@@ -40,7 +40,7 @@ export default function LoginPage() {
       // If there's a code parameter, Supabase will automatically handle it via detectSessionInUrl
       const code = urlParams.get('code')
       if (code) {
-        console.log('OAuth callback detected - Supabase will handle automatically')
+        
         setSuccess('Processing authentication...')
       }
     }

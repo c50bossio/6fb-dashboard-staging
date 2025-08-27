@@ -101,7 +101,7 @@ test.describe('Data Import System', () => {
         }
       } catch (error) {
         // File upload might not be fully functional in test environment
-        console.log('File upload test skipped:', error.message)
+        
       }
     }
   })
@@ -293,7 +293,7 @@ test.describe('Import API Endpoints', () => {
       // Should not return 404
       expect(response.status()).not.toBe(404)
     } catch (error) {
-      console.log('API test skipped:', error.message)
+      
     }
   })
 
@@ -304,7 +304,7 @@ test.describe('Import API Endpoints', () => {
       // Should not return 404 
       expect(response.status()).not.toBe(404)
     } catch (error) {
-      console.log('API test skipped:', error.message)
+      
     }
   })
 
@@ -319,7 +319,7 @@ test.describe('Import API Endpoints', () => {
       // Should not return 404
       expect(response.status()).not.toBe(404)
     } catch (error) {
-      console.log('API test skipped:', error.message)
+      
     }
   })
 })

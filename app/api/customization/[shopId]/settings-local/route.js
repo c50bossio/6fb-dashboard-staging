@@ -45,8 +45,7 @@ export async function GET(request) {
 
 export async function PUT(request) {
   const settings = await request.json();
-  console.log('💾 Settings saved locally:', settings.name);
-  
+
   return NextResponse.json({ 
     message: 'Settings saved successfully!',
     data: settings 

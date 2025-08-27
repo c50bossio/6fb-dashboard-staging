@@ -128,10 +128,10 @@ export default function OnboardingProgress({ user, profile }) {
       refreshTimeout = setTimeout(() => {
         // Only refresh if not in active onboarding flow
         if (!isInOnboardingFlow()) {
-          console.log('OnboardingProgress: Refreshing status after tab switch')
+          
           loadOnboardingStatus()
         } else {
-          console.log('OnboardingProgress: Skipping refresh - user is in active onboarding flow')
+          
         }
       }, 500) // 500ms debounce to prevent excessive calls
     }
@@ -201,8 +201,7 @@ export default function OnboardingProgress({ user, profile }) {
       if (response.ok) {
         const data = await response.json()
         setCompletionData(data)
-        console.log('Onboarding completion successful:', data)
-        
+
         // Optional: Show success notification or redirect after delay
         setTimeout(() => {
           if (data.bookingUrl) {
@@ -262,14 +261,14 @@ export default function OnboardingProgress({ user, profile }) {
       
       try {
         sessionStorage.setItem('onboarding_context', JSON.stringify(onboardingContext))
-        console.log('OnboardingProgress: Saved context to session storage', onboardingContext)
+        
       } catch (error) {
         console.warn('OnboardingProgress: Failed to save context to session storage', error)
       }
       
       // Add onboarding context parameters
       const url = `${route}?onboarding=true&step=${step.id}&from=dashboard`
-      console.log(`OnboardingProgress: Navigating to role-aware URL for ${userRole}:`, url)
+      
       router.push(url)
     }
   }

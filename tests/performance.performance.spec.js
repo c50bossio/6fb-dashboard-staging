@@ -70,9 +70,7 @@ test.describe('Performance Tests - Core Web Vitals @performance', () => {
     const loadTime = Date.now() - startTime
     
     const webVitals = await page.evaluate(() => window.webVitals)
-    
-    console.log('Core Web Vitals:', webVitals)
-    
+
     expect(webVitals.fcp).toBeLessThan(1800)
     
     expect(webVitals.lcp).toBeLessThan(2500)
@@ -154,7 +152,7 @@ test.describe('Performance Tests - Core Web Vitals @performance', () => {
     })
     
     stepPerformance.forEach(({ step, loadTime }) => {
-      console.log(`Step ${step} load time: ${loadTime}ms`)
+      
       expect(loadTime).toBeLessThan(1000) // Each step should load in under 1s
     })
     
@@ -218,7 +216,7 @@ test.describe('Performance Tests - Core Web Vitals @performance', () => {
     await page.waitForLoadState('networkidle')
     
     imageLoadTimes.forEach(({ url, loadTime, size }) => {
-      console.log(`Image: ${url.split('/').pop()}, Load time: ${loadTime}ms, Size: ${size} bytes`)
+      .pop()}, Load time: ${loadTime}ms, Size: ${size} bytes`)
       
       expect(loadTime).toBeLessThan(2000)
       
@@ -255,11 +253,10 @@ test.describe('Performance Tests - Core Web Vitals @performance', () => {
     const totalJSSize = resourceMetrics.reduce((total, resource) => total + resource.size, 0)
     const maxBundleSize = Math.max(...resourceMetrics.map(r => r.size))
     const avgLoadTime = resourceMetrics.reduce((total, r) => total + r.loadTime, 0) / resourceMetrics.length
-    
-    console.log('JavaScript Bundle Analysis:')
-    console.log(`Total JS size: ${(totalJSSize / 1024).toFixed(2)} KB`)
-    console.log(`Largest bundle: ${(maxBundleSize / 1024).toFixed(2)} KB`)
-    console.log(`Average load time: ${avgLoadTime.toFixed(2)}ms`)
+
+    .toFixed(2)} KB`)
+    .toFixed(2)} KB`)
+    }ms`)
     
     expect(totalJSSize).toBeLessThan(1024 * 1024) // Total JS < 1MB
     expect(maxBundleSize).toBeLessThan(500 * 1024) // Largest bundle < 500KB
@@ -288,10 +285,9 @@ test.describe('Performance Tests - Core Web Vitals @performance', () => {
     
     const totalCSSSize = cssMetrics.reduce((total, resource) => total + resource.size, 0)
     const avgCSSLoadTime = cssMetrics.reduce((total, r) => total + r.loadTime, 0) / cssMetrics.length
-    
-    console.log('CSS Performance Analysis:')
-    console.log(`Total CSS size: ${(totalCSSSize / 1024).toFixed(2)} KB`)
-    console.log(`Average CSS load time: ${avgCSSLoadTime.toFixed(2)}ms`)
+
+    .toFixed(2)} KB`)
+    }ms`)
     
     expect(totalCSSSize).toBeLessThan(100 * 1024) // Total CSS < 100KB
     expect(avgCSSLoadTime).toBeLessThan(500) // CSS should load quickly
@@ -336,12 +332,10 @@ test.describe('Performance Tests - Core Web Vitals @performance', () => {
     const avgApiResponseTime = apiMetrics.reduce((total, api) => total + api.loadTime, 0) / apiMetrics.length
     const slowAPIs = apiMetrics.filter(api => api.loadTime > 1000)
     const cachedAPIs = apiMetrics.filter(api => api.cacheControl.includes('max-age'))
-    
-    console.log('API Performance Analysis:')
-    console.log(`Average API response time: ${avgApiResponseTime.toFixed(2)}ms`)
-    console.log(`Slow APIs (>1s): ${slowAPIs.length}`)
-    console.log(`Cached APIs: ${cachedAPIs.length}/${apiMetrics.length}`)
-    
+
+    }ms`)
+    : ${slowAPIs.length}`)
+
     expect(avgApiResponseTime).toBeLessThan(500) // Average API response < 500ms
     expect(slowAPIs.length).toBeLessThan(2) // Max 2 slow APIs
     expect(cachedAPIs.length / apiMetrics.length).toBeGreaterThan(0.5) // 50%+ should be cached
@@ -413,7 +407,7 @@ test.describe('Performance Tests - Core Web Vitals @performance', () => {
     
     if (finalMemory) {
       const memoryUsageRatio = finalMemory.used / finalMemory.total
-      console.log(`Memory usage: ${(finalMemory.used / 1024 / 1024).toFixed(2)}MB / ${(finalMemory.total / 1024 / 1024).toFixed(2)}MB (${(memoryUsageRatio * 100).toFixed(1)}%)`)
+      .toFixed(2)}MB / ${(finalMemory.total / 1024 / 1024).toFixed(2)}MB (${(memoryUsageRatio * 100).toFixed(1)}%)`)
       
       expect(memoryUsageRatio).toBeLessThan(0.9)
     }
@@ -446,11 +440,10 @@ test.describe('Performance Tests - Core Web Vitals @performance', () => {
     
     const totalThirdPartySize = thirdPartyMetrics.reduce((total, script) => total + script.size, 0)
     const avgThirdPartyLoad = thirdPartyMetrics.reduce((total, script) => total + script.loadTime, 0) / thirdPartyMetrics.length
-    
-    console.log('Third-party Script Analysis:')
-    console.log(`Total third-party size: ${(totalThirdPartySize / 1024).toFixed(2)} KB`)
-    console.log(`Average load time: ${avgThirdPartyLoad?.toFixed(2) || 0}ms`)
-    console.log(`Number of third-party domains: ${new Set(thirdPartyMetrics.map(s => s.domain)).size}`)
+
+    .toFixed(2)} KB`)
+     || 0}ms`)
+    ).size}`)
     
     expect(totalThirdPartySize).toBeLessThan(200 * 1024) // < 200KB total
     expect(new Set(thirdPartyMetrics.map(s => s.domain)).size).toBeLessThan(5) // < 5 third-party domains
@@ -500,10 +493,8 @@ test.describe('Performance Tests - Stress Testing', () => {
     const maxInteractionTime = Math.max(...interactionTimes)
     const performanceDecay = interactionTimes[interactionTimes.length - 1] - interactionTimes[0]
     
-    console.log(`Average interaction time: ${avgInteractionTime.toFixed(2)}ms`)
-    console.log(`Max interaction time: ${maxInteractionTime}ms`)
-    console.log(`Performance decay: ${performanceDecay}ms`)
-    
+    }ms`)
+
     expect(avgInteractionTime).toBeLessThan(500)
     expect(maxInteractionTime).toBeLessThan(1000)
     expect(Math.abs(performanceDecay)).toBeLessThan(200) // Should not degrade significantly

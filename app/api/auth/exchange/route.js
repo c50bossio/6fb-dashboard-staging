@@ -24,7 +24,7 @@ export async function POST(request) {
     }
     
     if (data?.session) {
-      console.log('Session created for:', data.session.user.email)
+      
       return NextResponse.json({ 
         success: true, 
         user: {

@@ -12,7 +12,7 @@ export default function DebugPKCEPage() {
   const addLog = (message) => {
     const timestamp = new Date().toISOString()
     setLogs(prev => [...prev, `[${timestamp}] ${message}`])
-    console.log(`🔍 PKCE Debug: ${message}`)
+    
   }
 
   const updateStorageStates = () => {

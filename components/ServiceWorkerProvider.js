@@ -100,7 +100,7 @@ export default function ServiceWorkerProvider({ children }) {
         registration.update()
         cacheManager.checkForUpdates().then(result => {
           if (result.updateAvailable) {
-            console.log('[ServiceWorker] Update detected via build check')
+            
             setSwUpdateAvailable(true)
           }
         })

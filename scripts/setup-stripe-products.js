@@ -15,7 +15,7 @@ require('dotenv').config({ path: '.env.local' });
 
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error('❌ STRIPE_SECRET_KEY not found in environment variables');
-  console.log('Please make sure your .env.local file contains STRIPE_SECRET_KEY');
+  
   process.exit(1);
 }
 
@@ -24,10 +24,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 async function setupStripeProducts() {
-  console.log('🚀 Setting up Stripe products for BookedBarber...\n');
 
   try {
-    console.log('Creating Individual Barber product...');
+    
     const barberProduct = await stripe.products.create({
       name: 'Individual Barber',
       description: 'Perfect for independent barbers and stylists',
@@ -73,11 +72,6 @@ async function setupStripeProducts() {
       }
     });
 
-    console.log('✅ Individual Barber product created');
-    console.log(`   Monthly Price ID: ${barberMonthly.id}`);
-    console.log(`   Yearly Price ID: ${barberYearly.id}\n`);
-
-    console.log('Creating Barbershop product...');
     const shopProduct = await stripe.products.create({
       name: 'Barbershop',
       description: 'Ideal for barbershop owners with multiple barbers',
@@ -125,11 +119,6 @@ async function setupStripeProducts() {
       }
     });
 
-    console.log('✅ Barbershop product created');
-    console.log(`   Monthly Price ID: ${shopMonthly.id}`);
-    console.log(`   Yearly Price ID: ${shopYearly.id}\n`);
-
-    console.log('Creating Multi-Location Enterprise product...');
     const enterpriseProduct = await stripe.products.create({
       name: 'Multi-Location Enterprise',
       description: 'For barbershop chains and franchises',
@@ -178,11 +167,6 @@ async function setupStripeProducts() {
       }
     });
 
-    console.log('✅ Multi-Location Enterprise product created');
-    console.log(`   Monthly Price ID: ${enterpriseMonthly.id}`);
-    console.log(`   Yearly Price ID: ${enterpriseYearly.id}\n`);
-
-    console.log('Configuring Customer Portal...');
     const portalConfig = await stripe.billingPortal.configurations.create({
       business_profile: {
         headline: 'BookedBarber - Manage Your Subscription',
@@ -241,43 +225,6 @@ async function setupStripeProducts() {
         }
       }
     });
-
-    console.log('✅ Customer Portal configured');
-    console.log(`   Portal Config ID: ${portalConfig.id}\n`);
-
-    console.log('========================================');
-    console.log('🎉 SUCCESS! Stripe products created');
-    console.log('========================================\n');
-    console.log('Add these to your .env.local file:\n');
-    console.log(`# Stripe Configuration for BookedBarber`);
-    console.log(`STRIPE_SECRET_KEY=${process.env.STRIPE_SECRET_KEY || 'sk_test_YOUR_TEST_KEY_HERE'}`);
-    console.log(`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_PUBLISHABLE_KEY_HERE\n`);
-    console.log(`# Individual Barber Prices`);
-    console.log(`STRIPE_BARBER_PRICE_ID=${barberMonthly.id}`);
-    console.log(`STRIPE_BARBER_PRICE_ID_YEARLY=${barberYearly.id}\n`);
-    console.log(`# Barbershop Prices`);
-    console.log(`STRIPE_SHOP_PRICE_ID=${shopMonthly.id}`);
-    console.log(`STRIPE_SHOP_PRICE_ID_YEARLY=${shopYearly.id}\n`);
-    console.log(`# Enterprise Prices`);
-    console.log(`STRIPE_ENTERPRISE_PRICE_ID=${enterpriseMonthly.id}`);
-    console.log(`STRIPE_ENTERPRISE_PRICE_ID_YEARLY=${enterpriseYearly.id}\n`);
-    console.log(`# Customer Portal`);
-    console.log(`STRIPE_PORTAL_CONFIG_ID=${portalConfig.id}\n`);
-
-    console.log('Next Step: Configure webhook endpoint in Stripe Dashboard');
-    console.log('=========================================================');
-    console.log('1. Go to: https://dashboard.stripe.com/webhooks');
-    console.log('2. Click "Add endpoint"');
-    console.log('3. Endpoint URL: https://bookbarber.com/api/stripe/webhook');
-    console.log('4. Select events:');
-    console.log('   - checkout.session.completed');
-    console.log('   - customer.subscription.created');
-    console.log('   - customer.subscription.updated');
-    console.log('   - customer.subscription.deleted');
-    console.log('   - invoice.payment_succeeded');
-    console.log('   - invoice.payment_failed');
-    console.log('5. After creation, copy the webhook signing secret');
-    console.log('6. Add to .env.local: STRIPE_WEBHOOK_SECRET=whsec_...\n');
 
   } catch (error) {
     console.error('❌ Error setting up Stripe products:', error.message);

@@ -16,7 +16,7 @@ class CoderAutomation {
   }
 
   log(message) {
-    console.log(`🤖 [Coder Automation] ${message}`);
+    
   }
 
   error(message) {
@@ -24,7 +24,7 @@ class CoderAutomation {
   }
 
   success(message) {
-    console.log(`✅ [Coder Automation] ${message}`);
+    
   }
 
   async checkAuth() {
@@ -45,11 +45,7 @@ class CoderAutomation {
     }
 
     this.log('Please authenticate with Coder CLI:');
-    console.log(`1. Visit: ${this.coderUrl}/cli-auth`);
-    console.log(`2. Copy the token`);
-    console.log(`3. Run: echo "YOUR_TOKEN" | coder login ${this.coderUrl}`);
-    console.log(`4. Then run this script again`);
-    
+
     return false;
   }
 
@@ -100,7 +96,7 @@ resource "coder_agent" "main" {
     
     # Create project files
     echo "# 6FB AI Agent System - Automated Setup" > README.md
-    echo "console.log('6FB AI Agent System - Ready!');" > app.js
+    echo "" > app.js
     
     # Create Python virtual environment
     python3 -m venv venv
@@ -241,9 +237,7 @@ resource "docker_container" "workspace" {
   }
 
   async run() {
-    console.log('🚀 Starting Coder Setup Automation');
-    console.log('==================================');
-    
+
     if (!(await this.authenticate())) {
       return;
     }
@@ -252,10 +246,6 @@ resource "docker_container" "workspace" {
       return;
     }
 
-    console.log('\\n📋 Template uploaded successfully!');
-    console.log(`Visit: ${this.coderUrl}/templates to see your template`);
-    console.log('\\n🚀 To create a workspace, run:');
-    console.log(`node automate-coder-setup.js --create-workspace [workspace-name]`);
   }
 }
 

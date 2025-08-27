@@ -125,7 +125,7 @@ export default function ProductManagement() {
         }
       } else if (statusResponse.status === 401) {
         // Authentication required
-        console.log('Authentication required for Cin7')
+        
         setHasCredentials(false)
         setCin7Connected(false)
         setCredentialInfo(null)

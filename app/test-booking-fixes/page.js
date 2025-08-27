@@ -11,7 +11,7 @@ export default function TestBookingFixesPage() {
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && savingState) {
-        console.log('Page became visible - resetting saving state')
+        
         setSavingState(false)
       }
     }
@@ -45,7 +45,7 @@ export default function TestBookingFixesPage() {
               <ClientHistoryTracker 
                 barbershopId="test-barbershop-123"
                 onClientSelect={(client) => {
-                  console.log('Selected client:', client)
+                  
                   alert(`Selected client: ${client.name}`)
                 }}
                 isDev={true}

@@ -40,8 +40,7 @@ const EXCLUDE_FILES = [
 ]
 
 async function findMockDataFiles() {
-  console.log('🔍 Scanning for mock data across the codebase...\n')
-  
+
   const results = {
     totalFiles: 0,
     filesWithMockData: 0,
@@ -120,19 +119,15 @@ async function scanFile(filePath, results) {
 }
 
 function generateProgressReport(results) {
-  console.log('📊 Mock Data Cleanup Progress Report')
-  console.log('=' .repeat(60))
-  console.log(`Total files scanned: ${results.totalFiles}`)
-  console.log(`Files with mock data: ${results.filesWithMockData}`)
-  console.log(`Total mock data instances: ${results.mockDataInstances.length}`)
   
+  )
+
   if (results.mockDataInstances.length === 0) {
-    console.log('\n🎉 NO MOCK DATA FOUND! Cleanup complete!')
+    
     return
   }
-  
-  console.log('\n📋 Files needing cleanup:')
-  console.log('-' .repeat(40))
+
+  )
   
   const fileGroups = {}
   results.mockDataInstances.forEach(instance => {
@@ -147,16 +142,14 @@ function generateProgressReport(results) {
   
   sortedFiles.forEach(([file, instances]) => {
     const priority = getPriority(file, instances.length)
-    console.log(`\n${priority} ${file} (${instances.length} instances):`)
+    :`)
     
     instances.forEach(instance => {
-      console.log(`   Line ${instance.line}: ${instance.match}`)
-      console.log(`   → ${instance.context}`)
+
     })
   })
-  
-  console.log('\n🎯 Cleanup Priority:')
-  console.log('-' .repeat(40))
+
+  )
   
   const priorities = {
     '🔴 HIGH': sortedFiles.filter(([file, instances]) => 
@@ -168,11 +161,10 @@ function generateProgressReport(results) {
   }
   
   Object.entries(priorities).forEach(([priority, count]) => {
-    console.log(`${priority}: ${count} files`)
+    
   })
-  
-  console.log('\n🔍 Most Common Patterns:')
-  console.log('-' .repeat(40))
+
+  )
   
   const patternCounts = {}
   results.mockDataInstances.forEach(instance => {
@@ -183,15 +175,9 @@ function generateProgressReport(results) {
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .forEach(([pattern, count]) => {
-      console.log(`${pattern}: ${count} instances`)
+      
     })
-  
-  console.log('\n📋 Next Steps:')
-  console.log('1. Focus on HIGH priority files first')
-  console.log('2. Replace mock generators with database operations')
-  console.log('3. Update imports to use real database modules')
-  console.log('4. Test each file after cleanup')
-  console.log('5. Run this script again to track progress')
+
 }
 
 function getPriority(file, instanceCount) {
@@ -218,8 +204,8 @@ function isHighPriorityFile(file) {
 }
 
 function generateCleanupSuggestions(results) {
-  console.log('\n🛠️  Cleanup Suggestions:')
-  console.log('-' .repeat(40))
+  
+  )
   
   const suggestions = [
     'Replace generateMock* functions with database query functions',
@@ -231,7 +217,7 @@ function generateCleanupSuggestions(results) {
   ]
   
   suggestions.forEach((suggestion, index) => {
-    console.log(`${index + 1}. ${suggestion}`)
+    
   })
 }
 
@@ -241,10 +227,10 @@ if (require.main === module) {
       generateCleanupSuggestions(results)
       
       if (results.mockDataInstances.length > 0) {
-        console.log(`\n⚠️  Found ${results.mockDataInstances.length} mock data instances that need cleanup`)
+        
         process.exit(1)
       } else {
-        console.log('\n✅ Mock data cleanup complete!')
+        
         process.exit(0)
       }
     })

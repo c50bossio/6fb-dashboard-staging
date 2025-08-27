@@ -87,7 +87,6 @@ test.describe('Visual Regression - Homepage and Public Pages', () => {
   })
 
   test('Homepage visual consistency across viewports', async ({ page }) => {
-    console.log('Testing homepage visual consistency...')
 
     for (const viewport of visualEnv.testData.viewports) {
       await page.setViewportSize({ width: viewport.width, height: viewport.height })
@@ -118,7 +117,6 @@ test.describe('Visual Regression - Homepage and Public Pages', () => {
   })
 
   test('Pricing page visual consistency', async ({ page }) => {
-    console.log('Testing pricing page visual consistency...')
 
     await page.goto('/pricing')
     await page.waitForLoadState('networkidle')
@@ -142,7 +140,6 @@ test.describe('Visual Regression - Homepage and Public Pages', () => {
   })
 
   test('Login page visual consistency', async ({ page }) => {
-    console.log('Testing login page visual consistency...')
 
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
@@ -168,7 +165,6 @@ test.describe('Visual Regression - Homepage and Public Pages', () => {
   })
 
   test('Registration page visual consistency', async ({ page }) => {
-    console.log('Testing registration page visual consistency...')
 
     await page.goto('/register')
     await page.waitForLoadState('networkidle')
@@ -191,7 +187,6 @@ test.describe('Visual Regression - Authenticated Pages', () => {
   })
 
   test('Dashboard visual consistency', async ({ page }) => {
-    console.log('Testing dashboard visual consistency...')
 
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
@@ -228,7 +223,6 @@ test.describe('Visual Regression - Authenticated Pages', () => {
   })
 
   test('Calendar page visual consistency', async ({ page }) => {
-    console.log('Testing calendar page visual consistency...')
 
     await page.goto('/calendar')
     await page.waitForLoadState('networkidle')
@@ -271,7 +265,6 @@ test.describe('Visual Regression - Authenticated Pages', () => {
   })
 
   test('Settings page visual consistency', async ({ page }) => {
-    console.log('Testing settings page visual consistency...')
 
     await page.goto('/settings')
     await page.waitForLoadState('networkidle')
@@ -313,8 +306,6 @@ test.describe('Visual Regression - Booking Wizard', () => {
     if (!visualEnv.testData.shop) {
       test.skip('No test shop available')
     }
-
-    console.log('Testing booking wizard visual consistency...')
 
     const bookingUrl = visualEnv.getPageUrl({ path: '/book', useShopSlug: true })
     await page.goto(bookingUrl)
@@ -363,8 +354,6 @@ test.describe('Visual Regression - Booking Wizard', () => {
       test.skip('No test shop available')
     }
 
-    console.log('Testing booking wizard mobile responsiveness...')
-
     await page.setViewportSize({ width: 375, height: 667 })
     
     const bookingUrl = visualEnv.getPageUrl({ path: '/book', useShopSlug: true })
@@ -398,7 +387,6 @@ test.describe('Visual Regression - Component States', () => {
   })
 
   test('Loading states visual consistency', async ({ page }) => {
-    console.log('Testing loading states...')
 
     // Mock slow API responses to capture loading states
     await page.route('/api/**', async route => {
@@ -416,7 +404,6 @@ test.describe('Visual Regression - Component States', () => {
   })
 
   test('Error states visual consistency', async ({ page }) => {
-    console.log('Testing error states...')
 
     // Mock API errors
     await page.route('/api/**', async route => {
@@ -437,7 +424,6 @@ test.describe('Visual Regression - Component States', () => {
   })
 
   test('Modal dialogs visual consistency', async ({ page }) => {
-    console.log('Testing modal dialogs...')
 
     await visualEnv.authenticateUser(page)
     await page.goto('/calendar')
@@ -466,7 +452,6 @@ test.describe('Visual Regression - Component States', () => {
   })
 
   test('Form validation states', async ({ page }) => {
-    console.log('Testing form validation states...')
 
     await page.goto('/register')
     
@@ -511,7 +496,6 @@ test.describe('Visual Regression - Cross-Browser Compatibility', () => {
   })
 
   test('Chrome browser consistency', async ({ page }) => {
-    console.log('Testing Chrome browser consistency...')
 
     await page.goto('/')
     await page.waitForLoadState('networkidle')
@@ -524,7 +508,6 @@ test.describe('Visual Regression - Cross-Browser Compatibility', () => {
 
   // This test would run on Firefox when configured in playwright.config.js
   test('Firefox browser consistency', async ({ page }) => {
-    console.log('Testing Firefox browser consistency...')
 
     await page.goto('/')
     await page.waitForLoadState('networkidle')
@@ -537,7 +520,6 @@ test.describe('Visual Regression - Cross-Browser Compatibility', () => {
 
   // This test would run on Safari when configured in playwright.config.js
   test('Safari browser consistency', async ({ page }) => {
-    console.log('Testing Safari browser consistency...')
 
     await page.goto('/')
     await page.waitForLoadState('networkidle')
@@ -558,7 +540,6 @@ test.describe('Visual Regression - Accessibility Features', () => {
   })
 
   test('High contrast mode visual consistency', async ({ page }) => {
-    console.log('Testing high contrast mode...')
 
     await page.goto('/')
     
@@ -582,7 +563,6 @@ test.describe('Visual Regression - Accessibility Features', () => {
   })
 
   test('Dark mode visual consistency', async ({ page }) => {
-    console.log('Testing dark mode...')
 
     await page.goto('/')
     
@@ -611,7 +591,6 @@ test.describe('Visual Regression - Accessibility Features', () => {
   })
 
   test('Reduced motion visual consistency', async ({ page }) => {
-    console.log('Testing reduced motion...')
 
     await page.goto('/')
     await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -623,7 +602,6 @@ test.describe('Visual Regression - Accessibility Features', () => {
   })
 
   test('Focus states visual consistency', async ({ page }) => {
-    console.log('Testing focus states...')
 
     await page.goto('/login')
     

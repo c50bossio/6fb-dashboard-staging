@@ -9,7 +9,6 @@ const fs = require('fs')
 const path = require('path')
 
 function validateCin7Fixes() {
-  console.log('🔍 Validating Cin7 Integration Fixes...\n')
 
   const validations = [
     validateCredentialsAPI,
@@ -26,30 +25,27 @@ function validateCin7Fixes() {
     try {
       const result = validation()
       if (result.success) {
-        console.log(`✅ ${validation.name} - PASSED`)
+        
         if (result.details) {
-          console.log(`   ${result.details}`)
+          
         }
         passed++
       } else {
-        console.log(`❌ ${validation.name} - FAILED`)
+        
         if (result.reason) {
-          console.log(`   ${result.reason}`)
+          
         }
       }
     } catch (error) {
-      console.log(`❌ ${validation.name} - ERROR: ${error.message}`)
+      
     }
-    console.log('')
+    
   }
 
-  console.log(`📊 Validation Results: ${passed}/${total} validations passed\n`)
-  
   if (passed === total) {
-    console.log('🎉 All validations passed! Your Cin7 integration fixes are correctly implemented.')
-    console.log('\n🚀 Ready to test with real Cin7 credentials!')
+
   } else {
-    console.log('⚠️ Some validations failed. Please review the code changes.')
+    
   }
 
   return passed === total

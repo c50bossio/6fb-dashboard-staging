@@ -75,11 +75,11 @@ export default function TestOnboardingPersistencePage() {
                     <StaffSetup 
                       data={staffData}
                       updateData={(data) => {
-                        console.log('Staff data updated:', data)
+                        
                         setStaffData(data)
                       }}
                       onComplete={() => {
-                        console.log('Staff setup completed')
+                        
                         setActiveTab('booking')
                       }}
                     />
@@ -90,11 +90,11 @@ export default function TestOnboardingPersistencePage() {
                     <BookingRulesSetup 
                       data={bookingData}
                       updateData={(data) => {
-                        console.log('Booking data updated:', data)
+                        
                         setBookingData(data)
                       }}
                       onComplete={() => {
-                        console.log('Booking rules completed')
+                        
                         alert('Onboarding completed!')
                       }}
                     />

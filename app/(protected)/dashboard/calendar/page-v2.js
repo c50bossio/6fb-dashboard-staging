@@ -146,20 +146,13 @@ export default function CalendarPageV2() {
   }
   
   const handleDatesSet = useCallback((dateInfo) => {
-    console.log('📅 Calendar view changed:', dateInfo)
+    
     fetchEvents(dateInfo.start, dateInfo.end)
   }, [fetchEvents])
   
   const handleEventClick = useCallback((clickInfo) => {
     const event = clickInfo.event
-    
-    console.log('🔍 Event clicked:', {
-      id: event.id,
-      groupId: event.groupId,
-      title: event.title,
-      extendedProps: event.extendedProps
-    })
-    
+
     setSelectedEvent({
       id: event.groupId || event.id, // Use groupId for recurring series
       title: event.title,
@@ -186,8 +179,7 @@ export default function CalendarPageV2() {
   }, [])
   
   const handleDateSelect = useCallback((selectInfo) => {
-    console.log('📅 Slot selected:', selectInfo)
-    
+
     const slotData = {
       start: selectInfo.start,
       end: selectInfo.end,

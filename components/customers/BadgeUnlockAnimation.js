@@ -44,7 +44,7 @@ export default function BadgeUnlockAnimation({
           oscillator.start(audioContext.currentTime)
           oscillator.stop(audioContext.currentTime + 0.6)
         } catch (error) {
-          console.log('Audio not supported or allowed')
+          
         }
       }
       

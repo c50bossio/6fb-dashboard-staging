@@ -15,6 +15,5 @@ test('dev bypass authentication test', async ({ page }) => {
   await page.waitForURL(/\/dashboard/, { timeout: 15000 })
   
   await expect(page).toHaveURL(/\/dashboard/)
-  
-  console.log('✅ Authentication successful - redirected to dashboard')
+
 })

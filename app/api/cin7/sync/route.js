@@ -5,8 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 
 async function fetchCin7Products(accountId, apiKey) {
   try {
-    console.log('🔍 Starting Cin7 product fetch...')
-    
+
     let allProducts = []
     let page = 1
     let hasMorePages = true
@@ -23,7 +22,7 @@ async function fetchCin7Products(accountId, apiKey) {
       
       // Use the correct lowercase endpoint that works (verified in quick-sync and test-connection)
       const url = `https://inventory.dearsystems.com/externalapi/products?limit=${pageSize}&page=${page}`
-      console.log(`📦 Fetching page ${page} from Cin7 (limit: ${pageSize})...`)
+      ...`)
       
       const response = await fetch(url, {
         method: 'GET',
@@ -51,7 +50,7 @@ async function fetchCin7Products(accountId, apiKey) {
       const products = data?.ProductList || data?.Products || []
       totalProducts = data?.Total || 0
       
-      console.log(`✅ Page ${page}: Found ${products.length} products (Total in account: ${totalProducts})`)
+      `)
       
       if (products.length === 0) {
         hasMorePages = false
@@ -61,14 +60,13 @@ async function fetchCin7Products(accountId, apiKey) {
         // Check if we've fetched all products using the Total field
         if (allProducts.length >= totalProducts || products.length < pageSize) {
           hasMorePages = false
-          console.log(`📊 All products fetched: ${allProducts.length} of ${totalProducts}`)
+          
         } else {
           page++
         }
       }
     }
-    
-    console.log(`🎯 Final result: Fetched ${allProducts.length} total products from Cin7`)
+
     return allProducts
   } catch (error) {
     console.error('Error fetching products from Cin7:', error)
@@ -121,18 +119,16 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
   
   // Debug logging for first few products to understand structure
   if (cin7Product.SKU === '_1_' || cin7Product.SKU === 'T4512PP' || cin7Product.SKU === 'FXT45C') {
-    console.log(`\n📊 Analyzing Product: ${cin7Product.Name}`)
-    console.log(`   SKU: ${cin7Product.SKU}`)
-    
+
     // Check for nested inventory data
     if (cin7Product.Inventory) {
-      console.log(`   ✅ Inventory data:`, JSON.stringify(cin7Product.Inventory).substring(0, 200))
+      .substring(0, 200))
     }
     if (cin7Product.StockLevels) {
-      console.log(`   ✅ StockLevels:`, JSON.stringify(cin7Product.StockLevels).substring(0, 200))
+      .substring(0, 200))
     }
     if (cin7Product.Locations) {
-      console.log(`   ✅ Locations:`, JSON.stringify(cin7Product.Locations).substring(0, 200))
+      .substring(0, 200))
     }
     
     // Check any numeric fields
@@ -142,7 +138,7 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
         numericFields[key] = cin7Product[key]
       }
     })
-    console.log(`   Numeric fields:`, JSON.stringify(numericFields))
+    )
   }
   
   // Map category to barbershop-friendly categories
@@ -336,8 +332,7 @@ export async function POST(request) {
     } else {
       supabase = createClient()
     }
-    
-    
+
     // Check for dev bypass
     const devBypass = request.headers.get('x-dev-bypass') === 'true' || 
                      process.env.NODE_ENV === 'development'
@@ -368,7 +363,7 @@ export async function POST(request) {
         
         // TEMPORARY: Allow sync for testing while we fix OAuth
         if (process.env.NODE_ENV === 'production' && isKnownUser) {
-          console.log('🔧 TEMP: Allowing sync access for testing (OAuth session will be fixed)')
+          ')
           user = {
             id: 'temp-production-user',
             email: 'production-test@bookedbarber.com'
@@ -408,7 +403,7 @@ export async function POST(request) {
       
       if (profileShop) {
         barbershop = profileShop
-        console.log('Found barbershop via profile:', profileShop.name)
+        
       }
     }
     
@@ -422,7 +417,7 @@ export async function POST(request) {
       
       if (userBarbershop) {
         barbershop = userBarbershop
-        console.log('Found barbershop via ownership:', userBarbershop.name)
+        
       }
     }
     
@@ -443,7 +438,7 @@ export async function POST(request) {
         
         if (staffShop) {
           barbershop = staffShop
-          console.log('Found barbershop via staff association:', staffShop.name)
+          
         }
       }
     }
@@ -458,7 +453,7 @@ export async function POST(request) {
       
       if (overrideShop) {
         barbershop = overrideShop
-        console.log('Using override barbershop:', overrideShop.name)
+        
       }
     }
     
@@ -562,31 +557,19 @@ export async function POST(request) {
     }
     
     try {
-      console.log(`🚀 Starting Cin7 sync for barbershop: ${barbershop.name} (${barbershop.id})`)
-      console.log(`📊 Account: ${accountName}`)
-      
+      `)
+
       // Fetch both products and stock levels from Cin7
       const [cin7Products, stockLevels] = await Promise.all([
         fetchCin7Products(accountId, apiKey),
         fetchCin7StockLevels(accountId, apiKey)
       ])
-      
-      console.log(`✅ Successfully fetched ${cin7Products.length} products from Cin7`)
-      
+
       // Debug: Show first few products and their stock data
       if (cin7Products.length > 0) {
-        console.log('📊 Sample product stock fields from Cin7:')
+        
         cin7Products.slice(0, 3).forEach((product, index) => {
-          console.log(`  Product ${index + 1}: ${product.Name || product.ProductName}`)
-          console.log(`    SKU: ${product.SKU || 'N/A'}`)
-          console.log(`    AvailableQty: ${product.AvailableQty}`)
-          console.log(`    Available: ${product.Available}`)
-          console.log(`    StockOnHand: ${product.StockOnHand}`)
-          console.log(`    QtyOnHand: ${product.QtyOnHand}`)
-          console.log(`    FreeStock: ${product.FreeStock}`)
-          console.log(`    AllocatedQty: ${product.AllocatedQty}`)
-          console.log(`    IncomingStock: ${product.IncomingStock}`)
-          
+
           // Show all numeric fields that might contain stock data
           const stockFields = Object.keys(product).filter(key => {
             const value = product[key]
@@ -596,7 +579,7 @@ export async function POST(request) {
                    key.toLowerCase().includes('quantity')
           })
           if (stockFields.length > 0) {
-            console.log(`    Other stock-related fields: ${stockFields.join(', ')}`)
+            }`)
           }
         })
       }
@@ -666,9 +649,7 @@ export async function POST(request) {
           last_sync_status: 'success'
         })
         .eq('barbershop_id', barbershop.id)
-      
-      console.log(`🎉 Sync complete! Inserted ${syncedProducts.length} products into database`)
-      
+
       // Count products with stock issues for alert
       const lowStockCount = syncedProducts.filter(p => p.current_stock <= p.min_stock_level).length
       const outOfStockCount = syncedProducts.filter(p => p.current_stock === 0).length

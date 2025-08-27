@@ -199,8 +199,7 @@ function processFile(filePath) {
 
 // Main execution
 async function main() {
-  console.log('🔍 Searching for files to process...')
-  
+
   let totalFiles = 0
   let processedFiles = 0
   let skippedFiles = 0
@@ -221,23 +220,13 @@ async function main() {
       } else if (result.processed) {
         processedFiles++
         totalReplacements += result.replacements
-        console.log(`✅ Processed: ${file} (${result.replacements} replacements)`)
+        `)
       }
     }
   }
-  
-  console.log('\n📊 Summary:')
-  console.log(`Total files scanned: ${totalFiles}`)
-  console.log(`Files processed: ${processedFiles}`)
-  console.log(`Files skipped: ${skippedFiles}`)
-  console.log(`Total replacements: ${totalReplacements}`)
-  console.log('\n✨ Console.log replacement complete!')
-  
+
   if (totalReplacements > 0) {
-    console.log('\n⚠️  Remember to:')
-    console.log('1. Run your tests to ensure everything still works')
-    console.log('2. Check that logger imports are correct')
-    console.log('3. Review any complex console usage that may need manual adjustment')
+
   }
 }
 

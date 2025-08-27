@@ -33,7 +33,7 @@ export default function BarberAvailabilityManager({
   barberName,
   barbershopId
 }) {
-  console.log('🗓️ BarberAvailabilityManager props:', { barberId, barberName, barbershopId })
+  
   const { user } = useAuth()
   const supabase = createClient()
   
@@ -60,8 +60,7 @@ export default function BarberAvailabilityManager({
     
     try {
       setLoading(true)
-      console.log(`📅 Fetching availability for barber ${barberId} at barbershop ${barbershopId}`)
-      
+
       // First, verify the barber exists using unified staff service
       const barberData = await unifiedStaffService.getBarberById(barberId, barbershopId)
       if (!barberData) {
@@ -70,9 +69,7 @@ export default function BarberAvailabilityManager({
         setLoading(false)
         return
       }
-      
-      console.log(`✅ Verified barber: ${barberData.display_name || barberData.name}`)
-      
+
       // Fetch availability data
       const { data, error } = await supabase
         .from('barber_availability')
@@ -84,7 +81,6 @@ export default function BarberAvailabilityManager({
 
       if (error) throw error
 
-      console.log(`📊 Found ${data?.length || 0} availability slots`)
       setAvailability(data || [])
     } catch (error) {
       console.error('❌ Error fetching availability:', error)

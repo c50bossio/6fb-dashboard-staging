@@ -97,7 +97,7 @@ export async function POST(request) {
     }
 
     // Test the connection
-    console.log('Testing Cin7 connection...')
+    
     const connectionTest = await testCin7Connection(accountId, apiKey)
     
     if (!connectionTest.success) {
@@ -133,8 +133,6 @@ export async function POST(request) {
         { status: 500 }
       )
     }
-
-    console.log(`✅ Cin7 credentials saved for barbershop ${barbershopId}`)
 
     return NextResponse.json({
       success: true,

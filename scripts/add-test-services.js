@@ -74,8 +74,7 @@ const services = [
 
 async function addServices() {
   try {
-    console.log('🔄 Adding services to barbershop...')
-    
+
     // First, check if services already exist
     const { data: existingServices, error: checkError } = await supabase
       .from('services')
@@ -88,8 +87,8 @@ async function addServices() {
     }
     
     if (existingServices && existingServices.length > 0) {
-      console.log(`✅ Services already exist for this barbershop (${existingServices.length} services)`)
-      console.log('Existing services:', existingServices.map(s => s.name).join(', '))
+      `)
+      .join(', '))
       return
     }
     
@@ -103,9 +102,8 @@ async function addServices() {
       console.error('Error adding services:', error)
       return
     }
-    
-    console.log(`✅ Successfully added ${data.length} services to barbershop`)
-    console.log('Services added:', data.map(s => s.name).join(', '))
+
+    .join(', '))
     
   } catch (error) {
     console.error('Unexpected error:', error)

@@ -239,7 +239,7 @@ export default function UnifiedCustomizePageOptimized() {
   // Optimized save all handler
   const handleSaveAll = useCallback(() => {
     // Trigger save for all sections with changes
-    console.log('Saving all sections with changes')
+    
     // This would trigger save events for all customization components
   }, [])
 

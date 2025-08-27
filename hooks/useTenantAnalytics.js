@@ -42,7 +42,6 @@ export const useTenantAnalytics = (dateRange = '30d', filters = {}) => {
 
         const analyticsData = await response.json()
         setData(analyticsData)
-        console.log('📊 Tenant analytics loaded:', tenantId, analyticsData.summary)
 
       } catch (err) {
         console.error('❌ Error fetching tenant analytics:', err)
@@ -88,7 +87,6 @@ export const usePlatformAnalytics = (dateRange = '30d') => {
 
         const platformData = await response.json()
         setData(platformData)
-        console.log('🌍 Platform analytics loaded:', platformData.summary)
 
       } catch (err) {
         console.error('❌ Error fetching platform analytics:', err)

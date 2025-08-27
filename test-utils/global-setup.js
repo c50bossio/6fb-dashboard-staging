@@ -8,8 +8,7 @@ const fs = require('fs').promises
 const path = require('path')
 
 async function globalSetup(config) {
-  console.log('🔧 Setting up 6FB AI Agent System test environment...')
-  
+
   const testDirs = [
     'test-results',
     'test-results/screenshots',
@@ -23,7 +22,7 @@ async function globalSetup(config) {
 
   for (const dir of testDirs) {
     await fs.mkdir(dir, { recursive: true })
-    console.log(`✓ Created directory: ${dir}`)
+    
   }
 
   await setupAuthentication()
@@ -32,12 +31,10 @@ async function globalSetup(config) {
 
   await initializeComputerUse()
 
-  console.log('✅ Global setup completed successfully')
 }
 
 async function setupAuthentication() {
-  console.log('🔐 Setting up test authentication...')
-  
+
   const browser = await chromium.launch()
   const context = await browser.newContext()
   const page = await context.newPage()
@@ -57,9 +54,7 @@ async function setupAuthentication() {
     await page.waitForSelector('[data-testid="user-menu"]', { timeout: 5000 })
     
     await page.context().storageState({ path: 'playwright/.auth/user.json' })
-    
-    console.log('✓ Authentication setup completed')
-    
+
   } catch (error) {
     console.warn('⚠️  Authentication setup failed:', error.message)
     console.warn('   Tests requiring authentication may fail')
@@ -75,8 +70,7 @@ async function setupAuthentication() {
 }
 
 async function verifyTestServer() {
-  console.log('🌐 Verifying test server availability...')
-  
+
   const maxRetries = 30
   const retryDelay = 1000
   
@@ -88,14 +82,14 @@ async function verifyTestServer() {
       })
       
       if (response.ok) {
-        console.log('✓ Test server is ready')
+        
         return
       }
     } catch (error) {
     }
     
     if (i < maxRetries - 1) {
-      console.log(`   Waiting for server... (${i + 1}/${maxRetries})`)
+      `)
       await new Promise(resolve => setTimeout(resolve, retryDelay))
     }
   }
@@ -106,8 +100,7 @@ async function verifyTestServer() {
 }
 
 async function initializeComputerUse() {
-  console.log('🤖 Initializing Computer Use integration...')
-  
+
   try {
     const pythonScriptPath = path.join(__dirname, '../../computer_use_basic.py')
     await fs.access(pythonScriptPath)
@@ -123,8 +116,7 @@ async function initializeComputerUse() {
     const execAsync = promisify(exec)
     
     await execAsync('python3 --version')
-    console.log('✓ Python environment ready')
-    
+
     const testCommand = `cd "${path.dirname(pythonScriptPath)}" && python3 -c "
 import os
 import anthropic
@@ -136,9 +128,7 @@ print('Claude API connection ready')
       env: { ...process.env },
       timeout: 10000
     })
-    
-    console.log('✓ Computer Use integration ready')
-    
+
   } catch (error) {
     console.warn('⚠️  Computer Use initialization failed:', error.message)
     console.warn('   AI visual validation tests will be skipped')
@@ -156,12 +146,11 @@ test('health check', async ({ page }) => {
 `
 
   await fs.writeFile('tests/health-check.spec.js', healthCheckTest)
-  console.log('✓ Created health check test')
+  
 }
 
 async function setupTestData() {
-  console.log('📊 Setting up test data...')
-  
+
   const testData = {
     users: [
       {
@@ -208,7 +197,7 @@ async function setupTestData() {
   
   const testDataPath = path.join(__dirname, '../test-results/test-data.json')
   await fs.writeFile(testDataPath, JSON.stringify(testData, null, 2))
-  console.log('✓ Test data prepared')
+  
 }
 
 module.exports = globalSetup

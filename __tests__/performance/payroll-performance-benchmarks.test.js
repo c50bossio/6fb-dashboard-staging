@@ -199,9 +199,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
     await supabase.from('barbershops').delete().eq('id', testBarbershop.id)
 
     // Print performance summary
-    console.log('\n📊 PERFORMANCE TEST RESULTS SUMMARY:')
-    console.log('=====================================')
-    
+
     const measurements = PerformanceMetrics.measurements
     const groupedStats = measurements.reduce((acc, m) => {
       if (!acc[m.name]) acc[m.name] = []
@@ -212,7 +210,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
     Object.entries(groupedStats).forEach(([name, durations]) => {
       const avg = durations.reduce((a, b) => a + b, 0) / durations.length
       const p95 = percentile(durations, 0.95)
-      console.log(`${name}: Avg ${avg.toFixed(2)}ms | P95 ${p95.toFixed(2)}ms | Count ${durations.length}`)
+      }ms | P95 ${p95.toFixed(2)}ms | Count ${durations.length}`)
     })
   }, 60000)
 
@@ -249,7 +247,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       expect(measurement.duration).toBeLessThan(PERFORMANCE_TARGETS.webhook.singleProcessing)
       expect(measurement.memoryDelta).toBeLessThan(10 * 1024 * 1024) // 10MB max per webhook
 
-      console.log(`✅ Single webhook: ${measurement.duration.toFixed(2)}ms (Target: <${PERFORMANCE_TARGETS.webhook.singleProcessing}ms)`)
+      }ms (Target: <${PERFORMANCE_TARGETS.webhook.singleProcessing}ms)`)
     })
 
     test('should process 100 webhooks in sequence within performance target', async () => {
@@ -293,7 +291,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       const avgPerWebhook = bulkMeasurement.duration / 100
       expect(avgPerWebhook).toBeLessThan(PERFORMANCE_TARGETS.webhook.singleProcessing)
 
-      console.log(`✅ Bulk webhooks (100): ${bulkMeasurement.duration.toFixed(2)}ms | Avg per webhook: ${avgPerWebhook.toFixed(2)}ms`)
+      : ${bulkMeasurement.duration.toFixed(2)}ms | Avg per webhook: ${avgPerWebhook.toFixed(2)}ms`)
     })
 
     test('should handle 50 concurrent webhooks efficiently', async () => {
@@ -334,7 +332,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       const successRate = successfulResults.length / results.length
       expect(successRate).toBeGreaterThan(0.9) // 90% success rate minimum
 
-      console.log(`✅ Concurrent webhooks (50): ${concurrentMeasurement.duration.toFixed(2)}ms | Success rate: ${(successRate * 100).toFixed(1)}%`)
+      : ${concurrentMeasurement.duration.toFixed(2)}ms | Success rate: ${(successRate * 100).toFixed(1)}%`)
     })
 
     test('should maintain performance under memory pressure', async () => {
@@ -389,7 +387,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       const memoryGrowth = finalMemory.heapUsed - initialMemory.heapUsed
       expect(memoryGrowth).toBeLessThan(PERFORMANCE_TARGETS.webhook.memoryUsageMax * 1024 * 1024)
 
-      console.log(`✅ Memory pressure test: ${finalMeasurement.duration.toFixed(2)}ms | Memory growth: ${(memoryGrowth / 1024 / 1024).toFixed(2)}MB`)
+      }ms | Memory growth: ${(memoryGrowth / 1024 / 1024).toFixed(2)}MB`)
     }, 20000)
   })
 
@@ -447,7 +445,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       expect(exportResult.fileSize).toBeGreaterThan(10000) // At least 10KB
       expect(exportResult.fileSize).toBeLessThan(PERFORMANCE_TARGETS.export.maxFileSize * 1024 * 1024)
 
-      console.log(`✅ PDF Export: ${measurement.duration.toFixed(2)}ms | Size: ${(exportResult.fileSize / 1024).toFixed(1)}KB`)
+      }ms | Size: ${(exportResult.fileSize / 1024).toFixed(1)}KB`)
     })
 
     test('should generate Excel export for 1000 records within performance target', async () => {
@@ -476,7 +474,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       expect(exportResult.metadata.worksheets).toBeGreaterThanOrEqual(4)
       expect(exportResult.fileSize).toBeLessThan(PERFORMANCE_TARGETS.export.maxFileSize * 1024 * 1024)
 
-      console.log(`✅ Excel Export: ${measurement.duration.toFixed(2)}ms | Worksheets: ${exportResult.metadata.worksheets} | Size: ${(exportResult.fileSize / 1024).toFixed(1)}KB`)
+      }ms | Worksheets: ${exportResult.metadata.worksheets} | Size: ${(exportResult.fileSize / 1024).toFixed(1)}KB`)
     })
 
     test('should generate CSV export for 5000 records within performance target', async () => {
@@ -512,7 +510,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       const lineCount = exportResult.data.split('\n').length - 1 // Minus header
       expect(lineCount).toBeGreaterThan(100) // Should have substantial data
 
-      console.log(`✅ CSV Export: ${measurement.duration.toFixed(2)}ms | Records: ${lineCount} | Size: ${(exportResult.fileSize / 1024).toFixed(1)}KB`)
+      }ms | Records: ${lineCount} | Size: ${(exportResult.fileSize / 1024).toFixed(1)}KB`)
     }, 15000)
 
     test('should handle concurrent export requests efficiently', async () => {
@@ -547,7 +545,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       // Performance should be reasonable for concurrent processing
       expect(measurement.duration).toBeLessThan(15000) // 15 seconds for 5 concurrent exports
 
-      console.log(`✅ Concurrent Exports (${concurrentExports}): ${measurement.duration.toFixed(2)}ms`)
+      : ${measurement.duration.toFixed(2)}ms`)
     }, 20000)
   })
 
@@ -574,7 +572,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
         expect(data).toBeTruthy()
         expect(measurement.duration).toBeLessThan(PERFORMANCE_TARGETS.database.simpleQuery)
 
-        console.log(`✅ Simple Query ${index + 1}: ${measurement.duration.toFixed(2)}ms`)
+        }ms`)
       }
     })
 
@@ -614,7 +612,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
         expect(data).toBeTruthy()
         expect(measurement.duration).toBeLessThan(PERFORMANCE_TARGETS.database.complexQuery)
 
-        console.log(`✅ Complex Query ${index + 1}: ${measurement.duration.toFixed(2)}ms | Records: ${data?.length || 0}`)
+        }ms | Records: ${data?.length || 0}`)
       }
     })
 
@@ -635,7 +633,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       expect(data).toHaveLength(100)
       expect(measurement.duration).toBeLessThan(PERFORMANCE_TARGETS.database.bulkInsert)
 
-      console.log(`✅ Bulk Insert (100 records): ${measurement.duration.toFixed(2)}ms`)
+      : ${measurement.duration.toFixed(2)}ms`)
 
       // Track for cleanup
       performanceData.push({
@@ -664,7 +662,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       expect(data).toBeTruthy()
       expect(measurement.duration).toBeLessThan(PERFORMANCE_TARGETS.database.indexSeek)
 
-      console.log(`✅ Indexed Query: ${measurement.duration.toFixed(2)}ms | Used indexes: barbershop_id, barber_id`)
+      }ms | Used indexes: barbershop_id, barber_id`)
     })
 
     test('should handle concurrent database operations', async () => {
@@ -711,7 +709,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
 
       expect(successRate).toBeGreaterThan(0.95) // 95% success rate
 
-      console.log(`✅ Concurrent DB Operations (${concurrentOperations}): ${(successRate * 100).toFixed(1)}% success rate`)
+      : ${(successRate * 100).toFixed(1)}% success rate`)
     })
   })
 
@@ -743,7 +741,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       })
 
       const avgPerCalculation = measurement.duration / 50
-      console.log(`✅ Tier Calculations (50 barbers): ${measurement.duration.toFixed(2)}ms | Avg: ${avgPerCalculation.toFixed(2)}ms per barber`)
+      : ${measurement.duration.toFixed(2)}ms | Avg: ${avgPerCalculation.toFixed(2)}ms per barber`)
     })
 
     test('should handle progressive tier advancement efficiently', async () => {
@@ -770,7 +768,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
 
       expect(measurement.duration).toBeLessThan(1000) // 1 second for full progression
 
-      console.log(`✅ Tier Progression (5 levels): ${measurement.duration.toFixed(2)}ms`)
+      : ${measurement.duration.toFixed(2)}ms`)
     })
   })
 
@@ -802,7 +800,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       }
 
       const avgDeliveryTime = deliveryTimes.reduce((a, b) => a + b, 0) / deliveryTimes.length
-      console.log(`✅ Notification Delivery: Avg ${avgDeliveryTime.toFixed(2)}ms | Max ${Math.max(...deliveryTimes).toFixed(2)}ms`)
+      }ms | Max ${Math.max(...deliveryTimes).toFixed(2)}ms`)
     })
 
     test('should maintain real-time dashboard update performance', async () => {
@@ -830,7 +828,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       const avgUpdateTime = updateTimes.reduce((a, b) => a + b, 0) / updateTimes.length
       const p95UpdateTime = percentile(updateTimes, 0.95)
 
-      console.log(`✅ Dashboard Updates (${dashboardUpdates}): Avg ${avgUpdateTime.toFixed(2)}ms | P95 ${p95UpdateTime.toFixed(2)}ms`)
+      : Avg ${avgUpdateTime.toFixed(2)}ms | P95 ${p95UpdateTime.toFixed(2)}ms`)
     })
   })
 
@@ -842,8 +840,6 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
     test('should handle 10x expected load gracefully', async () => {
       const expectedDailyWebhooks = 100
       const stressTestWebhooks = expectedDailyWebhooks * 10 // 10x load
-
-      console.log(`🔥 Starting stress test: ${stressTestWebhooks} webhooks`)
 
       const measure = PerformanceMetrics.startMeasurement('stress_test_10x_load')
       
@@ -896,12 +892,10 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
       expect(successRate).toBeGreaterThan(0.8) // 80% success rate under extreme load
       expect(avgProcessingTime).toBeLessThan(1000) // Max 1 second average under stress
 
-      console.log(`🔥 Stress Test Results:`)
-      console.log(`   Total webhooks: ${stressTestWebhooks}`)
-      console.log(`   Success rate: ${(successRate * 100).toFixed(1)}%`)
-      console.log(`   Total time: ${(stressMeasurement.duration / 1000).toFixed(2)}s`)
-      console.log(`   Avg per webhook: ${avgProcessingTime.toFixed(2)}ms`)
-      console.log(`   Throughput: ${(stressTestWebhooks / (stressMeasurement.duration / 1000)).toFixed(1)} webhooks/second`)
+      .toFixed(1)}%`)
+      .toFixed(2)}s`)
+      }ms`)
+      ).toFixed(1)} webhooks/second`)
     }, 60000) // 1 minute timeout for stress test
   })
 })

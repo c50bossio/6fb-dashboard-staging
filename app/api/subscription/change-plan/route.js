@@ -82,8 +82,7 @@ export async function POST(request) {
     const tierLimits = getTierLimits(normalizedPlan)
     
     // Log the subscription change
-    console.log(`User ${user.id} changed subscription from ${currentPlan} to ${normalizedPlan}`)
-    
+
     return NextResponse.json({
       success: true,
       message: `Successfully changed to ${plan} plan`,

@@ -15,7 +15,6 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1Ni
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function checkAndCreateMarketingTables() {
-  console.log('🚀 Setting up Marketing Schema in Supabase...\n')
 
   const marketingTables = [
     'marketing_accounts',
@@ -29,7 +28,6 @@ async function checkAndCreateMarketingTables() {
     'email_unsubscribes'
   ]
 
-  console.log('📋 Checking existing tables...')
   const { data: existingTables, error: tablesError } = await supabase
     .from('information_schema.tables')
     .select('table_name')
@@ -37,10 +35,10 @@ async function checkAndCreateMarketingTables() {
     .in('table_name', marketingTables)
 
   if (tablesError) {
-    console.log('⚠️  Could not check existing tables via API, will proceed with schema application')
+    
   } else {
     const existingTableNames = existingTables?.map(t => t.table_name) || []
-    console.log(`   Found ${existingTableNames.length} existing marketing tables:`, existingTableNames)
+    
   }
 
   const schemaPath = path.join(__dirname, '../database/marketing-campaigns-schema.sql')
@@ -51,14 +49,11 @@ async function checkAndCreateMarketingTables() {
   }
 
   const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
-  console.log('📄 Read marketing schema file:', schemaPath)
 
   const statements = schemaSQL
     .split(';')
     .map(s => s.trim())
     .filter(s => s.length > 0 && !s.startsWith('--') && !s.startsWith('/*'))
-
-  console.log(`🔧 Applying ${statements.length} schema statements...\n`)
 
   let successCount = 0
   let skipCount = 0
@@ -74,14 +69,14 @@ async function checkAndCreateMarketingTables() {
       if (error) {
         if (error.message?.includes('already exists') || 
             error.message?.includes('duplicate')) {
-          console.log(`   ⏭️  Skipped: ${statement.substring(0, 50)}... (already exists)`)
+          }... (already exists)`)
           skipCount++
         } else {
           console.error(`   ❌ Error executing statement ${i + 1}:`, error.message)
           console.error(`      Statement: ${statement.substring(0, 100)}...`)
         }
       } else {
-        console.log(`   ✅ Applied: ${statement.substring(0, 50)}...`)
+        }...`)
         successCount++
       }
       
@@ -90,13 +85,8 @@ async function checkAndCreateMarketingTables() {
     }
   }
 
-  console.log(`\n📊 Schema Application Summary:`)
-  console.log(`   ✅ Successfully applied: ${successCount}`)
-  console.log(`   ⏭️  Skipped (already exists): ${skipCount}`)
-  console.log(`   📋 Total statements: ${statements.length}`)
+  : ${skipCount}`)
 
-  console.log('\n🔍 Verifying marketing tables...')
-  
   for (const tableName of marketingTables) {
     try {
       const { error } = await supabase
@@ -105,22 +95,20 @@ async function checkAndCreateMarketingTables() {
         .limit(1)
       
       if (error) {
-        console.log(`   ❌ ${tableName}: ${error.message}`)
+        
       } else {
-        console.log(`   ✅ ${tableName}: Table accessible`)
+        
       }
     } catch (err) {
-      console.log(`   ❌ ${tableName}: ${err.message}`)
+      
     }
   }
 
-  console.log('\n🎉 Marketing schema setup complete!')
   return true
 }
 
 async function applySchemaDirectly() {
-  console.log('\n🔄 Attempting alternative schema application method...')
-  
+
   const schemaPath = path.join(__dirname, '../database/marketing-campaigns-schema.sql')
   const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
   
@@ -135,16 +123,14 @@ async function applySchemaDirectly() {
   try {
     const { error } = await supabase.rpc('exec_sql', { sql: testTableSQL })
     if (error) {
-      console.log('❌ Cannot execute SQL via RPC:', error.message)
-      console.log('💡 Please apply the schema manually in Supabase SQL Editor')
-      console.log('📄 Schema file location:', schemaPath)
+
       return false
     } else {
-      console.log('✅ SQL execution working, proceeding with full schema...')
+      
       return await checkAndCreateMarketingTables()
     }
   } catch (err) {
-    console.log('❌ Exception during SQL execution:', err.message)
+    
     return false
   }
 }
@@ -153,10 +139,7 @@ async function main() {
   try {
     const success = await applySchemaDirectly()
     if (success) {
-      console.log('\n🎯 Next steps:')
-      console.log('   1. Seed test data: node scripts/seed-marketing-data.js')
-      console.log('   2. Test APIs: curl http://localhost:9999/api/marketing/campaigns')
-      console.log('   3. Configure SendGrid/Twilio services')
+
     }
   } catch (error) {
     console.error('💥 Fatal error during schema setup:', error)

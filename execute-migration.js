@@ -8,8 +8,7 @@ const supabase = createClient(
 );
 
 async function executeMigration() {
-  console.log('🚀 Starting database migration...\n');
-  
+
   const sqlContent = fs.readFileSync('./FIX_APPOINTMENT_TABLES_NOW.sql', 'utf8');
   
   const statements = sqlContent
@@ -38,8 +37,7 @@ async function executeMigration() {
           statement.includes('CREATE OR REPLACE VIEW') ||
           statement.includes('CREATE POLICY') ||
           statement.includes('DROP TRIGGER')) {
-        
-        console.log(`⚠️  DDL Statement needs manual execution: ${stmtPreview}...`);
+
         errors.push({
           statement: stmtPreview,
           error: 'DDL statements must be run in Supabase SQL Editor'
@@ -47,17 +45,16 @@ async function executeMigration() {
         errorCount++;
         
       } else if (statement.includes('UPDATE customers') || statement.includes('UPDATE bookings')) {
-        console.log(`📝 Executing UPDATE: ${stmtPreview}...`);
-        
+
         if (statement.includes('UPDATE customers')) {
-          console.log(`⚠️  Complex UPDATE needs manual execution`);
+          
           errors.push({
             statement: stmtPreview,
             error: 'Complex UPDATE must be run in Supabase SQL Editor'
           });
           errorCount++;
         } else {
-          console.log(`⚠️  UPDATE statement needs manual execution`);
+          
           errors.push({
             statement: stmtPreview,
             error: 'UPDATE statements must be run in Supabase SQL Editor'
@@ -66,15 +63,14 @@ async function executeMigration() {
         }
         
       } else if (statement.includes('INSERT INTO customers')) {
-        console.log(`📝 Executing INSERT: ${stmtPreview}...`);
-        console.log(`⚠️  Complex INSERT needs manual execution`);
+
         errors.push({
           statement: stmtPreview,
           error: 'Complex INSERT must be run in Supabase SQL Editor'
         });
         errorCount++;
       } else {
-        console.log(`⏭️  Skipping: ${stmtPreview}...`);
+        
       }
       
     } catch (error) {
@@ -87,33 +83,22 @@ async function executeMigration() {
     }
   }
 
-  console.log('\n' + '='.repeat(60));
-  console.log('📊 Migration Summary:');
-  console.log('='.repeat(60));
-  console.log(`✅ Successful statements: ${successCount}`);
-  console.log(`❌ Failed statements: ${errorCount}`);
+  );
   
+  );
+
   if (errors.length > 0) {
-    console.log('\n⚠️  The following statements need to be run manually in Supabase SQL Editor:');
-    console.log('='.repeat(60));
+    
+    );
     
     const manualSQL = fs.readFileSync('./FIX_APPOINTMENT_TABLES_NOW.sql', 'utf8');
-    
-    console.log('\n📋 INSTRUCTIONS:');
-    console.log('1. Go to your Supabase Dashboard');
-    console.log('2. Navigate to SQL Editor');
-    console.log('3. Create a new query');
-    console.log('4. Copy and paste the contents of FIX_APPOINTMENT_TABLES_NOW.sql');
-    console.log('5. Click "Run" to execute all statements');
-    console.log('\n✅ The SQL file has been prepared and is ready for manual execution.');
-    console.log('📁 File location: /Users/bossio/6FB AI Agent System/FIX_APPOINTMENT_TABLES_NOW.sql');
+
   }
 }
 
 executeMigration()
   .then(() => {
-    console.log('\n✅ Migration preparation complete!');
-    console.log('⚠️  IMPORTANT: Please run the SQL manually in Supabase SQL Editor');
+
     process.exit(0);
   })
   .catch(err => {

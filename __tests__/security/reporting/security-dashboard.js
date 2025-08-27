@@ -18,7 +18,6 @@ export class SecurityReportingDashboard {
    * Generate comprehensive security dashboard
    */
   async generateSecurityDashboard(scanResults = {}) {
-    console.log('📊 Generating security dashboard...');
 
     await fs.mkdir(this.dashboardDir, { recursive: true });
 
@@ -30,7 +29,6 @@ export class SecurityReportingDashboard {
     await this.generatePDFReport(dashboardData);
     await this.generateCSVReport(dashboardData);
 
-    console.log(`✅ Security dashboard generated at: ${this.dashboardDir}`);
     return dashboardData;
   }
 
@@ -424,7 +422,7 @@ export class SecurityReportingDashboard {
 
     const htmlPath = path.join(this.dashboardDir, 'security-dashboard.html');
     await fs.writeFile(htmlPath, htmlTemplate);
-    console.log(`📄 HTML dashboard generated: ${htmlPath}`);
+    
   }
 
   /**
@@ -476,7 +474,7 @@ export class SecurityReportingDashboard {
   async generateJSONReport(data) {
     const jsonPath = path.join(this.dashboardDir, 'security-report.json');
     await fs.writeFile(jsonPath, JSON.stringify(data, null, 2));
-    console.log(`📄 JSON report generated: ${jsonPath}`);
+    
   }
 
   /**
@@ -530,7 +528,7 @@ export class SecurityReportingDashboard {
 
     const sarifPath = path.join(this.dashboardDir, 'security-report.sarif');
     await fs.writeFile(sarifPath, JSON.stringify(sarif, null, 2));
-    console.log(`📄 SARIF report generated: ${sarifPath}`);
+    
   }
 
   /**
@@ -593,7 +591,7 @@ export class SecurityReportingDashboard {
 
     const pdfPath = path.join(this.dashboardDir, 'security-report.html');
     await fs.writeFile(pdfPath, pdfTemplate);
-    console.log(`📄 PDF-ready report generated: ${pdfPath}`);
+    
   }
 
   /**
@@ -636,7 +634,7 @@ export class SecurityReportingDashboard {
 
     const csvPath = path.join(this.dashboardDir, 'security-vulnerabilities.csv');
     await fs.writeFile(csvPath, csvContent);
-    console.log(`📄 CSV report generated: ${csvPath}`);
+    
   }
 
   /**

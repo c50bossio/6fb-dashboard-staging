@@ -576,8 +576,7 @@ test.describe('Performance and Load Tests', () => {
     await page.waitForLoadState('networkidle');
     
     const loadTime = Date.now() - startTime;
-    console.log(`Dashboard load time: ${loadTime}ms`);
-    
+
     expect(loadTime).toBeLessThan(3000); // 3 seconds
     
     const vitals = await page.evaluate(() => {
@@ -607,12 +606,12 @@ test.describe('Performance and Load Tests', () => {
     });
     
     if (vitals.fcp) {
-      console.log(`First Contentful Paint: ${vitals.fcp}ms`);
+      
       expect(vitals.fcp).toBeLessThan(1800); // 1.8 seconds
     }
     
     if (vitals.lcp) {
-      console.log(`Largest Contentful Paint: ${vitals.lcp}ms`);
+      
       expect(vitals.lcp).toBeLessThan(2500); // 2.5 seconds
     }
   });
@@ -640,17 +639,15 @@ test.describe('Performance and Load Tests', () => {
       
       const responseTime = Date.now() - startTime;
       responseTimes.push(responseTime);
-      console.log(`AI response time for "${request}": ${responseTime}ms`);
-      
+
       await page.waitForTimeout(500);
     }
     
     const maxResponseTime = Math.max(...responseTimes);
     const avgResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
     
-    console.log(`Average AI response time: ${avgResponseTime.toFixed(2)}ms`);
-    console.log(`Maximum AI response time: ${maxResponseTime}ms`);
-    
+    }ms`);
+
     expect(maxResponseTime).toBeLessThan(10000); // 10 seconds max
     expect(avgResponseTime).toBeLessThan(5000);  // 5 seconds average
   });

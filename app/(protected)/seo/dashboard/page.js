@@ -12,22 +12,21 @@ function GMBIntegrationTab() {
   useEffect(() => {
     const fetchUserContext = async () => {
       try {
-        console.log('Fetching user context...')
-        const response = await fetch('/api/analytics/live-data?barbershop_id=0b2d7524-49bc-47db-920d-db9c9822c416')
-        console.log('User context response:', response.status)
         
+        const response = await fetch('/api/analytics/live-data?barbershop_id=0b2d7524-49bc-47db-920d-db9c9822c416')
+
         setUserContext({
           userId: '11111111-1111-1111-1111-111111111111', // Development test user
           barbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416' // Real UUID from database
         })
-        console.log('User context set successfully')
+        
       } catch (error) {
         console.error('Failed to fetch user context:', error)
         setUserContext({
           userId: '11111111-1111-1111-1111-111111111111',
           barbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416'
         })
-        console.log('User context set via fallback')
+        
       }
     }
     
@@ -70,8 +69,7 @@ function GMBIntegrationTab() {
   ]
 
   const handleConnectGMB = async () => {
-    console.log('Connect GMB clicked, userContext:', userContext)
-    
+
     if (!userContext) {
       console.error('User context not available')
       alert('Loading user data... Please try again in a moment.')
@@ -80,14 +78,12 @@ function GMBIntegrationTab() {
     
     setLoading(true)
     try {
-      console.log('Making GMB OAuth request...')
+      
       const response = await fetch(`/api/gmb/oauth?barbershop_id=${userContext.barbershopId}&user_id=${userContext.userId}`)
       const data = await response.json()
-      
-      console.log('GMB OAuth response:', data)
-      
+
       if (data.success) {
-        console.log('Redirecting to Google OAuth:', data.auth_url)
+        
         window.location.href = data.auth_url
       } else {
         console.error('GMB OAuth failed:', data.error)

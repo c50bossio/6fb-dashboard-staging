@@ -54,7 +54,7 @@ async function sendInvitationEmail({ to, subject, html }, retryCount = 0) {
     )
     
     if (shouldRetry) {
-      console.log(`Retrying SendGrid email in ${RETRY_DELAY[retryCount]}ms...`)
+      
       await new Promise(resolve => setTimeout(resolve, RETRY_DELAY[retryCount]))
       return sendInvitationEmail({ to, subject, html }, retryCount + 1)
     }

@@ -64,16 +64,13 @@ const createBookingRequest = (customer, timeSlot) => ({
 
 // Test concurrent bookings for the same slot
 const testConflictDetection = async () => {
-  console.log('\n🚨 Testing Conflict Detection...')
-  
+
   const timeSlot = generateTimeSlots()[0] // 9:00 AM slot
   const customers = generateCustomers(3) // 3 customers for same slot
   
   const promises = customers.map(async (customer, index) => {
     const request = createBookingRequest(customer, timeSlot)
-    
-    console.log(`   Booking ${index + 1}: ${customer.name} at ${timeSlot}`)
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/appointments`, {
         method: 'POST',
@@ -105,32 +102,28 @@ const testConflictDetection = async () => {
   })
   
   const results = await Promise.all(promises)
-  
-  console.log('\n   Results:')
+
   results.forEach(result => {
     const status = result.success ? '✅' : '❌'
-    console.log(`   ${status} ${result.customer}: ${result.status} - ${result.message}`)
+    
   })
   
   // Should have exactly 1 success and 2 conflicts
   const successCount = results.filter(r => r.success).length
   const conflictCount = results.filter(r => r.status === 409).length
-  
-  console.log(`\n   Summary: ${successCount} bookings accepted, ${conflictCount} conflicts detected`)
-  
+
   if (successCount === 1 && conflictCount === 2) {
-    console.log('   ✅ Conflict detection working properly!')
+    
     return true
   } else {
-    console.log('   ❌ Conflict detection failed!')
+    
     return false
   }
 }
 
 // Test high-volume sequential bookings
 const testHighVolumeBookings = async () => {
-  console.log('\n📈 Testing High-Volume Sequential Bookings...')
-  
+
   const timeSlots = generateTimeSlots()
   const customers = generateCustomers(6) // One per slot
   
@@ -142,7 +135,7 @@ const testHighVolumeBookings = async () => {
     const timeSlot = timeSlots[i]
     const request = createBookingRequest(customer, timeSlot)
     
-    console.log(`   Booking ${i + 1}/6: ${customer.name} at ${new Date(timeSlot).toLocaleTimeString()}`)
+    .toLocaleTimeString()}`)
     
     try {
       const response = await fetch(`${API_BASE_URL}/api/appointments`, {
@@ -179,17 +172,14 @@ const testHighVolumeBookings = async () => {
   const totalTime = Date.now() - startTime
   const successCount = results.filter(r => r.success).length
   const avgResponseTime = results.reduce((sum, r) => sum + r.responseTime, 0) / results.length
-  
-  console.log('\n   Results:')
+
   results.forEach(result => {
     const status = result.success ? '✅' : '❌'
-    console.log(`   ${status} ${result.customer} (${result.timeSlot}): ${result.status}`)
+    : ${result.status}`)
   })
-  
-  console.log(`\n   Performance:`)
-  console.log(`   📊 Total time: ${totalTime}ms`)
-  console.log(`   📊 Success rate: ${successCount}/${results.length} (${(successCount/results.length*100).toFixed(1)}%)`)
-  console.log(`   📊 Avg response time: ${avgResponseTime.toFixed(0)}ms`)
+
+  .toFixed(1)}%)`)
+  }ms`)
   
   return {
     successRate: successCount / results.length,
@@ -200,8 +190,7 @@ const testHighVolumeBookings = async () => {
 
 // Test appointment retrieval performance
 const testAppointmentRetrieval = async () => {
-  console.log('\n📋 Testing Appointment Retrieval Performance...')
-  
+
   const startTime = Date.now()
   
   try {
@@ -215,23 +204,22 @@ const testAppointmentRetrieval = async () => {
     const responseTime = Date.now() - startTime
     
     if (response.ok) {
-      console.log(`   ✅ Retrieved ${result.bookings?.length || 0} appointments in ${responseTime}ms`)
+      
       return { success: true, responseTime, count: result.bookings?.length || 0 }
     } else {
-      console.log(`   ❌ Failed to retrieve appointments: ${result.error}`)
+      
       return { success: false, responseTime, error: result.error }
     }
   } catch (error) {
     const responseTime = Date.now() - startTime
-    console.log(`   ❌ Error retrieving appointments: ${error.message}`)
+    
     return { success: false, responseTime, error: error.message }
   }
 }
 
 // Test analytics dashboard during high load
 const testAnalyticsDashboard = async () => {
-  console.log('\n📊 Testing Analytics Dashboard Performance...')
-  
+
   const startTime = Date.now()
   
   try {
@@ -245,25 +233,22 @@ const testAnalyticsDashboard = async () => {
     const responseTime = Date.now() - startTime
     
     if (response.ok) {
-      console.log(`   ✅ Analytics loaded in ${responseTime}ms`)
-      console.log(`   📊 Revenue: $${result.summary?.total_revenue || 0}`)
-      console.log(`   📊 Appointments: ${result.summary?.total_appointments || 0}`)
+
       return { success: true, responseTime, data: result }
     } else {
-      console.log(`   ❌ Analytics failed: ${result.error}`)
+      
       return { success: false, responseTime, error: result.error }
     }
   } catch (error) {
     const responseTime = Date.now() - startTime
-    console.log(`   ❌ Analytics error: ${error.message}`)
+    
     return { success: false, responseTime, error: error.message }
   }
 }
 
 // Cleanup test data
 const cleanupTestData = async () => {
-  console.log('\n🧹 Cleaning up test data...')
-  
+
   try {
     // Delete test appointments
     const { error: appointmentsError } = await supabase
@@ -272,7 +257,7 @@ const cleanupTestData = async () => {
       .eq('barbershop_id', TEST_BARBERSHOP_ID)
     
     if (appointmentsError) {
-      console.log(`   ⚠️  Appointment cleanup warning: ${appointmentsError.message}`)
+      
     }
     
     // Delete test customers (users with test emails)
@@ -282,21 +267,17 @@ const cleanupTestData = async () => {
       .like('email', '%@test.com')
     
     if (usersError) {
-      console.log(`   ⚠️  User cleanup warning: ${usersError.message}`)
+      
     }
-    
-    console.log('   ✅ Cleanup completed')
+
   } catch (error) {
-    console.log(`   ❌ Cleanup error: ${error.message}`)
+    
   }
 }
 
 // Main test execution
 const runSaturdayRushTest = async () => {
-  console.log('🏪 Saturday Morning Rush Test')
-  console.log('========================================')
-  console.log('Simulating busy barbershop operations...')
-  
+
   // Verify environment
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
     console.error('❌ Missing Supabase configuration')
@@ -324,34 +305,28 @@ const runSaturdayRushTest = async () => {
     testResults.analyticsDashboard = await testAnalyticsDashboard()
     
     // Final Summary
-    console.log('\n📋 SATURDAY RUSH TEST SUMMARY')
-    console.log('========================================')
-    
+
     const conflictStatus = testResults.conflictDetection ? '✅ PASS' : '❌ FAIL'
-    console.log(`Conflict Detection: ${conflictStatus}`)
-    
+
     const bookingStatus = testResults.highVolumeBookings.successRate >= 0.8 ? '✅ PASS' : '❌ FAIL'
-    console.log(`High-Volume Bookings: ${bookingStatus} (${(testResults.highVolumeBookings.successRate * 100).toFixed(1)}% success)`)
+    .toFixed(1)}% success)`)
     
     const retrievalStatus = testResults.appointmentRetrieval.success && testResults.appointmentRetrieval.responseTime < 2000 ? '✅ PASS' : '❌ FAIL'
-    console.log(`Appointment Retrieval: ${retrievalStatus} (${testResults.appointmentRetrieval.responseTime}ms)`)
+    `)
     
     const dashboardStatus = testResults.analyticsDashboard.success && testResults.analyticsDashboard.responseTime < 3000 ? '✅ PASS' : '❌ FAIL'
-    console.log(`Analytics Dashboard: ${dashboardStatus} (${testResults.analyticsDashboard.responseTime}ms)`)
+    `)
     
     // Overall assessment
     const allTestsPassed = testResults.conflictDetection && 
                           testResults.highVolumeBookings.successRate >= 0.8 &&
                           testResults.appointmentRetrieval.success &&
                           testResults.analyticsDashboard.success
-    
-    console.log('\n🏪 OVERALL ASSESSMENT:')
+
     if (allTestsPassed) {
-      console.log('✅ SYSTEM READY FOR LIVE BARBERSHOP USE')
-      console.log('   The booking system can handle Saturday morning rush scenarios')
+
     } else {
-      console.log('❌ SYSTEM NEEDS ATTENTION BEFORE LIVE USE')
-      console.log('   Review failed tests and optimize before production deployment')
+
     }
     
   } catch (error) {

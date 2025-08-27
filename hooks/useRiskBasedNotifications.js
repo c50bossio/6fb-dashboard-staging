@@ -19,8 +19,7 @@ export function useRiskBasedNotifications() {
     setError(null)
     
     try {
-      console.log('Processing risk-based notifications for booking:', bookingData.booking_id)
-      
+
       const response = await fetch('/api/customer-behavior/notifications', {
         method: 'POST',
         headers: {
@@ -39,13 +38,7 @@ export function useRiskBasedNotifications() {
       
       const result = await response.json()
       setLastResult(result)
-      
-      console.log(`Notification processing complete:`, {
-        risk_tier: result.risk_assessment?.tier,
-        scheduled_count: result.notifications_scheduled,
-        strategy: result.strategy
-      })
-      
+
       return {
         success: true,
         risk_assessment: result.risk_assessment,
@@ -212,9 +205,7 @@ export function useRiskBasedNotifications() {
       
       // Process notifications
       const result = await processBookingNotifications(formattedData)
-      
-      console.log('Public booking notification integration complete:', result)
-      
+
       return result
     } catch (err) {
       console.error('Error in public booking notification integration:', err)

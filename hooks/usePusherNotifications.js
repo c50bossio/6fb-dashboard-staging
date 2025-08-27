@@ -48,7 +48,7 @@ export function usePusherNotifications() {
           [EVENTS.NEW_NOTIFICATION]: handleNewNotification,
           [EVENTS.NOTIFICATION_READ]: handleNotificationRead,
           'pusher:subscription_succeeded': () => {
-            console.log('Connected to notifications channel')
+            
             setIsConnected(true)
           },
           'pusher:subscription_error': (error) => {

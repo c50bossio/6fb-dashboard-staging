@@ -35,7 +35,7 @@ export async function GET(request, { params }) {
 
     if (error || !barbershop) {
       console.error('Barbershop lookup error:', error)
-      console.log('Barbershop ID:', barbershopId)
+      
       return NextResponse.json({
         success: false,
         error: 'Barbershop not found',

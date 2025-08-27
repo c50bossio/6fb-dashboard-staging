@@ -41,7 +41,6 @@ async function sendNotificationsAndSync(booking, barbershopData, barberData) {
   }
 
   try {
-    console.log('🔔 Starting notification and calendar sync process...')
 
     // Prepare notification data structure
     const notificationData = {
@@ -84,7 +83,7 @@ async function sendNotificationsAndSync(booking, barbershopData, barberData) {
     try {
       const notificationResult = await notificationService.sendAppointmentConfirmation(notificationData)
       results.notifications = notificationResult
-      console.log('📧 Notifications sent:', notificationResult)
+      
     } catch (error) {
       console.error('❌ Notification service error:', error)
       results.notifications = {
@@ -135,13 +134,13 @@ async function sendNotificationsAndSync(booking, barbershopData, barberData) {
           )
           
           results.calendar_sync = calendarResult
-          console.log('📅 Calendar sync result:', calendarResult)
+          
         } else {
           results.calendar_sync = {
             success: false,
             message: 'Google Calendar not configured or not healthy for this barber'
           }
-          console.log('📅 Calendar sync skipped - not configured')
+          
         }
       }
     } catch (error) {
@@ -313,7 +312,7 @@ export async function POST(request) {
         booking.barbershop, 
         booking.barber
       )
-      console.log('✅ Integration results:', integrationResults)
+      
     } catch (error) {
       console.error('❌ Integration error (non-blocking):', error)
       integrationResults = {

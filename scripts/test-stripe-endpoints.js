@@ -40,16 +40,15 @@ class StripeEndpointValidator {
     this.supabase = createClient(this.config.supabaseUrl, this.config.supabaseKey);
     this.results = [];
     
-    console.log(`🔧 Testing Stripe Connect endpoints in ${environment.toUpperCase()} environment`);
-    console.log(`📡 Base URL: ${this.config.baseUrl}\n`);
+    } environment`);
+    
   }
 
   /**
    * Main validation runner
    */
   async validate(endpoint = 'all') {
-    console.log('🚀 Starting Stripe Connect Endpoint Validation...\n');
-    
+
     try {
       // Pre-validation checks
       await this.preValidationChecks();
@@ -57,7 +56,7 @@ class StripeEndpointValidator {
       // Get test data
       const testData = await this.getTestData();
       if (!testData) {
-        console.log('❌ Cannot proceed without test data');
+        
         return;
       }
       
@@ -84,15 +83,14 @@ class StripeEndpointValidator {
    * Pre-validation environment checks
    */
   async preValidationChecks() {
-    console.log('📋 Running pre-validation checks...');
-    
+
     // Check environment variables
     const requiredEnvs = ['STRIPE_SECRET_KEY', 'NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
     let envOk = true;
     
     requiredEnvs.forEach(env => {
       if (!process.env[env]) {
-        console.log(`❌ Missing environment variable: ${env}`);
+        
         envOk = false;
       }
     });
@@ -109,10 +107,9 @@ class StripeEndpointValidator {
         .limit(1);
         
       if (error) throw error;
-      console.log('✅ Database connection successful');
-      
+
     } catch (error) {
-      console.log('❌ Database connection failed:', error.message);
+      
       throw error;
     }
     
@@ -124,23 +121,21 @@ class StripeEndpointValidator {
       });
       
       if (response.ok) {
-        console.log('✅ API endpoints accessible');
+        
       } else {
-        console.log('⚠️  API endpoints may have issues (non-critical)');
+        ');
       }
     } catch (error) {
-      console.log('⚠️  Cannot reach API endpoints (may be normal in dev)');
+      ');
     }
-    
-    console.log('');
+
   }
 
   /**
    * Get existing test data from database
    */
   async getTestData() {
-    console.log('🔍 Looking for existing test data...');
-    
+
     try {
       // Find a barbershop with financial arrangements
       const { data: arrangement, error } = await this.supabase
@@ -159,8 +154,7 @@ class StripeEndpointValidator {
         .single();
       
       if (error || !arrangement) {
-        console.log('⚠️  No suitable test data found in database');
-        console.log('   Create a barbershop with staff to test endpoints');
+
         return null;
       }
       
@@ -172,17 +166,11 @@ class StripeEndpointValidator {
         existingStripeAccountId: arrangement.barber_stripe_account_id,
         arrangementId: arrangement.id
       };
-      
-      console.log('✅ Found test data:');
-      console.log(`   Barbershop: ${arrangement.barbershops.name}`);
-      console.log(`   Barber: ${arrangement.profiles?.full_name || 'Unknown'}`);
-      console.log(`   Has Stripe Account: ${!!testData.existingStripeAccountId}`);
-      console.log('');
-      
+
       return testData;
       
     } catch (error) {
-      console.log('❌ Error getting test data:', error.message);
+      
       return null;
     }
   }
@@ -191,8 +179,7 @@ class StripeEndpointValidator {
    * Test /api/stripe/connect/create-account
    */
   async testCreateAccount(testData) {
-    console.log('🔧 Testing Create Account Endpoint...');
-    
+
     const tests = [
       {
         name: 'Valid account creation request',
@@ -225,16 +212,14 @@ class StripeEndpointValidator {
     for (const test of tests) {
       await this.runEndpointTest('create-account', 'POST', test, testData.barbershopOwnerId);
     }
-    
-    console.log('');
+
   }
 
   /**
    * Test /api/stripe/connect/onboarding-link
    */
   async testOnboardingLink(testData) {
-    console.log('🔗 Testing Onboarding Link Endpoint...');
-    
+
     // Get updated account ID after create-account test
     const { data: updated } = await this.supabase
       .from('financial_arrangements')
@@ -245,8 +230,7 @@ class StripeEndpointValidator {
     const accountId = updated?.barber_stripe_account_id || testData.existingStripeAccountId;
     
     if (!accountId) {
-      console.log('⚠️  No Stripe account ID found, skipping onboarding link tests');
-      console.log('');
+
       return;
     }
     
@@ -281,16 +265,14 @@ class StripeEndpointValidator {
     for (const test of tests) {
       await this.runEndpointTest('onboarding-link', test.method, test, testData.barbershopOwnerId);
     }
-    
-    console.log('');
+
   }
 
   /**
    * Test /api/stripe/connect/account-status
    */
   async testAccountStatus(testData) {
-    console.log('📊 Testing Account Status Endpoint...');
-    
+
     const { data: updated } = await this.supabase
       .from('financial_arrangements')
       .select('barber_stripe_account_id')
@@ -332,13 +314,12 @@ class StripeEndpointValidator {
     
     for (const test of tests) {
       if (test.payload === null || test.params === null) {
-        console.log(`  ⚠️  ${test.name}: Skipped (no account ID)`);
+        `);
         continue;
       }
       await this.runEndpointTest('account-status', test.method, test, testData.barbershopOwnerId);
     }
-    
-    console.log('');
+
   }
 
   /**
@@ -395,13 +376,13 @@ class StripeEndpointValidator {
       });
       
       const status = success ? '✅' : '❌';
-      console.log(`  ${status} ${testCase.name}: ${response.status} (${duration}ms)`);
+      `);
       
       // Log additional details for failures
       if (!success) {
-        console.log(`      Expected: ${testCase.expectedStatus}, Got: ${response.status}`);
+        
         if (parsedData?.error) {
-          console.log(`      Error: ${parsedData.error}`);
+          
         }
       }
       
@@ -413,8 +394,7 @@ class StripeEndpointValidator {
         error: error.message,
         duration: 0
       });
-      
-      console.log(`  ❌ ${testCase.name}: ${error.message}`);
+
     }
   }
 
@@ -425,49 +405,41 @@ class StripeEndpointValidator {
     const totalTests = this.results.length;
     const passedTests = this.results.filter(r => r.success).length;
     const failedTests = totalTests - passedTests;
-    
-    console.log('📋 VALIDATION REPORT');
-    console.log('=' .repeat(50));
-    console.log(`Environment: ${this.env.toUpperCase()}`);
-    console.log(`Base URL: ${this.config.baseUrl}`);
-    console.log(`Total Tests: ${totalTests}`);
-    console.log(`Passed: ${passedTests}`);
-    console.log(`Failed: ${failedTests}`);
-    console.log(`Success Rate: ${Math.round(passedTests/totalTests * 100)}%`);
-    console.log('');
-    
+
+    );
+    }`);
+
+    }%`);
+
     // Group by endpoint
     const endpoints = [...new Set(this.results.map(r => r.endpoint))];
     
     endpoints.forEach(endpoint => {
       const endpointResults = this.results.filter(r => r.endpoint === endpoint);
       const endpointPassed = endpointResults.filter(r => r.success).length;
-      
-      console.log(`${endpoint}: ${endpointPassed}/${endpointResults.length} passed`);
-      
+
       endpointResults.forEach(result => {
         const status = result.success ? '✅' : '❌';
         const duration = result.duration ? `${result.duration}ms` : 'timeout';
-        console.log(`  ${status} ${result.testName} (${duration})`);
+        `);
         
         if (!result.success && result.error) {
-          console.log(`      Error: ${result.error}`);
+          
         }
       });
-      console.log('');
+      
     });
     
     // Overall assessment
     if (passedTests === totalTests) {
-      console.log('🎉 All endpoints are working correctly!');
+      
     } else if (passedTests / totalTests > 0.8) {
-      console.log('⚠️  Most endpoints working, but some issues detected.');
+      
     } else {
-      console.log('❌ Multiple endpoint failures detected. Review implementation.');
+      
     }
-    
-    console.log('\n🔍 PRODUCTION READINESS ASSESSMENT');
-    console.log('=' .repeat(50));
+
+    );
     
     // Check critical functionality
     const createAccountWorks = this.results
@@ -481,30 +453,19 @@ class StripeEndpointValidator {
     const statusWorks = this.results
       .filter(r => r.endpoint === 'account-status')
       .some(r => r.success);
-    
-    console.log(`Create Account: ${createAccountWorks ? '✅' : '❌'} ${createAccountWorks ? 'Ready' : 'Needs Fix'}`);
-    console.log(`Onboarding Link: ${onboardingWorks ? '✅' : '❌'} ${onboardingWorks ? 'Ready' : 'Needs Fix'}`);
-    console.log(`Account Status: ${statusWorks ? '✅' : '❌'} ${statusWorks ? 'Ready' : 'Needs Fix'}`);
-    
+
     const allCriticalWork = createAccountWorks && onboardingWorks && statusWorks;
     
     if (allCriticalWork) {
-      console.log('\n🚀 PRODUCTION READY: Core Stripe Connect functionality is working');
+      
     } else {
-      console.log('\n⚠️  NOT PRODUCTION READY: Critical functionality issues detected');
+      
     }
-    
-    console.log('\n💡 Next Steps:');
+
     if (allCriticalWork) {
-      console.log('- Test with real Stripe webhooks');
-      console.log('- Verify end-to-end payment flow');
-      console.log('- Load test under expected traffic');
-      console.log('- Test error scenarios in production environment');
+
     } else {
-      console.log('- Fix failing endpoints before production deployment');
-      console.log('- Ensure all environment variables are set correctly');
-      console.log('- Verify database schema matches expectations');
-      console.log('- Check Stripe API key permissions');
+
     }
   }
 }

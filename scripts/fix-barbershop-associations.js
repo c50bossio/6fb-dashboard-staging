@@ -33,21 +33,20 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function fixBarbershopAssociations() {
-  console.log('🔧 Starting barbershop association fix...\n')
-  
+
   try {
     // Step 1: Check if columns exist
-    console.log('📊 Checking database schema...')
+    
     const { data: columns, error: columnsError } = await supabase
       .rpc('get_table_columns', { table_name: 'users' })
     
     if (columnsError && columnsError.message.includes('function')) {
       // RPC doesn't exist, try direct query
-      console.log('Using direct query method...')
+      
     }
     
     // Step 2: Get all users
-    console.log('\n👥 Fetching all users...')
+    
     const { data: users, error: usersError } = await supabase
       .from('users')
       .select('*')
@@ -57,16 +56,14 @@ async function fixBarbershopAssociations() {
       console.error('❌ Error fetching users:', usersError)
       return
     }
-    
-    console.log(`Found ${users.length} users`)
-    
+
     // Step 3: Process each user based on role
     let shopOwnersFixed = 0
     let barbersLinked = 0
     let enterpriseOwnersProcessed = 0
     
     for (const user of users) {
-      console.log(`\n👤 Processing user: ${user.email} (Role: ${user.role || 'CLIENT'})`)
+      `)
       
       if (user.role === 'SHOP_OWNER' && !user.barbershop_id) {
         // Check if they already own a barbershop
@@ -78,7 +75,7 @@ async function fixBarbershopAssociations() {
         
         if (existingShop) {
           // Update user with existing barbershop_id
-          console.log(`  ✅ Linking to existing barbershop: ${existingShop.name}`)
+          
           await supabase
             .from('users')
             .update({ barbershop_id: existingShop.id })
@@ -86,7 +83,7 @@ async function fixBarbershopAssociations() {
           shopOwnersFixed++
         } else {
           // Create new barbershop
-          console.log(`  🏪 Creating new barbershop for shop owner`)
+          
           const { data: newShop, error: createError } = await supabase
             .from('barbershops')
             .insert({
@@ -106,7 +103,7 @@ async function fixBarbershopAssociations() {
               .from('users')
               .update({ barbershop_id: newShop.id })
               .eq('id', user.id)
-            console.log(`  ✅ Created and linked barbershop: ${newShop.name}`)
+            
             shopOwnersFixed++
           } else if (createError) {
             console.error(`  ❌ Error creating barbershop:`, createError.message)
@@ -122,7 +119,7 @@ async function fixBarbershopAssociations() {
           .maybeSingle()
         
         if (staffLink) {
-          console.log(`  ✅ Barber already linked via staff table to: ${staffLink.barbershops.name}`)
+          
           barbersLinked++
         } else {
           // Try to find a barber record by email
@@ -134,7 +131,7 @@ async function fixBarbershopAssociations() {
           
           if (barberRecord && barberRecord.shop_id) {
             // Create staff link
-            console.log(`  🔗 Linking barber to shop via staff table`)
+            
             await supabase
               .from('barbershop_staff')
               .upsert({
@@ -148,7 +145,7 @@ async function fixBarbershopAssociations() {
               })
             barbersLinked++
           } else {
-            console.log(`  ⚠️  No barbershop found for barber - needs manual assignment`)
+            
           }
         }
       } else if (user.role === 'ENTERPRISE_OWNER') {
@@ -161,25 +158,20 @@ async function fixBarbershopAssociations() {
             .maybeSingle()
           
           if (org) {
-            console.log(`  ✅ Enterprise owner linked to organization: ${org.name}`)
+            
             enterpriseOwnersProcessed++
           }
         } else {
-          console.log(`  ⚠️  Enterprise owner without organization - needs setup`)
+          
         }
       }
     }
     
     // Step 4: Summary
-    console.log('\n' + '='.repeat(60))
-    console.log('📊 SUMMARY')
-    console.log('='.repeat(60))
-    console.log(`✅ Shop owners fixed: ${shopOwnersFixed}`)
-    console.log(`✅ Barbers linked: ${barbersLinked}`)
-    console.log(`✅ Enterprise owners processed: ${enterpriseOwnersProcessed}`)
-    console.log(`👥 Total users processed: ${users.length}`)
-    console.log('\n✨ Barbershop associations fix complete!')
+    )
     
+    )
+
   } catch (error) {
     console.error('\n❌ Unexpected error:', error)
   }

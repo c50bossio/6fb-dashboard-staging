@@ -209,7 +209,7 @@ export default function StaffScheduleView({ staff, onRefresh }) {
       const staffMember = staff.find(s => s.user_id === slotInfo.resourceId)
       if (staffMember) {
         // Could open modal to add shift override or time off
-        console.log('Staff slot clicked:', staffMember, slotInfo)
+        
       }
     }
   }
@@ -219,10 +219,10 @@ export default function StaffScheduleView({ staff, onRefresh }) {
     const event = eventInfo.event
     if (event.extendedProps.type === 'appointment') {
       // Could open appointment details modal
-      console.log('Appointment clicked:', event)
+      
     } else if (event.extendedProps.type === 'timeoff') {
       // Could open time off approval modal
-      console.log('Time off clicked:', event)
+      
     }
   }
 

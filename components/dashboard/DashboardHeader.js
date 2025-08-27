@@ -67,7 +67,7 @@ export default function DashboardHeader() {
         const session = JSON.parse(sessionData)
         setSessionUser(session.user)
       } catch (err) {
-        console.log('Could not parse user session')
+        
       }
     }
     
@@ -252,7 +252,7 @@ export default function DashboardHeader() {
                           crossOrigin="anonymous"
                           referrerPolicy="no-referrer"
                           onError={(e) => {
-                            console.log('Profile image failed to load:', avatarUrl)
+                            
                             setImageError(true)
                           }}
                         />

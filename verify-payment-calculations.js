@@ -5,8 +5,7 @@
  * Ensures all math is correct for the campaign credit system
  */
 
-console.log('🔍 PAYMENT PROCESSING CALCULATION VERIFICATION');
-console.log('=' .repeat(60));
+);
 
 // ============================================
 // CORE PRICING STRUCTURE
@@ -34,8 +33,8 @@ const pricing = {
 // ============================================
 // SCENARIO 1: Barbershop Absorbs Fee (Default)
 // ============================================
-console.log('\n📊 SCENARIO 1: Barbershop Absorbs Processing Fee');
-console.log('-'.repeat(50));
+
+);
 
 function calculateBarbershopAbsorbs(serviceAmount) {
   const customerPays = serviceAmount;
@@ -65,20 +64,20 @@ const testAmounts = [50, 100, 500, 1000];
 
 testAmounts.forEach(amount => {
   const result = calculateBarbershopAbsorbs(amount);
-  console.log(`\n💈 Service: $${amount}`);
-  console.log(`  Customer pays: $${result.customerPays.toFixed(2)}`);
-  console.log(`  Our total fee: $${result.ourFee.toFixed(2)} (2.95% + $0.30)`);
-  console.log(`  Stripe takes: $${result.stripeFee.toFixed(2)}`);
-  console.log(`  Our markup: $${result.ourMarkup.toFixed(2)}`);
-  console.log(`  Barbershop gets: $${result.barbershopReceives.toFixed(2)}`);
-  console.log(`  SMS credits earned: ${result.smsCreditsEarned}`);
+  
+  }`);
+  } (2.95% + $0.30)`);
+  }`);
+  }`);
+  }`);
+  
 });
 
 // ============================================
 // SCENARIO 2: Customer Pays 3% Fee
 // ============================================
-console.log('\n\n📊 SCENARIO 2: Customer Pays 3% Processing Fee');
-console.log('-'.repeat(50));
+
+);
 
 function calculateCustomerPays(serviceAmount) {
   const processingFee = serviceAmount * pricing.customerPassThrough.percentage;
@@ -107,20 +106,20 @@ function calculateCustomerPays(serviceAmount) {
 
 testAmounts.forEach(amount => {
   const result = calculateCustomerPays(amount);
-  console.log(`\n💈 Service: $${amount}`);
-  console.log(`  Processing fee (3%): $${result.processingFee.toFixed(2)}`);
-  console.log(`  Customer pays total: $${result.customerPays.toFixed(2)}`);
-  console.log(`  Stripe takes: $${result.stripeFee.toFixed(2)}`);
-  console.log(`  Barbershop gets: $${result.barbershopReceives.toFixed(2)} (FULL AMOUNT!)`);
-  console.log(`  Our profit: $${result.ourProfit.toFixed(2)}`);
-  console.log(`  SMS credits earned: ${result.smsCreditsEarned}`);
+  
+  : $${result.processingFee.toFixed(2)}`);
+  }`);
+  }`);
+  } (FULL AMOUNT!)`);
+  }`);
+  
 });
 
 // ============================================
 // MONTHLY VOLUME CALCULATIONS
 // ============================================
-console.log('\n\n📊 MONTHLY VOLUME & CREDITS');
-console.log('-'.repeat(50));
+
+);
 
 function calculateMonthlyCredits(monthlyVolume, feeModel = 'absorb') {
   let totalCredits = 0;
@@ -159,32 +158,32 @@ const volumeScenarios = [
   { volume: 100000, name: 'High Volume Shop' }
 ];
 
-console.log('\n🔄 When Barbershop Absorbs Fee (2.95%):');
+:');
 volumeScenarios.forEach(scenario => {
   const result = calculateMonthlyCredits(scenario.volume, 'absorb');
-  console.log(`\n${scenario.name} ($${scenario.volume.toLocaleString()}/month):`);
-  console.log(`  Platform revenue: $${result.totalRevenue.toFixed(2)}`);
-  console.log(`  SMS credits earned: ${result.totalCredits.toLocaleString()}`);
-  console.log(`  Credit value: $${result.creditValue.toFixed(2)}`);
-  console.log(`  Perceived value: $${result.perceivedValue.toFixed(2)} (vs competitors)`);
+  }/month):`);
+  }`);
+  }`);
+  }`);
+  } (vs competitors)`);
 });
 
-console.log('\n\n💳 When Customer Pays Fee (3%):');
+:');
 volumeScenarios.forEach(scenario => {
   const result = calculateMonthlyCredits(scenario.volume, 'pass_through');
-  console.log(`\n${scenario.name} ($${scenario.volume.toLocaleString()}/month):`);
-  console.log(`  Platform revenue: $${result.totalRevenue.toFixed(2)}`);
-  console.log(`  Platform profit: $${result.totalProfit.toFixed(2)}`);
-  console.log(`  SMS credits earned: ${result.totalCredits.toLocaleString()}`);
-  console.log(`  Credit value: $${result.creditValue.toFixed(2)}`);
-  console.log(`  Perceived value: $${result.perceivedValue.toFixed(2)}`);
+  }/month):`);
+  }`);
+  }`);
+  }`);
+  }`);
+  }`);
 });
 
 // ============================================
 // VERIFICATION: Does $25k = 600 credits?
 // ============================================
-console.log('\n\n✅ VERIFICATION OF CLAIM');
-console.log('-'.repeat(50));
+
+);
 
 const claimedVolume = 25000;
 const claimedCredits = 600;
@@ -203,45 +202,36 @@ const actualCalc = {
   credits: Math.floor((claimedVolume * actualMarkup * 0.5) / 0.025)
 };
 
-console.log('\n⚠️  CLAIMED vs ACTUAL:');
-console.log(`Volume: $${claimedVolume.toLocaleString()}`);
-console.log('\nIf markup was 0.6% (claimed):');
-console.log(`  Revenue: $${originalCalc.revenue.toFixed(2)}`);
-console.log(`  Credits: ${originalCalc.credits} SMS`);
-console.log(`  ✅ Matches claim of ${claimedCredits} credits`);
+}`);
+:');
+}`);
 
-console.log('\nWith actual 0.05% markup (2.95% - 2.9%):');
-console.log(`  Revenue: $${actualCalc.revenue.toFixed(2)}`);
-console.log(`  Credits: ${actualCalc.credits} SMS`);
-console.log(`  ❌ Only ${actualCalc.credits} credits, not ${claimedCredits}!`);
+:');
+}`);
 
 // ============================================
 // CORRECTED CALCULATION
 // ============================================
-console.log('\n\n🔧 CORRECTED APPROACH');
-console.log('-'.repeat(50));
 
-console.log('\nTo give 600 credits at $25k volume:');
+);
+
 const targetCredits = 600;
 const creditCost = 0.025;
 const neededFunds = targetCredits * creditCost;
 const neededMarkup = (neededFunds * 2) / claimedVolume; // *2 because only 50% goes to credits
 
-console.log(`  Target: ${targetCredits} credits`);
-console.log(`  Cost: $${neededFunds.toFixed(2)} (at $0.025/SMS)`);
-console.log(`  Required markup: ${(neededMarkup * 100).toFixed(3)}%`);
-console.log(`  Customer rate needed: ${(2.9 + neededMarkup * 100).toFixed(2)}%`);
+} (at $0.025/SMS)`);
+.toFixed(3)}%`);
+.toFixed(2)}%`);
 
-console.log('\n💡 RECOMMENDATION:');
-console.log('  Option 1: Charge 3.02% to barbershops (0.12% markup)');
-console.log('  Option 2: Customer pays 3% (gives more credits)');
-console.log('  Option 3: Lower credits promise to 250/month at $25k');
+');
+');
 
 // ============================================
 // COMPETITIVE ANALYSIS
 // ============================================
-console.log('\n\n🏆 COMPETITIVE COMPARISON');
-console.log('-'.repeat(50));
+
+);
 
 const competitors = {
   textedly: { price: 0.04, name: 'Textedly' },
@@ -250,38 +240,30 @@ const competitors = {
   square: { price: 0.01, name: 'Square' }
 };
 
-console.log('\nCost per SMS:');
 Object.values(competitors).forEach(comp => {
-  console.log(`  ${comp.name}: $${comp.price}/SMS`);
+  
 });
-console.log(`  Ours (free with processing): $0.00`);
+: $0.00`);
 
-console.log('\nMonthly cost for 600 SMS:');
 Object.values(competitors).forEach(comp => {
-  console.log(`  ${comp.name}: $${(600 * comp.price).toFixed(2)}`);
+  .toFixed(2)}`);
 });
-console.log(`  Ours: $0.00 (included with payment processing)`);
+`);
 
 // ============================================
 // SUMMARY
 // ============================================
-console.log('\n\n📋 SUMMARY');
-console.log('='.repeat(60));
 
-console.log('\n⚠️  IMPORTANT FINDINGS:');
-console.log('1. With 0.05% markup (2.95% - 2.90%), you only generate ~250 credits at $25k');
-console.log('2. To deliver 600 credits, you need 0.12% markup (charge 3.02%)');
-console.log('3. Customer pass-through (3%) generates MORE credits and profit');
-console.log('4. Current math in implementation is INCORRECT');
+);
 
-console.log('\n✅ RECOMMENDED FIXES:');
-console.log('1. Update marketing to promise 250 credits at $25k (not 600)');
-console.log('2. OR increase rate to 3.02% to deliver 600 credits');
-console.log('3. Strongly encourage customer pays model (better for everyone)');
-console.log('4. Fix the calculation in credit-allocation/route.js');
+, you only generate ~250 credits at $25k');
+');
+ generates MORE credits and profit');
 
-console.log('\n💰 BEST APPROACH:');
-console.log('Let barbershops choose:');
-console.log('  A) They absorb 2.95% → Get 250 credits/month at $25k');
-console.log('  B) Customer pays 3% → Get 600 credits/month at $25k');
-console.log('  C) Smart mode: <$20 shop absorbs, >$20 customer pays');
+');
+
+');
+
+ They absorb 2.95% → Get 250 credits/month at $25k');
+ Customer pays 3% → Get 600 credits/month at $25k');
+ Smart mode: <$20 shop absorbs, >$20 customer pays');

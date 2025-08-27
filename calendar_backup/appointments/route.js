@@ -434,7 +434,7 @@ export async function PATCH(request) {
       
       if (customer && customer.notification_preferences?.updates) {
         // Notification logic would go here
-        console.log('Update notification would be sent to:', customer.name)
+        
       }
     }
     
@@ -512,7 +512,7 @@ export async function DELETE(request) {
       // Send cancellation notification if requested
       if (notify && appointment.customers?.notification_preferences?.cancellations) {
         // Notification logic would go here
-        console.log('Cancellation notification would be sent to:', appointment.customers.name)
+        
       }
       
       return NextResponse.json({
@@ -539,7 +539,7 @@ export async function DELETE(request) {
     // Send deletion notification if requested
     if (notify && appointment.customers?.notification_preferences?.cancellations) {
       // Notification logic would go here
-      console.log('Deletion notification would be sent to:', appointment.customers.name)
+      
     }
     
     return NextResponse.json({

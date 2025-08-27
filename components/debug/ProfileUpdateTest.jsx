@@ -25,7 +25,6 @@ export default function ProfileUpdateTest({ userId }) {
 
       const data = await response.json()
       setResult(data)
-      console.log('Profile update test result:', data)
 
     } catch (error) {
       console.error('Test failed:', error)

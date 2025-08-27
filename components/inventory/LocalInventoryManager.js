@@ -177,12 +177,12 @@ export function LocalInventoryManager({ barbershopId }) {
   };
 
   const handleSyncComplete = async (syncData) => {
-    console.log('CIN7 sync completed:', syncData);
+    
     await refreshInventory();
   };
 
   const handlePOSSelectionComplete = async () => {
-    console.log('POS product selection completed');
+    
     setShowPOSSelector(false);
     await refreshInventory();
   };
@@ -508,7 +508,6 @@ export function LocalInventoryManager({ barbershopId }) {
       setDeletingProductId(null);
     }
   };
-
 
   const getStockStatus = (product) => {
     if (product.quantity_available === 0) {

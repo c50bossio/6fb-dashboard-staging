@@ -10,8 +10,7 @@ const supabase = createClient(
 
 async function seedProductData() {
   try {
-    console.log('🌱 Starting product data seeding...')
-    
+
     // Get the first shop
     const { data: shops } = await supabase
       .from('barbershops')
@@ -19,13 +18,12 @@ async function seedProductData() {
       .limit(1)
     
     if (!shops || shops.length === 0) {
-      console.log('No barbershops found. Please create a barbershop first.')
+      
       return
     }
     
     const shopId = shops[0].id
-    console.log(`Using shop ID: ${shopId}`)
-    
+
     // Check if products already exist
     const { data: existingProducts } = await supabase
       .from('products')
@@ -33,8 +31,7 @@ async function seedProductData() {
       .eq('shop_id', shopId)
     
     if (!existingProducts || existingProducts.length === 0) {
-      console.log('No products found. Creating sample products...')
-      
+
       // Sample product data
       const sampleProducts = [
         // Hair Care
@@ -79,7 +76,7 @@ async function seedProductData() {
         if (error) {
           console.error(`Error creating product ${product.name}:`, error)
         } else {
-          console.log(`✅ Created product: ${product.name}`)
+          
         }
       }
     }
@@ -91,12 +88,10 @@ async function seedProductData() {
       .eq('shop_id', shopId)
     
     if (!products || products.length === 0) {
-      console.log('No products found after seeding.')
+      
       return
     }
-    
-    console.log(`Found ${products.length} products. Generating sales data...`)
-    
+
     // Generate sales data for the last 90 days
     const salesData = []
     const daysToGenerate = 90
@@ -138,12 +133,10 @@ async function seedProductData() {
       if (error) {
         console.error('Error inserting sales batch:', error)
       } else {
-        console.log(`✅ Inserted ${batch.length} sales records (${i + batch.length}/${salesData.length})`)
+        `)
       }
     }
-    
-    console.log('🎉 Product data seeding completed successfully!')
-    
+
     // Generate summary
     const { data: salesSummary } = await supabase
       .from('product_sales')
@@ -153,11 +146,8 @@ async function seedProductData() {
     if (salesSummary) {
       const totalRevenue = salesSummary.reduce((sum, sale) => sum + parseFloat(sale.total_amount || 0), 0)
       const totalSales = salesSummary.length
-      
-      console.log('\n📊 Summary:')
-      console.log(`- Total products: ${products.length}`)
-      console.log(`- Total sales records: ${totalSales}`)
-      console.log(`- Total revenue generated: $${totalRevenue.toFixed(2)}`)
+
+      }`)
     }
     
   } catch (error) {

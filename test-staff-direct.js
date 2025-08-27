@@ -23,14 +23,11 @@ async function testDirectStaffCreation() {
     }
     
     const barbershopId = owner.shop_id || owner.barbershop_id;
-    console.log('Found test owner with barbershop:', barbershopId);
-    
+
     // Create staff data
     const testEmail = 'teststaff' + Date.now() + '@test.com';
     const testPassword = 'TempPass123!';
-    
-    console.log('Creating auth user:', testEmail);
-    
+
     // Create auth user using admin API
     const { data: newAuthUser, error: authError } = await supabase.auth.admin.createUser({
       email: testEmail,
@@ -49,9 +46,7 @@ async function testDirectStaffCreation() {
       console.error('Failed to create auth user:', authError);
       return;
     }
-    
-    console.log('✅ Created auth user:', newAuthUser.user.email);
-    
+
     // Create profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -75,9 +70,7 @@ async function testDirectStaffCreation() {
       await supabase.auth.admin.deleteUser(newAuthUser.user.id);
       return;
     }
-    
-    console.log('✅ Created profile for:', profile.email);
-    
+
     // Add to barbershop_staff
     const { data: staffRecord, error: staffError } = await supabase
       .from('barbershop_staff')
@@ -93,7 +86,7 @@ async function testDirectStaffCreation() {
     if (staffError) {
       console.error('Failed to create staff record:', staffError);
     } else {
-      console.log('✅ Added to barbershop_staff');
+      
     }
     
     // Verify everything worked
@@ -104,13 +97,7 @@ async function testDirectStaffCreation() {
       .single();
     
     if (verification) {
-      console.log('\n🎉 SUCCESS! Staff member created:');
-      console.log('   Email:', testEmail);
-      console.log('   Password:', testPassword);
-      console.log('   Role:', verification.role);
-      console.log('   Barbershop ID:', verification.barbershop_id);
-      console.log('   Active:', verification.is_active);
-      console.log('\n✅ The staff creation feature works correctly!');
+
     }
     
   } catch (error) {

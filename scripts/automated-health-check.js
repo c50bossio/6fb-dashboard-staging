@@ -70,9 +70,9 @@ class HealthCheckManager {
     }
 
     // Console output
-    console.log(`[${timestamp}] ${level.toUpperCase()}: ${message}`)
+    }: ${message}`)
     if (data) {
-      console.log('  Data:', JSON.stringify(data, null, 2))
+      )
     }
 
     // File logging
@@ -335,9 +335,8 @@ async function main() {
       dryRun: options.dryRun,
       autoFix: !options.dryRun
     })
-    
-    console.log('\nHealth Check Results:')
-    console.log(JSON.stringify(result, null, 2))
+
+    )
     
     process.exit(result.success ? 0 : 1)
   } else {

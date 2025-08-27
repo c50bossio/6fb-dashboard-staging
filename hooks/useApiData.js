@@ -57,7 +57,7 @@ export function useApiData(endpoint, options = {}) {
       console.error(`API fetch error for ${endpoint}:`, error)
       
       if (attempt < retries && error.name !== 'AbortError') {
-        console.log(`Retrying ${endpoint} (attempt ${attempt + 1}/${retries})`)
+        `)
         setTimeout(() => fetchData(attempt + 1), 1000 * (attempt + 1))
         return
       }

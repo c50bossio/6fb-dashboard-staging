@@ -78,9 +78,8 @@ const { chromium } = require('playwright');
     
     return results;
   });
-  
-  console.log('Calendar Analysis Results:');
-  console.log(JSON.stringify(analysis, null, 2));
+
+  );
   
   await page.screenshot({ path: 'calendar-full-page.png', fullPage: true });
   

@@ -81,7 +81,7 @@ function UpgradePageContent({ requiredTier, featureName }) {
   
   const handleUpgrade = async (tier) => {
     // TODO: Integrate with Stripe for payment processing
-    console.log('Upgrading to:', tier)
+    
     // For now, just redirect to contact for enterprise
     if (tier === 'enterprise') {
       router.push('/contact?subject=enterprise')

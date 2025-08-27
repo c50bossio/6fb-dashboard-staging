@@ -306,10 +306,10 @@ export async function DELETE(request) {
     
     if (barber_id) {
       detector.clearCache(barber_id)
-      console.log(`Cleared conflict detection cache for barber ${barber_id}`)
+      
     } else {
       detector.clearAllCaches()
-      console.log('Cleared all conflict detection caches')
+      
     }
     
     return NextResponse.json({

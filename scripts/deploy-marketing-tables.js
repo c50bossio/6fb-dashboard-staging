@@ -22,9 +22,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 async function deployMarketingTables() {
-    console.log('🚀 Deploying Marketing Tables to Supabase');
-    console.log('=========================================\n');
-    
+
     try {
         const schemaPath = path.join(__dirname, '..', 'database', 'production-marketing-schema.sql');
         const schema = fs.readFileSync(schemaPath, 'utf8');
@@ -33,9 +31,7 @@ async function deployMarketingTables() {
             .split(';')
             .map(s => s.trim())
             .filter(s => s.length > 0 && !s.startsWith('--'));
-        
-        console.log(`📋 Found ${statements.length} SQL statements to execute\n`);
-        
+
         let successCount = 0;
         let errorCount = 0;
         const errors = [];
@@ -55,14 +51,14 @@ async function deployMarketingTables() {
                 
                 if (error) {
                     if (error.message.includes('exec_sql')) {
-                        console.log('⚠️  exec_sql not available, skipping');
+                        
                         errors.push({
                             statement: statementType + ' ' + tableName,
                             error: 'exec_sql RPC not available - manual execution required'
                         });
                         errorCount++;
                     } else {
-                        console.log('❌ Error');
+                        
                         errors.push({
                             statement: statementType + ' ' + tableName,
                             error: error.message
@@ -70,11 +66,11 @@ async function deployMarketingTables() {
                         errorCount++;
                     }
                 } else {
-                    console.log('✅ Success');
+                    
                     successCount++;
                 }
             } catch (err) {
-                console.log('❌ Exception');
+                
                 errors.push({
                     statement: statementType + ' ' + tableName,
                     error: err.message
@@ -82,27 +78,15 @@ async function deployMarketingTables() {
                 errorCount++;
             }
         }
-        
-        console.log('\n=========================================');
-        console.log('📊 Deployment Summary:');
-        console.log(`   ✅ Successful: ${successCount}`);
-        console.log(`   ❌ Failed: ${errorCount}`);
-        
+
         if (errors.length > 0) {
-            console.log('\n⚠️  Errors encountered:');
-            errors.forEach(err => {
-                console.log(`   - ${err.statement}: ${err.error}`);
-            });
             
-            console.log('\n💡 Alternative Deployment Method:');
-            console.log('   Since exec_sql RPC is not available, you can:');
-            console.log('   1. Go to Supabase Dashboard → SQL Editor');
-            console.log('   2. Copy the contents of database/production-marketing-schema.sql');
-            console.log('   3. Paste and execute in the SQL editor');
-            console.log('   4. Or use Supabase CLI: supabase db push');
+            errors.forEach(err => {
+                
+            });
+
         }
-        
-        console.log('\n🔍 Verifying table creation...');
+
         await verifyTables();
         
     } catch (error) {
@@ -122,9 +106,7 @@ async function verifyTables() {
         'campaign_queue',
         'webhook_events'
     ];
-    
-    console.log('\n📋 Checking for marketing tables:');
-    
+
     for (const table of tables) {
         try {
             const { data, error, count } = await supabase
@@ -132,19 +114,15 @@ async function verifyTables() {
                 .select('*', { count: 'exact', head: true });
             
             if (error) {
-                console.log(`   ❌ ${table}: Not found or error`);
+                
             } else {
-                console.log(`   ✅ ${table}: Exists`);
+                
             }
         } catch (err) {
-            console.log(`   ❌ ${table}: ${err.message}`);
+            
         }
     }
-    
-    console.log('\n💡 Next Steps:');
-    console.log('   1. If tables are missing, deploy manually via Supabase Dashboard');
-    console.log('   2. Run test-marketing-database.js to verify functionality');
-    console.log('   3. Continue with Phase 1.2: Environment configuration');
+
 }
 
 deployMarketingTables().catch(console.error);

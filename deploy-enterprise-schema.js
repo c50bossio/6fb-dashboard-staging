@@ -7,8 +7,8 @@ const fs = require('fs');
 const path = require('path');
 
 async function deployEnterpriseSchema() {
-  console.log('🚀 DEPLOYING ENTERPRISE SCHEMA TO PRODUCTION');
-  console.log('='.repeat(60));
+  
+  );
 
   // Read the migration file
   const migrationPath = path.join(__dirname, 'database/migrations/003_enterprise_schema.sql');
@@ -42,13 +42,10 @@ async function deployEnterpriseSchema() {
     }
 
     const result = await response.json();
-    console.log('✅ Enterprise schema migration deployed successfully!');
 
     // Verify the tables were created
     const tablesToCheck = ['organizations', 'enterprise_websites', 'organization_members', 'enterprise_analytics_cache'];
-    
-    console.log('\n📊 Verifying table creation:');
-    
+
     for (const table of tablesToCheck) {
       try {
         const verifyResponse = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=*&limit=0`, {
@@ -59,12 +56,12 @@ async function deployEnterpriseSchema() {
         });
         
         if (verifyResponse.ok) {
-          console.log(`   ✅ ${table}: Created successfully`);
+          
         } else {
-          console.log(`   ❌ ${table}: ${verifyResponse.status} ${verifyResponse.statusText}`);
+          
         }
       } catch (err) {
-        console.log(`   ⚠️  ${table}: Verification failed - ${err.message}`);
+        
       }
     }
 
@@ -84,21 +81,12 @@ async function deployEnterpriseSchema() {
           const hasOrgId = 'organization_id' in barbershop;
           const hasManager = 'location_manager_id' in barbershop;
           const hasStatus = 'location_status' in barbershop;
-          
-          console.log('\n🏪 Barbershops table updates:');
-          console.log(`   ✅ organization_id column: ${hasOrgId ? 'Added' : 'Missing'}`);
-          console.log(`   ✅ location_manager_id column: ${hasManager ? 'Added' : 'Missing'}`);
-          console.log(`   ✅ location_status column: ${hasStatus ? 'Added' : 'Missing'}`);
+
         }
       }
     } catch (err) {
-      console.log(`   ⚠️  Could not verify barbershops updates: ${err.message}`);
+      
     }
-
-    console.log('\n🎉 ENTERPRISE DATABASE FOUNDATION: READY');
-    console.log('🏢 Organizations can now manage multiple barbershop locations');
-    console.log('🔐 Row Level Security policies active for data protection');
-    console.log('📈 Analytics caching system ready for performance');
 
   } catch (error) {
     console.error('❌ Migration failed:', error.message);

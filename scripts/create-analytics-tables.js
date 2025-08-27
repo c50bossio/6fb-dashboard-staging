@@ -19,8 +19,7 @@ const supabase = createClient(
 )
 
 async function createAnalyticsTables() {
-  console.log('📊 Creating analytics tables...')
-  
+
   try {
     const tables = [
       {
@@ -219,12 +218,12 @@ async function createAnalyticsTables() {
         }).single()
         
         if (error) {
-          console.log(`⚠️  Could not create ${table.name} via RPC, skipping...`)
+          
         } else {
-          console.log(`✅ Created table: ${table.name}`)
+          
         }
       } catch (err) {
-        console.log(`⚠️  Table ${table.name} might already exist or requires manual creation`)
+        
       }
     }
     
@@ -236,10 +235,7 @@ async function createAnalyticsTables() {
       'CREATE INDEX IF NOT EXISTS idx_recommendations_barbershop ON business_recommendations(barbershop_id, created_at DESC)',
       'CREATE INDEX IF NOT EXISTS idx_trending_services_rank ON trending_services(barbershop_id, date, popularity_rank)'
     ]
-    
-    console.log('\n📋 Note: Tables may need to be created manually via Supabase dashboard')
-    console.log('Copy the SQL from database/analytics-schema.sql and run it in the SQL editor')
-    
+
     return true
     
   } catch (error) {
@@ -249,17 +245,13 @@ async function createAnalyticsTables() {
 }
 
 async function main() {
-  console.log('🚀 Analytics Tables Creation Script')
-  console.log('====================================\n')
-  
+
   const success = await createAnalyticsTables()
   
   if (success) {
-    console.log('\n✨ Analytics tables creation completed!')
-    console.log('Next step: Run "npm run seed:analytics" to populate with test data')
+
   } else {
-    console.log('\n❌ Failed to create some tables')
-    console.log('Please create them manually via Supabase dashboard using database/analytics-schema.sql')
+
   }
 }
 

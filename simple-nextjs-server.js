@@ -269,5 +269,5 @@ function serveFile(res, filePath, contentType) {
 }
 
 server.listen(port, () => {
-  console.log(`Next.js-style server running on http://localhost:${port}`);
+  
 });

@@ -11,8 +11,7 @@ const fs = require('fs')
 const path = require('path')
 
 function analyzeComponent(filePath, componentName) {
-  console.log(`\n🔍 Analyzing ${componentName} at ${filePath}`)
-  
+
   try {
     const content = fs.readFileSync(filePath, 'utf8')
     
@@ -29,12 +28,12 @@ function analyzeComponent(filePath, componentName) {
       const match = content.match(pattern)
       if (match) {
         hasAutoAdvance = true
-        console.log(`✅ Pattern ${index + 1} found: ${match[0].substring(0, 50)}...`)
+        }...`)
       }
     })
     
     if (!hasAutoAdvance) {
-      console.log('❌ No auto-advance patterns found')
+      
       return false
     }
     
@@ -61,14 +60,13 @@ function analyzeComponent(filePath, componentName) {
         required: false
       }
     ]
-    
-    console.log('\n📋 Implementation Details:')
+
     implementationChecks.forEach(check => {
       const found = content.match(check.pattern)
       const status = found ? '✅' : (check.required ? '❌' : '⚠️')
-      console.log(`${status} ${check.name}: ${found ? 'Found' : 'Not found'}`)
+      
       if (found && found[0].length < 100) {
-        console.log(`   → ${found[0]}`)
+        
       }
     })
     
@@ -81,8 +79,7 @@ function analyzeComponent(filePath, componentName) {
 }
 
 function verifyOnboardingTrigger() {
-  console.log('\n🔍 Verifying Onboarding Trigger Mechanism')
-  
+
   const layoutPath = path.join(__dirname, 'app', '(protected)', 'layout.js')
   
   try {
@@ -105,12 +102,11 @@ function verifyOnboardingTrigger() {
         required: true
       }
     ]
-    
-    console.log('📋 Trigger Mechanism Verification:')
+
     triggerChecks.forEach(check => {
       const found = content.match(check.pattern)
       const status = found ? '✅' : '❌'
-      console.log(`${status} ${check.name}: ${found ? 'Found' : 'Not found'}`)
+      
     })
     
   } catch (error) {
@@ -119,13 +115,9 @@ function verifyOnboardingTrigger() {
 }
 
 function generateManualTestInstructions() {
-  console.log('\n🧪 MANUAL TEST INSTRUCTIONS')
-  console.log('=' .repeat(50))
   
-  console.log(`
-🎯 STEP 1: Open Browser
-1. Open Chrome/Firefox and navigate to: http://localhost:9999
-2. Open Developer Tools (F12)
+  )
+
 3. Go to Console tab
 
 🎯 STEP 2: Trigger Onboarding
@@ -168,8 +160,8 @@ function generateManualTestInstructions() {
 }
 
 function main() {
-  console.log('🚀 SINGLE-CLICK NAVIGATION VERIFICATION TOOL')
-  console.log('=' .repeat(60))
+  
+  )
   
   // Verify component implementations
   const components = [
@@ -196,22 +188,14 @@ function main() {
   generateManualTestInstructions()
   
   // Summary
-  console.log('\n📊 VERIFICATION SUMMARY')
-  console.log('=' .repeat(40))
-  if (allComponentsValid) {
-    console.log('✅ Code analysis: Single-click navigation logic detected')
-    console.log('✅ Components have auto-advance implementations')
-    console.log('🧪 Ready for live testing - follow manual test instructions above')
-  } else {
-    console.log('❌ Code analysis: Issues detected in components')
-    console.log('🔧 Review component implementations before testing')
-  }
   
-  console.log('\n📝 NEXT STEPS:')
-  console.log('1. Follow the manual test instructions above')
-  console.log('2. Document actual behavior vs expected behavior')
-  console.log('3. Take screenshots as evidence')
-  console.log('4. Report findings')
+  )
+  if (allComponentsValid) {
+
+  } else {
+
+  }
+
 }
 
 // Run the verification

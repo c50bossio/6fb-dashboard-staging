@@ -27,7 +27,6 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function setupDatabase() {
-  console.log('🚀 Starting database setup for Booking Links system...\n')
 
   try {
     const schemaPath = path.join(__dirname, '../database/booking-links-schema.sql')
@@ -37,17 +36,7 @@ async function setupDatabase() {
     }
 
     const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
-    console.log('📖 Schema file loaded successfully')
 
-    console.log('\n⚠️  MANUAL STEP REQUIRED:')
-    console.log('1. Open your Supabase dashboard: https://app.supabase.com')
-    console.log('2. Go to SQL Editor')
-    console.log('3. Copy and paste the content from: database/booking-links-schema.sql')
-    console.log('4. Execute the SQL to create all tables and functions')
-    console.log('5. Come back and run this script again to validate\n')
-
-    console.log('🔍 Checking database tables...')
-    
     const tables = ['booking_links', 'link_analytics', 'qr_codes', 'link_shares', 'booking_attributions']
     const tableResults = {}
     
@@ -69,14 +58,13 @@ async function setupDatabase() {
       }
     }
 
-    console.log('\n📊 Database Status:')
-    console.log('─'.repeat(50))
+    )
     
     let allTablesExist = true
     for (const [table, result] of Object.entries(tableResults)) {
       const status = result.exists ? '✅' : '❌'
       const info = result.exists ? `(${result.count} rows)` : `- ${result.error}`
-      console.log(`${status} ${table.padEnd(20)} ${info}`)
+      } ${info}`)
       
       if (!result.exists) {
         allTablesExist = false
@@ -84,17 +72,13 @@ async function setupDatabase() {
     }
 
     if (allTablesExist) {
-      console.log('\n🎉 All tables are set up correctly!')
-      console.log('\n🧪 Running test operations...')
-      
+
       try {
         const { data: users } = await supabase.auth.admin.listUsers()
         
         if (users && users.users.length > 0) {
           const testUserId = users.users[0].id
-          
-          console.log(`📝 Creating test booking link for user: ${testUserId}`)
-          
+
           const testLink = {
             barber_id: testUserId,
             name: 'Test Link - Setup Validation',
@@ -115,10 +99,9 @@ async function setupDatabase() {
             .single()
 
           if (linkError) {
-            console.log(`❌ Test link creation failed: ${linkError.message}`)
-          } else {
-            console.log(`✅ Test link created successfully: ${createdLink.id}`)
             
+          } else {
+
             const { error: analyticsError } = await supabase
               .from('link_analytics')
               .insert({
@@ -130,36 +113,24 @@ async function setupDatabase() {
               })
 
             if (analyticsError) {
-              console.log(`❌ Analytics test failed: ${analyticsError.message}`)
+              
             } else {
-              console.log('✅ Analytics tracking test successful')
+              
             }
 
             await supabase.from('link_analytics').delete().eq('link_id', createdLink.id)
             await supabase.from('booking_links').delete().eq('id', createdLink.id)
-            console.log('🧹 Test data cleaned up')
+            
           }
         } else {
-          console.log('⚠️  No users found - skipping test link creation')
+          
         }
       } catch (testError) {
-        console.log(`⚠️  Test operations skipped: ${testError.message}`)
+        
       }
 
-      console.log('\n✨ Database setup completed successfully!')
-      console.log('\n🔗 Next steps:')
-      console.log('1. Your booking links system is ready to use')
-      console.log('2. Test the barber booking links page: /dashboard/barber/booking-links')  
-      console.log('3. Create some booking links and test the analytics')
-      console.log('4. Check the SEO optimization on guest booking pages')
-
     } else {
-      console.log('\n❌ Database setup incomplete.')
-      console.log('\n🛠️  To fix this:')
-      console.log('1. Copy the SQL from: database/booking-links-schema.sql')
-      console.log('2. Paste it into your Supabase SQL Editor')
-      console.log('3. Execute the SQL')
-      console.log('4. Run this script again')
+
     }
 
   } catch (error) {

@@ -6,9 +6,7 @@
  */
 
 function testMobileUIImprovements() {
-    console.log('🔍 TESTING MOBILE/TABLET UI IMPROVEMENTS');
-    console.log('=========================================');
-    
+
     const results = {
         timestamp: new Date().toISOString(),
         viewport: getViewportInfo(),
@@ -314,102 +312,87 @@ function calculateOverallScore(results) {
 }
 
 function generateReport(results) {
-    console.log('\n📊 MOBILE UI IMPROVEMENTS TEST RESULTS');
-    console.log('======================================');
-    
+
     // Viewport Info
-    console.log(`\n📱 VIEWPORT: ${results.viewport.width}×${results.viewport.height}`);
-    console.log(`   Device: ${results.viewport.category}`);
-    console.log(`   Orientation: ${results.viewport.orientation}`);
-    console.log(`   Is Tablet: ${results.viewport.isTablet ? '✅ Yes' : '❌ No'}`);
-    
+
     // Modal Responsiveness
-    console.log('\n🖼️ MODAL RESPONSIVENESS');
+    
     if (results.modalWidth.error) {
-        console.log(`   ❌ ${results.modalWidth.error}`);
+        
     } else {
-        console.log(`   Width: ${results.modalWidth.modalWidth}px (${results.modalWidth.utilization} utilization)`);
-        console.log(`   Responsive Classes: ${results.modalWidth.hasResponsiveClasses ? '✅ Applied' : '❌ Missing'}`);
-        console.log(`   Viewport Fit: ${results.modalWidth.fitsViewport ? '✅ Good' : '❌ Overflow'}`);
-        console.log(`   Utilization: ${results.modalWidth.utilizationGood ? '✅ Optimal (≥70%)' : '⚠️ Low (<70%)'}`);
-        console.log(`   Status: ${results.modalWidth.isOptimized ? '✅ OPTIMIZED' : '❌ NEEDS WORK'}`);
+        `);
+
+        ' : '⚠️ Low (<70%)'}`);
+        
     }
     
     // Touch Targets
-    console.log(`\n👆 TOUCH TARGETS (${results.touchTargets.summary.total} elements)`);
-    console.log(`   Pass Rate: ${results.touchTargets.summary.passRate}%`);
-    console.log(`   Meet 44px Standard: ${results.touchTargets.summary.meetsStandard}/${results.touchTargets.summary.total}`);
-    console.log(`   Meet 48px Preferred: ${results.touchTargets.summary.meetsPreferred}/${results.touchTargets.summary.total}`);
-    
+    `);
+
     if (results.touchTargets.barberCards.length > 0) {
         const failing = results.touchTargets.barberCards.filter(c => !c.passes);
         if (failing.length > 0) {
-            console.log('   ⚠️ Barber cards below 48px:', failing.map(c => c.height + 'px').join(', '));
+            .join(', '));
         } else {
-            console.log('   ✅ All barber cards meet 48px standard');
+            
         }
     }
     
     if (results.touchTargets.changeButton) {
-        console.log(`   Change Button: ${results.touchTargets.changeButton.passes ? '✅' : '❌'} ${results.touchTargets.changeButton.height}px`);
+        
     }
     
     // Auto-Selection UI
-    console.log('\n💡 AUTO-SELECTION UI');
+    
     if (results.autoSelection.found) {
-        console.log(`   Enhanced Icon: ${results.autoSelection.hasEnhancedIcon ? '✅ Yes' : '❌ No'}`);
-        console.log(`   Change Button: ${results.autoSelection.changeButton?.passes ? '✅ Passes' : '❌ Too small'}`);
-        console.log(`   Visual Hierarchy: ${results.autoSelection.visualHierarchy.hasBoldText ? '✅ Good' : '⚠️ Needs improvement'}`);
+
     } else {
-        console.log(`   ⚠️ ${results.autoSelection.reason}`);
+        
     }
     
     // Payment Methods
     if (results.paymentMethods.length > 0) {
-        console.log('\n💳 PAYMENT METHOD TARGETS');
+        
         results.paymentMethods.forEach(method => {
-            console.log(`   ${method.type}: ${method.passes ? '✅' : '❌'} ${method.labelHeight}px`);
+            
         });
     }
     
     // Action Buttons
-    console.log('\n🎯 ACTION BUTTONS');
+    
     results.actionButtons.forEach(button => {
-        console.log(`   ${button.text}: ${button.passes ? '✅' : '❌'} ${button.height}px`);
+        
     });
     
     // Overall Score
-    console.log(`\n🏆 OVERALL SCORE: ${results.overallScore}%`);
-    
+
     if (results.overallScore >= 90) {
-        console.log('   ✅ EXCELLENT - Ready for production barbershop use');
+        
     } else if (results.overallScore >= 75) {
-        console.log('   🟡 GOOD - Minor improvements recommended');
+        
     } else if (results.overallScore >= 60) {
-        console.log('   ⚠️ NEEDS WORK - Several issues to address');
+        
     } else {
-        console.log('   ❌ POOR - Significant improvements required');
+        
     }
     
     // Recommendations
     if (results.overallScore < 90) {
-        console.log('\n🔧 RECOMMENDATIONS:');
-        
+
         if (!results.modalWidth.hasResponsiveClasses) {
-            console.log('   1. Add responsive width classes to modal');
+            
         }
         if (!results.modalWidth.utilizationGood) {
-            console.log('   2. Increase modal width utilization for tablets');
+            
         }
         if (results.touchTargets.summary.passRate < 100) {
-            console.log('   3. Ensure all touch targets meet 44px minimum');
+            
         }
         if (!results.autoSelection.found || !results.autoSelection.changeButton?.passes) {
-            console.log('   4. Enhance auto-selection UI with proper touch targets');
+            
         }
     }
-    
-    console.log('\n📋 Test complete. Run again after making changes to verify improvements.');
+
 }
 
 // Auto-detect and run
@@ -417,22 +400,15 @@ window.addEventListener('load', () => {
     setTimeout(() => {
         const modal = document.querySelector('.fixed.inset-0 .bg-white.rounded-xl');
         if (modal) {
-            console.log('🎯 Modal detected - run testMobileUIImprovements() to test');
+             to test');
         } else {
-            console.log('⚠️ Please open the appointment checkout modal first');
+            
         }
     }, 1000);
 });
 
 // Export for global use
 window.testMobileUIImprovements = testMobileUIImprovements;
-
-console.log(`
-🧪 MOBILE UI IMPROVEMENTS TEST SCRIPT LOADED
-
-To test the improvements:
-1. Open appointment checkout modal
-2. Run: testMobileUIImprovements()
 
 For different viewports:
 - Use Chrome DevTools device mode

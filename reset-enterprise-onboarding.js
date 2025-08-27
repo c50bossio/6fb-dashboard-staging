@@ -32,7 +32,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 async function resetOnboarding() {
-  console.log('🔄 Resetting onboarding for enterprise account...\n')
 
   const email = 'dev-enterprise@test.com'
   
@@ -45,9 +44,7 @@ async function resetOnboarding() {
       console.error(`❌ User ${email} not found`)
       return
     }
-    
-    console.log(`✓ Found user: ${user.id}`)
-    
+
     // Force update profile to show onboarding
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
@@ -62,33 +59,24 @@ async function resetOnboarding() {
     if (profileError) {
       console.error('❌ Failed to update profile:', profileError.message)
     } else {
-      console.log('✅ Profile reset successfully!')
-      console.log(`   - onboarding_completed: false`)
-      console.log(`   - onboarding_step: null`)
-      console.log(`   - onboarding_data: null`)
+
     }
     
   } catch (error) {
     console.error('❌ Unexpected error:', error.message)
   }
 
-  console.log('\n' + '═'.repeat(60))
-  console.log('📋 NEXT STEPS TO SEE ONBOARDING:')
-  console.log('═'.repeat(60))
-  console.log('1. Clear your browser cache/cookies for localhost:9999')
-  console.log('2. Or open an incognito/private window')
-  console.log('3. Go to http://localhost:9999/login')
-  console.log(`4. Login with: ${email} / TestPass123!`)
-  console.log('5. Onboarding should appear immediately!')
-  console.log('\n💡 Alternative: Force onboarding with URL parameter:')
-  console.log('   http://localhost:9999/dashboard?onboarding=true')
-  console.log('═'.repeat(60))
+  )
+  
+  )
+
+  )
 }
 
 // Run the script
 resetOnboarding()
   .then(() => {
-    console.log('\n✅ Onboarding reset complete!')
+    
     process.exit(0)
   })
   .catch((error) => {

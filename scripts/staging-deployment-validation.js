@@ -46,42 +46,37 @@ const TEST_DATA = {
 // ==========================================
 
 async function testSystemHealth() {
-  console.log('\n🏥 Testing System Health...')
-  
+
   try {
     const response = await fetch(`${STAGING_CONFIG.apiUrl}/api/health`)
     const data = await response.json()
-    
-    console.log(`   📊 Response Status: ${response.status}`)
-    console.log(`   🔌 System Status: ${data.status}`)
-    console.log(`   💾 Memory Usage: ${data.system?.memory?.used}MB / ${data.system?.memory?.total}MB`)
-    console.log(`   ⏰ Uptime: ${Math.floor(data.system?.uptime / 60)}m ${data.system?.uptime % 60}s`)
+
+    }m ${data.system?.uptime % 60}s`)
     
     // Check services
     const services = data.services || {}
     Object.entries(services).forEach(([service, config]) => {
       const status = config.status === 'healthy' || config.status === 'configured' ? '✅' : '❌'
-      console.log(`   ${status} ${service}: ${config.status}`)
+      
     })
     
     if (response.ok && data.status === 'ok') {
-      console.log('   ✅ System health: EXCELLENT')
+      
       return { success: true, services: Object.keys(services).length }
     } else {
-      console.log('   ❌ System health: FAILED')
+      
       return { success: false, error: data.error || 'Health check failed' }
     }
   } catch (error) {
-    console.log(`   ❌ Health check error: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 async function testDatabaseConnection() {
-  console.log('\n🗄️  Testing Database Connection...')
-  
+
   if (!STAGING_CONFIG.supabaseUrl || !STAGING_CONFIG.supabaseKey) {
-    console.log('   ⚠️  Supabase configuration missing')
+    
     return { success: false, error: 'Missing Supabase configuration' }
   }
   
@@ -95,13 +90,10 @@ async function testDatabaseConnection() {
       .limit(1)
     
     if (error) {
-      console.log(`   ❌ Database error: ${error.message}`)
+      
       return { success: false, error: error.message }
     }
-    
-    console.log('   ✅ Database connection: ACTIVE')
-    console.log(`   📊 Query response: Success`)
-    
+
     // Test RLS is enabled
     const { data: rlsData, error: rlsError } = await supabase
       .from('barbershops')
@@ -109,21 +101,20 @@ async function testDatabaseConnection() {
       .limit(1)
     
     if (rlsError) {
-      console.log('   ✅ Row Level Security: ENABLED (expected auth error)')
+      ')
     } else {
-      console.log('   ⚠️  Row Level Security: May need verification')
+      
     }
     
     return { success: true, connection: 'active' }
   } catch (error) {
-    console.log(`   ❌ Database connection failed: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 async function testAPIEndpoints() {
-  console.log('\n🔌 Testing API Endpoints...')
-  
+
   const endpoints = [
     { path: '/api/health', method: 'GET', expectAuth: false },
     { path: '/api/public/barbershop/test-shop', method: 'GET', expectAuth: false },
@@ -154,17 +145,14 @@ async function testAPIEndpoints() {
       }
       
       const statusIcon = success ? '✅' : '❌'
-      console.log(`   ${statusIcon} ${endpoint.method} ${endpoint.path}: ${actualStatus}`)
-      
+
       if (success) successCount++
       
     } catch (error) {
-      console.log(`   ❌ ${endpoint.method} ${endpoint.path}: Connection error`)
+      
     }
   }
-  
-  console.log(`   📊 Endpoints working: ${successCount}/${endpoints.length}`)
-  
+
   return {
     success: successCount >= Math.floor(endpoints.length * 0.8), // 80% success rate
     successCount,
@@ -173,8 +161,7 @@ async function testAPIEndpoints() {
 }
 
 async function testPublicBookingFlow() {
-  console.log('\n📅 Testing Public Booking Flow...')
-  
+
   const bookingData = {
     barbershop_id: TEST_DATA.barbershop.id,
     service_id: TEST_DATA.service.id,
@@ -189,10 +176,8 @@ async function testPublicBookingFlow() {
   }
   
   try {
-    console.log('   📝 Testing booking creation...')
-    console.log(`   👤 Customer: ${TEST_DATA.customer.name}`)
-    console.log(`   📞 Phone: ${TEST_DATA.customer.phone}`)
-    console.log(`   ⏰ Time: ${new Date(TEST_DATA.booking.scheduled_at).toLocaleString()}`)
+
+    .toLocaleString()}`)
     
     const response = await fetch(`${STAGING_CONFIG.apiUrl}/api/public/bookings/create`, {
       method: 'POST',
@@ -201,61 +186,53 @@ async function testPublicBookingFlow() {
     })
     
     const result = await response.json()
-    
-    console.log(`   📊 Response Status: ${response.status}`)
-    console.log(`   📨 Message: ${result.message || result.error || 'No message'}`)
-    
+
     if (response.status === 201 || response.status === 200) {
       if (result.success) {
-        console.log('   ✅ Booking creation: SUCCESS')
-        console.log(`   🎫 Booking ID: ${result.booking?.id}`)
+
         return { success: true, bookingId: result.booking?.id }
       }
     } else if (response.status === 404) {
-      console.log('   ℹ️  Barbershop not found (expected for staging without real data)')
+      ')
       return { success: true, note: 'Expected 404 - no test barbershop in staging DB' }
     } else if (response.status === 400) {
-      console.log('   ✅ Input validation working (400 response)')
+      ')
       return { success: true, note: 'Validation working correctly' }
     }
-    
-    console.log(`   ⚠️  Booking response: ${response.status} - ${result.error || 'Unknown'}`)
+
     return { success: false, status: response.status, error: result.error }
     
   } catch (error) {
-    console.log(`   ❌ Booking test failed: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 async function testPaymentIntegration() {
-  console.log('\n💳 Testing Payment Integration...')
-  
+
   // Test Stripe configuration endpoint
   try {
     const response = await fetch(`${STAGING_CONFIG.apiUrl}/api/stripe/config`)
     
     if (response.status === 200) {
       const config = await response.json()
-      console.log('   ✅ Stripe configuration: LOADED')
-      console.log(`   🔧 Test mode: ${config.testMode || 'Unknown'}`)
+
       return { success: true, testMode: config.testMode }
     } else if (response.status === 404) {
-      console.log('   ℹ️  Stripe config endpoint not found (may not be implemented)')
+      ')
       return { success: true, note: 'Stripe config endpoint not available' }
     } else {
-      console.log(`   ⚠️  Stripe config response: ${response.status}`)
+      
       return { success: false, status: response.status }
     }
   } catch (error) {
-    console.log(`   ❌ Payment test error: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 async function testPerformanceMetrics() {
-  console.log('\n⚡ Testing Performance Metrics...')
-  
+
   const performanceTests = []
   
   // Test multiple endpoints for performance
@@ -279,10 +256,10 @@ async function testPerformanceMetrics() {
       })
       
       const statusIcon = response.status < 500 ? '✅' : '❌'
-      console.log(`   ${statusIcon} ${endpoint}: ${responseTime}ms (${response.status})`)
+      `)
       
     } catch (error) {
-      console.log(`   ❌ ${endpoint}: Connection error`)
+      
       performanceTests.push({
         endpoint,
         responseTime: 0,
@@ -295,9 +272,8 @@ async function testPerformanceMetrics() {
   const successfulTests = performanceTests.filter(t => t.success)
   const avgResponseTime = successfulTests.reduce((sum, t) => sum + t.responseTime, 0) / successfulTests.length
   
-  console.log(`   📊 Average response time: ${avgResponseTime.toFixed(0)}ms`)
-  console.log(`   📊 Success rate: ${successfulTests.length}/${performanceTests.length}`)
-  
+  }ms`)
+
   return {
     success: successfulTests.length >= performanceTests.length * 0.8,
     avgResponseTime,
@@ -310,10 +286,7 @@ async function testPerformanceMetrics() {
 // ==========================================
 
 async function runStagingValidation() {
-  console.log('🚀 STAGING DEPLOYMENT VALIDATION')
-  console.log('=====================================')
-  console.log(`Testing staging environment: ${STAGING_CONFIG.apiUrl}`)
-  
+
   const results = {
     systemHealth: { success: false },
     databaseConnection: { success: false },
@@ -333,9 +306,7 @@ async function runStagingValidation() {
     results.performance = await testPerformanceMetrics()
     
     // Generate comprehensive summary
-    console.log('\n📋 STAGING VALIDATION SUMMARY')
-    console.log('=====================================')
-    
+
     const tests = [
       { name: 'System Health', result: results.systemHealth, critical: true },
       { name: 'Database Connection', result: results.databaseConnection, critical: true },
@@ -352,44 +323,30 @@ async function runStagingValidation() {
     tests.forEach(test => {
       const status = test.result.success ? '✅ PASS' : '❌ FAIL'
       const priority = test.critical ? '[CRITICAL]' : '[OPTIONAL]'
-      console.log(`${test.name}: ${status} ${priority}`)
-      
+
       if (test.result.success) allPassed++
       if (test.critical) {
         totalCritical++
         if (test.result.success) criticalPassed++
       }
     })
-    
-    console.log(`\\nResults: ${allPassed}/${tests.length} total, ${criticalPassed}/${totalCritical} critical`)
-    
+
     // Final assessment
-    console.log('\\n🎯 STAGING READINESS FOR PRODUCTION:')
-    
+
     if (criticalPassed === totalCritical && allPassed >= 5) {
-      console.log('✅ STAGING FULLY VALIDATED - READY FOR PRODUCTION')
-      console.log('   All critical systems operational')
-      console.log('   Performance within acceptable limits')
-      console.log('   Database and API integration working')
-      console.log('   🚀 PROCEED WITH PRODUCTION DEPLOYMENT')
+
       return true
     } else if (criticalPassed === totalCritical) {
-      console.log('🟡 STAGING MOSTLY READY - MINOR ISSUES')
-      console.log('   All critical systems working')
-      console.log('   Some optional features may need attention')
-      console.log('   ✅ SAFE TO PROCEED WITH CAUTION')
+
       return true
     } else {
-      console.log('❌ STAGING NOT READY - CRITICAL ISSUES')
-      console.log('   Critical systems failing')
-      console.log('   Must resolve issues before production')
-      console.log('   ⚠️  DO NOT DEPLOY TO PRODUCTION')
+
       return false
     }
     
   } catch (error) {
     console.error('\\n💥 Staging validation failed:', error.message)
-    console.log('❌ VALIDATION SUITE ERROR - INVESTIGATE IMMEDIATELY')
+    
     return false
   }
 }
@@ -399,22 +356,14 @@ async function runStagingValidation() {
 // ==========================================
 
 if (process.argv[1] === new URL(import.meta.url).pathname) {
-  console.log('🔧 STAGING VALIDATION CONFIGURATION')
-  console.log('===================================')
-  console.log(`API URL: ${STAGING_CONFIG.apiUrl}`)
-  console.log(`Supabase URL: ${STAGING_CONFIG.supabaseUrl || 'Not configured'}`)
-  console.log(`Stripe Test Mode: ${STAGING_CONFIG.stripeTestMode}`)
-  console.log('')
-  
+
   runStagingValidation()
     .then(ready => {
       if (ready) {
-        console.log('\\n🎉 Staging validation completed successfully!')
-        console.log('   Ready for production deployment')
+
         process.exit(0)
       } else {
-        console.log('\\n⚠️  Staging validation identified issues')
-        console.log('   Review and fix before production deployment')
+
         process.exit(1)
       }
     })

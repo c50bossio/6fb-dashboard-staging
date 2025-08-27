@@ -36,7 +36,6 @@ export default function AppointmentBookingModal({
   
   // Initialize with dragged duration or default
   const initialDuration = selectedSlot?.duration || 60
-  console.log('📅 Modal initializing with duration:', initialDuration, 'from slot:', selectedSlot)
 
   const [formData, setFormData] = useState({
     barber_id: selectedSlot?.barberId || '',
@@ -199,21 +198,13 @@ export default function AppointmentBookingModal({
     const userSelectedDuration = selectedSlot?.duration && selectedSlot?.selectionType === 'drag'
     
     // Debug logging
-    console.log('📅 Duration logic check:', {
-      isBlockMode,
-      userSelectedDuration,
-      slotDuration: selectedSlot?.duration,
-      selectionType: selectedSlot?.selectionType,
-      serviceId: formData.service_id,
-      currentDuration: formData.duration_minutes
-    })
-    
+
     if (!isBlockMode && !userSelectedDuration && formData.service_id) {
       const selectedService = services.find(s => s.id === formData.service_id)
       if (selectedService) {
         // Only update if duration actually needs to change
         if (formData.duration_minutes !== selectedService.duration_minutes) {
-          console.log('📅 Updating duration from service:', selectedService.duration_minutes)
+          
           setFormData(prev => ({
             ...prev,
             duration_minutes: selectedService.duration_minutes,
@@ -222,7 +213,7 @@ export default function AppointmentBookingModal({
         }
       }
     } else if (userSelectedDuration) {
-      console.log('📅 Preserving user-dragged duration:', selectedSlot.duration)
+      
     }
   }, [isBlockMode, formData.service_id, services, selectedSlot?.duration, selectedSlot?.selectionType])
 
@@ -615,8 +606,7 @@ export default function AppointmentBookingModal({
       setError('No appointment ID found. This may be demo data that cannot be uncancelled.')
       return
     }
-    
-    
+
     setDeletingAppointment(true)
     setError('')
     
@@ -636,8 +626,7 @@ export default function AppointmentBookingModal({
       if (!response.ok) {
         throw new Error(data.error || 'Failed to uncancel appointment')
       }
-      
-      
+
       setShowDeleteConfirmation(false)
       onClose()
       
@@ -659,8 +648,7 @@ export default function AppointmentBookingModal({
       setError('No appointment ID found. This may be demo data that cannot be cancelled.')
       return
     }
-    
-    
+
     setDeletingAppointment(true)
     setError('')
     
@@ -680,8 +668,7 @@ export default function AppointmentBookingModal({
       if (!response.ok) {
         throw new Error(data.error || 'Failed to cancel appointment')
       }
-      
-      
+
       setShowDeleteConfirmation(false)
       onClose()
       
@@ -723,8 +710,7 @@ export default function AppointmentBookingModal({
         shop_id: barbershopId,
         is_blocked_time: true // Special flag for UI handling
       }
-      
-      
+
       const response = await fetch('/api/calendar/appointments', {
         method: 'POST',
         headers: {
@@ -738,8 +724,7 @@ export default function AppointmentBookingModal({
       if (!response.ok) {
         throw new Error(data.error || 'Failed to block time slot')
       }
-      
-      
+
       setIsBlockMode(false)
       setBlockReason('')
       onClose()
@@ -798,8 +783,7 @@ export default function AppointmentBookingModal({
       if (params.toString()) {
         deleteUrl += `?${params.toString()}`
       }
-      
-      
+
       const response = await fetch(deleteUrl, {
         method: 'DELETE',
         headers: {
@@ -812,8 +796,7 @@ export default function AppointmentBookingModal({
       if (!response.ok) {
         throw new Error(data.error || 'Failed to delete appointment')
       }
-      
-      
+
       setShowDeleteConfirmation(false)
       onClose()
       

@@ -462,7 +462,7 @@ describe('Production-Ready AI System', () => {
       ].filter(Boolean)
 
       expect(providers.length).toBeGreaterThan(0)
-      console.log(`AI providers configured: ${providers.length}`)
+      
     })
   })
 

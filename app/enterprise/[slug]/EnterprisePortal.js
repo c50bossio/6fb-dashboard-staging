@@ -58,7 +58,7 @@ export default function EnterprisePortal({ initialData }) {
 
   useEffect(() => {
     if (!initialData) {
-      console.log('No initial data provided')
+      
     }
   }, [initialData])
 

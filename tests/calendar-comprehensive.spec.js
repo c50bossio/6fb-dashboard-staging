@@ -20,8 +20,7 @@ test.describe('Calendar Comprehensive Testing', () => {
     
     const currentUrl = page.url();
     if (currentUrl.includes('/login')) {
-      console.log('Authentication required, attempting to login with demo credentials');
-      
+
       await page.fill('input[type="email"]', 'demo@barbershop.com');
       await page.fill('input[type="password"]', 'demo123');
       await page.click('button[type="submit"], button:has-text("Sign in")');
@@ -58,8 +57,7 @@ test.describe('Calendar Comprehensive Testing', () => {
     await page.waitForTimeout(2000);
 
     await page.screenshot({ path: 'test-results/screenshots/calendar-fullcalendar-loaded.png' });
-    
-    console.log('✅ FullCalendar SDK loaded successfully');
+
   });
 
   test('Toast notifications work instead of alert() calls', async () => {
@@ -86,7 +84,7 @@ test.describe('Calendar Comprehensive Testing', () => {
 
     if (toastCount > 0) {
       await page.screenshot({ path: 'test-results/screenshots/calendar-toast-notifications.png' });
-      console.log('✅ Toast notifications found instead of alert() calls');
+       calls');
     }
   });
 
@@ -100,9 +98,9 @@ test.describe('Calendar Comprehensive Testing', () => {
       await expect(qrCodeModal.or(page.locator('canvas, svg, img').filter({ hasText: /qr/i }))).toBeVisible({ timeout: 5000 });
       
       await page.screenshot({ path: 'test-results/screenshots/calendar-qr-code-feature.png' });
-      console.log('✅ QR code functionality is working');
+      
     } else {
-      console.log('⚠️ QR code button not found - feature may not be implemented yet');
+      
     }
   });
 
@@ -115,8 +113,7 @@ test.describe('Calendar Comprehensive Testing', () => {
       
       const selectedDate = page.locator('.fc-daygrid-day.selected, .fc-daygrid-day.active, .fc-daygrid-day.highlighted');
       const feedbackVisible = await selectedDate.count() > 0;
-      
-      console.log(feedbackVisible ? '✅ Date selection feedback working' : '⚠️ Date selection feedback may be missing');
+
     }
 
     const events = page.locator('.fc-event');
@@ -127,9 +124,7 @@ test.describe('Calendar Comprehensive Testing', () => {
       
       const eventModal = page.locator('.modal, .popover, .event-details');
       const modalVisible = await eventModal.count() > 0;
-      
-      console.log(modalVisible ? '✅ Event click feedback working' : '⚠️ Event click feedback may be missing');
-      
+
       if (modalVisible) {
         await page.screenshot({ path: 'test-results/screenshots/calendar-event-interaction.png' });
       }
@@ -154,7 +149,6 @@ test.describe('Calendar Comprehensive Testing', () => {
     expect(calendarWidth).toBeLessThanOrEqual(375); // Should fit in mobile viewport
     
     await page.screenshot({ path: 'test-results/screenshots/calendar-mobile-responsive.png' });
-    console.log('✅ Mobile responsiveness verified');
 
     await page.setViewportSize({ width: 1200, height: 800 });
   });
@@ -170,7 +164,6 @@ test.describe('Calendar Comprehensive Testing', () => {
       !error.includes('extension')
     );
 
-    console.log('Console errors found:', consoleErrors);
     expect(criticalErrors.length).toBe(0);
 
     const jsErrors = await page.evaluate(() => {
@@ -188,8 +181,7 @@ test.describe('Calendar Comprehensive Testing', () => {
 
     expect(jsErrors.hasDocument).toBe(true);
     expect(jsErrors.hasConsole).toBe(true);
-    
-    console.log('✅ No critical console errors found');
+
   });
 
   test('API data loading and fallback to mock data', async () => {
@@ -208,7 +200,6 @@ test.describe('Calendar Comprehensive Testing', () => {
     await page.waitForTimeout(2000);
 
     const apiResponses = responses.filter(r => r.url.includes('/api/'));
-    console.log('API responses:', apiResponses);
 
     const calendarContainer = page.locator('.fc, [data-testid="calendar"], #calendar');
     await expect(calendarContainer).toBeVisible();
@@ -217,7 +208,7 @@ test.describe('Calendar Comprehensive Testing', () => {
     const hasDefaultView = await page.locator('.fc-view').count() > 0;
 
     expect(hasDefaultView).toBe(true);
-    console.log(hasEvents ? '✅ Events loaded (real or mock data)' : '✅ Calendar loads with default empty state');
+    ' : '✅ Calendar loads with default empty state');
   });
 
   test('Error handling and loading states', async () => {
@@ -228,7 +219,7 @@ test.describe('Calendar Comprehensive Testing', () => {
     const hasLoadingState = await loadingIndicators.count() > 0;
     if (hasLoadingState) {
       await page.screenshot({ path: 'test-results/screenshots/calendar-loading-state.png' });
-      console.log('✅ Loading states visible during initial load');
+      
     }
 
     await page.waitForLoadState('networkidle');
@@ -251,7 +242,6 @@ test.describe('Calendar Comprehensive Testing', () => {
     const calendarContainer = page.locator('.fc, [data-testid="calendar"], #calendar');
     await expect(calendarContainer).toBeVisible();
 
-    console.log('✅ Error handling verified - calendar renders despite API failures');
   });
 
   test.afterEach(async () => {
@@ -262,12 +252,9 @@ test.describe('Calendar Comprehensive Testing', () => {
     
     const finalUrl = page.url();
     const consoleErrors = page.consoleErrors || [];
-    
-    console.log('Final URL:', finalUrl);
-    console.log('Total console errors:', consoleErrors.length);
-    
+
     if (consoleErrors.length > 0) {
-      console.log('Console errors:', consoleErrors);
+      
     }
   });
 });

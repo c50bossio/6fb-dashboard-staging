@@ -16,9 +16,7 @@ test.describe('Navigation Logo - Direct Testing', () => {
       const mobileHeaders = document.querySelectorAll('.lg\\:hidden')
       return mobileHeaders.length > 0
     })
-    
-    console.log('Mobile headers found:', hasLgHidden)
-    
+
     // Check for our specific mobile header structure
     const mobileHeaderStructure = await page.evaluate(() => {
       // Look for the specific mobile header structure we implemented
@@ -47,7 +45,7 @@ test.describe('Navigation Logo - Direct Testing', () => {
       return { found: false, headers: headers.length }
     })
     
-    console.log('Mobile header structure:', JSON.stringify(mobileHeaderStructure, null, 2))
+    )
     
     // Take a screenshot for verification
     await page.screenshot({ 
@@ -101,7 +99,7 @@ test.describe('Navigation Logo - Direct Testing', () => {
       return results
     })
     
-    console.log('Logo analysis:', JSON.stringify(logoAnalysis, null, 2))
+    )
     
     // Verify our responsive classes are being applied somewhere
     expect(logoAnalysis.logoImagesFound).toBeGreaterThan(0)
@@ -172,8 +170,7 @@ test.describe('Navigation Logo - Direct Testing', () => {
           visible: nav.offsetWidth > 0 && nav.offsetHeight > 0
         }))
       })
-      
-      console.log(`Navigation elements at ${size.width}px:`, navElements)
+
     }
   })
 })

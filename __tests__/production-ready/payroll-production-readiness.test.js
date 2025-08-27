@@ -111,7 +111,6 @@ describe('Payroll System Production Readiness', () => {
         `Invalid environment variables: ${invalidVars.map(v => `${v.var}: ${v.reason}`).join('; ')}`
       )
 
-      console.log(`✅ All ${requiredEnvVars.length} required environment variables validated`)
     })
 
     it('should validate security-sensitive configuration', async () => {
@@ -137,8 +136,7 @@ describe('Payroll System Production Readiness', () => {
       // Validate production-specific settings
       expect(process.env.NODE_ENV).toBe('production')
       expect(process.env.DEBUG).not.toBe('true') // Debug mode should be off
-      
-      console.log('🔐 Security configuration validated')
+
     })
 
     it('should validate third-party service configurations', async () => {
@@ -193,7 +191,7 @@ describe('Payroll System Production Readiness', () => {
         expect(result.success).toBe(true, 
           `${service.name} configuration failed: ${result.error}`
         )
-        console.log(`✅ ${service.name} connection validated`)
+        
       }
     })
   })
@@ -229,7 +227,7 @@ describe('Payroll System Production Readiness', () => {
           .limit(0) // Just test table access
 
         expect(error).toBeNull(`Table ${table} is missing or inaccessible: ${error?.message}`)
-        console.log(`✅ Table ${table} validated`)
+        
       }
 
       // Test critical indexes exist
@@ -261,8 +259,7 @@ describe('Payroll System Production Readiness', () => {
 
         expect(error).toBeNull(`Index validation failed for ${indexCheck.table}`)
         expect(queryTime).toBeLessThan(500) // Should be fast with proper indexes
-        
-        console.log(`⚡ ${indexCheck.table} query performance: ${queryTime}ms`)
+
       }
     })
 
@@ -296,7 +293,6 @@ describe('Payroll System Production Readiness', () => {
         )
       })
 
-      console.log(`🔒 RLS validation completed for ${rlsTables.length} tables`)
     })
 
     it('should validate foreign key constraints', async () => {
@@ -340,7 +336,7 @@ describe('Payroll System Production Readiness', () => {
       for (const fkTest of foreignKeyTests) {
         const result = await fkTest.test()
         expect(result.success).toBe(true, `${fkTest.name} constraint validation failed`)
-        console.log(`✅ ${fkTest.name} constraint validated`)
+        
       }
     })
   })
@@ -390,7 +386,6 @@ describe('Payroll System Production Readiness', () => {
       // Should have some rate limiting in place
       expect(rateLimited).toBe(true)
 
-      console.log('🔐 Webhook endpoint security validated')
     })
 
     it('should validate API performance under load', async () => {
@@ -440,7 +435,7 @@ describe('Payroll System Production Readiness', () => {
         expect(avgResponseTime).toBeLessThan(1000) // Under 1 second average
         expect(successfulResponses / concurrency).toBeGreaterThan(0.8) // 80% success rate
 
-        console.log(`⚡ ${endpoint}: ${avgResponseTime.toFixed(2)}ms avg (${successfulResponses}/${concurrency} success)`)
+        }ms avg (${successfulResponses}/${concurrency} success)`)
       }
     })
 
@@ -471,7 +466,6 @@ describe('Payroll System Production Readiness', () => {
         })
         expect([200, 201, 202, 204]).toContain(correctRoleResponse.status)
 
-        console.log(`🔐 ${endpoint.path} authorization validated`)
       }
     })
   })
@@ -492,7 +486,6 @@ describe('Payroll System Production Readiness', () => {
           tags: { test: 'production_readiness' }
         })
 
-        console.log('📊 Sentry monitoring validated')
       } catch (error) {
         throw new Error(`Sentry configuration error: ${error.message}`)
       }
@@ -511,7 +504,6 @@ describe('Payroll System Production Readiness', () => {
             test: 'performance_monitoring'
           })
 
-          console.log('📈 Performance monitoring validated')
         } catch (error) {
           console.warn(`Performance monitoring warning: ${error.message}`)
         }
@@ -535,7 +527,6 @@ describe('Payroll System Production Readiness', () => {
         expect(healthData.timestamp).toBeTruthy()
         expect(healthData.checks).toBeDefined()
 
-        console.log(`💚 Health endpoint ${endpoint} validated`)
       }
     })
 
@@ -567,7 +558,7 @@ describe('Payroll System Production Readiness', () => {
           })
           
           expect(testAlert.status).toBe(200)
-          console.log('📢 Slack alerting validated')
+          
         } catch (error) {
           console.warn(`Slack alerting test failed: ${error.message}`)
         }
@@ -592,7 +583,6 @@ describe('Payroll System Production Readiness', () => {
       expect(backupInfo.point_in_time_recovery).toBe(true)
       expect(backupInfo.backup_retention_days).toBeGreaterThanOrEqual(30)
 
-      console.log(`💾 Database backups configured: ${backupInfo.backup_retention_days} days retention`)
     })
 
     it('should validate disaster recovery procedures', async () => {
@@ -636,7 +626,7 @@ describe('Payroll System Production Readiness', () => {
       for (const test of recoveryTests) {
         const result = await test.test()
         expect(result.success).toBe(true, `${test.name} failed: ${result.error}`)
-        console.log(`🔄 ${test.name} validated`)
+        
       }
     })
 
@@ -653,7 +643,6 @@ describe('Payroll System Production Readiness', () => {
       expect(exportTest.file_size_mb).toBeGreaterThan(0.1)
       expect(exportTest.checksum).toBeTruthy()
 
-      console.log(`📤 Data export test: ${exportTest.tables_exported} tables, ${exportTest.total_records} records`)
     })
   })
 
@@ -693,7 +682,6 @@ describe('Payroll System Production Readiness', () => {
         expect(log.metadata).toBeTruthy()
       }
 
-      console.log(`📋 Audit logging validated for ${auditableActions.length} action types`)
     })
 
     it('should validate data retention policies', async () => {
@@ -710,8 +698,7 @@ describe('Payroll System Production Readiness', () => {
         
         expect(config.retention_days).toBe(policy.retention_days)
         expect(config.auto_cleanup_enabled).toBe(true)
-        
-        console.log(`⏰ ${policy.table}: ${config.retention_days} days retention`)
+
       }
     })
 
@@ -762,7 +749,7 @@ describe('Payroll System Production Readiness', () => {
       for (const complianceCheck of pciComplianceChecks) {
         const isCompliant = await complianceCheck.check()
         expect(isCompliant).toBe(true, `PCI compliance check failed: ${complianceCheck.name}`)
-        console.log(`✅ PCI DSS: ${complianceCheck.name} compliant`)
+        
       }
     })
   })
@@ -902,8 +889,6 @@ describe('Payroll System Production Readiness', () => {
     }
 
     await fs.writeFile('production-readiness-report.json', JSON.stringify(report, null, 2))
-    console.log('\n🎉 Production Readiness Report Generated')
-    console.log('📄 File: production-readiness-report.json')
-    console.log(`🟢 Status: ${report.deployment_readiness.ready_for_production ? 'READY FOR PRODUCTION' : 'NOT READY'}`)
+
   }
 })

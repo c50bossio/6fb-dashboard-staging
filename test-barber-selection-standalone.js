@@ -50,8 +50,7 @@ class StandaloneBarberSelectionTester {
   }
 
   async setup() {
-    console.log('🚀 Setting up test environment...')
-    
+
     this.browser = await puppeteer.launch({
       headless: false,
       defaultViewport: TEST_CONFIG.viewports.desktop,
@@ -69,16 +68,14 @@ class StandaloneBarberSelectionTester {
       if (msg.type() === 'error') {
         console.error('❌ Browser Console Error:', msg.text())
       } else if (msg.text().includes('Auto-selected') || msg.text().includes('barber')) {
-        console.log('🔍 Barber Selection Log:', msg.text())
+        )
       }
     })
-    
-    console.log('✅ Browser setup complete')
+
   }
 
   async createMockCheckoutInterface() {
-    console.log('🛠️  Creating mock checkout interface...')
-    
+
     const mockHTML = `
     <!DOCTYPE html>
     <html lang="en">
@@ -310,8 +307,7 @@ class StandaloneBarberSelectionTester {
             };
 
             function initializeBarberSelection() {
-                console.log('🔄 Initializing barber auto-selection...');
-                
+
                 // Simulate loading
                 setTimeout(() => {
                     document.getElementById('barber-loading').style.display = 'none';
@@ -320,8 +316,7 @@ class StandaloneBarberSelectionTester {
             }
 
             function applyTestScenario(scenarioNumber) {
-                console.log('🎯 Applying test scenario', scenarioNumber);
-                
+
                 const scenario = testScenarios[scenarioNumber];
                 selectedBarber = scenario.selectedBarber;
                 autoSelectionReason = scenario.reason;
@@ -329,11 +324,11 @@ class StandaloneBarberSelectionTester {
                 if (selectedBarber && autoSelectionReason !== 'manual') {
                     // Show auto-selection banner
                     showAutoSelection(selectedBarber, scenario.reasonText);
-                    console.log('✅ Auto-selected barber:', selectedBarber.name, 'Reason:', autoSelectionReason);
+                    
                 } else {
                     // Show manual selection
                     showManualSelection();
-                    console.log('ℹ️  No auto-selection - showing manual selection');
+                    
                 }
             }
 
@@ -356,7 +351,7 @@ class StandaloneBarberSelectionTester {
 
             // Event handlers
             document.getElementById('change-barber-btn').addEventListener('click', function() {
-                console.log('🔄 Change Barber clicked');
+                
                 selectedBarber = null;
                 autoSelectionReason = 'manual';
                 showManualSelection();
@@ -365,8 +360,7 @@ class StandaloneBarberSelectionTester {
             // Manual barber selection
             document.querySelectorAll('.barber-option').forEach(option => {
                 option.addEventListener('click', function() {
-                    console.log('👆 Barber selected:', this.dataset.barberId);
-                    
+
                     // Clear previous selections
                     document.querySelectorAll('.barber-option').forEach(opt => {
                         opt.classList.remove('border-emerald-500', 'bg-emerald-50', 'ring-2', 'ring-emerald-500');
@@ -387,8 +381,7 @@ class StandaloneBarberSelectionTester {
 
             // Complete checkout validation
             document.getElementById('complete-checkout-btn').addEventListener('click', function() {
-                console.log('💳 Complete Checkout clicked');
-                
+
                 if (!selectedBarber) {
                     document.getElementById('selection-error').style.display = 'block';
                     alert('Please select which barber performed this service before completing the transaction.');
@@ -400,7 +393,7 @@ class StandaloneBarberSelectionTester {
 
             // Test scenario switching (for automated testing)
             window.switchTestScenario = function(scenarioNumber) {
-                console.log('🔀 Switching to test scenario:', scenarioNumber);
+                
                 currentTestScenario = scenarioNumber;
                 selectedBarber = null;
                 autoSelectionReason = null;
@@ -435,14 +428,12 @@ class StandaloneBarberSelectionTester {
     await this.page.setContent(mockHTML)
     await new Promise(resolve => setTimeout(resolve, 1500)) // Wait for initialization
     await this.takeScreenshot('01-mock-interface-loaded')
-    
-    console.log('✅ Mock checkout interface created')
+
     return true
   }
 
   async testPriorityOneAppointmentSelection() {
-    console.log('🔍 Testing Priority 1: Appointment-based selection...')
-    
+
     try {
       // Switch to scenario 1 (appointment-based selection)
       await this.page.evaluate(() => window.switchTestScenario(1))
@@ -459,7 +450,7 @@ class StandaloneBarberSelectionTester {
         
         if (bannerText.includes('appointment') && selectedBarberName.includes('Mike Johnson')) {
           this.addResult('PRIORITY_1_APPOINTMENT', 'PASS', 'Appointment-based auto-selection working correctly')
-          console.log('✅ Auto-selected from appointment:', selectedBarberName.trim())
+          )
           
           // Test "Change Barber" functionality
           const changeBtn = await this.page.$('#change-barber-btn')
@@ -492,8 +483,7 @@ class StandaloneBarberSelectionTester {
   }
 
   async testPriorityTwoLoggedInBarber() {
-    console.log('🔍 Testing Priority 2: Logged-in barber auto-selection...')
-    
+
     try {
       // Switch to scenario 2 (logged-in barber selection)
       await this.page.evaluate(() => window.switchTestScenario(2))
@@ -509,7 +499,7 @@ class StandaloneBarberSelectionTester {
         
         if (bannerText.includes('logged in') && selectedBarberName.includes('Sarah Davis')) {
           this.addResult('PRIORITY_2_LOGGED_IN', 'PASS', 'Logged-in barber auto-selection working correctly')
-          console.log('✅ Auto-selected logged-in barber:', selectedBarberName.trim())
+          )
           return true
         } else {
           throw new Error('Logged-in barber selection content incorrect')
@@ -526,8 +516,7 @@ class StandaloneBarberSelectionTester {
   }
 
   async testPriorityThreeManualSelection() {
-    console.log('🔍 Testing Priority 3: Manual selection fallback...')
-    
+
     try {
       // Switch to scenario 3 (manual selection)
       await this.page.evaluate(() => window.switchTestScenario(3))
@@ -542,8 +531,7 @@ class StandaloneBarberSelectionTester {
       if (manualVisible && bannerHidden) {
         // Test selecting a barber manually
         const barberOptions = await this.page.$$('.barber-option')
-        console.log(`Found ${barberOptions.length} barber options for manual selection`)
-        
+
         if (barberOptions.length > 0) {
           await barberOptions[0].click()
           await new Promise(resolve => setTimeout(resolve, 500))
@@ -579,8 +567,7 @@ class StandaloneBarberSelectionTester {
   }
 
   async testSelectionValidation() {
-    console.log('🔒 Testing selection validation...')
-    
+
     try {
       // Clear all selections
       await this.page.evaluate(() => {
@@ -612,8 +599,7 @@ class StandaloneBarberSelectionTester {
   }
 
   async testMobileResponsiveness() {
-    console.log('📱 Testing mobile responsiveness...')
-    
+
     try {
       // Test tablet viewport
       await this.page.setViewport(TEST_CONFIG.viewports.tablet)
@@ -651,8 +637,7 @@ class StandaloneBarberSelectionTester {
   }
 
   async testTouchTargets() {
-    console.log('👆 Testing WCAG 2.1 AA touch target compliance...')
-    
+
     try {
       const touchTargets = await this.page.$$eval('button, .cursor-pointer, input[type="radio"], input[type="checkbox"]', elements => {
         return elements.map(el => {
@@ -683,11 +668,11 @@ class StandaloneBarberSelectionTester {
       if (failedTargets.length === 0) {
         this.addResult('WCAG_TOUCH_TARGETS', 'PASS', 
           `All ${touchTargets.length} touch targets meet 44px minimum requirement`)
-        console.log(`📊 Touch Target Analysis: ${passedTargets}/${touchTargets.length} passed`)
+        
       } else {
         this.addResult('WCAG_TOUCH_TARGETS', 'FAIL', 
           `${failedTargets.length}/${touchTargets.length} touch targets below 44px minimum`)
-        console.log('❌ Failed touch targets:', failedTargets)
+        
       }
       
     } catch (error) {
@@ -697,8 +682,7 @@ class StandaloneBarberSelectionTester {
   }
 
   async runCompleteTestSuite() {
-    console.log('🧪 Running complete barber auto-selection test suite...')
-    
+
     try {
       await this.setup()
       await this.createMockCheckoutInterface()
@@ -712,9 +696,7 @@ class StandaloneBarberSelectionTester {
       await this.testMobileResponsiveness()
       
       await this.takeScreenshot('99-test-suite-complete')
-      
-      console.log('✅ Test suite completed successfully')
-      
+
     } catch (error) {
       console.error('❌ Test suite failed:', error.message)
       await this.takeScreenshot('99-error-test-suite-failed')
@@ -734,7 +716,7 @@ class StandaloneBarberSelectionTester {
         type: 'png'
       })
       this.results.screenshots.push(screenshotPath)
-      console.log(`📸 Screenshot saved: ${name}.png`)
+      
     } catch (error) {
       console.error(`⚠️  Could not save screenshot ${name}:`, error.message)
     }
@@ -754,19 +736,18 @@ class StandaloneBarberSelectionTester {
     
     if (status === 'PASS') {
       this.results.passed++
-      console.log(`✅ ${testName}: ${message}`)
+      
     } else if (status === 'FAIL') {
       this.results.failed++
-      console.log(`❌ ${testName}: ${message}`)
+      
     } else {
       this.results.warnings++
-      console.log(`⚠️  ${testName}: ${message}`)
+      
     }
   }
 
   async generateReport() {
-    console.log('📋 Generating comprehensive test report...')
-    
+
     const successRate = this.results.totalTests > 0 
       ? ((this.results.passed / this.results.totalTests) * 100).toFixed(1)
       : 0
@@ -795,10 +776,8 @@ class StandaloneBarberSelectionTester {
     const summaryPath = path.join(__dirname, `standalone-barber-selection-summary-${Date.now()}.md`)
     const summary = this.generateSummaryReport(report)
     await fs.writeFile(summaryPath, summary)
-    
-    console.log(`📄 Test report saved: ${reportPath}`)
-    console.log(`📝 Test summary saved: ${summaryPath}`)
-    console.log(`🎯 Overall Result: ${report.summary.overallStatus} (${report.summary.successRate} success rate)`)
+
+    `)
     
     if (this.browser) {
       await this.browser.close()
@@ -911,7 +890,7 @@ if (require.main === module) {
   
   tester.runCompleteTestSuite()
     .then(() => {
-      console.log('🎉 Standalone test suite completed successfully!')
+      
       process.exit(0)
     })
     .catch((error) => {

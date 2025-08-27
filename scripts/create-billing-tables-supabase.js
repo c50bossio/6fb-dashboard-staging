@@ -415,7 +415,6 @@ CREATE INDEX IF NOT EXISTS idx_unsubscribes_active ON email_unsubscribes(is_acti
 `;
 
 async function createBillingTables() {
-  console.log('🏗️  Creating marketing billing tables in Supabase...')
 
   try {
     const { data, error } = await supabase.rpc('exec_sql', {
@@ -424,9 +423,7 @@ async function createBillingTables() {
 
     if (error) {
       console.error('❌ Error creating tables:', error)
-      
-      console.log('🔄 Trying alternative approach...')
-      
+
       const statements = createTableSQL.split(';').filter(stmt => stmt.trim())
       
       for (const statement of statements) {
@@ -436,16 +433,14 @@ async function createBillingTables() {
               sql_query: statement + ';'
             })
           } catch (e) {
-            console.log('⚠️  Statement skipped (might already exist):', statement.substring(0, 100) + '...')
+            :', statement.substring(0, 100) + '...')
           }
         }
       }
     } else {
-      console.log('✅ All billing tables created successfully')
+      
     }
 
-    console.log('\n🔍 Verifying table creation...')
-    
     const tables = [
       'marketing_accounts',
       'marketing_payment_methods', 
@@ -463,16 +458,14 @@ async function createBillingTables() {
           .select('*', { count: 'exact', head: true })
 
         if (error) {
-          console.log(`❌ Table '${table}' verification failed:`, error.message)
+          
         } else {
-          console.log(`✅ Table '${table}' exists`)
+          
         }
       } catch (e) {
-        console.log(`❌ Table '${table}' not accessible:`, e.message)
+        
       }
     }
-
-    console.log('\n✨ Marketing billing database setup completed!')
 
   } catch (error) {
     console.error('❌ Setup error:', error)

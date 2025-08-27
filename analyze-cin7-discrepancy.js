@@ -51,17 +51,14 @@ function parseCSV(csvContent) {
 
 async function analyzeCin7Discrepancy() {
   try {
-    console.log('🔍 Analyzing CIN7 Data Discrepancy...\n');
-    
+
     // 1. Load and parse CIN7 CSV data
-    console.log('📂 Loading CIN7 availability report...');
+    
     const csvContent = readFileSync('/Users/bossio/Downloads/AvailabilityReport_2025-08-15.csv', 'utf8');
     const cin7Data = parseCSV(csvContent);
-    
-    console.log(`✅ Loaded ${cin7Data.length} items from CIN7 report`);
-    
+
     // 2. Get current database products
-    console.log('\n📊 Loading current database products...');
+    
     const { data: dbProducts, error } = await supabase
       .from('products')
       .select('id, name, sku, current_stock, retail_price, cin7_product_id, cin7_sku');
@@ -70,12 +67,9 @@ async function analyzeCin7Discrepancy() {
       console.error('❌ Error loading database products:', error.message);
       return;
     }
-    
-    console.log(`✅ Loaded ${dbProducts.length} products from database`);
-    
+
     // 3. Analyze key discrepancies
-    console.log('\n🔍 Analyzing discrepancies...\n');
-    
+
     const discrepancies = [];
     const matched = [];
     const unmatched = [];
@@ -122,63 +116,50 @@ async function analyzeCin7Discrepancy() {
     });
     
     // 4. Report findings
-    console.log('📊 Analysis Results:');
-    console.log(`   ✅ Matched products: ${matched.length}`);
-    console.log(`   ❌ Products with discrepancies: ${discrepancies.length}`);
-    console.log(`   ⚠️  Unmatched products: ${unmatched.length}`);
-    
+
     if (discrepancies.length > 0) {
-      console.log('\n🚨 Top 10 Stock Discrepancies:');
+      
       discrepancies
         .sort((a, b) => Math.abs(b.stockDiff) - Math.abs(a.stockDiff))
         .slice(0, 10)
         .forEach((item, index) => {
-          console.log(`   ${index + 1}. ${item.name.substring(0, 50)}...`);
-          console.log(`      SKU: ${item.sku}`);
-          console.log(`      DB Stock: ${item.dbStock} | CIN7 Stock: ${item.cin7Stock} | Diff: ${item.stockDiff > 0 ? '+' : ''}${item.stockDiff}`);
-          console.log(`      DB Price: $${item.dbPrice} | CIN7 Price: $${item.cin7Price} | Diff: ${item.priceDiff > 0 ? '+' : ''}$${item.priceDiff.toFixed(2)}`);
-          console.log('');
+          }...`);
+
+          }`);
+          
         });
     }
     
     if (unmatched.length > 0) {
-      console.log('\n⚠️  Unmatched Products (first 5):');
+      :');
       unmatched.slice(0, 5).forEach((product, index) => {
-        console.log(`   ${index + 1}. ${product.name} (SKU: ${product.sku})`);
+        `);
       });
     }
     
     // 5. Suggest fixes
-    console.log('\n💡 Recommendations:');
-    
+
     const majorStockDiscrepancies = discrepancies.filter(d => Math.abs(d.stockDiff) > 10);
     if (majorStockDiscrepancies.length > 0) {
-      console.log(`   🔄 ${majorStockDiscrepancies.length} products have major stock differences (>10 units)`);
-      console.log('   📋 Action: Update sync logic to use "Available" field from CIN7');
+      `);
+      
     }
     
     const priceDiscrepancies = discrepancies.filter(d => Math.abs(d.priceDiff) > 1);
     if (priceDiscrepancies.length > 0) {
-      console.log(`   💰 ${priceDiscrepancies.length} products have price differences (>$1)`);
-      console.log('   📋 Action: Update prices from "PriceTier1" field');
+      `);
+      
     }
     
     if (unmatched.length > 0) {
-      console.log(`   🔗 ${unmatched.length} products could not be matched to CIN7 data`);
-      console.log('   📋 Action: Review SKU mapping or remove obsolete products');
+
     }
     
     // 6. Show correct data examples
-    console.log('\n📝 Example of Correct CIN7 Data:');
+    
     const examples = cin7Data.slice(0, 3);
     examples.forEach((item, index) => {
-      console.log(`   ${index + 1}. ${item.ProductName}`);
-      console.log(`      SKU: ${item.SKU}`);
-      console.log(`      Available: ${item.Available} units`);
-      console.log(`      OnHand: ${item.OnHand} units`);
-      console.log(`      Price: $${item.PriceTier1}`);
-      console.log(`      Category: ${item.Category}`);
-      console.log('');
+
     });
     
     return {
@@ -198,24 +179,13 @@ async function analyzeCin7Discrepancy() {
 }
 
 async function main() {
-  console.log('🚀 CIN7 Data Discrepancy Analysis\n');
-  
+
   const results = await analyzeCin7Discrepancy();
   
   if (results) {
-    console.log('\n📋 Summary:');
-    console.log(`   📊 CIN7 has ${results.totalCin7Items} items`);
-    console.log(`   💾 Database has ${results.totalDbProducts} products`);
-    console.log(`   ✅ ${results.matched} products matched`);
-    console.log(`   ❌ ${results.discrepancies} discrepancies found`);
-    console.log(`   🚨 ${results.majorStockIssues} major stock issues`);
-    console.log(`   💰 ${results.priceIssues} price issues`);
-    
-    console.log('\n🔗 Next Steps:');
-    console.log('1. Fix sync mapping to use CIN7 "Available" field');
-    console.log('2. Update product matching logic (SKU-based)');
-    console.log('3. Sync current inventory levels from CIN7');
-    console.log('4. Set up real-time webhook updates');
+
+    ');
+
   }
 }
 

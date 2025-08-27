@@ -52,7 +52,7 @@ export const useCalendarEvents = (options = {}) => {
       
       setEvents(data.events || []);
       
-      console.log(`Loaded ${data.meta?.total || 0} events (${data.meta?.recurring_count || 0} recurring, ${data.meta?.single_count || 0} single)`);
+      `);
       
     } catch (err) {
       console.error('Error fetching calendar events:', err);

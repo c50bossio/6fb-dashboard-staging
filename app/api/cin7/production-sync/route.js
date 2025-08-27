@@ -546,7 +546,7 @@ async function processBatch(cin7Client, page, batchSize, mappingStrategy, barber
 
   try {
     
-    const batchData = await retryWithBackoff(() => 
+    const batchData = await retryWithBackoff(() => {}
       cin7Client.getProducts(page, batchSize)
     )
 

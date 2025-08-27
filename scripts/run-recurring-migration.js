@@ -28,14 +28,13 @@ const colors = {
 };
 
 const log = {
-  info: (msg) => console.log(`${colors.cyan}ℹ${colors.reset} ${msg}`),
-  success: (msg) => console.log(`${colors.green}✓${colors.reset} ${msg}`),
-  error: (msg) => console.log(`${colors.red}✗${colors.reset} ${msg}`),
-  warning: (msg) => console.log(`${colors.yellow}⚠${colors.reset} ${msg}`)
+  info: (msg) => ,
+  success: (msg) => ,
+  error: (msg) => ,
+  warning: (msg) => 
 };
 
 async function runMigration() {
-  console.log(`\n${colors.bright}${colors.blue}Running Recurring Appointments Migration${colors.reset}\n`);
 
   try {
     const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '002-add-recurring-improvements.sql');
@@ -100,12 +99,7 @@ async function runMigration() {
         }
       }
     }
-    
-    console.log(`\n${colors.bright}Migration Summary:${colors.reset}`);
-    console.log(`  ${colors.green}Success: ${successCount}${colors.reset}`);
-    console.log(`  ${colors.yellow}Skipped: ${skipCount}${colors.reset}`);
-    console.log(`  ${colors.red}Errors: ${errorCount}${colors.reset}`);
-    
+
     log.info('\nVerifying migration results...');
     
     const { data: testData, error: testError } = await supabase
@@ -149,11 +143,10 @@ async function runMigration() {
     }
     
     if (errorCount === 0) {
-      console.log(`\n${colors.bright}${colors.green}✅ Migration completed successfully!${colors.reset}\n`);
+      
       return true;
     } else {
-      console.log(`\n${colors.bright}${colors.yellow}⚠️ Migration completed with some errors${colors.reset}`);
-      console.log(`${colors.yellow}The system should still work, but some optimizations might be missing${colors.reset}\n`);
+
       return true;
     }
     
@@ -199,8 +192,7 @@ async function main() {
     log.warning('Trying alternative approach...');
     await addColumnsDirect();
   }
-  
-  console.log(`${colors.cyan}Migration process complete. The new recurring system is ready to use!${colors.reset}\n`);
+
 }
 
 main().catch(error => {

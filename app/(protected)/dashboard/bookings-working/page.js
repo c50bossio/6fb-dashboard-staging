@@ -23,7 +23,6 @@ export default function BookingsPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-
   useEffect(() => {
     fetchRealData()
   }, [user])
@@ -62,10 +61,7 @@ export default function BookingsPage() {
       }))
       
       const events = appointmentsResponse.appointments || []
-      
-      console.log(`📅 Loaded ${events.length} real appointments`)
-      console.log(`👥 Loaded ${resources.length} real barber resources`)
-      
+
       setEvents(events)
       setResources(resources)
       
@@ -84,16 +80,16 @@ export default function BookingsPage() {
   }
 
   const handleEventClick = (info) => {
-    console.log('Event clicked:', info.event)
+    
     alert(`Appointment: ${info.event.title}\nStatus: ${info.event.extendedProps.status}\nPrice: $${info.event.extendedProps.price}`)
   }
 
   const handleEventDrop = async (info) => {
-    console.log('Event dropped:', info.event)
+    
   }
 
   const handleDateSelect = (info) => {
-    console.log('Date selected:', info)
+    
     const title = prompt('Enter client name:')
     if (title) {
       const newEvent = {

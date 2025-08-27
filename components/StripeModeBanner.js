@@ -35,9 +35,9 @@ export default function StripeModeBanner() {
       setStripeMode('invalid')
     }
 
-    // Auto-dismiss success banner after 5 seconds
+    // Auto-dismiss success banner after 3 seconds
     if (stripeMode === 'live' && isProd) {
-      setTimeout(() => setIsDismissed(true), 5000)
+      setTimeout(() => setIsDismissed(true), 3000)
     }
   }, [stripeMode])
 

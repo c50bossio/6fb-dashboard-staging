@@ -209,8 +209,7 @@ function BusinessRecommendationsContent() {
 
   const handleImplementRecommendation = async (recommendation) => {
     try {
-      console.log('Implementing recommendation:', recommendation.id)
-      
+
       alert(`Marked "${recommendation.title}" as implemented!`)
       
       // 1. Track this in analytics
@@ -306,7 +305,6 @@ function BusinessRecommendationsContent() {
                "Comprehensive AI analysis completed with personalized recommendations."}
             </p>
 
-            
             {recommendations.recommendations_suite?.total_potential_impact && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white rounded-lg p-4 text-center">

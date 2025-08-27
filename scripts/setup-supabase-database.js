@@ -19,9 +19,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   process.exit(1);
 }
 
-console.log('🚀 Setting up Supabase database for 6FB AI Agent System...');
-console.log(`📍 Supabase URL: ${SUPABASE_URL}`);
-console.log(`🔑 Service Role Key: ${SUPABASE_SERVICE_ROLE_KEY.substring(0, 30)}...`);
+}...`);
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -29,23 +27,18 @@ async function executeSQLFile() {
   try {
     const sqlFilePath = join(__dirname, '../database/supabase-setup.sql');
     const sqlContent = readFileSync(sqlFilePath, 'utf8');
-    
-    console.log('📄 SQL file loaded, executing commands...');
-    
+
     const statements = sqlContent
       .split(';')
       .map(stmt => stmt.trim())
       .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
-    
-    console.log(`📋 Found ${statements.length} SQL statements to execute`);
-    
+
     let successCount = 0;
     let errorCount = 0;
     
     for (const [index, statement] of statements.entries()) {
       try {
-        console.log(`\n⏳ Executing statement ${index + 1}/${statements.length}...`);
-        
+
         const { data, error } = await supabase.rpc('exec_sql', { 
           sql_statement: statement + ';' 
         });
@@ -57,26 +50,21 @@ async function executeSQLFile() {
             .limit(1);
           
           if (directError && directError.message?.includes('relation "information_schema.tables"')) {
-            console.log('⚠️ Using alternative execution method...');
+            
           } else {
             throw error;
           }
         }
-        
-        console.log(`✅ Statement ${index + 1} executed successfully`);
+
         successCount++;
         
       } catch (error) {
         console.error(`❌ Error executing statement ${index + 1}:`, error.message);
-        console.log('📝 Statement was:', statement.substring(0, 100) + '...');
+         + '...');
         errorCount++;
       }
     }
-    
-    console.log(`\n📊 Execution completed:`);
-    console.log(`   ✅ Success: ${successCount} statements`);
-    console.log(`   ❌ Errors: ${errorCount} statements`);
-    
+
     return errorCount === 0;
     
   } catch (error) {
@@ -86,8 +74,7 @@ async function executeSQLFile() {
 }
 
 async function createTablesDirectly() {
-  console.log('🔧 Creating tables directly using Supabase client...');
-  
+
   try {
     const { data: testData, error: testError } = await supabase
       .from('information_schema.tables')
@@ -99,18 +86,9 @@ async function createTablesDirectly() {
       console.error('❌ Connection test failed:', testError.message);
       return false;
     }
-    
-    console.log('✅ Supabase connection successful');
-    
-    console.log('📋 Creating barbershops table...');
-    
-    console.log('📋 Please execute the SQL manually in Supabase dashboard:');
-    console.log('1. Go to https://supabase.com/dashboard/project/' + SUPABASE_URL.split('//')[1].split('.')[0]);
-    console.log('2. Click "SQL Editor"');
-    console.log('3. Click "New Query"');
-    console.log('4. Copy and paste the contents of database/supabase-setup.sql');
-    console.log('5. Click "Run"');
-    
+
+    [1].split('.')[0]);
+
     return true;
     
   } catch (error) {
@@ -120,8 +98,7 @@ async function createTablesDirectly() {
 }
 
 async function verifySetup() {
-  console.log('🔍 Verifying database setup...');
-  
+
   try {
     const { data: barbershops, error } = await supabase
       .from('barbershops')
@@ -132,14 +109,11 @@ async function verifySetup() {
       console.error('❌ Verification failed - barbershops table not accessible:', error.message);
       return false;
     }
-    
-    console.log('✅ Barbershops table accessible');
-    console.log('📊 Found barbershops:', barbershops?.length || 0);
-    
+
     if (barbershops && barbershops.length > 0) {
-      console.log('🏪 Sample data:');
+      
       barbershops.forEach(shop => {
-        console.log(`   - ${shop.name} (${shop.shop_slug}) [${shop.website_enabled ? 'enabled' : 'disabled'}]`);
+         [${shop.website_enabled ? 'enabled' : 'disabled'}]`);
       });
     }
     
@@ -150,19 +124,10 @@ async function verifySetup() {
       .single();
     
     if (demoError) {
-      console.log('⚠️ Demo barbershop not found - this is expected if running for the first time');
+      
       return true; // Not a failure, just needs setup
     }
-    
-    console.log('🎉 Demo barbershop found:', demoShop.name);
-    console.log('📋 All customization fields present:', {
-      logo_url: !!demoShop.logo_url,
-      brand_colors: !!demoShop.brand_colors,
-      theme_preset: !!demoShop.theme_preset,
-      hero_title: !!demoShop.hero_title,
-      shop_slug: demoShop.shop_slug
-    });
-    
+
     return true;
     
   } catch (error) {
@@ -172,39 +137,29 @@ async function verifySetup() {
 }
 
 async function main() {
-  console.log('🚀 Starting Supabase database setup...\n');
-  
+
   const setupSuccess = await verifySetup();
   
   if (!setupSuccess) {
-    console.log('\n📋 Database setup required. Attempting automatic setup...');
-    
+
     const sqlSuccess = await executeSQLFile();
     
     if (!sqlSuccess) {
-      console.log('\n🔧 Automatic SQL execution failed. Trying direct approach...');
+      
       await createTablesDirectly();
     }
-    
-    console.log('\n🔍 Final verification...');
+
     const finalSuccess = await verifySetup();
     
     if (finalSuccess) {
-      console.log('\n🎉 Database setup completed successfully!');
-      console.log('✅ You can now test the website settings save functionality');
+
     } else {
-      console.log('\n⚠️ Database setup needs manual intervention');
-      console.log('📋 Please run the SQL commands manually in Supabase dashboard');
+
     }
   } else {
-    console.log('\n✅ Database is already set up and working!');
-    console.log('🎉 Website settings save functionality should work now');
+
   }
-  
-  console.log('\n🔗 Next steps:');
-  console.log('1. Test the website settings page: http://localhost:9999/dashboard/website-settings');
-  console.log('2. Try saving some changes');
-  console.log('3. Verify the data persists after page reload');
+
 }
 
 main().catch(console.error);

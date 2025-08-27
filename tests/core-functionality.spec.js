@@ -23,8 +23,7 @@ test.describe('Core Dashboard Functionality', () => {
     
     const bodyText = await page.locator('body').textContent()
     expect(bodyText?.length || 0).toBeGreaterThan(100)
-    
-    console.log('✅ Authentication successful')
+
   })
 
   test('dashboard pages are accessible', async ({ page }) => {
@@ -54,18 +53,15 @@ test.describe('Core Dashboard Functionality', () => {
             routesWithContent++
           }
         }
-        
-        console.log(`✅ ${route}: Accessible`)
+
       } catch (error) {
-        console.log(`❌ ${route}: ${error.message}`)
+        
       }
     }
     
     expect(accessibleRoutes).toBeGreaterThanOrEqual(3)
     expect(routesWithContent).toBeGreaterThanOrEqual(2)
-    
-    console.log(`✅ ${accessibleRoutes}/${testRoutes.length} routes accessible`)
-    console.log(`✅ ${routesWithContent}/${testRoutes.length} routes have content`)
+
   })
 
   test('responsive design basics', async ({ page }) => {
@@ -92,7 +88,7 @@ test.describe('Core Dashboard Functionality', () => {
       expect(hasContent).toBe(true)
       expect(hasHorizontalScroll).toBe(false)
       
-      console.log(`✅ ${viewport.name} (${viewport.width}x${viewport.height}): Responsive OK`)
+      : Responsive OK`)
     }
   })
 
@@ -132,8 +128,7 @@ test.describe('Core Dashboard Functionality', () => {
     }
     
     expect(interactiveElementsFound).toBeGreaterThan(0)
-    console.log(`✅ Found ${interactiveElementsFound} interactive elements`)
-    console.log(`✅ ${functionalElements} elements are functional`)
+
   })
 
   test('navigation between dashboard sections', async ({ page }) => {
@@ -157,10 +152,10 @@ test.describe('Core Dashboard Functionality', () => {
         
         if (page.url().includes(nav.to.split('/').pop())) {
           successfulNavigations++
-          console.log(`✅ Navigation: ${nav.from} → ${nav.to}`)
+          
         }
       } catch (error) {
-        console.log(`❌ Navigation failed: ${nav.from} → ${nav.to}`)
+        
       }
     }
     

@@ -43,7 +43,7 @@ export default function PublicShopWebsite({ initialData }) {
   useEffect(() => {
     if (!initialData) {
       // This would be called if SSR fails
-      console.log('No initial data provided')
+      
     }
   }, [initialData])
 

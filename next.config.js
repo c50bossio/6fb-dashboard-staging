@@ -14,11 +14,17 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
+  // Enable SWC minification for faster builds
+  swcMinify: true,
+  
+  // Optimize production builds
+  productionBrowserSourceMaps: false,
+  
   // Generate unique build ID for cache busting
   generateBuildId: async () => {
     // Use timestamp for unique build ID
     const buildId = Date.now().toString();
-    console.log(`[Build] Generating build ID: ${buildId}`);
+    
     return buildId;
   },
   
@@ -33,6 +39,8 @@ const nextConfig = {
   
   // Experimental features for optimizing bundle
   experimental: {
+    optimizeCss: true,
+    scrollRestoration: true,
     outputFileTracingExcludes: {
       '*': [
         'node_modules/@sentry/cli',
@@ -51,6 +59,19 @@ const nextConfig = {
         'node_modules/webpack-bundle-analyzer',
       ],
     },
+  },
+  
+  // Module optimization
+  modularizeImports: {
+    '@heroicons/react': {
+      transform: '@heroicons/react/24/outline/{{member}}'
+    },
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{member}}'
+    },
+    'react-icons': {
+      transform: 'react-icons/{{member}}'
+    }
   },
   
   images: {

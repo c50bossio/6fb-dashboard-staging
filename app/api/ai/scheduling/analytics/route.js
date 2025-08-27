@@ -4,6 +4,8 @@
  */
 
 import { NextResponse } from 'next/server';
+import unifiedStaffService from '@/lib/unified-staff-service';
+
 export const runtime = 'nodejs'
 
 export async function GET(request) {
@@ -19,6 +21,15 @@ export async function GET(request) {
         { status: 400 }
       );
     }
+    
+    // Fetch staff data for context
+    const staffData = await unifiedStaffService.getStaff(barbershopId, {
+      useCache: true,
+      includeAvailability: false
+    });
+    
+    const staffCount = staffData?.staff?.length || 0;
+    const hasStaff = staffCount > 0;
     
     const Analytics = {
       success: true,
@@ -261,7 +272,7 @@ export async function GET(request) {
       return NextResponse.json(filteredAnalytics);
     }
     
-    return NextResponse.json(mockAnalytics);
+    return NextResponse.json(Analytics);
     
   } catch (error) {
     console.error('Error getting scheduling analytics:', error);
@@ -360,7 +371,7 @@ export async function POST(request) {
       share_link: `https://app.6fbai.com/reports/shared/${barbershop_id}/analytics-${Date.now()}`
     };
     
-    return NextResponse.json(mockCustomReport);
+    return NextResponse.json(CustomReport);
     
   } catch (error) {
     console.error('Error generating custom analytics report:', error);

@@ -29,8 +29,7 @@ class CodeQualityAnalyzer {
   }
 
   async analyzeCodebase() {
-    console.log('🔍 Analyzing codebase quality...\n');
-    
+
     await this.generateCodebaseStats();
     await this.analyzeCleanupResults();
     await this.checkCodeQuality();
@@ -260,10 +259,9 @@ ${this.calculateQualityScore()}/100
 `;
 
     fs.writeFileSync(path.join(this.projectRoot, 'code-quality-report.md'), reportContent);
+
+    );
     
-    console.log('📋 Code Quality Report Generated');
-    console.log('='.repeat(50));
-    console.log(reportContent);
   }
 
   calculateQualityScore() {

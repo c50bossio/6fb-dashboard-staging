@@ -11,9 +11,7 @@
  */
 
 function validateMobileCompatibility() {
-    console.log('🔍 BARBERSHOP MODAL MOBILE VALIDATION');
-    console.log('=====================================');
-    
+
     const results = {
         viewport: getViewportInfo(),
         modal: validateModalResponsiveness(),
@@ -200,53 +198,46 @@ function getElementDescription(element) {
 }
 
 function generateValidationReport(results) {
-    console.log('\n📊 VALIDATION RESULTS SUMMARY');
-    console.log('==============================');
-    
+
     // Viewport Info
-    console.log(`\n📱 VIEWPORT: ${results.viewport.width}×${results.viewport.height} (${results.viewport.orientation})`);
-    console.log(`   Category: ${results.viewport.category}`);
-    
+    `);
+
     // Modal Responsiveness
     if (results.modal.error) {
-        console.log('\n❌ MODAL: ' + results.modal.error);
+        
     } else {
-        console.log(`\n🖼️ MODAL RESPONSIVENESS`);
-        console.log(`   Width: ${results.modal.modalWidth}px (${results.modal.utilization} utilization)`);
-        console.log(`   Fits viewport: ${results.modal.fitsViewport ? '✅' : '❌'}`);
-        console.log(`   Good utilization: ${results.modal.utilizationGood ? '✅' : '⚠️'} (target: 70%+)`);
-        console.log(`   Responsive classes: ${results.modal.responsive ? '✅' : '⚠️'}`);
+        
+        `);
+        
+        `);
+        
     }
     
     // Touch Targets
-    console.log(`\n👆 TOUCH TARGETS (${results.touchTargets.totalTargets} elements)`);
-    console.log(`   Meet minimum (44px): ${results.touchTargets.meetsMinimum}/${results.touchTargets.totalTargets} (${results.touchTargets.passRate}%)`);
-    console.log(`   Meet preferred (48px): ${results.touchTargets.meetsPreferred}/${results.touchTargets.totalTargets}`);
+    `);
+    : ${results.touchTargets.meetsMinimum}/${results.touchTargets.totalTargets} (${results.touchTargets.passRate}%)`);
+    : ${results.touchTargets.meetsPreferred}/${results.touchTargets.totalTargets}`);
     
     if (results.touchTargets.passRate < 100) {
-        console.log('   ⚠️ Elements below 44px:');
+        
         results.touchTargets.targets.forEach(target => {
             if (!target.meetsMinimum) {
-                console.log(`      - ${target.element}: ${target.width}×${target.height}px`);
+                
             }
         });
     }
     
     // Auto-selection
-    console.log(`\n💡 AUTO-SELECTION FEEDBACK`);
+    
     if (results.autoSelection.visible) {
-        console.log(`   Notification visible: ✅`);
-        console.log(`   Has icon: ${results.autoSelection.notification.hasIcon ? '✅' : '❌'}`);
-        console.log(`   Change button: ${results.autoSelection.changeButton?.meetsTouch ? '✅' : '❌'} (${results.autoSelection.changeButton?.height}px)`);
+
+        `);
     } else {
-        console.log(`   Notification: ❌ ${results.autoSelection.reason}`);
+        
     }
     
     // Usability
-    console.log(`\n🎯 USABILITY`);
-    console.log(`   Scrollable when needed: ${results.usability.scrollable ? '✅' : '⚠️'}`);
-    console.log(`   Form elements count: ${results.usability.formElements.radioButtons}`);
-    
+
     // Overall Score
     const scores = [
         results.modal.fitsViewport ? 1 : 0,
@@ -255,31 +246,24 @@ function generateValidationReport(results) {
         results.autoSelection.visible ? 1 : 0
     ];
     const overallScore = Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100);
-    
-    console.log(`\n🏆 OVERALL MOBILE COMPATIBILITY: ${overallScore}%`);
-    console.log(overallScore >= 80 ? '   ✅ Ready for barbershop use' : 
-                overallScore >= 60 ? '   ⚠️ Needs improvements' : 
-                '   ❌ Requires significant fixes');
-    
+
     // Recommendations
     if (overallScore < 80) {
-        console.log('\n🔧 PRIORITY RECOMMENDATIONS:');
-        
+
         if (!results.modal.fitsViewport) {
-            console.log('   1. Fix modal viewport overflow');
+            
         }
         if (!results.modal.utilizationGood) {
-            console.log(`   2. Increase modal width for tablets (current: ${results.modal.utilization})`);
+            `);
         }
         if (results.touchTargets.passRate < 90) {
-            console.log('   3. Increase touch target sizes to 44px minimum');
+            
         }
         if (!results.autoSelection.visible) {
-            console.log('   4. Ensure auto-selection notification is visible');
+            
         }
     }
-    
-    console.log('\n📋 Run this validation after making improvements to verify fixes.');
+
 }
 
 // Auto-run if modal is already open
@@ -287,22 +271,15 @@ window.addEventListener('load', () => {
     setTimeout(() => {
         const modal = document.querySelector('.fixed.inset-0 .bg-white.rounded-xl');
         if (modal) {
-            console.log('🎯 Modal detected - you can run validateMobileCompatibility() now');
+             now');
         } else {
-            console.log('🔍 Modal not detected - please open the appointment checkout modal first');
+            
         }
     }, 1000);
 });
 
 // Expose function globally
 window.validateMobileCompatibility = validateMobileCompatibility;
-
-console.log(`
-🧪 BARBERSHOP MODAL VALIDATION SCRIPT LOADED
-
-To test:
-1. Open appointment checkout modal  
-2. Run: validateMobileCompatibility()
 
 For different viewports:
 - F12 → Toggle device toolbar → Select iPad/tablet

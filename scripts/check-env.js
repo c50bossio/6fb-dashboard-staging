@@ -20,7 +20,7 @@ const colors = {
 }
 
 function log(message, color = 'reset') {
-  console.log(`${colors[color]}${message}${colors.reset}`)
+  
 }
 
 const examplePath = path.join(__dirname, '..', '.env.local.example')

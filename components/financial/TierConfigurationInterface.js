@@ -300,8 +300,7 @@ export default function TierConfigurationInterface({ barbershopId, onSave }) {
       }
       
       // Show success message
-      console.log('Tier structure saved successfully')
-      
+
     } catch (error) {
       console.error('Error saving tier structure:', error)
       setErrors({ save: error.message })

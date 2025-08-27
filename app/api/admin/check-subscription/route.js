@@ -62,7 +62,7 @@ export async function GET(request) {
       }
     } catch (e) {
       // Subscriptions table might not exist
-      console.log('Subscriptions table not found or accessible')
+      
     }
 
     const response = {

@@ -193,7 +193,6 @@ function SupabaseAuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth event:', event, { hasSession: !!session })
 
         // Update auth state based on session
         if (session?.user) {

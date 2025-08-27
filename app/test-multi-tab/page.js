@@ -70,7 +70,7 @@ export default function TestMultiTabPage() {
   // Log visibility changes for this specific tab
   useEffect(() => {
     const handleVisibility = () => {
-      console.log(`🔵 [TAB ${tabId}] Visibility: ${document.visibilityState}`)
+      
       if (document.visibilityState === 'visible') {
         // Retest session when tab becomes visible
         setTimeout(testSession, 100)

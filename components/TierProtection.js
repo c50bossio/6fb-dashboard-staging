@@ -47,7 +47,7 @@ export default function TierProtection({
       const hasAccess = hasTierAccess(requiredTier)
       
       if (!hasAccess) {
-        console.log(`Access denied: User tier ${profile.subscription_tier} (role: ${profile.role}) cannot access ${requiredTier} features`)
+        // User cannot access tier features - redirect
         router.push(`${redirectTo}?required=${requiredTier}`)
       }
     }

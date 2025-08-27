@@ -7,8 +7,7 @@ const supabase = createClient(
 );
 
 async function testSupabaseFixes() {
-  console.log('🧪 Testing Supabase Fixes...\n');
-  
+
   const tests = [
     {
       name: 'Barbershops table - is_active column',
@@ -67,37 +66,33 @@ async function testSupabaseFixes() {
   let failCount = 0;
 
   for (const test of tests) {
-    console.log(`Testing: ${test.name}`);
+    
     const result = await test.test();
     
     if (result.success) {
-      console.log(`✅ PASS`);
+      
       if (result.data) {
-        console.log(`   Data: ${result.data.length} records found`);
+        
       }
       if (result.count !== undefined) {
-        console.log(`   Count: ${result.count}`);
+        
       }
       passCount++;
     } else {
-      console.log(`❌ FAIL`);
-      console.log(`   Error: ${result.error?.message || 'Unknown error'}`);
+
       failCount++;
     }
-    console.log('');
+    
   }
 
-  console.log('━'.repeat(50));
-  console.log(`\n📊 Test Results: ${passCount} passed, ${failCount} failed\n`);
+  );
 
   if (failCount > 0) {
-    console.log('⚠️  Some tests are still failing. Please run the SQL migration script:');
-    console.log('1. Open Supabase Dashboard (https://app.supabase.com)');
-    console.log('2. Go to SQL Editor');
-    console.log('3. Copy and run the contents of: scripts/URGENT_FIX_SUPABASE_400_ERRORS.sql');
-    console.log('4. Run this test again to verify');
+    
+    ');
+
   } else {
-    console.log('🎉 All tests passed! The 400 errors should be resolved.');
+    
   }
 }
 

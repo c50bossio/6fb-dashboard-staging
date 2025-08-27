@@ -16,8 +16,7 @@ test.describe('Authentication State Management', () => {
   });
   
   test('should persist authentication state across page reloads', async ({ page }) => {
-    console.log('🔄 Testing authentication state persistence...');
-    
+
     await page.goto('/login', { waitUntil: 'networkidle' });
     
     await page.evaluate(() => {
@@ -45,34 +44,23 @@ test.describe('Authentication State Management', () => {
     const currentUrl = page.url();
     const isOnProtectedRoute = currentUrl.includes('/ai-agents');
     const isOnLoginPage = currentUrl.includes('/login');
-    
-    console.log(`🔄 Current URL: ${currentUrl}`);
-    console.log(`🔄 On protected route: ${isOnProtectedRoute}`);
-    console.log(`🔄 On login page: ${isOnLoginPage}`);
-    
-    console.log('🔄 Reloading page to test state persistence...');
+
     await page.reload({ waitUntil: 'networkidle' });
     await page.waitForTimeout(3000);
     
     const urlAfterReload = page.url();
     const stillOnProtectedRoute = urlAfterReload.includes('/ai-agents');
     const redirectedToLogin = urlAfterReload.includes('/login');
-    
-    console.log(`🔄 URL after reload: ${urlAfterReload}`);
-    console.log(`🔄 Still on protected route: ${stillOnProtectedRoute}`);
-    console.log(`🔄 Redirected to login: ${redirectedToLogin}`);
-    
+
     await page.screenshot({ 
       path: `test-results/auth-state-persistence.png`,
       fullPage: true 
     });
-    
-    console.log('✅ Authentication state persistence test completed');
+
   });
   
   test('should handle session timeout and cleanup', async ({ page }) => {
-    console.log('⏰ Testing session timeout handling...');
-    
+
     await page.goto('/login', { waitUntil: 'networkidle' });
     
     await page.evaluate(() => {
@@ -95,10 +83,7 @@ test.describe('Authentication State Management', () => {
     
     const finalUrl = page.url();
     const redirectedToLogin = finalUrl.includes('/login');
-    
-    console.log(`⏰ Final URL: ${finalUrl}`);
-    console.log(`⏰ Redirected to login: ${redirectedToLogin}`);
-    
+
     const sessionAfterCleanup = await page.evaluate(() => {
       return {
         localStorage: Object.keys(localStorage),
@@ -106,20 +91,16 @@ test.describe('Authentication State Management', () => {
         cookies: document.cookie
       };
     });
-    
-    console.log(`⏰ Storage after cleanup:`, sessionAfterCleanup);
-    
+
     await page.screenshot({ 
       path: `test-results/session-timeout.png`,
       fullPage: true 
     });
-    
-    console.log('✅ Session timeout test completed');
+
   });
   
   test('should synchronize authentication state across tabs', async ({ context }) => {
-    console.log('🔄 Testing multi-tab authentication sync...');
-    
+
     const page1 = await context.newPage();
     const page2 = await context.newPage();
     
@@ -151,20 +132,15 @@ test.describe('Authentication State Management', () => {
     await page1.waitForTimeout(3000);
     
     const page1Url = page1.url();
-    console.log(`🔄 Tab 1 URL: ${page1Url}`);
-    
+
     await page2.goto('/ai-agents', { waitUntil: 'networkidle' });
     await page2.waitForTimeout(3000);
     
     const page2Url = page2.url();
-    console.log(`🔄 Tab 2 URL: ${page2Url}`);
-    
+
     const tab1Authenticated = page1Url.includes('/ai-agents');
     const tab2Authenticated = page2Url.includes('/ai-agents');
-    
-    console.log(`🔄 Tab 1 authenticated: ${tab1Authenticated}`);
-    console.log(`🔄 Tab 2 authenticated: ${tab2Authenticated}`);
-    
+
     await page1.screenshot({ 
       path: `test-results/multi-tab-auth-page1.png`,
       fullPage: true 
@@ -174,9 +150,7 @@ test.describe('Authentication State Management', () => {
       path: `test-results/multi-tab-auth-page2.png`,
       fullPage: true 
     });
-    
-    console.log('🔄 Testing logout synchronization...');
-    
+
     await page1.evaluate(() => {
       localStorage.removeItem('dev_session');
       localStorage.removeItem('supabase.auth.token');
@@ -194,19 +168,14 @@ test.describe('Authentication State Management', () => {
     
     const page2UrlAfterLogout = page2.url();
     const tab2LoggedOut = page2UrlAfterLogout.includes('/login');
-    
-    console.log(`🔄 Tab 2 URL after logout: ${page2UrlAfterLogout}`);
-    console.log(`🔄 Tab 2 logged out: ${tab2LoggedOut}`);
-    
+
     await page1.close();
     await page2.close();
-    
-    console.log('✅ Multi-tab authentication sync test completed');
+
   });
   
   test('should properly manage authentication storage', async ({ page }) => {
-    console.log('💾 Testing authentication storage management...');
-    
+
     await page.goto('/login', { waitUntil: 'networkidle' });
     
     const initialStorage = await page.evaluate(() => {
@@ -216,9 +185,7 @@ test.describe('Authentication State Management', () => {
         cookies: document.cookie
       };
     });
-    
-    console.log('💾 Initial storage state:', initialStorage);
-    
+
     await page.evaluate(() => {
       localStorage.setItem('dev_session', 'true');
       localStorage.setItem('auth_user', JSON.stringify({ id: 'test', email: 'test@example.com' }));
@@ -241,15 +208,12 @@ test.describe('Authentication State Management', () => {
         cookies: document.cookie
       };
     });
-    
-    console.log('💾 Storage after auth:', authStorage);
-    
+
     await page.goto('/ai-agents', { waitUntil: 'networkidle' });
     await page.waitForTimeout(3000);
     
     const protectedUrl = page.url();
-    console.log(`💾 Protected route URL: ${protectedUrl}`);
-    
+
     await page.evaluate(() => {
       const keysToRemove = [
         'dev_session',
@@ -274,29 +238,22 @@ test.describe('Authentication State Management', () => {
         cookies: document.cookie
       };
     });
-    
-    console.log('💾 Storage after cleanup:', cleanedStorage);
-    
+
     await page.goto('/ai-agents', { waitUntil: 'networkidle' });
     await page.waitForTimeout(3000);
     
     const finalUrl = page.url();
     const isLoggedOut = finalUrl.includes('/login') || finalUrl === page.url();
-    
-    console.log(`💾 Final URL: ${finalUrl}`);
-    console.log(`💾 Properly logged out: ${isLoggedOut}`);
-    
+
     await page.screenshot({ 
       path: `test-results/storage-management.png`,
       fullPage: true 
     });
-    
-    console.log('✅ Authentication storage management test completed');
+
   });
   
   test('should recover from authentication errors gracefully', async ({ page }) => {
-    console.log('🚨 Testing authentication error recovery...');
-    
+
     await page.goto('/login', { waitUntil: 'networkidle' });
     
     const errorStates = [
@@ -331,24 +288,18 @@ test.describe('Authentication State Management', () => {
     ];
     
     for (const errorState of errorStates) {
-      console.log(`🚨 Testing error state: ${errorState.name}`);
-      
+
       await page.evaluate(errorState.setup);
       
       await page.goto('/ai-agents', { waitUntil: 'networkidle' });
       await page.waitForTimeout(5000); // Allow time for error handling
       
       const currentUrl = page.url();
-      console.log(`🚨 [${errorState.name}] Current URL: ${currentUrl}`);
-      
+
       const hasError = await page.locator('.error, .alert-error, [role="alert"]').count() > 0;
       const isOnLoginPage = currentUrl.includes('/login');
       const isResponsive = await page.locator('body').isVisible();
-      
-      console.log(`🚨 [${errorState.name}] Has error message: ${hasError}`);
-      console.log(`🚨 [${errorState.name}] Redirected to login: ${isOnLoginPage}`);
-      console.log(`🚨 [${errorState.name}] Page responsive: ${isResponsive}`);
-      
+
       await page.screenshot({ 
         path: `test-results/error-recovery-${errorState.name.replace(/\s+/g, '-').toLowerCase()}.png`,
         fullPage: true 
@@ -366,8 +317,7 @@ test.describe('Authentication State Management', () => {
       
       await page.waitForTimeout(1000);
     }
-    
-    console.log('✅ Authentication error recovery test completed');
+
   });
   
 });

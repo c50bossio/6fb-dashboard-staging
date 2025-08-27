@@ -94,7 +94,7 @@ export async function POST(request) {
     }
     
     // Save to onboarding_progress table using service client (bypasses RLS)
-    console.log('🔍 API POST: Saving progress to DB for user:', user.id, 'step:', step)
+    
     const { data: progressData, error: progressError } = await serviceClient
       .from('onboarding_progress')
       .upsert({
@@ -112,7 +112,7 @@ export async function POST(request) {
       console.error('🔍 API POST: Error saving onboarding progress:', progressError)
       // Continue even if this fails - we'll still update the profile
     } else {
-      console.log('🔍 API POST: Progress saved successfully:', progressData)
+      
     }
     
     // Save analytics event for tracking using service client
@@ -211,7 +211,7 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    console.log('🔍 API GET: Starting progress retrieval...')
+    
     const supabase = await createClient()
     
     // Create service client for bypassing RLS - check if key exists
@@ -225,9 +225,7 @@ export async function GET(request) {
     const serviceClient = (supabaseUrl && serviceKey) 
       ? createServiceClient(supabaseUrl, serviceKey)
       : supabase
-    
-    console.log('🔍 API GET: Service client created, using', serviceClient === supabase ? 'regular client' : 'service client')
-    
+
     // Handle authentication with fallback for SSR cookie issues
     let user = null
     let authError = null
@@ -245,7 +243,7 @@ export async function GET(request) {
     
     // Fallback for demo/testing
     if (!user && (process.env.NODE_ENV === 'development' || process.env.ALLOW_DEMO_USER === 'true')) {
-      console.log('🔍 API GET: Using demo user fallback')
+      
       user = {
         id: 'befcd3e1-8722-449b-8dd3-cdf7e1f59483',
         email: 'demo@bookedbarber.com'
@@ -253,41 +251,33 @@ export async function GET(request) {
     }
     
     if (!user) {
-      console.log('🔍 API GET: No user authenticated. AuthError:', authError?.message)
+      
       return NextResponse.json({ 
         error: 'Authentication required',
         details: authError?.message || 'No valid session found'
       }, { status: 401 })
     }
-    
-    console.log('🔍 API GET: User authenticated:', user.id, user.email)
-    
-    console.log('🔍 API GET: Querying onboarding_progress for user:', user.id)
+
     const { data: progress, error } = await serviceClient
       .from('onboarding_progress')
       .select('*')
       .eq('user_id', user.id)
       .order('completed_at', { ascending: true })
-    
-    console.log('🔍 API GET: Progress query result. Error:', error, 'Data:', progress)
-    
+
     if (error) {
       console.error('🔍 API GET: Error fetching progress:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
-    
-    console.log('🔍 API GET: Querying profiles for user:', user.id)
+
     const { data: profile } = await serviceClient
       .from('profiles')
       .select('onboarding_completed, onboarding_step, user_goals, business_size')
       .eq('id', user.id)
       .single()
-    
-    console.log('🔍 API GET: Profile data:', profile)
-    
+
     // Calculate the next step based on completed steps
     const completedStepNames = new Set((progress || []).map(p => p.step_name))
-    console.log('🔍 API GET: Completed step names from DB:', Array.from(completedStepNames))
+    )
     
     const stepOrder = ['business', 'schedule', 'services', 'staff', 'financial', 'booking', 'branding']
     
@@ -299,12 +289,10 @@ export async function GET(request) {
       }
       calculatedCurrentStep = i + 1
     }
-    
-    console.log('🔍 API GET: Calculated current step:', calculatedCurrentStep)
-    
+
     // Use calculated step if it's more advanced than stored step, otherwise use stored step
     const currentStep = Math.max(profile?.onboarding_step || 0, calculatedCurrentStep)
-    console.log('🔍 API GET: Final current step (max of stored vs calculated):', currentStep)
+    :', currentStep)
     
     const combinedData = {
       completed: profile?.onboarding_completed || false,
@@ -315,8 +303,7 @@ export async function GET(request) {
       businessSize: profile?.business_size || '',
       steps: progress || []
     }
-    
-    console.log('🔍 API GET: Final response data:', combinedData)
+
     return NextResponse.json(combinedData)
     
   } catch (error) {

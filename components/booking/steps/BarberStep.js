@@ -29,7 +29,7 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
         const barbershopId = bookingData.location?.id || urlParams.get('shop_id') || urlParams.get('barbershop_id')
         
         if (barbershopId) {
-          console.log('Using public endpoint for barbershop:', barbershopId)
+          
           response = await fetch(`/api/public/barbershop/${barbershopId}/barbers`)
           if (response.ok) {
             data = await response.json()

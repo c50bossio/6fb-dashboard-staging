@@ -36,7 +36,7 @@ export default function PayrollPage() {
     setProcessingPayroll(true)
     try {
       // This would integrate with payment processing system
-      console.log('Processing payroll for:', payrollData.payrollData.length, 'staff members')
+      
       // Placeholder for actual payroll processing
       await new Promise(resolve => setTimeout(resolve, 2000))
       

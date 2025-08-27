@@ -806,8 +806,8 @@ export default function ABTestingDashboard() {
                 experiment={experiment}
                 onView={handleViewResults}
                 onStart={handleStartExperiment}
-                onStop={(id) => console.log('Stop', id)}
-                onDelete={(id) => console.log('Delete', id)}
+                onStop={(id) => }
+                onDelete={(id) => }
               />
             ))}
           </div>
@@ -842,8 +842,8 @@ export default function ABTestingDashboard() {
                 experiment={experiment}
                 onView={handleViewResults}
                 onStart={handleStartExperiment}
-                onStop={(id) => console.log('Stop', id)}
-                onDelete={(id) => console.log('Delete', id)}
+                onStop={(id) => }
+                onDelete={(id) => }
               />
             ))}
           </div>

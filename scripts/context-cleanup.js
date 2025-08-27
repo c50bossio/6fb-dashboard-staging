@@ -33,9 +33,9 @@ class ContextCleaner {
     } else if (level === 'warn') {
       console.warn(`⚠️  ${prefix}[${timestamp}] ${message}`);
     } else if (level === 'success') {
-      console.log(`✅ ${prefix}[${timestamp}] ${message}`);
+      
     } else {
-      console.log(`📋 ${prefix}[${timestamp}] ${message}`);
+      
     }
   }
 
@@ -446,16 +446,14 @@ irrelevant files that consume context window space.
       fs.writeFileSync('cleanup-report.md', report);
       this.log('Report saved to cleanup-report.md', 'success');
     } else {
-      console.log(report);
+      
     }
   }
 
   async run() {
-    console.log('🚀 BookedBarber Context Cleanup Script');
-    console.log('=====================================\n');
-    
+
     if (this.dryRun) {
-      console.log('🔍 DRY RUN MODE - No files will be modified\n');
+      
     }
     
     try {
@@ -478,13 +476,11 @@ irrelevant files that consume context window space.
       this.commitChanges();
       await this.measureContextAfter();
       this.generateReport();
-      
-      console.log('\n🎉 Context cleanup completed successfully!');
-      console.log(`📊 Context efficiency improved by ${this.stats.contextReduction}%`);
-      console.log(`💾 ${(this.stats.sizeReduced / 1024 / 1024).toFixed(2)} MB freed`);
+
+      .toFixed(2)} MB freed`);
       
       if (this.dryRun) {
-        console.log('\n💡 Run without --dry-run to apply changes');
+        
       }
       
     } catch (error) {
@@ -498,22 +494,7 @@ if (require.main === module) {
   const cleaner = new ContextCleaner();
   
   if (process.argv.includes('--help')) {
-    console.log(`
-BookedBarber Context Cleanup Script
-
-Usage: node scripts/context-cleanup.js [options]
-
-Options:
-  --dry-run       Show what would be removed without making changes
-  --verbose       Show detailed output
-  --aggressive    Include test file reorganization
-  --help          Show this help message
-
-Examples:
-  node scripts/context-cleanup.js --dry-run     # Preview changes
-  node scripts/context-cleanup.js              # Apply cleanup
-  node scripts/context-cleanup.js --aggressive # Deep cleanup
-`);
+    
     process.exit(0);
   }
   

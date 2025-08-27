@@ -22,9 +22,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 })
 
-console.log('🧹 CLEANING PRODUCTION DATABASE')
-console.log('=' * 50)
-
 // Specific test data to remove (based on audit)
 const testBarbershops = [
   'My Barbershop',
@@ -41,8 +38,7 @@ async function cleanupDatabase() {
     let totalDeleted = 0
 
     // Step 1: Delete test barbershops
-    console.log('\n1️⃣ Removing test barbershops...')
-    
+
     for (const shopName of testBarbershops) {
       const { data, error } = await supabase
         .from('barbershops')
@@ -56,16 +52,15 @@ async function cleanupDatabase() {
         const deleted = data?.length || 0
         totalDeleted += deleted
         if (deleted > 0) {
-          console.log(`   ✅ Deleted "${shopName}" (${deleted} record)`)
+          `)
         } else {
-          console.log(`   ℹ️  "${shopName}" not found`)
+          
         }
       }
     }
 
     // Step 2: Delete test profiles
-    console.log('\n2️⃣ Removing test profiles...')
-    
+
     for (const email of testUsers) {
       const { data, error } = await supabase
         .from('profiles')
@@ -79,16 +74,15 @@ async function cleanupDatabase() {
         const deleted = data?.length || 0
         totalDeleted += deleted
         if (deleted > 0) {
-          console.log(`   ✅ Deleted profile "${email}"`)
+          
         } else {
-          console.log(`   ℹ️  Profile "${email}" not found`)
+          
         }
       }
     }
 
     // Step 3: Delete test auth users
-    console.log('\n3️⃣ Removing test auth users...')
-    
+
     const { data: allUsers } = await supabase.auth.admin.listUsers()
     
     for (const email of testUsers) {
@@ -99,23 +93,22 @@ async function cleanupDatabase() {
           console.error(`   ❌ Error deleting auth user "${email}":`, error.message)
         } else {
           totalDeleted += 1
-          console.log(`   ✅ Deleted auth user "${email}"`)
+          
         }
       } else {
-        console.log(`   ℹ️  Auth user "${email}" not found`)
+        
       }
     }
 
     // Step 4: Clean orphaned staff records
-    console.log('\n4️⃣ Cleaning orphaned staff records...')
-    
+
     const { data: orphanedStaff, error: staffError } = await supabase
       .rpc('delete_orphaned_staff')  // We'll need to create this RPC
       
     if (staffError && !staffError.message.includes('does not exist')) {
       console.error('   ❌ Error cleaning staff records:', staffError.message)
     } else {
-      console.log('   ✅ Checked for orphaned staff records')
+      
     }
 
     // Manual orphaned staff cleanup
@@ -146,14 +139,13 @@ async function cleanupDatabase() {
     }
 
     if (orphanedCount > 0) {
-      console.log(`   ✅ Removed ${orphanedCount} orphaned staff record(s)`)
+      `)
       totalDeleted += orphanedCount
     }
 
-    console.log('\n' + '='.repeat(50))
-    console.log('🎉 CLEANUP COMPLETE!')
-    console.log('='.repeat(50))
-    console.log(`📊 Total records deleted: ${totalDeleted}`)
+    )
+    
+    )
 
     return true
 
@@ -164,7 +156,6 @@ async function cleanupDatabase() {
 }
 
 async function verifyCleanState() {
-  console.log('\n🔍 Verifying clean state...')
 
   try {
     // Check remaining barbershops
@@ -172,20 +163,18 @@ async function verifyCleanState() {
       .from('barbershops')
       .select('id, name, owner_id')
 
-    console.log(`📍 Remaining barbershops: ${shops.length}`)
     shops.forEach((shop, i) => {
-      console.log(`   ${i + 1}. ${shop.name} (Owner: ${shop.owner_id})`)
+      `)
     })
 
     // Check for test data
     const hasTestShops = shops.some(s => testBarbershops.includes(s.name))
 
     if (!hasTestShops) {
-      console.log('\n✅ SUCCESS! No test barbershops found.')
-      console.log('🚀 Database is ready for first legitimate user!')
+
       return true
     } else {
-      console.log('\n⚠️  Some test barbershops may remain.')
+      
       return false
     }
 
@@ -197,20 +186,14 @@ async function verifyCleanState() {
 
 // Run cleanup
 async function main() {
-  console.log('Starting production database cleanup...\n')
 
   const success = await cleanupDatabase()
   
   if (success) {
     await verifyCleanState()
-    
-    console.log('\n💡 Next Steps:')
-    console.log('   1. Test new user registration')
-    console.log('   2. Verify onboarding shows for fresh users')
-    console.log('   3. Test barbershop creation process')
-    console.log('\n🎯 Ready for production launch!')
+
   } else {
-    console.log('\n❌ Cleanup failed. Manual review needed.')
+    
   }
 }
 

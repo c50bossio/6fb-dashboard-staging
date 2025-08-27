@@ -20,12 +20,7 @@ export async function POST(request) {
     const webhookData = Object.fromEntries(formData.entries())
     
     // Log webhook for debugging
-    console.log('📱 Twilio webhook received:', {
-      type: webhookData.MessageStatus ? 'status_update' : 'incoming_message',
-      from: webhookData.From,
-      to: webhookData.To,
-      status: webhookData.MessageStatus,
-      timestamp: new Date().toISOString()
+    .toISOString()
     })
 
     // Handle SMS status updates
@@ -90,8 +85,6 @@ async function handleSMSStatusUpdate(webhookData) {
       await logFailedSMS(messageSid, errorCode, errorMessage, from, to)
     }
 
-    console.log(`📱 SMS ${messageSid} status updated to: ${status}`)
-
   } catch (error) {
     console.error('Error handling SMS status update:', error)
     throw error
@@ -150,7 +143,7 @@ async function handleIncomingSMS(webhookData) {
     // Check if this is a reply to a specific campaign
     await processCampaignReply(cleanPhone, messageBody, messageSid)
 
-    console.log(`📱 Incoming SMS processed from ${fromPhone}: ${messageBody.substring(0, 50)}...`)
+    }...`)
 
   } catch (error) {
     console.error('Error handling incoming SMS:', error)
@@ -241,8 +234,6 @@ async function processOptOut(phone, fullPhone) {
         created_at: new Date().toISOString()
       })
 
-    console.log(`📱 Customer ${phone} opted out via SMS`)
-
   } catch (error) {
     console.error('Error processing opt-out:', error)
   }
@@ -281,8 +272,6 @@ async function processOptIn(phone, fullPhone) {
         created_at: new Date().toISOString()
       })
 
-    console.log(`📱 Customer ${phone} opted in via SMS`)
-
   } catch (error) {
     console.error('Error processing opt-in:', error)
   }
@@ -294,7 +283,7 @@ async function processOptIn(phone, fullPhone) {
 async function sendOptOutConfirmation(toPhone) {
   try {
     if (!twilioSMSService.isInitialized) {
-      console.log('📱 Twilio not initialized, skipping opt-out confirmation')
+      
       return
     }
 
@@ -314,7 +303,7 @@ async function sendOptOutConfirmation(toPhone) {
 async function sendOptInConfirmation(toPhone) {
   try {
     if (!twilioSMSService.isInitialized) {
-      console.log('📱 Twilio not initialized, skipping opt-in confirmation')
+      
       return
     }
 
@@ -354,7 +343,6 @@ async function processCampaignReply(phone, messageBody, messageSid) {
           replied_at: new Date().toISOString()
         })
 
-      console.log(`📱 Campaign reply logged for campaign ${recentSMS[0].campaign_id}`)
     }
 
   } catch (error) {

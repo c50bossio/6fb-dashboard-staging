@@ -102,8 +102,7 @@ function formatCurrency(amount) {
 // ==========================================
 
 async function testBarbershopSetup() {
-  console.log('\n🏪 Testing Barbershop Setup...')
-  
+
   try {
     // Get test barbershop data
     const { data: barbershop, error: shopError } = await supabase
@@ -116,16 +115,10 @@ async function testBarbershopSetup() {
       .single()
     
     if (shopError || !barbershop) {
-      console.log('   ❌ Test barbershop not found')
-      console.log('   💡 Run the setup-test-barbershop.js script first')
+
       return { success: false, error: 'Test barbershop not found' }
     }
-    
-    console.log(`   ✅ Found test barbershop: ${barbershop.name}`)
-    console.log(`   📊 Shop ID: ${barbershop.id}`)
-    console.log(`   💳 Stripe Account: ${barbershop.stripe_connected_account_id || 'Not configured'}`)
-    console.log(`   🔓 Online Payments: ${barbershop.accepts_online_payments ? 'Enabled' : 'Disabled'}`)
-    
+
     // Get services
     const { data: services, error: servicesError } = await supabase
       .from('services')
@@ -134,13 +127,12 @@ async function testBarbershopSetup() {
       .limit(3)
     
     if (servicesError || !services.length) {
-      console.log('   ⚠️  No services found for test barbershop')
+      
       return { success: false, error: 'No services found' }
     }
-    
-    console.log(`   💈 Available services: ${services.length}`)
+
     services.forEach(service => {
-      console.log(`      - ${service.name}: ${formatCurrency(service.price)} (${service.duration_minutes}min)`)
+      } (${service.duration_minutes}min)`)
     })
     
     return {
@@ -151,29 +143,23 @@ async function testBarbershopSetup() {
     }
     
   } catch (error) {
-    console.log(`   ❌ Setup test failed: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 async function testStripeConnectSetup(barbershopData) {
-  console.log('\n💳 Testing Stripe Connect Setup...')
-  
+
   try {
     const { barbershop } = barbershopData
     
     // Check if already has Stripe account
     if (barbershop.stripe_connected_account_id) {
-      console.log(`   ℹ️  Existing Stripe Account: ${barbershop.stripe_connected_account_id}`)
-      
+
       // Verify account status
       try {
         const account = await stripe.accounts.retrieve(barbershop.stripe_connected_account_id)
-        
-        console.log(`   ✅ Account Status: ${account.details_submitted ? 'Complete' : 'Incomplete'}`)
-        console.log(`   💰 Charges Enabled: ${account.charges_enabled}`)
-        console.log(`   📤 Payouts Enabled: ${account.payouts_enabled}`)
-        
+
         if (account.charges_enabled) {
           return {
             success: true,
@@ -181,21 +167,19 @@ async function testStripeConnectSetup(barbershopData) {
             charges_enabled: account.charges_enabled
           }
         } else {
-          console.log('   ⚠️  Account exists but charges not enabled')
+          
         }
       } catch (stripeError) {
-        console.log(`   ❌ Error checking account: ${stripeError.message}`)
+        
       }
     }
     
     // For testing purposes, simulate a Stripe Connect account
     // since Express accounts require manual ToS acceptance by the merchant
-    console.log('   🔧 Using test Stripe Connect account (simulated)...')
+    ...')
     
     const testAccountId = 'acct_test_6fb_development'
-    console.log(`   ℹ️  Test Account ID: ${testAccountId}`)
-    console.log('   ⚠️  Note: In production, barbershop owners complete Stripe Connect onboarding')
-    
+
     // Update barbershop with simulated Stripe account ID for API testing
     const { error: updateError } = await supabase
       .from('barbershops')
@@ -206,9 +190,9 @@ async function testStripeConnectSetup(barbershopData) {
       .eq('id', barbershop.id)
     
     if (updateError) {
-      console.log(`   ⚠️  Could not update barbershop: ${updateError.message}`)
+      
     } else {
-      console.log('   ✅ Updated barbershop with test Stripe account')
+      
     }
     
     return {
@@ -220,14 +204,13 @@ async function testStripeConnectSetup(barbershopData) {
     }
     
   } catch (error) {
-    console.log(`   ❌ Stripe Connect setup failed: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 async function testPaymentIntentCreation(barbershopData, stripeData) {
-  console.log('\n💰 Testing Payment Intent Creation...')
-  
+
   try {
     const { barbershop, testService } = barbershopData
     const { stripeAccountId } = stripeData
@@ -247,10 +230,9 @@ async function testPaymentIntentCreation(barbershopData, stripeData) {
     
     const customerInfo = TEST_CUSTOMER
     
-    console.log(`   📊 Service: ${testService.name} - ${formatCurrency(testService.price)}`)
-    console.log(`   👤 Customer: ${customerInfo.name} (${customerInfo.email})`)
-    console.log(`   🏪 Stripe Account: ${stripeAccountId}`)
-    
+    }`)
+    `)
+
     const response = await makeAPIRequest('/api/stripe/payment-intent', {
       body: JSON.stringify({
         bookingData,
@@ -260,18 +242,14 @@ async function testPaymentIntentCreation(barbershopData, stripeData) {
     })
     
     if (!response.success) {
-      console.log(`   ❌ Payment intent failed: ${response.data?.error || 'Unknown error'}`)
-      console.log(`   📊 Status: ${response.status}`)
+
       return { success: false, error: response.data?.error }
     }
     
     const { clientSecret, paymentIntentId, amount, currency } = response.data
-    
-    console.log(`   ✅ Payment intent created successfully`)
-    console.log(`   🆔 Payment Intent ID: ${paymentIntentId}`)
-    console.log(`   💵 Amount: ${formatCurrency(amount)} ${currency.toUpperCase()}`)
-    console.log(`   🔑 Client Secret: ${clientSecret ? 'Generated' : 'Missing'}`)
-    
+
+    } ${currency.toUpperCase()}`)
+
     return {
       success: true,
       paymentIntentId,
@@ -281,13 +259,13 @@ async function testPaymentIntentCreation(barbershopData, stripeData) {
     }
     
   } catch (error) {
-    console.log(`   ❌ Payment intent test failed: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 async function testBookingCreation(barbershopData) {
-  console.log('\n📅 Testing Booking Creation (Public API)...')
+  ...')
   
   try {
     const { barbershop, testService } = barbershopData
@@ -305,32 +283,25 @@ async function testBookingCreation(barbershopData) {
       customer_notes: 'Test booking for payment processing validation',
       source: 'payment_test'
     }
-    
-    console.log(`   📊 Creating booking for: ${testService.name}`)
-    console.log(`   👤 Customer: ${TEST_CUSTOMER.name}`)
-    console.log(`   📅 Time: ${new Date(bookingData.scheduled_at).toLocaleString()}`)
+
+    .toLocaleString()}`)
     
     const response = await makeAPIRequest('/api/public/bookings/create', {
       body: JSON.stringify(bookingData)
     })
     
     if (!response.success) {
-      console.log(`   ❌ Booking creation failed: ${response.data?.error || 'Unknown error'}`)
-      console.log(`   📊 Status: ${response.status}`)
+
       if (response.data?.details) {
-        console.log(`   🔍 Details: ${response.data.details}`)
+        
       }
       return { success: false, error: response.data?.error }
     }
     
     const booking = response.data.booking
-    
-    console.log(`   ✅ Booking created successfully`)
-    console.log(`   🆔 Booking ID: ${booking.id}`)
-    console.log(`   💈 Service: ${booking.service}`)
-    console.log(`   💵 Price: ${formatCurrency(booking.price)}`)
-    console.log(`   📧 Confirmation: ${booking.confirmation_sent_to || 'No email'}`)
-    
+
+    }`)
+
     return {
       success: true,
       bookingId: booking.id,
@@ -338,40 +309,33 @@ async function testBookingCreation(barbershopData) {
     }
     
   } catch (error) {
-    console.log(`   ❌ Booking creation test failed: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 async function testPaymentSimulation(paymentData, bookingData) {
-  console.log('\n💳 Testing Payment Simulation...')
-  
+
   try {
     const { paymentIntentId, clientSecret } = paymentData
     const { bookingId } = bookingData
-    
-    console.log(`   🔄 Simulating payment for Intent: ${paymentIntentId}`)
-    
+
     // Create a test payment method
     const paymentMethod = await stripe.paymentMethods.create({
       type: 'card',
       card: TEST_PAYMENT_CARD
     })
-    
-    console.log(`   💳 Created test payment method: ${paymentMethod.id}`)
-    
+
     // Attach payment method to the payment intent
     const paymentIntent = await stripe.paymentIntents.confirm(paymentIntentId, {
       payment_method: paymentMethod.id,
       return_url: `${BASE_URL}/booking-confirmation`
     })
-    
-    console.log(`   📊 Payment Intent Status: ${paymentIntent.status}`)
-    console.log(`   💰 Amount: ${formatCurrency(paymentIntent.amount / 100)}`)
+
+    }`)
     
     if (paymentIntent.status === 'succeeded') {
-      console.log(`   ✅ Payment simulation successful`)
-      
+
       // Test payment confirmation API
       const confirmResponse = await makeAPIRequest('/api/stripe/confirm-payment', {
         body: JSON.stringify({
@@ -381,11 +345,10 @@ async function testPaymentSimulation(paymentData, bookingData) {
       })
       
       if (confirmResponse.success) {
-        console.log(`   ✅ Payment confirmation processed`)
-        console.log(`   📊 Booking Status: ${confirmResponse.data.booking?.status}`)
-        console.log(`   💵 Amount Paid: ${formatCurrency(confirmResponse.data.booking?.amountPaid)}`)
+
+        }`)
       } else {
-        console.log(`   ⚠️  Payment confirmation failed: ${confirmResponse.data?.error}`)
+        
       }
       
       return {
@@ -394,12 +357,12 @@ async function testPaymentSimulation(paymentData, bookingData) {
         confirmation: confirmResponse
       }
     } else {
-      console.log(`   ❌ Payment failed: ${paymentIntent.status}`)
+      
       return { success: false, error: `Payment status: ${paymentIntent.status}` }
     }
     
   } catch (error) {
-    console.log(`   ❌ Payment simulation failed: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
@@ -409,8 +372,7 @@ async function testPaymentSimulation(paymentData, bookingData) {
 // ==========================================
 
 async function testErrorHandling() {
-  console.log('\n🚨 Testing Error Handling Scenarios...')
-  
+
   const errorTests = [
     {
       name: 'Invalid Service ID',
@@ -444,17 +406,15 @@ async function testErrorHandling() {
   ]
   
   for (const test of errorTests) {
-    console.log(`\n   🧪 Testing: ${test.name}`)
-    
+
     const response = await makeAPIRequest(test.endpoint, {
       body: JSON.stringify(test.payload)
     })
     
     if (!response.success) {
-      console.log(`   ✅ Correctly rejected: ${response.data?.error || 'Unknown error'}`)
-      console.log(`   📊 Status Code: ${response.status}`)
+
     } else {
-      console.log(`   ❌ Should have failed but succeeded`)
+      
     }
   }
 }
@@ -464,10 +424,8 @@ async function testErrorHandling() {
 // ==========================================
 
 async function runPaymentProcessingTests() {
-  console.log('💳 STRIPE PAYMENT PROCESSING TEST SUITE')
-  console.log('========================================')
-  console.log(`Testing environment: ${BASE_URL}`)
-  console.log(`Stripe Mode: ${STRIPE_SECRET_KEY.includes('test') ? 'TEST' : 'LIVE'}`)
+
+   ? 'TEST' : 'LIVE'}`)
   
   try {
     // Test 1: Barbershop Setup
@@ -479,7 +437,7 @@ async function runPaymentProcessingTests() {
     // Test 2: Stripe Connect Setup
     testResults.stripeConnect = await testStripeConnectSetup(testResults.barbershopSetup)
     if (!testResults.stripeConnect.success) {
-      console.log('⚠️  Stripe Connect setup failed - some tests will be skipped')
+      
     }
     
     // Test 3: Payment Intent Creation
@@ -505,9 +463,7 @@ async function runPaymentProcessingTests() {
     await testErrorHandling()
     
     // Generate Test Summary
-    console.log('\n📋 PAYMENT PROCESSING TEST SUMMARY')
-    console.log('===================================')
-    
+
     const tests = [
       { name: 'Barbershop Setup', result: testResults.barbershopSetup, critical: true },
       { name: 'Stripe Connect Setup', result: testResults.stripeConnect, critical: true },
@@ -523,43 +479,30 @@ async function runPaymentProcessingTests() {
     tests.forEach(test => {
       const status = test.result.success ? '✅ PASS' : '❌ FAIL'
       const priority = test.critical ? '[CRITICAL]' : '[OPTIONAL]'
-      console.log(`${test.name}: ${status} ${priority}`)
-      
+
       if (test.result.success) allPassed++
       if (test.critical) {
         totalCritical++
         if (test.result.success) criticalPassed++
       }
     })
-    
-    console.log(`\\nResults: ${allPassed}/${tests.length} total, ${criticalPassed}/${totalCritical} critical`)
-    
+
     // Final Assessment
-    console.log('\\n🎯 PAYMENT SYSTEM READINESS:')
-    
+
     if (criticalPassed === totalCritical && allPassed >= 4) {
-      console.log('✅ PAYMENT SYSTEM FULLY OPERATIONAL')
-      console.log('   All critical payment functions working')
-      console.log('   Ready for live barbershop bookings')
-      console.log('   🚀 PRODUCTION PAYMENT PROCESSING VALIDATED')
+
       return true
     } else if (criticalPassed >= 3) {
-      console.log('🟡 PAYMENT SYSTEM MOSTLY FUNCTIONAL')
-      console.log('   Core payment features working')
-      console.log('   Some advanced features need attention')
-      console.log('   ✅ SAFE FOR LIMITED PRODUCTION USE')
+
       return true
     } else {
-      console.log('❌ PAYMENT SYSTEM NOT READY')
-      console.log('   Critical payment functions failing')
-      console.log('   Must resolve issues before production')
-      console.log('   ⚠️  DO NOT ENABLE LIVE PAYMENTS')
+
       return false
     }
     
   } catch (error) {
     console.error('\\n💥 Payment test suite failed:', error.message)
-    console.log('❌ PAYMENT SYSTEM VALIDATION FAILED')
+    
     return false
   }
 }
@@ -569,19 +512,16 @@ async function runPaymentProcessingTests() {
 // ==========================================
 
 async function cleanupTestData() {
-  console.log('\\n🧹 Cleaning up test payment data...')
-  
+
   try {
     // Delete test bookings
     await supabase
       .from('bookings')
       .delete()
       .eq('source', 'payment_test')
-    
-    console.log('   ✅ Cleaned up test bookings')
-    
+
   } catch (error) {
-    console.log(`   ⚠️  Cleanup warning: ${error.message}`)
+    
   }
 }
 
@@ -595,7 +535,7 @@ if (process.argv[1] && process.argv[1].endsWith('test-stripe-payment-processing.
   if (args.includes('--cleanup')) {
     cleanupTestData()
       .then(() => {
-        console.log('🎉 Cleanup completed')
+        
         process.exit(0)
       })
       .catch(error => {
@@ -606,12 +546,10 @@ if (process.argv[1] && process.argv[1].endsWith('test-stripe-payment-processing.
     runPaymentProcessingTests()
       .then(success => {
         if (success) {
-          console.log('\\n🎉 Payment processing validation completed!')
-          console.log('   System ready for live payment processing')
+
           process.exit(0)
         } else {
-          console.log('\\n⚠️  Payment validation identified issues')
-          console.log('   Review and fix before enabling live payments')
+
           process.exit(1)
         }
       })

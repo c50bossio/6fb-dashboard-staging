@@ -37,23 +37,16 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 async function applyMigration() {
-  console.log('🚀 Starting Barber Operations Migration...\n')
-  
+
   try {
     const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '001_barber_operations.sql')
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8')
-    
-    console.log('📄 Migration file loaded successfully')
-    console.log('📍 File path:', migrationPath)
-    console.log('📏 SQL length:', migrationSQL.length, 'characters\n')
-    
+
     const statements = migrationSQL
       .split(/;(?=\s*\n)/)
       .map(stmt => stmt.trim())
       .filter(stmt => stmt && !stmt.startsWith('--'))
-    
-    console.log(`📋 Found ${statements.length} SQL statements to execute\n`)
-    
+
     let successCount = 0
     let errorCount = 0
     const errors = []
@@ -84,20 +77,10 @@ async function applyMigration() {
             .limit(1)
           
           if (queryError && queryError.message.includes('exec_sql')) {
-            console.log('\n\n⚠️  The exec_sql function is not available in your Supabase database.')
-            console.log('\n📝 Please run the migration manually:')
-            console.log('1. Go to your Supabase dashboard')
-            console.log('2. Navigate to SQL Editor')
-            console.log('3. Create a new query')
-            console.log('4. Copy and paste the contents of:')
-            console.log(`   ${migrationPath}`)
-            console.log('5. Run the query\n')
-            
+
             const tempPath = path.join(__dirname, '..', 'APPLY_THIS_MIGRATION.sql')
             fs.writeFileSync(tempPath, migrationSQL)
-            console.log(`\n💾 Migration SQL has been saved to: ${tempPath}`)
-            console.log('   You can copy this file content to Supabase SQL Editor\n')
-            
+
             process.exit(1)
           }
           
@@ -118,32 +101,24 @@ async function applyMigration() {
       }
     }
     
-    console.log('\n' + '='.repeat(60))
-    console.log('📊 Migration Summary:')
-    console.log('='.repeat(60))
-    console.log(`✅ Successful statements: ${successCount}`)
-    console.log(`❌ Failed statements: ${errorCount}`)
+    )
     
+    )
+
     if (errors.length > 0) {
-      console.log('\n⚠️  Some statements failed:')
-      errors.forEach((err, index) => {
-        console.log(`\n${index + 1}. ${err.statement}`)
-        console.log(`   Error: ${err.error}`)
-      })
       
-      console.log('\n💡 Common reasons for failures:')
-      console.log('   - Tables might already exist (this is OK)')
-      console.log('   - Some PostgreSQL syntax might need adjustment')
-      console.log('   - RLS policies might already be in place')
+      errors.forEach((err, index) => {
+
+      })
+
+      ')
+
     }
     
     if (successCount > 0) {
-      console.log('\n🎉 Migration partially or fully completed!')
-      console.log('   Your database now has the barber operations tables.')
+
     }
-    
-    console.log('\n🔍 Testing created tables...\n')
-    
+
     const tablesToTest = [
       'barber_customizations',
       'barber_services',
@@ -161,17 +136,15 @@ async function applyMigration() {
           .limit(1)
         
         if (!error) {
-          console.log(`   ✅ Table '${table}' is accessible`)
+          
         } else {
-          console.log(`   ❌ Table '${table}' error: ${error.message}`)
+          
         }
       } catch (err) {
-        console.log(`   ❌ Table '${table}' error: ${err.message}`)
+        
       }
     }
-    
-    console.log('\n✨ Migration process complete!\n')
-    
+
   } catch (error) {
     console.error('\n❌ Migration failed:', error)
     process.exit(1)
@@ -179,22 +152,10 @@ async function applyMigration() {
 }
 
 function showManualInstructions() {
-  console.log('\n📝 Manual Migration Instructions:')
-  console.log('=====================================\n')
-  console.log('Since direct SQL execution might not be available, follow these steps:\n')
-  console.log('1. Open your Supabase Dashboard')
-  console.log('2. Go to the SQL Editor section')
-  console.log('3. Click "New query"')
-  console.log('4. Copy the entire contents of this file:')
-  console.log(`   ${path.join(__dirname, '..', 'database', 'migrations', '001_barber_operations.sql')}`)
-  console.log('5. Paste it into the SQL editor')
-  console.log('6. Click "Run" to execute the migration\n')
-  console.log('The migration will create all necessary tables for the barber operations system.\n')
-}
 
-console.log('====================================')
-console.log('   Barber Operations Migration')
-console.log('====================================\n')
+  }`)
+
+}
 
 if (process.argv.includes('--manual')) {
   showManualInstructions()

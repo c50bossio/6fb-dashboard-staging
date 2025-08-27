@@ -63,7 +63,7 @@ export default function BarberProfile({ initialData }) {
 
   useEffect(() => {
     if (!initialData) {
-      console.log('No initial data provided')
+      
     }
   }, [initialData])
 

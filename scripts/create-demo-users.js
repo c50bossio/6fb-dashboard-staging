@@ -30,7 +30,6 @@ const demoUsers = [
 ];
 
 async function createDemoUsers() {
-  console.log('🚀 Creating demo users for testing...\n');
 
   for (const testUser of demoUsers) {
     try {
@@ -46,13 +45,12 @@ async function createDemoUsers() {
 
       if (authError) {
         if (authError.message.includes('already registered')) {
-          console.log(`⚠️  User ${testUser.email} already exists, skipping creation`);
+          
         } else {
           throw authError;
         }
       } else {
-        console.log(`✅ Created user: ${testUser.email}`);
-        console.log(`   ID: ${authData.user.id}`);
+
       }
 
     } catch (error) {
@@ -60,18 +58,12 @@ async function createDemoUsers() {
     }
   }
 
-  console.log('\n📝 Demo User Credentials:');
-  console.log('─'.repeat(50));
+  );
   demoUsers.forEach(user => {
-    console.log(`Email:    ${user.email}`);
-    console.log(`Password: ${user.password}`);
-    console.log('─'.repeat(30));
+
+    );
   });
-  
-  console.log('\n🎯 You can now:');
-  console.log('1. Go to http://localhost:9999/login');
-  console.log('2. Sign in with any of the demo credentials above');
-  console.log('3. Access the dashboard at http://localhost:9999/dashboard');
+
 }
 
 createDemoUsers();

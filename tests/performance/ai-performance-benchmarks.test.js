@@ -569,9 +569,8 @@ describe('AI Performance Benchmarks', () => {
       metrics: performanceMetrics,
       recommendations: generateRecommendations()
     }
-    
-    console.log('\n=== AI PERFORMANCE BENCHMARK REPORT ===')
-    console.log(JSON.stringify(report, null, 2))
+
+    )
     
     require('fs').writeFileSync(
       'performance-report.json',

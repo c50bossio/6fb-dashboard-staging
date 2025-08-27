@@ -1,10 +1,12 @@
 /**
- * Lazy-loaded components for code splitting
+ * Lazy-loaded components for code splitting and performance optimization
  * These components are loaded on-demand to reduce initial bundle size
+ * Updated for performance optimization
  */
 
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useState, useEffect } from 'react'
 
 const ComponentLoader = () => (
   <div className="space-y-4 p-4">
@@ -13,6 +15,101 @@ const ComponentLoader = () => (
     <Skeleton className="h-4 w-5/6" />
   </div>
 )
+
+// Specialized loading skeletons
+const ChartLoader = () => (
+  <div className="animate-pulse">
+    <div className="h-64 bg-gray-200 rounded-lg"></div>
+  </div>
+)
+
+const CalendarLoader = () => (
+  <div className="animate-pulse">
+    <div className="h-96 bg-gray-200 rounded-lg"></div>
+  </div>
+)
+
+// Heavy chart library components with code splitting
+export const LazyChartJS = dynamic(
+  () => import('react-chartjs-2').then(mod => ({ default: mod.Chart })),
+  {
+    loading: () => <ChartLoader />,
+    ssr: false
+  }
+)
+
+export const LazyFullCalendar = dynamic(
+  () => import('@fullcalendar/react'),
+  {
+    loading: () => <CalendarLoader />,
+    ssr: false
+  }
+)
+
+// Recharts components with individual imports for tree-shaking
+export const LazyLineChart = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.LineChart })),
+  {
+    loading: () => <ChartLoader />,
+    ssr: false
+  }
+)
+
+export const LazyBarChart = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.BarChart })),
+  {
+    loading: () => <ChartLoader />,
+    ssr: false
+  }
+)
+
+export const LazyAreaChart = dynamic(
+  () => import('recharts').then(mod => ({ default: mod.AreaChart })),
+  {
+    loading: () => <ChartLoader />,
+    ssr: false
+  }
+)
+
+// Custom hook for intersection observer-based lazy loading
+export function useIntersectionObserver({ 
+  threshold = 0.1, 
+  rootMargin = '100px',
+  triggerOnce = true 
+} = {}) {
+  const [entry, setEntry] = useState()
+  const [node, setNode] = useState()
+
+  useEffect(() => {
+    if (!node || typeof window === 'undefined') return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setEntry(entry)
+        if (triggerOnce && entry.isIntersecting) {
+          observer.disconnect()
+        }
+      },
+      { threshold, rootMargin }
+    )
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [node, threshold, rootMargin, triggerOnce])
+
+  return [setNode, entry?.isIntersecting ?? false]
+}
+
+// Wrapper component for viewport-based lazy loading
+export function LazyLoadOnView({ children, placeholder = <div className="min-h-[200px]" /> }) {
+  const [ref, isVisible] = useIntersectionObserver({ triggerOnce: true })
+  
+  return (
+    <div ref={ref}>
+      {isVisible ? children : placeholder}
+    </div>
+  )
+}
 
 export const LazyAIChat = dynamic(
   () => import('@/components/AIChat'),

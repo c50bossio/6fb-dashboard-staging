@@ -22,7 +22,7 @@ try {
     }
   })
 } catch (error) {
-  console.log('Warning: Could not load .env.local file')
+  
 }
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -37,40 +37,13 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function setupRLS() {
-  console.log('🔒 6FB AI Agent System - Setting up Row Level Security Policies')
-  console.log('================================================================\n')
-  
-  console.log('🔍 Environment check:')
-  console.log('   Supabase URL:', supabaseUrl ? '✅ Connected' : '❌ Missing')
-  console.log('   Service Key:', supabaseServiceKey ? '✅ Available' : '❌ Missing')
-  console.log('')
 
   try {
     const sqlPath = join(__dirname, '../database/setup-rls-policies.sql')
     const sql = readFileSync(sqlPath, 'utf8')
-    
-    console.log('📋 Loading RLS policies from SQL file...')
-    console.log(`   File: ${sqlPath}`)
-    console.log(`   Size: ${(sql.length / 1024).toFixed(1)} KB`)
-    console.log('')
-    
-    
-    console.log('🔧 RLS Policy Setup Instructions')
-    console.log('==================================')
-    console.log('')
-    console.log('Due to Supabase security restrictions, RLS policies must be set up manually:')
-    console.log('')
-    console.log('📋 Step 1: Open Supabase Dashboard')
-    console.log('   🔗 Go to: https://supabase.com/dashboard/project/dfhqjdoydihajmjxniee')
-    console.log('   📝 Navigate to: Authentication > Policies')
-    console.log('')
-    console.log('📋 Step 2: Alternative - Use SQL Editor')
-    console.log('   🔗 Go to: SQL Editor in Supabase Dashboard')
-    console.log('   📄 Copy and paste: database/setup-rls-policies.sql')
-    console.log('   ▶️  Click "Run" to execute all policies')
-    console.log('')
-    
-    console.log('🔍 Verifying database tables...')
+
+    .toFixed(1)} KB`)
+
     const tables = ['barbershops', 'barbers', 'services', 'clients', 'appointments']
     
     for (const table of tables) {
@@ -80,55 +53,21 @@ async function setupRLS() {
           .select('*', { count: 'exact', head: true })
         
         if (error) {
-          console.log(`   ❌ ${table}: Not accessible (${error.message})`)
+          `)
         } else {
-          console.log(`   ✅ ${table}: Ready for RLS (${count || 0} records)`)
+          `)
         }
       } catch (err) {
-        console.log(`   ⚠️  ${table}: Could not verify (${err.message})`)
+        `)
       }
     }
-    
-    console.log('')
-    console.log('📊 RLS Policy Summary')
-    console.log('=======================')
-    console.log('')
-    console.log('🔒 Security Features:')
-    console.log('   • Multi-tenant data isolation by barbershop')
-    console.log('   • Role-based access control (CLIENT, BARBER, SHOP_OWNER, etc.)')
-    console.log('   • Public booking access for guest appointments')
-    console.log('   • Self-management policies for users')
-    console.log('   • Staff oversight for barbershop operations')
-    console.log('')
-    
-    console.log('👥 User Access Patterns:')
-    console.log('   • CLIENTS: Can view/edit own appointments and profile')
-    console.log('   • BARBERS: Can manage own schedule and view assigned appointments')
-    console.log('   • SHOP_OWNERS: Full access to their barbershop data')
-    console.log('   • PUBLIC: Can view active barbershops/barbers and book appointments')
-    console.log('')
-    
-    console.log('🛡️  Key Security Policies:')
-    console.log('   • Barbershops: Public read (active only), owner management')
-    console.log('   • Barbers: Public read (available only), self + owner management')
-    console.log('   • Services: Public read (active only), owner management')
-    console.log('   • Appointments: Multi-role access based on relationship')
-    console.log('   • Clients: Self-management + staff visibility in same shop')
-    console.log('')
-    
-    console.log('⚡ Performance Optimizations:')
-    console.log('   • Indexed foreign keys for fast policy evaluation')
-    console.log('   • Helper functions for common access checks')
-    console.log('   • Efficient query patterns for multi-tenant access')
-    console.log('')
-    
-    console.log('📝 Next Steps:')
-    console.log('1. ✅ Manual setup of RLS policies via Supabase Dashboard')
-    console.log('2. 🧪 Test authentication with different user roles')
-    console.log('3. 📊 Verify data isolation between barbershops')
-    console.log('4. 🔧 Configure user registration and role assignment')
-    console.log('')
-    
+
+    ')
+
+    , owner management')
+    , self + owner management')
+    , owner management')
+
     return true
     
   } catch (error) {
@@ -138,9 +77,7 @@ async function setupRLS() {
 }
 
 async function testRLSAccess() {
-  console.log('🧪 Testing RLS Policy Access...')
-  console.log('')
-  
+
   try {
     const { data: barbershops, error: shopsError } = await supabase
       .from('barbershops')
@@ -148,9 +85,9 @@ async function testRLSAccess() {
       .limit(3)
     
     if (shopsError) {
-      console.log('   🔐 Barbershops: RLS is active (expected error)')
+      ')
     } else {
-      console.log(`   ✅ Barbershops: ${barbershops?.length || 0} accessible`)
+      
     }
     
     const { data: barbers, error: barbersError } = await supabase
@@ -159,16 +96,15 @@ async function testRLSAccess() {
       .limit(3)
     
     if (barbersError) {
-      console.log('   🔐 Barbers: RLS is active (expected without auth)')
+      ')
     } else {
-      console.log(`   ✅ Barbers: ${barbers?.length || 0} accessible`)
+      
     }
     
   } catch (error) {
-    console.log('   ⚠️  RLS test failed:', error.message)
+    
   }
-  
-  console.log('')
+
 }
 
 async function main() {
@@ -176,10 +112,9 @@ async function main() {
   await testRLSAccess()
   
   if (success) {
-    console.log('🎉 RLS setup guidance provided!')
-    console.log('   Remember to manually apply policies via Supabase Dashboard')
+
   } else {
-    console.log('❌ RLS setup encountered issues')
+    
     process.exit(1)
   }
 }

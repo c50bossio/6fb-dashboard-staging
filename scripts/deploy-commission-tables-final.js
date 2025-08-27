@@ -14,13 +14,10 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function deployCommissionTables() {
-  console.log('🚀 FINAL COMMISSION TABLES DEPLOYMENT')
-  console.log('=' * 50)
 
   try {
     // 1. Commission Transactions Table
-    console.log('\n📝 Creating commission_transactions table...')
-    
+
     const commissionTransactionSQL = `
       CREATE TABLE commission_transactions (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -42,11 +39,9 @@ async function deployCommissionTables() {
     `
 
     await supabase.rpc('exec_sql', { query: commissionTransactionSQL })
-    console.log('✅ commission_transactions table created')
 
     // 2. Barber Commission Balances Table
-    console.log('\n📝 Creating barber_commission_balances table...')
-    
+
     const balanceSQL = `
       CREATE TABLE barber_commission_balances (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -62,11 +57,9 @@ async function deployCommissionTables() {
     `
 
     await supabase.rpc('exec_sql', { query: balanceSQL })
-    console.log('✅ barber_commission_balances table created')
 
     // 3. Add unique constraint
-    console.log('\n📝 Adding unique constraint...')
-    
+
     const uniqueConstraintSQL = `
       ALTER TABLE barber_commission_balances 
       ADD CONSTRAINT unique_barber_shop UNIQUE (barber_id, barbershop_id);
@@ -74,18 +67,17 @@ async function deployCommissionTables() {
 
     try {
       await supabase.rpc('exec_sql', { query: uniqueConstraintSQL })
-      console.log('✅ Unique constraint added')
+      
     } catch (error) {
       if (error.message.includes('already exists')) {
-        console.log('ℹ️  Unique constraint already exists')
+        
       } else {
-        console.log(`⚠️  Unique constraint warning: ${error.message}`)
+        
       }
     }
 
     // 4. Create indexes
-    console.log('\n📝 Creating performance indexes...')
-    
+
     const indexes = [
       'CREATE INDEX IF NOT EXISTS idx_commission_transactions_payment_intent ON commission_transactions(payment_intent_id);',
       'CREATE INDEX IF NOT EXISTS idx_commission_transactions_barber ON commission_transactions(barber_id);',
@@ -100,15 +92,13 @@ async function deployCommissionTables() {
         await supabase.rpc('exec_sql', { query: indexSQL })
       } catch (error) {
         if (!error.message.includes('already exists')) {
-          console.log(`⚠️  Index warning: ${error.message}`)
+          
         }
       }
     }
-    console.log('✅ Performance indexes created')
 
     // 5. Enable RLS
-    console.log('\n📝 Enabling Row Level Security...')
-    
+
     const rlsSQL = [
       'ALTER TABLE commission_transactions ENABLE ROW LEVEL SECURITY;',
       'ALTER TABLE barber_commission_balances ENABLE ROW LEVEL SECURITY;'
@@ -119,15 +109,13 @@ async function deployCommissionTables() {
         await supabase.rpc('exec_sql', { query: sql })
       } catch (error) {
         if (!error.message.includes('already exists')) {
-          console.log(`⚠️  RLS warning: ${error.message}`)
+          
         }
       }
     }
-    console.log('✅ Row Level Security enabled')
 
     // 6. Create RLS policies
-    console.log('\n📝 Creating RLS policies...')
-    
+
     const policies = [
       `CREATE POLICY "Users can view their shop commission transactions" ON commission_transactions
        FOR SELECT TO authenticated
@@ -171,15 +159,13 @@ async function deployCommissionTables() {
         await supabase.rpc('exec_sql', { query: policy })
       } catch (error) {
         if (!error.message.includes('already exists')) {
-          console.log(`⚠️  Policy warning: ${error.message}`)
+          
         }
       }
     }
-    console.log('✅ RLS policies created')
 
     // 7. Verify deployment
-    console.log('\n🔍 Verifying deployment...')
-    
+
     const { data: commissionTest } = await supabase
       .from('commission_transactions')
       .select('*')
@@ -189,15 +175,6 @@ async function deployCommissionTables() {
       .from('barber_commission_balances')
       .select('*')
       .limit(0)
-
-    console.log('✅ commission_transactions: accessible')
-    console.log('✅ barber_commission_balances: accessible')
-
-    console.log('\n🎉 COMMISSION AUTOMATION TABLES SUCCESSFULLY DEPLOYED!')
-    console.log('✅ Database schema ready for automated commission processing')
-    console.log('✅ RLS policies configured for multi-tenant security')
-    console.log('✅ Performance indexes created for optimal queries')
-    console.log('✅ System ready for live barbershop use')
 
     return true
 

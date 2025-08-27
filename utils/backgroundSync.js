@@ -63,7 +63,6 @@ export async function queueAction(action) {
       await registration.sync.register('background-sync-' + action.type);
     }
 
-    console.log('[BackgroundSync] Action queued:', queueItem);
     return queueItem.id;
   } catch (error) {
     console.error('[BackgroundSync] Failed to queue action:', error);
@@ -325,7 +324,7 @@ export async function initBackgroundSync() {
     
     const cleaned = await cleanupCompletedActions(24);
     if (cleaned > 0) {
-      console.log(`[BackgroundSync] Cleaned up ${cleaned} old actions`);
+      
     }
 
     if ('serviceWorker' in navigator) {
@@ -340,7 +339,6 @@ export async function initBackgroundSync() {
       });
     }
 
-    console.log('[BackgroundSync] Initialized successfully');
   } catch (error) {
     console.error('[BackgroundSync] Failed to initialize:', error);
   }

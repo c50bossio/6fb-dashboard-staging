@@ -783,8 +783,7 @@ export default function WorkflowCollaboration() {
 
   const handleWorkflowAction = async (action, workflowId) => {
     try {
-      console.log(`Performing action: ${action} on workflow: ${workflowId}`)
-      
+
       switch (action) {
         case 'approve':
           setWorkflows(prev => prev.map(wf => 
@@ -812,7 +811,7 @@ export default function WorkflowCollaboration() {
 
   const handleVersionRevert = async (versionId) => {
     try {
-      console.log('Reverting to version:', versionId)
+      
       setMessage({ type: 'success', text: 'Reverted to selected version successfully!' })
     } catch (error) {
       console.error('Error reverting version:', error)
@@ -822,7 +821,7 @@ export default function WorkflowCollaboration() {
 
   const handleVersionCompare = async (versionIds) => {
     try {
-      console.log('Comparing versions:', versionIds)
+      
       setMessage({ type: 'info', text: 'Version comparison feature coming soon!' })
     } catch (error) {
       console.error('Error comparing versions:', error)

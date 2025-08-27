@@ -52,18 +52,16 @@ export default function StaffManagementDashboard() {
   const loadStaffData = useCallback(async () => {
     try {
       setLoading(true)
-      console.log('📋 StaffManagementDashboard: Loading staff data...')
       
       // Use unified staff service to get comprehensive staff data
       const staffData = await unifiedStaffService.getStaff(null, {
         useCache: true,
-        includeAvailability: true,
-        includeServices: true,
+        includeAvailability: false, // Not needed in dashboard, prevents 400 errors
+        includeServices: false,     // Not needed in dashboard, prevents 400 errors
         forceRefresh: false
       })
       
       if (staffData.staff && staffData.staff.length > 0) {
-        console.log(`✅ StaffManagementDashboard: Loaded ${staffData.staff.length} staff members via ${staffData.source} endpoint`)
         
         // The unified staff service already provides enhanced staff data
         setStaff(staffData.staff)
@@ -81,9 +79,7 @@ export default function StaffManagementDashboard() {
           avgRating
         })
         
-        console.log(`📊 Staff metrics: ${totalStaff} total, ${activeToday} active, $${pendingPayroll.toFixed(2)} pending payroll`)
       } else {
-        console.log('⚠️ StaffManagementDashboard: No staff data found')
         setStaff([])
         setMetrics({
           totalStaff: 0,
@@ -94,7 +90,6 @@ export default function StaffManagementDashboard() {
       }
       
     } catch (error) {
-      console.error('❌ StaffManagementDashboard: Error loading staff:', error)
       toast.error('Failed to load staff members')
       setStaff([])
     } finally {
@@ -108,10 +103,20 @@ export default function StaffManagementDashboard() {
 
   // Handle staff added - refresh data and invalidate cache
   const handleStaffAdded = useCallback(() => {
-    console.log('🎉 Staff member added, refreshing data...')
     unifiedStaffService.invalidateCache()
     loadStaffData()
   }, [loadStaffData])
+
+  // Handle Add Staff button click - Fixed missing function error
+  const handleAddStaffClick = useCallback(() => {
+    setAddButtonLoading(true)
+    setShowAddModal(true)
+    
+    // Auto-reset loading state after a delay to prevent stuck states
+    addStaffTimeoutRef.current = setTimeout(() => {
+      setAddButtonLoading(false)
+    }, 500)
+  }, [])
 
   // Filter staff based on search and status
   const filteredStaff = useMemo(() => {
@@ -154,7 +159,7 @@ export default function StaffManagementDashboard() {
   // Render staff card
   const StaffCard = ({ member }) => {
     const statusColor = member.is_active ? 'green' : 'gray'
-    const hasCommission = member.metrics.pendingCommission > 0
+    const hasCommission = member.metrics?.pendingCommission > 0
 
     return (
       <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
@@ -169,28 +174,8 @@ export default function StaffManagementDashboard() {
             {/* Info */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                {(() => {
-                  // Use name utilities for consistent display
-                  const displayName = getDisplayName({
-                    firstName: member.user?.firstName || member.user?.first_name,
-                    lastName: member.user?.lastName || member.user?.last_name,
-                    fullName: member.user?.fullName || member.user?.full_name,
-                    email: member.user?.email,
-                    defaultName: null
-                  })
-                  
-                  // If we got a name from the user data, return it
-                  if (displayName && displayName !== 'Unknown User') {
-                    return displayName
-                  }
-                  
-                  // Fall back to invitation data
-                  if (member.invitedName) return `${member.invitedName} (Invited)`
-                  if (member.invitedEmail) return `${member.invitedEmail} (Invited)`
-                  if (member.metadata?.invited_name) return `${member.metadata.invited_name} (Invited)`
-                  if (member.metadata?.invited_email) return `${member.metadata.invited_email} (Invited)`
-                  return 'Unnamed Staff'
-                })()}
+                {/* Simple name display - use what we have */}
+                {member.full_name || member.display_name || member.email || 'Unnamed Staff'}
               </h3>
               <p className="text-sm text-gray-600">
                 {member.role ? member.role.charAt(0).toUpperCase() + member.role.slice(1).toLowerCase() : 'Barber'}
@@ -245,25 +230,25 @@ export default function StaffManagementDashboard() {
         <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-100">
           <div>
             <p className="text-xs text-gray-500">Bookings (30d)</p>
-            <p className="text-sm font-semibold text-gray-900">{member.metrics.totalBookings}</p>
+            <p className="text-sm font-semibold text-gray-900">{member.metrics?.totalBookings || 0}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Revenue (30d)</p>
-            <p className="text-sm font-semibold text-gray-900">{formatCurrency(member.metrics.revenue)}</p>
+            <p className="text-sm font-semibold text-gray-900">{formatCurrency(member.metrics?.revenue || 0)}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Rating</p>
             <div className="flex items-center">
               <StarIcon className="h-3 w-3 text-yellow-400 mr-1" />
               <p className="text-sm font-semibold text-gray-900">
-                {member.metrics.rating > 0 ? member.metrics.rating.toFixed(1) : 'N/A'}
+                {member.metrics?.rating > 0 ? member.metrics.rating.toFixed(1) : 'N/A'}
               </p>
             </div>
           </div>
           <div>
             <p className="text-xs text-gray-500">Pending</p>
             <p className={`text-sm font-semibold ${hasCommission ? 'text-green-600' : 'text-gray-900'}`}>
-              {formatCurrency(member.metrics.pendingCommission)}
+              {formatCurrency(member.metrics?.pendingCommission || 0)}
             </p>
           </div>
         </div>
@@ -546,18 +531,15 @@ export default function StaffManagementDashboard() {
           staff={selectedStaff}
           onClose={() => setSelectedStaff(null)}
           onUpdate={(updatedStaff) => {
-            console.log('📝 [DASHBOARD] onUpdate received:', updatedStaff)
             
             // Validate updatedStaff data to prevent crashes
             if (!updatedStaff || typeof updatedStaff !== 'object') {
-              console.error('❌ [DASHBOARD] Invalid updatedStaff data received:', updatedStaff)
               toast.error('Invalid staff data received from server')
               return
             }
             
             // Ensure required fields exist
             if (!updatedStaff.id && !updatedStaff.user_id) {
-              console.error('❌ [DASHBOARD] Missing required ID fields:', updatedStaff)
               toast.error('Staff update failed - missing ID')
               return
             }
@@ -575,7 +557,6 @@ export default function StaffManagementDashboard() {
               })
             )
             
-            console.log('✅ [DASHBOARD] Staff list updated successfully')
             
             // Note: Removed loadStaffData() call to prevent race condition
             // The local state update above is sufficient since we have fresh API data

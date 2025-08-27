@@ -129,7 +129,7 @@ class MockDataScanner {
    * Scan all JavaScript/TypeScript files in the project
    */
   async scanProject() {
-    console.log(colors.blue('🔍 Scanning for mock data violations...\n'));
+    );
 
     const patterns = [
       '**/*.js',
@@ -146,7 +146,7 @@ class MockDataScanner {
       files.push(...matches);
     }
 
-    console.log(colors.gray(`Found ${files.length} files to scan\n`));
+    );
 
     for (const file of files) {
       await this.scanFile(file);
@@ -156,7 +156,6 @@ class MockDataScanner {
       }
     }
 
-    console.log('\n');
   }
 
   /**
@@ -180,36 +179,36 @@ class MockDataScanner {
    */
   generateReport() {
     if (this.violations.length === 0) {
-      console.log(colors.green('✅ No mock data violations found!\n'));
-      console.log(colors.green('Your codebase is clean and follows the NO MOCK DATA policy.'));
+      );
+      );
       return;
     }
 
-    console.log(colors.red(`❌ Found ${this.violations.length} mock data violations\n`));
+    );
 
     const groupedViolations = this.groupViolationsByFile();
     const fileCount = Object.keys(groupedViolations).length;
 
-    console.log(colors.yellow(`📁 ${fileCount} files contain mock data:\n`));
+    );
 
     const sortedFiles = Object.entries(groupedViolations)
       .sort((a, b) => b[1].length - a[1].length);
 
     sortedFiles.forEach(([file, violations]) => {
       const relativePath = path.relative(process.cwd(), file);
-      console.log(colors.cyan(`\n${relativePath}`) + colors.gray(` (${violations.length} violations)`));
+       + colors.gray(` (${violations.length} violations)`));
       
       violations.slice(0, 3).forEach(v => {
-        console.log(colors.gray(`  Line ${v.line}:`) + colors.red(` ${v.match}`));
-        console.log(colors.gray(`    ${v.context}`));
+         + colors.red(` ${v.match}`));
+        );
       });
 
       if (violations.length > 3) {
-        console.log(colors.gray(`  ... and ${violations.length - 3} more violations`));
+        );
       }
     });
 
-    console.log(colors.yellow('\n📊 Summary by Pattern:\n'));
+    );
     
     const patternCounts = {};
     this.violations.forEach(v => {
@@ -222,15 +221,11 @@ class MockDataScanner {
       .slice(0, 10);
 
     sortedPatterns.forEach(([pattern, count]) => {
-      console.log(colors.gray(`  ${count}x`) + ` "${pattern}"`);
+       + ` "${pattern}"`);
     });
 
-    console.log(colors.yellow('\n🔧 How to fix:\n'));
-    console.log('1. Replace mock data generators with database queries');
-    console.log('2. Use the database seed scripts for test data');
-    console.log('3. Remove hardcoded arrays and fetch from database');
-    console.log('4. Update service names to use real service types');
-    console.log('5. Use the DatabasePolicyEnforcer for validation\n');
+    );
+
   }
 
   /**
@@ -249,7 +244,7 @@ class MockDataScanner {
     };
 
     await fs.writeFile(outputPath, JSON.stringify(report, null, 2));
-    console.log(colors.gray(`\n📄 JSON report saved to: ${outputPath}`));
+    );
   }
 
   /**
@@ -293,7 +288,7 @@ echo "Use the database seed scripts for test data instead of mock generators."
 
     await fs.writeFile(outputPath, script);
     await fs.chmod(outputPath, '755');
-    console.log(colors.gray(`\n📝 Fix script saved to: ${outputPath}`));
+    );
   }
 }
 

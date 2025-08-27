@@ -8,9 +8,7 @@ export async function POST(request) {
     const supabase = await createClient()
     const serviceClient = createServiceClient()
     const body = await request.json()
-    
-    console.log('🔍 [DEBUG] Test profile update request:', body)
-    
+
     // Verify authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
@@ -41,8 +39,6 @@ export async function POST(request) {
       }, { status: 500 })
     }
 
-    console.log('🔍 [DEBUG] Existing profile:', existingProfile)
-
     // Try to update the profile
     const { data: updateResult, error: updateError } = await serviceClient
       .from('profiles')
@@ -53,8 +49,6 @@ export async function POST(request) {
       })
       .eq('id', userId)
       .select()
-
-    console.log('🔍 [DEBUG] Update result:', { updateResult, updateError })
 
     if (updateError) {
       return NextResponse.json({

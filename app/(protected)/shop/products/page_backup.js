@@ -125,7 +125,7 @@ export default function ProductManagement() {
         }
       } else if (statusResponse.status === 401) {
         // Authentication required
-        console.log('Authentication required for Cin7')
+        
         setHasCredentials(false)
         setCin7Connected(false)
         setCredentialInfo(null)
@@ -421,8 +421,7 @@ export default function ProductManagement() {
       }
       
       const credData = await credentialResponse.json()
-      console.log('✅ Credentials saved successfully:', credData.accountName)
-      
+
       // Then, sync the inventory
       const syncResponse = await fetch('/api/cin7/sync', {
         method: 'POST',
@@ -1553,7 +1552,7 @@ function AppointmentCheckoutModal({
       if (assignedBarber) {
         selectedBarber = assignedBarber
         reason = 'appointment'
-        console.log('✅ Auto-selected barber from appointment:', assignedBarber.display_name || assignedBarber.full_name)
+        
       }
     }
 
@@ -1563,14 +1562,14 @@ function AppointmentCheckoutModal({
       if (loggedInBarber) {
         selectedBarber = loggedInBarber
         reason = 'logged_in_barber'
-        console.log('✅ Auto-selected logged-in barber:', loggedInBarber.display_name || loggedInBarber.full_name)
+        
       }
     }
 
     // Priority 3: Manual selection (no auto-selection)
     if (!selectedBarber) {
       reason = 'manual'
-      console.log('ℹ️  No auto-selection criteria met - user must select manually')
+      
     }
 
     setSelectedBarber(selectedBarber)

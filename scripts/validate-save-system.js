@@ -18,14 +18,11 @@ config({ path: path.join(__dirname, '..', '.env.local') })
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-console.log('🔍 Comprehensive Staff Save System Validation')
-console.log('===========================================')
-
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function validateSaveSystem() {
   try {
-    console.log('\n1️⃣ Testing Supabase Connection...')
+    
     const { data: connectionTest, error: connectionError } = await supabase
       .from('barbershop_staff')
       .select('count', { count: 'exact' })
@@ -34,26 +31,19 @@ async function validateSaveSystem() {
       console.error('❌ Supabase connection failed:', connectionError.message)
       return
     }
-    console.log('✅ Supabase connection successful')
-    console.log(`📊 Found ${connectionTest.count} staff records`)
-    
-    console.log('\n2️⃣ Checking API Route File...')
+
     const apiRoutePath = path.join(__dirname, '..', 'app', 'api', 'staff', '[staffId]', 'route.js')
     if (!fs.existsSync(apiRoutePath)) {
       console.error('❌ API route file missing:', apiRoutePath)
       return
     }
-    console.log('✅ API route file exists')
-    
-    console.log('\n3️⃣ Validating Financial Display Utils...')
+
     const utilsPath = path.join(__dirname, '..', 'lib', 'financial-display-utils.js')
     if (!fs.existsSync(utilsPath)) {
       console.error('❌ Financial utils file missing:', utilsPath)
       return
     }
-    console.log('✅ Financial display utils exist')
-    
-    console.log('\n4️⃣ Testing Database Schema...')
+
     const { data: schemaTest, error: schemaError } = await supabase
       .from('barbershop_staff')
       .select('id, arrangement_type, rent_frequency, commission_rate')
@@ -61,12 +51,11 @@ async function validateSaveSystem() {
     
     if (schemaError) {
       console.error('❌ Schema validation failed:', schemaError.message)
-      console.log('💡 The financial arrangement fields may not exist in the database')
+      
       return
     }
-    console.log('✅ All financial arrangement fields accessible')
-    
-    console.log('\n5️⃣ Finding test subject (unnamed barber)...')
+
+    ...')
     
     // Get profile data separately to find unnamed barbers
     const { data: allStaff, error: staffError } = await supabase
@@ -96,13 +85,12 @@ async function validateSaveSystem() {
     }
     
     if (!unnamedBarber) {
-      console.log('⚠️  No unnamed barber found. Testing with first available staff member...')
+      
       unnamedBarber = allStaff[0]
     } else {
-      console.log('✅ Found unnamed barber:', unnamedBarber.id)
+      
     }
-    
-    console.log('\n6️⃣ Testing Staff Update...')
+
     const testUpdate = {
       commission_rate: Math.random() * 0.5 + 0.5, // Random between 0.5-1.0
       arrangement_type: 'commission',
@@ -121,16 +109,12 @@ async function validateSaveSystem() {
       
       // Check if it's a permissions issue
       if (updateError.code === 'PGRST301') {
-        console.log('💡 Row Level Security (RLS) may be blocking the update')
-        console.log('🔧 This is normal - RLS requires proper user authentication')
+         may be blocking the update')
+        
       }
       return
     }
-    
-    console.log('✅ Database update successful')
-    console.log('📊 Updated commission rate to:', updateResult.commission_rate)
-    
-    console.log('\n7️⃣ Testing Profile Update...')
+
     if (unnamedBarber.user_id) {
       const { data: profileUpdate, error: profileError } = await supabase
         .from('profiles')
@@ -139,25 +123,12 @@ async function validateSaveSystem() {
         .select()
       
       if (profileError) {
-        console.log('⚠️  Profile update failed (may be RLS protected):', profileError.message)
+        :', profileError.message)
       } else {
-        console.log('✅ Profile update successful')
+        
       }
     }
-    
-    console.log('\n📋 System Validation Summary:')
-    console.log('✅ Database connection working')
-    console.log('✅ API route file exists')
-    console.log('✅ Financial utils available')
-    console.log('✅ Database schema correct')
-    console.log('✅ Staff updates functional')
-    
-    console.log('\n🎯 Next Steps:')
-    console.log('1. Check browser console for JavaScript errors')
-    console.log('2. Verify user authentication in the frontend')
-    console.log('3. Check network requests in browser dev tools')
-    console.log('4. Ensure you are logged in as the barbershop owner')
-    
+
   } catch (error) {
     console.error('❌ Validation error:', error.message)
   }

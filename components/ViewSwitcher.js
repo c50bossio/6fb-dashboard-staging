@@ -112,8 +112,7 @@ export default function ViewSwitcher() {
         await syncWithServerState()
         
         // Show success message (optional - could add toast notification)
-        console.log('Context switched successfully:', result.message)
-        
+
       } else {
         console.error('Failed to switch context:', response.status)
         const error = await response.json()

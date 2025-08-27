@@ -98,12 +98,6 @@ class AnalyticsTestEnvironment {
 
     this.testData.customers = [...new Set(customers?.map(c => c.client_email) || [])]
 
-    console.log('Expected metrics calculated:', {
-      daily: this.testData.revenue.daily,
-      weekly: this.testData.revenue.weekly,
-      monthly: this.testData.revenue.monthly,
-      customers: this.testData.customers.length
-    })
   }
 
   async createTestBooking() {
@@ -171,7 +165,6 @@ test.describe('Analytics Dashboard - Revenue Metrics', () => {
   })
 
   test('Dashboard displays accurate revenue metrics', async ({ page }) => {
-    console.log('Testing revenue metrics accuracy...')
 
     // Wait for dashboard to load
     await expect(page.locator('[data-testid="analytics-dashboard"]')).toBeVisible({ timeout: 15000 })
@@ -205,7 +198,6 @@ test.describe('Analytics Dashboard - Revenue Metrics', () => {
   })
 
   test('Revenue calculations update after new booking', async ({ page }) => {
-    console.log('Testing real-time revenue updates...')
 
     // Get initial revenue
     await expect(page.locator('[data-testid="daily-revenue"]')).toBeVisible()
@@ -229,7 +221,6 @@ test.describe('Analytics Dashboard - Revenue Metrics', () => {
   })
 
   test('Revenue breakdown by service displays correctly', async ({ page }) => {
-    console.log('Testing service revenue breakdown...')
 
     // Navigate to detailed analytics
     await page.locator('[data-testid="view-detailed-analytics"]').click()
@@ -250,7 +241,6 @@ test.describe('Analytics Dashboard - Revenue Metrics', () => {
   })
 
   test('Revenue trends chart displays historical data', async ({ page }) => {
-    console.log('Testing revenue trends chart...')
 
     await expect(page.locator('[data-testid="revenue-trends-chart"]')).toBeVisible()
 
@@ -283,7 +273,6 @@ test.describe('Analytics Dashboard - Customer Analytics', () => {
   })
 
   test('Customer metrics display accurate counts', async ({ page }) => {
-    console.log('Testing customer metrics accuracy...')
 
     await expect(page.locator('[data-testid="customer-metrics"]')).toBeVisible()
 
@@ -306,7 +295,6 @@ test.describe('Analytics Dashboard - Customer Analytics', () => {
   })
 
   test('Customer acquisition chart shows growth trends', async ({ page }) => {
-    console.log('Testing customer acquisition chart...')
 
     await expect(page.locator('[data-testid="customer-acquisition-chart"]')).toBeVisible()
 
@@ -321,7 +309,6 @@ test.describe('Analytics Dashboard - Customer Analytics', () => {
   })
 
   test('Customer lifetime value calculations', async ({ page }) => {
-    console.log('Testing customer lifetime value...')
 
     await page.locator('[data-testid="customer-analytics-tab"]').click()
     await expect(page.locator('[data-testid="customer-ltv-section"]')).toBeVisible()
@@ -338,7 +325,6 @@ test.describe('Analytics Dashboard - Customer Analytics', () => {
   })
 
   test('Top customers list displays accurate data', async ({ page }) => {
-    console.log('Testing top customers list...')
 
     await page.locator('[data-testid="top-customers-tab"]').click()
     await expect(page.locator('[data-testid="top-customers-list"]')).toBeVisible()
@@ -371,7 +357,6 @@ test.describe('Analytics Dashboard - Booking Analytics', () => {
   })
 
   test('Booking trends show accurate patterns', async ({ page }) => {
-    console.log('Testing booking trends...')
 
     await expect(page.locator('[data-testid="booking-analytics"]')).toBeVisible()
 
@@ -395,7 +380,6 @@ test.describe('Analytics Dashboard - Booking Analytics', () => {
   })
 
   test('Peak hours analysis displays correctly', async ({ page }) => {
-    console.log('Testing peak hours analysis...')
 
     await page.locator('[data-testid="peak-hours-tab"]').click()
     await expect(page.locator('[data-testid="peak-hours-chart"]')).toBeVisible()
@@ -418,7 +402,6 @@ test.describe('Analytics Dashboard - Booking Analytics', () => {
   })
 
   test('Service popularity rankings', async ({ page }) => {
-    console.log('Testing service popularity rankings...')
 
     await page.locator('[data-testid="service-analytics-tab"]').click()
     await expect(page.locator('[data-testid="service-popularity-chart"]')).toBeVisible()
@@ -437,7 +420,6 @@ test.describe('Analytics Dashboard - Booking Analytics', () => {
   })
 
   test('Cancellation rate analysis', async ({ page }) => {
-    console.log('Testing cancellation rate analysis...')
 
     await page.locator('[data-testid="cancellation-analytics"]').click()
     await expect(page.locator('[data-testid="cancellation-rate-metric"]')).toBeVisible()
@@ -468,7 +450,6 @@ test.describe('Analytics Dashboard - Data Integrity', () => {
   })
 
   test('No mock data indicators present', async ({ page }) => {
-    console.log('Verifying no mock data is used...')
 
     // Check for common mock data indicators
     const mockDataIndicators = [
@@ -519,7 +500,6 @@ test.describe('Analytics Dashboard - Data Integrity', () => {
   })
 
   test('Cross-reference dashboard data with database', async ({ page }) => {
-    console.log('Cross-referencing dashboard data with database...')
 
     await expect(page.locator('[data-testid="analytics-dashboard"]')).toBeVisible()
 
@@ -542,7 +522,6 @@ test.describe('Analytics Dashboard - Data Integrity', () => {
   })
 
   test('Real-time data updates work correctly', async ({ page }) => {
-    console.log('Testing real-time data updates...')
 
     // Get initial metrics
     await expect(page.locator('[data-testid="daily-revenue"]')).toBeVisible()
@@ -574,7 +553,6 @@ test.describe('Analytics Dashboard - Data Integrity', () => {
   })
 
   test('Export functionality works with real data', async ({ page }) => {
-    console.log('Testing analytics export functionality...')
 
     await expect(page.locator('[data-testid="export-analytics"]')).toBeVisible()
 
@@ -611,7 +589,6 @@ test.describe('Analytics Dashboard - Performance', () => {
   })
 
   test('Dashboard loads within acceptable time limits', async ({ page }) => {
-    console.log('Testing dashboard load performance...')
 
     const startTime = Date.now()
     
@@ -632,7 +609,6 @@ test.describe('Analytics Dashboard - Performance', () => {
   })
 
   test('Large dataset handling', async ({ page }) => {
-    console.log('Testing dashboard with large datasets...')
 
     // Navigate to dashboard with date range that includes more data
     await page.goto(`${analyticsEnv.getDashboardUrl()}&range=year`)

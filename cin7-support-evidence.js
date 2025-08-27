@@ -51,12 +51,7 @@ function makeRequest(testName, options) {
           }
         };
         testResults.push(result);
-        
-        console.log(`\nTest ${testNumber}: ${testName}`);
-        console.log(`Status: ${res.statusCode} ${res.statusMessage}`);
-        console.log(`Response: ${data}`);
-        console.log(`Duration: ${result.duration}`);
-        
+
         resolve(result);
       });
     });
@@ -68,8 +63,7 @@ function makeRequest(testName, options) {
         error: error.message
       };
       testResults.push(result);
-      console.log(`\nTest ${testNumber}: ${testName}`);
-      console.log(`Error: ${error.message}`);
+
       resolve(result);
     });
     
@@ -78,15 +72,12 @@ function makeRequest(testName, options) {
 }
 
 async function runTests() {
-  console.log('='.repeat(80));
-  console.log('CIN7 EXTERNAL API AUTHENTICATION TEST SUITE');
-  console.log('Generated:', new Date().toISOString());
-  console.log('='.repeat(80));
-  console.log('\nACCOUNT INFORMATION:');
-  console.log('Account ID:', VALID_ACCOUNT_ID);
-  console.log('API Key:', VALID_API_KEY);
-  console.log('API Documentation: https://developer.cin7.com/');
-  console.log('='.repeat(80));
+  );
+  
+  .toISOString());
+  );
+
+  );
   
   // Test 1: Valid credentials - standard format
   await makeRequest('Valid Credentials - Standard Format', {
@@ -145,43 +136,30 @@ async function runTests() {
   });
   
   // Generate summary
-  console.log('\n' + '='.repeat(80));
-  console.log('TEST SUMMARY');
-  console.log('='.repeat(80));
+  );
+  
+  );
   
   const allResponses = testResults.map(r => r.response?.body).filter(Boolean);
   const uniqueResponses = [...new Set(allResponses)];
-  
-  console.log(`\nTotal tests run: ${testResults.length}`);
-  console.log(`Unique responses: ${uniqueResponses.length}`);
-  console.log('\nResponse types:');
+
   uniqueResponses.forEach((response, index) => {
     const count = allResponses.filter(r => r === response).length;
-    console.log(`  ${index + 1}. "${response}" - occurred ${count} times`);
+    
   });
   
   // Critical finding
-  console.log('\n' + '='.repeat(80));
-  console.log('⚠️  CRITICAL FINDING');
-  console.log('='.repeat(80));
+  );
+  
+  );
   
   const validCredsResponse = testResults[0].response?.body;
   const invalidCredsResponse = testResults[3].response?.body;
   
   if (validCredsResponse === invalidCredsResponse) {
-    console.log('\n🔴 EXTERNAL API AUTHENTICATION IS BROKEN\n');
-    console.log('Valid credentials return: "' + validCredsResponse + '"');
-    console.log('Invalid credentials return: "' + invalidCredsResponse + '"');
-    console.log('\nBoth valid and invalid credentials return the SAME error.');
-    console.log('This proves the API is not validating credentials at all.');
-    console.log('\nA functioning API would return different errors for:');
-    console.log('  - Valid credentials: Success or specific permission error');
-    console.log('  - Invalid credentials: Authentication failure');
-    console.log('  - Missing credentials: Missing authentication headers');
+
   } else {
-    console.log('\n✅ API appears to be differentiating between credential types');
-    console.log('Valid credentials response:', validCredsResponse);
-    console.log('Invalid credentials response:', invalidCredsResponse);
+
   }
   
   // Save detailed report
@@ -211,25 +189,15 @@ async function runTests() {
   const reportFile = `cin7-api-test-report-${Date.now()}.json`;
   fs.writeFileSync(reportFile, JSON.stringify(report, null, 2));
   
-  console.log('\n' + '='.repeat(80));
-  console.log('REPORT SAVED');
-  console.log('='.repeat(80));
-  console.log(`\nDetailed JSON report saved to: ${reportFile}`);
-  console.log('Send this report to CIN7 support as evidence.\n');
+  );
   
+  );
+
   // Action items
-  console.log('='.repeat(80));
-  console.log('REQUIRED ACTIONS FOR CIN7 SUPPORT');
-  console.log('='.repeat(80));
-  console.log('\n1. Verify external API access is enabled for account:', VALID_ACCOUNT_ID);
-  console.log('2. Check if there are any IP restrictions blocking external requests');
-  console.log('3. Confirm the API key has proper permissions:', VALID_API_KEY);
-  console.log('4. Test the external API endpoint from your side');
-  console.log('5. Check for any recent changes to the authentication system');
-  console.log('6. Verify the API service is running and accepting connections\n');
+  );
   
-  console.log('Note: The API Explorer works because it uses browser session authentication,');
-  console.log('not API key authentication. These are different authentication systems.\n');
+  );
+
 }
 
 // Run the tests

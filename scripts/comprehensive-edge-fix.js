@@ -39,8 +39,6 @@ const NODE_DEPENDENT_LIBS = [
 const apiRoutePattern = path.join(__dirname, '..', 'app', 'api', '**', '*.js');
 const apiRoutes = glob.sync(apiRoutePattern);
 
-console.log(`Checking ${apiRoutes.length} API route files for Edge Runtime compatibility\n`);
-
 let fixedCount = 0;
 let alreadyFixed = 0;
 let edgeCompatible = 0;
@@ -81,20 +79,12 @@ apiRoutes.forEach(filePath => {
   if (hasNodeDependency) {
     content = content.replace("export const runtime = 'edge'\n", '');
     fs.writeFileSync(filePath, content, 'utf8');
-    console.log(`✅ Fixed: ${relativePath} (uses ${foundDependency})`);
+    `);
     fixedCount++;
   } else {
     edgeCompatible++;
   }
 });
-
-console.log('\n📊 Final Summary:');
-console.log(`  Fixed in this run: ${fixedCount} routes`);
-console.log(`  Already on Node.js: ${alreadyFixed} routes`);
-console.log(`  Edge compatible: ${edgeCompatible} routes`);
-console.log(`  Total routes: ${apiRoutes.length}`);
-
-console.log('\n🔍 Checking lib files for Node.js dependencies...');
 
 const libPattern = path.join(__dirname, '..', 'lib', '**', '*.js');
 const libFiles = glob.sync(libPattern);
@@ -114,8 +104,8 @@ libFiles.forEach(filePath => {
 });
 
 if (problematicLibs.length > 0) {
-  console.log('\n⚠️  Lib files with Node.js dependencies:');
+  
   problematicLibs.forEach(({ file, dependency }) => {
-    console.log(`  - ${file} (uses ${dependency})`);
+    `);
   });
 }

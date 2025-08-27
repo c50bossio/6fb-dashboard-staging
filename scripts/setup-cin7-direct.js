@@ -14,21 +14,18 @@ const supabase = createClient(
 )
 
 async function setupCin7Tables() {
-  console.log('🔧 Setting up Cin7 tables in Supabase...\n')
-  
+
   let success = true
-  
-  console.log('📋 Checking existing tables...')
-  
+
   const { error: conn_check } = await supabase
     .from('cin7_connections')
     .select('id')
     .limit(1)
   
   if (!conn_check) {
-    console.log('✅ cin7_connections table already exists')
+    
   } else if (conn_check.message.includes('does not exist')) {
-    console.log('❌ cin7_connections table needs to be created')
+    
     success = false
   }
   
@@ -38,9 +35,9 @@ async function setupCin7Tables() {
     .limit(1)
   
   if (!logs_check) {
-    console.log('✅ cin7_sync_logs table already exists')
+    
   } else if (logs_check.message.includes('does not exist')) {
-    console.log('❌ cin7_sync_logs table needs to be created')
+    
     success = false
   }
   
@@ -50,23 +47,16 @@ async function setupCin7Tables() {
     .limit(1)
   
   if (!inv_check) {
-    console.log('✅ inventory table has Cin7 columns')
+    
   } else if (inv_check.message.includes('column') && inv_check.message.includes('does not exist')) {
-    console.log('❌ inventory table needs Cin7 columns added')
+    
     success = false
   }
   
   if (!success) {
-    console.log('\n⚠️  Some tables/columns are missing.')
-    console.log('\n📝 To create them, copy this SQL and run it in Supabase SQL Editor:')
-    console.log('   https://supabase.com/dashboard/project/dfhqjdoydihajmjxniee/sql\n')
-    console.log('=' + '='.repeat(70))
-    console.log(`
--- Cin7 Integration Tables for Supabase
 
--- Create cin7_connections table
-CREATE TABLE IF NOT EXISTS cin7_connections (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    )
+    ,
   user_id UUID,
   barbershop_id UUID,
   account_id TEXT NOT NULL,
@@ -144,16 +134,10 @@ CREATE POLICY "Users can view own sync logs" ON cin7_sync_logs
     )
   );
 `)
-    console.log('=' + '='.repeat(70))
-    console.log('\n✂️  Copy the SQL above and paste it in the Supabase SQL Editor')
-    console.log('   Then click "Run" to create the tables.\n')
+    )
+
   } else {
-    console.log('\n🎉 All Cin7 tables are ready!')
-    console.log('\n✅ You can now use the Cin7 integration:')
-    console.log('   1. Go to the Inventory page')
-    console.log('   2. Scroll to the bottom')
-    console.log('   3. Click "Advanced: Connect warehouse system"')
-    console.log('   4. Enter your Cin7 credentials')
+
   }
 }
 

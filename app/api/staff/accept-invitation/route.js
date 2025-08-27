@@ -29,9 +29,6 @@ export async function POST(request) {
       .eq('is_active', false)
       .not('metadata', 'is', null)
 
-    console.log('Debug - Fetched invitations:', pendingInvitations?.length || 0)
-    console.log('Debug - Looking for token:', token)
-
     if (fetchError) {
       console.error('Error fetching invitations:', fetchError)
       return NextResponse.json({ error: 'Failed to verify invitation' }, { status: 500 })
@@ -42,7 +39,7 @@ export async function POST(request) {
       inv => {
         const hasToken = inv.metadata?.invitation_token === token
         if (inv.metadata?.invitation_token) {
-          console.log('Debug - Checking token:', inv.metadata.invitation_token.substring(0, 10) + '...', 'Match:', hasToken)
+           + '...', 'Match:', hasToken)
         }
         return hasToken
       }

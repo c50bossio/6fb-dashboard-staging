@@ -105,21 +105,11 @@ function CustomersPageContent() {
     try {
       setLoading(true)
       setError(null)
-      
-      console.log('🔄 Fetching customer data...')
-      
+
       // Get barbershop_id from user profile
       const userResponse = await fetch('/api/auth/user')
       const userData = await userResponse.json()
-      
-      console.log('👤 User data received:', {
-        authenticated: userData.authenticated,
-        hasUser: !!userData.user,
-        barbershopId: userData.user?.barbershop_id,
-        hasCustomerAccess: userData.user?.has_customer_access,
-        subscriptionTier: userData.user?.subscription_tier
-      })
-      
+
       if (!userData.authenticated) {
         setError('Please log in to access customer management.')
         setCustomers([])
@@ -148,9 +138,7 @@ function CustomersPageContent() {
         setLoading(false)
         return
       }
-      
-      console.log('📞 Fetching customers for barbershop:', userData.user.barbershop_id)
-      
+
       const response = await fetch(`/api/customers?limit=100&barbershop_id=${userData.user.barbershop_id}`)
       
       if (!response.ok) {
@@ -162,18 +150,13 @@ function CustomersPageContent() {
       if (data.error) {
         throw new Error(data.error)
       }
-      
-      console.log('✅ Customer data received:', {
-        count: data.customers?.length || 0,
-        total: data.total
-      })
-      
+
       const formattedCustomers = formatCustomerData(data.customers || [], userData.user.barbershop_id)
       setCustomers(formattedCustomers)
       setFilteredCustomers(formattedCustomers)
       
       if (formattedCustomers.length === 0) {
-        console.log('📝 No customers found - this is normal for new barbershops')
+        
       }
       
     } catch (err) {
@@ -371,7 +354,7 @@ function CustomersPageContent() {
 
   const handleExportCustomers = (selectedFields, options) => {
     // Export logic will be handled by the ExportCSV component
-    console.log('Exporting customers with fields:', selectedFields, 'and options:', options)
+    
   }
 
   const addCustomer = async (customerData) => {
@@ -564,7 +547,7 @@ function CustomersPageContent() {
             barbershopId="demo-barbershop"
             showQuickActions={true}
             onProgressUpdate={(data) => {
-              console.log('Badge progress updated:', data)
+              
             }}
           />
         </div>
@@ -1174,7 +1157,7 @@ function CustomersPageContent() {
                       vip_status: customer.isVip
                     }}
                     onRebook={(id) => {
-                      console.log('Rebook initiated for customer:', id)
+                      
                       fetchCustomers()
                     }}
                   />
@@ -1391,7 +1374,7 @@ function CustomersPageContent() {
               <div className="p-6">
                 <PlatformTailoredImport
                   onComplete={(importData) => {
-                    console.log('Company-wide import completed:', importData)
+                    
                     if (!importData.skipped) {
                       setNotification({
                         type: 'success',

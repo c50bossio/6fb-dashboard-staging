@@ -14,23 +14,18 @@ function SuccessPageContent() {
   
   useEffect(() => {
     const handleSessionDetection = async () => {
-      console.log('🔄 Success page: Starting session detection...')
-      
+
       const sessionId = searchParams.get('session_id')
       
       if (sessionId) {
-        console.log('✅ Stripe session detected, bypassing auth check temporarily')
-        console.log('📦 Session ID:', sessionId)
-        
+
         const plan = searchParams.get('plan') || 'shop'
         const billing = searchParams.get('billing') || 'monthly'
-        
-        console.log('📦 Plan:', plan, 'Billing:', billing)
-        
+
         setLoading(false)
         
         setTimeout(() => {
-          console.log('🔄 Redirecting to welcome page for onboarding...')
+          
           router.push(`/dashboard?stripe_session=${sessionId}&setup=initial&plan=${plan}&billing=${billing}`)
         }, 2000)
         
@@ -38,12 +33,11 @@ function SuccessPageContent() {
       }
       
       if (user) {
-        console.log('✅ User session available, initializing...')
+        
         initializeUser()
         return
       }
-      
-      console.log('⚠️ No session detected, redirecting to welcome for setup...')
+
       setLoading(false)
       
       setTimeout(() => {
@@ -59,11 +53,7 @@ function SuccessPageContent() {
       const sessionId = searchParams.get('session_id')
       const plan = searchParams.get('plan') || 'shop'
       const billing = searchParams.get('billing') || 'monthly'
-      
-      console.log('✅ Payment successful, initializing user...')
-      console.log('📦 Session ID:', sessionId)
-      console.log('🎯 Plan:', plan, '| Billing:', billing)
-      
+
       setLoading(true)
       
       const response = await fetch('/api/user/initialize', {
@@ -75,17 +65,17 @@ function SuccessPageContent() {
       const result = await response.json()
       
       if (response.ok && result.success) {
-        console.log('✅ User profile created successfully:', result.profile?.email)
+        
         if (result.barbershop) {
-          console.log('✅ Barbershop created:', result.barbershop.name)
+          
         }
         if (result.role) {
-          console.log('✅ User role set to:', result.role)
+          
         }
         setLoading(false)
         
         setTimeout(() => {
-          console.log('🔄 Redirecting to dashboard...')
+          
           router.push(`/dashboard?plan=${plan}&billing=${billing}&setup=complete`)
         }, 2000)
         
@@ -120,7 +110,7 @@ function SuccessPageContent() {
   }
   
   const handleRetryInitialization = () => {
-    console.log('🔄 Retrying user initialization...')
+    
     setError(null)
     setLoading(true)
     
@@ -130,7 +120,7 @@ function SuccessPageContent() {
   }
   
   const handleSkipToLogin = () => {
-    console.log('↩️ Skipping to manual login...')
+    
     router.push('/login?message=account_setup_incomplete')
   }
 

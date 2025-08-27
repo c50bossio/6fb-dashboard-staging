@@ -248,13 +248,6 @@ export default function PlatformTailoredImport({ onComplete, initialData = {}, p
                           initialData?.barbershopId || 
                           'onboarding-temp-' + Date.now()
       
-      console.log('🚀 Starting import with:', {
-        platform: selectedPlatform,
-        barbershopId,
-        fileCount: Object.keys(uploadedFiles).length,
-        profile
-      })
-      
       const formData = new FormData()
       formData.append('platform', selectedPlatform)
       formData.append('barbershopId', barbershopId)

@@ -9,7 +9,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No code provided' }, { status: 400 })
     }
     
-    console.log('Exchange code v2: Starting exchange for code:', code.substring(0, 10) + '...')
+     + '...')
     
     // Try using the server-side Supabase client
     try {
@@ -22,8 +22,7 @@ export async function POST(request) {
         console.error('Supabase exchange error:', error)
         // Fall through to manual exchange
       } else if (data?.session) {
-        console.log('Exchange successful via Supabase client')
-        
+
         const res = NextResponse.json({
           success: true,
           access_token: data.session.access_token,
@@ -59,9 +58,7 @@ export async function POST(request) {
     // Manual exchange as fallback
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    
-    console.log('Attempting manual token exchange...')
-    
+
     // Try without code_verifier first (for non-PKCE flow)
     const tokenUrl = `${supabaseUrl}/auth/v1/token`
     
@@ -80,16 +77,7 @@ export async function POST(request) {
     })
     
     const data = await response.json()
-    
-    console.log('Manual exchange response:', {
-      status: response.status,
-      ok: response.ok,
-      hasAccessToken: !!data.access_token,
-      hasError: !!data.error,
-      error: data.error,
-      errorDescription: data.error_description
-    })
-    
+
     if (response.ok && data.access_token) {
       const res = NextResponse.json({
         success: true,

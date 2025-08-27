@@ -488,8 +488,7 @@ test.describe('Enhanced Onboarding System - Complete E2E Testing', () => {
     
     test('should work consistently across different browsers', async ({ page, browserName }) => {
       // This test runs on all browser projects defined in playwright config
-      console.log(`Testing onboarding in ${browserName}`)
-      
+
       const modal = page.locator('[data-onboarding-modal="true"]')
       await expect(modal).toBeVisible({ timeout: 10000 })
       

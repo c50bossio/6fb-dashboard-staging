@@ -38,7 +38,6 @@ export default function AvailabilityPage() {
     e.preventDefault()
     if (!selectedSlot || !phoneNumber || !smsConsent) return
 
-    console.log('Booking slot:', selectedSlot, 'Phone:', phoneNumber, 'SMS Consent:', smsConsent)
     setSubmitted(true)
   }
 

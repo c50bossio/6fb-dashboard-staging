@@ -35,7 +35,6 @@ import SmartAlertsPanel from './SmartAlertsPanel'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
 // DataImportWidget removed - replaced with QuickActionsCard for better UX
 
-
 const DASHBOARD_MODES = {
   EXECUTIVE: 'executive',
   AI_INSIGHTS: 'ai_insights', 
@@ -112,7 +111,7 @@ export default function UnifiedDashboard({ user, profile }) {
 
   // Function to launch onboarding flow
   const launchOnboarding = useCallback(() => {
-    console.log('🚀 Launching onboarding from dashboard setup card')
+    
     window.dispatchEvent(new CustomEvent('launchOnboarding', {
       detail: { forced: true, source: 'dashboard_setup_card' }
     }))
@@ -146,7 +145,7 @@ export default function UnifiedDashboard({ user, profile }) {
 
       // Guard: Wait for both user and profile to be available
       if (!user || !profile) {
-        console.log('Waiting for user and profile data to load...')
+        
         setIsLoading(false)
         return
       }
@@ -163,12 +162,12 @@ export default function UnifiedDashboard({ user, profile }) {
       // For shop owners without a barbershop, create one automatically
       if (!barbershopId && profile?.role === 'SHOP_OWNER') {
         try {
-          console.log('Creating barbershop for shop owner...')
+          
           const newBarbershop = await createBarbershopForOwner(user, {
             name: profile.shop_name || profile.business_name
           })
           barbershopId = newBarbershop.id
-          console.log('Successfully created barbershop:', barbershopId)
+          
         } catch (error) {
           console.error('Failed to create barbershop:', error)
           setRetryCount(prev => prev + 1)
@@ -305,14 +304,6 @@ export default function UnifiedDashboard({ user, profile }) {
           }
           
           setDashboardData(transformedData)
-          console.log('📊 Dashboard loaded with real data:', {
-            revenue: apiData.total_revenue,
-            appointments: apiData.total_appointments,
-            customers: apiData.total_customers,
-            source: result.data_source || 'api',
-            mode: currentMode,
-            timestamp: new Date().toISOString()
-          })
         } else {
           console.warn('Analytics API error:', result)
           // Set error state instead of empty data
@@ -368,7 +359,6 @@ export default function UnifiedDashboard({ user, profile }) {
     }
   }, [currentMode, user, profile, retryCount])
 
-
   useEffect(() => {
     if (modeParam && Object.values(DASHBOARD_MODES).includes(modeParam)) {
       setCurrentMode(modeParam)
@@ -394,7 +384,6 @@ export default function UnifiedDashboard({ user, profile }) {
     }
   }, [modeParam, router])
 
-
   useEffect(() => {
     // Prevent duplicate initial loads
     if (!user || !profile || loadingRef.current) {
@@ -404,7 +393,7 @@ export default function UnifiedDashboard({ user, profile }) {
     // Only load dashboard data if we haven't done the initial load
     // or if the mode changes after initial load
     if (!hasInitialLoad || currentMode !== DASHBOARD_MODES.EXECUTIVE) {
-      console.log(`🔄 Loading dashboard data for mode: ${currentMode}`)
+      
       loadingRef.current = true
       loadDashboardData().finally(() => {
         loadingRef.current = false
@@ -415,7 +404,7 @@ export default function UnifiedDashboard({ user, profile }) {
     if (currentMode === DASHBOARD_MODES.OPERATIONS) {
       const interval = setInterval(() => {
         if (!loadingRef.current) {
-          console.log('🔄 Auto-refreshing operations dashboard')
+          
           loadDashboardData()
         }
       }, 30000)
@@ -697,7 +686,6 @@ export default function UnifiedDashboard({ user, profile }) {
           <ShareableBookingLink />
         )}
       </div>
-
 
       {/* Welcome Setup Prompt or Error State Display */}
       {errorState && (

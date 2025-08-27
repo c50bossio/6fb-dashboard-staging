@@ -77,9 +77,7 @@ class E2ETestRunner {
   }
 
   async runAllTests(options = {}) {
-    console.log('🚀 Starting E2E Test Suite Execution')
-    console.log('=====================================')
-    
+
     this.results.startTime = new Date()
     
     try {
@@ -109,16 +107,13 @@ class E2ETestRunner {
     } finally {
       this.results.endTime = new Date()
       this.results.duration = this.results.endTime - this.results.startTime
-      
-      console.log('\\n📊 Test Execution Summary')
-      console.log('=========================')
+
       this.printSummary()
     }
   }
 
   async validateEnvironment() {
-    console.log('🔍 Validating test environment...')
-    
+
     // Check required environment variables
     const requiredEnvVars = [
       'NEXT_PUBLIC_SUPABASE_URL',
@@ -137,13 +132,11 @@ class E2ETestRunner {
     
     // Verify test data setup
     await this.verifyTestData()
-    
-    console.log('✅ Environment validation passed')
+
   }
 
   async checkServiceHealth() {
-    console.log('🏥 Checking service health...')
-    
+
     const services = [
       { name: 'Frontend', url: 'http://localhost:9999/api/health', timeout: 5000 },
       { name: 'Backend', url: 'http://localhost:8001/health', timeout: 5000 },
@@ -153,7 +146,7 @@ class E2ETestRunner {
     for (const service of services) {
       try {
         await this.pingService(service)
-        console.log(`  ✅ ${service.name} is healthy`)
+        
       } catch (error) {
         throw new Error(`${service.name} is not available: ${error.message}`)
       }
@@ -179,8 +172,7 @@ class E2ETestRunner {
   }
 
   async verifyTestData() {
-    console.log('📋 Verifying test data availability...')
-    
+
     // Check for active barbershops, services, etc.
     // This would connect to your database and verify test data exists
     
@@ -193,13 +185,12 @@ class E2ETestRunner {
 
     for (const check of testDataChecks) {
       // Simulate data checks
-      console.log(`  ✅ ${check}`)
+      
     }
   }
 
   async setupTestEnvironment() {
-    console.log('⚙️  Setting up test environment...')
-    
+
     // Create output directories
     await this.ensureDirectories()
     
@@ -208,8 +199,7 @@ class E2ETestRunner {
     
     // Initialize test databases/state
     await this.initializeTestState()
-    
-    console.log('✅ Test environment setup complete')
+
   }
 
   async ensureDirectories() {
@@ -218,19 +208,19 @@ class E2ETestRunner {
     for (const dir of dirs) {
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true })
-        console.log(`  📁 Created directory: ${dir}`)
+        
       }
     }
   }
 
   async startTestServices() {
     // Start any test-specific services (e.g., mock payment processors)
-    console.log('  🎭 Starting mock services for testing...')
+    
   }
 
   async initializeTestState() {
     // Clear any previous test state, set up fresh test data
-    console.log('  🧹 Initializing clean test state...')
+    
   }
 
   selectTestSuites(options) {
@@ -251,19 +241,16 @@ class E2ETestRunner {
     const priorityOrder = { critical: 1, high: 2, medium: 3, low: 4 }
     suites.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
 
-    console.log(`\\n📋 Selected ${suites.length} test suites to run:`)
     suites.forEach((suite, index) => {
-      console.log(`  ${index + 1}. ${suite.name} (${suite.priority}) - ${suite.description}`)
+       - ${suite.description}`)
     })
 
     return suites
   }
 
   async runTestSuite(suite, options) {
-    console.log(`\\n🧪 Running test suite: ${suite.name}`)
-    console.log(`📝 Description: ${suite.description}`)
-    console.log(`⏱️  Estimated duration: ${suite.estimatedDuration}`)
-    console.log('─'.repeat(50))
+
+    )
 
     const startTime = new Date()
     const suiteResult = {
@@ -282,8 +269,7 @@ class E2ETestRunner {
       const browsersToTest = options.browsers || this.config.browsers
       
       for (const browser of browsersToTest) {
-        console.log(`\\n🌐 Testing on ${browser}...`)
-        
+
         const browserResult = await this.runSuiteOnBrowser(suite, browser, options)
         suiteResult.browsers.push(browserResult)
         
@@ -332,9 +318,7 @@ class E2ETestRunner {
       
       // Build Playwright command
       const playwrightCmd = this.buildPlaywrightCommand(suite, browser, options)
-      
-      console.log(`  🏃 Executing: ${playwrightCmd}`)
-      
+
       const child = exec(playwrightCmd, (error, stdout, stderr) => {
         result.duration = new Date() - startTime
         
@@ -347,15 +331,13 @@ class E2ETestRunner {
         const testResults = this.parsePlaywrightOutput(stdout)
         result.tests = testResults
 
-        console.log(`  📊 ${browser} Results: ${testResults.passed}✅ ${testResults.failed}❌ ${testResults.skipped}⏭️`)
-        
         resolve(result)
       })
 
       // Handle real-time output
       child.stdout.on('data', (data) => {
         if (options.verbose) {
-          console.log(data.toString())
+          )
         }
       })
 
@@ -416,15 +398,10 @@ class E2ETestRunner {
   printSuiteResult(suiteResult) {
     const { name, duration, tests, status } = suiteResult
     const durationStr = this.formatDuration(duration)
-    
-    console.log(`\\n📊 Suite: ${name}`)
-    console.log(`⏱️  Duration: ${durationStr}`)
-    console.log(`📈 Results: ${tests.total} total, ${tests.passed} passed, ${tests.failed} failed, ${tests.skipped} skipped`)
-    console.log(`🎯 Status: ${status === 'passed' ? '✅ PASSED' : status === 'failed' ? '❌ FAILED' : '⚠️ ERROR'}`)
-    
+
     if (suiteResult.errors.length > 0) {
-      console.log(`🚨 Errors:`)
-      suiteResult.errors.forEach(error => console.log(`  - ${error}`))
+      
+      suiteResult.errors.forEach(error => )
     }
   }
 
@@ -432,18 +409,12 @@ class E2ETestRunner {
     const { totalTests, passed, failed, skipped, duration } = this.results
     const passRate = totalTests > 0 ? ((passed / totalTests) * 100).toFixed(1) : 0
     const durationStr = this.formatDuration(duration)
-    
-    console.log(`⏱️  Total Duration: ${durationStr}`)
-    console.log(`📊 Test Results: ${totalTests} total, ${passed} passed, ${failed} failed, ${skipped} skipped`)
-    console.log(`📈 Pass Rate: ${passRate}%`)
-    console.log(`🎯 Overall Status: ${failed === 0 ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED'}`)
-    
+
     if (this.results.errors.length > 0) {
-      console.log(`\\n🚨 Global Errors:`)
-      this.results.errors.forEach(error => console.log(`  - ${error}`))
+      
+      this.results.errors.forEach(error => )
     }
 
-    console.log(`\\n📄 Detailed reports available in: ${this.config.reportDir}`)
   }
 
   formatDuration(ms) {
@@ -458,8 +429,7 @@ class E2ETestRunner {
   }
 
   async generateReport() {
-    console.log('\\n📊 Generating comprehensive test report...')
-    
+
     const report = {
       summary: {
         executionId: `e2e-${Date.now()}`,
@@ -490,10 +460,8 @@ class E2ETestRunner {
     
     // Generate HTML report
     await this.generateHTMLReport(report)
-    
-    console.log(`✅ Reports generated:`)
-    console.log(`  📄 JSON: ${reportPath}`)
-    console.log(`  🌐 HTML: ${path.join(this.config.reportDir, 'index.html')}`)
+
+    }`)
   }
 
   generateRecommendations() {
@@ -518,29 +486,27 @@ class E2ETestRunner {
   async generateHTMLReport(report) {
     // Generate a comprehensive HTML report
     // This would create a detailed HTML report with charts, graphs, and detailed test results
-    console.log('  🎨 HTML report generation completed')
+    
   }
 
   async cleanup() {
-    console.log('\\n🧹 Cleaning up test environment...')
-    
+
     // Stop test services
     await this.stopTestServices()
     
     // Clean up temporary test data
     await this.cleanupTestData()
-    
-    console.log('✅ Cleanup completed')
+
   }
 
   async stopTestServices() {
     // Stop any test-specific services
-    console.log('  🛑 Stopping test services...')
+    
   }
 
   async cleanupTestData() {
     // Clean up any test data created during execution
-    console.log('  🗑️  Cleaning up test data...')
+    
   }
 }
 

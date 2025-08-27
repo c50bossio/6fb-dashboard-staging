@@ -306,19 +306,19 @@ export default function BadgeProgress({
         icon: Calendar,
         title: 'Book Next Appointment',
         description: 'Progress toward visit milestones',
-        action: () => console.log('Navigate to booking')
+        action: () => {}
       },
       {
         icon: Star,
         title: 'Leave a Review',
         description: 'Unlock the Review Star badge',
-        action: () => console.log('Navigate to reviews')
+        action: () => {}
       },
       {
         icon: Gift,
         title: 'Refer a Friend',
         description: 'Earn referral badges',
-        action: () => console.log('Open referral system')
+        action: () => {}
       }
     ]
 

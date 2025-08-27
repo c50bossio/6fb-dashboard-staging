@@ -13,16 +13,12 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 async function setupDemoUser() {
-  console.log('🔧 Setting up demo user...')
-  
+
   try {
     const { data: existingUser, error: checkError } = await supabase.auth.admin.getUserByEmail('demo@barbershop.com')
     
     if (existingUser?.user) {
-      console.log('✅ Demo user already exists')
-      console.log('User ID:', existingUser.user.id)
-      console.log('Email:', existingUser.user.email)
-      
+
       const { data: updateData, error: updateError } = await supabase.auth.admin.updateUserById(
         existingUser.user.id,
         { password: 'demo123' }
@@ -31,13 +27,12 @@ async function setupDemoUser() {
       if (updateError) {
         console.error('❌ Error updating password:', updateError)
       } else {
-        console.log('✅ Password updated to: demo123')
+        
       }
       
       return existingUser.user
     }
-    
-    console.log('📝 Creating new demo user...')
+
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
       email: 'demo@barbershop.com',
       password: 'demo123',
@@ -52,11 +47,7 @@ async function setupDemoUser() {
       console.error('❌ Error creating user:', createError)
       return null
     }
-    
-    console.log('✅ Demo user created successfully!')
-    console.log('User ID:', newUser.user.id)
-    console.log('Email:', newUser.user.email)
-    
+
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
@@ -71,7 +62,7 @@ async function setupDemoUser() {
     if (profileError) {
       console.error('⚠️ Error creating profile:', profileError)
     } else {
-      console.log('✅ Profile created successfully!')
+      
     }
     
     return newUser.user
@@ -83,8 +74,7 @@ async function setupDemoUser() {
 }
 
 async function testLogin() {
-  console.log('\n🧪 Testing login with demo credentials...')
-  
+
   const { data, error } = await supabase.auth.signInWithPassword({
     email: 'demo@barbershop.com',
     password: 'demo123'
@@ -93,27 +83,18 @@ async function testLogin() {
   if (error) {
     console.error('❌ Login test failed:', error.message)
   } else {
-    console.log('✅ Login test successful!')
-    console.log('Session:', data.session ? 'Active' : 'None')
-    console.log('User:', data.user?.email)
+
   }
 }
 
 async function main() {
-  console.log('🚀 Supabase Demo User Setup')
-  console.log('URL:', supabaseUrl)
-  console.log('----------------------------\n')
-  
+
   const user = await setupDemoUser()
   
   if (user) {
     await testLogin()
   }
-  
-  console.log('\n✨ Setup complete!')
-  console.log('You can now login with:')
-  console.log('Email: demo@barbershop.com')
-  console.log('Password: demo123')
+
 }
 
 main().catch(console.error)

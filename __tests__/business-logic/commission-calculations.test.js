@@ -200,7 +200,7 @@ describe('Commission Calculation Business Logic', () => {
       scenarios.forEach((scenario, index) => {
         const result = calculateHybridCommission(scenario.payment, arrangement, scenario.monthlyRevenue)
         expect(result.barberAmount).toBe(scenario.expectedCommission)
-        console.log(`Scenario ${index + 1}: Revenue ${scenario.monthlyRevenue}, Commission: ${result.barberAmount}`)
+        
       })
     })
   })

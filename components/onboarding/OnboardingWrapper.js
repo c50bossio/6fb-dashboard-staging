@@ -29,8 +29,7 @@ export default function OnboardingWrapper() {
   const CurrentStepComponent = currentStep?.component
 
   const handleStepComplete = (data) => {
-    console.log('Step completed:', currentStep.key, data)
-    
+
     // Mark step as completed
     setCompletedSteps(prev => new Set([...prev, currentStep.key]))
     
@@ -38,7 +37,7 @@ export default function OnboardingWrapper() {
     if (currentStepIndex < ONBOARDING_STEPS.length - 1) {
       setCurrentStepIndex(currentStepIndex + 1)
     } else {
-      console.log('Onboarding completed!')
+      
       // Handle onboarding completion
     }
   }
@@ -133,7 +132,7 @@ export default function OnboardingWrapper() {
                       onComplete={handleStepComplete}
                       updateData={(data) => {
                         // Handle data updates if needed
-                        console.log('Data updated:', data)
+                        
                       }}
                     />
                   )}

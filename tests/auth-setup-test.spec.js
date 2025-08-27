@@ -18,6 +18,5 @@ test('updated authentication setup test', async ({ page }) => {
   await page.waitForLoadState('networkidle')
   
   await expect(page).toHaveURL(/\/dashboard/)
-  
-  console.log('✅ Authentication setup successful!')
+
 })

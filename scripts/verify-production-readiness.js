@@ -52,7 +52,7 @@ class ProductionReadinessChecker {
   }
 
   async checkEnvironmentFile() {
-    console.log(chalk.blue('\n📋 Checking environment configuration...'))
+    )
     
     try {
       // Check if production template exists
@@ -90,7 +90,7 @@ class ProductionReadinessChecker {
   }
 
   async checkForHardcodedValues() {
-    console.log(chalk.blue('\n🔍 Scanning for hard-coded values...'))
+    )
     
     const patterns = [
       {
@@ -140,7 +140,7 @@ class ProductionReadinessChecker {
   }
 
   async checkConfigurationService() {
-    console.log(chalk.blue('\n⚙️  Checking configuration service...'))
+    )
     
     try {
       await fs.access(path.join(rootDir, 'lib/config-service.js'))
@@ -168,7 +168,7 @@ class ProductionReadinessChecker {
   }
 
   async checkDatabaseSchema() {
-    console.log(chalk.blue('\n💾 Checking database configuration...'))
+    )
     
     const sqlFiles = await this.findFiles(rootDir, ['.sql'])
     let hasTestData = false
@@ -199,7 +199,7 @@ class ProductionReadinessChecker {
   }
 
   async checkSecuritySettings() {
-    console.log(chalk.blue('\n🔐 Checking security configuration...'))
+    )
     
     // Check middleware security
     try {
@@ -258,53 +258,53 @@ class ProductionReadinessChecker {
   }
 
   printReport() {
-    console.log(chalk.bold.white('\n\n📊 PRODUCTION READINESS REPORT'))
-    console.log(chalk.gray('━'.repeat(50)))
+    )
+    ))
     
     if (this.passed.length > 0) {
-      console.log(chalk.green('\n✅ PASSED CHECKS:'))
-      this.passed.forEach(item => console.log(`   ${item}`))
+      )
+      this.passed.forEach(item => )
     }
     
     if (this.warnings.length > 0) {
-      console.log(chalk.yellow('\n⚠️  WARNINGS:'))
-      this.warnings.forEach(item => console.log(`   ${item}`))
+      )
+      this.warnings.forEach(item => )
     }
     
     if (this.issues.length > 0) {
-      console.log(chalk.red('\n❌ CRITICAL ISSUES:'))
-      this.issues.forEach(item => console.log(`   ${item}`))
+      )
+      this.issues.forEach(item => )
     }
     
-    console.log(chalk.gray('\n' + '━'.repeat(50)))
+    ))
     
     const score = Math.round((this.passed.length / (this.passed.length + this.issues.length + this.warnings.length * 0.5)) * 100)
     
     if (this.issues.length === 0) {
       if (this.warnings.length === 0) {
-        console.log(chalk.bold.green(`\n🎉 PRODUCTION READY! Score: ${score}%`))
-        console.log(chalk.green('All checks passed. Your application is ready for production.'))
+        )
+        )
       } else {
-        console.log(chalk.bold.yellow(`\n⚠️  MOSTLY READY - Score: ${score}%`))
-        console.log(chalk.yellow('Address warnings before deploying to production.'))
+        )
+        )
       }
     } else {
-      console.log(chalk.bold.red(`\n❌ NOT PRODUCTION READY - Score: ${score}%`))
-      console.log(chalk.red('Critical issues must be resolved before production deployment.'))
+      )
+      )
     }
     
-    console.log(chalk.gray('\nNext steps:'))
-    console.log(chalk.gray('1. Copy .env.production.template to .env.production'))
-    console.log(chalk.gray('2. Fill in all production values'))
-    console.log(chalk.gray('3. Run npm run lint && npm run build'))
-    console.log(chalk.gray('4. Test all integrations with production credentials'))
-    console.log(chalk.gray('5. Set up monitoring and error tracking'))
+    )
+    )
+    )
+    )
+    )
+    )
   }
 }
 
 // Run the checker
 async function main() {
-  console.log(chalk.bold.cyan('\n🚀 6FB AI Agent System - Production Readiness Check\n'))
+  )
   
   const checker = new ProductionReadinessChecker()
   

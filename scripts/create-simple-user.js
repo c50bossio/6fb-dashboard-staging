@@ -18,8 +18,7 @@ const supabase = createClient(
 );
 
 async function createSimpleUser() {
-  console.log('Creating simple test user...\n');
-  
+
   const testUser = {
     email: 'test@bookedbarber.com',
     password: 'Test1234',  // Simple password without special characters
@@ -39,8 +38,7 @@ async function createSimpleUser() {
 
     if (error) {
       if (error.message.includes('already exists')) {
-        console.log('User already exists, updating password...');
-        
+
         const { data: users } = await supabase.auth.admin.listUsers();
         const existingUser = users?.users?.find(u => u.email === testUser.email);
         
@@ -53,7 +51,7 @@ async function createSimpleUser() {
           if (updateError) {
             console.error('Failed to update password:', updateError.message);
           } else {
-            console.log('✅ Password updated successfully');
+            
           }
         }
       } else {
@@ -61,14 +59,9 @@ async function createSimpleUser() {
         return;
       }
     } else {
-      console.log('✅ User created successfully');
+      
     }
 
-    console.log('\n📝 Simple Test Credentials:');
-    console.log('   Email: test@bookedbarber.com');
-    console.log('   Password: Test1234');
-    console.log('\n✅ Ready to test!');
-    
   } catch (error) {
     console.error('Error:', error.message);
   }

@@ -80,8 +80,7 @@ export default function BookingLinksPage() {
       
     } catch (error) {
       console.error('Failed to load booking links:', error)
-      
-      console.log('🔄 Using fallback mock booking links data...')
+
       const mockBookingLinks = [
         {
           id: 'demo-link-1',

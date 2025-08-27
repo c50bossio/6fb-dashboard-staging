@@ -76,7 +76,7 @@ export default function DataImportWidget({ profile, onStartImport }) {
     // Track the start of import flow
     if (typeof window !== 'undefined') {
       // Could integrate with analytics here
-      console.log('🚀 Starting post-onboarding data import')
+      
     }
     
     // Navigate to dedicated import page or trigger modal

@@ -52,8 +52,7 @@ export async function GET(request) {
     
     // Development fallback for testing loyalty points without proper authentication
     if ((!session?.user || sessionError) && process.env.NODE_ENV === 'development') {
-      console.log('🔧 [DEV LOYALTY] No session found, using development fallback user...');
-      
+
       // Use the same hardcoded test user as /api/auth/user
       user = {
         id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
@@ -71,8 +70,7 @@ export async function GET(request) {
         shop_id: 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9', // Known test barbershop ID
         onboarding_completed: true
       };
-      
-      console.log('🔧 [DEV LOYALTY] Development fallback user configured for loyalty API');
+
     } else if (sessionError || !session?.user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -280,8 +278,7 @@ export async function POST(request) {
     
     // Development fallback for testing loyalty points without proper authentication
     if ((!session?.user || sessionError) && process.env.NODE_ENV === 'development') {
-      console.log('🔧 [DEV LOYALTY] No session found in POST, using development fallback user...');
-      
+
       // Use the same hardcoded test user as /api/auth/user
       user = {
         id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
@@ -299,8 +296,7 @@ export async function POST(request) {
         shop_id: 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9', // Known test barbershop ID
         onboarding_completed: true
       };
-      
-      console.log('🔧 [DEV LOYALTY] Development fallback user configured for loyalty POST API');
+
     } else if (sessionError || !session?.user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }

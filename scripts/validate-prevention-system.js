@@ -74,10 +74,10 @@ class SystemValidator {
     }
 
     const color = colors[level] || colors.info
-    console.log(`${color}[${level.toUpperCase()}]${colors.reset} ${test}: ${message}`)
+    }]${colors.reset} ${test}: ${message}`)
     
     if (data) {
-      console.log('  Details:', JSON.stringify(data, null, 2))
+      )
     }
 
     // Store result
@@ -341,15 +341,12 @@ class SystemValidator {
   }
 
   async runFullValidation() {
-    console.log(`🧪 Running Profile Consistency Prevention System Validation`)
-    console.log(`📊 Environment: ${this.environment}`)
-    console.log(`⚙️  Configuration: ${JSON.stringify(this.config, null, 2)}`)
-    console.log('')
+
+    }`)
 
     if (this.config.requireConfirmation) {
-      console.log('⚠️  This is a production environment.')
-      console.log('Some tests will be skipped to prevent data corruption.')
-      console.log('Continue? (y/N)')
+
+      ')
       
       // In a real implementation, you'd wait for user input
       // For now, we'll assume confirmation
@@ -368,37 +365,24 @@ class SystemValidator {
   }
 
   generateFinalReport() {
-    console.log('')
-    console.log('📊 VALIDATION RESULTS')
-    console.log('=' .repeat(50))
-    console.log(`✅ Passed: ${this.results.passed}`)
-    console.log(`❌ Failed: ${this.results.failed}`)
-    console.log(`⏭️  Skipped: ${this.results.skipped}`)
-    console.log(`⚠️  Warnings: ${this.results.warnings}`)
-    console.log('')
+
+    )
 
     const totalTests = this.results.passed + this.results.failed
     const successRate = totalTests > 0 ? (this.results.passed / totalTests * 100).toFixed(1) : 0
 
-    console.log(`📈 Success Rate: ${successRate}%`)
-    
     if (this.results.failed === 0 && this.results.warnings === 0) {
-      console.log('🎉 ALL SYSTEMS OPERATIONAL')
-      console.log('Profile Consistency Prevention System is fully functional!')
+
     } else if (this.results.failed === 0) {
-      console.log('✅ SYSTEM OPERATIONAL WITH WARNINGS')
-      console.log('Review warnings for potential improvements.')
+
     } else {
-      console.log('❌ SYSTEM ISSUES DETECTED')
-      console.log('Please address failed tests before deployment.')
+
     }
 
-    console.log('')
-    console.log('💾 Detailed Results:')
     this.results.tests
       .filter(test => test.level === 'fail' || test.level === 'warn')
       .forEach(test => {
-        console.log(`  ${test.level.toUpperCase()}: ${test.test} - ${test.message}`)
+        }: ${test.test} - ${test.message}`)
       })
 
     return {

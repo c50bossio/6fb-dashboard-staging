@@ -208,16 +208,10 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
   const policyScore = calculatePolicyScore()
   const policyType = policyScore >= 5 ? 'Flexible' : policyScore >= 0 ? 'Balanced' : 'Strict'
 
-  // Auto-save to Supabase when rules change - properly memoized to prevent recreation
-  const debouncedSave = useMemo(
-    () => debounce((rulesData) => {
-      const snakeCaseRules = FieldNormalizer.normalizeObject(rulesData, true) // true = toSnakeCase
-      saveStep('booking_policies', { booking_rules: snakeCaseRules })
-    }, 1500),
-    [saveStep]
-  )
+  // Track saving state
+  const [isSaving, setIsSaving] = useState(false)
 
-  // Memoize update function to prevent useEffect dependency changes
+  // Update parent data when rules change (without auto-saving)
   const handleUpdateData = useCallback((rulesData) => {
     if (updateData) {
       const snakeCaseRules = FieldNormalizer.normalizeObject(rulesData, true) // true = toSnakeCase
@@ -225,16 +219,23 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
     }
   }, [updateData])
 
-  // Update parent data and auto-save - using JSON.stringify to detect actual changes
-  const rulesString = JSON.stringify(rules)
+  // Update parent data when rules change (without auto-save)
   useEffect(() => {
     handleUpdateData(rules)
-    
-    // Auto-save to Supabase database
-    if (Object.keys(rules).length > 0) {
-      debouncedSave(rules)
+  }, [rules, handleUpdateData])
+
+  // Manual save handler
+  const handleManualSave = async () => {
+    setIsSaving(true)
+    try {
+      const snakeCaseRules = FieldNormalizer.normalizeObject(rules, true) // true = toSnakeCase
+      await saveStep('booking_policies', { booking_rules: snakeCaseRules })
+    } catch (error) {
+      console.error('Error saving booking rules:', error)
+    } finally {
+      setIsSaving(false)
     }
-  }, [rulesString, handleUpdateData, debouncedSave]) // Use rulesString instead of rules object
+  }
   
   // Restore rules data when session data changes (cross-tab sync)
   useEffect(() => {
@@ -880,6 +881,38 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
         </div>
       </div>
 
+      {/* Save Button */}
+      <div className="flex justify-end space-x-3 mt-6">
+        <button
+          onClick={handleManualSave}
+          disabled={isSaving || !hasUnsavedChanges}
+          className={`px-6 py-2.5 rounded-lg font-medium transition-colors ${
+            isSaving || !hasUnsavedChanges
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
+          }`}
+        >
+          {isSaving ? (
+            <span className="flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Saving...
+            </span>
+          ) : hasUnsavedChanges ? (
+            'Save Changes'
+          ) : (
+            <span className="flex items-center">
+              <svg className="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              Saved
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* Status Display with Progress */}
       <div className="flex justify-between items-center pt-4">
         <div className="text-sm text-gray-500">
@@ -893,15 +926,3 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
   )
 }
 
-// Utility debounce function (same as in OnboardingContext)
-function debounce(func, wait) {
-  let timeout
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout)
-      func(...args)
-    }
-    clearTimeout(timeout)
-    timeout = setTimeout(later, wait)
-  }
-}

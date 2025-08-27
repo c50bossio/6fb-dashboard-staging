@@ -707,7 +707,7 @@ async function awardReferralPoints(customerId, points, type, referralId, barbers
       .single();
 
     if (enrollmentError || !enrollment) {
-      console.log(`Customer ${customerId} not enrolled in loyalty program, skipping points award`);
+      
       return;
     }
 

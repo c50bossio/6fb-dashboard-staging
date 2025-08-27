@@ -18,14 +18,12 @@ import {
 
 export async function handleEnhancedTransferCreated(transfer) {
   try {
-    console.log(`🔄 Processing enhanced transfer.created: ${transfer.id}`)
-    
+
     // Call the enhanced handler
     const result = await enhancedHandleTransferCreated(transfer)
     
     if (result.success) {
-      console.log(`✅ Enhanced transfer.created processed successfully: ${transfer.id}`)
-      
+
       // Trigger real-time updates if needed
       await triggerRealTimeUpdate('transfer_created', {
         transfer_id: transfer.id,
@@ -48,14 +46,12 @@ export async function handleEnhancedTransferCreated(transfer) {
 
 export async function handleEnhancedTransferPaid(transfer) {
   try {
-    console.log(`🔄 Processing enhanced transfer.paid: ${transfer.id}`)
-    
+
     // Call the enhanced handler
     const result = await enhancedHandleTransferPaid(transfer)
     
     if (result.success) {
-      console.log(`✅ Enhanced transfer.paid processed successfully: ${transfer.id}`)
-      
+
       // Trigger real-time updates and notifications
       await triggerRealTimeUpdate('transfer_paid', {
         transfer_id: transfer.id,
@@ -81,14 +77,12 @@ export async function handleEnhancedTransferPaid(transfer) {
 
 export async function handleEnhancedTransferFailed(transfer) {
   try {
-    console.log(`🔄 Processing enhanced transfer.failed: ${transfer.id}`)
-    
+
     // Call the enhanced handler
     const result = await enhancedHandleTransferFailed(transfer)
     
     if (result.success) {
-      console.log(`✅ Enhanced transfer.failed processed successfully: ${transfer.id}`)
-      
+
       // Trigger real-time updates and failure notifications
       await triggerRealTimeUpdate('transfer_failed', {
         transfer_id: transfer.id,
@@ -117,14 +111,12 @@ export async function handleEnhancedTransferFailed(transfer) {
 
 export async function handleEnhancedTransferReversed(transfer) {
   try {
-    console.log(`🔄 Processing enhanced transfer.reversed: ${transfer.id}`)
-    
+
     // Call the enhanced handler
     const result = await enhancedHandleTransferReversed(transfer)
     
     if (result.success) {
-      console.log(`✅ Enhanced transfer.reversed processed successfully: ${transfer.id}`)
-      
+
       // Trigger real-time updates and reversal notifications
       await triggerRealTimeUpdate('transfer_reversed', {
         transfer_id: transfer.id,
@@ -159,8 +151,7 @@ export async function handleEnhancedTransferReversed(transfer) {
 
 export async function handleEnhancedPayoutCreated(payout) {
   try {
-    console.log(`🔄 Processing enhanced payout.created: ${payout.id}`)
-    
+
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
     
@@ -215,9 +206,7 @@ export async function handleEnhancedPayoutCreated(payout) {
       amount: payout.amount / 100,
       expected_arrival: new Date(payout.arrival_date * 1000)
     })
-    
-    console.log(`✅ Enhanced payout.created processed: ${payout.id}`)
-    
+
     return {
       success: true,
       payout_tracking_id: payoutTracking.id,
@@ -232,8 +221,7 @@ export async function handleEnhancedPayoutCreated(payout) {
 
 export async function handleEnhancedPayoutPaid(payout) {
   try {
-    console.log(`🔄 Processing enhanced payout.paid: ${payout.id}`)
-    
+
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
     
@@ -270,9 +258,7 @@ export async function handleEnhancedPayoutPaid(payout) {
         completion_time: new Date()
       })
     }
-    
-    console.log(`✅ Enhanced payout.paid processed: ${payout.id}`)
-    
+
     return { success: true, amount: payout.amount / 100 }
     
   } catch (error) {
@@ -289,9 +275,7 @@ async function triggerRealTimeUpdate(eventType, data) {
   try {
     // In production, this would trigger WebSocket updates or Server-Sent Events
     // For now, we'll log the update and could trigger push notifications
-    
-    console.log(`📡 Real-time update triggered: ${eventType}`, data)
-    
+
     // Could integrate with services like:
     // - WebSocket server for real-time dashboard updates
     // - Push notification service for mobile apps
@@ -375,9 +359,7 @@ async function schedulePayoutRetry(payoutRecordId) {
         `)
       })
       .eq('id', payoutRecordId)
-    
-    console.log(`📅 Payout retry scheduled for: ${payoutRecordId}`)
-    
+
   } catch (error) {
     console.error('Error scheduling payout retry:', error)
   }
@@ -386,8 +368,7 @@ async function schedulePayoutRetry(payoutRecordId) {
 async function triggerAdminAlert(alertType, data) {
   try {
     // Integration with admin notification system
-    console.log(`🚨 Admin alert triggered: ${alertType}`, data)
-    
+
     // Could integrate with:
     // - Slack webhook
     // - Discord webhook  

@@ -342,9 +342,8 @@ export const contextDebugUtils = {
   logContextChanges: (contextName, oldValue, newValue) => {
     if (process.env.NODE_ENV === 'development') {
       console.group(`🔄 Context Change: ${contextName}`)
-      console.log('Old:', oldValue)
-      console.log('New:', newValue)
-      console.log('Changed keys:', findChangedKeys(oldValue, newValue))
+
+      )
       console.groupEnd()
     }
   },

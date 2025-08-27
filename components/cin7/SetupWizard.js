@@ -152,16 +152,10 @@ export default function SetupWizard({ onComplete, onClose }) {
         // Ensure dev_bypass is set in localStorage for consistency
         if (typeof window !== 'undefined' && !localStorage.getItem('dev_bypass')) {
           localStorage.setItem('dev_bypass', 'true')
-          console.log('✅ Development mode detected - dev bypass enabled')
+          
         }
       }
-      
-      console.log('🔧 Setup request config:', {
-        devMode: isDevMode,
-        headers: { ...headers, 'x-dev-bypass': headers['x-dev-bypass'] || 'false' },
-        environment: process.env.NODE_ENV
-      })
-      
+
       const setupResponse = await fetch('/api/cin7/setup', {
         method: 'POST',
         headers,
@@ -234,7 +228,7 @@ export default function SetupWizard({ onComplete, onClose }) {
           setup: null,
           setupWarning: null
         }))
-        console.log('✅ Setup successful:', setupData)
+        
       }
 
       // Setup is complete! Store setup result and show completion/sync choice
@@ -264,7 +258,7 @@ export default function SetupWizard({ onComplete, onClose }) {
         setSyncProgress(0) // Reset sync progress
         
         // Show setup completion message
-        console.log('🎉 Setup completed successfully:', setupResult)
+        
       }, 500)
     } catch (error) {
       setErrors({ setup: error.message })
@@ -285,8 +279,6 @@ export default function SetupWizard({ onComplete, onClose }) {
       if (!syncCredentials || !syncCredentials.accountId || !syncCredentials.apiKey) {
         throw new Error('No sync credentials available. Please complete setup first.')
       }
-
-      console.log('🔄 Starting manual sync with stored credentials')
 
       // Simulate progress updates
       const progressInterval = setInterval(() => {
@@ -315,13 +307,7 @@ export default function SetupWizard({ onComplete, onClose }) {
         apiKey: syncCredentials.apiKey,
         accountName: syncCredentials.accountName
       }
-      
-      console.log('🔄 Manual sync request config:', {
-        devMode: isDevMode,
-        headers: { ...headers, 'x-dev-bypass': headers['x-dev-bypass'] || 'false' },
-        syncBody: { ...syncBody, apiKey: syncBody.apiKey ? '[REDACTED]' : 'missing' }
-      })
-      
+
       const syncResponse = await fetch('/api/cin7/sync', {
         method: 'POST',
         headers,
@@ -377,8 +363,7 @@ export default function SetupWizard({ onComplete, onClose }) {
 
       // Check if sync was successful
       if (syncData.success || syncData.count >= 0) {
-        console.log('✅ Manual sync completed successfully:', syncResult)
-        
+
         // Set sync completed to show completion UI
         setTimeout(() => {
           setSyncCompleted(true)

@@ -33,12 +33,10 @@ export class ContinuousSecurityMonitor extends EventEmitter {
    */
   async start() {
     if (this.isRunning) {
-      console.log('Security monitoring is already running');
+      
       return;
     }
 
-    console.log('🚀 Starting continuous security monitoring...');
-    
     this.isRunning = true;
     
     await fs.mkdir(this.reportDir, { recursive: true });
@@ -50,8 +48,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
     await this.runInitialScan();
     
     await this.startRealtimeMonitoring();
-    
-    console.log('✅ Continuous security monitoring started successfully');
+
     this.emit('monitoring-started');
   }
 
@@ -60,20 +57,17 @@ export class ContinuousSecurityMonitor extends EventEmitter {
    */
   async stop() {
     if (!this.isRunning) {
-      console.log('Security monitoring is not running');
+      
       return;
     }
 
-    console.log('🛑 Stopping continuous security monitoring...');
-    
     this.isRunning = false;
     
     this.scanIntervals.forEach(interval => clearInterval(interval));
     this.scanIntervals.clear();
     
     await this.generateFinalReport();
-    
-    console.log('✅ Continuous security monitoring stopped');
+
     this.emit('monitoring-stopped');
   }
 
@@ -122,15 +116,13 @@ export class ContinuousSecurityMonitor extends EventEmitter {
    * Run initial security scan
    */
   async runInitialScan() {
-    console.log('🔍 Running initial security scan...');
-    
+
     try {
       const scanner = new AutomatedSecurityScanner();
       const results = await scanner.runCompleteScan();
       
       await this.processSecurityResults(results, 'initial-scan');
-      
-      console.log('✅ Initial security scan completed');
+
     } catch (error) {
       console.error('❌ Initial security scan failed:', error.message);
       this.emit('scan-error', { type: 'initial-scan', error: error.message });
@@ -141,8 +133,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
    * Run quick security scan (lightweight checks)
    */
   async runQuickSecurityScan() {
-    console.log('⚡ Running quick security scan...');
-    
+
     try {
       const results = {
         timestamp: new Date().toISOString(),
@@ -163,8 +154,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
       results.checks.push(dnsResults);
 
       await this.processSecurityResults(results, 'quick-scan');
-      
-      console.log(`✅ Quick security scan completed - ${results.checks.length} checks performed`);
+
     } catch (error) {
       console.error('❌ Quick security scan failed:', error.message);
       this.emit('scan-error', { type: 'quick-scan', error: error.message });
@@ -175,15 +165,13 @@ export class ContinuousSecurityMonitor extends EventEmitter {
    * Run full security scan
    */
   async runFullSecurityScan() {
-    console.log('🔍 Running full security scan...');
-    
+
     try {
       const scanner = new AutomatedSecurityScanner();
       const results = await scanner.runCompleteScan();
       
       await this.processSecurityResults(results, 'full-scan');
-      
-      console.log('✅ Full security scan completed');
+
     } catch (error) {
       console.error('❌ Full security scan failed:', error.message);
       this.emit('scan-error', { type: 'full-scan', error: error.message });
@@ -351,8 +339,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
    * Start real-time monitoring for specific security events
    */
   async startRealtimeMonitoring() {
-    console.log('🔄 Starting real-time security monitoring...');
-    
+
     await this.monitorSuspiciousActivities();
     
     await this.monitorSystemResources();
@@ -372,7 +359,6 @@ export class ContinuousSecurityMonitor extends EventEmitter {
       /(\b(admin|root|administrator)\b.*\b(password|pwd|pass)\b)/i // Credential attacks
     ];
 
-    console.log('👀 Monitoring for suspicious activities...');
   }
 
   /**
@@ -414,8 +400,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
    * Monitor security logs
    */
   async monitorSecurityLogs() {
-    console.log('📋 Monitoring security logs...');
-    
+
     const logMonitor = setInterval(async () => {
       if (!this.isRunning) {
         clearInterval(logMonitor);
@@ -451,8 +436,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
    * Check for vulnerability database updates
    */
   async checkVulnerabilityUpdates() {
-    console.log('🔄 Checking for vulnerability database updates...');
-    
+
     try {
       // - CVE database
       // - OWASP dependency check database
@@ -574,8 +558,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
    */
   
   async handleVulnerabilityDetected(data) {
-    console.log(`🚨 Critical vulnerabilities detected: ${data.vulnerabilities.length}`);
-    
+
     const alert = {
       id: `vuln_${Date.now()}`,
       type: 'vulnerability-detected',
@@ -589,8 +572,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
   }
 
   async handleSecurityScoreChange(data) {
-    console.log(`📊 Security score changed: ${data.score}`);
-    
+
     if (data.score < 50) {
       const alert = {
         id: `score_${Date.now()}`,
@@ -606,8 +588,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
   }
 
   async handleComplianceViolation(data) {
-    console.log(`⚖️ Compliance violation detected: ${data.violation}`);
-    
+
     const alert = {
       id: `compliance_${Date.now()}`,
       type: 'compliance-violation',
@@ -621,7 +602,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
   }
 
   async handleAlertThresholdExceeded(data) {
-    console.log(`🔔 Alert threshold exceeded: ${data.type} (${data.count}/${data.threshold})`);
+    `);
     
     const alert = {
       id: `threshold_${Date.now()}`,
@@ -651,14 +632,13 @@ export class ContinuousSecurityMonitor extends EventEmitter {
       }
     }
 
-    console.log(`🔔 ALERT [${alert.severity}]: ${alert.type}`, alert.data);
   }
 
   /**
    * Send email alert
    */
   async sendEmailAlert(alert) {
-    console.log(`📧 Email alert sent: ${alert.type}`);
+    
   }
 
   /**
@@ -678,7 +658,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
         });
 
         if (response.ok) {
-          console.log(`🔗 Webhook alert sent to ${webhook.name}`);
+          
         } else {
           console.error(`❌ Webhook alert failed for ${webhook.name}: ${response.status}`);
         }
@@ -696,7 +676,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
     const filepath = path.join(this.reportDir, filename);
     
     await fs.writeFile(filepath, JSON.stringify(results, null, 2));
-    console.log(`💾 Scan results saved: ${filename}`);
+    
   }
 
   /**
@@ -721,8 +701,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
 
     const reportPath = path.join(this.reportDir, 'monitoring-final-report.json');
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
-    
-    console.log(`📊 Final monitoring report saved: ${reportPath}`);
+
     return report;
   }
 

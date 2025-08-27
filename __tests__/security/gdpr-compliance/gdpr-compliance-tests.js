@@ -22,7 +22,6 @@ export class GDPRComplianceTester {
    * Run comprehensive GDPR compliance testing
    */
   async runGDPRComplianceTests() {
-    console.log('🇪🇺 Starting GDPR compliance testing...');
 
     const testSuites = [
       () => this.testConsentManagement(),
@@ -61,7 +60,6 @@ export class GDPRComplianceTester {
    * Test consent management mechanisms
    */
   async testConsentManagement() {
-    console.log('✅ Testing consent management...');
 
     await this.page.goto('/');
     
@@ -203,7 +201,6 @@ export class GDPRComplianceTester {
    * Test Right to Access (Article 15)
    */
   async testRightToAccess() {
-    console.log('📖 Testing Right to Access...');
 
     const testSubject = this.testSubjects[0];
     
@@ -301,7 +298,6 @@ export class GDPRComplianceTester {
    * Test Right to Rectification (Article 16)
    */
   async testRightToRectification() {
-    console.log('✏️ Testing Right to Rectification...');
 
     const testSubject = this.testSubjects[0];
     const userId = await this.createTestUser(testSubject);
@@ -358,7 +354,6 @@ export class GDPRComplianceTester {
    * Test Right to Erasure (Article 17)
    */
   async testRightToErasure() {
-    console.log('🗑️ Testing Right to Erasure...');
 
     const testSubject = this.testSubjects[1];
     const userId = await this.createTestUser(testSubject);
@@ -449,7 +444,6 @@ export class GDPRComplianceTester {
    * Test Right to Data Portability (Article 20)
    */
   async testRightToPortability() {
-    console.log('📤 Testing Right to Data Portability...');
 
     const testSubject = this.testSubjects[0];
     const userId = await this.createTestUser(testSubject);
@@ -507,7 +501,6 @@ export class GDPRComplianceTester {
    * Test data minimization principle
    */
   async testDataMinimization() {
-    console.log('📊 Testing Data Minimization...');
 
     await this.page.goto('/register');
     
@@ -578,7 +571,6 @@ export class GDPRComplianceTester {
    * Test lawful basis tracking
    */
   async testLawfulBasisTracking() {
-    console.log('⚖️ Testing Lawful Basis Tracking...');
 
     const privacyPaths = ['/privacy', '/privacy-policy', '/legal/privacy'];
     let lawfulBasisFound = false;
@@ -619,7 +611,6 @@ export class GDPRComplianceTester {
    * Test cookie compliance
    */
   async testCookieCompliance() {
-    console.log('🍪 Testing Cookie Compliance...');
 
     await this.page.goto('/');
     
@@ -707,7 +698,7 @@ export class GDPRComplianceTester {
       
       return null;
     } catch (error) {
-      console.log(`Failed to create test user: ${error.message}`);
+      
       return null;
     }
   }
@@ -716,13 +707,12 @@ export class GDPRComplianceTester {
    * Clean up test data
    */
   async cleanupTestData() {
-    console.log('🧹 Cleaning up test data...');
-    
+
     for (const testData of this.createdTestData) {
       try {
         await this.page.request.delete(`${this.baseUrl}/api/users/test/${testData.userId}`);
       } catch (error) {
-        console.log(`Could not cleanup test user ${testData.userId}: ${error.message}`);
+        
       }
     }
   }
@@ -738,8 +728,7 @@ export class GDPRComplianceTester {
       description,
       details
     });
-    
-    console.log(`[${severity}] ${category}: ${description}`);
+
   }
 
   /**
@@ -768,13 +757,6 @@ export class GDPRComplianceTester {
       recommendations,
       gdprArticleAssessment: this.assessGDPRArticles()
     };
-
-    console.log('📊 GDPR Compliance Summary:');
-    console.log(`✅ Passed: ${summary.passed}`);
-    console.log(`🔴 High: ${summary.high}`);
-    console.log(`🟡 Medium: ${summary.medium}`);
-    console.log(`🟢 Low: ${summary.low}`);
-    console.log(`📊 Compliance Score: ${complianceScore}/100`);
 
     return report;
   }

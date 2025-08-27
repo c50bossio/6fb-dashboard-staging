@@ -257,7 +257,7 @@ function updateFile(filePath) {
     
     if (hasChanges) {
       fs.writeFileSync(filePath, content);
-      console.log(`✅ Updated: ${filePath}`);
+      
       return true;
     }
     return false;
@@ -272,8 +272,7 @@ function escapeRegExp(string) {
 }
 
 async function main() {
-  console.log('🎨 Starting color theme update to Deep Olive & Gold...\n');
-  
+
   let totalFiles = 0;
   let updatedFiles = 0;
   
@@ -290,11 +289,7 @@ async function main() {
       }
     }
   }
-  
-  console.log('\n📊 Update Summary:');
-  console.log(`   Total files scanned: ${totalFiles}`);
-  console.log(`   Files updated: ${updatedFiles}`);
-  console.log('\n✨ Color theme update complete!');
+
 }
 
 main().catch(console.error);

@@ -74,12 +74,6 @@ class BookingTestData {
 
       this.testData.service = services[0]
 
-      console.log('Test data setup completed:', {
-        barbershop: this.testData.barbershop.name,
-        barber: this.testData.barber.name,
-        service: this.testData.service.name
-      })
-
       return this.testData
     } catch (error) {
       console.error('Test data setup failed:', error)
@@ -131,7 +125,6 @@ test.describe('Complete Booking Flow - End-to-End', () => {
   })
 
   test('Complete booking flow with online payment', async ({ page }) => {
-    console.log('Testing complete booking flow with online payment...')
 
     // Step 1: Verify booking wizard loads with real shop settings
     await expect(page.locator('h1')).toContainText('Book Your Appointment')
@@ -285,7 +278,6 @@ test.describe('Complete Booking Flow - End-to-End', () => {
   })
 
   test('Complete booking flow with in-person payment', async ({ page }) => {
-    console.log('Testing complete booking flow with in-person payment...')
 
     // Navigate through booking steps (location, barber, service, time)
     await page.goto(testData.getBookingUrl())
@@ -331,7 +323,6 @@ test.describe('Complete Booking Flow - End-to-End', () => {
   })
 
   test('Booking flow with failed payment handling', async ({ page }) => {
-    console.log('Testing booking flow with failed payment...')
 
     // Navigate through booking steps
     await page.goto(testData.getBookingUrl())
@@ -382,7 +373,6 @@ test.describe('Complete Booking Flow - End-to-End', () => {
   })
 
   test('Booking wizard loads real shop settings correctly', async ({ page }) => {
-    console.log('Testing shop settings integration...')
 
     await page.goto(testData.getBookingUrl())
     await page.waitForLoadState('networkidle')
@@ -433,7 +423,6 @@ test.describe('Complete Booking Flow - End-to-End', () => {
   })
 
   test('Verify no mock data is used in booking flow', async ({ page }) => {
-    console.log('Verifying no mock data is used...')
 
     // Monitor network requests to ensure no mock endpoints are called
     const mockDataDetected = []
@@ -497,7 +486,6 @@ test.describe('Booking Flow - Mobile Responsive', () => {
   })
 
   test('Complete booking flow on mobile device', async ({ page }) => {
-    console.log('Testing mobile booking flow...')
 
     // Verify mobile-optimized layout
     await expect(page.locator('[data-testid="mobile-booking-header"]')).toBeVisible()

@@ -63,7 +63,7 @@ export async function GET(request) {
       }
     } catch (e) {
       // Subscriptions table might not exist
-      console.log('Subscriptions table not found or accessible')
+      
     }
 
     // Also check auth.users table for Stripe customer info
@@ -80,7 +80,7 @@ export async function GET(request) {
         }
       }
     } catch (e) {
-      console.log('Could not fetch auth user data')
+      
     }
 
     // Pricing tier mapping

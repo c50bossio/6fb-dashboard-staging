@@ -7,23 +7,20 @@ const supabase = createClient(
 );
 
 async function fixSupabaseIssues() {
-  console.log('🔧 Fixing Supabase 400 errors...\n');
 
   try {
     // 1. Test if is_active column exists in barbershops
-    console.log('1️⃣ Checking barbershops table structure...');
+    
     const { data: testData, error: testError } = await supabase
       .from('barbershops')
       .select('id, name, is_active')
       .limit(1);
 
     if (testError) {
-      console.log('❌ Error accessing barbershops:', testError.message);
-      
+
       // If column doesn't exist, add it
       if (testError.message.includes('is_active')) {
-        console.log('Adding is_active column to barbershops table...');
-        
+
         const { error: alterError } = await supabase.rpc('exec_sql', {
           query: `
             ALTER TABLE barbershops 
@@ -32,21 +29,17 @@ async function fixSupabaseIssues() {
         });
 
         if (alterError) {
-          console.log('❌ Could not add column via RPC:', alterError.message);
-          console.log('\n📝 Manual fix required:');
-          console.log('Run this SQL in Supabase dashboard:');
-          console.log('ALTER TABLE barbershops ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;');
+
         } else {
-          console.log('✅ Added is_active column');
+          
         }
       }
     } else {
-      console.log('✅ barbershops table has is_active column');
+      
     }
 
     // 2. Update RLS policies to be more permissive for authenticated users
-    console.log('\n2️⃣ Updating RLS policies...');
-    
+
     const policiesSQL = `
       -- Drop existing restrictive policies
       DROP POLICY IF EXISTS "Public read access" ON barbershops;
@@ -86,14 +79,12 @@ async function fixSupabaseIssues() {
     });
 
     if (policyError) {
-      console.log('⚠️ Could not update policies via RPC:', policyError.message);
-      console.log('\n📝 Manual policy update may be required in Supabase dashboard');
+
     } else {
-      console.log('✅ RLS policies updated');
+      
     }
 
     // 3. Test queries that were failing
-    console.log('\n3️⃣ Testing queries...');
 
     // Test barbershop query
     const { data: barbershopData, error: barbershopError } = await supabase
@@ -102,9 +93,9 @@ async function fixSupabaseIssues() {
       .limit(1);
 
     if (barbershopError) {
-      console.log('❌ Barbershop query still failing:', barbershopError.message);
+      
     } else {
-      console.log('✅ Barbershop query working');
+      
     }
 
     // Test appointments query
@@ -114,9 +105,9 @@ async function fixSupabaseIssues() {
       .gte('appointment_date', new Date().toISOString());
 
     if (appointmentError) {
-      console.log('❌ Appointments query still failing:', appointmentError.message);
+      
     } else {
-      console.log('✅ Appointments query working');
+      
     }
 
     // Test services query
@@ -126,18 +117,10 @@ async function fixSupabaseIssues() {
       .eq('is_active', true);
 
     if (servicesError) {
-      console.log('❌ Services query still failing:', servicesError.message);
+      
     } else {
-      console.log('✅ Services query working');
+      
     }
-
-    console.log('\n✨ Fix process complete!');
-    console.log('\n📌 Next steps:');
-    console.log('1. If errors persist, go to Supabase dashboard');
-    console.log('2. Navigate to SQL Editor');
-    console.log('3. Run: SELECT * FROM barbershops LIMIT 1;');
-    console.log('4. Verify the is_active column exists');
-    console.log('5. Check Authentication > Policies for each table');
 
   } catch (error) {
     console.error('❌ Unexpected error:', error);

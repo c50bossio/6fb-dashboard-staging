@@ -75,14 +75,7 @@ export default function OnboardingOrchestrator({ onComplete, onSkip, isCompletin
       
       setOnboardingFlow(flow)
       setFlowConfig(config)
-      
-      console.log('🎯 Onboarding Orchestrator: Detected flow', {
-        email: user?.email,
-        role: profile.role,
-        subscriptionTier: profile.subscription_tier,
-        selectedFlow: flow,
-        config
-      })
+
     }
   }, [authLoading, profile, user])
 
@@ -102,8 +95,7 @@ export default function OnboardingOrchestrator({ onComplete, onSkip, isCompletin
   // Enterprise users get enhanced onboarding experience but same flow as shop owners
   // The power comes from post-onboarding features (location selector, enterprise dashboard)
   const enhancedOnComplete = (onboardingData) => {
-    console.log(`✅ ${flowConfig.title} onboarding completed:`, onboardingData)
-    
+
     // Call the original completion handler
     if (onComplete) {
       onComplete(onboardingData)
@@ -111,12 +103,7 @@ export default function OnboardingOrchestrator({ onComplete, onSkip, isCompletin
     
     // Log enterprise-specific completion for analytics
     if (onboardingFlow === 'enterprise') {
-      console.log('🏢 Enterprise onboarding completed - user will have access to:')
-      console.log('   - Multi-location management')
-      console.log('   - Global context selector')
-      console.log('   - Add Location functionality')
-      console.log('   - Enterprise dashboard')
-      console.log('   - Advanced analytics')
+
     }
   }
 

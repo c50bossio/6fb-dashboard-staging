@@ -523,11 +523,11 @@ function UpcomingNotificationItem({ notification }) {
 
 // Event Handlers (would be implemented based on specific needs)
 function handleViewCustomerDetails(customerId) {
-  console.log('View customer details:', customerId)
+  
   // Would navigate to customer detail view or open modal
 }
 
 function handleContactCustomer(alert) {
-  console.log('Contact customer:', alert)
+  
   // Would open contact modal or initiate call/message
 }

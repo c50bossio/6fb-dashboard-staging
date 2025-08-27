@@ -160,7 +160,7 @@ export default function NoShowRecoveryFlow({
       }
     } catch (err) {
       // No existing recovery request - this is normal
-      console.log('No existing recovery request found')
+      
     }
   }
 
@@ -1267,7 +1267,7 @@ export function useNoShowRecoveryFlow(clientId) {
 
   const handleRecoveryComplete = (result) => {
     // Handle completion logic
-    console.log('Recovery completed:', result)
+    
   }
 
   return {

@@ -10,8 +10,7 @@ const supabase = createClient(
 
 async function seedProductData() {
   try {
-    console.log('🌱 Starting product data seeding with correct schema...')
-    
+
     // Get the first barbershop (using correct column name)
     const { data: shops } = await supabase
       .from('barbershops')
@@ -19,13 +18,12 @@ async function seedProductData() {
       .limit(1)
     
     if (!shops || shops.length === 0) {
-      console.log('No barbershops found. Please create a barbershop first.')
+      
       return
     }
     
     const barbershopId = shops[0].id
-    console.log(`Using barbershop ID: ${barbershopId}`)
-    
+
     // Sample product data with correct field names
     const sampleProducts = [
       // Hair Care
@@ -253,9 +251,7 @@ async function seedProductData() {
       .delete()
       .eq('barbershop_id', barbershopId)
       .like('name', '%Hair%')
-    
-    console.log('Cleared any existing test products')
-    
+
     // Insert products
     let successCount = 0
     for (const product of sampleProducts) {
@@ -275,14 +271,11 @@ async function seedProductData() {
       if (error) {
         console.error(`❌ Error creating ${product.name}:`, error.message)
       } else {
-        console.log(`✅ Created: ${product.name} (${product.category})`)
+        `)
         successCount++
       }
     }
-    
-    console.log(`\n📊 Summary:`)
-    console.log(`- Products created: ${successCount}/${sampleProducts.length}`)
-    
+
     // Get all products to show summary
     const { data: allProducts } = await supabase
       .from('products')
@@ -300,16 +293,13 @@ async function seedProductData() {
       }, 0)
       
       const categories = [...new Set(allProducts.map(p => p.category))]
-      
-      console.log(`- Total products in shop: ${allProducts.length}`)
-      console.log(`- Categories: ${categories.join(', ')}`)
-      console.log(`- Total inventory value: $${totalValue.toFixed(2)}`)
-      console.log(`- Total inventory cost: $${totalCost.toFixed(2)}`)
-      console.log(`- Potential profit margin: $${(totalValue - totalCost).toFixed(2)}`)
+
+      }`)
+      }`)
+      }`)
+      .toFixed(2)}`)
     }
-    
-    console.log('\n🎉 Product data seeding completed!')
-    
+
   } catch (error) {
     console.error('Error seeding data:', error)
   }

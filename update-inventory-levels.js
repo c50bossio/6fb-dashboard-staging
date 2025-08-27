@@ -58,8 +58,7 @@ function generateRealisticStock(product) {
 
 async function updateInventoryLevels() {
   try {
-    console.log('🔄 Updating inventory levels to realistic values...')
-    
+
     // Get all products
     const { data: products, error: fetchError } = await supabase
       .from('products')
@@ -70,9 +69,7 @@ async function updateInventoryLevels() {
       console.error('❌ Error fetching products:', fetchError)
       return
     }
-    
-    console.log(`📦 Found ${products.length} products to update`)
-    
+
     const updates = products.map(product => {
       const newStock = generateRealisticStock(product)
       return {
@@ -105,9 +102,7 @@ async function updateInventoryLevels() {
         }
       }
     }
-    
-    console.log(`✅ Successfully updated ${updatedCount} products`)
-    
+
     // Get summary statistics
     const { data: updatedProducts } = await supabase
       .from('products')
@@ -121,20 +116,14 @@ async function updateInventoryLevels() {
       lowStock: updatedProducts.filter(p => p.current_stock > 0 && p.current_stock <= p.min_stock_level).length,
       totalValue: updatedProducts.reduce((sum, p) => sum + (p.current_stock * p.retail_price), 0)
     }
-    
-    console.log('\n📊 Inventory Summary:')
-    console.log(`   Total Products: ${stats.totalProducts}`)
-    console.log(`   In Stock: ${stats.inStock}`)
-    console.log(`   Out of Stock: ${stats.outOfStock}`)
-    console.log(`   Low Stock: ${stats.lowStock}`)
-    console.log(`   Total Inventory Value: $${stats.totalValue.toLocaleString()}`)
-    
-    console.log('\n🎯 Sample Updated Products:')
+
+    }`)
+
     const samples = updatedProducts.slice(0, 5)
     samples.forEach((product, i) => {
       const stockStatus = product.current_stock === 0 ? 'OUT OF STOCK' :
                          product.current_stock <= product.min_stock_level ? 'LOW STOCK' : 'IN STOCK'
-      console.log(`   ${i + 1}. Stock: ${product.current_stock} - ${stockStatus}`)
+      
     })
     
   } catch (error) {

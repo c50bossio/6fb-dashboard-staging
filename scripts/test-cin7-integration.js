@@ -13,7 +13,6 @@ const supabase = createClient(
 )
 
 async function testCin7Integration() {
-  console.log('🧪 Testing Cin7 Integration Improvements...\n')
 
   const tests = [
     testDatabaseSchema,
@@ -31,29 +30,26 @@ async function testCin7Integration() {
     try {
       const result = await test()
       if (result) {
-        console.log(`✅ ${test.name} - PASSED`)
+        
         passed++
       } else {
-        console.log(`❌ ${test.name} - FAILED`)
+        
       }
     } catch (error) {
-      console.log(`❌ ${test.name} - ERROR: ${error.message}`)
+      
     }
-    console.log('')
+    
   }
 
-  console.log(`\n📊 Test Results: ${passed}/${total} tests passed`)
-  
   if (passed === total) {
-    console.log('🎉 All tests passed! Cin7 integration is working correctly.')
+    
   } else {
-    console.log('⚠️ Some tests failed. Please review the integration.')
+    
   }
 }
 
 async function testDatabaseSchema() {
-  console.log('🗄️ Testing database schema...')
-  
+
   try {
     // Check if cin7_credentials table exists
     const { data, error } = await supabase
@@ -62,22 +58,19 @@ async function testDatabaseSchema() {
       .limit(1)
     
     if (error && error.code === '42P01') {
-      console.log('   ⚠️ cin7_credentials table does not exist')
-      console.log('   💡 Run: psql -f database/cin7-credentials-migration.sql')
+
       return false
     }
-    
-    console.log('   ✓ cin7_credentials table exists')
+
     return true
   } catch (error) {
-    console.log('   ❌ Database connection failed:', error.message)
+    
     return false
   }
 }
 
 async function testCredentialsAPI() {
-  console.log('🔐 Testing credentials API endpoints...')
-  
+
   try {
     // Test GET endpoint
     const getResponse = await fetch('http://localhost:9999/api/cin7/credentials', {
@@ -88,29 +81,27 @@ async function testCredentialsAPI() {
     })
     
     if (getResponse.status === 401) {
-      console.log('   ✓ GET /api/cin7/credentials requires authentication')
+      
     } else {
-      console.log('   ⚠️ GET /api/cin7/credentials response:', getResponse.status)
+      
     }
     
     // Test that hardcoded barbershop IDs are removed
     const responseText = await getResponse.text()
     if (responseText.includes('550e8400-e29b-41d4-a716-446655440000')) {
-      console.log('   ❌ Still contains hardcoded barbershop ID')
+      
       return false
     }
-    
-    console.log('   ✓ No hardcoded barbershop IDs found')
+
     return true
   } catch (error) {
-    console.log('   ❌ API test failed:', error.message)
+    
     return false
   }
 }
 
 async function testSyncAPI() {
-  console.log('🔄 Testing sync API improvements...')
-  
+
   try {
     // Test that sync endpoint requires authentication
     const syncResponse = await fetch('http://localhost:9999/api/cin7/sync', {
@@ -121,9 +112,9 @@ async function testSyncAPI() {
     })
     
     if (syncResponse.status === 401) {
-      console.log('   ✓ Sync API requires authentication')
+      
     } else {
-      console.log('   ⚠️ Sync API response:', syncResponse.status)
+      
     }
     
     // Check if the endpoint mentions v2 API
@@ -133,22 +124,21 @@ async function testSyncAPI() {
     )
     
     if (syncCode.includes('ExternalAPI/v2/products') && syncCode.includes('ExternalAPI/v2/stocklevels')) {
-      console.log('   ✓ Using Cin7 API v2 consistently')
+      
     } else {
-      console.log('   ❌ Not using Cin7 API v2 consistently')
+      
       return false
     }
     
     return true
   } catch (error) {
-    console.log('   ❌ Sync API test failed:', error.message)
+    
     return false
   }
 }
 
 async function testWebhookHandler() {
-  console.log('🪝 Testing webhook improvements...')
-  
+
   try {
     // Test webhook signature verification
     const webhookCode = require('fs').readFileSync(
@@ -157,29 +147,28 @@ async function testWebhookHandler() {
     )
     
     if (webhookCode.includes('verifyWebhookSignature') && webhookCode.includes('crypto.timingSafeEqual')) {
-      console.log('   ✓ Webhook signature verification implemented')
+      
     } else {
-      console.log('   ❌ Webhook signature verification missing')
+      
       return false
     }
     
     if (webhookCode.includes('stock-updated') && webhookCode.includes('product-modified')) {
-      console.log('   ✓ Multiple webhook event handlers implemented')
+      
     } else {
-      console.log('   ❌ Missing webhook event handlers')
+      
       return false
     }
     
     return true
   } catch (error) {
-    console.log('   ❌ Webhook test failed:', error.message)
+    
     return false
   }
 }
 
 async function testDataMapping() {
-  console.log('📊 Testing enhanced data mapping...')
-  
+
   try {
     const syncCode = require('fs').readFileSync(
       '/Users/bossio/6FB AI Agent System/app/api/cin7/sync/route.js', 
@@ -198,22 +187,21 @@ async function testDataMapping() {
     const missingFeatures = enhancedFeatures.filter(feature => !syncCode.includes(feature))
     
     if (missingFeatures.length === 0) {
-      console.log('   ✓ All enhanced mapping features implemented')
+      
     } else {
-      console.log('   ❌ Missing features:', missingFeatures.join(', '))
+      )
       return false
     }
     
     return true
   } catch (error) {
-    console.log('   ❌ Data mapping test failed:', error.message)
+    
     return false
   }
 }
 
 async function testFieldValidation() {
-  console.log('🔍 Testing field mapping for stock numbers...')
-  
+
   try {
     const syncCode = require('fs').readFileSync(
       '/Users/bossio/6FB AI Agent System/app/api/cin7/sync/route.js', 
@@ -231,23 +219,23 @@ async function testFieldValidation() {
     const hasAllFallbacks = stockFields.every(field => syncCode.includes(field))
     
     if (hasAllFallbacks) {
-      console.log('   ✓ Multiple stock field fallbacks implemented')
+      
     } else {
-      console.log('   ❌ Missing stock field fallbacks')
+      
       return false
     }
     
     // Check for separate stock levels API call
     if (syncCode.includes('fetchCin7StockLevels')) {
-      console.log('   ✓ Separate stock levels API call implemented')
+      
     } else {
-      console.log('   ❌ Missing separate stock levels API call')
+      
       return false
     }
     
     return true
   } catch (error) {
-    console.log('   ❌ Field validation test failed:', error.message)
+    
     return false
   }
 }

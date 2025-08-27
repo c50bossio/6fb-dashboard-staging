@@ -11,8 +11,8 @@ const supabase = createClient(
 )
 
 async function populateTestAppointments() {
-  console.log('📅 Populating Database with Real Test Appointments')
-  console.log('=' .repeat(60))
+  
+  )
   
   const shopId = 'demo-shop-001'
   
@@ -43,7 +43,7 @@ async function populateTestAppointments() {
   const durations = [30, 20, 45, 25]
   
   try {
-    console.log('🧹 Clearing existing test appointments...')
+    
     const { error: deleteError } = await supabase
       .from('bookings')
       .delete()
@@ -97,9 +97,7 @@ async function populateTestAppointments() {
         })
       }
     }
-    
-    console.log(`📝 Creating ${appointments.length} test appointments...`)
-    
+
     const batchSize = 10
     let created = 0
     
@@ -117,31 +115,20 @@ async function populateTestAppointments() {
       }
       
       created += data?.length || 0
-      console.log(`  ✅ Created batch ${Math.floor(i/batchSize) + 1}: ${data?.length || 0} appointments`)
+       + 1}: ${data?.length || 0} appointments`)
     }
     
-    console.log('\n' + '=' .repeat(60))
-    console.log(`🎉 Successfully created ${created} test appointments!`)
-    console.log('\n📊 Test Data Summary:')
-    
+    )
+
     const statusCounts = {}
     appointments.forEach(apt => {
       statusCounts[apt.status] = (statusCounts[apt.status] || 0) + 1
     })
     
     Object.entries(statusCounts).forEach(([status, count]) => {
-      console.log(`  ${status}: ${count} appointments`)
+      
     })
-    
-    console.log('\n📅 Calendar should now show:')
-    console.log('  ✅ Real appointments from database')
-    console.log('  ✅ Cancelled appointments with visual indicators')
-    console.log('  ✅ Real-time updates when you create/cancel appointments')
-    console.log('\n🔧 Test the cancel functionality:')
-    console.log('  1. Click on any confirmed appointment')
-    console.log('  2. Click "Cancel Appointment"')
-    console.log('  3. Should immediately show red color with ❌ emoji')
-    
+
   } catch (error) {
     console.error('❌ Error populating test data:', error.message)
   }

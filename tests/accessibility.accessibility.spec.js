@@ -551,9 +551,8 @@ test.describe('Accessibility Tests - WCAG 2.2 AA Compliance @accessibility', () 
       expect(scanResults.violations).toEqual([])
     }
 
-    console.log('WCAG 2.2 Audit Summary:')
     auditResults.forEach(result => {
-      console.log(`${result.page}: ✓ ${result.passes} passes, ✗ ${result.violations} violations`)
+      
     })
     
     const totalViolations = auditResults.reduce((sum, result) => sum + result.violations, 0)

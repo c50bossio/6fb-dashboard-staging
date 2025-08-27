@@ -876,7 +876,6 @@ describe('Database Operations Integration Tests', () => {
       await Promise.all(promises);
       
       const creationTime = Date.now() - startTime;
-      console.log(`Created 1000 users in ${creationTime}ms`);
 
       const queryStartTime = Date.now();
       const users = await userRepo.findByRole('CLIENT', { limit: 100, offset: 0 });
@@ -884,7 +883,7 @@ describe('Database Operations Integration Tests', () => {
 
       expect(users).toHaveLength(100);
       expect(queryTime).toBeLessThan(1000); // Should complete within 1 second
-      console.log(`Queried 100 users from 1000+ in ${queryTime}ms`);
+      
     });
 
     it('should use database indexes effectively', async () => {

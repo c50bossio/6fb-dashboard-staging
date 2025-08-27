@@ -7,6 +7,7 @@ import { OpenAI } from 'openai'
 import { AIBusinessContextService } from '@/lib/ai-business-context'
 // Use the unified AI providers instead of individual files
 import { openaiClient, anthropicClient, geminiClient, DEFAULT_CLAUDE_MODEL } from '@/lib/ai-providers'
+import unifiedStaffService from '@/lib/unified-staff-service'
 
 const aiBusinessContext = new AIBusinessContextService()
 
@@ -28,6 +29,36 @@ export async function POST(request) {
     }
 
     const enhancedMessages = [...messages]
+    
+    // Add staff context if the query is about staff
+    const lastMessage = messages[messages.length - 1]?.content || ''
+    const isStaffQuery = /staff|barber|employee|team|worker/i.test(lastMessage)
+    
+    if (isStaffQuery && barbershopId) {
+      try {
+        const staffData = await unifiedStaffService.getStaff(barbershopId, {
+          useCache: true,
+          includeAvailability: false
+        })
+        
+        if (staffData?.success && staffData?.staff?.length > 0) {
+          const staffContext = `Current staff members: ${staffData.staff.map(s => s.name || s.full_name).join(', ')}. Total staff count: ${staffData.staff.length}.`
+          
+          const systemIndex = enhancedMessages.findIndex(m => m.role === 'system')
+          if (systemIndex >= 0) {
+            enhancedMessages[systemIndex].content += '\n\n' + staffContext
+          } else {
+            enhancedMessages.unshift({
+              role: 'system',
+              content: staffContext
+            })
+          }
+        }
+      } catch (error) {
+        
+      }
+    }
+    
     if (includeBusinessContext) {
       try {
         const businessPrompt = await aiBusinessContext.getAISystemPrompt(barbershopId)

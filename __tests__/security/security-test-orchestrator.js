@@ -33,28 +33,22 @@ export class SecurityTestOrchestrator {
    * Run complete security testing suite
    */
   async runCompleteSuite(page, testTypes = ['all']) {
-    console.log('🚀 Starting comprehensive security testing suite...');
-    console.log(`📋 Test types: ${testTypes.join(', ')}`);
+    
+    }`);
 
     try {
       await fs.mkdir(this.reportDir, { recursive: true });
 
       const executionPlan = this.createExecutionPlan(testTypes);
-      console.log(`📅 Execution plan created with ${executionPlan.length} test phases`);
 
       for (const phase of executionPlan) {
-        console.log(`\n🔄 Executing phase: ${phase.name}`);
+        
         await this.executePhase(phase, page);
       }
 
       const finalReport = await this.generateFinalReport();
 
       const securityPosture = this.calculateSecurityPosture();
-
-      console.log('\n✅ Security testing suite completed successfully');
-      console.log(`📊 Overall Security Score: ${securityPosture.overallScore}/100`);
-      console.log(`🎯 Risk Level: ${securityPosture.riskLevel}`);
-      console.log(`📈 Total Findings: ${securityPosture.totalFindings}`);
 
       return {
         results: this.results,
@@ -140,7 +134,7 @@ export class SecurityTestOrchestrator {
     const startTime = Date.now();
     
     try {
-      console.log(`⏱️ Starting ${phase.name} (estimated: ${Math.round(phase.estimatedTime / 60000)} minutes)`);
+      } minutes)`);
 
       switch (phase.type) {
         case 'sast':
@@ -166,7 +160,7 @@ export class SecurityTestOrchestrator {
       }
 
       const executionTime = Date.now() - startTime;
-      console.log(`✅ ${phase.name} completed in ${Math.round(executionTime / 1000)}s`);
+      }s`);
 
       await this.saveIntermediateResults(phase.type, this.results[phase.type]);
 
@@ -184,12 +178,12 @@ export class SecurityTestOrchestrator {
    * Run SAST tests
    */
   async runSASTTests() {
-    console.log('🔍 Running Static Application Security Testing (SAST)...');
+    ...');
     
     const scanner = new AutomatedSecurityScanner();
     const sastResults = await scanner.runSAST();
     
-    console.log(`✅ SAST completed - ${this.countFindings(sastResults)} findings`);
+    } findings`);
     return sastResults;
   }
 
@@ -197,12 +191,12 @@ export class SecurityTestOrchestrator {
    * Run DAST tests
    */
   async runDASTTests() {
-    console.log('🎯 Running Dynamic Application Security Testing (DAST)...');
+    ...');
     
     const scanner = new AutomatedSecurityScanner();
     const dastResults = await scanner.runDAST();
     
-    console.log(`✅ DAST completed - ${this.countFindings(dastResults)} findings`);
+    } findings`);
     return dastResults;
   }
 
@@ -210,12 +204,10 @@ export class SecurityTestOrchestrator {
    * Run API security tests
    */
   async runAPISecurityTests(page) {
-    console.log('🛡️ Running API Security Testing...');
-    
+
     const apiTester = new APISecurityTester(page);
     const apiResults = await apiTester.runAPISecurityTests();
-    
-    console.log(`✅ API Security Testing completed - ${apiResults.summary?.totalTests || 0} tests run`);
+
     return apiResults;
   }
 
@@ -223,12 +215,10 @@ export class SecurityTestOrchestrator {
    * Run penetration tests
    */
   async runPenetrationTests(page) {
-    console.log('🎯 Running Automated Penetration Testing...');
-    
+
     const penTester = new AutomatedPenetrationTester(page);
     const penResults = await penTester.runPenetrationTests();
-    
-    console.log(`✅ Penetration Testing completed - ${penResults.summary?.totalTests || 0} tests run`);
+
     return penResults;
   }
 
@@ -236,12 +226,10 @@ export class SecurityTestOrchestrator {
    * Run GDPR compliance tests
    */
   async runGDPRComplianceTests(page) {
-    console.log('🇪🇺 Running GDPR Compliance Testing...');
-    
+
     const gdprTester = new GDPRComplianceTester(page);
     const gdprResults = await gdprTester.runGDPRComplianceTests();
-    
-    console.log(`✅ GDPR Compliance Testing completed - ${gdprResults.summary?.totalTests || 0} tests run`);
+
     return gdprResults;
   }
 
@@ -249,8 +237,7 @@ export class SecurityTestOrchestrator {
    * Setup security monitoring
    */
   async setupSecurityMonitoring() {
-    console.log('🔄 Setting up Security Monitoring...');
-    
+
     const monitor = new ContinuousSecurityMonitor();
     
     const monitoringResults = {
@@ -268,8 +255,7 @@ export class SecurityTestOrchestrator {
         'Implement automated response procedures for critical alerts'
       ]
     };
-    
-    console.log('✅ Security Monitoring configuration completed');
+
     return monitoringResults;
   }
 
@@ -277,8 +263,7 @@ export class SecurityTestOrchestrator {
    * Generate final comprehensive report
    */
   async generateFinalReport() {
-    console.log('📊 Generating comprehensive security report...');
-    
+
     const dashboard = new SecurityReportingDashboard();
     const dashboardData = await dashboard.generateSecurityDashboard(this.results);
     
@@ -307,8 +292,7 @@ export class SecurityTestOrchestrator {
 
     const reportPath = path.join(this.reportDir, 'final-security-report.json');
     await fs.writeFile(reportPath, JSON.stringify(finalReport, null, 2));
-    
-    console.log(`📋 Final security report saved: ${reportPath}`);
+
     return finalReport;
   }
 

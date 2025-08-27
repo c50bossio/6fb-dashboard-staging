@@ -112,7 +112,7 @@ export default function ShopServicesAndPricing() {
       const barbershopId = await getUserBarbershop()
       
       if (!barbershopId || barbershopId === 'demo-barbershop-id') {
-        console.log('No barbershop ID found')
+        
         setServices([])
         setCategories([])
         setLoading(false)

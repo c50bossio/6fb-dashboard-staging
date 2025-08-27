@@ -919,7 +919,7 @@ export function useClientCareFlow(clientId) {
 
   const handleCareComplete = (result) => {
     // Handle completion with positive reinforcement
-    console.log('Care relationship building completed:', result)
+    
   }
 
   return {

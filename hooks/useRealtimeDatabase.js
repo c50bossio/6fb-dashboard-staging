@@ -63,9 +63,6 @@ export function useRealtime(channelName, barbershopId) {
       setData(realtimeData)
       setLastUpdate(new Date())
       setError(null)
-      
-      console.log(`📡 Realtime data updated for ${channelName}:`, Object.keys(realtimeData))
-      
     } catch (err) {
       console.error('Realtime fetch error:', err)
       setError(err.message)
@@ -97,12 +94,12 @@ export function useRealtime(channelName, barbershopId) {
             filter: `barbershop_id=eq.${barbershopId}`
           },
           (payload) => {
-            console.log(`📡 Database change detected in ${tableName}:`, payload.eventType)
+            
             fetchRealtimeData()
           }
         )
         .subscribe((status) => {
-          console.log(`📡 Realtime subscription status: ${status}`)
+          
           setIsConnected(status === 'SUBSCRIBED')
         })
       
@@ -116,8 +113,7 @@ export function useRealtime(channelName, barbershopId) {
   }, [channelName, barbershopId, supabase, fetchRealtimeData])
 
   useEffect(() => {
-    console.log(`📡 Initializing realtime connection for ${channelName}`)
-    
+
     fetchRealtimeData()
     
     setupRealtimeSubscription()
@@ -136,7 +132,7 @@ export function useRealtime(channelName, barbershopId) {
   }, [fetchRealtimeData, setupRealtimeSubscription])
 
   const refresh = useCallback(() => {
-    console.log(`🔄 Manual refresh requested for ${channelName}`)
+    
     fetchRealtimeData()
   }, [fetchRealtimeData])
 
@@ -150,9 +146,9 @@ export function useRealtime(channelName, barbershopId) {
           .insert([insertData])
         
         if (error) throw error
-        console.log(`📤 Sent notification to ${channelName}`)
+        
       } else {
-        console.log(`📤 Send not implemented for ${channelName}`)
+        
       }
       
     } catch (err) {

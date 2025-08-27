@@ -141,7 +141,6 @@ export async function POST(request) {
       )
     }
 
-
     switch (event.type) {
       case 'customer.subscription.created':
         await handleSubscriptionCreated(event.data.object)
@@ -347,7 +346,6 @@ async function handleSubscriptionCreated(subscription) {
       updated_at: new Date()
     }
 
-
     await sendSubscriptionEmail(tenantId, 'welcome', {
       plan_name: planName,
       trial_end: subscriptionData.trial_end
@@ -390,7 +388,6 @@ async function handleSubscriptionUpdated(subscription) {
       })
     }
 
-
   } catch (error) {
     console.error('Error handling subscription updated:', error)
   }
@@ -412,11 +409,9 @@ async function handleSubscriptionDeleted(subscription) {
       updated_at: new Date()
     }
 
-
     await sendSubscriptionEmail(tenantId, 'cancellation_confirmed', {
       canceled_at: new Date()
     })
-
 
   } catch (error) {
     console.error('Error handling subscription deleted:', error)
@@ -445,12 +440,10 @@ async function handlePaymentSucceeded(invoice) {
       status: 'paid'
     }
 
-
     await sendSubscriptionEmail(tenantId, 'payment_succeeded', {
       amount: paymentData.amount_paid,
       invoice_url: invoice.hosted_invoice_url
     })
-
 
   } catch (error) {
     console.error('Error handling payment succeeded:', error)
@@ -478,13 +471,11 @@ async function handlePaymentFailed(invoice) {
       failed_at: new Date()
     }
 
-
     await sendSubscriptionEmail(tenantId, 'payment_failed', {
       amount_due: paymentData.amount_due,
       next_attempt: paymentData.next_payment_attempt,
       update_payment_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`
     })
-
 
   } catch (error) {
     console.error('Error handling payment failed:', error)
@@ -507,7 +498,6 @@ async function handleTrialWillEnd(subscription) {
       upgrade_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`
     })
 
-
   } catch (error) {
     console.error('Error handling trial will end:', error)
   }
@@ -517,9 +507,7 @@ async function handleCheckoutCompleted(session) {
   const userId = session.client_reference_id || session.metadata?.userId
   const plan = session.metadata?.plan
   const billing = session.metadata?.billing
-  
-  console.log('Checkout completed:', { userId, plan, billing })
-  
+
   if (!userId) {
     console.error('No user ID in checkout session')
     return
@@ -544,9 +532,7 @@ async function handleCheckoutCompleted(session) {
       role = 'ENTERPRISE_OWNER'
       subscription_tier = 'ENTERPRISE'
     }
-    
-    console.log('Updating user role based on subscription:', { userId, role, plan })
-    
+
     // Update user profile with role and subscription info
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -565,9 +551,7 @@ async function handleCheckoutCompleted(session) {
       console.error('Failed to update profile:', profileError)
       return
     }
-    
-    console.log('Profile updated successfully')
-    
+
     // Get user details for barbershop creation
     const { data: { user } } = await supabase.auth.admin.getUserById(userId)
     
@@ -589,9 +573,7 @@ async function handleCheckoutCompleted(session) {
           email: user.email,
           type: role === 'BARBER' ? 'individual' : 'multi-barber'
         })
-        
-        console.log('✅ Barbershop created via webhook:', barbershop.id)
-        
+
         // Update profile with shop_id
         await supabase
           .from('profiles')
@@ -619,15 +601,13 @@ async function handleCheckoutCompleted(session) {
           .single()
           
         if (organization) {
-          console.log('✅ Organization created via webhook:', organization.id)
-          
+
           // Create first barbershop
           const barbershop = await createBarbershopForOwner(user, {
             name: `${organization.name} - Main Location`,
             organization_id: organization.id
           })
-          
-          console.log('✅ First barbershop created under organization')
+
         }
       } catch (orgError) {
         console.error('Organization creation failed in webhook:', orgError)
@@ -764,8 +744,7 @@ async function handleAccountDeauthorized(account) {
         updated_at: new Date().toISOString()
       })
       .eq('stripe_account_id', account.id)
-    
-    
+
   } catch (error) {
     console.error('Error handling account deauthorized:', error)
   }
@@ -833,8 +812,7 @@ async function handlePayoutCreated(payout) {
         expected_arrival_date: new Date(payout.arrival_date * 1000).toISOString(),
         initiated_at: new Date(payout.created * 1000).toISOString()
       })
-    
-    
+
   } catch (error) {
     console.error('Error handling payout created:', error)
   }
@@ -881,8 +859,7 @@ async function handlePayoutPaid(payout) {
           .eq('stripe_connected_account_id', account.id)
       }
     }
-    
-    
+
   } catch (error) {
     console.error('Error handling payout paid:', error)
   }
@@ -902,8 +879,7 @@ async function handlePayoutFailed(payout) {
         failure_message: payout.failure_message
       })
       .eq('stripe_payout_id', payout.id)
-    
-    
+
     // TODO: Send notification to user about failed payout
     
   } catch (error) {
@@ -966,8 +942,7 @@ async function handleExternalAccountUpdated(externalAccount) {
         updated_at: new Date().toISOString()
       })
       .eq('stripe_bank_account_id', externalAccount.id)
-    
-    
+
   } catch (error) {
     console.error('Error handling external account updated:', error)
   }
@@ -1060,14 +1035,14 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
     const productSaleResult = await handleProductSalePayment(paymentIntent, supabase)
     
     if (productSaleResult.success && productSaleResult.reason !== 'no_product_sale') {
-      console.log(`🛍️ Product commission processed: $${productSaleResult.commission_amount} (${productSaleResult.processing_time}ms)`)
+      `)
     }
 
     // Calculate and record service commission if financial arrangement exists
     const commissionResult = await processCommissionCalculation(paymentIntent, supabase)
     
     if (commissionResult.success) {
-      console.log(`💰 Service commission calculated: $${commissionResult.commission_amount} (${commissionResult.arrangement_type})`)
+      `)
       
       // Update booking metadata with commission info
       const commissionMetadata = {
@@ -1112,7 +1087,6 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
       timestamp: new Date().toISOString(),
       source: 'stripe'
     })
-
 
   } catch (error) {
     console.error('Error handling payment intent succeeded:', error)
@@ -1190,7 +1164,6 @@ async function handlePaymentIntentFailed(paymentIntent) {
       source: 'stripe'
     })
 
-
   } catch (error) {
     console.error('Error handling payment intent failed:', error)
   }
@@ -1217,7 +1190,7 @@ async function processCommissionCalculation(paymentIntent, supabase) {
     
     // Skip if no arrangement data - this is normal for non-commission payments
     if (!arrangementId || !barberId || !barbershopId) {
-      console.log('No commission arrangement found for payment:', paymentIntent.id)
+      
       return { success: false, reason: 'no_arrangement' }
     }
 
@@ -1268,7 +1241,7 @@ async function processCommissionCalculation(paymentIntent, supabase) {
         tierInfo = tierCalculation.tierInfo
         tierBonus = tierCalculation.tierInfo?.tierBonus || 0
         
-        console.log(`💎 Tier-based commission calculated: $${commissionAmount} at ${tierCalculation.commissionRate}% (Tier: ${tierCalculation.tierInfo?.applicableTier?.name})`)
+        `)
       } else {
         console.warn(`⚠️ Tier calculation failed, falling back to standard: ${tierCalculation.error}`)
         // Fall through to standard calculation
@@ -1409,7 +1382,7 @@ async function processCommissionCalculation(paymentIntent, supabase) {
       })
       .eq('id', arrangementId)
 
-    console.log(`✅ Commission processed: $${commissionAmount} for barber ${barberId} (${arrangement.type} arrangement)`)
+    `)
 
     // Update tier progress if tier system is active
     if (tierInfo) {
@@ -1588,10 +1561,10 @@ async function updateBarberTierProgressWebhook(barberId, barbershopId, transacti
           avg_commission_rate: tierInfo.applicableTier.commission_percentage
         })
 
-      console.log(`🎉 Tier upgrade achieved! Barber ${barberId} reached ${tierInfo.applicableTier.name} tier (Level ${tierInfo.applicableTier.tier_level})`)
+      `)
     }
 
-    console.log(`📊 Tier progress updated: $${newRevenue}/${tierInfo.nextTierThreshold || 'MAX'} (${Math.round(tierInfo.progressToNextTier)}%)`)
+    }%)`)
     
   } catch (error) {
     console.error('Error updating barber tier progress:', error)
@@ -1757,8 +1730,7 @@ async function handleTransferCreated(transfer) {
           metadata: supabase.raw(`metadata || '{"stripe_transfer_id": "${transfer.id}", "transfer_created_at": "${new Date().toISOString()}"}'::jsonb`)
         })
         .eq('id', commissionTransactionId)
-      
-      console.log(`📤 Transfer created for commission transaction ${commissionTransactionId}: $${transfer.amount / 100}`)
+
     } else if (payoutTransactionId) {
       // This is a manual payout transfer
       await supabase
@@ -1769,10 +1741,9 @@ async function handleTransferCreated(transfer) {
           metadata: supabase.raw(`metadata || '{"transfer_created_at": "${new Date().toISOString()}"}'::jsonb`)
         })
         .eq('id', payoutTransactionId)
-      
-      console.log(`📤 Transfer created for payout transaction ${payoutTransactionId}: $${transfer.amount / 100}`)
+
     } else {
-      console.log(`📤 Transfer created without commission metadata: ${transfer.id}`)
+      
     }
     
   } catch (error) {
@@ -1822,8 +1793,7 @@ async function handleTransferPaid(transfer) {
           transferId: transfer.id,
           method: 'stripe_transfer'
         })
-        
-        console.log(`✅ Commission transfer completed: $${transferAmount} paid to barber ${commissionTx.barber_id}`)
+
       }
       
     } else if (payoutTransactionId) {
@@ -1836,8 +1806,7 @@ async function handleTransferPaid(transfer) {
           metadata: supabase.raw(`metadata || '{"stripe_transfer_paid_at": "${new Date().toISOString()}"}'::jsonb`)
         })
         .eq('id', payoutTransactionId)
-      
-      console.log(`✅ Manual payout transfer completed: $${transferAmount}`)
+
     }
     
   } catch (error) {
@@ -1919,8 +1888,7 @@ async function handleTransferReversed(transfer) {
           })
           .eq('barber_id', commissionTx.barber_id)
           .eq('barbershop_id', commissionTx.barbershop_id)
-        
-        console.log(`🔄 Commission transfer reversed: $${reversedAmount} for barber ${commissionTx.barber_id}`)
+
       }
       
     } else if (payoutTransactionId) {
@@ -1932,8 +1900,7 @@ async function handleTransferReversed(transfer) {
           metadata: supabase.raw(`metadata || '{"transfer_reversed_at": "${new Date().toISOString()}"}'::jsonb`)
         })
         .eq('id', payoutTransactionId)
-      
-      console.log(`🔄 Payout transfer reversed: $${reversedAmount}`)
+
     }
     
   } catch (error) {
@@ -1947,8 +1914,7 @@ async function sendCommissionPaidNotification(data) {
     const { barberId, barbershopId, amount, transferId, method } = data
     
     // TODO: Integrate with notification service
-    console.log(`📧 Commission paid notification: $${amount} to barber ${barberId} via ${method}`)
-    
+
     // Could send email, SMS, or push notification here
     
   } catch (error) {

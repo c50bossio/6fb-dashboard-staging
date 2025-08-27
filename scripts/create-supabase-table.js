@@ -4,8 +4,6 @@ import 'dotenv/config';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-console.log('🚀 Creating Supabase table directly via REST API...');
-
 async function createTableViaSQL() {
   const sql = `
 -- Create barbershops table
@@ -110,7 +108,7 @@ INSERT INTO public.barbershops (
     }
 
     const result = await response.json();
-    console.log('✅ SQL executed successfully');
+    
     return true;
 
   } catch (error) {
@@ -130,10 +128,10 @@ async function testConnection() {
 
     if (response.ok) {
       const data = await response.json();
-      console.log('✅ Connection successful, found barbershops:', data.length);
+      
       return true;
     } else {
-      console.log('⚠️ Table doesn\'t exist yet, will create it');
+      
       return false;
     }
   } catch (error) {
@@ -143,23 +141,19 @@ async function testConnection() {
 }
 
 async function main() {
-  console.log('🔍 Testing connection to Supabase...');
-  
+
   const tableExists = await testConnection();
   
   if (!tableExists) {
-    console.log('🏗️ Creating table and inserting data...');
+    
     const success = await createTableViaSQL();
     
     if (success) {
-      console.log('🔍 Verifying setup...');
+      
       await testConnection();
     }
   }
-  
-  console.log('\n🎉 Setup complete!');
-  console.log('🔗 Test the website settings at: http://localhost:9999/dashboard/website-settings');
-  console.log('💾 Save functionality should now work!');
+
 }
 
 main().catch(console.error);

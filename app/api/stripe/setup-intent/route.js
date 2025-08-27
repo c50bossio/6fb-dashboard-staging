@@ -52,7 +52,7 @@ export async function POST(request) {
     
     // Check if Stripe is properly configured
     if (!isStripeConfigured) {
-      console.log('Stripe not configured - keys disabled or invalid')
+      
       return NextResponse.json({ 
         error: 'Stripe not configured. Please contact support.',
         configured: false
@@ -63,8 +63,7 @@ export async function POST(request) {
     
     // If no Stripe customer ID exists, create one
     if (!customerId) {
-      console.log('Creating new Stripe customer for user:', user.id)
-      
+
       const customer = await stripe.customers.create({
         email: userData.email,
         name: userData.full_name,

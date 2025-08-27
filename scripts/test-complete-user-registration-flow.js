@@ -65,8 +65,7 @@ class RegistrationFlowTester {
   }
 
   async setup() {
-    console.log('🚀 Setting up browser and test environment...')
-    
+
     this.browser = await puppeteer.launch({
       headless: false, // Set to true for CI/automated testing
       slowMo: 100,
@@ -84,8 +83,7 @@ class RegistrationFlowTester {
         console.error('🔴 Browser Error:', msg.text())
       }
     })
-    
-    console.log('✅ Browser setup complete')
+
   }
 
   async cleanup() {
@@ -95,20 +93,17 @@ class RegistrationFlowTester {
   }
 
   async testPricingPage() {
-    console.log('\n📄 Testing Pricing Page...')
-    
+
     try {
       await this.page.goto(`${BASE_URL}/pricing`, { waitUntil: 'networkidle0' })
       
       // Check if pricing page loaded
       await this.page.waitForSelector('h1', { timeout: 5000 })
       const title = await this.page.$eval('h1', el => el.textContent)
-      console.log('   📝 Page title:', title)
-      
+
       // Check if all plans are visible
       const plans = await this.page.$$('[data-plan-id], .plan-card, [class*="plan"]')
-      console.log('   📊 Found', plans.length, 'pricing plans')
-      
+
       // Look for expected plan features
       const planTexts = await this.page.$$eval('*', elements => 
         elements
@@ -122,12 +117,9 @@ class RegistrationFlowTester {
           ))
           .map(el => el.textContent.trim())
       )
-      
-      console.log('   💰 Pricing plan content found:', planTexts.length, 'elements')
-      
+
       this.testResults.pricing_page = plans.length >= 3 && planTexts.length > 0
-      console.log('   ✅ Pricing page test:', this.testResults.pricing_page ? 'PASSED' : 'FAILED')
-      
+
       return this.testResults.pricing_page
       
     } catch (error) {
@@ -138,8 +130,7 @@ class RegistrationFlowTester {
   }
 
   async testPlanSelection(userData) {
-    console.log(`\n🎯 Testing Plan Selection for ${userData.plan}...`)
-    
+
     try {
       // Look for plan selection buttons or links
       const planSelectors = [
@@ -158,7 +149,7 @@ class RegistrationFlowTester {
         try {
           const elements = await this.page.$$(selector)
           if (elements.length > 0) {
-            console.log(`   🎯 Found plan selector: ${selector}`)
+            
             await elements[0].click()
             planSelected = true
             break
@@ -172,7 +163,7 @@ class RegistrationFlowTester {
       if (!planSelected) {
         const registrationLinks = await this.page.$$('a[href*="/register"]')
         if (registrationLinks.length > 0) {
-          console.log('   🔗 Found registration link, clicking...')
+          
           await registrationLinks[0].click()
           planSelected = true
         }
@@ -182,12 +173,10 @@ class RegistrationFlowTester {
         // Wait for navigation to registration page
         await this.page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 10000 })
         const currentUrl = this.page.url()
-        console.log('   📍 Navigated to:', currentUrl)
-        
+
         this.testResults.plan_selection = currentUrl.includes('/register')
       }
-      
-      console.log('   ✅ Plan selection test:', this.testResults.plan_selection ? 'PASSED' : 'FAILED')
+
       return this.testResults.plan_selection
       
     } catch (error) {
@@ -198,8 +187,7 @@ class RegistrationFlowTester {
   }
 
   async testRegistrationForm(userData) {
-    console.log('\n📝 Testing Registration Form...')
-    
+
     try {
       // Wait for registration form to load
       await this.page.waitForSelector('form, input[type="email"]', { timeout: 10000 })
@@ -213,17 +201,14 @@ class RegistrationFlowTester {
         'input[name="lastName"]': userData.lastName,
         'input[name="shopName"]': userData.shopName
       }
-      
-      console.log('   ✍️ Filling out registration form...')
-      
+
       for (const [selector, value] of Object.entries(formFields)) {
         try {
           await this.page.waitForSelector(selector, { timeout: 3000 })
           await this.page.type(selector, value)
-          console.log(`   ✓ Filled ${selector}: ${value}`)
-        } catch (e) {
-          console.log(`   ⚠️ Could not find ${selector}, trying alternatives...`)
           
+        } catch (e) {
+
           // Try alternative selectors
           const alternatives = [
             selector.replace('[name="', '[id="'),
@@ -238,7 +223,7 @@ class RegistrationFlowTester {
               const element = await this.page.$(altSelector)
               if (element) {
                 await this.page.type(altSelector, value)
-                console.log(`   ✓ Filled ${altSelector}: ${value}`)
+                
                 filled = true
                 break
               }
@@ -248,14 +233,13 @@ class RegistrationFlowTester {
           }
           
           if (!filled) {
-            console.log(`   ❌ Could not fill field for ${selector}`)
+            
           }
         }
       }
       
       // Submit the form
-      console.log('   📤 Submitting registration form...')
-      
+
       const submitSelectors = [
         'button[type="submit"]',
         'input[type="submit"]',
@@ -271,7 +255,7 @@ class RegistrationFlowTester {
           const element = await this.page.$(selector)
           if (element) {
             await element.click()
-            console.log(`   ✓ Clicked submit button: ${selector}`)
+            
             submitted = true
             break
           }
@@ -289,8 +273,7 @@ class RegistrationFlowTester {
           })
           
           const currentUrl = this.page.url()
-          console.log('   📍 After registration:', currentUrl)
-          
+
           this.testResults.registration_form = 
             currentUrl.includes('/checkout') || 
             currentUrl.includes('/success') ||
@@ -309,8 +292,7 @@ class RegistrationFlowTester {
           this.testResults.registration_form = hasSuccessText
         }
       }
-      
-      console.log('   ✅ Registration form test:', this.testResults.registration_form ? 'PASSED' : 'FAILED')
+
       return this.testResults.registration_form
       
     } catch (error) {
@@ -321,15 +303,13 @@ class RegistrationFlowTester {
   }
 
   async testCheckoutProcess(userData) {
-    console.log('\n💳 Testing Checkout Process...')
-    
+
     try {
       const currentUrl = this.page.url()
-      console.log('   📍 Current URL:', currentUrl)
-      
+
       // Check if we're in development mode (should skip to success)
       if (currentUrl.includes('/success') || process.env.DEVELOPMENT_MODE === 'true') {
-        console.log('   🔄 Development mode detected, checkout bypassed to success')
+        
         this.testResults.checkout_process = true
         this.testResults.success_redirect = true
         return true
@@ -337,12 +317,10 @@ class RegistrationFlowTester {
       
       // If in checkout, look for Stripe elements
       if (currentUrl.includes('/checkout') || currentUrl.includes('checkout.stripe.com')) {
-        console.log('   💳 Stripe checkout detected')
-        
+
         // In a real implementation, we would handle Stripe test checkout
         // For now, we'll simulate the checkout completion
-        console.log('   ⚠️ Stripe checkout simulation - in production, test with Stripe test cards')
-        
+
         this.testResults.checkout_process = true
         
         // Simulate redirect to success page
@@ -352,11 +330,10 @@ class RegistrationFlowTester {
         
         this.testResults.success_redirect = true
       } else {
-        console.log('   ⚠️ No checkout flow detected - possibly development mode')
+        
         this.testResults.checkout_process = true
       }
-      
-      console.log('   ✅ Checkout process test:', this.testResults.checkout_process ? 'PASSED' : 'FAILED')
+
       return this.testResults.checkout_process
       
     } catch (error) {
@@ -367,18 +344,14 @@ class RegistrationFlowTester {
   }
 
   async testSuccessRedirect() {
-    console.log('\n🎉 Testing Success Page and Dashboard Redirect...')
-    
+
     try {
       const currentUrl = this.page.url()
-      console.log('   📍 Current URL:', currentUrl)
-      
+
       if (currentUrl.includes('/success')) {
-        console.log('   ✅ Success page reached')
-        
+
         // Wait for automatic redirect to dashboard (as per success page code)
-        console.log('   ⏳ Waiting for redirect to dashboard...')
-        
+
         try {
           await this.page.waitForNavigation({ 
             waitUntil: 'networkidle0', 
@@ -386,27 +359,22 @@ class RegistrationFlowTester {
           })
           
           const dashboardUrl = this.page.url()
-          console.log('   📍 Redirected to:', dashboardUrl)
-          
+
           this.testResults.success_redirect = dashboardUrl.includes('/dashboard')
           this.testResults.onboarding_access = dashboardUrl.includes('/dashboard')
           
         } catch (redirectError) {
-          console.log('   ⚠️ No automatic redirect detected, checking for manual navigation')
-          
+
           // Try to navigate to dashboard manually
           await this.page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'networkidle0' })
           this.testResults.onboarding_access = true
         }
       } else {
-        console.log('   ⚠️ Not on success page, attempting direct dashboard access')
+        
         await this.page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'networkidle0' })
         this.testResults.onboarding_access = true
       }
-      
-      console.log('   ✅ Success redirect test:', this.testResults.success_redirect ? 'PASSED' : 'FAILED')
-      console.log('   ✅ Onboarding access test:', this.testResults.onboarding_access ? 'PASSED' : 'FAILED')
-      
+
       return this.testResults.success_redirect && this.testResults.onboarding_access
       
     } catch (error) {
@@ -417,12 +385,10 @@ class RegistrationFlowTester {
   }
 
   async testDashboardFeatures(userData) {
-    console.log('\n📊 Testing Dashboard Features...')
-    
+
     try {
       const currentUrl = this.page.url()
-      console.log('   📍 Current URL:', currentUrl)
-      
+
       // Ensure we're on the dashboard
       if (!currentUrl.includes('/dashboard')) {
         await this.page.goto(`${BASE_URL}/dashboard`, { waitUntil: 'networkidle0' })
@@ -445,7 +411,7 @@ class RegistrationFlowTester {
           const elements = await this.page.$$(selector)
           if (elements.length > 0) {
             elementsFound++
-            console.log(`   ✓ Found ${elements.length} elements matching ${selector}`)
+            
           }
         } catch (e) {
           // Element not found, continue
@@ -466,18 +432,14 @@ class RegistrationFlowTester {
       for (const feature of expectedFeatures) {
         if (pageContent.toLowerCase().includes(feature)) {
           planFeaturesFound++
-          console.log(`   ✓ Found ${userData.plan} plan feature: ${feature}`)
+          
         }
       }
       
       this.testResults.dashboard_features = 
         elementsFound >= 2 && 
         (planFeaturesFound > 0 || expectedFeatures.length === 0)
-      
-      console.log('   📊 Dashboard elements found:', elementsFound)
-      console.log('   🎯 Plan-specific features found:', planFeaturesFound, '/', expectedFeatures.length)
-      console.log('   ✅ Dashboard features test:', this.testResults.dashboard_features ? 'PASSED' : 'FAILED')
-      
+
       return this.testResults.dashboard_features
       
     } catch (error) {
@@ -489,10 +451,8 @@ class RegistrationFlowTester {
 
   async runCompleteFlow(userType = 'shop_owner') {
     const userData = TEST_USERS[userType]
-    console.log(`\n🎬 Starting complete registration flow test for: ${userType}`)
-    console.log(`📧 Test user: ${userData.email}`)
-    console.log(`🏪 Shop: ${userData.shopName}`)
-    console.log(`📦 Plan: ${userData.plan} (${userData.expectedPrice})`)
+
+    `)
     
     try {
       await this.setup()
@@ -532,9 +492,7 @@ class RegistrationFlowTester {
   }
 
   async generateTestReport(results) {
-    console.log('\n📋 REGISTRATION FLOW TEST REPORT')
-    console.log('=====================================')
-    
+
     const testSteps = {
       'Pricing Page Load': results.pricing_page,
       'Plan Selection': results.plan_selection,
@@ -547,32 +505,29 @@ class RegistrationFlowTester {
     
     Object.entries(testSteps).forEach(([step, passed]) => {
       const status = passed ? '✅ PASSED' : '❌ FAILED'
-      console.log(`${step.padEnd(20)}: ${status}`)
+      }: ${status}`)
     })
     
     const passedCount = Object.values(testSteps).filter(Boolean).length
     const totalCount = Object.keys(testSteps).length
     const passRate = Math.round((passedCount / totalCount) * 100)
-    
-    console.log('\n📊 SUMMARY')
-    console.log(`Passed: ${passedCount}/${totalCount} tests (${passRate}%)`)
-    console.log(`Overall: ${results.overall_success ? '✅ SYSTEM READY' : '❌ NEEDS ATTENTION'}`)
-    
+
+    `)
+
     if (!results.overall_success) {
-      console.log('\n⚠️ ISSUES FOUND:')
+      
       Object.entries(testSteps).forEach(([step, passed]) => {
         if (!passed) {
-          console.log(`- ${step} failed`)
+          
         }
       })
-      
-      console.log('\n🔧 RECOMMENDED ACTIONS:')
-      if (!results.pricing_page) console.log('- Check pricing page layout and content')
-      if (!results.plan_selection) console.log('- Verify plan selection buttons and links')
-      if (!results.registration_form) console.log('- Review registration form validation and submission')
-      if (!results.checkout_process) console.log('- Test Stripe checkout integration')
-      if (!results.success_redirect) console.log('- Check success page redirect logic')
-      if (!results.dashboard_features) console.log('- Verify dashboard accessibility and content')
+
+      if (!results.pricing_page) 
+      if (!results.plan_selection) 
+      if (!results.registration_form) 
+      if (!results.checkout_process) 
+      if (!results.success_redirect) 
+      if (!results.dashboard_features) 
     }
     
     return results
@@ -581,12 +536,7 @@ class RegistrationFlowTester {
 
 // Main execution
 async function main() {
-  console.log('🧪 6FB AI AGENT SYSTEM - REGISTRATION FLOW TEST SUITE')
-  console.log('====================================================')
-  console.log(`Environment: ${TEST_MODE ? 'DEVELOPMENT' : 'PRODUCTION'}`)
-  console.log(`Base URL: ${BASE_URL}`)
-  console.log('')
-  
+
   const tester = new RegistrationFlowTester()
   
   try {
@@ -594,19 +544,19 @@ async function main() {
     const userTypes = ['shop_owner'] // Start with shop owner, can expand to ['barber', 'shop_owner', 'enterprise']
     
     for (const userType of userTypes) {
-      console.log(`\n🎭 Testing ${userType} registration flow...`)
+      
       const results = await tester.runCompleteFlow(userType)
       await tester.generateTestReport(results)
       
       // Clean up test data
       if (results.registration_form) {
-        console.log('🧹 Cleaning up test user data...')
+        
         const userData = TEST_USERS[userType]
         try {
           await supabase.auth.admin.deleteUser(userData.email)
-          console.log('✅ Test user cleaned up')
+          
         } catch (cleanupError) {
-          console.log('⚠️ Could not clean up test user:', cleanupError.message)
+          
         }
       }
     }

@@ -32,13 +32,10 @@ async function executeSQL(sql) {
 }
 
 async function setupDatabase() {
-  console.log('🚀 Setting up database using Supabase Management API...\n');
 
   try {
     const sqlPath = path.join(__dirname, '..', 'database', 'RUN_THIS_IN_SUPABASE.sql');
     const sqlContent = fs.readFileSync(sqlPath, 'utf8');
-
-    console.log('📝 Executing database schema...\n');
 
     const response = await fetch(`${supabaseUrl}/rest/v1/`, {
       method: 'POST',
@@ -54,8 +51,7 @@ async function setupDatabase() {
     });
 
     if (!response.ok) {
-      console.log('⚠️  Direct execution failed, trying statement by statement...\n');
-      
+
       const statements = sqlContent
         .split(/;\s*(?=\n)/)
         .map(s => s.trim())
@@ -73,24 +69,19 @@ async function setupDatabase() {
         
         try {
           await executeSQL(statement + ';');
-          console.log(' ✅');
+          
         } catch (err) {
-          console.log(' ⚠️');
+          
           console.error(`   Warning: ${err.message}`);
         }
       }
     } else {
-      console.log('✅ Database schema executed successfully!');
+      
     }
-
-    console.log('\n✅ Database setup completed!');
-    console.log('\n💡 Next step: Verify the tables in your Supabase dashboard');
-    console.log(`   👉 ${supabaseUrl}`);
 
   } catch (error) {
     console.error('\n❌ Setup failed:', error.message);
-    console.log('\n💡 Alternative: Copy the SQL from database/RUN_THIS_IN_SUPABASE.sql');
-    console.log('   and paste it directly in the Supabase SQL editor');
+
   }
 }
 

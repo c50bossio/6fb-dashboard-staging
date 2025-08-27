@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import unifiedStaffService from '@/lib/unified-staff-service'
+
 export const runtime = 'nodejs'
 
 /**
@@ -8,7 +10,13 @@ export const runtime = 'nodejs'
 
 export async function POST(request) {
   try {
-    const { action_type, barbershop_id, parameters } = await request.json()
+    const body = await request.json()
+    const { action_type, barbershop_id, parameters, workflow_type } = body
+    
+    // Handle staff onboarding workflow specifically
+    if (workflow_type === 'new_staff_onboarding') {
+      return await handleStaffOnboardingWorkflow(barbershop_id || body.barbershop_id)
+    }
 
     switch (action_type) {
       case 'create_automation':
@@ -539,5 +547,87 @@ function generateExecutionSummary(execution) {
     recommendations: successfulActions === totalActions 
       ? ['Workflow executed successfully', 'Monitor results for 24-48 hours']
       : ['Review failed actions', 'Adjust workflow parameters if needed']
+  }
+}
+
+/**
+ * Handle new staff onboarding workflow
+ */
+async function handleStaffOnboardingWorkflow(barbershopId) {
+  try {
+    // Fetch current staff to understand onboarding needs
+    const staffData = await unifiedStaffService.getStaff(barbershopId, {
+      useCache: false,
+      includeAvailability: true
+    })
+    
+    const hasStaff = staffData?.success && staffData?.staff?.length > 0
+    const staffCount = staffData?.staff?.length || 0
+    
+    const workflow = {
+      success: true,
+      workflow_type: 'new_staff_onboarding',
+      barbershop_id: barbershopId,
+      status: hasStaff ? 'ready' : 'requires_staff',
+      staff_context: {
+        current_staff_count: staffCount,
+        staff_names: hasStaff ? staffData.staff.map(s => s.name || s.full_name) : []
+      },
+      onboarding_steps: [
+        {
+          step: 1,
+          name: 'Staff Profile Creation',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Create staff profiles with photos, specialties, and experience'
+        },
+        {
+          step: 2,
+          name: 'Schedule Setup',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Configure working hours and availability'
+        },
+        {
+          step: 3,
+          name: 'Service Assignment',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Assign services and pricing for each staff member'
+        },
+        {
+          step: 4,
+          name: 'Booking Page Integration',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Add staff to public booking pages'
+        },
+        {
+          step: 5,
+          name: 'Notification Setup',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Configure appointment notifications and reminders'
+        }
+      ],
+      automated_actions: hasStaff ? [
+        'Profile optimization suggestions generated',
+        'Default schedule templates applied',
+        'Service recommendations based on market data'
+      ] : [
+        'Waiting for staff to be added',
+        'Onboarding templates prepared',
+        'Best practices guide available'
+      ],
+      next_action: hasStaff 
+        ? 'Review and customize staff profiles'
+        : 'Add your first staff member to begin onboarding',
+      estimated_completion_time: hasStaff ? '15 minutes' : 'Requires staff setup first'
+    }
+    
+    return NextResponse.json(workflow)
+    
+  } catch (error) {
+    console.error('Staff onboarding workflow error:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to process staff onboarding workflow',
+      details: error.message
+    }, { status: 500 })
   }
 }

@@ -22,8 +22,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function fixChrisBossioAccount() {
-  console.log('🔍 Looking for Chris Bossio\'s account...')
-  
+
   try {
     // Find Chris Bossio's profile
     const { data: profile, error: fetchError } = await supabase
@@ -37,13 +36,6 @@ async function fixChrisBossioAccount() {
       return
     }
 
-    console.log('📋 Current profile status:')
-    console.log(`   Email: ${profile.email}`)
-    console.log(`   Name: ${profile.full_name}`)
-    console.log(`   Role: ${profile.role}`)
-    console.log(`   Subscription Tier: ${profile.subscription_tier}`)
-    console.log(`   Subscription Status: ${profile.subscription_status}`)
-
     // Check if fix is needed
     const needsFix = (
       profile.role === 'SHOP_OWNER' && 
@@ -51,11 +43,9 @@ async function fixChrisBossioAccount() {
     )
 
     if (!needsFix) {
-      console.log('✅ Profile is already consistent - no fix needed!')
+      
       return
     }
-
-    console.log('\n🔧 Profile needs synchronization...')
 
     // Apply the fix
     const { data: updatedProfile, error: updateError } = await supabase
@@ -74,22 +64,13 @@ async function fixChrisBossioAccount() {
       return
     }
 
-    console.log('✅ Profile updated successfully!')
-    console.log('\n📋 Updated profile status:')
-    console.log(`   Role: ${updatedProfile.role}`)
-    console.log(`   Subscription Tier: ${updatedProfile.subscription_tier}`)
-    console.log(`   Subscription Status: ${updatedProfile.subscription_status}`)
-
-    console.log('\n🎉 Chris Bossio\'s account should now show "Shop Owner" consistently!')
-    
   } catch (error) {
     console.error('❌ Script failed:', error.message)
   }
 }
 
 async function validateAllProfiles() {
-  console.log('\n🔍 Checking for other inconsistent profiles...')
-  
+
   try {
     const { data: inconsistentProfiles, error } = await supabase
       .from('profiles')
@@ -106,11 +87,11 @@ async function validateAllProfiles() {
     }
 
     if (inconsistentProfiles.length === 0) {
-      console.log('✅ All profiles are consistent!')
+      
       return
     }
 
-    console.log(`⚠️ Found ${inconsistentProfiles.length} inconsistent profile(s):`)
+    :`)
     
     inconsistentProfiles.forEach((profile, index) => {
       const expectedTier = 
@@ -119,13 +100,9 @@ async function validateAllProfiles() {
         profile.role === 'ENTERPRISE_OWNER' ? 'ENTERPRISE' :
         'FREE'
 
-      console.log(`\n   ${index + 1}. ${profile.email}`)
-      console.log(`      Role: ${profile.role}`)
-      console.log(`      Current Tier: ${profile.subscription_tier}`)
-      console.log(`      Expected Tier: ${expectedTier}`)
     })
 
-    console.log(`\n💡 Run the database migration script to fix all ${inconsistentProfiles.length} profile(s).`)
+    .`)
     
   } catch (error) {
     console.error('❌ Validation failed:', error.message)
@@ -133,8 +110,7 @@ async function validateAllProfiles() {
 }
 
 async function testSubscriptionAPI() {
-  console.log('\n🧪 Testing subscription API endpoint...')
-  
+
   try {
     // This would normally require authentication, but we can check if Chris's data looks correct
     const { data: profile } = await supabase
@@ -147,28 +123,20 @@ async function testSubscriptionAPI() {
       const shouldShow = profile.role === 'SHOP_OWNER' && profile.subscription_tier === 'PROFESSIONAL'
         ? 'Shop Owner Plan'
         : `${profile.subscription_tier || 'Free'} Plan`
-        
-      console.log(`✅ API should now return: "${shouldShow}" for Chris Bossio`)
+
     }
     
   } catch (error) {
-    console.log('⚠️ Could not test API (requires authentication)')
+    ')
   }
 }
 
 async function main() {
-  console.log('🚀 Fix Chris Bossio Subscription Tier Sync')
-  console.log('==========================================\n')
 
   await fixChrisBossioAccount()
   await validateAllProfiles()
   await testSubscriptionAPI()
 
-  console.log('\n✅ Script completed!')
-  console.log('\n📋 Next steps:')
-  console.log('   1. Have Chris refresh his browser')
-  console.log('   2. Verify the dropdown now shows "Shop Owner Plan"')
-  console.log('   3. Run database migration script if other profiles need fixing')
 }
 
 if (require.main === module) {

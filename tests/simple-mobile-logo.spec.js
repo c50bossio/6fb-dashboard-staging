@@ -31,12 +31,10 @@ test.describe('Mobile Logo Alignment - Simple Test', () => {
     try {
       await page.waitForSelector('nav', { timeout: 15000 })
     } catch (e) {
-      console.log('Navigation selector not found, trying alternative selectors...')
-      
+
       // Try to find any navigation-like elements
       const navElements = await page.locator('header, .navigation, [role="navigation"], nav').count()
-      console.log(`Found ${navElements} navigation elements`)
-      
+
       if (navElements > 0) {
         await page.waitForTimeout(2000) // Give time for elements to stabilize
       }
@@ -51,7 +49,6 @@ test.describe('Mobile Logo Alignment - Simple Test', () => {
     // Look for mobile header specifically
     const mobileHeaders = page.locator('.lg\\:hidden')
     const mobileHeaderCount = await mobileHeaders.count()
-    console.log(`Found ${mobileHeaderCount} mobile header elements`)
 
     if (mobileHeaderCount > 0) {
       const firstMobileHeader = mobileHeaders.first()
@@ -64,7 +61,6 @@ test.describe('Mobile Logo Alignment - Simple Test', () => {
       // Check if logo container exists
       const logoContainer = firstMobileHeader.locator('.flex-shrink-0')
       const logoContainerCount = await logoContainer.count()
-      console.log(`Found ${logoContainerCount} logo containers in mobile header`)
 
       if (logoContainerCount > 0) {
         await logoContainer.first().screenshot({ 
@@ -80,8 +76,7 @@ test.describe('Mobile Logo Alignment - Simple Test', () => {
           
           // Verify logo dimensions don't exceed container
           const logoBounds = await logoImage.boundingBox()
-          console.log('Logo dimensions:', logoBounds)
-          
+
           if (logoBounds) {
             expect(logoBounds.height).toBeLessThanOrEqual(50) // Should fit in mobile header
             expect(logoBounds.width).toBeGreaterThan(0) // Should be visible
@@ -103,8 +98,7 @@ test.describe('Mobile Logo Alignment - Simple Test', () => {
     ]
 
     for (const size of testSizes) {
-      console.log(`Testing ${size.name} mobile size: ${size.width}x${size.height}`)
-      
+
       await page.setViewportSize({ width: size.width, height: size.height })
       await page.goto('http://localhost:9999/dashboard')
       
@@ -120,8 +114,7 @@ test.describe('Mobile Logo Alignment - Simple Test', () => {
       // Check for mobile elements
       const mobileElements = page.locator('.lg\\:hidden')
       const count = await mobileElements.count()
-      console.log(`Mobile elements found at ${size.width}px: ${count}`)
-      
+
       if (count > 0) {
         await mobileElements.first().screenshot({ 
           path: `test-results/mobile-header-${size.name}-${size.width}w.png` 
@@ -144,22 +137,20 @@ test.describe('Mobile Logo Alignment - Simple Test', () => {
     )
 
     const logoCount = await logoImages.count()
-    console.log(`Found ${logoCount} potential logo images`)
 
     if (logoCount > 0) {
       const firstLogo = logoImages.first()
       
       // Check classes
       const logoClasses = await firstLogo.getAttribute('class')
-      console.log('Logo classes:', logoClasses)
-      
+
       // Take screenshot
       await firstLogo.screenshot({ path: 'test-results/logo-with-classes.png' })
       
       // Verify responsive classes exist
       if (logoClasses) {
         const hasResponsiveClasses = logoClasses.includes('max-h') || logoClasses.includes('w-auto')
-        console.log('Has responsive classes:', hasResponsiveClasses)
+        
       }
     }
   })

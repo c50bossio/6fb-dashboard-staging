@@ -89,8 +89,7 @@ function generateTestEmail(template, timestamp) {
  * Clean up old test accounts
  */
 async function cleanupOldTestAccounts() {
-  console.log('🧹 Cleaning up old test accounts...')
-  
+
   try {
     const { data: testUsers, error: fetchError } = await supabase
       .from('users')
@@ -102,18 +101,16 @@ async function cleanupOldTestAccounts() {
     }
 
     if (testUsers.length === 0) {
-      console.log('   No test accounts found to clean up')
+      
       return
     }
 
-    console.log(`   Found ${testUsers.length} test accounts to remove`)
-    
     const batchSize = 10
     for (let i = 0; i < testUsers.length; i += batchSize) {
       const batch = testUsers.slice(i, i + batchSize)
       const userIds = batch.map(user => user.id)
       
-      console.log(`   Deleting batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(testUsers.length/batchSize)}`)
+       + 1}/${Math.ceil(testUsers.length/batchSize)}`)
       
       for (const user of batch) {
         try {
@@ -134,14 +131,12 @@ async function cleanupOldTestAccounts() {
       if (deleteError) {
         console.warn(`     Warning: Database deletion error:`, deleteError.message)
       } else {
-        console.log(`     Successfully deleted ${batch.length} accounts`)
+        
       }
     }
     
     await cleanupTestData()
-    
-    console.log('✅ Cleanup completed successfully')
-    
+
   } catch (error) {
     console.error('❌ Cleanup failed:', error.message)
     throw error
@@ -152,8 +147,7 @@ async function cleanupOldTestAccounts() {
  * Clean up related test data
  */
 async function cleanupTestData() {
-  console.log('🧹 Cleaning up related test data...')
-  
+
   const tables = [
     'subscription_history',
     'barbershops',
@@ -191,7 +185,7 @@ async function cleanupTestData() {
 async function createTestAccount(config, timestamp) {
   const email = generateTestEmail(config.email, timestamp)
   
-  console.log(`   Creating: ${config.name} (${email})`)
+  `)
   
   try {
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
@@ -249,7 +243,7 @@ async function createTestAccount(config, timestamp) {
       await createTestBarbershop(authUser.user.id, config.shop_name, timestamp)
     }
     
-    console.log(`     ✅ Created successfully (ID: ${authUser.user.id})`)
+    `)
     
     return {
       id: authUser.user.id,
@@ -291,7 +285,7 @@ async function createTestBarbershop(userId, shopName, timestamp) {
     if (error) {
       console.warn(`     Warning: Could not create barbershop ${shopName}:`, error.message)
     } else {
-      console.log(`     📍 Created barbershop: ${shopName}`)
+      
     }
   } catch (error) {
     console.warn(`     Warning: Barbershop creation error:`, error.message)
@@ -302,8 +296,7 @@ async function createTestBarbershop(userId, shopName, timestamp) {
  * Create test accounts
  */
 async function createTestAccounts() {
-  console.log('👥 Creating test accounts...')
-  
+
   const timestamp = generateTimestamp()
   const accountsToCreate = TEST_ACCOUNT_CONFIGS.slice(0, options.count)
   const createdAccounts = []
@@ -316,9 +309,7 @@ async function createTestAccounts() {
       console.error(`Failed to create account for ${config.name}:`, error.message)
     }
   }
-  
-  console.log(`✅ Created ${createdAccounts.length}/${accountsToCreate.length} test accounts`)
-  
+
   return createdAccounts
 }
 
@@ -347,18 +338,9 @@ async function generateTestCredentials(accounts) {
   
   const credentialsPath = path.join(__dirname, '..', 'test-credentials.json')
   fs.writeFileSync(credentialsPath, JSON.stringify(credentials, null, 2))
-  
-  console.log(`📄 Test credentials saved to: ${credentialsPath}`)
-  console.log('\n📋 Test Account Summary:')
-  console.log('================================')
-  
+
   accounts.forEach(account => {
-    console.log(`${account.name}:`)
-    console.log(`  Email: ${account.email}`)
-    console.log(`  Password: ${account.password}`)
-    console.log(`  Role: ${account.role}`)
-    console.log(`  Subscription: ${account.subscription_tier || 'None'}`)
-    console.log('')
+
   })
   
   return credentialsPath
@@ -390,38 +372,28 @@ async function verifyConnection() {
  * Main execution function
  */
 async function main() {
-  console.log('🚀 Payment Flow Test Data Setup')
-  console.log('================================')
-  
+
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error('❌ Missing required environment variables:')
     console.error('   NEXT_PUBLIC_SUPABASE_URL')
     console.error('   SUPABASE_SERVICE_ROLE_KEY')
     process.exit(1)
   }
-  
-  console.log('🔌 Verifying database connection...')
+
   const connected = await verifyConnection()
   if (!connected) {
     process.exit(1)
   }
-  console.log('✅ Database connection verified')
-  
+
   try {
     await cleanupOldTestAccounts()
     
     if (!options.cleanupOnly) {
       const accounts = await createTestAccounts()
       await generateTestCredentials(accounts)
-      
-      console.log('\n🎉 Setup completed successfully!')
-      console.log('\nNext steps:')
-      console.log('1. Review the test credentials file')
-      console.log('2. Ensure Stripe is in TEST mode')
-      console.log('3. Follow the manual testing guide in tests/MANUAL_PAYMENT_TEST_GUIDE.md')
-      console.log('4. Use the test accounts to verify payment flows')
+
     } else {
-      console.log('\n🎉 Cleanup completed successfully!')
+      
     }
     
   } catch (error) {

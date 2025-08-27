@@ -5,9 +5,6 @@ import 'dotenv/config';
 const SUPABASE_ACCESS_TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 const PROJECT_ID = 'dfhqjdoydihajmjxniee'; // From the URL
 
-console.log('🚀 Attempting to use Supabase Management API...');
-console.log('🔑 Access Token:', SUPABASE_ACCESS_TOKEN ? 'Found' : 'Missing');
-
 async function executeViaMgmtAPI() {
   const sql = `
 -- Create barbershops table
@@ -89,8 +86,7 @@ INSERT INTO public.barbershops (
   `;
 
   try {
-    console.log('📋 Trying Management API...');
-    
+
     const response = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_ID}/database/query`, {
       method: 'POST',
       headers: {
@@ -103,14 +99,14 @@ INSERT INTO public.barbershops (
     });
 
     if (!response.ok) {
-      console.log('❌ Management API failed:', response.status, response.statusText);
+      
       const errorText = await response.text();
-      console.log('Error details:', errorText);
+      
       return false;
     }
 
     const result = await response.json();
-    console.log('✅ Management API success:', result);
+    
     return true;
 
   } catch (error) {
@@ -120,8 +116,7 @@ INSERT INTO public.barbershops (
 }
 
 async function tryDirectInsert() {
-  console.log('📋 Trying direct data insert via REST API...');
-  
+
   const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
   
@@ -179,13 +174,13 @@ async function tryDirectInsert() {
 
     if (response.ok) {
       const result = await response.json();
-      console.log('✅ Direct insert success:', result[0]?.name);
+      
       return true;
     } else {
-      console.log('❌ Direct insert failed:', response.status);
+      
       const errorText = await response.text();
       if (errorText.includes('does not exist')) {
-        console.log('⚠️ Table does not exist - need to create it first');
+        
       }
       return false;
     }
@@ -197,26 +192,18 @@ async function tryDirectInsert() {
 }
 
 async function main() {
-  console.log('🚀 Attempting automated Supabase setup...\n');
 
   let success = await executeViaMgmtAPI();
   
   if (!success) {
-    console.log('\n📋 Trying direct insert approach...');
+    
     success = await tryDirectInsert();
   }
 
   if (success) {
-    console.log('\n🎉 SUCCESS! Database setup completed automatically!');
-    console.log('🔗 Test: http://localhost:9999/dashboard/website-settings');
-    console.log('💾 Save functionality should now work!');
+
   } else {
-    console.log('\n❌ Automated setup failed');
-    console.log('📋 Manual setup required:');
-    console.log('1. Go to: https://supabase.com/dashboard/project/dfhqjdoydihajmjxniee');
-    console.log('2. SQL Editor → New Query');
-    console.log('3. Copy/paste from: EXECUTE_THIS_SQL.sql');
-    console.log('4. Click Run');
+
   }
 }
 

@@ -109,7 +109,7 @@ export default function GeneralSettingsPage() {
         initialValues.current = JSON.parse(JSON.stringify(shopData))
       } else {
         // No barbershop exists yet - this is expected during onboarding
-        console.log('No barbershop found - ready for initial setup')
+        
         // Pre-fill with user's email if available
         setFormData(prev => ({
           ...prev,

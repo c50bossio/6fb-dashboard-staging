@@ -393,7 +393,7 @@ test.describe('AI Security Comprehensive Testing', () => {
           }
         }
       } catch (error) {
-        console.log('No file upload endpoint found - skipping file security tests')
+        
       }
     })
   })

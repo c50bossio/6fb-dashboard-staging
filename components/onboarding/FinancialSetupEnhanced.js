@@ -227,9 +227,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       
       // Use fallback email if user is not authenticated
       const email = user?.email || 'demo@bookedbarber.com'
-      
-      console.log('Creating Stripe Connect account for:', email)
-      
+
       const response = await fetch('/api/payments/connect/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

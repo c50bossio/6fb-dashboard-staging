@@ -48,7 +48,7 @@ export default function OnboardingStepBanner({
                               window.location.pathname.startsWith(context.route)
           
           if (isRecent && matchesStep && matchesRoute) {
-            console.log('OnboardingStepBanner: Restored context from session storage', context)
+            
             isOnboardingFlow = true
           } else if (!isRecent) {
             // Clean up old context
@@ -94,7 +94,7 @@ export default function OnboardingStepBanner({
     // Clear session storage context when user manually returns
     try {
       sessionStorage.removeItem('onboarding_context')
-      console.log('OnboardingStepBanner: Cleared context - user manually returned to dashboard')
+      
     } catch (error) {
       console.warn('OnboardingStepBanner: Failed to clear session storage', error)
     }
@@ -124,7 +124,7 @@ export default function OnboardingStepBanner({
     // Clear session storage context when step is completed
     try {
       sessionStorage.removeItem('onboarding_context')
-      console.log('OnboardingStepBanner: Cleared context - step completed')
+      
     } catch (error) {
       console.warn('OnboardingStepBanner: Failed to clear session storage', error)
     }

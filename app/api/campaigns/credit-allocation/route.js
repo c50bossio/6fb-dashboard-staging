@@ -185,7 +185,7 @@ export async function GET(request) {
       usageStats = data
     } catch (rpcError) {
       // RPC function doesn't exist yet
-      console.log('Campaign usage stats RPC not available yet')
+      
     }
 
     // Calculate estimated monthly credits based on payment volume
@@ -198,7 +198,7 @@ export async function GET(request) {
       monthlyVolume = data || 0
     } catch (rpcError) {
       // RPC function doesn't exist yet
-      console.log('Monthly payment volume RPC not available yet')
+      
     }
 
     const estimatedMonthlyCredits = Math.floor((monthlyVolume * 0.006 * 0.5) / 0.025)

@@ -33,8 +33,6 @@ export class RiskBasedNotificationEngine {
         service_name
       } = bookingData
 
-      console.log(`Processing notification scheduling for booking ${booking_id}`)
-
       // Step 1: Get or calculate customer risk score
       const riskAssessment = await this.assessCustomerRisk(customer_id, barbershop_id, {
         phone: customer_phone,
@@ -68,8 +66,6 @@ export class RiskBasedNotificationEngine {
         communication_plan: communicationPlan,
         scheduled_notifications: scheduledNotifications
       })
-
-      console.log(`Scheduled ${scheduledNotifications.length} notifications for ${riskAssessment.risk_tier}-tier customer`)
 
       return {
         success: true,
@@ -514,8 +510,7 @@ export class RiskBasedNotificationEngine {
 
   async scheduleBasicReminders(bookingData) {
     // Fallback scheduling logic for when risk assessment fails
-    console.log('Applying fallback basic reminder scheduling')
-    
+
     // Schedule standard 24-hour reminder
     // Implementation would integrate with existing notification system
   }

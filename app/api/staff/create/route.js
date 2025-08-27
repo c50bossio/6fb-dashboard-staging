@@ -17,7 +17,7 @@ function generateSecurePassword() {
 // Send welcome email with credentials
 async function sendWelcomeEmail({ to, fullName, tempPassword, barbershopName }) {
   if (!process.env.SENDGRID_API_KEY) {
-    console.log('SendGrid not configured, skipping email')
+    
     return { success: false, error: 'Email service not configured' }
   }
 

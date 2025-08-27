@@ -261,11 +261,10 @@ export function useBookingRules(barbershopId) {
     const subscription = realtimeSync.current.subscribe(barbershopId, {
       onSubscribed: () => {
         setSyncStatus('connected')
-        console.log('Connected to real-time rule updates')
+        
       },
       onRuleUpdate: async (update) => {
-        console.log('Real-time rule update received:', update)
-        
+
         // Normalize the updated rules
         const normalizedRules = FieldNormalizer.normalizeObject(update.rules, true)
         setRules(normalizedRules)
@@ -276,7 +275,7 @@ export function useBookingRules(barbershopId) {
         }
       },
       onRemoteUpdate: async (data) => {
-        console.log('Remote rule update received:', data)
+        
         // Reload rules to ensure consistency
         await loadRules(true)
       },

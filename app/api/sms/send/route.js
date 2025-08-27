@@ -82,7 +82,7 @@ export async function POST(request) {
       }
     } else {
       // Demo mode when Twilio is not configured
-      console.log('📱 DEMO SMS:', { to: formattedPhone, message })
+      
       smsResult = {
         success: true,
         messageId: `demo-${Date.now()}`,

@@ -15,8 +15,6 @@ export async function GET() {
       .eq('id', testUserId)
       .single()
 
-    console.log('Test user profile:', profile)
-
     const result = {
       userProfile: profile,
       viewSwitcherData: {

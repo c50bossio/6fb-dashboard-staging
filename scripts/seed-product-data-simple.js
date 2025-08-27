@@ -10,8 +10,7 @@ const supabase = createClient(
 
 async function seedProductData() {
   try {
-    console.log('🌱 Starting simplified product data seeding...')
-    
+
     // Get the first shop
     const { data: shops } = await supabase
       .from('barbershops')
@@ -19,13 +18,12 @@ async function seedProductData() {
       .limit(1)
     
     if (!shops || shops.length === 0) {
-      console.log('No barbershops found. Please create a barbershop first.')
+      
       return
     }
     
     const shopId = shops[0].id
-    console.log(`Using shop ID: ${shopId}`)
-    
+
     // Check if products already exist
     const { data: existingProducts } = await supabase
       .from('products')
@@ -33,8 +31,7 @@ async function seedProductData() {
       .eq('shop_id', shopId)
     
     if (!existingProducts || existingProducts.length === 0) {
-      console.log('No products found. Creating sample products with basic fields...')
-      
+
       // Sample product data - using only fields that exist in the table
       const sampleProducts = [
         // Hair Care
@@ -77,11 +74,11 @@ async function seedProductData() {
         if (error) {
           console.error(`Error creating product ${product.name}:`, error.message)
         } else {
-          console.log(`✅ Created product: ${product.name}`)
+          
         }
       }
     } else {
-      console.log(`Found ${existingProducts.length} existing products`)
+      
     }
     
     // Get all products for generating sales data
@@ -91,27 +88,17 @@ async function seedProductData() {
       .eq('shop_id', shopId)
     
     if (!products || products.length === 0) {
-      console.log('No products found after seeding.')
+      
       return
     }
-    
-    console.log(`\n📊 Summary:`)
-    console.log(`- Total products in shop: ${products.length}`)
-    console.log(`- Product categories created:`)
-    console.log(`  • Hair Care: 4 products`)
-    console.log(`  • Beard Care: 3 products`)
-    console.log(`  • Tools: 3 products`)
-    console.log(`  • Styling: 3 products`)
-    console.log(`  • Aftercare: 3 products`)
-    
+
     // Calculate total inventory value
     const totalValue = products.reduce((sum, product) => {
       return sum + (product.price * product.stock)
     }, 0)
     
-    console.log(`- Total inventory value: $${totalValue.toFixed(2)}`)
-    console.log('\n🎉 Product data seeding completed successfully!')
-    
+    }`)
+
   } catch (error) {
     console.error('Error seeding data:', error)
   }

@@ -76,7 +76,7 @@ describe('Payroll System Performance Tests', () => {
       const processingTime = performance.getEntriesByName('webhook_single_process')[0].duration
       expect(processingTime).toBeLessThan(200) // Under 200ms
 
-      console.log(`✅ Single webhook processed in ${processingTime.toFixed(2)}ms`)
+      }ms`)
     })
 
     it('should maintain performance under concurrent webhook load', async () => {
@@ -114,9 +114,8 @@ describe('Payroll System Performance Tests', () => {
       expect(averageTime).toBeLessThan(500) // Average under 500ms
       expect(totalTime).toBeLessThan(10000) // Total under 10 seconds
 
-      console.log(`✅ Processed ${successfulResults.length}/${concurrentWebhooks} webhooks`)
-      console.log(`⚡ Average processing time: ${averageTime.toFixed(2)}ms`)
-      console.log(`🚀 Total processing time: ${totalTime.toFixed(2)}ms`)
+      }ms`)
+      }ms`)
     })
 
     it('should handle webhook bursts without degradation', async () => {
@@ -164,7 +163,7 @@ describe('Payroll System Performance Tests', () => {
         expect(result.successRate).toBeGreaterThanOrEqual(85) // 85% success minimum
         expect(result.avgTime).toBeLessThan(1000) // Under 1 second average
 
-        console.log(`📊 Burst ${result.size}: ${result.avgTime.toFixed(2)}ms avg, ${result.successRate.toFixed(1)}% success`)
+        }ms avg, ${result.successRate.toFixed(1)}% success`)
       })
 
       // Verify no significant performance degradation with larger bursts
@@ -212,7 +211,7 @@ describe('Payroll System Performance Tests', () => {
       expect(successfulResults.length).toBeGreaterThanOrEqual(85) // 85% success rate
       expect(processingTime).toBeLessThan(15000) // Under 15 seconds for 100 mixed webhooks
 
-      console.log(`🔄 Mixed webhook processing: ${processingTime.toFixed(2)}ms for ${successfulResults.length} webhooks`)
+      }ms for ${successfulResults.length} webhooks`)
     })
   })
 
@@ -250,7 +249,7 @@ describe('Payroll System Performance Tests', () => {
           executions
         })
 
-        console.log(`🗄️ ${queryType.name}: ${avgTime.toFixed(2)}ms avg, ${maxTime.toFixed(2)}ms max`)
+        }ms avg, ${maxTime.toFixed(2)}ms max`)
       }
     })
 
@@ -290,7 +289,7 @@ describe('Payroll System Performance Tests', () => {
         expect(queryTime).toBeLessThan(200) // Under 200ms for large datasets
         expect(result.data).toBeDefined()
 
-        console.log(`📊 ${query.name}: ${queryTime.toFixed(2)}ms`)
+        }ms`)
       }
     })
 
@@ -323,7 +322,7 @@ describe('Payroll System Performance Tests', () => {
         expect(queryTime).toBeLessThan(query.expectedTime)
         expect(result.data.length).toBeGreaterThan(0)
 
-        console.log(`📈 ${query.name}: ${queryTime.toFixed(2)}ms (target: ${query.expectedTime}ms)`)
+        }ms (target: ${query.expectedTime}ms)`)
       }
     })
 
@@ -351,7 +350,7 @@ describe('Payroll System Performance Tests', () => {
       expect(successfulConnections).toBeGreaterThanOrEqual(95) // 95% connection success
       expect(avgConnectionTime).toBeLessThan(10) // Under 10ms per connection
 
-      console.log(`🔗 Connection pool: ${successfulConnections}/100 successful, ${avgConnectionTime.toFixed(2)}ms avg`)
+      }ms avg`)
     })
   })
 
@@ -397,7 +396,7 @@ describe('Payroll System Performance Tests', () => {
           iterations: 100
         })
 
-        console.log(`🧮 ${scenario.type}: ${avgTime.toFixed(3)}ms avg (target: ${scenario.expectedTime}ms)`)
+        }ms avg (target: ${scenario.expectedTime}ms)`)
       }
     })
 
@@ -436,7 +435,7 @@ describe('Payroll System Performance Tests', () => {
       
       expect(avgTierCalcTime).toBeLessThan(12) // Average under 12ms
 
-      console.log(`💎 Tier calculations: ${avgTierCalcTime.toFixed(2)}ms average across revenue levels`)
+      }ms average across revenue levels`)
     })
 
     it('should process bulk commission calculations efficiently', async () => {
@@ -462,8 +461,8 @@ describe('Payroll System Performance Tests', () => {
       expect(avgPerCalculation).toBeLessThan(5) // Under 5ms per calculation in bulk
       expect(bulkTime).toBeLessThan(30000) // Under 30 seconds total
 
-      console.log(`📦 Bulk processing: ${bulkPayments.length} calculations in ${bulkTime.toFixed(2)}ms`)
-      console.log(`⚡ Average per calculation: ${avgPerCalculation.toFixed(3)}ms`)
+      }ms`)
+      }ms`)
     })
   })
 
@@ -510,7 +509,7 @@ describe('Payroll System Performance Tests', () => {
           fileSize: exportResult.file_size
         })
 
-        console.log(`📄 ${config.format.toUpperCase()} export (${config.records} records): ${exportTime.toFixed(2)}ms`)
+        } export (${config.records} records): ${exportTime.toFixed(2)}ms`)
       }
     })
 
@@ -538,7 +537,7 @@ describe('Payroll System Performance Tests', () => {
         expect(exportTime).toBeLessThan(expectedTime + 5000) // Plus 5s overhead
         expect(excelResult.success).toBe(true)
 
-        console.log(`📊 Excel export (${recordCount} records): ${exportTime.toFixed(2)}ms`)
+        : ${exportTime.toFixed(2)}ms`)
       }
     })
 
@@ -570,7 +569,7 @@ describe('Payroll System Performance Tests', () => {
       expect(successfulExports).toBeGreaterThanOrEqual(4) // At least 4/5 should succeed
       expect(avgExportTime).toBeLessThan(10000) // Under 10s average
 
-      console.log(`🚀 Concurrent exports: ${successfulExports}/5 successful in ${totalTime.toFixed(2)}ms`)
+      }ms`)
     })
   })
 
@@ -616,8 +615,8 @@ describe('Payroll System Performance Tests', () => {
       expect(memoryIncreasePercent).toBeLessThan(200) // Less than 200% increase
       expect(finalMemory.heapUsed).toBeLessThan(500 * 1024 * 1024) // Under 500MB
 
-      console.log(`🧠 Memory usage: ${memoryIncreasePercent.toFixed(1)}% increase after 1000 webhooks`)
-      console.log(`📊 Final heap: ${(finalMemory.heapUsed / 1024 / 1024).toFixed(2)}MB`)
+      }% increase after 1000 webhooks`)
+      .toFixed(2)}MB`)
     })
 
     it('should handle resource cleanup efficiently', async () => {
@@ -650,7 +649,7 @@ describe('Payroll System Performance Tests', () => {
       expect(avgCleanupTime).toBeLessThan(50) // Under 50ms average
       expect(maxCleanupTime).toBeLessThan(200) // Under 200ms max
 
-      console.log(`🧹 Resource cleanup: ${avgCleanupTime.toFixed(2)}ms avg, ${maxCleanupTime.toFixed(2)}ms max`)
+      }ms avg, ${maxCleanupTime.toFixed(2)}ms max`)
     })
   })
 
@@ -691,7 +690,7 @@ describe('Payroll System Performance Tests', () => {
           maxTime: maxDeliveryTime
         })
 
-        console.log(`🔔 ${notificationType}: ${avgDeliveryTime.toFixed(2)}ms avg delivery`)
+        }ms avg delivery`)
       }
     })
 
@@ -723,7 +722,7 @@ describe('Payroll System Performance Tests', () => {
       expect(successfulNotifications).toBeGreaterThanOrEqual(90) // 90% delivery success
       expect(avgNotificationTime).toBeLessThan(20) // Under 20ms per notification
 
-      console.log(`💥 Notification burst: ${successfulNotifications}/${burstSize} delivered in ${totalTime.toFixed(2)}ms`)
+      }ms`)
     })
   })
 
@@ -806,7 +805,7 @@ describe('Payroll System Performance Tests', () => {
     }
 
     await fs.writeFile('performance-test-report.json', JSON.stringify(report, null, 2))
-    console.log('📊 Performance report generated: performance-test-report.json')
+    
   }
 
   function generatePerformanceRecommendations(metrics) {

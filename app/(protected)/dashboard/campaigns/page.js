@@ -31,11 +31,9 @@ export default function CampaignsPage() {
   const [billingModal, setBillingModal] = useState({ isOpen: false, feature: null, estimatedCost: null })
 
   useEffect(() => {
-    console.log('🔄 useEffect triggered - authLoading:', authLoading, 'user:', user?.id, 'profile:', profile?.email)
-    
+
     const loadingTimeout = setTimeout(() => {
-      console.log('⏰ Loading timeout reached - forcing initialLoading to false')
-      console.log('   Auth state at timeout: authLoading:', authLoading, 'user:', user?.id, 'profile:', profile?.email)
+
       setInitialLoading(false)
     }, 5000) // 5 second timeout
     
@@ -43,11 +41,11 @@ export default function CampaignsPage() {
       clearTimeout(loadingTimeout) // Clear timeout if auth resolves normally
       
       if (user?.id) {
-        console.log('✅ Auth complete, loading campaigns for user:', user.id)
+        
         loadCampaigns()
         setInitialLoading(false)
       } else {
-        console.log('❌ No user found after auth check')
+        
         setInitialLoading(false)
       }
     }
@@ -59,17 +57,16 @@ export default function CampaignsPage() {
 
   const loadCampaigns = async () => {
     if (!user?.id) {
-      console.log('⚠️ loadCampaigns: No user ID available')
+      
       return
     }
 
-    console.log('🔄 loadCampaigns: Starting for user', user.id)
     try {
       const response = await fetch(`/api/marketing/campaigns?user_id=${user.id}`)
       
       if (response.ok) {
         const data = await response.json()
-        console.log('✅ Campaigns loaded:', data)
+        
         setCampaigns(data.campaigns || [])
         
         const campaigns = data.campaigns || []

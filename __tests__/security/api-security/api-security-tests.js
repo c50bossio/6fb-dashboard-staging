@@ -23,7 +23,6 @@ export class APISecurityTester {
    * Run comprehensive API security testing
    */
   async runAPISecurityTests() {
-    console.log('🛡️ Starting comprehensive API security testing...');
 
     await this.discoverAPIEndpoints();
     
@@ -45,14 +44,12 @@ export class APISecurityTester {
    * Discover API endpoints from application
    */
   async discoverAPIEndpoints() {
-    console.log('🔍 Discovering API endpoints...');
 
     const apiDir = path.join(process.cwd(), 'app/api');
     await this.discoverEndpointsFromFilesystem(apiDir);
 
     await this.discoverEndpointsDynamically();
 
-    console.log(`📋 Discovered ${this.discoveredEndpoints.size} API endpoints`);
   }
 
   /**
@@ -79,12 +76,12 @@ export class APISecurityTester {
               this.discoveredEndpoints.add(`${method}:${basePath}`);
             });
           } catch (error) {
-            console.log(`Could not analyze route file: ${fullPath}`);
+            
           }
         }
       }
     } catch (error) {
-      console.log(`Could not read directory: ${dir}`);
+      
     }
   }
 
@@ -147,7 +144,6 @@ export class APISecurityTester {
    * Test API authentication mechanisms
    */
   async testAPIAuthentication() {
-    console.log('🔐 Testing API authentication...');
 
     const authTests = [
       () => this.testMissingAuthentication(),
@@ -232,7 +228,6 @@ export class APISecurityTester {
    * Test API authorization mechanisms
    */
   async testAPIAuthorization() {
-    console.log('🚪 Testing API authorization...');
 
     await this.testRoleBasedAccess();
     await this.testResourceOwnershipValidation();
@@ -289,7 +284,6 @@ export class APISecurityTester {
    * Test input validation on API endpoints
    */
   async testInputValidation() {
-    console.log('🔍 Testing API input validation...');
 
     await this.testSQLInjectionAPI();
     await this.testXSSInAPI();
@@ -389,7 +383,6 @@ export class APISecurityTester {
    * Test API rate limiting
    */
   async testRateLimiting() {
-    console.log('⏱️ Testing API rate limiting...');
 
     const rateLimitConfig = this.config.apiSecurity.rateLimiting;
     const testEndpoints = [
@@ -450,7 +443,6 @@ export class APISecurityTester {
           { endpoint, requestsPerSecond, results });
       }
 
-      console.log(`Rate limiting test for ${endpoint}: ${results.rateLimitedRequests}/${results.totalRequests} requests limited`);
     }
   }
 
@@ -458,7 +450,6 @@ export class APISecurityTester {
    * Test CORS configuration
    */
   async testCORSConfiguration() {
-    console.log('🌐 Testing CORS configuration...');
 
     const corsTests = [
       { origin: 'https://evil.com', shouldBlock: true },
@@ -513,7 +504,6 @@ export class APISecurityTester {
    * Test API contract security
    */
   async testAPIContractSecurity() {
-    console.log('📋 Testing API contract security...');
 
     await this.testSchemaValidation();
     await this.testContentTypeValidation();
@@ -571,7 +561,6 @@ export class APISecurityTester {
    * Test security headers on API responses
    */
   async testSecurityHeaders() {
-    console.log('🛡️ Testing API security headers...');
 
     const testEndpoints = Array.from(this.discoveredEndpoints).slice(0, 10);
     const requiredHeaders = this.config.apiSecurity.headers.required;
@@ -632,7 +621,7 @@ export class APISecurityTester {
           }
         }
       } catch (error) {
-        console.log(`Could not obtain token for role: ${role}`);
+        
       }
     }
   }
@@ -648,8 +637,7 @@ export class APISecurityTester {
       description,
       details
     });
-    
-    console.log(`[${severity}] ${category}: ${description}`);
+
   }
 
   /**
@@ -678,13 +666,6 @@ export class APISecurityTester {
       recommendations,
       complianceStatus: this.assessAPICompliance()
     };
-
-    console.log('📊 API Security Testing Summary:');
-    console.log(`🔍 Endpoints tested: ${summary.totalEndpoints}`);
-    console.log(`🔴 Critical: ${summary.critical}`);
-    console.log(`🟠 High: ${summary.high}`);
-    console.log(`🟡 Medium: ${summary.medium}`);
-    console.log(`🟢 Low: ${summary.low}`);
 
     return report;
   }

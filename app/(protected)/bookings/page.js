@@ -76,7 +76,7 @@ export default function BookingsPage() {
   }
 
   const handlePaymentSuccess = (paymentIntent, data) => {
-    console.log('Payment successful:', paymentIntent, data)
+    
     setBookings(prev => prev.map(booking => 
       booking.id === paymentModal.booking?.id 
         ? { ...booking, payment_status: 'paid' }

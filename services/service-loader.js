@@ -37,7 +37,7 @@ try {
   // Load SendGrid service
   try {
     sendGridService = require('./sendgrid-service-production')
-    console.log('✅ SendGrid service loaded (production)')
+    ')
   } catch (e) {
     console.error('❌ Failed to load SendGrid service:', e.message)
     sendGridService = null
@@ -47,7 +47,7 @@ try {
   try {
     const twilioModule = require('./twilio-service')
     twilioSMSService = twilioModule.twilioSMSService
-    console.log('✅ Twilio service loaded (production)')
+    ')
   } catch (e) {
     console.error('❌ Failed to load Twilio service:', e.message)
     twilioSMSService = null
@@ -57,7 +57,7 @@ try {
   try {
     const stripeModule = require('./stripe-service')
     stripeService = stripeModule.stripeService
-    console.log('✅ Stripe service loaded (production)')
+    ')
   } catch (e) {
     console.error('❌ Failed to load Stripe service:', e.message)
     stripeService = null

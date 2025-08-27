@@ -60,13 +60,7 @@ export default function DashboardOnboarding({
 }) {
   // Log component mount for debugging
   useEffect(() => {
-    console.log('🔧 DashboardOnboarding: Component mounted', {
-      hasUser: !!user,
-      userEmail: user?.email,
-      hasProfile: !!profile,
-      profileRole: profile?.role,
-      useQuickFlow
-    })
+    
   }, [])
   
   const router = useRouter()
@@ -270,7 +264,7 @@ export default function DashboardOnboarding({
         // Store completion data for modal display
         setCompletionData(completionMessage)
         setShowCompletionModal(true)
-        console.log('🎉 Adaptive Completion:', completionMessage)
+        
       } else {
         // Fallback completion for users without segmentation
         const flowEngine = new AdaptiveFlowEngine({}, profile)
@@ -359,11 +353,11 @@ export default function DashboardOnboarding({
           internalAnalytics.onboarding.dataSaved(currentStepData?.id, true, null)
         } else if (response.status === 401) {
           // API auth failed - that's okay, profile update is more important
-          console.log('API save skipped (auth), but profile updated successfully')
+          , but profile updated successfully')
         }
       } catch (apiError) {
         // API call failed - that's okay, we still have profile update
-        console.log('API save failed, but profile updated successfully')
+        
       }
     } catch (error) {
       console.error('Error saving progress:', error)
@@ -431,7 +425,6 @@ export default function DashboardOnboarding({
     }
   }, [])
 
-
   // Load saved progress from API
   const loadProgress = async () => {
     try {
@@ -446,7 +439,7 @@ export default function DashboardOnboarding({
         
         // If Stripe is fully set up, mark financial step as complete
         if (stripeData.account_id && stripeData.onboarding_completed) {
-          console.log('💳 Stripe account already connected - marking financial step complete')
+          
           completedSteps.current.add('financial')
           
           // Update onboarding data with Stripe info
@@ -483,8 +476,7 @@ export default function DashboardOnboarding({
           
           setOnboardingData(prev => ({ ...prev, ...combinedData }))
         }
-        
-        console.log('✅ Onboarding progress restored')
+
       }
     } catch (error) {
       console.error('Error loading progress:', error)
@@ -498,8 +490,7 @@ export default function DashboardOnboarding({
     const paymentComplete = urlParams.get('payment_setup_complete') === 'true'
     
     if (paymentComplete) {
-      console.log('💳 Payment setup completed - advancing onboarding')
-      
+
       // Mark financial step as complete
       const financialStepIndex = steps.findIndex(s => s.id === 'financial')
       if (financialStepIndex !== -1) {
@@ -509,8 +500,7 @@ export default function DashboardOnboarding({
         const nextStepIndex = financialStepIndex + 1
         if (nextStepIndex < steps.length) {
           setCurrentStep(nextStepIndex)
-          console.log(`📍 Advanced to step ${nextStepIndex}: ${steps[nextStepIndex].id}`)
-          
+
           // Show success message
           setShowPaymentSuccess(true)
           setTimeout(() => setShowPaymentSuccess(false), 5000)
@@ -551,7 +541,6 @@ export default function DashboardOnboarding({
     }
   }, []) // Only run once on mount
 
-
   // Simplified visibility logic - single source of truth
   const shouldShowModal = showOnboarding
   
@@ -561,7 +550,7 @@ export default function DashboardOnboarding({
 
   // QuickOnboardingFlow not available - falling back to standard flow
   if (useQuickFlow) {
-    console.log('🚀 DashboardOnboarding: QuickOnboardingFlow not available, using standard flow')
+    
     // Continue with standard flow below
   }
 
@@ -624,7 +613,7 @@ export default function DashboardOnboarding({
             </div>
             <button
               onClick={() => {
-                console.log('⏹️ Closing minimized onboarding')
+                
                 setShowOnboarding(false)
                 if (onSkip) onSkip()
               }}
@@ -651,7 +640,7 @@ export default function DashboardOnboarding({
             </div>
             <button
               onClick={() => {
-                console.log('➕ Expanding onboarding from minimized state')
+                
                 setIsMinimized(false)
                 // Track the expansion
                 if (typeof window !== 'undefined') {
@@ -711,7 +700,7 @@ export default function DashboardOnboarding({
                     }
                     
                     // Set minimized state to true
-                    console.log('➖ Minimizing onboarding modal')
+                    
                     setIsMinimized(true)
                   }}
                   className="text-white/80 hover:text-white transition-colors"
@@ -964,7 +953,7 @@ function renderStepContent(stepId, data, updateData, profile, onNavigateNext) {
       // Small delay to ensure data update is processed
       setTimeout(() => {
         if (onNavigateNext) {
-          console.log('🚀 Auto-advancing to next step after data update')
+          
           onNavigateNext()
         }
       }, 100)

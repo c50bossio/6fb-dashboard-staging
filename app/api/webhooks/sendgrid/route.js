@@ -40,8 +40,6 @@ export async function POST(request) {
       )
     }
 
-    console.log(`📧 SendGrid webhook received ${events.length} events`)
-
     // Process each event
     for (const event of events) {
       await processEmailEvent(event)
@@ -109,7 +107,6 @@ async function processEmailEvent(event) {
     } = event
 
     // Log event for debugging
-    console.log(`📧 Processing ${eventType} event for ${email}`)
 
     // Store email event in database
     const { error: eventError } = await supabase
@@ -171,7 +168,7 @@ async function processEmailEvent(event) {
         break
       
       default:
-        console.log(`📧 Unhandled event type: ${eventType}`)
+        
     }
 
     // Update campaign analytics if campaign_id is present
@@ -212,8 +209,6 @@ async function handleEmailDelivered(event) {
         .eq('recipient_email', email)
     }
 
-    console.log(`📧 Email delivered to ${email}`)
-
   } catch (error) {
     console.error('Error handling email delivered:', error)
   }
@@ -249,8 +244,6 @@ async function handleEmailOpened(event) {
         .eq('recipient_email', email)
         .is('first_opened_at', null) // Only update if not already opened
     }
-
-    console.log(`📧 Email opened by ${email}`)
 
   } catch (error) {
     console.error('Error handling email opened:', error)
@@ -302,8 +295,6 @@ async function handleEmailClicked(event) {
         .eq('recipient_email', email)
     }
 
-    console.log(`📧 Email clicked by ${email} - URL: ${url}`)
-
   } catch (error) {
     console.error('Error handling email clicked:', error)
   }
@@ -350,8 +341,6 @@ async function handleEmailFailed(event) {
         failed_at: new Date().toISOString()
       })
 
-    console.log(`📧 Email ${eventType} for ${email}: ${reason || response}`)
-
   } catch (error) {
     console.error('Error handling email failed:', error)
   }
@@ -387,8 +376,6 @@ async function handleEmailUnsubscribe(event) {
         created_at: new Date().toISOString()
       })
 
-    console.log(`📧 Customer ${email} unsubscribed via ${eventType}`)
-
   } catch (error) {
     console.error('Error handling email unsubscribe:', error)
   }
@@ -410,8 +397,6 @@ async function handleGroupUnsubscribe(event) {
         unsubscribed_at: new Date().toISOString()
       })
 
-    console.log(`📧 Customer ${email} unsubscribed from group ${asm_group_id}`)
-
   } catch (error) {
     console.error('Error handling group unsubscribe:', error)
   }
@@ -430,8 +415,6 @@ async function handleGroupResubscribe(event) {
       .delete()
       .eq('email', email)
       .eq('group_id', asm_group_id)
-
-    console.log(`📧 Customer ${email} resubscribed to group ${asm_group_id}`)
 
   } catch (error) {
     console.error('Error handling group resubscribe:', error)

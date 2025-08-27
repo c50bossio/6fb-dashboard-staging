@@ -24,9 +24,6 @@ class CICDReportGenerator {
    * Main report generation function
    */
   async generateReports() {
-    console.log('🚀 Starting CI/CD security report generation...');
-    console.log(`📂 Input directory: ${this.inputDir}`);
-    console.log(`📁 Output directory: ${this.outputDir}`);
 
     try {
       await fs.mkdir(this.outputDir, { recursive: true });
@@ -39,7 +36,6 @@ class CICDReportGenerator {
       await this.generateHTMLDashboard();
       await this.generateMarkdownReport();
 
-      console.log('✅ Security reports generated successfully');
       return {
         scanId: this.scanId,
         timestamp: new Date().toISOString(),
@@ -63,7 +59,6 @@ class CICDReportGenerator {
    * Collect security results from all test phases
    */
   async collectSecurityResults() {
-    console.log('📊 Collecting security results...');
 
     try {
       const entries = await fs.readdir(this.inputDir, { withFileTypes: true });
@@ -104,7 +99,7 @@ class CICDReportGenerator {
         }
       }
 
-      console.log(`📋 Collected results from ${Object.keys(this.results).length} test categories`);
+      .length} test categories`);
 
     } catch (error) {
       console.warn(`⚠️ Could not read input directory: ${error.message}`);
@@ -142,7 +137,7 @@ class CICDReportGenerator {
 
     const reportPath = path.join(this.outputDir, 'security-report.json');
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
-    console.log(`📄 JSON report generated: ${reportPath}`);
+    
   }
 
   /**
@@ -312,7 +307,6 @@ class CICDReportGenerator {
       }
     });
 
-    console.log(`🔍 Deduplicated ${findings.length} findings to ${unique.length} unique issues`);
     return unique;
   }
 
@@ -416,7 +410,7 @@ class CICDReportGenerator {
 
     const sarifPath = path.join(this.outputDir, 'security-report.sarif');
     await fs.writeFile(sarifPath, JSON.stringify(sarif, null, 2));
-    console.log(`📄 SARIF report generated: ${sarifPath}`);
+    
   }
 
   /**
@@ -442,7 +436,7 @@ class CICDReportGenerator {
 
     const summaryPath = path.join(this.outputDir, 'security-summary.json');
     await fs.writeFile(summaryPath, JSON.stringify(summary, null, 2));
-    console.log(`📄 Summary report generated: ${summaryPath}`);
+    
   }
 
   /**
@@ -555,7 +549,7 @@ class CICDReportGenerator {
 
     const htmlPath = path.join(this.outputDir, 'security-dashboard.html');
     await fs.writeFile(htmlPath, htmlTemplate);
-    console.log(`📄 HTML dashboard generated: ${htmlPath}`);
+    
   }
 
   /**
@@ -623,7 +617,7 @@ ${this.generateRecommendations(findings).map(rec => `- **${rec.priority}**: ${re
 
     const markdownPath = path.join(this.outputDir, 'security-report.md');
     await fs.writeFile(markdownPath, markdown);
-    console.log(`📄 Markdown report generated: ${markdownPath}`);
+    
   }
 
   /**
@@ -726,8 +720,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const generator = new CICDReportGenerator(options);
   generator.generateReports()
     .then(result => {
-      console.log('✅ Report generation completed successfully');
-      console.log(JSON.stringify(result, null, 2));
+      
+      );
       process.exit(0);
     })
     .catch(error => {

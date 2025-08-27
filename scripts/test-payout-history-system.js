@@ -38,8 +38,7 @@ function log(message, type = 'info') {
     error: '\x1b[31m',     // red
     reset: '\x1b[0m'       // reset
   }
-  
-  console.log(`${colors[type]}[${timestamp}] ${message}${colors.reset}`)
+
 }
 
 function logSuccess(message) { log(`✅ ${message}`, 'success') }
@@ -515,16 +514,11 @@ async function runTests() {
     const duration = Date.now() - startTime
     
     // Print summary
-    console.log('\n' + '='.repeat(60))
-    console.log('PAYOUT HISTORY SYSTEM TEST RESULTS')
-    console.log('='.repeat(60))
-    console.log(`Total Tests: ${report.summary.total}`)
-    console.log(`Passed: ${report.summary.passed}`)
-    console.log(`Failed: ${report.summary.failed}`)
-    console.log(`Skipped: ${report.summary.skipped}`)
-    console.log(`Success Rate: ${report.summary.success_rate}%`)
-    console.log(`Duration: ${duration}ms`)
-    console.log('='.repeat(60))
+    )
+    
+    )
+
+    )
     
     if (report.summary.failed > 0) {
       logError('Some tests failed. Check the detailed report for more information.')

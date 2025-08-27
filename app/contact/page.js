@@ -23,7 +23,7 @@ export default function ContactUs() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Contact form submitted:', formData)
+    
     setSubmitted(true)
     setTimeout(() => setSubmitted(false), 5000)
   }

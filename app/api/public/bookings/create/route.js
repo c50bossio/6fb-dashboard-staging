@@ -207,8 +207,7 @@ async function sendConfirmationEmail(booking, barbershop) {
 
   try {
     // In production, integrate with email service (SendGrid, etc.)
-    console.log('Sending confirmation email to:', booking.customer_email)
-    
+
     // For now, just log the email content
     const emailContent = {
       to: booking.customer_email,
@@ -231,8 +230,7 @@ async function sendConfirmationEmail(booking, barbershop) {
     }
     
     // TODO: Integrate with actual email service
-    console.log('Email content:', emailContent)
-    
+
   } catch (error) {
     console.error('Failed to send confirmation email:', error)
   }

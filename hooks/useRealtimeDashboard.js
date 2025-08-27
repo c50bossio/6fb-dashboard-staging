@@ -15,13 +15,11 @@ export function useRealtimeDashboard(barbershopId, enabled = true) {
   useEffect(() => {
     if (!enabled) return;
 
-    console.log('🔄 Starting real-time dashboard connection...');
-    
     const eventSource = new EventSource(`/api/realtime/dashboard?barbershop_id=${barbershopId}`);
     eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
-      console.log('✅ Real-time dashboard connected');
+      
       setConnected(true);
       setError(null);
     };
@@ -32,12 +30,12 @@ export function useRealtimeDashboard(barbershopId, enabled = true) {
         
         switch (eventData.type) {
           case 'connected':
-            console.log('📡 Dashboard stream connected:', eventData.message);
+            
             setConnected(true);
             break;
             
           case 'dashboard_update':
-            console.log('📊 Dashboard update received:', eventData.timestamp);
+            
             setData(eventData.data);
             setLastUpdate(new Date(eventData.timestamp));
             break;
@@ -51,7 +49,7 @@ export function useRealtimeDashboard(barbershopId, enabled = true) {
             break;
             
           default:
-            console.log('📨 Unknown dashboard event:', eventData.type);
+            
         }
       } catch (err) {
         console.error('Failed to parse dashboard event:', err);
@@ -66,13 +64,13 @@ export function useRealtimeDashboard(barbershopId, enabled = true) {
       
       setTimeout(() => {
         if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
-          console.log('🔄 Attempting to reconnect dashboard stream...');
+          
         }
       }, 5000);
     };
 
     return () => {
-      console.log('🔌 Closing real-time dashboard connection');
+      
       eventSource.close();
       eventSourceRef.current = null;
       setConnected(false);
@@ -84,7 +82,7 @@ export function useRealtimeDashboard(barbershopId, enabled = true) {
       eventSourceRef.current.close();
       eventSourceRef.current = null;
       setConnected(false);
-      console.log('🛑 Real-time dashboard manually disconnected');
+      
     }
   };
 

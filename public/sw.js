@@ -26,25 +26,23 @@ let isNewInstallation = false;
 
 self.addEventListener('install', (event) => {
   isNewInstallation = true;
-  console.log(`[SW] Installing new service worker with cache: ${CACHE_NAME}`);
-  
+
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[SW] Caching essential files');
+        
         return cache.addAll(urlsToCache);
       })
       .then(() => {
         // Immediately take control of all clients
-        console.log('[SW] Skip waiting to activate immediately');
+        
         return self.skipWaiting();
       })
   );
 });
 
 self.addEventListener('activate', (event) => {
-  console.log(`[SW] Activating service worker with cache: ${CACHE_NAME}`);
-  
+
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -52,7 +50,7 @@ self.addEventListener('activate', (event) => {
           // Delete ALL old caches that don't match current version
           if (!cacheName.includes(CACHE_VERSION) || 
               (cacheName !== CACHE_NAME && cacheName !== API_CACHE)) {
-            console.log('[SW] Deleting old cache:', cacheName);
+            
             return caches.delete(cacheName);
           }
         })
@@ -60,7 +58,7 @@ self.addEventListener('activate', (event) => {
     })
     .then(() => {
       // Claim all clients immediately
-      console.log('[SW] Claiming all clients');
+      
       return self.clients.claim();
     })
     .then(() => {
@@ -115,10 +113,10 @@ self.addEventListener('fetch', (event) => {
               // Wrap in try-catch to prevent network errors
               try {
                 cache.put(request, responseToCache).catch(err => {
-                  console.log('[SW] Cache.put error (API):', err);
+                  :', err);
                 });
               } catch (err) {
-                console.log('[SW] Cache operation failed:', err);
+                
               }
             });
           }
@@ -170,13 +168,13 @@ async function staleWhileRevalidate(request, cacheName) {
       if (response && response.ok) {
         const responseToCache = response.clone();
         cache.put(request, responseToCache).catch(err => {
-          console.log('[SW] Cache update failed:', err);
+          
         });
       }
       return response;
     })
     .catch(error => {
-      console.log('[SW] Fetch failed, using cache:', error);
+      
       return cachedResponse;
     });
   
@@ -199,12 +197,12 @@ async function cacheFirstStrategy(request, cacheName) {
       if (response && response.ok) {
         const responseToCache = response.clone();
         cache.put(request, responseToCache).catch(err => {
-          console.log('[SW] Cache update failed:', err);
+          
         });
       }
       return response;
     }).catch(error => {
-      console.log('[SW] Fetch failed for uncached resource:', error);
+      
       // Return a proper error response
       return new Response('Resource not available offline', {
         status: 503,
@@ -212,7 +210,7 @@ async function cacheFirstStrategy(request, cacheName) {
       });
     });
   } catch (error) {
-    console.log('[SW] cacheFirstStrategy error:', error);
+    
     return new Response('Service Worker Error', {
       status: 500,
       statusText: 'Internal Error'
@@ -228,16 +226,16 @@ async function networkFirstStrategy(request, cacheName, maxAge) {
       const cache = await caches.open(cacheName);
       try {
         await cache.put(request, response.clone()).catch(err => {
-          console.log('[SW] Cache.put error (network-first):', err);
+          :', err);
         });
       } catch (err) {
-        console.log('[SW] Cache operation failed:', err);
+        
       }
     }
     
     return response;
   } catch (error) {
-    console.log('[SW] Network request failed, trying cache:', request.url);
+    
     const cached = await caches.match(request);
     
     if (cached) {
@@ -262,16 +260,16 @@ async function fetchAndCache(request, cacheName) {
       const cache = await caches.open(cacheName);
       try {
         await cache.put(request, response.clone()).catch(err => {
-          console.log('[SW] Cache.put error (fetchAndCache):', err);
+          :', err);
         });
       } catch (err) {
-        console.log('[SW] Cache operation failed:', err);
+        
       }
     }
     
     return response;
   } catch (error) {
-    console.log('[SW] fetchAndCache failed:', error);
+    
     // Try to return from cache if fetch fails
     const cache = await caches.open(cacheName);
     const cachedResponse = await cache.match(request);
@@ -354,7 +352,7 @@ self.addEventListener('message', (event) => {
           caches.keys().then(cacheNames => {
             return Promise.all(
               cacheNames.map(cacheName => {
-                console.log('[SW] Clearing cache:', cacheName);
+                
                 return caches.delete(cacheName);
               })
             );

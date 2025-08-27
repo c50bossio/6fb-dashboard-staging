@@ -66,12 +66,12 @@ export default function AddBarberModal({ isOpen, onClose, onBarberAdded, locatio
         if (result.instructions && result.instructions.length > 0) {
           // Join instructions with line breaks for display
           const instructionsText = result.instructions.join('\n')
-          console.log('Staff operation completed:', instructionsText)
+          
         }
         
         // Show temp password in dev mode for create flow
         if (activeTab === 'create' && result.data?.tempPassword) {
-          console.log('Development Mode - Temporary Password:', result.data.tempPassword)
+          
           setSuccess(`${successMessage}\n\nDev Mode - Temp Password: ${result.data.tempPassword}`)
         }
         

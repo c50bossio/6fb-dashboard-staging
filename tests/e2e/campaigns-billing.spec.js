@@ -8,7 +8,7 @@ test.use({
 });
 
 test.beforeAll(async () => {
-  console.log('🧪 Starting Campaign & Billing E2E Tests');
+  
   process.env.NODE_ENV = 'development';
   process.env.NEXT_PUBLIC_DEV_MODE = 'true';
 });
@@ -256,5 +256,5 @@ test.describe('Development Mode Authentication', () => {
 });
 
 test.afterAll(async () => {
-  console.log('✅ Campaign & Billing E2E Tests Completed');
+  
 });

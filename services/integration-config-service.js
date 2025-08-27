@@ -65,7 +65,7 @@ class IntegrationConfigService {
   }
 
   async init() {
-    console.log('⚙️ Initializing Integration Configuration Service...')
+    
     this.initialized = true
   }
 

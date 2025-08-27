@@ -126,7 +126,6 @@ test.describe('Payment Processing - Stripe Integration', () => {
   })
 
   test('Successful payment with valid Visa card', async ({ page }) => {
-    console.log('Testing successful payment with Visa card...')
 
     // Navigate to payment form
     await page.goto(`/shop/${paymentEnv.testData.shop.slug}/book`)
@@ -186,7 +185,6 @@ test.describe('Payment Processing - Stripe Integration', () => {
   })
 
   test('Payment failure with declined card', async ({ page }) => {
-    console.log('Testing payment failure with declined card...')
 
     await page.goto(`/shop/${paymentEnv.testData.shop.slug}/book`)
     
@@ -230,7 +228,6 @@ test.describe('Payment Processing - Stripe Integration', () => {
   })
 
   test('Payment with insufficient funds', async ({ page }) => {
-    console.log('Testing payment with insufficient funds...')
 
     await page.goto(`/shop/${paymentEnv.testData.shop.slug}/book`)
     
@@ -261,8 +258,6 @@ test.describe('Payment Processing - Stripe Integration', () => {
     if (!paymentEnv.testData.shop.business_settings?.deposit_required) {
       test.skip('Shop does not require deposits')
     }
-
-    console.log('Testing deposit payment...')
 
     await page.goto(`/shop/${paymentEnv.testData.shop.slug}/book`)
     
@@ -303,7 +298,6 @@ test.describe('Payment Processing - Stripe Integration', () => {
   })
 
   test('Webhook handling for successful payment', async ({ page }) => {
-    console.log('Testing webhook handling...')
 
     // Create a test payment intent
     const paymentIntent = await paymentEnv.createTestPaymentIntent()
@@ -342,7 +336,6 @@ test.describe('Payment Processing - Stripe Integration', () => {
   })
 
   test('Payment retry after initial failure', async ({ page }) => {
-    console.log('Testing payment retry functionality...')
 
     await page.goto(`/shop/${paymentEnv.testData.shop.slug}/book`)
     
@@ -381,7 +374,6 @@ test.describe('Payment Processing - Stripe Integration', () => {
   })
 
   test('In-person payment flow', async ({ page }) => {
-    console.log('Testing in-person payment flow...')
 
     await page.goto(`/shop/${paymentEnv.testData.shop.slug}/book`)
     
@@ -424,7 +416,6 @@ test.describe('Payment Processing - Stripe Integration', () => {
   })
 
   test('Payment processing with network errors', async ({ page }) => {
-    console.log('Testing payment with network errors...')
 
     await page.goto(`/shop/${paymentEnv.testData.shop.slug}/book`)
     

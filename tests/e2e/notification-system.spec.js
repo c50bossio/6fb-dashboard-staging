@@ -142,7 +142,6 @@ test.describe('Notification System - Email Notifications', () => {
   })
 
   test('Booking confirmation email is sent', async ({ page }) => {
-    console.log('Testing booking confirmation email...')
 
     // Complete a booking to trigger notification
     await page.goto(`/shop/${notificationEnv.testData.shop.slug}/book`)
@@ -186,7 +185,6 @@ test.describe('Notification System - Email Notifications', () => {
   })
 
   test('Payment receipt email is sent', async ({ page }) => {
-    console.log('Testing payment receipt email...')
 
     // Mock successful payment webhook
     await page.route('**/api/webhooks/stripe', async route => {
@@ -252,7 +250,6 @@ test.describe('Notification System - Email Notifications', () => {
   })
 
   test('Booking reminder email is scheduled', async ({ page }) => {
-    console.log('Testing booking reminder email scheduling...')
 
     // Create a booking for tomorrow
     const booking = await notificationEnv.createTestBooking()
@@ -271,7 +268,6 @@ test.describe('Notification System - Email Notifications', () => {
   })
 
   test('Email delivery failure handling', async ({ page }) => {
-    console.log('Testing email delivery failure handling...')
 
     // Mock email service failure
     await page.route('**/api/notifications/email', async route => {
@@ -336,7 +332,6 @@ test.describe('Notification System - SMS Notifications', () => {
   })
 
   test('SMS booking confirmation is sent', async ({ page }) => {
-    console.log('Testing SMS booking confirmation...')
 
     // Verify shop has SMS notifications enabled
     const smsEnabled = notificationEnv.testData.shop.notification_settings?.sms_enabled
@@ -373,7 +368,6 @@ test.describe('Notification System - SMS Notifications', () => {
   })
 
   test('SMS reminder notification', async ({ page }) => {
-    console.log('Testing SMS reminder notification...')
 
     const booking = await notificationEnv.createTestBooking()
 
@@ -428,7 +422,6 @@ test.describe('Notification System - SMS Notifications', () => {
   })
 
   test('SMS failure with invalid phone number', async ({ page }) => {
-    console.log('Testing SMS failure with invalid phone number...')
 
     // Use invalid phone number
     const invalidCustomer = {
@@ -477,7 +470,6 @@ test.describe('Notification System - Real-time Notifications', () => {
   })
 
   test('Real-time booking notification to barber dashboard', async ({ page, context }) => {
-    console.log('Testing real-time booking notifications...')
 
     // Open barber dashboard in second tab
     const barberPage = await context.newPage()
@@ -514,7 +506,6 @@ test.describe('Notification System - Real-time Notifications', () => {
   })
 
   test('Push notification to mobile app', async ({ page }) => {
-    console.log('Testing push notifications...')
 
     // Mock push notification service
     let pushNotificationSent = false
@@ -554,7 +545,6 @@ test.describe('Notification System - Real-time Notifications', () => {
   })
 
   test('WebSocket notification delivery', async ({ page }) => {
-    console.log('Testing WebSocket notifications...')
 
     // Listen for WebSocket messages
     const websocketMessages = []
@@ -612,7 +602,6 @@ test.describe('Notification System - Webhook Integration', () => {
   })
 
   test('Booking webhook triggers notification processing', async ({ page }) => {
-    console.log('Testing booking webhook notification processing...')
 
     const webhookPayload = {
       event_type: 'booking_completed',
@@ -648,7 +637,6 @@ test.describe('Notification System - Webhook Integration', () => {
   })
 
   test('Payment webhook triggers receipt notification', async ({ page }) => {
-    console.log('Testing payment webhook receipt notification...')
 
     const paymentWebhook = {
       id: 'evt_test_webhook',
@@ -690,7 +678,6 @@ test.describe('Notification System - Webhook Integration', () => {
   })
 
   test('Third-party integration webhook processing', async ({ page }) => {
-    console.log('Testing third-party integration webhooks...')
 
     // Mock calendar integration webhook
     const calendarWebhook = {

@@ -8,15 +8,14 @@ import { ConflictDetector } from '@/lib/booking-rules-engine/ConflictDetector'
 
 export async function GET() {
   try {
-    console.log('🧪 Starting Enterprise Booking Rules System Test...')
-    
+
     const results = {
       timestamp: new Date().toISOString(),
       tests: {}
     }
     
     // Test 1: ConflictDetector instantiation
-    console.log('Testing ConflictDetector instantiation...')
+    
     try {
       const detector = new ConflictDetector()
       results.tests.instantiation = {
@@ -33,7 +32,7 @@ export async function GET() {
     }
     
     // Test 2: Basic conflict detection with mock data
-    console.log('Testing basic conflict detection...')
+    
     try {
       const detector = new ConflictDetector()
       
@@ -87,7 +86,7 @@ export async function GET() {
     }
     
     // Test 3: Available slots finding
-    console.log('Testing available slots finding...')
+    
     try {
       const detector = new ConflictDetector()
       
@@ -123,7 +122,7 @@ export async function GET() {
     }
     
     // Test 4: API route structure
-    console.log('Testing API route structure...')
+    
     try {
       // Check if the main API route exists
       const apiRoute = await import('@/app/api/booking-rules/conflicts/route.js')
@@ -147,7 +146,7 @@ export async function GET() {
     }
     
     // Test 5: Statistics functionality
-    console.log('Testing statistics functionality...')
+    
     try {
       const detector = new ConflictDetector()
       const stats = detector.getStats()
@@ -182,9 +181,7 @@ export async function GET() {
       successRate: `${Math.round((passedTests / totalTests) * 100)}%`,
       overallStatus: passedTests === totalTests ? 'ALL_TESTS_PASSED' : 'SOME_TESTS_FAILED'
     }
-    
-    console.log(`🎯 Test Results: ${passedTests}/${totalTests} tests passed`)
-    
+
     return NextResponse.json(results, {
       status: 200,
       headers: {
@@ -208,9 +205,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     const { testType, testData } = await request.json()
-    
-    console.log(`🧪 Running specific test: ${testType}`)
-    
+
     const detector = new ConflictDetector()
     let result = {}
     

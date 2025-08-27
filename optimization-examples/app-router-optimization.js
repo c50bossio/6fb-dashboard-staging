@@ -62,7 +62,7 @@ import { updateAnalyticsSettings } from '@/app/actions'
 export function SettingsForm() {
   async function handleSubmit(formData) {
     const result = await updateAnalyticsSettings(formData)
-    console.log(result)
+    
   }
   
   return <form action={handleSubmit}>/* form */</form>

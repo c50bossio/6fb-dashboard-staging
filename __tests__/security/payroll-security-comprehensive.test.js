@@ -367,7 +367,7 @@ describe('🔒 PAYROLL SYSTEM SECURITY COMPREHENSIVE TESTS', () => {
 
         expect(result.success).toBe(false)
         expect(result.error).toContain('Invalid amount')
-        console.log(`✅ Rejected ${description}: ${amount}`)
+        
       }
     })
 
@@ -621,7 +621,7 @@ describe('🔒 PAYROLL SYSTEM SECURITY COMPREHENSIVE TESTS', () => {
       ).length
 
       expect(rateLimitedCount).toBeGreaterThan(5)
-      console.log(`✅ Rate limited ${rateLimitedCount} requests from IP ${sourceIP}`)
+      
     })
 
     test('should implement progressive rate limit penalties', async () => {
@@ -658,7 +658,7 @@ describe('🔒 PAYROLL SYSTEM SECURITY COMPREHENSIVE TESTS', () => {
         ).length
 
         expect(blockedCount).toBeGreaterThan(0)
-        console.log(`✅ Blocked suspicious pattern: ${description}`)
+        
       }
     })
 
@@ -691,7 +691,7 @@ describe('🔒 PAYROLL SYSTEM SECURITY COMPREHENSIVE TESTS', () => {
 
       // Whitelisted IP should have much higher success rate
       expect(successCount).toBeGreaterThan(150)
-      console.log(`✅ Whitelisted IP processed ${successCount}/200 requests`)
+      
     })
 
     // Helper functions for rate limiting tests

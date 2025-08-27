@@ -41,13 +41,6 @@ export default function ReviewPage() {
     e.preventDefault()
     if (rating === 0) return
 
-    console.log('Review submitted:', {
-      rating,
-      reviewText,
-      phoneNumber,
-      smsConsent,
-      appointmentId: params.id
-    })
     setSubmitted(true)
   }
 

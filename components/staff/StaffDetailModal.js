@@ -36,13 +36,7 @@ import {
   validateFinancialArrangement,
   standardizeFinancialFields
 } from '@/lib/financial-display-utils'
-import { 
-  getDisplayName, 
-  splitFullName, 
-  combineNames, 
-  normalizeNameData,
-  createNameUpdateObject 
-} from '@/lib/name-utils'
+// Name utilities removed - using direct field access for simplicity
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
 
@@ -54,20 +48,13 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
   useEffect(() => {
     if (staff) {
-      // Handle both old and new name field formats
-      const nameData = {
-        firstName: staff.user?.first_name,
-        lastName: staff.user?.last_name,
-        fullName: staff.user?.full_name
-      }
-      const normalizedNames = normalizeNameData(nameData)
-      
+      // Simple direct field access - no transformations
       setEditedData({
-        first_name: normalizedNames.firstName || '',
-        last_name: normalizedNames.lastName || '',
-        full_name: normalizedNames.fullName || '', // Keep for backward compatibility
-        email: staff.user?.email || '',
-        phone: staff.user?.phone || '',
+        first_name: staff.first_name || staff.user?.first_name || '',
+        last_name: staff.last_name || staff.user?.last_name || '',
+        full_name: staff.full_name || staff.user?.full_name || '',
+        email: staff.email || staff.user?.email || '',
+        phone: staff.phone || staff.user?.phone || '',
         role: staff.role || 'barber',
         arrangement_type: staff.arrangement_type || staff.financial_model || 'commission',
         commission_rate: staff.commission_rate || 0.6, // Default 60%
@@ -80,47 +67,31 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
   }, [staff])
 
   const handleSave = async () => {
-    console.log('🚀 [StaffDetailModal] SAVE BUTTON CLICKED - Starting save process')
-    console.log('🔍 [StaffDetailModal] Current editedData state:', editedData)
-    console.log('🔍 [StaffDetailModal] Staff object:', staff)
     
     setLoading(true)
-    console.log('🔍 [StaffDetailModal] Loading state set to true')
     
     try {
       // Validate financial arrangement before saving
-      console.log('🔍 [StaffDetailModal] Starting validation...')
       const validation = validateFinancialArrangement(editedData)
-      console.log('🔍 [StaffDetailModal] Validation result:', validation)
       
       if (!validation.isValid) {
-        console.log('❌ [StaffDetailModal] Validation failed:', validation.errors)
         toast.error(`Please fix the following: ${validation.errors.join(', ')}`)
         setLoading(false)
         return
       }
       
-      console.log('✅ [StaffDetailModal] Validation passed, proceeding with save...')
 
-      // Debug: Log what we're about to send
-      console.log('🔍 [StaffDetailModal] Raw editedData:', editedData)
       
-      const nameUpdateData = createNameUpdateObject(editedData)
-      console.log('🔍 [StaffDetailModal] Name update data:', nameUpdateData)
-      
-      // Standardize both financial and name data before sending to API
+      // Simple data preparation - just pass what we have
       const standardizedData = {
         ...standardizeFinancialFields(editedData),
-        ...nameUpdateData
+        first_name: editedData.first_name,
+        last_name: editedData.last_name,
+        full_name: editedData.full_name || `${editedData.first_name} ${editedData.last_name}`.trim()
       }
       
-      console.log('🔍 [StaffDetailModal] Final data being sent to API:', standardizedData)
       
       // PRODUCTION: Use proper staff API with authorization
-      console.log('🌐 [StaffDetailModal] Making API request to:', `/api/staff/${staff.id}`)
-      console.log('🌐 [StaffDetailModal] Staff ID (user_id):', staff.id)
-      console.log('🌐 [StaffDetailModal] Request method: PATCH')
-      console.log('🌐 [StaffDetailModal] Request body:', JSON.stringify(standardizedData, null, 2))
       
       const response = await fetch(`/api/staff/${staff.id}`, {
         method: 'PATCH',
@@ -128,16 +99,9 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
         body: JSON.stringify(standardizedData)
       })
 
-      console.log('🌐 [StaffDetailModal] Raw response received:', {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries())
-      })
 
       const data = await response.json()
       
-      console.log('🔍 [StaffDetailModal] Parsed response data:', data)
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to update staff')
@@ -148,24 +112,17 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
       
       // Update the local state with the new data from proper staff API
       if (data.staff) {
-        // The API now always returns user profile data
+        // Simple update - just use the data directly
         if (data.staff.user) {
-          const updatedNameData = normalizeNameData({
-            firstName: data.staff.user.first_name,
-            lastName: data.staff.user.last_name,
-            fullName: data.staff.user.full_name
-          })
-          
           setEditedData(prev => ({
             ...prev,
-            first_name: updatedNameData.firstName || '',
-            last_name: updatedNameData.lastName || '',
-            full_name: updatedNameData.fullName || '',
+            first_name: data.staff.user.first_name || prev.first_name,
+            last_name: data.staff.user.last_name || prev.last_name,
+            full_name: data.staff.user.full_name || prev.full_name,
             email: data.staff.user.email || prev.email,
             phone: data.staff.user.phone || prev.phone
           }))
           
-          console.log('🔍 [StaffDetailModal] Updated local state with new profile data:', updatedNameData)
         }
         
         if (onUpdate) {
@@ -176,28 +133,15 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
             // Ensure name fields are present for UI display
             first_name: data.staff.user?.first_name || editedData.first_name,
             last_name: data.staff.user?.last_name || editedData.last_name,
-            full_name: data.staff.user?.full_name || combineNames(editedData.first_name, editedData.last_name),
-            display_name: getDisplayName({
-              firstName: data.staff.user?.first_name || editedData.first_name,
-              lastName: data.staff.user?.last_name || editedData.last_name,
-              fullName: data.staff.user?.full_name,
-              email: data.staff.user?.email || staff.email
-            })
+            full_name: data.staff.user?.full_name || `${editedData.first_name} ${editedData.last_name}`.trim(),
+            display_name: data.staff.user?.full_name || `${editedData.first_name} ${editedData.last_name}`.trim() || data.staff.user?.email || 'Staff Member'
           }
-          console.log('🔍 [StaffDetailModal] Calling onUpdate with:', updatedStaffData)
           onUpdate(updatedStaffData)
         }
       }
     } catch (error) {
-      console.error('🚨 [StaffDetailModal] Error during save process:', error)
-      console.error('🚨 [StaffDetailModal] Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      })
       toast.error(error.message || 'Failed to update staff member')
     } finally {
-      console.log('🔍 [StaffDetailModal] Save process completed, setting loading to false')
       setLoading(false)
     }
   }
@@ -221,7 +165,6 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
       if (onUpdate) onUpdate(data.staff)
       onClose()
     } catch (error) {
-      console.error('Error deactivating staff:', error)
       toast.error(error.message || 'Failed to deactivate staff member')
     } finally {
       setLoading(false)
@@ -247,7 +190,6 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
       setEditedData(prev => ({ ...prev, is_active: true }))
       if (onUpdate) onUpdate(data.staff)
     } catch (error) {
-      console.error('Error reactivating staff:', error)
       toast.error(error.message || 'Failed to reactivate staff member')
     } finally {
       setLoading(false)
@@ -269,7 +211,7 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                {getDisplayName({ firstName: editedData.first_name, lastName: editedData.last_name, fullName: editedData.full_name, email: staff.user?.email })}
+                {editedData.full_name || `${editedData.first_name} ${editedData.last_name}`.trim() || editedData.email || 'Staff Member'}
               </h2>
               <p className="text-gray-600 capitalize">{editedData.role}</p>
               {isInactive && (
@@ -325,20 +267,13 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                 <Button
                   onClick={() => {
                     setIsEditing(false)
-                    // Reset to original values using name utilities for consistency
-                    const nameData = {
-                      firstName: staff.user?.first_name,
-                      lastName: staff.user?.last_name,
-                      fullName: staff.user?.full_name
-                    }
-                    const normalizedNames = normalizeNameData(nameData)
-                    
+                    // Reset to original values - simple direct access
                     setEditedData({
-                      first_name: normalizedNames.firstName || '',
-                      last_name: normalizedNames.lastName || '',
-                      full_name: normalizedNames.fullName || '', // Keep for backward compatibility
-                      email: staff.user?.email || '',
-                      phone: staff.user?.phone || '',
+                      first_name: staff.first_name || staff.user?.first_name || '',
+                      last_name: staff.last_name || staff.user?.last_name || '',
+                      full_name: staff.full_name || staff.user?.full_name || '',
+                      email: staff.email || staff.user?.email || '',
+                      phone: staff.phone || staff.user?.phone || '',
                       role: staff.role || 'barber',
                       financial_model: staff.financial_model || 'commission',
                       commission_rate: staff.commission_rate || 0.5, // Default 50%

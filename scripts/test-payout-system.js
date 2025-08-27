@@ -25,16 +25,13 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function testPayoutSystem() {
-  console.log('🚀 TESTING AUTOMATED PAYOUT SYSTEM')
-  console.log('=' * 50)
-  
+
   let allTestsPassed = true
   const testResults = []
 
   // Test 1: Database Schema Verification
   try {
-    console.log('\n1️⃣ TESTING DATABASE SCHEMA...')
-    
+
     const requiredTables = [
       'commission_transactions',
       'barber_commission_balances', 
@@ -48,21 +45,20 @@ async function testPayoutSystem() {
       if (error) {
         throw new Error(`Table ${table} not accessible: ${error.message}`)
       }
-      console.log(`   ✅ ${table}: accessible`)
+      
     }
     
     testResults.push({ test: 'Database Schema', status: 'PASS' })
     
   } catch (error) {
-    console.log(`   ❌ Database schema test failed: ${error.message}`)
+    
     testResults.push({ test: 'Database Schema', status: 'FAIL', error: error.message })
     allTestsPassed = false
   }
 
   // Test 2: Commission Balance Calculation
   try {
-    console.log('\n2️⃣ TESTING COMMISSION BALANCE CALCULATION...')
-    
+
     // Get barbershops with commission data
     const { data: barbershops } = await supabase
       .from('barbershops')
@@ -72,91 +68,74 @@ async function testPayoutSystem() {
     if (!barbershops || barbershops.length === 0) {
       throw new Error('No barbershops found for testing')
     }
-    
-    console.log(`   📊 Testing with ${barbershops.length} barbershops`)
-    
+
     for (const shop of barbershops) {
       // Check commission balances
       const { data: balances } = await supabase
         .from('barber_commission_balances')
         .select('*')
         .eq('barbershop_id', shop.id)
-      
-      console.log(`   🏪 ${shop.name}: ${balances?.length || 0} barber balances`)
-      
+
       // Check commission transactions
       const { data: transactions } = await supabase
         .from('commission_transactions')
         .select('*')
         .eq('barbershop_id', shop.id)
         .limit(5)
-      
-      console.log(`   💰 Recent transactions: ${transactions?.length || 0}`)
+
     }
     
     testResults.push({ test: 'Commission Calculations', status: 'PASS' })
     
   } catch (error) {
-    console.log(`   ❌ Commission calculation test failed: ${error.message}`)
+    
     testResults.push({ test: 'Commission Calculations', status: 'FAIL', error: error.message })
     allTestsPassed = false
   }
 
   // Test 3: Payout Scheduler Service
   try {
-    console.log('\n3️⃣ TESTING PAYOUT SCHEDULER SERVICE...')
-    
+
     // Test importing the payout scheduler
     const PayoutScheduler = require('../services/payout-scheduler')
     const scheduler = new PayoutScheduler()
-    
-    console.log('   ✅ PayoutScheduler class loaded successfully')
-    
+
     // Test getting active arrangements
     const arrangements = await scheduler.getActiveArrangements()
-    console.log(`   📋 Found ${arrangements.length} active arrangements`)
-    
+
     // Test checking due payouts (without processing)
     if (arrangements.length > 0) {
       const firstArrangement = arrangements[0]
       const shouldProcess = await scheduler.shouldProcessPayout(firstArrangement)
-      console.log(`   🔍 First arrangement payout check:`)
-      console.log(`      - Process: ${shouldProcess.process}`)
-      console.log(`      - Reason: ${shouldProcess.reason}`)
-      console.log(`      - Amount: $${shouldProcess.amount}`)
+
     }
     
     testResults.push({ test: 'Payout Scheduler', status: 'PASS' })
     
   } catch (error) {
-    console.log(`   ❌ Payout scheduler test failed: ${error.message}`)
+    
     testResults.push({ test: 'Payout Scheduler', status: 'FAIL', error: error.message })
     allTestsPassed = false
   }
 
   // Test 4: API Endpoint Integration
   try {
-    console.log('\n4️⃣ TESTING API ENDPOINT INTEGRATION...')
-    
+
     // Test the payout schedule API endpoint structure
     const fetch = require('node-fetch')
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9999'
-    
-    console.log(`   🌐 Base URL: ${baseUrl}`)
-    console.log('   ✅ API endpoint structure verified')
-    
+
     testResults.push({ test: 'API Integration', status: 'PASS' })
     
   } catch (error) {
-    console.log(`   ❌ API integration test failed: ${error.message}`)
+    
     testResults.push({ test: 'API Integration', status: 'FAIL', error: error.message })
     allTestsPassed = false
   }
 
   // Test 5: Real-time Data Flow
   try {
-    console.log('\n5️⃣ TESTING REAL-TIME DATA FLOW...')
-    
+
     // Test commission balance aggregation
     const { data: totalBalances } = await supabase
       .rpc('exec_sql', {
@@ -173,49 +152,38 @@ async function testPayoutSystem() {
       })
     
     if (totalBalances && totalBalances.length > 0) {
-      console.log('   📊 Real-time aggregation working:')
+      
       totalBalances.forEach(balance => {
-        console.log(`      Shop ${balance.barbershop_id}: ${balance.barber_count} barbers, $${balance.total_pending} pending`)
+        
       })
     } else {
-      console.log('   ℹ️  No commission data found (normal for new installations)')
+      ')
     }
     
     testResults.push({ test: 'Real-time Data Flow', status: 'PASS' })
     
   } catch (error) {
-    console.log(`   ❌ Real-time data flow test failed: ${error.message}`)
+    
     testResults.push({ test: 'Real-time Data Flow', status: 'FAIL', error: error.message })
     allTestsPassed = false
   }
 
   // Test Summary
-  console.log('\n' + '=' * 50)
-  console.log('📋 TEST SUMMARY:')
-  console.log('=' * 50)
-  
+
   testResults.forEach(result => {
     const status = result.status === 'PASS' ? '✅' : '❌'
-    console.log(`${status} ${result.test}: ${result.status}`)
+    
     if (result.error) {
-      console.log(`   Error: ${result.error}`)
+      
     }
   })
-  
-  console.log('\n' + '=' * 50)
+
   if (allTestsPassed) {
-    console.log('🎉 ALL TESTS PASSED - PAYOUT SYSTEM IS FULLY OPERATIONAL!')
-    console.log('✅ Ready for live barbershop use')
-    console.log('✅ End-to-end automation working')
-    console.log('✅ Database schema properly deployed')
-    console.log('✅ API endpoints functional')
-    console.log('✅ Real-time data flow operational')
+
   } else {
-    console.log('⚠️  SOME TESTS FAILED - REVIEW REQUIRED')
-    console.log('❌ System not ready for production')
+
   }
-  console.log('=' * 50)
-  
+
   return allTestsPassed
 }
 

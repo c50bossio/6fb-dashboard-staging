@@ -286,7 +286,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
         expect(process.env[envVar]).not.toBe('')
       })
 
-      console.log('✅ All environment variables are properly configured')
     })
 
     test('should validate encryption keys meet security standards', () => {
@@ -306,7 +305,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       const uniqueChars = new Set(testKey.split('')).size
       expect(uniqueChars).toBeGreaterThan(10) // Should have good character diversity
 
-      console.log('✅ Encryption keys meet security standards')
     })
 
     test('should validate database connection security', async () => {
@@ -323,7 +321,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       expect(error).toBeNull()
       expect(data).toBeTruthy()
 
-      console.log('✅ Database connection is secure and functional')
     })
 
     test('should validate external service configurations', async () => {
@@ -334,7 +331,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
         if (result.error) {
           console.error(`❌ ${result.name}: ${result.error}`)
         } else {
-          console.log(`✅ ${result.name}: Connected`)
+          
         }
       })
 
@@ -358,7 +355,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
 
       expect(schemaIssues).toHaveLength(0)
 
-      console.log('✅ Database schema is complete and accessible')
     })
 
     test('should validate Row Level Security (RLS) policies are active', async () => {
@@ -386,7 +382,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
         }
       }
 
-      console.log('✅ Row Level Security policies are active')
     })
 
     test('should validate critical database indexes exist', async () => {
@@ -415,7 +410,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
         expect(error).toBeNull()
         expect(queryTime).toBeLessThan(PRODUCTION_REQUIREMENTS.performance.maxDbQueryTime)
 
-        console.log(`✅ ${name} query: ${queryTime.toFixed(2)}ms`)
+        }ms`)
       }
     })
 
@@ -442,7 +437,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       expect(backupData.data).toContain('Staff Name')
       expect(backupData.format).toBe('csv')
 
-      console.log(`✅ Database backup capability validated: ${(backupData.fileSize / 1024).toFixed(1)}KB export`)
+      .toFixed(1)}KB export`)
     })
   })
 
@@ -482,7 +477,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
           expect(isHealthy).toBe(true)
           expect(responseTime).toBeLessThan(1000) // Health checks should be fast
 
-          console.log(`✅ ${service} health check: ${responseTime.toFixed(2)}ms`)
+          }ms`)
         } catch (error) {
           healthResults[service] = {
             healthy: false,
@@ -507,7 +502,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       
       expect(errorTracked).toBe(true)
 
-      console.log('✅ Error monitoring is configured')
     })
 
     test('should validate audit logging for compliance', async () => {
@@ -524,7 +518,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       const auditResult = await webhookPipeline.createAuditLog?.(auditAction) || true
       expect(auditResult).toBe(true)
 
-      console.log('✅ Audit logging is functional')
     })
 
     test('should validate performance monitoring thresholds', async () => {
@@ -572,7 +565,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
         expect(result.success).toBe(true)
         expect(result.duration).toBeLessThan(PRODUCTION_REQUIREMENTS.performance.maxResponseTime)
 
-        console.log(`✅ ${name}: ${result.duration.toFixed(2)}ms${result.recordCount ? ` (${result.recordCount} records)` : ''}`)
+        }ms${result.recordCount ? ` (${result.recordCount} records)` : ''}`)
       }
     })
   })
@@ -605,7 +598,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
         }
       }
 
-      console.log('✅ Data encryption validation passed')
     })
 
     test('should validate GDPR compliance capabilities', async () => {
@@ -627,7 +619,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
 
       expect(deletionTest.success).toBe(true)
 
-      console.log('✅ GDPR compliance capabilities validated')
     })
 
     test('should validate PCI DSS compliance measures', async () => {
@@ -652,7 +643,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
         })
       }
 
-      console.log('✅ PCI DSS compliance validation passed')
     })
 
     test('should validate data retention policies', async () => {
@@ -668,7 +658,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
 
       expect(retentionCheck.compliant).toBe(true)
 
-      console.log(`✅ Data retention policy validated (${PRODUCTION_REQUIREMENTS.compliance.dataRetentionDays} days)`)
+      `)
     })
   })
 
@@ -694,7 +684,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
         expect(result.success).toBe(false)
         expect(result.error).toBeTruthy()
 
-        console.log('✅ Graceful degradation validated')
       } finally {
         // Restore original key
         process.env.STRIPE_SECRET_KEY = originalStripeKey
@@ -721,7 +710,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       // Circuit breaker should activate after max failures
       expect(failedCalls).toBeGreaterThan(0)
 
-      console.log(`✅ Circuit breaker pattern validated (${failedCalls} failures handled)`)
+      `)
     })
 
     test('should validate rate limiting under load', async () => {
@@ -749,7 +738,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       expect(successCount).toBeGreaterThan(0)
       expect(successCount).toBeLessThanOrEqual(rapidRequests)
 
-      console.log(`✅ Rate limiting validated: ${successCount}/${rapidRequests} requests succeeded`)
     })
 
     test('should validate database connection pool resilience', async () => {
@@ -776,7 +764,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       const successRate = successfulOperations / concurrentOperations
       expect(successRate).toBeGreaterThan(0.8) // 80% success rate minimum
 
-      console.log(`✅ Database connection pool resilience: ${(successRate * 100).toFixed(1)}% success rate`)
+      .toFixed(1)}% success rate`)
     })
   })
 
@@ -830,7 +818,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
           const passed = await check()
           deploymentResults.push({ name, passed })
           expect(passed).toBe(true)
-          console.log(`✅ ${name}: Ready`)
+          
         } catch (error) {
           deploymentResults.push({ name, passed: false, error: error.message })
           console.error(`❌ ${name}: ${error.message}`)
@@ -882,7 +870,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       const successRate = successfulRequests / concurrentRequests
       expect(successRate).toBeGreaterThan(0.7) // 70% minimum during deployment
 
-      console.log(`✅ Zero-downtime deployment: ${(successRate * 100).toFixed(1)}% success rate during deployment`)
+      .toFixed(1)}% success rate during deployment`)
     })
 
     test('should validate rollback capability', async () => {
@@ -924,7 +912,6 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
       const allHealthy = stateChecks.every(check => check === true)
       expect(allHealthy).toBe(true)
 
-      console.log('✅ System state validation for rollback capability confirmed')
     })
   })
 })

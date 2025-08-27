@@ -7,8 +7,7 @@ const fs = require('fs').promises
 const path = require('path')
 
 async function globalTeardown(config) {
-  console.log('🧹 Cleaning up test environment...')
-  
+
   try {
     await generateTestSummary()
     
@@ -19,17 +18,14 @@ async function globalTeardown(config) {
     }
     
     await sendNotifications()
-    
-    console.log('✅ Global teardown completed successfully')
-    
+
   } catch (error) {
     console.error('❌ Teardown error:', error.message)
   }
 }
 
 async function generateTestSummary() {
-  console.log('📊 Generating final test summary...')
-  
+
   const summaryData = {
     timestamp: new Date().toISOString(),
     environment: {
@@ -61,14 +57,11 @@ async function generateTestSummary() {
   
   const summaryPath = path.join('test-results', 'test-summary.json')
   await fs.writeFile(summaryPath, JSON.stringify(summaryData, null, 2))
-  
-  console.log('✓ Test summary generated')
-  console.log(`   Reports available: ${summaryData.testRun.reportsGenerated.length}`)
+
 }
 
 async function cleanupTempFiles() {
-  console.log('🗑️  Cleaning up temporary files...')
-  
+
   const tempPatterns = [
     'test-results/tmp-*',
     'test-results/*.tmp',
@@ -92,13 +85,12 @@ async function cleanupTempFiles() {
   }
   
   if (cleanedFiles > 0) {
-    console.log(`✓ Cleaned up ${cleanedFiles} temporary files`)
+    
   }
 }
 
 async function archiveTestResults() {
-  console.log('📦 Archiving test results for CI...')
-  
+
   try {
     const archiveName = `test-results-${new Date().toISOString().replace(/[:.]/g, '-')}.tar.gz`
     const { exec } = require('child_process')
@@ -106,13 +98,11 @@ async function archiveTestResults() {
     const execAsync = promisify(exec)
     
     await execAsync(`tar -czf ${archiveName} test-results/ playwright-report/ || true`)
-    
-    console.log(`✓ Test results archived as ${archiveName}`)
-    
+
     try {
       await fs.access('artifacts')
       await fs.rename(archiveName, `artifacts/${archiveName}`)
-      console.log('✓ Archive moved to artifacts directory')
+      
     } catch {
     }
     
@@ -125,9 +115,7 @@ async function sendNotifications() {
   if (!process.env.NOTIFICATION_WEBHOOK && !process.env.SLACK_WEBHOOK) {
     return
   }
-  
-  console.log('📤 Sending test notifications...')
-  
+
   try {
     let testResults = null
     try {
@@ -184,7 +172,7 @@ async function sendNotifications() {
     })
     
     if (response.ok) {
-      console.log('✓ Notification sent successfully')
+      
     } else {
       console.warn('⚠️  Failed to send notification:', response.statusText)
     }
@@ -195,9 +183,9 @@ async function sendNotifications() {
 }
 
 async function logFinalSummary() {
-  console.log('\n' + '='.repeat(60))
-  console.log('🏁 6FB AI Agent System - Testing Complete')
-  console.log('='.repeat(60))
+  )
+  
+  )
   
   try {
     const resultsData = await fs.readFile('test-results/triple-tool-report.json', 'utf8')
@@ -205,17 +193,9 @@ async function logFinalSummary() {
     
     const { total, passed, failed, skipped, duration } = results.summary
     const passRate = total > 0 ? Math.round((passed / total) * 100) : 0
-    
-    console.log(`📊 Final Results:`)
-    console.log(`   Total Tests: ${total}`)
-    console.log(`   ✅ Passed: ${passed}`)
-    console.log(`   ❌ Failed: ${failed}`)
-    console.log(`   ⏭️  Skipped: ${skipped}`)
-    console.log(`   📈 Pass Rate: ${passRate}%`)
-    console.log(`   ⏱️  Duration: ${Math.round(duration / 1000)}s`)
-    console.log('')
-    
-    console.log('🛠️  Tool Breakdown:')
+
+    }s`)
+
     const tools = ['playwright', 'puppeteer', 'computerUse']
     tools.forEach(tool => {
       const toolResults = results.results[tool]
@@ -223,35 +203,26 @@ async function logFinalSummary() {
         const toolPassed = toolResults.filter(r => r.status === 'passed').length
         const toolTotal = toolResults.length
         const toolName = tool.charAt(0).toUpperCase() + tool.slice(1)
-        console.log(`   ${toolName}: ${toolPassed}/${toolTotal}`)
+        
       }
     })
-    
-    console.log('')
-    console.log('📁 View Results:')
-    console.log('   HTML Report: test-results/triple-tool-report.html')
-    console.log('   Playwright Report: playwright-report/index.html')
-    console.log('   JSON Data: test-results/triple-tool-report.json')
-    
+
     if (failed > 0) {
-      console.log('')
-      console.log('❌ Some tests failed. Check the reports for details.')
+
     } else {
-      console.log('')
-      console.log('🎉 All tests passed! Great job!')
+
     }
     
   } catch (error) {
-    console.log('📝 Test execution completed')
-    console.log('   Check test-results/ directory for output')
+
   }
   
-  console.log('='.repeat(60))
+  )
 }
 
 process.on('exit', () => {
   if (!process.env.SUPPRESS_FINAL_SUMMARY) {
-    console.log('\n🏁 6FB AI Agent System testing session ended')
+    
   }
 })
 

@@ -58,10 +58,9 @@ class ProductionReadinessChecker {
     }
 
     const color = colorMap[level] || colors.reset
-    console.log(`${color}[${level}]${colors.reset} ${message}`)
-    
+
     if (details) {
-      console.log(`  ${colors.cyan}Details:${colors.reset} ${details}`)
+      
     }
 
     this.results.checks.push({
@@ -520,50 +519,43 @@ class ProductionReadinessChecker {
   }
 
   printSummary() {
-    console.log(`\n${colors.bold}${colors.cyan}Production Readiness Summary${colors.reset}`)
-    console.log(`${colors.green}✓ Passed: ${this.results.passed}${colors.reset}`)
-    console.log(`${colors.red}✗ Failed: ${this.results.failed}${colors.reset}`)
-    console.log(`${colors.yellow}⚠ Warnings: ${this.results.warnings}${colors.reset}`)
 
     const totalCritical = this.results.passed + this.results.failed
     const score = totalCritical > 0 ? Math.round((this.results.passed / totalCritical) * 100) : 0
 
-    console.log(`\n${colors.bold}Production Readiness Score: ${score}%${colors.reset}`)
-
     if (score >= 90) {
-      console.log(`${colors.green}${colors.bold}✓ READY FOR PRODUCTION${colors.reset}`)
+      
     } else if (score >= 70) {
-      console.log(`${colors.yellow}${colors.bold}⚠ NEEDS ATTENTION BEFORE PRODUCTION${colors.reset}`)
+      
     } else {
-      console.log(`${colors.red}${colors.bold}✗ NOT READY FOR PRODUCTION${colors.reset}`)
+      
     }
 
     if (this.results.failed > 0) {
-      console.log(`\n${colors.red}${colors.bold}Critical Issues:${colors.reset}`)
+      
       this.results.checks
         .filter(check => check.level === 'FAIL')
         .forEach(check => {
-          console.log(`${colors.red}  ✗ ${check.message}${colors.reset}`)
+          
         })
     }
 
     if (this.results.warnings > 0) {
-      console.log(`\n${colors.yellow}${colors.bold}Warnings:${colors.reset}`)
+      
       this.results.checks
         .filter(check => check.level === 'WARN')
         .slice(0, 5) // Show first 5 warnings
         .forEach(check => {
-          console.log(`${colors.yellow}  ⚠ ${check.message}${colors.reset}`)
+          
         })
       
       if (this.results.warnings > 5) {
-        console.log(`${colors.yellow}  ... and ${this.results.warnings - 5} more warnings${colors.reset}`)
+        
       }
     }
   }
 
   async run() {
-    console.log(`${colors.bold}${colors.blue}6FB Barbershop Platform - Production Readiness Checker${colors.reset}\n`)
 
     await this.checkEnvironmentVariables()
     await this.checkSupabaseConnection()

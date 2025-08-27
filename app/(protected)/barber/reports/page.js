@@ -90,7 +90,7 @@ export default function BarberReports() {
     const currentUser = user || { id: 'dev-user-123', email: 'dev@localhost.com' }
     
     try {
-      console.log('Loading report data for user:', currentUser.id)
+      
       setError(null)
       
       const endDate = new Date()
@@ -122,7 +122,7 @@ export default function BarberReports() {
         .lte('created_at', endDate.toISOString())
       
       if (appointmentsResult.error && appointmentsResult.error.message.includes('does not exist')) {
-        console.log('Appointments table not found, trying bookings table...')
+        
         const bookingsResult = await supabase
           .from('bookings')
           .select('*')
@@ -154,7 +154,7 @@ export default function BarberReports() {
       if (transError) {
         console.error('Error fetching transactions:', transError)
         if (transError.message.includes('does not exist')) {
-          console.log('Transactions table does not exist yet')
+          
         }
         transactions = [] // Use empty array instead of throwing
       }
@@ -311,7 +311,6 @@ export default function BarberReports() {
     
     return { daily, hourly }
   }
-
 
   const COLORS = ['#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#C5A35B']
 

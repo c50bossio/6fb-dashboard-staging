@@ -144,7 +144,6 @@ test.describe('Error Scenarios - Network and Connectivity', () => {
   })
 
   test('Application handles offline mode gracefully', async ({ page }) => {
-    console.log('Testing offline mode handling...')
 
     // Start online
     await page.goto('/')
@@ -175,7 +174,6 @@ test.describe('Error Scenarios - Network and Connectivity', () => {
   })
 
   test('API timeout handling with user feedback', async ({ page }) => {
-    console.log('Testing API timeout handling...')
 
     // Mock slow API responses
     await errorEnv.mockSlowAPI(page, 35000)
@@ -194,7 +192,6 @@ test.describe('Error Scenarios - Network and Connectivity', () => {
   })
 
   test('Slow network connection handling', async ({ page }) => {
-    console.log('Testing slow network handling...')
 
     await errorEnv.simulateSlowConnection(page)
     
@@ -214,8 +211,6 @@ test.describe('Error Scenarios - Network and Connectivity', () => {
     if (!errorEnv.testData.shop) {
       test.skip('No test shop available')
     }
-
-    console.log('Testing connection interruption during booking...')
 
     await page.goto(`/shop/${errorEnv.testData.shop.slug}/book`)
     
@@ -257,7 +252,6 @@ test.describe('Error Scenarios - Server Errors', () => {
   })
 
   test('500 Server Error handling', async ({ page }) => {
-    console.log('Testing 500 server error handling...')
 
     await errorEnv.mockServerError(page, 500)
     
@@ -275,7 +269,6 @@ test.describe('Error Scenarios - Server Errors', () => {
   })
 
   test('503 Service Unavailable handling', async ({ page }) => {
-    console.log('Testing 503 service unavailable handling...')
 
     await errorEnv.mockServerError(page, 503)
     
@@ -290,7 +283,6 @@ test.describe('Error Scenarios - Server Errors', () => {
   })
 
   test('API rate limiting handling', async ({ page }) => {
-    console.log('Testing rate limiting handling...')
 
     await page.route('/api/**', async route => {
       await route.fulfill({
@@ -318,7 +310,6 @@ test.describe('Error Scenarios - Server Errors', () => {
   })
 
   test('Database connection error handling', async ({ page }) => {
-    console.log('Testing database connection error handling...')
 
     await page.route('/api/**', async route => {
       await route.fulfill({
@@ -348,7 +339,6 @@ test.describe('Error Scenarios - Authentication and Authorization', () => {
   })
 
   test('Session expiration handling', async ({ page }) => {
-    console.log('Testing session expiration handling...')
 
     // Start with valid session
     await page.addInitScript(() => {
@@ -384,7 +374,6 @@ test.describe('Error Scenarios - Authentication and Authorization', () => {
   })
 
   test('Insufficient permissions handling', async ({ page }) => {
-    console.log('Testing insufficient permissions handling...')
 
     // Mock user with limited permissions
     await page.addInitScript(() => {
@@ -407,7 +396,6 @@ test.describe('Error Scenarios - Authentication and Authorization', () => {
   })
 
   test('Invalid API key handling', async ({ page }) => {
-    console.log('Testing invalid API key handling...')
 
     await page.route('/api/**', async route => {
       await route.fulfill({
@@ -437,7 +425,6 @@ test.describe('Error Scenarios - Data Validation and Input Errors', () => {
   })
 
   test('Invalid email format handling', async ({ page }) => {
-    console.log('Testing invalid email format handling...')
 
     await page.goto('/register')
     
@@ -464,7 +451,6 @@ test.describe('Error Scenarios - Data Validation and Input Errors', () => {
   })
 
   test('SQL injection attempt handling', async ({ page }) => {
-    console.log('Testing SQL injection attempt handling...')
 
     await page.goto('/register')
     
@@ -489,7 +475,6 @@ test.describe('Error Scenarios - Data Validation and Input Errors', () => {
   })
 
   test('XSS attempt handling', async ({ page }) => {
-    console.log('Testing XSS attempt handling...')
 
     await page.goto('/register')
     
@@ -518,7 +503,6 @@ test.describe('Error Scenarios - Data Validation and Input Errors', () => {
   })
 
   test('Large file upload handling', async ({ page }) => {
-    console.log('Testing large file upload handling...')
 
     if (!errorEnv.testData.shop) {
       test.skip('No test shop available')
@@ -547,8 +531,6 @@ test.describe('Error Scenarios - Data Validation and Input Errors', () => {
     if (!errorEnv.testData.shop) {
       test.skip('No test shop available')
     }
-
-    console.log('Testing invalid date/time handling...')
 
     await page.goto(`/shop/${errorEnv.testData.shop.slug}/book`)
     
@@ -582,7 +564,6 @@ test.describe('Error Scenarios - Memory and Performance Issues', () => {
   })
 
   test('Memory pressure handling', async ({ page }) => {
-    console.log('Testing memory pressure handling...')
 
     await page.goto('/dashboard')
     
@@ -603,7 +584,6 @@ test.describe('Error Scenarios - Memory and Performance Issues', () => {
   })
 
   test('Large dataset rendering handling', async ({ page }) => {
-    console.log('Testing large dataset rendering...')
 
     // Mock API to return large dataset
     await page.route('/api/bookings', async route => {
@@ -641,7 +621,6 @@ test.describe('Error Scenarios - Memory and Performance Issues', () => {
   })
 
   test('JavaScript error handling', async ({ page }) => {
-    console.log('Testing JavaScript error handling...')
 
     // Listen for console errors
     const consoleErrors = []
@@ -690,8 +669,6 @@ test.describe('Error Scenarios - Edge Cases', () => {
       test.skip('No test shop available')
     }
 
-    console.log('Testing concurrent user actions...')
-
     // Open multiple tabs
     const page2 = await context.newPage()
     
@@ -718,7 +695,6 @@ test.describe('Error Scenarios - Edge Cases', () => {
   })
 
   test('Browser compatibility edge cases', async ({ page }) => {
-    console.log('Testing browser compatibility edge cases...')
 
     // Simulate unsupported browser features
     await page.addInitScript(() => {
@@ -736,7 +712,6 @@ test.describe('Error Scenarios - Edge Cases', () => {
   })
 
   test('Timezone edge cases', async ({ page }) => {
-    console.log('Testing timezone edge cases...')
 
     // Mock different timezone
     await page.addInitScript(() => {
@@ -774,7 +749,6 @@ test.describe('Error Scenarios - Edge Cases', () => {
   })
 
   test('Mobile device edge cases', async ({ page }) => {
-    console.log('Testing mobile device edge cases...')
 
     // Simulate mobile device with limited capabilities
     await page.setViewportSize({ width: 320, height: 568 }) // iPhone SE

@@ -31,8 +31,6 @@ const NODE_ONLY_MODULES = [
 const apiRoutePattern = path.join(__dirname, '..', 'app', 'api', '**', '*.js');
 const apiRoutes = glob.sync(apiRoutePattern);
 
-console.log(`Found ${apiRoutes.length} API route files`);
-
 let fixedCount = 0;
 let edgeCount = 0;
 let nodeCount = 0;
@@ -73,7 +71,7 @@ apiRoutes.forEach(filePath => {
   if (usesNodeModules && content.includes("export const runtime = 'edge'")) {
     const updatedContent = content.replace("export const runtime = 'edge'\n", '');
     fs.writeFileSync(filePath, updatedContent, 'utf8');
-    console.log(`✅ Removed Edge Runtime from: ${path.relative(process.cwd(), filePath)}`);
+    , filePath)}`);
     fixedCount++;
     nodeCount++;
   } else if (content.includes("export const runtime = 'edge'")) {
@@ -83,8 +81,5 @@ apiRoutes.forEach(filePath => {
   }
 });
 
-console.log('\n📊 Summary:');
-console.log(`  Fixed: ${fixedCount} routes (removed Edge Runtime)`);
-console.log(`  Edge Runtime: ${edgeCount} routes`);
-console.log(`  Node.js Runtime: ${nodeCount} routes`);
-console.log(`  Total: ${apiRoutes.length} routes`);
+`);
+

@@ -95,8 +95,8 @@ function updateFile(filePath) {
     
     if (hasChanges) {
       fs.writeFileSync(filePath, content);
-      console.log(`✅ Fixed: ${path.relative(process.cwd(), filePath)}`);
-      changeLog.forEach(log => console.log(log));
+      , filePath)}`);
+      changeLog.forEach(log => );
       return true;
     }
     return false;
@@ -153,13 +153,11 @@ function createSemanticClasses() {
 
   const outputPath = path.join(__dirname, '..', 'styles', 'semantic-colors.css');
   fs.writeFileSync(outputPath, semanticClasses);
-  console.log(`\n✅ Created semantic color classes at: styles/semantic-colors.css`);
-  console.log('   Import this in your globals.css file: @import "./semantic-colors.css";');
+
 }
 
 async function main() {
-  console.log('🎨 Fixing Color Contrast Issues...\n');
-  
+
   const filePatterns = [
     'app/**/*.{js,jsx,ts,tsx}',
     'components/**/*.{js,jsx,ts,tsx}',
@@ -183,22 +181,7 @@ async function main() {
   }
   
   createSemanticClasses();
-  
-  console.log('\n📊 Contrast Fix Summary:');
-  console.log(`   Total files scanned: ${totalFiles}`);
-  console.log(`   Files updated: ${updatedFiles}`);
-  
-  console.log('\n🎯 Next Steps:');
-  console.log('1. Import semantic-colors.css in your globals.css');
-  console.log('2. Replace hardcoded status colors with semantic classes:');
-  console.log('   • Use .status-success instead of bg-green-* text-green-*');
-  console.log('   • Use .status-warning instead of bg-yellow-* text-yellow-*');
-  console.log('   • Use .status-error instead of bg-red-* text-red-*');
-  console.log('   • Use .btn-gold instead of bg-gold-* text-white');
-  console.log('\n3. Test all buttons and status indicators for proper contrast');
-  console.log('4. Run the contrast analysis again to verify fixes');
-  
-  console.log('\n✨ Contrast fixes complete!');
+
 }
 
 main().catch(console.error);

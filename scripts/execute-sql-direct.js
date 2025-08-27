@@ -7,8 +7,6 @@ import 'dotenv/config';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-console.log('🚀 Executing SQL directly in Supabase...');
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     autoRefreshToken: false,
@@ -17,8 +15,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 async function executeSQL() {
-  console.log('📋 Creating barbershops table and inserting demo data...');
-  
+
   try {
     const createTableSQL = `
       CREATE TABLE IF NOT EXISTS public.barbershops (
@@ -58,8 +55,6 @@ async function executeSQL() {
       );
     `;
 
-    console.log('🏗️ Step 1: Creating table structure...');
-    
     const demoData = {
       id: '550e8400-e29b-41d4-a716-446655440000',
       name: 'Elite Cuts Barbershop',
@@ -108,8 +103,6 @@ async function executeSQL() {
       online_booking_enabled: true
     };
 
-    console.log('📋 Step 2: Inserting demo barbershop data...');
-    
     const { data, error } = await supabase
       .from('barbershops')
       .upsert(demoData, { onConflict: 'id' })
@@ -117,12 +110,7 @@ async function executeSQL() {
 
     if (error) {
       if (error.message.includes('relation "public.barbershops" does not exist')) {
-        console.log('❌ Table does not exist. Manual setup required.');
-        console.log('📋 Please run the SQL manually in Supabase dashboard:');
-        console.log('1. Go to: https://supabase.com/dashboard/project/dfhqjdoydihajmjxniee');
-        console.log('2. Click SQL Editor → New Query');
-        console.log('3. Copy/paste the content from EXECUTE_THIS_SQL.sql');
-        console.log('4. Click Run');
+
         return false;
       } else {
         console.error('❌ Database error:', error.message);
@@ -130,9 +118,6 @@ async function executeSQL() {
       }
     }
 
-    console.log('✅ Demo data inserted successfully!');
-    console.log('🏪 Created barbershop:', data[0]?.name);
-    
     return true;
 
   } catch (error) {
@@ -142,8 +127,7 @@ async function executeSQL() {
 }
 
 async function verifySetup() {
-  console.log('🔍 Verifying database setup...');
-  
+
   try {
     const { data, error } = await supabase
       .from('barbershops')
@@ -157,15 +141,10 @@ async function verifySetup() {
 
     if (data && data.length > 0) {
       const shop = data[0];
-      console.log('✅ Verification successful!');
-      console.log('🏪 Found barbershop:', shop.name);
-      console.log('🌐 Shop slug:', shop.shop_slug);
-      console.log('🎨 Theme:', shop.theme_preset);
-      console.log('🎯 Website enabled:', shop.website_enabled);
-      console.log('🎨 Brand colors configured:', !!shop.brand_colors);
+
       return true;
     } else {
-      console.log('⚠️ No barbershop data found');
+      
       return false;
     }
 
@@ -176,8 +155,7 @@ async function verifySetup() {
 }
 
 async function testSaveAPI() {
-  console.log('🧪 Testing save API endpoint...');
-  
+
   try {
     const response = await fetch('http://localhost:9999/api/demo/simple-setup', {
       method: 'POST',
@@ -189,42 +167,31 @@ async function testSaveAPI() {
     const result = await response.json();
     
     if (response.ok) {
-      console.log('✅ Save API working:', result.message);
+      
       return true;
     } else {
-      console.log('⚠️ Save API response:', result.error || result.message);
+      
       return false;
     }
 
   } catch (error) {
-    console.log('⚠️ Save API test failed:', error.message);
+    
     return false;
   }
 }
 
 async function main() {
-  console.log('🚀 Starting automated Supabase database setup...\n');
 
   const setupSuccess = await executeSQL();
   
   if (setupSuccess) {
-    console.log('\n✅ Database setup completed!');
-    
+
     const verifySuccess = await verifySetup();
     
     if (verifySuccess) {
-      console.log('\n🧪 Testing save functionality...');
-      await testSaveAPI();
       
-      console.log('\n🎉 SUCCESS! Everything is ready!');
-      console.log('🔗 Test at: http://localhost:9999/dashboard/website-settings');
-      console.log('💾 Save functionality should now work perfectly!');
-      console.log('\n🎯 Try this:');
-      console.log('1. Go to website settings');
-      console.log('2. Change the business name');
-      console.log('3. Click "Save Changes"');
-      console.log('4. You should see "Settings saved successfully!" ✅');
-      console.log('5. Refresh - changes should persist! ✅');
+      await testSaveAPI();
+
     }
   }
 }

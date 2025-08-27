@@ -50,8 +50,7 @@ export default function EverboardingProvider({ children }) {
 
   // Feature discovery handler
   const handleFeatureDiscovered = (featureId) => {
-    console.log('🎯 Feature discovered:', featureId)
-    
+
     // Track feature discovery analytics
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'feature_discovered', {
@@ -63,8 +62,7 @@ export default function EverboardingProvider({ children }) {
 
   // Feature completion handler
   const handleFeatureCompleted = (featureId) => {
-    console.log('✅ Feature completed:', featureId)
-    
+
     // Track feature completion analytics
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'feature_completed', {

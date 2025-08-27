@@ -30,7 +30,6 @@ export default function VIPPage() {
     e.preventDefault()
     if (!phoneNumber || !smsConsent) return
 
-    console.log('VIP signup:', phoneNumber, 'SMS Consent:', smsConsent)
     setSubmitted(true)
   }
 

@@ -73,7 +73,7 @@ export function useConversationPersistence(sessionId, messages, enabled = true) 
       
       const recoveryData = recoveryManager.getRecoveryData()
       if (recoveryData && recoveryData.sessionId === sessionId) {
-        console.log('Using recovery data as fallback')
+        
         return recoveryData.messages || []
       }
       

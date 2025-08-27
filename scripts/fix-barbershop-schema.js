@@ -12,8 +12,6 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   process.exit(1);
 }
 
-console.log('🚀 Fixing barbershop schema for calendar API...');
-
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     autoRefreshToken: false,
@@ -22,8 +20,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 async function addMissingColumns() {
-  console.log('📋 Adding missing columns to barbershops table...');
-  
+
   const columnsToAdd = [
     'logo_url TEXT',
     'cover_image_url TEXT', 
@@ -46,27 +43,26 @@ async function addMissingColumns() {
   
   for (const column of columnsToAdd) {
     try {
-      console.log(`Adding column: ${column.split(' ')[0]}...`);
+      [0]}...`);
       
       const { data, error } = await supabase.rpc('exec', {
         sql: `ALTER TABLE barbershops ADD COLUMN IF NOT EXISTS ${column};`
       });
       
       if (error) {
-        console.log(`⚠️ Column might already exist or different approach needed for: ${column.split(' ')[0]}`);
-        console.log(`Error: ${error.message}`);
+        [0]}`);
+        
       } else {
-        console.log(`✅ Successfully added: ${column.split(' ')[0]}`);
+        [0]}`);
       }
     } catch (err) {
-      console.log(`⚠️ Error adding column ${column.split(' ')[0]}:`, err.message);
+      [0]}:`, err.message);
     }
   }
 }
 
 async function createRelatedTables() {
-  console.log('📋 Creating related tables...');
-  
+
   const tables = [
     {
       name: 'business_hours',
@@ -179,26 +175,24 @@ async function createRelatedTables() {
   
   for (const table of tables) {
     try {
-      console.log(`Creating table: ${table.name}...`);
-      
+
       const { data, error } = await supabase.rpc('exec', {
         sql: table.sql
       });
       
       if (error) {
-        console.log(`⚠️ Error creating table ${table.name}:`, error.message);
+        
       } else {
-        console.log(`✅ Successfully created table: ${table.name}`);
+        
       }
     } catch (err) {
-      console.log(`⚠️ Error creating table ${table.name}:`, err.message);
+      
     }
   }
 }
 
 async function testConnection() {
-  console.log('🔍 Testing Supabase connection...');
-  
+
   try {
     const { data, error } = await supabase
       .from('barbershops')
@@ -209,9 +203,7 @@ async function testConnection() {
       console.error('❌ Connection test failed:', error.message);
       return false;
     }
-    
-    console.log('✅ Supabase connection successful');
-    console.log('📊 Found barbershops:', data?.length || 0);
+
     return true;
   } catch (err) {
     console.error('❌ Connection error:', err.message);
@@ -220,8 +212,7 @@ async function testConnection() {
 }
 
 async function main() {
-  console.log('🚀 Starting barbershop schema fix...\n');
-  
+
   const connected = await testConnection();
   if (!connected) {
     console.error('❌ Cannot connect to database. Exiting...');
@@ -231,8 +222,7 @@ async function main() {
   await addMissingColumns();
   
   await createRelatedTables();
-  
-  console.log('\n🔍 Testing fixed schema...');
+
   try {
     const { data, error } = await supabase
       .from('barbershops')
@@ -242,25 +232,16 @@ async function main() {
     if (error) {
       console.error('❌ Schema test failed:', error.message);
     } else {
-      console.log('✅ Schema test passed');
+      
       if (data && data.length > 0) {
         const shop = data[0];
-        console.log('📋 Sample barbershop:', {
-          id: shop.id,
-          name: shop.name,
-          shop_slug: shop.shop_slug,
-          has_brand_colors: !!shop.brand_colors,
-          website_enabled: shop.website_enabled
-        });
+        
       }
     }
   } catch (err) {
     console.error('❌ Schema test error:', err.message);
   }
-  
-  console.log('\n🎉 Schema fix completed!');
-  console.log('✅ Calendar API endpoints should now work properly');
-  console.log('🔗 Test the calendar at: http://localhost:9999/dashboard/calendar');
+
 }
 
 main().catch(console.error);

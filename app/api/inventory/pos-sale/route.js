@@ -19,7 +19,7 @@ async function calculateAndRecordCommission({ barber_id, barbershop_id, payment_
       .single()
 
     if (arrangementError) {
-      console.log('❌ No active financial arrangement found for barber, using default commission')
+      
       // Use default 40% commission if no arrangement found
       await recordCommission({
         barber_id,
@@ -160,7 +160,7 @@ async function recordCommission({ barber_id, barbershop_id, payment_amount, comm
       }
     }
 
-    console.log(`✅ Commission calculated: $${commission_amount} (${commission_percentage}%) for barber ${barber_id}`)
+     for barber ${barber_id}`)
   } catch (error) {
     console.error('❌ Error in recordCommission:', error)
   }
@@ -185,8 +185,7 @@ async function getBarberMonthlyRevenue(barber_id, barbershop_id) {
 export async function POST(request) {
   try {
     const { items, appointment_id, payment_total, payment_method, barber_id } = await request.json()
-    
-    
+
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { error: 'Items array is required' },
@@ -356,8 +355,7 @@ export async function POST(request) {
     const outOfStockAlerts = updatedProducts?.filter(p => 
       p.current_stock === 0
     ) || []
-    
-    
+
     return NextResponse.json({
       success: true,
       message: `Sale processed: ${items.length} items sold`,

@@ -42,11 +42,7 @@ export function useRealtimeAppointments(barbershopId) {
       }
     }
     
-    // // console.log('🔐 Supabase client check:', {
-      hasClient: !!supabase,
-      hasUrl: !!supabaseUrl,
-      hasKey: !!supabaseAnonKey
-    })
+    // // 
     
     if (typeof window !== 'undefined') {
       const debugInfo = {
@@ -72,17 +68,17 @@ export function useRealtimeAppointments(barbershopId) {
     setConnectionAttempts(prev => prev + 1)
     
     if (!supabase) {
-      // // console.log('❌ Supabase client not available')
+      // // 
       setLoading(false)
       setAppointments([])
       return
     }
     
-    // // console.log('🔄 Initializing real-time connection for shop:', barbershopId)
+    // // 
 
     const fetchAppointments = async () => {
       try {
-        // // console.log('📡 Fetching initial appointments...')
+        // // 
         
         const { data, error } = await supabase
           .from('bookings')
@@ -97,7 +93,7 @@ export function useRealtimeAppointments(barbershopId) {
         
         if (error) throw error
 
-        // // console.log('📡 Found', data?.length || 0, 'appointments')
+        // // 
 
         const events = data.map(booking => {
           const isCancelled = booking.status === 'cancelled'
@@ -161,13 +157,7 @@ export function useRealtimeAppointments(barbershopId) {
       const shopId = payload.new?.shop_id || payload.old?.shop_id
       const isOurShop = shopId === barbershopId
       
-      // // console.log(`📡 Real-time ${eventType} event:`, {
-        appointmentId,
-        timestamp: eventTime,
-        shopId,
-        isOurShop,
-        hasShopId: !!shopId
-      })
+      // // 
       
       setLastUpdate(eventTime)
       
@@ -198,14 +188,10 @@ export function useRealtimeAppointments(barbershopId) {
       }))
       
       if (eventType === 'INSERT' && payload.new) {
-        // // console.log('📡 Processing INSERT for appointment:', payload.new.id, {
-          hasShopId: !!payload.new.shop_id,
-          shopId: payload.new.shop_id,
-          ourShopId: barbershopId
-        })
+        // // 
         
         if (payload.new.shop_id && payload.new.shop_id !== barbershopId) {
-          // // console.log('📡 Ignoring INSERT - different shop:', payload.new.shop_id)
+          // // 
           return
         }
         
@@ -224,7 +210,7 @@ export function useRealtimeAppointments(barbershopId) {
           if (error) {
             console.error('📡 Error fetching INSERT data:', error)
             if (payload.new.shop_id === barbershopId) {
-              // // console.log('📡 Using fallback INSERT data from payload')
+              // // 
               const fallbackEvent = {
                 id: payload.new.id,
                 resourceId: payload.new.barber_id,
@@ -244,7 +230,7 @@ export function useRealtimeAppointments(barbershopId) {
               
               setAppointments(prev => {
                 if (!prev.find(apt => apt.id === fallbackEvent.id)) {
-                  // // console.log('📡 Added fallback appointment:', fallbackEvent.id)
+                  // // 
                   return [...prev, fallbackEvent]
                 }
                 return prev
@@ -281,22 +267,16 @@ export function useRealtimeAppointments(barbershopId) {
             setAppointments(prev => {
               const existingIndex = prev.findIndex(apt => apt.id === newEvent.id)
               if (existingIndex !== -1) {
-                // // console.log('📡 Appointment exists, updating:', newEvent.id)
+                // // 
                 const updated = [...prev]
                 updated[existingIndex] = newEvent
                 return updated
               }
-              // // console.log('📡 Adding new appointment:', newEvent.id, {
-                customer: newEvent.extendedProps.customer,
-                status: newEvent.extendedProps.status
-              })
+              // // 
               return [...prev, newEvent]
             })
           } else {
-            // // console.log('📡 Ignoring INSERT - wrong shop or missing data:', {
-              hasData: !!newBooking,
-              shopId: newBooking?.shop_id
-            })
+            // // 
           }
         } catch (err) {
           console.error('📡 Unexpected error in INSERT handler:', err)
@@ -311,24 +291,13 @@ export function useRealtimeAppointments(barbershopId) {
           }
         }
         
-        // // console.log('🔍 APPOINTMENT UPDATE DETAILS:', {
-          appointmentId: payload.new?.id,
-          oldStatus: payload.old?.status,
-          newStatus: payload.new?.status,
-          shopId: payload.new.shop_id,
-          ourShopId: barbershopId,
-          timestamp: new Date().toISOString(),
+        // // .toISOString(),
           payloadKeys: Object.keys(payload),
           newKeys: payload.new ? Object.keys(payload.new) : [],
           oldKeys: payload.old ? Object.keys(payload.old) : []
         })
         
-        // // console.log('🔥 WEBSOCKET STATUS CHECK:', {
-          channelConnected: isConnected,
-          subscriptionDiagnostics: diagnostics.subscriptionStatus,
-          eventReceived: true,
-          willProcess: payload.new?.shop_id === barbershopId
-        })
+        // // 
         
         if (payload.new.shop_id && payload.new.shop_id !== barbershopId) {
           return
@@ -340,14 +309,7 @@ export function useRealtimeAppointments(barbershopId) {
             if (appointment.id === payload.new.id) {
               const isCancelled = payload.new.status === 'cancelled'
               
-              // // console.log('🔄 APPOINTMENT STATUS CHANGE:', {
-                id: payload.new.id,
-                oldTitle: appointment.title,
-                newStatus: payload.new.status,
-                isCancelled,
-                willHaveXSymbol: isCancelled,
-                willBeRed: isCancelled
-              })
+              // // 
               
               const updatedAppointment = {
                 ...appointment,
@@ -364,40 +326,30 @@ export function useRealtimeAppointments(barbershopId) {
                 }
               }
               
-              // // console.log('✅ APPOINTMENT UPDATED IN CALENDAR:', {
-                id: updatedAppointment.id,
-                title: updatedAppointment.title,
-                backgroundColor: updatedAppointment.backgroundColor,
-                status: updatedAppointment.extendedProps.status
-              })
+              // // 
               
               return updatedAppointment
             }
             return appointment
           })
-          
-          
+
           return updated
         })
         
         setLastUpdate(new Date().toISOString())
       } else if (eventType === 'DELETE' && payload.old) {
         const deletedId = payload.old.id
-        // // console.log('📡 DELETE received for:', deletedId, {
-          hasShopId: !!payload.old.shop_id,
-          shopId: payload.old.shop_id,
-          ourShopId: barbershopId
-        })
+        // // 
         
         if (payload.old.shop_id && payload.old.shop_id !== barbershopId) {
-          // // console.log('📡 Ignoring DELETE - different shop:', payload.old.shop_id)
+          // // 
           return
         }
         
         setAppointments(prev => {
           const existingAppointment = prev.find(event => event.id === deletedId)
           if (!existingAppointment) {
-            // // console.log('📡 Ignoring DELETE - appointment not in our current state')
+            // // 
             return prev
           }
           
@@ -406,18 +358,10 @@ export function useRealtimeAppointments(barbershopId) {
           
           if (isCancelled || hasShopConfirmation || !payload.old.shop_id) {
             const filtered = prev.filter(event => event.id !== deletedId)
-            // // console.log('📡 Removed appointment:', {
-              id: deletedId,
-              reason: isCancelled ? 'cancelled' : hasShopConfirmation ? 'shop_confirmed' : 'legacy_delete',
-              count: `${prev.length} → ${filtered.length}`
-            })
+            // // 
             return filtered
           } else {
-            // // console.log('📡 Refusing DELETE - safety check failed:', {
-              isCancelled,
-              hasShopConfirmation,
-              appointmentStatus: existingAppointment.extendedProps?.status
-            })
+            // // 
             return prev
           }
         })
@@ -426,7 +370,7 @@ export function useRealtimeAppointments(barbershopId) {
 
     fetchAppointments()
 
-    // // console.log('📡 Setting up real-time subscription for shop:', barbershopId)
+    // // 
     
     const channel = supabase
       .channel(`bookings-${barbershopId}`)
@@ -438,11 +382,7 @@ export function useRealtimeAppointments(barbershopId) {
           table: 'bookings'
         },
         (payload) => {
-          // // console.log('🚨🚨🚨 ANY EVENT RECEIVED:', {
-            eventType: payload.eventType,
-            table: payload.table,
-            id: payload.new?.id || payload.old?.id,
-            timestamp: new Date().toISOString()
+          // // .toISOString()
           })
           if (typeof window !== 'undefined') {
             window.lastAnyEvent = {
@@ -473,12 +413,7 @@ export function useRealtimeAppointments(barbershopId) {
           table: 'bookings'
         },
         (payload) => {
-          // // console.log('🚨 RAW UPDATE EVENT:', {
-            id: payload.new?.id,
-            shop_id: payload.new?.shop_id,
-            ourShop: barbershopId,
-            matches: payload.new?.shop_id === barbershopId
-          })
+          // // 
           if (payload.new?.shop_id === barbershopId) {
             handleRealtimeEvent('UPDATE', payload)
           }
@@ -494,20 +429,14 @@ export function useRealtimeAppointments(barbershopId) {
         (payload) => {
           const appointmentId = payload.old?.id
           if (appointmentId) {
-            // // console.log('📡 DELETE event for appointment:', appointmentId)
+            // // 
             handleRealtimeEvent('DELETE', payload)
           }
         }
       )
       .subscribe((status, error) => {
         const statusTimestamp = new Date().toISOString()
-        // // console.log('📡 ENHANCED Subscription status:', {
-          status,
-          error: error || 'none',
-          timestamp: statusTimestamp,
-          barbershopId,
-          channelName: `bookings-${barbershopId}`,
-          connectionTime: Date.now() - startTime
+        // //  - startTime
         })
         
         if (typeof window !== 'undefined') {
@@ -533,8 +462,8 @@ export function useRealtimeAppointments(barbershopId) {
             connectionTime: Date.now() - startTime,
             connectedAt: statusTimestamp
           }))
-          // // console.log('✅ WEBSOCKET CONNECTED! Real-time subscription established for shop:', barbershopId)
-          // // console.log('🎉 WebSocket should now receive INSERT/UPDATE/DELETE events')
+          // // 
+          // // 
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           setIsConnected(false)
           setError('Real-time connection failed')
@@ -546,16 +475,14 @@ export function useRealtimeAppointments(barbershopId) {
       })
 
     return () => {
-      // // console.log('🧹 ENHANCED Cleaning up real-time subscription:', {
-        channelName: `bookings-${barbershopId}`,
-        timestamp: new Date().toISOString(),
+      // // .toISOString(),
         hadChannel: !!channel
       })
       
       if (channel) {
         try {
           supabase.removeChannel(channel)
-          // // console.log('✅ Channel successfully removed')
+          // // 
         } catch (error) {
           console.error('❌ Error removing channel:', error)
         }
@@ -574,20 +501,14 @@ export function useRealtimeAppointments(barbershopId) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // // console.log('📊 Real-time diagnostics:', {
-        connected: isConnected,
-        appointments: appointments.length,
-        events: diagnostics.eventCounts
-      })
+      // // 
     }, 30000)
     
     return () => clearInterval(interval)
   }, [isConnected, appointments.length])
   
   useEffect(() => {
-    // // console.log('🚨 HOOK: Appointments updated!', {
-      count: appointments.length,
-      timestamp: new Date().toISOString(),
+    // // .toISOString(),
       lastUpdate: lastUpdate
     })
   }, [appointments])

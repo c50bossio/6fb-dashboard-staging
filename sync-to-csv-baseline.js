@@ -67,14 +67,12 @@ function mapCategoryForBarbershop(cin7Category) {
 
 async function syncToCSVBaseline() {
   try {
-    console.log('🔄 Syncing Database to CIN7 CSV Baseline\n');
-    
+
     // 1. Load CSV data
-    console.log('📂 Loading CIN7 availability report...');
+    
     const csvContent = readFileSync('/Users/bossio/Downloads/AvailabilityReport_2025-08-15.csv', 'utf8');
     const csvData = parseCSV(csvContent);
-    console.log(`✅ Loaded ${csvData.length} items from CIN7 report`);
-    
+
     // 2. Filter active products with inventory
     const activeProducts = csvData.filter(item => 
       item.Status === 'ACTIVE' && 
@@ -82,9 +80,7 @@ async function syncToCSVBaseline() {
       item.SKU &&
       parseFloat(item.Available || 0) >= 0 // Include 0 stock items
     );
-    
-    console.log(`📊 Found ${activeProducts.length} active products to sync`);
-    
+
     // 3. Get current barbershop ID (using the main demo shop)
     const { data: barbershop, error: shopError } = await supabase
       .from('barbershops')
@@ -95,11 +91,9 @@ async function syncToCSVBaseline() {
     if (shopError || !barbershop) {
       throw new Error('Demo barbershop not found');
     }
-    
-    console.log(`🏪 Using barbershop: ${barbershop.id}`);
-    
+
     // 4. Clear existing products for clean sync
-    console.log('\n🧹 Clearing existing products for clean sync...');
+    
     const { error: deleteError } = await supabase
       .from('products')
       .delete()
@@ -108,12 +102,11 @@ async function syncToCSVBaseline() {
     if (deleteError) {
       console.warn('⚠️ Warning clearing products:', deleteError.message);
     } else {
-      console.log('✅ Existing products cleared');
+      
     }
     
     // 5. Transform CSV data to database format
-    console.log('\n🔄 Transforming CIN7 data to database format...');
-    
+
     const transformedProducts = activeProducts.map(item => ({
       barbershop_id: barbershop.id,
       name: item.ProductName,
@@ -148,12 +141,9 @@ async function syncToCSVBaseline() {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }));
-    
-    console.log(`📦 Prepared ${transformedProducts.length} products for database`);
-    
+
     // 6. Insert products in batches
-    console.log('\n💾 Inserting products into database...');
-    
+
     const batchSize = 50;
     let insertedCount = 0;
     let errors = 0;
@@ -171,15 +161,12 @@ async function syncToCSVBaseline() {
         errors++;
       } else {
         insertedCount += data.length;
-        console.log(`✅ Batch ${Math.floor(i/batchSize) + 1}: ${data.length} products inserted`);
+         + 1}: ${data.length} products inserted`);
       }
     }
     
     // 7. Verify results
-    console.log('\n📊 Sync Results:');
-    console.log(`   ✅ Products inserted: ${insertedCount}`);
-    console.log(`   ❌ Batch errors: ${errors}`);
-    
+
     // 8. Calculate new metrics
     const { data: products, error: metricsError } = await supabase
       .from('products')
@@ -198,14 +185,9 @@ async function syncToCSVBaseline() {
           max: Math.max(...products.map(p => p.current_stock))
         }
       };
-      
-      console.log('\n📈 New Inventory Metrics:');
-      console.log(`   📦 Total Products: ${metrics.totalProducts}`);
-      console.log(`   💰 Inventory Value: $${metrics.totalValue.toLocaleString()}`);
-      console.log(`   📊 Average Stock: ${metrics.avgStock} units`);
-      console.log(`   📉 Stock Range: ${metrics.stockRange.min} - ${metrics.stockRange.max} units`);
-      console.log(`   ⚠️  Low Stock Items: ${metrics.lowStock}`);
-      console.log(`   ❌ Out of Stock: ${metrics.outOfStock}`);
+
+      }`);
+
     }
     
     // 9. Show sample of high-stock items
@@ -216,7 +198,7 @@ async function syncToCSVBaseline() {
         .slice(0, 5);
       
       if (highStockItems.length > 0) {
-        console.log('\n📊 Top High-Stock Items (from CIN7):');
+        :');
         const { data: highStockProducts } = await supabase
           .from('products')
           .select('name, sku, current_stock')
@@ -225,18 +207,11 @@ async function syncToCSVBaseline() {
           .limit(5);
         
         highStockProducts?.forEach((product, index) => {
-          console.log(`   ${index + 1}. ${product.name.substring(0, 50)}... (${product.current_stock} units)`);
+          }... (${product.current_stock} units)`);
         });
       }
     }
-    
-    console.log('\n🎉 Database successfully synced to CIN7 CSV baseline!');
-    console.log('\n🔗 Next Steps:');
-    console.log('1. Refresh your products page to see real CIN7 inventory levels');
-    console.log('2. Set up live API sync for real-time updates');
-    console.log('3. Configure webhooks for automatic inventory updates');
-    console.log('4. Test the "Refresh Inventory" button with live API data');
-    
+
     return {
       success: true,
       productsInserted: insertedCount,
@@ -255,19 +230,13 @@ async function syncToCSVBaseline() {
 }
 
 async function main() {
-  console.log('🚀 CIN7 CSV Baseline Sync\n');
-  console.log('This will:');
-  console.log('• Load your CIN7 availability report');
-  console.log('• Clear existing demo inventory'); 
-  console.log('• Sync real CIN7 stock levels to database');
-  console.log('• Show accurate inventory metrics\n');
-  
+
   const results = await syncToCSVBaseline();
   
   if (results.success) {
-    console.log(`\n✅ Sync completed: ${results.productsInserted} products from ${results.totalCin7Items} CIN7 items`);
+    
   } else {
-    console.log('\n❌ Sync failed:', results.error);
+    
   }
 }
 

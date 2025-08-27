@@ -138,8 +138,7 @@ export default function TierAssignmentManager({
     try {
       // Update financial arrangement to disable tier system
       // This would need to be implemented in the financial service
-      console.log('Removing barber from tier system:', barberId)
-      
+
       // Refresh data
       await loadData()
       

@@ -104,11 +104,7 @@ async function confirmCleanup() {
   });
 
   return new Promise((resolve) => {
-    console.log('\n⚠️  WARNING: This script will permanently delete test data from the database.');
-    console.log('📊 Environment:', process.env.NODE_ENV || 'development');
-    console.log('🔗 Database URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log('\n');
-    
+
     rl.question('Type "CONFIRM DELETE TEST DATA" to proceed: ', (answer) => {
       rl.close();
       resolve(answer === 'CONFIRM DELETE TEST DATA');
@@ -174,7 +170,7 @@ async function deleteTestRecords(table, config) {
   try {
     const whereClause = buildTestDataQuery(config);
     if (!whereClause) {
-      console.log(`  ⏭️  No test data patterns configured for ${table}`);
+      
       return 0;
     }
     
@@ -182,12 +178,10 @@ async function deleteTestRecords(table, config) {
     const count = await countTestRecords(table, config);
     
     if (count === 0) {
-      console.log(`  ✅ No test data found in ${table}`);
+      
       return 0;
     }
-    
-    console.log(`  🗑️  Deleting ${count} test records from ${table}...`);
-    
+
     // Delete using Supabase client with OR conditions
     const { error } = await supabase
       .from(table)
@@ -198,8 +192,7 @@ async function deleteTestRecords(table, config) {
       console.error(`  ❌ Error deleting from ${table}:`, error.message);
       return 0;
     }
-    
-    console.log(`  ✅ Deleted ${count} test records from ${table}`);
+
     return count;
   } catch (error) {
     console.error(`  ❌ Failed to clean ${table}:`, error);
@@ -209,22 +202,20 @@ async function deleteTestRecords(table, config) {
 
 // Main cleanup function
 async function cleanupDatabase() {
-  console.log('\n🧹 Starting database cleanup...\n');
-  
+
   let totalDeleted = 0;
   const results = {};
   
   // Process each table
   for (const [table, config] of Object.entries(CLEANUP_CONFIG)) {
-    console.log(`\n📦 Processing table: ${table}`);
+    
     const deleted = await deleteTestRecords(table, config);
     totalDeleted += deleted;
     results[table] = deleted;
   }
   
   // Clean up orphaned records
-  console.log('\n🔗 Cleaning up orphaned records...');
-  
+
   // Clean orphaned bookings (where customer doesn't exist)
   try {
     const { data: orphanedBookings, error } = await supabase
@@ -234,7 +225,7 @@ async function cleanupDatabase() {
       .select();
     
     if (!error && orphanedBookings) {
-      console.log(`  ✅ Deleted ${orphanedBookings.length} orphaned bookings`);
+      
       totalDeleted += orphanedBookings.length;
     }
   } catch (error) {
@@ -242,27 +233,26 @@ async function cleanupDatabase() {
   }
   
   // Summary
-  console.log('\n' + '═'.repeat(50));
-  console.log('📊 CLEANUP SUMMARY');
-  console.log('═'.repeat(50));
+  );
+  
+  );
   
   Object.entries(results).forEach(([table, count]) => {
     if (count > 0) {
-      console.log(`  ${table}: ${count} records deleted`);
+      
     }
   });
   
-  console.log('─'.repeat(50));
-  console.log(`  Total records deleted: ${totalDeleted}`);
-  console.log('═'.repeat(50));
+  );
+  
+  );
   
   return totalDeleted;
 }
 
 // Reset demo sequences if needed
 async function resetSequences() {
-  console.log('\n🔄 Resetting ID sequences...');
-  
+
   try {
     // This would reset auto-increment sequences
     // Note: Be very careful with this in production
@@ -275,7 +265,7 @@ async function resetSequences() {
         .select('*', { count: 'exact', head: true });
       
       if (count === 0) {
-        console.log(`  ℹ️  Table ${table} is empty, sequence reset may be beneficial`);
+        
       }
     }
   } catch (error) {
@@ -304,25 +294,17 @@ async function main() {
     const confirmed = await confirmCleanup();
     
     if (!confirmed) {
-      console.log('\n❌ Cleanup cancelled by user');
+      
       process.exit(0);
     }
-    
-    console.log('\n✅ Confirmation received. Starting cleanup...');
-    
+
     // Run cleanup
     const deletedCount = await cleanupDatabase();
     
     if (deletedCount > 0) {
       await resetSequences();
     }
-    
-    console.log('\n✅ Database cleanup completed successfully!');
-    console.log('📝 Remember to:');
-    console.log('  1. Run your application tests to ensure everything works');
-    console.log('  2. Check that real user data was preserved');
-    console.log('  3. Update any documentation about test accounts');
-    
+
   } catch (error) {
     console.error('\n❌ Cleanup failed:', error);
     process.exit(1);

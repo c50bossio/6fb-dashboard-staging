@@ -173,7 +173,7 @@ describe('Webhook Automation Integration Tests', () => {
       const processingTime = performance.now() - startTime
       expect(processingTime).toBeLessThan(5000) // Should complete within 5 seconds
 
-      console.log(`✅ End-to-end flow completed in ${processingTime.toFixed(2)}ms`)
+      }ms`)
     })
 
     it('should handle multiple concurrent payments correctly', async () => {
@@ -543,8 +543,8 @@ describe('Webhook Automation Integration Tests', () => {
       // Should complete within reasonable time
       expect(processingTime).toBeLessThan(30000) // 30 seconds for 50 webhooks
 
-      console.log(`✅ Processed ${successfulResults.length}/50 webhooks in ${processingTime.toFixed(2)}ms`)
-      console.log(`⚡ Average processing time: ${(processingTime / successfulResults.length).toFixed(2)}ms per webhook`)
+      }ms`)
+      .toFixed(2)}ms per webhook`)
     })
 
     it('should maintain database performance under load', async () => {
@@ -570,7 +570,7 @@ describe('Webhook Automation Integration Tests', () => {
         .reduce((sum, r) => sum + r.value, 0) / dbResults.length
 
       expect(avgDbTime).toBeLessThan(100) // Average DB operation should be under 100ms
-      console.log(`📊 Average database operation time: ${avgDbTime.toFixed(2)}ms`)
+      }ms`)
     })
   })
 

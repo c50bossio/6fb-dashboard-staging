@@ -14,8 +14,7 @@ const supabase = createClient(
 )
 
 async function checkAndCreateTables() {
-  console.log('🔍 Checking for existing analytics tables...\n')
-  
+
   const tables = [
     'business_metrics',
     'ai_insights', 
@@ -38,47 +37,35 @@ async function checkAndCreateTables() {
       
       if (error) {
         if (error.message.includes('does not exist') || error.code === '42P01') {
-          console.log(`❌ Table '${tableName}' does not exist`)
+          
           missingTables.push(tableName)
         } else {
-          console.log(`⚠️  Table '${tableName}' exists but has issues: ${error.message}`)
+          
           existingTables.push(tableName)
         }
       } else {
-        console.log(`✅ Table '${tableName}' exists`)
+        
         existingTables.push(tableName)
       }
     } catch (err) {
-      console.log(`❌ Table '${tableName}' does not exist`)
+      
       missingTables.push(tableName)
     }
   }
-  
-  console.log('\n📊 Summary:')
-  console.log(`- Existing tables: ${existingTables.length}`)
-  console.log(`- Missing tables: ${missingTables.length}`)
-  
+
   if (missingTables.length > 0) {
-    console.log('\n⚠️  Missing tables:', missingTables.join(', '))
-    console.log('\n📝 To create missing tables:')
-    console.log('1. Go to your Supabase Dashboard')
-    console.log('2. Navigate to SQL Editor')
-    console.log('3. Copy the SQL from database/analytics-schema.sql')
-    console.log('4. Run the SQL to create the missing tables')
-    
+    )
+
     generateSQLForMissingTables(missingTables)
   } else {
-    console.log('\n✨ All analytics tables exist! You can now run:')
-    console.log('   npm run seed:analytics')
+
   }
   
   return { existingTables, missingTables }
 }
 
 function generateSQLForMissingTables(missingTables) {
-  console.log('\n📄 SQL for missing tables only:\n')
-  console.log('-- Copy and run this SQL in Supabase Dashboard --\n')
-  
+
   const tableDefs = {
     business_metrics: `
 CREATE TABLE IF NOT EXISTS business_metrics (
@@ -244,24 +231,18 @@ CREATE TABLE IF NOT EXISTS realtime_metrics (
   
   missingTables.forEach(tableName => {
     if (tableDefs[tableName]) {
-      console.log(tableDefs[tableName])
-      console.log('')
+
     }
   })
-  
-  console.log('-- End of SQL --\n')
+
 }
 
 async function main() {
-  console.log('🚀 Analytics Tables Check & Creation Helper')
-  console.log('===========================================\n')
-  
+
   const { existingTables, missingTables } = await checkAndCreateTables()
   
   if (missingTables.length === 0) {
-    console.log('\n🎉 Success! All tables are ready.')
-    console.log('You can now populate them with test data using:')
-    console.log('   npm run seed:analytics')
+
   }
 }
 

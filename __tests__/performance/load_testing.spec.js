@@ -195,8 +195,7 @@ class LoadTester {
   }
 
   async runLoadTest(concurrentUsers, duration) {
-    console.log(`Starting load test: ${concurrentUsers} users for ${duration}ms`);
-    
+
     const promises = [];
     for (let i = 0; i < concurrentUsers; i++) {
       promises.push(this.simulateUser(`user-${i}`, duration));
@@ -212,7 +211,6 @@ class LoadTester {
       errorRate: results.reduce((sum, r) => sum + r.errors, 0) / results.reduce((sum, r) => sum + r.requests, 0)
     };
 
-    console.log('Load test results:', aggregated);
     return aggregated;
   }
 }
@@ -223,8 +221,7 @@ class AIAgentStressTester {
   }
 
   async testConcurrentConversations(conversationCount = 10) {
-    console.log(`Testing ${conversationCount} concurrent AI conversations`);
-    
+
     const promises = [];
     for (let i = 0; i < conversationCount; i++) {
       promises.push(this.simulateConversation(`conversation-${i}`));
@@ -305,8 +302,7 @@ test.describe('Performance Testing Suite', () => {
   });
 
   test('Dashboard loading performance', async ({ page }) => {
-    console.log('Testing dashboard loading performance...');
-    
+
     const startTime = Date.now();
     await page.goto('/dashboard');
     
@@ -315,14 +311,6 @@ test.describe('Performance Testing Suite', () => {
     
     const metrics = await performanceMonitor.getMetrics();
     const networkMetrics = await performanceMonitor.getNetworkMetrics();
-    
-    console.log('Dashboard Performance Metrics:', {
-      totalLoadTime: loadTime,
-      firstContentfulPaint: metrics.firstContentfulPaint,
-      largestContentfulPaint: metrics.largestContentfulPaint,
-      domContentLoaded: metrics.domContentLoaded,
-      networkTiming: networkMetrics
-    });
 
     expect(loadTime).toBeLessThan(PERFORMANCE_CONFIG.MAX_RESPONSE_TIME);
     expect(metrics.firstContentfulPaint).toBeLessThan(1800); // 1.8s
@@ -335,8 +323,7 @@ test.describe('Performance Testing Suite', () => {
   });
 
   test('AI Agent response time performance', async ({ page }) => {
-    console.log('Testing AI Agent response time...');
-    
+
     await page.goto('/dashboard/ai-agent');
     
     const testMessages = [
@@ -361,9 +348,7 @@ test.describe('Performance Testing Suite', () => {
       
       const responseTime = Date.now() - startTime;
       responseTimes.push(responseTime);
-      
-      console.log(`Response time for "${message}": ${responseTime}ms`);
-      
+
       await page.fill('[data-testid="message-input"]', '');
       await setTimeout(500); // Brief pause between messages
     }
@@ -371,8 +356,7 @@ test.describe('Performance Testing Suite', () => {
     const averageResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
     const maxResponseTime = Math.max(...responseTimes);
     
-    console.log(`Average AI response time: ${averageResponseTime.toFixed(2)}ms`);
-    console.log(`Maximum AI response time: ${maxResponseTime}ms`);
+    }ms`);
 
     expect(averageResponseTime).toBeLessThan(5000); // 5 seconds average
     expect(maxResponseTime).toBeLessThan(10000);    // 10 seconds max
@@ -380,13 +364,11 @@ test.describe('Performance Testing Suite', () => {
   });
 
   test('Concurrent user load testing', async ({ page }) => {
-    console.log('Running concurrent user load tests...');
-    
+
     const results = {};
     
     for (const userCount of PERFORMANCE_CONFIG.CONCURRENT_USERS) {
-      console.log(`Testing with ${userCount} concurrent users...`);
-      
+
       const testResult = await loadTester.runLoadTest(
         userCount, 
         PERFORMANCE_CONFIG.TEST_DURATION
@@ -406,18 +388,14 @@ test.describe('Performance Testing Suite', () => {
       (results[50].averageResponseTime - results[1].averageResponseTime) / 
       results[1].averageResponseTime;
     
-    console.log('Load test scaling analysis:', {
-      singleUserResponse: results[1].averageResponseTime,
-      fiftyUserResponse: results[50].averageResponseTime,
-      responseTimeIncrease: `${(responseTimeIncrease * 100).toFixed(2)}%`
+    .toFixed(2)}%`
     });
 
     expect(responseTimeIncrease).toBeLessThan(2.0);
   });
 
   test('Database query performance under load', async ({ page }) => {
-    console.log('Testing database performance under load...');
-    
+
     const queries = [
       '/api/dashboard/analytics',
       '/api/appointments/history',
@@ -445,21 +423,13 @@ test.describe('Performance Testing Suite', () => {
     
     const successfulResponses = responses.filter(r => r.ok()).length;
     const averageResponseTime = totalTime / concurrentRequests;
-    
-    console.log('Database load test results:', {
-      totalRequests: concurrentRequests,
-      successfulResponses,
-      averageResponseTime,
-      successRate: successfulResponses / concurrentRequests
-    });
 
     expect(successfulResponses).toBe(concurrentRequests); // All should succeed
     expect(averageResponseTime).toBeLessThan(PERFORMANCE_CONFIG.MAX_QUERY_TIME);
   });
 
   test('Memory usage and garbage collection', async ({ page }) => {
-    console.log('Testing memory usage patterns...');
-    
+
     await page.goto('/dashboard');
     
     const operations = [
@@ -508,12 +478,7 @@ test.describe('Performance Testing Suite', () => {
     
     const memoryIncrease = (lastCycleAvg - firstCycleAvg) / firstCycleAvg;
     
-    console.log('Memory usage analysis:', {
-      maxMemoryMB: maxMemory,
-      avgMemoryMB: avgMemory,
-      firstCycleAvg: firstCycleAvg,
-      lastCycleAvg: lastCycleAvg,
-      memoryIncreasePercent: (memoryIncrease * 100).toFixed(2)
+    .toFixed(2)
     });
 
     expect(maxMemory).toBeLessThan(PERFORMANCE_CONFIG.MAX_MEMORY_MB);
@@ -521,11 +486,8 @@ test.describe('Performance Testing Suite', () => {
   });
 
   test('AI Agent stress testing', async ({ page }) => {
-    console.log('Running AI Agent stress test...');
-    
+
     const stressTestResults = await aiStressTester.testConcurrentConversations(5);
-    
-    console.log('AI Agent stress test results:', stressTestResults);
 
     expect(stressTestResults.successRate).toBeGreaterThan(0.9); // 90% success rate
     expect(stressTestResults.averageResponseTime).toBeLessThan(8000); // 8s average
@@ -533,8 +495,7 @@ test.describe('Performance Testing Suite', () => {
   });
 
   test('Progressive Web App performance', async ({ page }) => {
-    console.log('Testing PWA performance characteristics...');
-    
+
     await page.goto('/');
     
     const serviceWorkerRegistered = await page.evaluate(() => {
@@ -550,7 +511,7 @@ test.describe('Performance Testing Suite', () => {
       const offlineIndicator = page.locator('[data-testid="offline-indicator"]');
       await expect(offlineIndicator).toBeVisible({ timeout: 5000 });
     } catch (error) {
-      console.log('Offline functionality test failed:', error.message);
+      
     }
     
     await page.context().setOffline(false);
@@ -563,18 +524,14 @@ test.describe('Performance Testing Suite', () => {
     await page.reload();
     const cacheLoadTime = Date.now() - cacheStartTime;
     
-    console.log('PWA Cache Performance:', {
-      firstLoad: firstLoadTime,
-      cachedLoad: cacheLoadTime,
-      improvement: `${((firstLoadTime - cacheLoadTime) / firstLoadTime * 100).toFixed(2)}%`
+     / firstLoadTime * 100).toFixed(2)}%`
     });
 
     expect(cacheLoadTime).toBeLessThan(firstLoadTime * 0.8); // 20% improvement minimum
   });
 
   test('Chart rendering performance', async ({ page }) => {
-    console.log('Testing chart rendering performance...');
-    
+
     await page.goto('/dashboard/analytics');
     
     const startTime = Date.now();
@@ -592,20 +549,13 @@ test.describe('Performance Testing Suite', () => {
     
     const tooltipVisible = await page.locator('.chart-tooltip').isVisible();
     const interactionTime = Date.now() - interactionStartTime;
-    
-    console.log('Chart Performance:', {
-      renderTime,
-      interactionTime,
-      tooltipVisible
-    });
 
     expect(renderTime).toBeLessThan(PERFORMANCE_CONFIG.MAX_RENDER_TIME);
     expect(interactionTime).toBeLessThan(500); // 500ms for interactions
   });
 
   test('Mobile performance optimization', async ({ page }) => {
-    console.log('Testing mobile performance...');
-    
+
     await page.setViewportSize({ width: 375, height: 667 });
     
     const startTime = Date.now();
@@ -634,11 +584,7 @@ test.describe('Performance Testing Suite', () => {
       size => size.width < 44 || size.height < 44
     ).length;
     
-    console.log('Mobile Performance:', {
-      loadTime: mobileLoadTime,
-      touchTargets,
-      smallTouchTargets,
-      averageTouchTargetSize: touchTargetSizes.reduce((sum, s) => sum + s.area, 0) / touchTargetSizes.length
+     => sum + s.area, 0) / touchTargetSizes.length
     });
 
     expect(mobileLoadTime).toBeLessThan(PERFORMANCE_CONFIG.MAX_RESPONSE_TIME);
@@ -646,8 +592,7 @@ test.describe('Performance Testing Suite', () => {
   });
 
   test('API rate limiting performance', async ({ page }) => {
-    console.log('Testing API rate limiting...');
-    
+
     const apiEndpoint = 'http://localhost:8000/api/chat';
     const requestsPerSecond = 50;
     const testDuration = 10000; // 10 seconds
@@ -687,7 +632,7 @@ test.describe('Performance Testing Suite', () => {
         return response;
       }).catch(error => {
         results.totalRequests++;
-        console.log('Request error:', error.message);
+        
       });
       
       promises.push(requestPromise);
@@ -698,8 +643,6 @@ test.describe('Performance Testing Suite', () => {
     await Promise.all(promises);
     
     results.averageResponseTime = results.totalResponseTime / results.totalRequests;
-    
-    console.log('Rate Limiting Test Results:', results);
 
     expect(results.rateLimitedRequests).toBeGreaterThan(0); // Some requests should be rate limited
     expect(results.successfulRequests / results.totalRequests).toBeGreaterThan(0.5); // At least 50% success
@@ -716,8 +659,7 @@ test.describe('Performance Regression Tests', () => {
   };
 
   test('Performance regression detection', async ({ page }) => {
-    console.log('Running performance regression tests...');
-    
+
     const performanceMonitor = new PerformanceMonitor(page);
     await performanceMonitor.startMonitoring();
     
@@ -749,10 +691,7 @@ test.describe('Performance Regression Tests', () => {
       apiResponse
     };
     
-    console.log('Performance Comparison:', {
-      baseline: BASELINE_METRICS,
-      current: currentMetrics,
-      regressions: Object.keys(BASELINE_METRICS).filter(
+    .filter(
         key => currentMetrics[key] > BASELINE_METRICS[key] * 1.2 // 20% regression threshold
       )
     });

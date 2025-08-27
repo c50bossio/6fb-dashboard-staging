@@ -21,7 +21,7 @@ class FocusValidator {
   log(message, type = 'info') {
     const timestamp = new Date().toLocaleTimeString();
     const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
-    console.log(`${prefix} [${timestamp}] ${message}`);
+    
   }
 
   // Test 1: Basic Information Fields Focus Behavior
@@ -284,9 +284,7 @@ class FocusValidator {
                                 passedTests > totalTests / 2 ? 'mostly_passed' : 'mostly_failed';
 
     console.group('🧪 AddStaffModal Focus Behavior Test Results');
-    console.log('Overall Status:', this.results.overallStatus);
-    console.log('Tests Passed:', `${passedTests}/${totalTests}`);
-    console.log('Full Results:', this.results);
+
     console.groupEnd();
 
     // Return summary for external use
@@ -336,11 +334,10 @@ class FocusValidator {
 
 // Quick validation function
 function quickFocusTest() {
-  console.log('🏃‍♂️ Running Quick Focus Test...');
-  
+
   const nameField = document.querySelector('input[placeholder="Enter full name"]');
   if (!nameField) {
-    console.log('❌ Name field not found - is the modal open?');
+    
     return false;
   }
 
@@ -353,13 +350,12 @@ function quickFocusTest() {
     nameField.dispatchEvent(new Event('input', { bubbles: true }));
     
     if (document.activeElement !== nameField) {
-      console.log(`❌ Focus lost after typing: ${nameField.value}`);
+      
       success = false;
       break;
     }
   }
 
-  console.log(success ? '✅ Quick test passed!' : '❌ Quick test failed!');
   return success;
 }
 
@@ -367,15 +363,9 @@ function quickFocusTest() {
 window.FocusValidator = FocusValidator;
 window.quickFocusTest = quickFocusTest;
 
-console.log(`
-🧪 AddStaffModal Focus Validator Loaded!
-
-Usage:
-1. Open AddStaffModal at: http://localhost:9999/shop/settings/staff
-2. Run quick test: quickFocusTest()
 3. Run full test suite: 
    const validator = new FocusValidator();
-   validator.runAllTests().then(result => console.log('Final Result:', result));
+   validator.runAllTests().then(result => );
 
 The validator will test:
 - Basic input field focus behavior

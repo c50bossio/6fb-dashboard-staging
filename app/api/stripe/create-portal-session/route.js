@@ -36,7 +36,7 @@ export async function POST(request) {
     
     // Check if Stripe is properly configured
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('placeholder')) {
-      console.log('Stripe not configured, redirecting to billing page')
+      
       return NextResponse.json({ 
         url: '/dashboard/billing',
         message: 'Redirecting to billing management page'
@@ -47,8 +47,7 @@ export async function POST(request) {
     
     // If no Stripe customer ID exists, create one
     if (!customerId) {
-      console.log('Creating new Stripe customer for user:', user.id)
-      
+
       const customer = await stripe.customers.create({
         email: userData.email,
         name: userData.full_name,
@@ -89,8 +88,7 @@ export async function POST(request) {
         error.message?.includes('No configuration provided') ||
         error.message?.includes('default configuration has not been created') ||
         error.type === 'StripeInvalidRequestError') {
-      
-      console.log('Stripe configuration issue, redirecting to local billing page')
+
       return NextResponse.json({ 
         url: '/dashboard/billing',
         message: 'Using local billing management'

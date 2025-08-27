@@ -21,8 +21,7 @@ export function OAuthHandler() {
       }
       
       if (code) {
-        console.log('🔐 OAuth code detected, exchanging for session...')
-        
+
         try {
           const supabase = createClient()
           
@@ -33,9 +32,7 @@ export function OAuthHandler() {
             router.push(`/login?error=${encodeURIComponent(exchangeError.message)}`)
             return
           }
-          
-          console.log('✅ OAuth session established:', data?.user?.email)
-          
+
           if (data?.user) {
             const { data: profile, error: profileError } = await supabase
               .from('profiles')
@@ -44,8 +41,7 @@ export function OAuthHandler() {
               .single()
             
             if (profileError && profileError.code === 'PGRST116') {
-              console.log('📝 Creating profile for OAuth user')
-              
+
               await supabase
                 .from('profiles')
                 .insert({

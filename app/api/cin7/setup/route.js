@@ -60,7 +60,6 @@ export async function POST(request) {
       ...options
     }
 
-
     // Get user's barbershop using same logic as sync endpoint
     let barbershop = null
     
@@ -81,7 +80,7 @@ export async function POST(request) {
       
       if (profileShop) {
         barbershop = profileShop
-        console.log('Found barbershop via profile:', profileShop.name)
+        
       }
     }
     
@@ -95,7 +94,7 @@ export async function POST(request) {
       
       if (userBarbershop) {
         barbershop = userBarbershop
-        console.log('Found barbershop via ownership:', userBarbershop.name)
+        
       }
     }
     
@@ -116,7 +115,7 @@ export async function POST(request) {
         
         if (staffShop) {
           barbershop = staffShop
-          console.log('Found barbershop via staff association:', staffShop.name)
+          
         }
       }
     }

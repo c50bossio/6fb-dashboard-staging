@@ -101,9 +101,8 @@ export default function BookingRulesPage() {
   const hasAccess = isDev || (profile?.role && authorizedRoles.includes(profile.role))
 
   useEffect(() => {
-    if (profile?.id) {
-      loadBookingRules()
-    }
+    // Always call loadBookingRules - it handles the dev/localhost case internally
+    loadBookingRules()
   }, [profile?.id, isDev])
 
   // Check if user has complex benefits setup and should use advanced mode
@@ -246,7 +245,10 @@ export default function BookingRulesPage() {
       return
     }
     
-    if (!user || !profile) return
+    if (!user || !profile) {
+      setLoading(false) // Important: Set loading to false even when no profile
+      return
+    }
     
     // Don't reload if already loading or saving
     if (loading || saving) return
@@ -674,7 +676,7 @@ export default function BookingRulesPage() {
                 dateRange={{ start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), end: new Date() }}
                 onExport={(data) => {
                   // Handle export functionality
-                  console.log('Exporting analytics data:', data)
+                  
                 }}
               />
             </div>

@@ -52,7 +52,7 @@ export async function GET(request) {
     if (!session?.user) {
       // Development fallback for hardcoded authentication
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔧 [DEV] No session found, using development fallback user...')
+        
         return NextResponse.json({
           authenticated: true,
           user: {

@@ -15,21 +15,15 @@ async function finalCheck() {
     .single();
   
   if (error) {
-    console.log('Error:', error);
-  } else if (profile) {
-    console.log('✅ ACCOUNT READY FOR TESTING!\n');
-    console.log('Profile confirmed:');
-    console.log('- Email:', profile.email);
-    console.log('- Role:', profile.role);
-    console.log('- Shop ID:', profile.shop_id || profile.barbershop_id);
-    console.log('- Has permissions to:');
-    console.log('  • Create staff members (Add Barber) ✅');
-    console.log('  • Manage barbershop ✅');
     
+  } else if (profile) {
+
+     ✅');
+
     if (profile.role === 'ENTERPRISE_OWNER') {
-      console.log('  • Create new locations ✅');
+      
     } else {
-      console.log('  • Create new locations (will show upgrade prompt)');
+      ');
     }
   }
   

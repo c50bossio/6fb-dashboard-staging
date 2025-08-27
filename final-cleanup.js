@@ -20,8 +20,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 async function finalCleanup() {
-  console.log('🔧 FINAL CLEANUP: Removing remaining test user')
-  console.log('=' * 50)
 
   try {
     // List all users to find the test user
@@ -36,7 +34,7 @@ async function finalCleanup() {
     const targetUser = userData.users.find(u => u.email === targetEmail)
     
     if (targetUser) {
-      console.log(`🎯 Found test user: ${targetUser.email} (ID: ${targetUser.id})`)
+      `)
       
       // Delete the user
       const { error: deleteError } = await supabase.auth.admin.deleteUser(targetUser.id)
@@ -45,48 +43,30 @@ async function finalCleanup() {
         console.error('❌ Error deleting user:', deleteError.message)
         return false
       }
-      
-      console.log('✅ Successfully deleted test user from auth')
-      console.log('✅ Database is now completely clean!')
-      
+
     } else {
-      console.log(`ℹ️  Test user ${targetEmail} not found - may already be deleted`)
+      
     }
     
     // Final verification
-    console.log('\n🔍 Final verification...')
-    
+
     const { data: barbershops } = await supabase
       .from('barbershops')
       .select('*')
     
     const { data: remainingUsers } = await supabase.auth.admin.listUsers()
-    
-    console.log(`📍 Barbershops remaining: ${barbershops.length}`)
-    console.log(`👤 Auth users remaining: ${remainingUsers.users.length}`)
-    
+
     // Check if any remaining users are test users
     const testEmails = ['dev-enterprise@test.com', 'test@test.com']
     const remainingTest = remainingUsers.users.filter(u => testEmails.includes(u.email))
-    
-    console.log(`🧪 Test users remaining: ${remainingTest.length}`)
-    
+
     if (barbershops.length === 0 && remainingTest.length === 0) {
-      console.log('\n🎉 PERFECT! Database is completely clean!')
-      console.log('🚀 Ready for first legitimate barbershop user!')
-      
-      console.log('\n💡 Next Steps for Production:')
-      console.log('   1. Test new user signup at /signup')
-      console.log('   2. Verify onboarding modal appears automatically')
-      console.log('   3. Test barbershop creation flow')
-      console.log('   4. Confirm dashboard loads properly')
-      console.log('   5. Test booking system end-to-end')
-      
+
       return true
     } else {
-      console.log('\n⚠️  Some data may remain - manual review needed')
+      
       if (remainingTest.length > 0) {
-        remainingTest.forEach(u => console.log(`      🧪 ${u.email}`))
+        remainingTest.forEach(u => )
       }
       return false
     }
@@ -99,10 +79,10 @@ async function finalCleanup() {
 
 finalCleanup().then(success => {
   if (success) {
-    console.log('\n✅ PRODUCTION DATABASE: READY!')
+    
     process.exit(0)
   } else {
-    console.log('\n❌ Manual intervention needed')
+    
     process.exit(1)
   }
 })

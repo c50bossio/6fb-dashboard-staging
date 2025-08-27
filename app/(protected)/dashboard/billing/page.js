@@ -258,7 +258,7 @@ Thank you for your business!
       try {
         const stripeInstance = window.Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
         setStripe(stripeInstance)
-        console.log('✅ Stripe initialized successfully')
+        
       } catch (error) {
         console.warn('⚠️ Stripe initialization failed:', error.message)
         // Don't set stripe instance if initialization fails
@@ -276,7 +276,7 @@ Thank you for your business!
       
       // Check if Stripe is configured
       if (data.configured === false) {
-        console.log('Stripe not configured - skipping payment methods')
+        
         setPaymentMethods([])
         return
       }
@@ -324,7 +324,7 @@ Thank you for your business!
           clientSecret: client_secret
         })
         setElements(elementsInstance)
-        console.log('✅ Stripe Elements initialized')
+        
       }
     } catch (error) {
       console.error('Error initializing Stripe Elements:', error)

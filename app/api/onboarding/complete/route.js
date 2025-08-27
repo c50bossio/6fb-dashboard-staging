@@ -337,13 +337,7 @@ export async function POST(request) {
       .single()
     
     // Log for debugging
-    console.log('Profile before update:', {
-      current_shop_id: currentProfile?.shop_id,
-      current_barbershop_id: currentProfile?.barbershop_id,
-      new_barbershop_id: barbershopId,
-      updating_to_completed: true
-    })
-    
+
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .update(profileUpdateData)
@@ -384,13 +378,7 @@ export async function POST(request) {
     }
     
     const allChecksPass = Object.values(verificationChecks).every(check => check === true)
-    
-    console.log('Onboarding completion verification:', {
-      checks: verificationChecks,
-      allPass: allChecksPass,
-      errors: results.errors
-    })
-    
+
     if (results.errors.length > 0) {
       // Log errors but don't fail if non-critical
       const criticalErrors = results.errors.filter(e => 

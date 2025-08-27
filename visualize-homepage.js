@@ -20,10 +20,7 @@ const { chromium } = require('playwright');
     path: 'homepage-spacing-mobile.png', 
     fullPage: true 
   });
-  
-  console.log('Screenshots saved: homepage-spacing-desktop.png and homepage-spacing-mobile.png');
-  
-  console.log('Browser will stay open for 30 seconds for manual inspection...');
+
   await page.waitForTimeout(30000);
   
   await browser.close();

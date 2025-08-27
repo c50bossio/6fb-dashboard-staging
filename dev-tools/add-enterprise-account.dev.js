@@ -34,19 +34,14 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 async function createEnterpriseAccount() {
   // ⚠️  PRODUCTION WARNING CHECK
   if (process.env.NODE_ENV === 'production' || supabaseUrl.includes('supabase.co')) {
-    console.log('🚨 PRODUCTION DATABASE DETECTED!')
-    console.log('❌ This script creates TEST DATA and should NOT be run against production.')
-    console.log('💡 Use this script only for local development with local database.')
-    console.log('\nTo override (NOT recommended for production):')
-    console.log('   FORCE_TEST_DATA=true node add-enterprise-account.dev.js')
-    
+
+    :')
+
     if (!process.env.FORCE_TEST_DATA) {
-      console.log('\n❌ Aborting to protect production data.')
+      
       process.exit(1)
     }
   }
-
-  console.log('🚀 Creating enterprise test account...\n')
 
   const account = {
     email: 'dev-enterprise@test.com',
@@ -56,8 +51,6 @@ async function createEnterpriseAccount() {
     role: 'ENTERPRISE_OWNER'
   }
 
-  console.log(`📧 Setting up account: ${account.email}`)
-  
   try {
     // Step 1: Try to create auth user
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -73,16 +66,14 @@ async function createEnterpriseAccount() {
 
     if (authError) {
       if (authError.message?.includes('already been registered')) {
-        console.log(`   ⚠️  User already exists, updating...`)
-        
+
         // Get existing user's ID
         const { data: userData } = await supabase.auth.admin.listUsers()
         const existingUser = userData?.users?.find(u => u.email === account.email)
         
         if (existingUser) {
           userId = existingUser.id
-          console.log(`   ✓ Found existing user: ${userId}`)
-          
+
           // Update password
           const { error: updateError } = await supabase.auth.admin.updateUserById(
             userId,
@@ -92,7 +83,7 @@ async function createEnterpriseAccount() {
           if (updateError) {
             console.error(`   ⚠️  Could not update password:`, updateError.message)
           } else {
-            console.log(`   ✓ Password updated to: ${account.password}`)
+            
           }
         } else {
           console.error(`   ❌ Could not find user in database`)
@@ -103,7 +94,7 @@ async function createEnterpriseAccount() {
         return
       }
     } else {
-      console.log(`   ✓ Auth user created successfully`)
+      
     }
 
     // Step 2: Create or update profile with onboarding NOT completed
@@ -128,42 +119,27 @@ async function createEnterpriseAccount() {
       if (profileError) {
         console.error(`   ❌ Failed to create/update profile:`, profileError.message)
       } else {
-        console.log(`   ✓ Profile configured with:`)
-        console.log(`      - Role: ${account.role}`)
-        console.log(`      - Shop: ${account.shopName}`)
-        console.log(`      - Onboarding: NOT completed (will show on login)`)
+
+        `)
       }
     }
 
-    console.log(`\n   ✅ Account ready for testing!\n`)
   } catch (error) {
     console.error(`   ❌ Unexpected error:`, error.message)
   }
 
-  console.log('\n' + '═'.repeat(60))
-  console.log('📋 ACCOUNT DETAILS')
-  console.log('═'.repeat(60))
-  console.log(`📧 Email:     ${account.email}`)
-  console.log(`🔑 Password:  ${account.password}`)
-  console.log(`👤 Role:      ${account.role}`)
-  console.log(`🏢 Shop:      ${account.shopName}`)
-  console.log(`📝 Onboarding: Will show automatically on login`)
-  console.log('═'.repeat(60))
+  )
   
-  console.log('\n🎯 How to test:')
-  console.log('1. Go to http://localhost:9999/login')
-  console.log(`2. Login with: ${account.email} / ${account.password}`)
-  console.log('3. The onboarding will appear automatically!')
-  
-  console.log('\n💡 Pro tip for demos:')
-  console.log('   After login, you can also use this URL to force onboarding:')
-  console.log('   http://localhost:9999/dashboard?onboarding=true')
+  )
+
+  )
+
 }
 
 // Run the script
 createEnterpriseAccount()
   .then(() => {
-    console.log('\n✅ Enterprise account setup complete!')
+    
     process.exit(0)
   })
   .catch((error) => {

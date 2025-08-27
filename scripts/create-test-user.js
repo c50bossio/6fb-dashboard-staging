@@ -15,7 +15,6 @@ const supabase = createClient(
 );
 
 async function createTestUser() {
-  console.log('🚀 Creating test user account...\n');
 
   const testUser = {
     email: 'test@barbershop.com',
@@ -37,30 +36,21 @@ async function createTestUser() {
 
     if (authError) {
       if (authError.message.includes('already registered')) {
-        console.log('⚠️  User already exists, skipping creation');
-        
+
         const { data: existingUser } = await supabase.auth.admin.getUserByEmail(testUser.email);
         if (existingUser) {
-          console.log(`✅ Found existing user: ${testUser.email}`);
+          
         }
       } else {
         throw authError;
       }
     } else {
-      console.log(`✅ Created user: ${testUser.email}`);
-      console.log(`   ID: ${authData.user.id}`);
+
     }
 
-    console.log('\n📝 Test User Credentials:');
-    console.log('─'.repeat(40));
-    console.log(`Email:    ${testUser.email}`);
-    console.log(`Password: ${testUser.password}`);
-    console.log('─'.repeat(40));
-    
-    console.log('\n🎯 You can now:');
-    console.log('1. Go to http://localhost:9999/login');
-    console.log('2. Sign in with the test credentials above');
-    console.log('3. Access the dashboard at http://localhost:9999/dashboard');
+    );
+
+    );
 
   } catch (error) {
     console.error('❌ Error creating test user:', error.message);

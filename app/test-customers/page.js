@@ -21,8 +21,7 @@ export default function TestCustomersPage() {
         }
 
         setCustomers(data.customers || [])
-        console.log('✅ Customers loaded:', data.customers?.length || 0)
-        console.log('📊 Test info:', data.testInfo)
+
       } catch (err) {
         console.error('❌ Error loading customers:', err)
         setError(err.message)

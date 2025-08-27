@@ -62,20 +62,15 @@ export default function PricingPage() {
 
   useEffect(() => {
     if (user && profile) {
-      console.log('🔍 Checking existing user on pricing page:', {
-        email: user.email,
-        role: profile.role,
-        subscription_status: profile.subscription_status
-      })
-      
+
       if (profile.subscription_status === 'active') {
-        console.log('✅ User already has active subscription, redirecting to welcome')
+        
         router.push('/welcome?from=existing_customer')
         return
       }
       
       if (profile.role && profile.role !== 'CLIENT') {
-        console.log('✅ User has business role, redirecting to welcome')
+        
         router.push('/welcome?from=existing_customer')
         return
       }
@@ -85,10 +80,9 @@ export default function PricingPage() {
   const handleEmailSignup = async (planId) => {
     try {
       setLoading(true)
-      console.log('📧 Starting email signup for plan:', planId)
-      
+
       const registrationUrl = `/register?plan=${planId}&billing=${billingPeriod}`
-      console.log('🔄 Redirecting to registration:', registrationUrl)
+      
       window.location.href = registrationUrl
       
     } catch (error) {
@@ -101,11 +95,9 @@ export default function PricingPage() {
   const handleGoogleSignup = async (planId) => {
     try {
       setLoading(true)
-      console.log('🔐 Starting Google OAuth for plan:', planId)
-      
+
       const callbackUrl = `${window.location.origin}/auth/callback?plan=${planId}&billing=${billingPeriod}`
-      console.log('🔄 OAuth callback URL:', callbackUrl)
-      
+
       const { error } = await signInWithGoogle(callbackUrl)
       
       if (error) {
@@ -113,9 +105,7 @@ export default function PricingPage() {
         alert('Sign up failed. Please try again.')
         return
       }
-      
-      console.log('✅ OAuth initiated successfully')
-      
+
     } catch (error) {
       console.error('Google signup error:', error)
       alert('Something went wrong. Please try again.')

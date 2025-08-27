@@ -30,13 +30,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n🚀 Payment Test Server Running!`);
-  console.log(`================================\n`);
-  console.log(`📍 Test page available at:`);
-  console.log(`   http://localhost:${PORT}\n`);
-  console.log(`✅ This avoids CORS issues by serving from HTTP\n`);
-  console.log(`Press Ctrl+C to stop the server\n`);
-  
+
   // Auto-open in browser
   const { exec } = require('child_process');
   exec(`open http://localhost:${PORT}`);

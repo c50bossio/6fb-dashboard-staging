@@ -63,8 +63,7 @@ class BarberAutoSelectionTester {
   }
 
   async setup() {
-    console.log('🚀 Setting up Puppeteer browser...')
-    
+
     this.browser = await puppeteer.launch({
       headless: false, // Show browser for debugging
       defaultViewport: TEST_CONFIG.viewports.desktop,
@@ -87,7 +86,7 @@ class BarberAutoSelectionTester {
       if (msg.type() === 'error') {
         console.error('❌ Browser Console Error:', msg.text())
       } else if (msg.text().includes('Auto-selected') || msg.text().includes('barber')) {
-        console.log('🔍 Barber Selection Log:', msg.text())
+        )
       }
     })
     
@@ -95,17 +94,15 @@ class BarberAutoSelectionTester {
     await this.page.setRequestInterception(true)
     this.page.on('request', (req) => {
       if (req.url().includes('/api/staff') || req.url().includes('/api/profile')) {
-        console.log('📡 Staff/Profile API Call:', req.url())
+        )
       }
       req.continue()
     })
-    
-    console.log('✅ Browser setup complete')
+
   }
 
   async login() {
-    console.log('🔑 Attempting to log in...')
-    
+
     try {
       await this.page.goto(`${TEST_CONFIG.baseUrl}/login`, { 
         waitUntil: 'networkidle2', 
@@ -151,8 +148,7 @@ class BarberAutoSelectionTester {
       } else if (currentUrl.includes('/login')) {
         throw new Error('Login failed - still on login page')
       }
-      
-      console.log('✅ Login successful')
+
       return true
       
     } catch (error) {
@@ -164,8 +160,7 @@ class BarberAutoSelectionTester {
   }
 
   async navigateToProducts() {
-    console.log('📍 Navigating to products page...')
-    
+
     try {
       // Try direct navigation first
       await this.page.goto(`${TEST_CONFIG.baseUrl}/shop/products`, { 
@@ -196,8 +191,7 @@ class BarberAutoSelectionTester {
   }
 
   async testProductToCartFlow() {
-    console.log('🛒 Testing product to cart flow...')
-    
+
     try {
       // Look for products or demo data
       await this.page.waitForSelector('table, .product-list, .product-grid', { timeout: 10000 })
@@ -210,8 +204,7 @@ class BarberAutoSelectionTester {
       })
       
       if (!hasProducts) {
-        console.log('⚠️  No products found, checking for "Add Product" functionality...')
-        
+
         // Try to add a test product
         const buttons = await this.page.$$('button')
         let addButton = null
@@ -241,8 +234,7 @@ class BarberAutoSelectionTester {
       ).catch(() => [])
       
       if (quickSaleButtons.length > 0) {
-        console.log(`Found ${quickSaleButtons.length} Quick Sale buttons`)
-        
+
         // Quick Sale buttons were returned as elements, need to get actual buttons
         const actualButtons = await this.page.$$('button')
         let quickSaleButton = null
@@ -264,7 +256,7 @@ class BarberAutoSelectionTester {
         
         // Handle the prompt that appears
         this.page.on('dialog', async dialog => {
-          console.log('Dialog appeared:', dialog.message())
+          )
           await dialog.accept('1') // Accept with quantity 1
         })
         
@@ -274,7 +266,7 @@ class BarberAutoSelectionTester {
         // Look for checkout mode or appointment checkout
         const checkoutElements = await this.page.$$('.checkout, .appointment-checkout, [class*="checkout"]')
         if (checkoutElements.length > 0) {
-          console.log('Found checkout elements, testing appointment checkout flow...')
+          
           return await this.testAppointmentCheckout()
         } else {
           throw new Error('No cart or checkout functionality found')
@@ -290,8 +282,7 @@ class BarberAutoSelectionTester {
   }
 
   async fillTestProduct() {
-    console.log('📝 Filling test product information...')
-    
+
     try {
       // Fill product form fields
       const nameField = await this.page.$('input[name="name"], #name, #product-name')
@@ -338,8 +329,7 @@ class BarberAutoSelectionTester {
   }
 
   async testAppointmentCheckout() {
-    console.log('💳 Testing appointment checkout flow...')
-    
+
     try {
       // Try to trigger checkout mode by URL parameter
       const checkoutUrl = `${TEST_CONFIG.baseUrl}/shop/products?checkout=appointment&id=test123`
@@ -352,7 +342,7 @@ class BarberAutoSelectionTester {
       const checkoutModal = await this.page.$('.checkout-modal, .appointment-checkout, [class*="checkout"]')
       
       if (checkoutModal) {
-        console.log('✅ Checkout modal found, testing barber selection...')
+        
         return await this.testBarberAutoSelection()
       } else {
         // Try to create a mock checkout session
@@ -369,8 +359,7 @@ class BarberAutoSelectionTester {
   }
 
   async createMockCheckoutSession() {
-    console.log('🔄 Creating mock checkout session...')
-    
+
     try {
       // Inject mock checkout data into sessionStorage
       await this.page.evaluate(() => {
@@ -389,7 +378,7 @@ class BarberAutoSelectionTester {
         }
         
         sessionStorage.setItem('pendingCheckout', JSON.stringify(mockCheckoutData))
-        console.log('✅ Mock checkout data injected')
+        
       })
       
       // Reload page to trigger checkout mode
@@ -402,8 +391,7 @@ class BarberAutoSelectionTester {
   }
 
   async testBarberAutoSelection() {
-    console.log('🎯 Testing intelligent barber auto-selection system...')
-    
+
     try {
       // Wait for checkout modal to appear
       await this.page.waitForSelector('.checkout-modal, .appointment-checkout, [role="dialog"]', { timeout: 10000 })
@@ -433,16 +421,14 @@ class BarberAutoSelectionTester {
   }
 
   async testPriorityOneAppointmentSelection() {
-    console.log('🔍 Testing Priority 1: Appointment-based selection...')
-    
+
     try {
       // Check if there's a green notification banner indicating auto-selection
       const autoSelectionBanner = await this.page.$('.bg-emerald-50, .auto-selection-banner, [class*="emerald"]')
       
       if (autoSelectionBanner) {
         const bannerText = await autoSelectionBanner.evaluate(el => el.textContent)
-        console.log('Auto-selection banner text:', bannerText)
-        
+
         if (bannerText.includes('Selected from') || bannerText.includes('appointment')) {
           this.addResult('PRIORITY_1_APPOINTMENT', 'PASS', 'Appointment-based auto-selection working')
           await this.takeScreenshot('11-priority-1-appointment-selection')
@@ -454,7 +440,7 @@ class BarberAutoSelectionTester {
       const barberList = await this.page.$('.barber-list, .space-y-2')
       if (barberList) {
         this.addResult('PRIORITY_1_APPOINTMENT', 'PASS', 'No appointment barber - correctly showing manual selection')
-        console.log('ℹ️  No appointment-assigned barber found, showing manual selection (expected)')
+        ')
         return false // Continue to test other priorities
       }
       
@@ -468,8 +454,7 @@ class BarberAutoSelectionTester {
   }
 
   async testPriorityTwoLoggedInBarber() {
-    console.log('🔍 Testing Priority 2: Logged-in barber auto-selection...')
-    
+
     try {
       // Check if current user is an active barber
       const userProfile = await this.page.evaluate(() => {
@@ -501,7 +486,7 @@ class BarberAutoSelectionTester {
         return true
       } else {
         this.addResult('PRIORITY_2_LOGGED_IN', 'INFO', 'Current user is not an active barber - fallback behavior correct')
-        console.log('ℹ️  Current user is not an active barber, proceeding to manual selection')
+        
         return false
       }
       
@@ -513,8 +498,7 @@ class BarberAutoSelectionTester {
   }
 
   async testPriorityThreeManualSelection() {
-    console.log('🔍 Testing Priority 3: Manual selection fallback...')
-    
+
     try {
       // Look for barber selection interface
       const barberSelectionInterface = await this.page.$('.space-y-2, .barber-list, .barber-selection')
@@ -525,8 +509,7 @@ class BarberAutoSelectionTester {
       
       // Get list of available barbers
       const barberOptions = await this.page.$$('.cursor-pointer[class*="border"], .barber-option')
-      console.log(`Found ${barberOptions.length} barber selection options`)
-      
+
       if (barberOptions.length === 0) {
         this.addResult('PRIORITY_3_MANUAL', 'WARNING', 'No barbers available for selection')
         return false
@@ -555,8 +538,7 @@ class BarberAutoSelectionTester {
   }
 
   async testChangeBarberFunctionality() {
-    console.log('🔄 Testing "Change Barber" functionality...')
-    
+
     try {
       // Look for "Change Barber" button
       const buttons = await this.page.$$('button')
@@ -608,7 +590,7 @@ class BarberAutoSelectionTester {
   }
 
   async testMobileResponsiveness() {
-    console.log('📱 Testing mobile responsiveness (iPad size: 768x1024)...')
+    ...')
     
     try {
       // Switch to tablet viewport
@@ -649,8 +631,7 @@ class BarberAutoSelectionTester {
   }
 
   async testWCAGTouchTargets() {
-    console.log('👆 Testing WCAG 2.1 AA touch target compliance...')
-    
+
     try {
       // Get all interactive elements
       const touchTargets = await this.page.$$eval('button, a, input[type="radio"], input[type="checkbox"], [role="button"]', elements => {
@@ -700,9 +681,7 @@ class BarberAutoSelectionTester {
         this.addResult('WCAG_TOUCH_TARGETS', 'PASS', 
           `All ${touchTargets.length} touch targets meet 44px minimum requirement`)
       }
-      
-      console.log(`📊 Touch Target Analysis: ${passedTargets}/${touchTargets.length} passed`)
-      
+
     } catch (error) {
       console.error('⚠️  WCAG touch target test error:', error.message)
       this.addResult('WCAG_TOUCH_TARGETS', 'WARNING', `Could not test touch targets: ${error.message}`)
@@ -710,8 +689,7 @@ class BarberAutoSelectionTester {
   }
 
   async testColorContrast() {
-    console.log('🎨 Testing color contrast compliance...')
-    
+
     try {
       // This is a simplified contrast test - in production you'd use tools like axe-puppeteer
       const contrastIssues = await this.page.evaluate(() => {
@@ -757,8 +735,7 @@ class BarberAutoSelectionTester {
   }
 
   async runFullTestSuite() {
-    console.log('🧪 Running full intelligent barber auto-selection test suite...')
-    
+
     try {
       await this.setup()
       
@@ -781,9 +758,7 @@ class BarberAutoSelectionTester {
       
       // Final screenshot
       await this.takeScreenshot('99-test-suite-complete')
-      
-      console.log('✅ Test suite completed successfully')
-      
+
     } catch (error) {
       console.error('❌ Test suite failed:', error.message)
       await this.takeScreenshot('99-error-test-suite-failed')
@@ -803,7 +778,7 @@ class BarberAutoSelectionTester {
         type: 'png'
       })
       this.results.screenshots.push(screenshotPath)
-      console.log(`📸 Screenshot saved: ${name}.png`)
+      
     } catch (error) {
       console.error(`⚠️  Could not save screenshot ${name}:`, error.message)
     }
@@ -823,19 +798,18 @@ class BarberAutoSelectionTester {
     
     if (status === 'PASS') {
       this.results.passed++
-      console.log(`✅ ${testName}: ${message}`)
+      
     } else if (status === 'FAIL') {
       this.results.failed++
-      console.log(`❌ ${testName}: ${message}`)
+      
     } else if (status === 'WARNING' || status === 'INFO') {
       this.results.warnings++
-      console.log(`⚠️  ${testName}: ${message}`)
+      
     }
   }
 
   async generateReport() {
-    console.log('📋 Generating comprehensive test report...')
-    
+
     // Calculate success rate
     const successRate = this.results.totalTests > 0 
       ? ((this.results.passed / this.results.totalTests) * 100).toFixed(1)
@@ -873,10 +847,8 @@ class BarberAutoSelectionTester {
     const summary = this.generateHumanReadableReport(report)
     const summaryPath = path.join(__dirname, `barber-auto-selection-test-summary-${Date.now()}.md`)
     await fs.writeFile(summaryPath, summary)
-    
-    console.log(`📄 Test report saved: ${reportPath}`)
-    console.log(`📝 Test summary saved: ${summaryPath}`)
-    console.log(`🎯 Overall Result: ${report.summary.overallStatus} (${report.summary.successRate} success rate)`)
+
+    `)
     
     if (this.browser) {
       await this.browser.close()
@@ -995,7 +967,7 @@ if (require.main === module) {
   
   tester.runFullTestSuite()
     .then(() => {
-      console.log('🎉 Test suite completed successfully!')
+      
       process.exit(0)
     })
     .catch((error) => {

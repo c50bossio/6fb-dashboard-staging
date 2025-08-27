@@ -8,9 +8,7 @@ const supabase = createClient(
 
 async function resetOnboardingProgress() {
   const email = 'c50bossio@gmail.com'
-  
-  console.log('🔍 Checking onboarding progress for:', email)
-  
+
   // Get user profile
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
@@ -22,16 +20,7 @@ async function resetOnboardingProgress() {
     console.error('Error fetching profile:', profileError)
     return
   }
-  
-  console.log('Profile found:', {
-    id: profile.id,
-    email: profile.email,
-    role: profile.role,
-    onboarding_completed: profile.onboarding_completed,
-    shop_id: profile.shop_id,
-    barbershop_id: profile.barbershop_id
-  })
-  
+
   // Check current onboarding progress
   const { data: progress, error: progressError } = await supabase
     .from('onboarding_progress')
@@ -43,21 +32,16 @@ async function resetOnboardingProgress() {
     console.error('Error fetching progress:', progressError)
     return
   }
-  
-  console.log('\n📊 Current onboarding progress:')
-  console.log(`Found ${progress.length} completed steps:`)
+
   progress.forEach(step => {
-    console.log(`  - ${step.step_name} (completed at: ${step.completed_at})`)
+    `)
   })
   
   // Since user has no barbershop, these completions are false
   if (!profile.shop_id && !profile.barbershop_id) {
-    console.log('\n⚠️  User has no barbershop but shows completed onboarding!')
-    console.log('This is a false completion state.')
-    
+
     // Reset the onboarding progress
-    console.log('\n🧹 Clearing false onboarding progress...')
-    
+
     const { error: deleteError } = await supabase
       .from('onboarding_progress')
       .delete()
@@ -83,11 +67,9 @@ async function resetOnboardingProgress() {
       console.error('Error updating profile:', updateError)
       return
     }
-    
-    console.log('✅ Onboarding progress reset successfully!')
-    console.log('The OnboardingProgress widget should now appear when you refresh.')
+
   } else {
-    console.log('\n✅ User has a barbershop, onboarding appears legitimate.')
+    
   }
 }
 

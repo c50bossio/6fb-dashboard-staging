@@ -16,7 +16,7 @@ export default function ClearAllPage() {
     const clearedItems = []
     
     // 1. Clear all cookies
-    console.log('🍪 Clearing all cookies...')
+    
     const cookies = document.cookie.split(';')
     let cookieCount = 0
     
@@ -38,44 +38,44 @@ export default function ClearAllPage() {
         })
         
         cookieCount++
-        console.log(`  Cleared cookie: ${name}`)
+        
       }
     })
     clearedItems.push(`✅ Cleared ${cookieCount} cookies`)
     
     // 2. Clear localStorage
-    console.log('💾 Clearing localStorage...')
+    
     const localStorageCount = localStorage.length
     const localStorageKeys = []
     for (let i = 0; i < localStorage.length; i++) {
       localStorageKeys.push(localStorage.key(i))
     }
     localStorageKeys.forEach(key => {
-      console.log(`  Clearing localStorage: ${key}`)
+      
       localStorage.removeItem(key)
     })
     clearedItems.push(`✅ Cleared ${localStorageCount} localStorage items`)
     
     // 3. Clear sessionStorage
-    console.log('📦 Clearing sessionStorage...')
+    
     const sessionStorageCount = sessionStorage.length
     const sessionStorageKeys = []
     for (let i = 0; i < sessionStorage.length; i++) {
       sessionStorageKeys.push(sessionStorage.key(i))
     }
     sessionStorageKeys.forEach(key => {
-      console.log(`  Clearing sessionStorage: ${key}`)
+      
       sessionStorage.removeItem(key)
     })
     clearedItems.push(`✅ Cleared ${sessionStorageCount} sessionStorage items`)
     
     // 4. Clear IndexedDB
-    console.log('🗄️ Clearing IndexedDB...')
+    
     if ('indexedDB' in window) {
       indexedDB.databases().then(databases => {
         databases.forEach(db => {
           indexedDB.deleteDatabase(db.name)
-          console.log(`  Deleted IndexedDB: ${db.name}`)
+          
         })
         clearedItems.push(`✅ Cleared ${databases.length} IndexedDB databases`)
       }).catch(err => {
@@ -85,12 +85,12 @@ export default function ClearAllPage() {
     }
     
     // 5. Clear Cache Storage (for PWAs)
-    console.log('📱 Clearing Cache Storage...')
+    
     if ('caches' in window) {
       caches.keys().then(names => {
         names.forEach(name => {
           caches.delete(name)
-          console.log(`  Deleted cache: ${name}`)
+          
         })
         clearedItems.push(`✅ Cleared ${names.length} caches`)
       }).catch(err => {
@@ -100,12 +100,12 @@ export default function ClearAllPage() {
     }
     
     // 6. Unregister Service Workers
-    console.log('👷 Unregistering Service Workers...')
+    
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(registrations => {
         registrations.forEach(registration => {
           registration.unregister()
-          console.log(`  Unregistered service worker: ${registration.scope}`)
+          
         })
         clearedItems.push(`✅ Unregistered ${registrations.length} service workers`)
       }).catch(err => {
@@ -123,15 +123,13 @@ export default function ClearAllPage() {
         })
         clearedItems.push('✅ Cleared Web SQL')
       } catch (e) {
-        console.log('No Web SQL to clear')
+        
       }
     }
     
     setDetails(clearedItems)
     setCleared(true)
-    
-    console.log('✅ All browser data cleared!')
-    
+
     setTimeout(() => {
       router.push('/login')
     }, 3000)

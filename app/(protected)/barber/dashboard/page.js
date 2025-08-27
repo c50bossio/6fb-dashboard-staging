@@ -64,8 +64,7 @@ export default function BarberDashboard() {
       
       // Build API URL with both barber_id and barbershop_id for proper authorization
       const apiUrl = `/api/appointments?barber_id=${barberId}&barbershop_id=${barbershopId}`
-      console.log('Fetching appointments from:', apiUrl)
-      
+
       const appointmentsRes = await fetch(apiUrl)
       
       if (!appointmentsRes.ok) {
@@ -132,7 +131,7 @@ export default function BarberDashboard() {
       
       // Auto-retry once after a delay if it's a network error
       if (retryCount === 0 && (error.message.includes('500') || error.message.includes('Network'))) {
-        console.log('Auto-retrying in 3 seconds...')
+        
         setTimeout(() => {
           loadDashboardData()
         }, 3000)

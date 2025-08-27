@@ -50,7 +50,7 @@ export default function TestBookingRulesConflictsPage() {
     } else {
       const results = validator.detectRuleConflicts(rules, testServices, 45)
       setValidationResults(results)
-      console.log('Validation results:', results)
+      
     }
   }, [rules, validator, useRealData])
 
@@ -58,16 +58,14 @@ export default function TestBookingRulesConflictsPage() {
   const validateWithRealData = async () => {
     try {
       setIsLoadingRealData(true)
-      console.log('Validating rules with real data...')
-      
+
       const results = await validateRulesWithRealData(rules, {
         includeHistoricalAnalysis: true,
         includeConflictDetection: true,
         includePredictiveAnalysis: true,
         monthsBack: 6
       })
-      
-      console.log('Real data validation results:', results)
+
       setRealDataResults(results)
       
       // Update the main validation results with real data conflicts
@@ -90,14 +88,13 @@ export default function TestBookingRulesConflictsPage() {
 
   // Handle Apply Fix button
   const handleFixConflict = (conflict) => {
-    console.log('Applying fix for conflict:', conflict)
-    
+
     try {
       // Use RuleValidator.applyFix method
       const fixedRules = RuleValidator.applyFix(rules, conflict, testServices)
       
       if (fixedRules && Object.keys(fixedRules).length > 0) {
-        console.log('Fixed rules:', fixedRules)
+        
         setRules(prevRules => ({
           ...prevRules,
           ...fixedRules
@@ -116,7 +113,7 @@ export default function TestBookingRulesConflictsPage() {
   }
 
   const handleDismiss = (item) => {
-    console.log('Dismissed:', item.title)
+    
   }
 
   return (

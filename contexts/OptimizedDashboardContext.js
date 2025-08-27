@@ -380,8 +380,7 @@ export function OptimizedDashboardProvider({ children }) {
   // Initialize dashboard
   useEffect(() => {
     if (user?.id && profile && !initialized) {
-      console.log('🚀 Initializing optimized dashboard for:', user.email)
-      
+
       const initialize = async () => {
         setUiState(prev => ({ ...prev, loading: true }))
         

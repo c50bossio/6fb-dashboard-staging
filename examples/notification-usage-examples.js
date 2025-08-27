@@ -43,7 +43,7 @@ export function BookingConfirmationExample() {
       );
 
       const result = await sendAppointmentConfirmation(notificationData);
-      console.log('Confirmation sent:', result);
+      
       setSent(true);
     } catch (err) {
       console.error('Failed to send confirmation:', err);

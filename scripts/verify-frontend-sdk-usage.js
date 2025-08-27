@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-
 const fs = require('fs');
 const path = require('path');
 
@@ -16,9 +15,6 @@ const colors = {
   blue: '\x1b[34m',
   reset: '\x1b[0m'
 };
-
-console.log(`${colors.blue}🔍 Verifying Frontend SDK Usage${colors.reset}`);
-console.log(`${colors.blue}=================================${colors.reset}`);
 
 const SDK_MAPPINGS = {
   'Supabase': {
@@ -186,29 +182,22 @@ function checkPatternsInFile(filePath, patterns) {
 }
 
 function verifySDKUsage() {
-  console.log(`${colors.blue}Scanning directories:${colors.reset}`);
-  console.log(`• App: ${APP_DIR}`);
-  console.log(`• Components: ${COMPONENTS_DIR}`);
-  console.log(`• Lib: ${LIB_DIR}`);
-  
+
   const appFiles = getAllFrontendFiles(APP_DIR);
   const componentFiles = getAllFrontendFiles(COMPONENTS_DIR);
   const allFiles = [...appFiles, ...componentFiles];
-  
-  console.log(`\n${colors.blue}Found ${allFiles.length} frontend files to scan${colors.reset}\n`);
-  
+
   const results = {};
   let totalImplemented = 0;
   let totalMissing = 0;
   
   for (const [sdkName, config] of Object.entries(SDK_MAPPINGS)) {
-    console.log(`${colors.blue}=== ${sdkName} SDK Verification ===${colors.reset}`);
-    
+
     const libPath = path.join(PROJECT_ROOT, config.libFile);
     const libExists = fs.existsSync(libPath);
     
     if (!libExists) {
-      console.log(`${colors.red}✗ MISSING${colors.reset} ${sdkName} - Library file not found: ${config.libFile}`);
+      
       results[sdkName] = { status: 'MISSING', reason: 'Library file not found' };
       totalMissing++;
       continue;
@@ -238,11 +227,9 @@ function verifySDKUsage() {
     }
     
     if (importFound && usageFound) {
-      console.log(`${colors.green}✓ IMPLEMENTED${colors.reset} ${sdkName} - Active usage found`);
-      console.log(`  ${colors.blue}Files with imports: ${filesWithImports.length}${colors.reset}`);
-      console.log(`  ${colors.blue}Files with usage: ${filesWithUsage.length}${colors.reset}`);
+
       if (filesWithImports.length <= 3) {
-        console.log(`    ${filesWithImports.join(', ')}`);
+        }`);
       }
       results[sdkName] = { 
         status: 'IMPLEMENTED', 
@@ -253,8 +240,8 @@ function verifySDKUsage() {
       };
       totalImplemented++;
     } else if (importFound && !usageFound) {
-      console.log(`${colors.yellow}⚠ PARTIAL${colors.reset} ${sdkName} - Imported but not used`);
-      console.log(`  ${colors.blue}Files with imports: ${filesWithImports.join(', ')}${colors.reset}`);
+      
+      }${colors.reset}`);
       results[sdkName] = { 
         status: 'PARTIAL', 
         reason: 'Imported but not used',
@@ -262,7 +249,7 @@ function verifySDKUsage() {
       };
       totalMissing++;
     } else {
-      console.log(`${colors.red}✗ MISSING${colors.reset} ${sdkName} - No frontend usage found`);
+      
       results[sdkName] = { status: 'MISSING', reason: 'No frontend imports or usage found' };
       totalMissing++;
     }
@@ -270,13 +257,7 @@ function verifySDKUsage() {
   
   const totalSDKs = Object.keys(SDK_MAPPINGS).length;
   const completionPercentage = Math.round((totalImplemented / totalSDKs) * 100);
-  
-  console.log(`\n${colors.blue}=== Frontend SDK Usage Summary ===${colors.reset}`);
-  console.log(`${colors.blue}Total SDKs: ${totalSDKs}${colors.reset}`);
-  console.log(`${colors.green}Implemented: ${totalImplemented}${colors.reset}`);
-  console.log(`${colors.red}Missing/Partial: ${totalMissing}${colors.reset}`);
-  console.log(`${colors.blue}Completion: ${completionPercentage}%${colors.reset}`);
-  
+
   const reportPath = path.join(PROJECT_ROOT, 'frontend_sdk_usage_report.json');
   const report = {
     timestamp: new Date().toISOString(),
@@ -290,20 +271,15 @@ function verifySDKUsage() {
   };
   
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-  console.log(`\n${colors.blue}Detailed report saved to: frontend_sdk_usage_report.json${colors.reset}`);
-  
+
   if (completionPercentage >= 90) {
-    console.log(`\n${colors.green}🎉 FRONTEND INTEGRATION STATUS: EXCELLENT${colors.reset}`);
-    console.log(`${colors.green}Most SDKs are actively used in frontend components.${colors.reset}`);
+
   } else if (completionPercentage >= 70) {
-    console.log(`\n${colors.yellow}🔧 FRONTEND INTEGRATION STATUS: GOOD${colors.reset}`);
-    console.log(`${colors.yellow}Core SDKs are implemented. Consider adding missing integrations.${colors.reset}`);
+
   } else if (completionPercentage >= 50) {
-    console.log(`\n${colors.yellow}⚠️ FRONTEND INTEGRATION STATUS: PARTIAL${colors.reset}`);
-    console.log(`${colors.yellow}Several SDKs need frontend implementation before production.${colors.reset}`);
+
   } else {
-    console.log(`\n${colors.red}🚨 FRONTEND INTEGRATION STATUS: INCOMPLETE${colors.reset}`);
-    console.log(`${colors.red}Most SDKs are not integrated in frontend. Significant work required.${colors.reset}`);
+
   }
   
   return completionPercentage >= 80;

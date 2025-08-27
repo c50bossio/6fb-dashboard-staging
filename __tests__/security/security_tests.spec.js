@@ -205,7 +205,7 @@ class SecurityTester {
         }
       } catch (error) {
         results.totalRequests++;
-        console.log(`Request ${i} failed:`, error.message);
+        
       }
     }
     
@@ -251,8 +251,7 @@ test.describe('Authentication Security', () => {
       
       const strengthResult = await securityTester.testPasswordStrength(password);
       expect(strengthResult.isStrong).toBe(false);
-      
-      console.log(`Weak password "${password}" correctly rejected:`, strengthResult);
+
     }
     
     for (const password of strongPasswords) {
@@ -264,8 +263,7 @@ test.describe('Authentication Security', () => {
       
       const strengthResult = await securityTester.testPasswordStrength(password);
       expect(strengthResult.isStrong).toBe(true);
-      
-      console.log(`Strong password "${password}" correctly accepted:`, strengthResult);
+
     }
   });
 
@@ -292,7 +290,7 @@ test.describe('Authentication Security', () => {
       
       if (await lockoutMessage.isVisible() || await rateLimitMessage.isVisible()) {
         isLocked = true;
-        console.log(`Account locked after ${loginAttempts} attempts`);
+        
         break;
       }
       
@@ -326,12 +324,7 @@ test.describe('Authentication Security', () => {
       expect(sessionCookie.httpOnly).toBe(true); // Should be HttpOnly
       expect(sessionCookie.secure).toBe(true);   // Should be Secure in production
       expect(sessionCookie.sameSite).toBe('Strict'); // Should have SameSite protection
-      
-      console.log('Session cookie security attributes:', {
-        httpOnly: sessionCookie.httpOnly,
-        secure: sessionCookie.secure,
-        sameSite: sessionCookie.sameSite
-      });
+
     }
     
     await page.evaluate((timeout) => {
@@ -385,9 +378,7 @@ test.describe('Authentication Security', () => {
     
     if (jwtToken) {
       const payload = JSON.parse(atob(jwtToken.split('.')[1]));
-      
-      console.log('JWT payload:', payload);
-      
+
       expect(payload.exp).toBeDefined(); // Expiration
       expect(payload.iat).toBeDefined(); // Issued at
       expect(payload.sub).toBeDefined(); // Subject (user ID)
@@ -408,8 +399,7 @@ test.describe('Authentication Security', () => {
       });
       
       expect(response.status()).toBe(401); // Should reject tampered token
-      
-      console.log('JWT security validation passed');
+
     }
   });
 });
@@ -433,9 +423,7 @@ test.describe('Input Validation Security', () => {
       await page.goto(form.url);
       
       const results = await securityTester.testSQLInjection(form.selector);
-      
-      console.log(`SQL injection test results for ${form.url}:`, results);
-      
+
       const blockedCount = results.filter(r => r.blocked).length;
       expect(blockedCount).toBe(results.length);
       
@@ -456,16 +444,14 @@ test.describe('Input Validation Security', () => {
         await page.goto(form.url);
         
         const results = await securityTester.testXSS(form.selector);
-        
-        console.log(`XSS test results for ${form.url}:`, results);
-        
+
         const blockedCount = results.filter(r => r.blocked).length;
         expect(blockedCount).toBe(results.length);
         
         const scriptExecutions = results.filter(r => r.alertFired).length;
         expect(scriptExecutions).toBe(0);
       } catch (error) {
-        console.log(`Skipping XSS test for ${form.url}: ${error.message}`);
+        
       }
     }
   });
@@ -488,9 +474,7 @@ test.describe('Input Validation Security', () => {
     
     for (const test of csrfTests) {
       const result = await securityTester.testCSRF(test.url, test.data);
-      
-      console.log(`CSRF test result for ${test.url}:`, result);
-      
+
       expect(result.blocked).toBe(true);
       expect([401, 403]).toContain(result.status);
     }
@@ -509,8 +493,7 @@ test.describe('Input Validation Security', () => {
     
     const errorText = await validationError.textContent();
     expect(errorText.toLowerCase()).toContain('too long');
-    
-    console.log('Input length validation working correctly');
+
   });
 
   test('File upload security', async ({ page }) => {
@@ -540,10 +523,9 @@ test.describe('Input Validation Security', () => {
         const isRejected = await uploadError.isVisible();
         
         expect(isRejected).toBe(true);
-        
-        console.log(`Malicious file ${file.name} correctly rejected`);
+
       } catch (error) {
-        console.log(`File upload test failed for ${file.name}:`, error.message);
+        
       }
     }
   });
@@ -570,9 +552,7 @@ test.describe('API Security', () => {
         30, // 30 requests
         1000 // in 1 second
       );
-      
-      console.log(`Rate limiting test for ${endpoint}:`, rateLimitResults);
-      
+
       expect(rateLimitResults.rateLimitingEffective).toBe(true);
       expect(rateLimitResults.blockedRequests).toBeGreaterThan(0);
       
@@ -610,8 +590,7 @@ test.describe('API Security', () => {
         expect(responseText.toLowerCase()).not.toContain('secret');
         expect(responseText.toLowerCase()).not.toContain('private_key');
         
-        console.log(`Auth bypass attempt blocked for ${endpoint}:`, {
-          status: response.status(),
+        ,
           attempt: attempt.headers
         });
       }
@@ -645,8 +624,7 @@ test.describe('API Security', () => {
       
       expect([400, 422]).toContain(response.status()); // Bad request or validation error
       
-      console.log(`Parameter pollution test for ${test.endpoint}:`, {
-        status: response.status(),
+      ,
         params: test.params
       });
     }
@@ -714,8 +692,7 @@ test.describe('Data Protection', () => {
     
     expect(localStorage).not.toMatch(/password|ssn|credit/i);
     expect(sessionStorage).not.toMatch(/password|ssn|credit/i);
-    
-    console.log('PII data protection check passed');
+
   });
 
   test('Data retention compliance', async ({ page }) => {
@@ -731,8 +708,7 @@ test.describe('Data Protection', () => {
       const deletionInfo = await confirmDialog.textContent();
       expect(deletionInfo.toLowerCase()).toContain('permanently delete');
       expect(deletionInfo.toLowerCase()).toMatch(/\d+\s*days?/); // Should mention retention period
-      
-      console.log('Data deletion process properly implemented');
+
     }
     
     const exportButton = page.locator('[data-testid="export-data"]');
@@ -741,8 +717,7 @@ test.describe('Data Protection', () => {
       
       const exportStatus = page.locator('[data-testid="export-status"]');
       await expect(exportStatus).toBeVisible();
-      
-      console.log('Data export functionality available');
+
     }
   });
 
@@ -782,8 +757,7 @@ test.describe('Data Protection', () => {
     );
     
     expect(trackingCookies).toHaveLength(0);
-    
-    console.log('Cookie consent working correctly');
+
   });
 
   test('Audit trail and logging', async ({ page }) => {
@@ -815,8 +789,7 @@ test.describe('Data Protection', () => {
       expect(entryText).toMatch(/\d{4}-\d{2}-\d{2}/); // Date
       expect(entryText).toMatch(/\d{2}:\d{2}/); // Time
       expect(entryText).toContain('audit@test.com'); // User identifier
-      
-      console.log('Audit logging properly implemented');
+
     }
   });
 });
@@ -825,9 +798,7 @@ test.describe('Security Configuration', () => {
   test('Security headers validation', async ({ page }) => {
     const response = await page.goto('/');
     const headers = response.headers();
-    
-    console.log('Security headers:', headers);
-    
+
     const requiredHeaders = {
       'x-content-type-options': 'nosniff',
       'x-frame-options': ['DENY', 'SAMEORIGIN'],
@@ -877,8 +848,7 @@ test.describe('Security Configuration', () => {
     
     expect(cspMap['script-src']).not.toContain("'unsafe-inline'");
     expect(cspMap['style-src']).not.toContain("'unsafe-inline'");
-    
-    console.log('CSP validation passed:', cspMap);
+
   });
 
   test('HTTPS enforcement', async ({ page }) => {
@@ -892,10 +862,9 @@ test.describe('Security Configuration', () => {
       
       const location = httpResponse.headers()['location'];
       expect(location).toMatch(/^https:/);
-      
-      console.log('HTTPS redirect working correctly');
+
     } catch (error) {
-      console.log('HTTPS redirect test skipped (development environment)');
+      ');
     }
   });
 
@@ -907,10 +876,9 @@ test.describe('Security Configuration', () => {
       
       expect(securityTxt).toContain('Contact:');
       expect(securityTxt).toMatch(/Expires:\s*\d{4}-\d{2}-\d{2}/);
-      
-      console.log('Security.txt found and properly configured');
+
     } else {
-      console.log('Security.txt not found - consider adding for vulnerability disclosure');
+      
     }
   });
 });

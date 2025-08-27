@@ -2,8 +2,7 @@
 
 // Super simple test component to verify modal rendering works
 export default function TestOnboardingModal() {
-  console.log('🚨 TEST MODAL: Component is rendering!')
-  
+
   return (
     <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white rounded-lg p-8 m-4 max-w-md w-full">

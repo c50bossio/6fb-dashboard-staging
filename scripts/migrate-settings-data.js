@@ -34,13 +34,10 @@ const args = process.argv.slice(2)
 const isDryRun = args.includes('--dry-run')
 const specificBarbershopId = args.find(arg => arg.startsWith('--barbershop-id='))?.split('=')[1]
 
-console.log('🚀 Starting Settings Data Migration')
-console.log('=====================================')
-console.log(`Mode: ${isDryRun ? 'DRY RUN (no changes will be made)' : 'LIVE MIGRATION'}`)
+' : 'LIVE MIGRATION'}`)
 if (specificBarbershopId) {
-  console.log(`Target: Single barbershop ${specificBarbershopId}`)
+  
 }
-console.log('')
 
 /**
  * Migration Statistics Tracking
@@ -57,9 +54,7 @@ const stats = {
  * Consolidates business information scattered across multiple tables
  */
 async function migrateBarbershopsToOrganizations() {
-  console.log('📊 Step 1: Migrating Barbershops → Organizations')
-  console.log('------------------------------------------------')
-  
+
   try {
     // Get existing barbershops
     let query = supabase
@@ -78,11 +73,10 @@ async function migrateBarbershopsToOrganizations() {
     }
     
     stats.barbershops.found = barbershops.length
-    console.log(`   Found ${barbershops.length} barbershops to migrate`)
-    
+
     for (const barbershop of barbershops) {
       try {
-        console.log(`   → Processing: ${barbershop.name} (${barbershop.id})`)
+        `)
         
         // Check if already migrated
         const { data: existing } = await supabase
@@ -92,7 +86,7 @@ async function migrateBarbershopsToOrganizations() {
           .single()
         
         if (existing) {
-          console.log(`     ⚠️  Already exists as organization, skipping`)
+          
           continue
         }
         
@@ -172,11 +166,10 @@ async function migrateBarbershopsToOrganizations() {
         }
         
         stats.barbershops.migrated++
-        console.log(`     ✅ Migrated successfully`)
-        
+
       } catch (error) {
         stats.barbershops.errors++
-        console.log(`     ❌ Error: ${error.message}`)
+        
       }
     }
     
@@ -184,9 +177,7 @@ async function migrateBarbershopsToOrganizations() {
     console.error(`❌ Step 1 failed: ${error.message}`)
     throw error
   }
-  
-  console.log(`   Summary: ${stats.barbershops.migrated}/${stats.barbershops.found} migrated`)
-  console.log('')
+
 }
 
 /**
@@ -194,9 +185,7 @@ async function migrateBarbershopsToOrganizations() {
  * Establishes proper role-based relationships
  */
 async function createUserOrganizationMemberships() {
-  console.log('👥 Step 2: Creating User-Organization Memberships')
-  console.log('--------------------------------------------------')
-  
+
   try {
     // Get barbershop owners
     let query = supabase
@@ -213,9 +202,7 @@ async function createUserOrganizationMemberships() {
     if (fetchError) {
       throw new Error(`Failed to fetch barbershop owners: ${fetchError.message}`)
     }
-    
-    console.log(`   Processing ${barbershops.length} owner relationships`)
-    
+
     for (const barbershop of barbershops) {
       try {
         // Check if membership already exists
@@ -227,7 +214,7 @@ async function createUserOrganizationMemberships() {
           .single()
         
         if (existing) {
-          console.log(`   → ${barbershop.name}: Membership already exists`)
+          
           continue
         }
         
@@ -258,11 +245,10 @@ async function createUserOrganizationMemberships() {
         }
         
         stats.memberships.created++
-        console.log(`   → ${barbershop.name}: ✅ Owner membership created`)
-        
+
       } catch (error) {
         stats.memberships.errors++
-        console.log(`   → ${barbershop.name}: ❌ Error: ${error.message}`)
+        
       }
     }
     
@@ -273,8 +259,7 @@ async function createUserOrganizationMemberships() {
       .eq('is_active', true)
     
     if (staffMembers) {
-      console.log(`   Processing ${staffMembers.length} staff relationships`)
-      
+
       for (const staff of staffMembers) {
         try {
           // Check if membership already exists
@@ -322,9 +307,7 @@ async function createUserOrganizationMemberships() {
     console.error(`❌ Step 2 failed: ${error.message}`)
     throw error
   }
-  
-  console.log(`   Summary: ${stats.memberships.created} memberships created`)
-  console.log('')
+
 }
 
 /**
@@ -332,12 +315,10 @@ async function createUserOrganizationMemberships() {
  * Extract scattered settings into organized hierarchy
  */
 async function migrateSettingsToHierarchy() {
-  console.log('⚙️  Step 3: Migrating Settings to Hierarchy')
-  console.log('---------------------------------------------')
-  
+
   try {
     // Migrate notification settings from profiles
-    console.log('   → Migrating user notification preferences...')
+    
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, notification_preferences, appearance_settings')
@@ -397,7 +378,7 @@ async function migrateSettingsToHierarchy() {
     }
     
     // Migrate organization-level settings from barbershops
-    console.log('   → Migrating organization settings...')
+    
     let query = supabase
       .from('barbershops')
       .select('id, notification_settings, booking_settings, payment_settings')
@@ -487,9 +468,7 @@ async function migrateSettingsToHierarchy() {
     console.error(`❌ Step 3 failed: ${error.message}`)
     throw error
   }
-  
-  console.log(`   Summary: ${stats.settings.created} settings migrated`)
-  console.log('')
+
 }
 
 /**
@@ -497,9 +476,7 @@ async function migrateSettingsToHierarchy() {
  * Add references to primary organization
  */
 async function updateUserProfiles() {
-  console.log('👤 Step 4: Updating User Profiles')
-  console.log('-----------------------------------')
-  
+
   try {
     // Update profiles to reference primary organization
     const { data: memberships } = await supabase
@@ -509,8 +486,7 @@ async function updateUserProfiles() {
       .eq('is_active', true)
     
     if (memberships) {
-      console.log(`   Updating ${memberships.length} user profiles`)
-      
+
       for (const membership of memberships) {
         try {
           if (!isDryRun) {
@@ -540,18 +516,14 @@ async function updateUserProfiles() {
     console.error(`❌ Step 4 failed: ${error.message}`)
     throw error
   }
-  
-  console.log(`   Summary: ${stats.profiles.updated} profiles updated`)
-  console.log('')
+
 }
 
 /**
  * Step 5: Validation and Verification
  */
 async function validateMigration() {
-  console.log('✅ Step 5: Validating Migration')
-  console.log('---------------------------------')
-  
+
   try {
     // Run built-in verification function
     const { data: verification, error } = await supabase.rpc('verify_settings_migration')
@@ -559,11 +531,10 @@ async function validateMigration() {
     if (error) {
       throw new Error(`Verification failed: ${error.message}`)
     }
-    
-    console.log('   Verification Results:')
+
     verification.forEach(check => {
       const icon = check.status === 'PASS' ? '✅' : '❌'
-      console.log(`   ${icon} ${check.check_name}: ${check.details}`)
+      
     })
     
     // Additional validation checks
@@ -578,13 +549,7 @@ async function validateMigration() {
     const { count: settingsCount } = await supabase
       .from('settings_hierarchy')
       .select('*', { count: 'exact', head: true })
-    
-    console.log('')
-    console.log('   Final Statistics:')
-    console.log(`   📊 Organizations: ${orgCount}`)
-    console.log(`   👥 Memberships: ${membershipCount}`)
-    console.log(`   ⚙️  Settings: ${settingsCount}`)
-    
+
   } catch (error) {
     console.error(`❌ Validation failed: ${error.message}`)
     throw error
@@ -605,33 +570,15 @@ async function runMigration() {
     await validateMigration()
     
     const duration = ((Date.now() - startTime) / 1000).toFixed(2)
-    
-    console.log('🎉 Migration Completed Successfully!')
-    console.log('====================================')
-    console.log(`Duration: ${duration}s`)
-    console.log('')
-    console.log('📊 Final Statistics:')
-    console.log(`   Barbershops: ${stats.barbershops.migrated}/${stats.barbershops.found} migrated`)
-    console.log(`   Memberships: ${stats.memberships.created} created`)
-    console.log(`   Settings: ${stats.settings.created} created`)
-    console.log(`   Profiles: ${stats.profiles.updated} updated`)
-    console.log('')
-    
+
     if (stats.barbershops.errors + stats.memberships.errors + stats.settings.errors + stats.profiles.errors > 0) {
-      console.log('⚠️  Some errors occurred during migration:')
-      console.log(`   Barbershop errors: ${stats.barbershops.errors}`)
-      console.log(`   Membership errors: ${stats.memberships.errors}`)
-      console.log(`   Settings errors: ${stats.settings.errors}`)
-      console.log(`   Profile errors: ${stats.profiles.errors}`)
-      console.log('')
+
     }
     
     if (isDryRun) {
-      console.log('🔍 This was a DRY RUN - no actual changes were made')
-      console.log('   Run without --dry-run flag to perform the migration')
+
     } else {
-      console.log('✅ All data has been successfully migrated to the new schema')
-      console.log('   The old tables remain intact for rollback if needed')
+
     }
     
   } catch (error) {

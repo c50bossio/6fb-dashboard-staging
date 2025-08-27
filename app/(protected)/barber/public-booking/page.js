@@ -18,7 +18,6 @@ import {
 import QRCode from 'qrcode'
 import { useState, useEffect } from 'react'
 
-
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function PublicBookingPage() {
@@ -32,7 +31,7 @@ export default function PublicBookingPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('🔄 PublicBookingPage mounted, all icons should be ClipboardIcon')
+    
   }, [])
 
   const barberData = {

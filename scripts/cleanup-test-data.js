@@ -9,8 +9,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function cleanupTestData() {
-  console.log('🧹 Cleaning up test data...')
-  
+
   await supabase.from('bookings').delete().eq('is_test', true)
   
   await supabase.from('customers').delete().eq('is_test', true)
@@ -18,8 +17,7 @@ async function cleanupTestData() {
   await supabase.from('services').delete().eq('is_test', true)
   
   await supabase.from('barbers').delete().eq('is_test', true)
-  
-  console.log('✅ Test data cleaned up')
+
 }
 
 cleanupTestData().catch(console.error)

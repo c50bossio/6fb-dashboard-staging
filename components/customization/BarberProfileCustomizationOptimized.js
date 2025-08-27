@@ -146,7 +146,7 @@ function BarberProfileCustomizationOptimized({ onUnsavedChanges }) {
     enableUndo: true,
     onUnsavedChanges,
     onSave: useCallback((data) => {
-      console.log('Profile saved:', data)
+      
     }, []),
     onError: useCallback((error) => {
       console.error('Profile error:', error)

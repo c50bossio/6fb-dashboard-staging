@@ -19,16 +19,10 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey)
 const isDryRun = process.argv.includes('--dry-run')
 
-console.log('🚀 SIMPLIFIED SETTINGS DATA MIGRATION')
-console.log('=' * 50)
-console.log(`Mode: ${isDryRun ? 'DRY RUN' : 'LIVE MIGRATION'}`)
-console.log('')
-
 async function migrateData() {
   try {
     // First, check if the new tables are available
-    console.log('🔍 Checking migration prerequisites...')
-    
+
     const checkTables = ['organizations', 'user_organization_memberships', 'settings_hierarchy']
     const missingTables = []
     
@@ -44,16 +38,13 @@ async function migrateData() {
     }
     
     if (missingTables.length > 0) {
-      console.log('❌ Missing required tables:', missingTables.join(', '))
-      console.log('📋 Please execute deploy-settings-schema.sql first')
+      )
+      
       return
     }
-    
-    console.log('✅ All required tables exist')
-    console.log('')
-    
+
     // Step 1: Migrate barbershops to organizations
-    console.log('📊 Step 1: Migrating Barbershops → Organizations')
+    
     const { data: barbershops, error: barbershopError } = await supabase
       .from('barbershops')
       .select('*')
@@ -61,9 +52,7 @@ async function migrateData() {
     if (barbershopError) {
       throw new Error(`Failed to fetch barbershops: ${barbershopError.message}`)
     }
-    
-    console.log(`Found ${barbershops.length} barbershops to migrate`)
-    
+
     for (const barbershop of barbershops) {
       // Check if already exists in organizations
       const { data: existing } = await supabase
@@ -73,7 +62,7 @@ async function migrateData() {
         .single()
       
       if (existing) {
-        console.log(`   - ${barbershop.name}: Already migrated`)
+        
         continue
       }
       
@@ -126,13 +115,11 @@ async function migrateData() {
           .insert(organizationData)
         
         if (error) {
-          console.log(`   - ${barbershop.name}: Error - ${error.message}`)
+          
           continue
         }
       }
-      
-      console.log(`   - ${barbershop.name}: ✅ Migrated`)
-      
+
       // Step 2: Create user membership for owner
       if (barbershop.owner_id) {
         const membershipData = {
@@ -156,16 +143,14 @@ async function migrateData() {
             .insert(membershipData)
           
           if (membershipError && !membershipError.message.includes('duplicate')) {
-            console.log(`     Membership error: ${membershipError.message}`)
+            
           }
         }
       }
     }
     
     // Step 3: Create organization-level settings from barbershop data
-    console.log('')
-    console.log('⚙️  Step 2: Creating Organization Settings')
-    
+
     for (const barbershop of barbershops) {
       if (barbershop.notification_settings || barbershop.booking_settings) {
         const settingsToMigrate = []
@@ -195,29 +180,21 @@ async function migrateData() {
               .upsert(setting, { onConflict: 'context_type,context_id,category' })
             
             if (error) {
-              console.log(`   Settings error for ${barbershop.name}: ${error.message}`)
+              
             }
           }
         }
         
         if (settingsToMigrate.length > 0) {
-          console.log(`   - ${barbershop.name}: ${settingsToMigrate.length} settings migrated`)
+          
         }
       }
     }
-    
-    console.log('')
-    console.log('🎉 MIGRATION COMPLETED SUCCESSFULLY!')
-    console.log(`✅ Migrated ${barbershops.length} barbershops to organizations`)
-    console.log('✅ Created owner memberships and settings hierarchy')
-    console.log('')
-    
+
     if (isDryRun) {
-      console.log('🔍 This was a DRY RUN - no changes made')
-      console.log('   Run without --dry-run to execute migration')
+
     } else {
-      console.log('✅ Data successfully migrated to new schema!')
-      console.log('📋 Next: Update UI routing to use UnifiedSettingsInterface')
+
     }
     
   } catch (error) {

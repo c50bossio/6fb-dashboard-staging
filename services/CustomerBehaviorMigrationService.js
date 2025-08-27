@@ -15,8 +15,7 @@ export class CustomerBehaviorMigrationService {
    * Migrate all customers for a barbershop to the new scoring system
    */
   async migrateBarbershop(barbershopId) {
-    console.log(`Starting migration for barbershop: ${barbershopId}`)
-    
+
     try {
       // Reset counters
       this.migratedCount = 0
@@ -44,11 +43,7 @@ export class CustomerBehaviorMigrationService {
       
       // Update barbershop statistics after migration
       await this.updateStatistics(barbershopId)
-      
-      console.log(`Migration completed for barbershop ${barbershopId}:`)
-      console.log(`- Processed: ${this.migratedCount} customers`)
-      console.log(`- Errors: ${this.errorCount}`)
-      
+
       return {
         success: true,
         barbershopId,
@@ -267,9 +262,7 @@ export class CustomerBehaviorMigrationService {
       if (!response.ok) {
         throw new Error(`Failed to update statistics: ${response.statusText}`)
       }
-      
-      console.log(`Updated statistics for barbershop ${barbershopId}`)
-      
+
     } catch (error) {
       console.error('Failed to update statistics:', error)
     }

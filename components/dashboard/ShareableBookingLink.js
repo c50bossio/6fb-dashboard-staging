@@ -50,7 +50,7 @@ export default function ShareableBookingLink() {
         
         // Development fallback: Use first available barbershop
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔧 [DEV] Profile query failed, using first available barbershop...')
+          
           const { data: barbershops, error: shopError } = await supabase
             .from('barbershops')
             .select('id, name, slug')

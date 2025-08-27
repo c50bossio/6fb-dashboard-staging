@@ -556,7 +556,7 @@ export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
           }}
           customerInfo={customerInfo}
           onAccountCreated={(user) => {
-            console.log('Account created for user:', user)
+            
           }}
           onSkip={() => setShowAccountCreation(false)}
         />

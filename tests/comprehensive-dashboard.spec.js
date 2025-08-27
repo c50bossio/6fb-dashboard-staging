@@ -248,8 +248,7 @@ test.describe('Page Loading Tests', () => {
     ]
     
     for (const route of dashboardRoutes) {
-      console.log(`Testing route: ${route}`)
-      
+
       await page.goto(route)
       
       await page.waitForLoadState('networkidle')
@@ -288,7 +287,7 @@ test.describe('Page Loading Tests', () => {
       const loadTime = Date.now() - startTime
       
       expect(loadTime).toBeLessThan(5000)
-      console.log(`${route} loaded in ${loadTime}ms`)
+      
     }
   })
 })
@@ -329,7 +328,7 @@ test.describe('Interactive Elements', () => {
           await button.click()
           await page.waitForTimeout(1000)
         } catch (error) {
-          console.log(`Button click resulted in: ${error.message}`)
+          
         }
       }
     }
@@ -396,8 +395,7 @@ test.describe('API Health Check', () => {
     expect(responseBody).toBeDefined()
     
     expect(responseBody.status).toBeDefined()
-    
-    console.log('API Health Response:', responseBody)
+
   })
 
   test('frontend health endpoint responds', async ({ page }) => {
@@ -407,7 +405,6 @@ test.describe('API Health Check', () => {
     
     const responseBody = await response.json()
     expect(responseBody).toBeDefined()
-    
-    console.log('Frontend Health Response:', responseBody)
+
   })
 })

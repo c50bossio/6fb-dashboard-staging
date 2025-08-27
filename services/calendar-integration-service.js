@@ -35,7 +35,6 @@ class CalendarIntegrationService {
 
       this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client })
       this.initialized = true
-      console.log('📅 Calendar Integration Service initialized')
 
     } catch (error) {
       console.error('❌ Failed to initialize Calendar service:', error)

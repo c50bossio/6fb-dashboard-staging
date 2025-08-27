@@ -7,11 +7,10 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function createCommissionTables() {
-  console.log('🚀 Creating Commission Automation Tables...')
-  
+
   try {
     // 1. Create commission_transactions table
-    console.log('📝 Creating commission_transactions table...')
+    
     await supabase.rpc('exec_sql', {
       query: `
         CREATE TABLE IF NOT EXISTS commission_transactions (
@@ -33,10 +32,9 @@ async function createCommissionTables() {
         );
       `
     })
-    console.log('✅ commission_transactions table created')
 
     // 2. Create barber_commission_balances table
-    console.log('📝 Creating barber_commission_balances table...')
+    
     await supabase.rpc('exec_sql', {
       query: `
         CREATE TABLE IF NOT EXISTS barber_commission_balances (
@@ -53,11 +51,9 @@ async function createCommissionTables() {
         );
       `
     })
-    console.log('✅ barber_commission_balances table created')
 
     // 3. Create indexes
-    console.log('📝 Creating indexes...')
-    
+
     const indexes = [
       'CREATE INDEX IF NOT EXISTS idx_commission_transactions_payment_intent ON commission_transactions(payment_intent_id)',
       'CREATE INDEX IF NOT EXISTS idx_commission_transactions_barber ON commission_transactions(barber_id)',
@@ -71,21 +67,18 @@ async function createCommissionTables() {
     for (const indexSQL of indexes) {
       await supabase.rpc('exec_sql', { query: indexSQL })
     }
-    console.log('✅ Indexes created')
 
     // 4. Enable RLS
-    console.log('📝 Enabling Row Level Security...')
+    
     await supabase.rpc('exec_sql', {
       query: 'ALTER TABLE commission_transactions ENABLE ROW LEVEL SECURITY'
     })
     await supabase.rpc('exec_sql', {
       query: 'ALTER TABLE barber_commission_balances ENABLE ROW LEVEL SECURITY'
     })
-    console.log('✅ RLS enabled')
 
     // 5. Create RLS policies
-    console.log('📝 Creating RLS policies...')
-    
+
     // Commission transactions policies
     await supabase.rpc('exec_sql', {
       query: `
@@ -140,10 +133,8 @@ async function createCommissionTables() {
       `
     })
 
-    console.log('✅ RLS policies created')
-
     // 6. Create updated_at trigger
-    console.log('📝 Creating updated_at trigger...')
+    
     await supabase.rpc('exec_sql', {
       query: `
         CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -163,11 +154,9 @@ async function createCommissionTables() {
           FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
       `
     })
-    console.log('✅ Triggers created')
 
     // 7. Verify tables exist and are accessible
-    console.log('\n🔍 Verifying table accessibility...')
-    
+
     const { data: commissionTest } = await supabase
       .from('commission_transactions')
       .select('*')
@@ -182,13 +171,6 @@ async function createCommissionTables() {
       .from('payout_transactions')
       .select('*')
       .limit(0)
-
-    console.log('✅ commission_transactions: accessible')
-    console.log('✅ barber_commission_balances: accessible') 
-    console.log('✅ payout_transactions: accessible')
-
-    console.log('\n🎉 COMMISSION AUTOMATION TABLES DEPLOYED SUCCESSFULLY!')
-    console.log('📊 Your financial system is now ready for automated commission processing!')
 
   } catch (error) {
     console.error('❌ Migration failed:', error.message)

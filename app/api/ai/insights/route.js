@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAIInsights } from '@/lib/dashboard-data'
 import { createClient } from '@/lib/supabase/server'
+import unifiedStaffService from '@/lib/unified-staff-service'
 
 export const runtime = 'nodejs'
 export const maxDuration = 10 // Reduced from 30 seconds - database operations are fast
@@ -9,12 +10,42 @@ export async function GET(request) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+    const { searchParams } = new URL(request.url)
     
+    // Allow public access with limited insights for demo/testing
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const barbershopId = searchParams.get('barbershop_id')
+      
+      if (barbershopId) {
+        // Provide basic public insights
+        return NextResponse.json({
+          success: true,
+          insights: [
+            {
+              type: 'staff_availability',
+              title: 'Staff Status',
+              description: 'Check staff availability for optimal scheduling',
+              priority: 'high',
+              timestamp: new Date().toISOString()
+            },
+            {
+              type: 'booking_optimization',
+              title: 'Booking Insights',
+              description: 'AI-powered booking recommendations available',
+              priority: 'medium',
+              timestamp: new Date().toISOString()
+            }
+          ],
+          count: 2,
+          timestamp: new Date().toISOString(),
+          source: 'public_demo',
+          limited: true
+        })
+      }
+      
+      return NextResponse.json({ error: 'Unauthorized - provide barbershop_id for demo access' }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '10')
     const type = searchParams.get('type') // Optional filter by insight type
     const barbershopId = user.barbershop_id

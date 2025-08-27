@@ -179,10 +179,10 @@ class MockDataFixer {
         this.fixedCount++;
         
         const relativePath = path.relative(process.cwd(), filePath);
-        console.log(colors.green(`✅ Fixed: ${relativePath}`));
+        );
         
         result.replacements.forEach(r => {
-          console.log(colors.gray(`   - ${r.description} (${r.count}x)`));
+          `));
         });
         
         return {
@@ -207,7 +207,7 @@ class MockDataFixer {
    * Fix all files matching patterns
    */
   async fixAllFiles() {
-    console.log(colors.blue('🔧 Starting automated mock data fixes...\n'));
+    );
     
     const patterns = [
       '**/*.js',
@@ -224,7 +224,7 @@ class MockDataFixer {
       files.push(...matches);
     }
     
-    console.log(colors.gray(`Found ${files.length} files to check\n`));
+    );
     
     const results = [];
     for (const file of files) {
@@ -237,8 +237,7 @@ class MockDataFixer {
         process.stdout.write(colors.gray('.'));
       }
     }
-    
-    console.log('\n');
+
     return results;
   }
   
@@ -246,34 +245,30 @@ class MockDataFixer {
    * Generate report
    */
   generateReport(results) {
-    console.log(colors.blue('\n📊 Automated Fix Report:\n'));
+    );
     
-    console.log(colors.green(`✅ Fixed: ${this.fixedCount} files`));
-    console.log(colors.yellow(`⚠️  Skipped: ${this.skippedCount} files`));
-    console.log(colors.red(`❌ Failed: ${this.failedCount} files`));
+    );
+    );
+    );
     
     if (this.fixedCount > 0) {
-      console.log(colors.blue('\n📝 Files Fixed:\n'));
+      );
       
       const successfulFixes = results.filter(r => r.success);
       successfulFixes.slice(0, 10).forEach(fix => {
-        console.log(colors.cyan(`  ${fix.filePath}`));
+        );
         fix.replacements.forEach(r => {
-          console.log(colors.gray(`    - ${r.description}`));
+          );
         });
       });
       
       if (successfulFixes.length > 10) {
-        console.log(colors.gray(`\n  ... and ${successfulFixes.length - 10} more files`));
+        );
       }
     }
     
-    console.log(colors.yellow('\n⚠️  Important Notes:\n'));
-    console.log('1. Backup files have been created for all modified files');
-    console.log('2. Review changes and test thoroughly');
-    console.log('3. Some replacements may need manual adjustment');
-    console.log('4. Add database helper functions where referenced');
-    console.log('5. Run tests to ensure functionality is preserved');
+    );
+
   }
   
   /**
@@ -407,8 +402,8 @@ module.exports = {
     const helperPath = path.join(process.cwd(), 'lib', 'database-helpers.js');
     await fs.writeFile(helperPath, helperContent);
     
-    console.log(colors.green(`\n✅ Created helper functions at: ${helperPath}`));
-    console.log(colors.gray('   Import these functions where needed in your fixed files'));
+    );
+    );
   }
 }
 
@@ -433,15 +428,11 @@ async function main() {
       results: results.filter(r => r && r.success)
     }, null, 2));
     
-    console.log(colors.gray(`\n📄 Detailed report saved to: ${reportPath}`));
+    );
     
     if (fixer.fixedCount > 0) {
-      console.log(colors.yellow('\n⚠️  Next Steps:'));
-      console.log('1. Review the changes in modified files');
-      console.log('2. Import database helper functions where needed');
-      console.log('3. Run your test suite to verify functionality');
-      console.log('4. Commit the changes if tests pass');
-      console.log('5. Delete backup files after verification');
+      );
+
     }
     
   } catch (error) {

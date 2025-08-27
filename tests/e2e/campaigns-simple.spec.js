@@ -25,9 +25,9 @@ test.describe('Campaign Management - Simple Tests', () => {
     
     if (pageLoaded) {
       await expect(page.locator('h1, h2').filter({ hasText: 'Campaign Management' })).toBeVisible();
-      console.log('✅ Campaigns page loaded successfully');
+      
     } else {
-      console.log('⚠️ Page is loading, checking for test user...');
+      
       const userText = await page.textContent('body');
       expect(userText).toContain('Test Shop Owner');
     }
@@ -45,7 +45,7 @@ test.describe('Campaign Management - Simple Tests', () => {
     
     const pageContent = await page.textContent('body');
     expect(pageContent).toContain('Test Shop Owner');
-    console.log('✅ Test user detected');
+    
   });
 
   test('should have campaign action buttons', async ({ page }) => {
@@ -66,7 +66,7 @@ test.describe('Campaign Management - Simple Tests', () => {
     const hasBillingButton = buttons.some(text => text.includes('Billing'));
     
     expect(hasEmailButton || hasSMSButton || hasBillingButton).toBeTruthy();
-    console.log('✅ Campaign action buttons found');
+    
   });
 
   test('should open email campaign modal', async ({ page }) => {
@@ -86,9 +86,9 @@ test.describe('Campaign Management - Simple Tests', () => {
       const modalText = await page.textContent('body');
       const hasModal = modalText.includes('Create') || modalText.includes('Campaign') || modalText.includes('Subject');
       expect(hasModal).toBeTruthy();
-      console.log('✅ Email campaign modal opened');
+      
     } else {
-      console.log('⚠️ Email button not found, page may still be loading');
+      
     }
   });
 
@@ -109,9 +109,9 @@ test.describe('Campaign Management - Simple Tests', () => {
       const pageText = await page.textContent('body');
       const hasBillingContent = pageText.includes('Payment') || pageText.includes('4242') || pageText.includes('Account');
       expect(hasBillingContent).toBeTruthy();
-      console.log('✅ Billing modal displayed');
+      
     } else {
-      console.log('⚠️ Billing button not found');
+      
     }
   });
 });
@@ -125,7 +125,7 @@ test.describe('Mock Services Verification', () => {
       const url = request.url();
       if (url.includes('/api/marketing')) {
         apiCalls.push(url);
-        console.log('📡 API Call:', url.substring(url.indexOf('/api')));
+        ));
       }
     });
     
@@ -142,11 +142,11 @@ test.describe('Mock Services Verification', () => {
     );
     
     if (hasTestUUID) {
-      console.log('✅ API calls include test user UUID');
+      
     } else if (apiCalls.length > 0) {
-      console.log('⚠️ API calls made but no test UUID found');
+      
     } else {
-      console.log('⚠️ No API calls intercepted');
+      
     }
     
     expect(true).toBeTruthy();
@@ -199,9 +199,9 @@ test.describe('Mock Services Verification', () => {
     expect(criticalErrors.length).toBe(0);
     
     if (criticalErrors.length === 0) {
-      console.log('✅ No critical errors during campaign creation');
+      
     } else {
-      console.log('❌ Critical errors found:', criticalErrors);
+      
     }
   });
 });
@@ -220,8 +220,7 @@ test.describe('Development Mode Features', () => {
     const currentURL = page.url();
     expect(currentURL).not.toContain('/login');
     expect(currentURL).not.toContain('/register');
-    
-    console.log('✅ No login required in dev mode');
+
   });
 
   test('should load mock billing data', async ({ page }) => {
@@ -244,7 +243,7 @@ test.describe('Development Mode Features', () => {
     await page.waitForTimeout(3000);
     
     expect(billingDataLoaded).toBeTruthy();
-    console.log('✅ Mock billing data loaded');
+    
   });
 });
 
@@ -287,14 +286,7 @@ test.describe('System Health Check', () => {
     
     const buttons = await page.$$('button');
     results.buttonsPresent = buttons.length > 3;
-    
-    console.log('\n📊 System Health Check Results:');
-    console.log(`  Page Loads: ${results.pageLoads ? '✅' : '❌'}`);
-    console.log(`  Test User: ${results.testUserPresent ? '✅' : '❌'}`);
-    console.log(`  UI Buttons: ${results.buttonsPresent ? '✅' : '❌'}`);
-    console.log(`  API Calls: ${results.apiCallsWork ? '✅' : '❌'}`);
-    console.log(`  No Errors: ${results.noErrors ? '✅' : '⚠️'}`);
-    
+
     const passCount = Object.values(results).filter(v => v).length;
     expect(passCount).toBeGreaterThanOrEqual(3);
   });

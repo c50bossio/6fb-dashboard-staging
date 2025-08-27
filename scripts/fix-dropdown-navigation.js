@@ -28,8 +28,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function diagnoseAndFix() {
-  console.log('\n🔍 Diagnosing Dropdown Navigation Issues...\n')
-  
+
   try {
     // Step 1: Check for authenticated user
     const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers()
@@ -37,9 +36,7 @@ async function diagnoseAndFix() {
       console.error('❌ Error fetching users:', usersError.message)
       return
     }
-    
-    console.log(`✅ Found ${users.length} registered users`)
-    
+
     // Step 2: Check barbershops table
     const { data: barbershops, error: barbershopsError } = await supabase
       .from('barbershops')
@@ -49,13 +46,10 @@ async function diagnoseAndFix() {
       console.error('❌ Error fetching barbershops:', barbershopsError.message)
       return
     }
-    
-    console.log(`📍 Found ${barbershops?.length || 0} barbershops`)
-    
+
     // Step 3: If no barbershops exist, create a demo one
     if (!barbershops || barbershops.length === 0) {
-      console.log('\n⚠️  No barbershops found! Creating demo barbershop...\n')
-      
+
       const { data: newBarbershop, error: createError } = await supabase
         .from('barbershops')
         .insert([
@@ -96,9 +90,7 @@ async function diagnoseAndFix() {
         console.error('❌ Error creating barbershop:', createError.message)
         return
       }
-      
-      console.log('✅ Created demo barbershop:', newBarbershop.name)
-      
+
       // Update the user's profile to be a SHOP_OWNER with this barbershop
       if (users[0]?.id) {
         const { error: profileError } = await supabase
@@ -113,14 +105,13 @@ async function diagnoseAndFix() {
         if (profileError) {
           console.error('⚠️  Warning: Could not update user profile:', profileError.message)
         } else {
-          console.log('✅ Updated user role to SHOP_OWNER')
+          
         }
       }
     }
     
     // Step 4: Check user profiles and their associations
-    console.log('\n📊 Checking User Profiles and Associations:\n')
-    
+
     for (const user of users.slice(0, 5)) { // Check first 5 users
       const { data: profile } = await supabase
         .from('profiles')
@@ -129,10 +120,7 @@ async function diagnoseAndFix() {
         .single()
       
       if (profile) {
-        console.log(`👤 ${profile.full_name || profile.email || user.email}`)
-        console.log(`   Role: ${profile.role || 'Not set'}`)
-        console.log(`   Shop ID: ${profile.shop_id || profile.barbershop_id || 'None'}`)
-        
+
         // Check staff associations
         const { data: staffData } = await supabase
           .from('barbershop_staff')
@@ -141,13 +129,12 @@ async function diagnoseAndFix() {
           .eq('is_active', true)
         
         if (staffData && staffData.length > 0) {
-          console.log(`   Staff associations: ${staffData.length} active`)
+          
         }
         
         // Fix missing associations for SHOP_OWNERs
         if (profile.role === 'SHOP_OWNER' && !profile.shop_id && !profile.barbershop_id && barbershops?.[0]) {
-          console.log(`   ⚠️  Fixing missing barbershop association...`)
-          
+
           await supabase
             .from('profiles')
             .update({ 
@@ -155,27 +142,22 @@ async function diagnoseAndFix() {
               barbershop_id: barbershops[0].id
             })
             .eq('id', user.id)
-          
-          console.log(`   ✅ Associated with ${barbershops[0].name}`)
+
         }
       }
-      console.log('')
+      
     }
     
     // Step 5: Check for multi-location setup
-    console.log('🏢 Multi-Location Setup Check:\n')
-    
+
     if (barbershops && barbershops.length > 1) {
-      console.log(`✅ Multi-location enabled (${barbershops.length} locations)`)
-      console.log('   Dropdown should show location selector')
-    } else {
-      console.log('📍 Single location mode')
-      console.log('   Dropdown may be simplified or hidden')
+      `)
       
+    } else {
+
       // Create additional demo locations for testing multi-location
       if (barbershops?.length === 1) {
-        console.log('\n💡 Creating additional demo locations for multi-location testing...\n')
-        
+
         const additionalLocations = [
           {
             name: '6FB Beverly Hills',
@@ -210,24 +192,12 @@ async function diagnoseAndFix() {
             })
           
           if (!error) {
-            console.log(`✅ Created location: ${location.name}`)
+            
           }
         }
       }
     }
-    
-    console.log('\n✨ Diagnosis Complete!\n')
-    console.log('Next Steps:')
-    console.log('1. Restart your development server: npm run dev')
-    console.log('2. Navigate to http://localhost:9999/customize')
-    console.log('3. The dropdown should now show available locations')
-    console.log('4. If you have SHOP_OWNER role or higher, you can switch between locations')
-    console.log('\nDirect Links to Test:')
-    console.log('- Enterprise Dashboard: http://localhost:9999/customize')
-    console.log('- Shop Dashboard: http://localhost:9999/shop/dashboard')
-    console.log('- Staff Management: http://localhost:9999/shop/settings/staff')
-    console.log('- Payroll System: http://localhost:9999/shop/payroll')
-    
+
   } catch (error) {
     console.error('❌ Unexpected error:', error.message)
   }

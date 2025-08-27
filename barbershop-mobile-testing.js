@@ -49,10 +49,9 @@ class BarbershopMobileTester {
 
   // Test modal responsiveness across different viewports
   async testModalResponsiveness() {
-    console.log('🧪 Testing AppointmentCheckoutModal Responsiveness')
-    
+
     for (const [name, viewport] of Object.entries(BARBERSHOP_VIEWPORTS)) {
-      console.log(`  📱 Testing viewport: ${name} (${viewport.width}x${viewport.height})`)
+      `)
       
       // Set viewport
       await this.setViewport(viewport)
@@ -77,8 +76,7 @@ class BarbershopMobileTester {
 
   // Test touch interactions for barber selection
   async testTouchInteractions() {
-    console.log('👆 Testing Touch Interactions')
-    
+
     const touchTests = {
       barber_selection_cards: await this.testBarberSelectionTouch(),
       change_barber_button: await this.testChangeBarberButton(),
@@ -92,8 +90,7 @@ class BarbershopMobileTester {
 
   // Test auto-selection visual feedback system
   async testAutoSelectionFeedback() {
-    console.log('💡 Testing Auto-Selection Visual Feedback')
-    
+
     const feedbackTests = {
       auto_selection_notification: await this.testAutoSelectionNotification(),
       change_barber_visibility: await this.testChangeBarberVisibility(),
@@ -105,8 +102,7 @@ class BarbershopMobileTester {
 
   // Performance testing for mobile browsers
   async testMobilePerformance() {
-    console.log('⚡ Testing Mobile Performance')
-    
+
     // Simulate different network conditions
     const networkConditions = [
       { name: 'fast_3g', downloadThroughput: 1500000, uploadThroughput: 750000, latency: 150 },
@@ -122,8 +118,7 @@ class BarbershopMobileTester {
 
   // Test specific barbershop workflow scenarios
   async testBarbershopWorkflows() {
-    console.log('💼 Testing Barbershop Workflow Scenarios')
-    
+
     const workflows = [
       'walk_in_customer_quick_checkout',
       'appointment_customer_with_tip',
@@ -385,8 +380,7 @@ class BarbershopMobileTester {
   }
 
   async testWorkflow(workflowName) {
-    console.log(`  📋 Testing workflow: ${workflowName}`)
-    
+
     const workflows = {
       walk_in_customer_quick_checkout: async () => {
         // Simulate quick checkout for walk-in customer
@@ -441,36 +435,28 @@ class BarbershopMobileTester {
 
   // Generate comprehensive report
   generateReport() {
-    console.log('\n📊 BARBERSHOP MOBILE COMPATIBILITY REPORT')
-    console.log('==========================================')
-    
+
     // Viewport Results
-    console.log('\n📱 VIEWPORT COMPATIBILITY')
+    
     Object.entries(this.testResults.viewport_tests).forEach(([name, test]) => {
-      console.log(`  ${name}: ${test.modal.fits_viewport ? '✅' : '❌'} Fits viewport`)
-      console.log(`    Modal responsive: ${test.modal.is_responsive ? '✅' : '❌'}`)
-      console.log(`    Scroll available: ${test.scroll.is_scrollable ? '✅' : '❌'}`)
+
     })
     
     // Touch Results
-    console.log('\n👆 TOUCH INTERACTION COMPATIBILITY')
-    const touchResults = this.testResults.touch_tests
-    console.log(`  Barber selection cards: ${touchResults.barber_selection_cards?.all_meet_requirements ? '✅' : '❌'}`)
-    console.log(`  Change barber button: ${touchResults.change_barber_button?.meets_touch_target ? '✅' : '❌'}`)
-    console.log(`  Payment method radios: ${touchResults.payment_method_radio?.all_meet_requirements ? '✅' : '❌'}`)
-    console.log(`  Action buttons: ${touchResults.action_buttons?.all_meet_requirements ? '✅' : '❌'}`)
     
+    const touchResults = this.testResults.touch_tests
+
     // Performance Results
-    console.log('\n⚡ PERFORMANCE RESULTS')
+    
     Object.entries(this.testResults.performance_tests).forEach(([condition, metrics]) => {
-      console.log(`  ${condition}: ${metrics.load_time.toFixed(2)}ms load time`)
+      }ms load time`)
     })
     
     // Workflow Results
-    console.log('\n💼 WORKFLOW COMPATIBILITY')
+    
     if (this.testResults.usability_tests.workflows) {
       Object.entries(this.testResults.usability_tests.workflows).forEach(([workflow, result]) => {
-        console.log(`  ${workflow}: ${result.success ? '✅' : '❌'} (${result.estimated_time})`)
+        `)
       })
     }
     
@@ -479,10 +465,7 @@ class BarbershopMobileTester {
 
   // Run all tests
   async runAllTests() {
-    console.log('🚀 Starting Barbershop Mobile Compatibility Testing')
-    console.log('Testing AppointmentCheckoutModal for real barbershop environments')
-    console.log('=============================================================\n')
-    
+
     await this.testModalResponsiveness()
     await this.testTouchInteractions()
     await this.testAutoSelectionFeedback()
@@ -523,14 +506,7 @@ const CRITICAL_ISSUES = {
 }
 
 // Usage instructions
-console.log(`
-🧪 BARBERSHOP MOBILE TESTING FRAMEWORK
-
-To run tests:
-1. Open localhost:9999 in browser
-2. Navigate to shop/products page
-3. Open appointment checkout modal
-4. Run: const tester = new BarbershopMobileTester(); tester.runAllTests()
+ tester.runAllTests()
 
 Key Test Scenarios:
 - Portrait tablet (768x1024) - Most common barbershop setup

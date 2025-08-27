@@ -1,21 +1,18 @@
 const { chromium } = require('playwright');
 
 async function verifySettingsConsistency() {
-  console.log('🔍 Starting Settings Consistency Verification');
-  console.log('============================================');
-  
+
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext();
   const page = await context.newPage();
   
   try {
     // Step 1: Navigate to login
-    console.log('1. Navigating to login page...');
+    
     await page.goto('http://localhost:9999/login');
     
     // Step 2: Login (using test credentials)
-    console.log('2. Logging in...');
-    
+
     // Take screenshot of login page
     await page.screenshot({ 
       path: '/Users/bossio/Desktop/login-page-debug.png',
@@ -36,12 +33,11 @@ async function verifySettingsConsistency() {
     // Try to wait for dashboard with longer timeout
     try {
       await page.waitForURL('**/dashboard**', { timeout: 15000 });
-      console.log('✅ Successfully logged in and reached dashboard');
-    } catch (navError) {
-      console.log('⚠️ Dashboard navigation failed, checking current page...');
-      const currentUrl = page.url();
-      console.log('Current URL:', currentUrl);
       
+    } catch (navError) {
+      
+      const currentUrl = page.url();
+
       // Take final screenshot to debug
       await page.screenshot({ 
         path: '/Users/bossio/Desktop/navigation-failed-debug.png',
@@ -50,14 +46,14 @@ async function verifySettingsConsistency() {
       
       // If we're already on dashboard, continue
       if (currentUrl.includes('dashboard')) {
-        console.log('✅ Already on dashboard page, continuing...');
+        
       } else {
         throw navError;
       }
     }
     
     // Step 3: Navigate to general settings
-    console.log('3. Navigating to general settings...');
+    
     await page.click('a[href="/dashboard/settings"]');
     await page.waitForLoadState('networkidle');
     
@@ -77,13 +73,9 @@ async function verifySettingsConsistency() {
         email: emailInput?.value || 'NOT_FOUND'
       };
     });
-    
-    console.log('📊 General Settings Data:');
-    console.log('   Business Name:', generalSettingsData.name);
-    console.log('   Email:', generalSettingsData.email);
-    
+
     // Step 4: Navigate to shop settings
-    console.log('4. Navigating to shop settings...');
+    
     await page.goto('http://localhost:9999/shop/settings/general');
     await page.waitForLoadState('networkidle');
     
@@ -103,37 +95,18 @@ async function verifySettingsConsistency() {
         email: emailInput?.value || 'NOT_FOUND'
       };
     });
-    
-    console.log('📊 Shop Settings Data:');
-    console.log('   Business Name:', shopSettingsData.name);
-    console.log('   Email:', shopSettingsData.email);
-    
+
     // Step 5: Compare and verify consistency
-    console.log('\n🔍 CONSISTENCY VERIFICATION RESULTS:');
-    console.log('=====================================');
-    
+
     const nameMatch = generalSettingsData.name === shopSettingsData.name;
     const emailMatch = generalSettingsData.email === shopSettingsData.email;
-    
-    console.log('Business Name Consistency:', nameMatch ? '✅ PASS' : '❌ FAIL');
-    console.log('  General Settings:', generalSettingsData.name);
-    console.log('  Shop Settings:   ', shopSettingsData.name);
-    console.log('');
-    console.log('Email Consistency:', emailMatch ? '✅ PASS' : '❌ FAIL');
-    console.log('  General Settings:', generalSettingsData.email);
-    console.log('  Shop Settings:   ', shopSettingsData.email);
-    console.log('');
-    
+
     const overallPass = nameMatch && emailMatch;
-    console.log('🎯 OVERALL RESULT:', overallPass ? '✅ SETTINGS ARE CONSISTENT' : '❌ SETTINGS ARE INCONSISTENT');
-    
+
     if (!overallPass) {
-      console.log('\n⚠️  DATA CONSISTENCY ISSUE DETECTED:');
-      console.log('   The user challenge was correct - settings show different values!');
-      console.log('   This is exactly the "DemoBarberShop vs Tool45ChannelSide" problem mentioned.');
+
     } else {
-      console.log('\n🎉 SUCCESS: Settings deduplication is working correctly!');
-      console.log('   Both interfaces show identical data from the barbershops table.');
+
     }
     
     return overallPass;

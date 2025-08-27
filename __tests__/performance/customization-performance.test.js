@@ -656,7 +656,6 @@ describe('Performance Benchmarks', () => {
     benchmarks.modalInteraction = performance.now() - startTime
 
     // Log benchmarks for tracking
-    console.log('Performance Benchmarks:', benchmarks)
 
     // Assert reasonable performance
     expect(benchmarks.initialRender).toBeLessThan(200)

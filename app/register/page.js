@@ -75,8 +75,7 @@ function RegisterForm() {
     
     try {
       setLoading(true)
-      console.log('📧 Creating account for:', formData.email)
-      
+
       const { user } = await signUp({
         email: formData.email,
         password: formData.password,
@@ -88,11 +87,9 @@ function RegisterForm() {
           billing_period: billingPeriod
         }
       })
-      
-      console.log('✅ Account created:', user?.email)
-      
+
       const checkoutUrl = `/api/stripe/checkout?plan=${planId}&billing=${billingPeriod}`
-      console.log('🔄 Redirecting to checkout:', checkoutUrl)
+      
       window.location.href = checkoutUrl
       
     } catch (error) {

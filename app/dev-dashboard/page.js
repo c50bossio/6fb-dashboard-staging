@@ -10,8 +10,7 @@ export default function DevDashboard() {
   
   useEffect(() => {
     async function loadRealData() {
-      console.log('🔄 Loading real data from Supabase...')
-      
+
       const supabase = createClient()
       
       // Hardcode the dev user ID we know exists
@@ -75,13 +74,7 @@ export default function DevDashboard() {
       } else {
         console.warn('No barbershop_id available, skipping dashboard data load')
       }
-      
-      console.log('✅ Loaded real data:', {
-        profile: !!profile,
-        barbershop: !!barbershop,
-        shopName: barbershop?.name
-      })
-      
+
       setUserData(user)
       setLoading(false)
     }

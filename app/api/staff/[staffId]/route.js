@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
       .single()
 
     if (staffError) {
-      console.error('Error fetching staff member:', staffError)
+      // console.error('Error fetching staff member:', staffError)
       return NextResponse.json({ error: 'Staff member not found' }, { status: 404 })
     }
 
@@ -73,7 +73,7 @@ export async function GET(request, { params }) {
     })
 
   } catch (error) {
-    console.error('GET /api/staff/[staffId] error:', error)
+    // console.error('GET /api/staff/[staffId] error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -139,7 +139,7 @@ export async function PUT(request, { params }) {
       .single()
 
     if (updateError) {
-      console.error('Error updating staff:', updateError)
+      // console.error('Error updating staff:', updateError)
       return NextResponse.json({ error: 'Failed to update staff member' }, { status: 500 })
     }
 
@@ -169,17 +169,13 @@ export async function PUT(request, { params }) {
       if (body.phone !== undefined) profileUpdate.phone = body.phone
       if (body.email !== undefined) profileUpdate.email = body.email
 
-      console.log('🔍 [STAFF PROFILE PUT] Attempting profile update:', {
-        staffId: params.staffId,
-        userId: updatedStaff.user_id,
-        profileUpdate,
-        updateKeys: Object.keys(profileUpdate),
+      // ,
         hasUpdates: Object.keys(profileUpdate).length > 0
       })
 
       // Only perform update if we have fields to update
       if (Object.keys(profileUpdate).length === 0) {
-        console.log('⚠️ [STAFF PROFILE PUT] No profile fields to update, skipping')
+        // 
         return NextResponse.json({
           success: true,
           staff: updatedStaff,
@@ -191,7 +187,7 @@ export async function PUT(request, { params }) {
       // Shop owners are authorized to update their staff's profile information
       const serviceClient = createServiceClient()
       if (!serviceClient) {
-        console.error('🚨 [STAFF PROFILE PUT] Service client not available - check SUPABASE_SERVICE_ROLE_KEY')
+        // console.error('🚨 [STAFF PROFILE PUT] Service client not available - check SUPABASE_SERVICE_ROLE_KEY')
         return NextResponse.json({
           error: 'Service client not available for profile updates',
           details: {
@@ -209,18 +205,9 @@ export async function PUT(request, { params }) {
         .eq('id', updatedStaff.user_id)
         .single()
 
-      console.log('🔍 [STAFF PROFILE PUT] Profile existence check:', {
-        userId: updatedStaff.user_id,
-        profileExists: !!existingProfile,
-        existingProfile: existingProfile,
-        checkError: checkError
-      })
+      // 
 
-      console.log('🔍 [STAFF PROFILE PUT] About to execute database update:', {
-        userId: updatedStaff.user_id,
-        updates: profileUpdate,
-        serviceClientExists: !!serviceClient
-      })
+      // 
 
       const { data: profileData, error: profileError } = await serviceClient
         .from('users')
@@ -228,15 +215,10 @@ export async function PUT(request, { params }) {
         .eq('id', updatedStaff.user_id)
         .select()
 
-      console.log('🔍 [STAFF PROFILE PUT] Database update result:', {
-        success: !profileError,
-        error: profileError,
-        data: profileData,
-        affectedRows: profileData?.length || 0
-      })
+      // 
 
       if (profileError) {
-        console.error('🚨 [STAFF PROFILE PUT] Profile update failed:', {
+        // console.error('🚨 [STAFF PROFILE PUT] Profile update failed:', {
           error: profileError,
           staffId: params.staffId,
           userId: updatedStaff.user_id,
@@ -254,10 +236,7 @@ export async function PUT(request, { params }) {
         }, { status: 500 })
       }
 
-      console.log('✅ [STAFF PROFILE PUT] Profile update successful:', {
-        staffId: params.staffId,
-        userId: updatedStaff.user_id,
-        updatedFields: Object.keys(profileUpdate),
+      // ,
         profileData
       })
       
@@ -287,7 +266,7 @@ export async function PUT(request, { params }) {
     })
 
   } catch (error) {
-    console.error('PUT /api/staff/[staffId] error:', error)
+    // console.error('PUT /api/staff/[staffId] error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -297,22 +276,22 @@ export async function PUT(request, { params }) {
 
 // PATCH - Partial update of staff member
 export async function PATCH(request, { params }) {
-  console.log('🎯 [API ROUTE] PATCH /api/staff/[staffId] - Starting staff update')
-  console.log('🎯 [API ROUTE] Request params:', params)
-  console.log('🎯 [API ROUTE] Request method:', request.method)
+  // 
+  // 
+  // 
   
   try {
     const supabase = await createClient()
     let userId = params.staffId  // STANDARDIZED: staffId is actually the user_id (let instead of const for reassignment)
     const body = await request.json()
     
-    console.log('🎯 [API ROUTE] Request body received:', body)
-    console.log('🎯 [API ROUTE] User ID:', userId)
+    // 
+    // 
 
     // Verify authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      console.error('❌ [API ROUTE] Authentication failed:', authError)
+      // console.error('❌ [API ROUTE] Authentication failed:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -326,7 +305,7 @@ export async function PATCH(request, { params }) {
 
     // If not found, try to find by barbershop_staff.id (backward compatibility)
     if (!staffCheck) {
-      console.log('⚠️ [API ROUTE] Not found by user_id, trying by barbershop_staff.id for backward compatibility')
+      // 
       const result = await supabase
         .from('barbershop_staff')
         .select('id, barbershop_id, metadata, user_id')
@@ -336,20 +315,16 @@ export async function PATCH(request, { params }) {
       if (result.data) {
         staffCheck = result.data
         userId = staffCheck.user_id  // Update userId to the actual user_id
-        console.log('✅ [API ROUTE] Found by barbershop_staff.id, using user_id:', userId)
+        // 
       }
     }
 
     if (!staffCheck) {
-      console.error('❌ [API ROUTE] Staff not found for ID:', params.staffId)
+      // console.error('❌ [API ROUTE] Staff not found for ID:', params.staffId)
       return NextResponse.json({ error: 'Staff member not found' }, { status: 404 })
     }
 
-    console.log('✅ [API ROUTE] Found staff record:', {
-      staffId: staffCheck.id,
-      userId: staffCheck.user_id,
-      barbershopId: staffCheck.barbershop_id
-    })
+    // 
 
     // Get barbershop details separately for authorization
     const { data: barbershop, error: barbershopError } = await supabase
@@ -359,13 +334,13 @@ export async function PATCH(request, { params }) {
       .single()
 
     if (barbershopError || !barbershop) {
-      console.error('❌ [API ROUTE] Barbershop not found:', staffCheck.barbershop_id, barbershopError)
+      // console.error('❌ [API ROUTE] Barbershop not found:', staffCheck.barbershop_id, barbershopError)
       return NextResponse.json({ error: 'Barbershop not found' }, { status: 404 })
     }
 
     // AUTHORIZATION: Verify user owns the barbershop
     if (barbershop.owner_id !== user.id) {
-      console.warn('⚠️ [API ROUTE] Unauthorized access attempt:', {
+      // console.warn('⚠️ [API ROUTE] Unauthorized access attempt:', {
         requestingUser: user.id,
         barbershopOwner: barbershop.owner_id,
         targetStaff: userId
@@ -373,7 +348,7 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized to update this staff member' }, { status: 403 })
     }
 
-    console.log('✅ [API ROUTE] Authorization passed - user owns barbershop')
+    // 
 
     // Build update object with only provided fields
     const updateData = {}
@@ -401,7 +376,7 @@ export async function PATCH(request, { params }) {
       }
     }
 
-    console.log('📝 [API ROUTE] Updating barbershop_staff with:', updateData)
+    // 
 
     // Only update barbershop_staff if there are fields to update
     let updatedStaff = staffCheck  // Start with existing data
@@ -416,14 +391,14 @@ export async function PATCH(request, { params }) {
         .single()
 
       if (updateError) {
-        console.error('❌ [API ROUTE] Error updating staff:', updateError)
+        // console.error('❌ [API ROUTE] Error updating staff:', updateError)
         return NextResponse.json({ error: 'Failed to update staff member' }, { status: 500 })
       }
       
       updatedStaff = staffUpdateResult
-      console.log('✅ [API ROUTE] Staff record updated successfully')
+      // 
     } else {
-      console.log('ℹ️ [API ROUTE] No barbershop_staff fields to update, skipping staff table update')
+      // 
     }
 
     // Update profile fields if provided - with comprehensive error handling
@@ -449,10 +424,7 @@ export async function PATCH(request, { params }) {
     if (body.phone !== undefined) profileUpdates.phone = body.phone
     if (body.email !== undefined) profileUpdates.email = body.email
 
-    console.log('🔍 [STAFF PROFILE UPDATE] Profile updates to apply:', {
-      staffId: params.staffId,
-      userId: updatedStaff.user_id,
-      hasUpdates: Object.keys(profileUpdates).length > 0,
+    // .length > 0,
       updates: profileUpdates,
       originalRequestBody: {
         first_name: body.first_name,
@@ -465,26 +437,17 @@ export async function PATCH(request, { params }) {
     })
 
     if (Object.keys(profileUpdates).length > 0) {
-      console.log('🔍 [STAFF PROFILE UPDATE] Attempting profile update:', {
-        staffId: params.staffId,
-        userId: updatedStaff.user_id,
-        profileUpdates,
-        updateKeys: Object.keys(profileUpdates)
+      // 
       })
 
       // Use service client for profile updates to bypass RLS restrictions
       // Shop owners are authorized to update their staff's profile information
       const serviceClient = createServiceClient()
       
-      console.log('🔍 [SERVICE CLIENT] Environment check:', {
-        supabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-        serviceKeyExists: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-        serviceKeyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
-        serviceClientCreated: !!serviceClient
-      })
+      // 
       
       if (!serviceClient) {
-        console.error('🚨 [STAFF PROFILE UPDATE] Service client not available - check SUPABASE_SERVICE_ROLE_KEY')
+        // console.error('🚨 [STAFF PROFILE UPDATE] Service client not available - check SUPABASE_SERVICE_ROLE_KEY')
         return NextResponse.json({
           error: 'Service client not available for profile updates',
           details: {
@@ -506,18 +469,9 @@ export async function PATCH(request, { params }) {
         .eq('id', userId)  // Use userId directly
         .single()
 
-      console.log('🔍 [STAFF PROFILE UPDATE] Profile existence check:', {
-        userId: userId,
-        profileExists: !!existingProfile,
-        existingProfile: existingProfile,
-        checkError: checkError
-      })
+      // 
 
-      console.log('🔍 [STAFF PROFILE UPDATE] About to execute database update:', {
-        userId: userId,  // Use the userId from params directly
-        updates: profileUpdates,
-        serviceClientExists: !!serviceClient
-      })
+      // 
 
       const { data: profileData, error: profileError } = await serviceClient
         .from('users')
@@ -525,15 +479,10 @@ export async function PATCH(request, { params }) {
         .eq('id', userId)  // Use userId directly, not updatedStaff.user_id
         .select()
 
-      console.log('🔍 [STAFF PROFILE UPDATE] Database update result:', {
-        success: !profileError,
-        error: profileError,
-        data: profileData,
-        affectedRows: profileData?.length || 0
-      })
+      // 
 
       if (profileError) {
-        console.error('🚨 [STAFF PROFILE UPDATE] Profile update failed:', {
+        // console.error('🚨 [STAFF PROFILE UPDATE] Profile update failed:', {
           error: profileError,
           errorDetails: {
             message: profileError.message,
@@ -542,7 +491,7 @@ export async function PATCH(request, { params }) {
             hint: profileError.hint
           },
           staffId: params.staffId,
-          userId: updatedStaff.user_id,
+          userId: userId,  // Use the resolved userId
           attemptedUpdates: profileUpdates,
           existingProfile: existingProfile
         })
@@ -562,10 +511,7 @@ export async function PATCH(request, { params }) {
         }, { status: 500 })
       }
 
-      console.log('✅ [STAFF PROFILE UPDATE] Profile update successful:', {
-        staffId: params.staffId,
-        userId: updatedStaff.user_id,
-        updatedFields: Object.keys(profileUpdates),
+      // ,
         profileData
       })
       
@@ -614,7 +560,7 @@ export async function PATCH(request, { params }) {
     })
 
   } catch (error) {
-    console.error('PATCH /api/staff/[staffId] error:', error)
+    // console.error('PATCH /api/staff/[staffId] error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -668,7 +614,7 @@ export async function DELETE(request, { params }) {
         .eq('id', staffId)
 
       if (deleteError) {
-        console.error('Error deleting staff:', deleteError)
+        // console.error('Error deleting staff:', deleteError)
         return NextResponse.json({ error: 'Failed to delete staff member' }, { status: 500 })
       }
 
@@ -692,7 +638,7 @@ export async function DELETE(request, { params }) {
         .single()
 
       if (updateError) {
-        console.error('Error deactivating staff:', updateError)
+        // console.error('Error deactivating staff:', updateError)
         return NextResponse.json({ error: 'Failed to deactivate staff member' }, { status: 500 })
       }
 
@@ -704,7 +650,7 @@ export async function DELETE(request, { params }) {
     }
 
   } catch (error) {
-    console.error('DELETE /api/staff/[staffId] error:', error)
+    // console.error('DELETE /api/staff/[staffId] error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -19,8 +19,7 @@ const supabase = createClient(
 );
 
 async function setupTestUsers() {
-  console.log('🔐 Setting up test authentication users...\n');
-  
+
   const testUsers = [
     {
       email: 'demo@bookedbarber.com',
@@ -51,8 +50,6 @@ async function setupTestUsers() {
     }
   ];
 
-  console.log('📊 Creating test users in Supabase Auth...\n');
-  
   for (const user of testUsers) {
     try {
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -64,8 +61,7 @@ async function setupTestUsers() {
 
       if (authError) {
         if (authError.message.includes('already exists')) {
-          console.log(`⚠️  User ${user.email} already exists`);
-          
+
           const { data: updateData, error: updateError } = await supabase.auth.admin.updateUserById(
             authData?.id || '', 
             { 
@@ -75,16 +71,16 @@ async function setupTestUsers() {
           );
           
           if (updateError && !updateError.message.includes('not found')) {
-            console.log(`   ❌ Failed to update password: ${updateError.message}`);
+            
           } else {
-            console.log(`   ✅ Password updated successfully`);
+            
           }
         } else {
-          console.log(`❌ Failed to create ${user.email}: ${authError.message}`);
+          
           continue;
         }
       } else {
-        console.log(`✅ Created auth user: ${user.email}`);
+        
       }
 
       const { data: profileData, error: profileError } = await supabase
@@ -109,40 +105,25 @@ async function setupTestUsers() {
           .insert(profileToInsert);
 
         if (insertError) {
-          console.log(`   ⚠️  Failed to create profile: ${insertError.message}`);
+          
         } else {
-          console.log(`   ✅ Created profile record`);
+          
         }
       } else if (!profileError) {
-        console.log(`   ℹ️  Profile already exists`);
+        
       }
 
-      console.log('');
     } catch (error) {
       console.error(`❌ Error processing ${user.email}:`, error.message);
     }
   }
 
-  console.log('\n📝 Test Credentials for Authentication:\n');
-  console.log('┌─────────────────────────────────────────────────────────┐');
-  console.log('│ Email                    │ Password      │ Role         │');
-  console.log('├─────────────────────────────────────────────────────────┤');
-  console.log('│ demo@bookedbarber.com    │ Demo123!@#    │ User         │');
-  console.log('│ barber@bookedbarber.com  │ Barber123!@# │ Barber       │');
-  console.log('│ owner@bookedbarber.com   │ Owner123!@#   │ Shop Owner   │');
-  console.log('└─────────────────────────────────────────────────────────┘');
-  
-  console.log('\n🌐 Test URLs:');
-  console.log('   Login: https://bookedbarber.com/login');
-  console.log('   Register: https://bookedbarber.com/register');
-  console.log('   Dashboard: https://bookedbarber.com/dashboard (after login)');
-  
-  console.log('\n✅ Test users setup complete!');
+  ');
+
 }
 
 async function checkAuthSettings() {
-  console.log('\n🔍 Checking Supabase Auth Configuration...\n');
-  
+
   try {
     const { data: { users }, error } = await supabase.auth.admin.listUsers({
       page: 1,
@@ -150,14 +131,10 @@ async function checkAuthSettings() {
     });
     
     if (error) {
-      console.log('❌ Cannot access Supabase Admin API');
-      console.log('   Make sure SUPABASE_SERVICE_ROLE_KEY is correctly configured');
+
       return false;
     }
-    
-    console.log('✅ Supabase Admin API connection successful');
-    console.log(`   Total users in Auth: ${users?.length || 0}`);
-    
+
     return true;
   } catch (error) {
     console.error('❌ Failed to check auth settings:', error.message);
@@ -166,14 +143,11 @@ async function checkAuthSettings() {
 }
 
 async function main() {
-  console.log('🚀 Supabase Authentication Setup\n');
-  console.log('Project:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log('');
-  
+
   const isConnected = await checkAuthSettings();
   
   if (!isConnected) {
-    console.log('\n⚠️  Please check your Supabase configuration and try again.');
+    
     process.exit(1);
   }
   

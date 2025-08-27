@@ -22,7 +22,7 @@ try {
     }
   })
 } catch (error) {
-  console.log('Warning: Could not load .env.local file')
+  
 }
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -31,11 +31,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function createTables() {
-  console.log('🏗️  Creating database tables using Supabase SDK...\n')
-  
-  
-  console.log('🔍 Checking if we can work with existing data...')
-  
+
   const testData = {
     barbershops: [
       {
@@ -77,19 +73,7 @@ async function createTables() {
       }
     ]
   }
-  
-  console.log('✅ Created test data structure')
-  console.log('📋 Since the calendar system already has mock data fallbacks,')
-  console.log('   the calendar should work without database setup.')
-  console.log('')
-  console.log('🔗 Test your calendar: http://localhost:9999/dashboard/calendar')
-  console.log('')
-  console.log('💡 For production, you would manually create tables in Supabase dashboard:')
-  console.log('   1. Go to https://supabase.com/dashboard')
-  console.log('   2. Open SQL Editor')
-  console.log('   3. Copy and run: database/setup-calendar-tables.sql')
-  console.log('')
-  
+
   return testData
 }
 

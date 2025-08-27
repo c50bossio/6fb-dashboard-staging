@@ -51,9 +51,7 @@ function checkWCAG(ratio, isLargeText = false) {
 }
 
 function analyzeColorCombinations() {
-  console.log('🎨 COLOR CONTRAST ANALYSIS REPORT');
-  console.log('==================================\n');
-  
+
   const criticalCombinations = [
     { fg: 'gunmetal', bg: 'light-sand', usage: 'Light mode primary text' },
     { fg: 'warm-gray', bg: 'charcoal-olive', usage: 'Dark mode primary text' },
@@ -70,9 +68,7 @@ function analyzeColorCombinations() {
     { fg: 'amber', bg: 'light-sand', usage: 'Warning text on light' },
     { fg: 'soft-red', bg: 'light-sand', usage: 'Error text on light' },
   ];
-  
-  console.log('📊 CRITICAL COLOR COMBINATIONS:\n');
-  
+
   const issues = [];
   const warnings = [];
   const passes = [];
@@ -85,13 +81,9 @@ function analyzeColorCombinations() {
     const wcagLarge = checkWCAG(ratio, true);
     
     const status = wcagNormal.pass ? '✅' : (wcagLarge.pass ? '⚠️' : '❌');
-    
-    console.log(`${status} ${combo.usage}`);
-    console.log(`   ${combo.fg} on ${combo.bg}`);
-    console.log(`   Contrast: ${ratio.toFixed(2)}:1`);
-    console.log(`   Normal text: ${wcagNormal.level} | Large text: ${wcagLarge.level}`);
-    console.log('');
-    
+
+    }:1`);
+
     if (!wcagNormal.pass && !wcagLarge.pass) {
       issues.push({ ...combo, ratio, wcagNormal, wcagLarge });
     } else if (!wcagNormal.pass && wcagLarge.pass) {
@@ -100,32 +92,24 @@ function analyzeColorCombinations() {
       passes.push({ ...combo, ratio, wcagNormal, wcagLarge });
     }
   });
-  
-  console.log('\n📈 SUMMARY:');
-  console.log('===========');
-  console.log(`✅ Passing combinations: ${passes.length}`);
-  console.log(`⚠️  Large text only: ${warnings.length}`);
-  console.log(`❌ Failing combinations: ${issues.length}`);
-  
+
   if (issues.length > 0) {
-    console.log('\n🚨 CRITICAL ISSUES TO FIX:');
-    console.log('==========================');
+
     issues.forEach(issue => {
-      console.log(`\n❌ ${issue.usage}`);
-      console.log(`   Current ratio: ${issue.ratio.toFixed(2)}:1`);
-      console.log(`   Required: 4.5:1 (normal) / 3:1 (large)`);
-      console.log(`   Solution: Use darker background or lighter text`);
+      
+      }:1`);
+       / 3:1 (large)`);
+      
     });
   }
   
   if (warnings.length > 0) {
-    console.log('\n⚠️  WARNINGS (Large text only):');
-    console.log('================================');
+    :');
+    
     warnings.forEach(warning => {
-      console.log(`\n⚠️  ${warning.usage}`);
-      console.log(`   Current ratio: ${warning.ratio.toFixed(2)}:1`);
-      console.log(`   Only suitable for text ≥18pt or ≥14pt bold`);
-      console.log(`   Consider improving for better accessibility`);
+      
+      }:1`);
+
     });
   }
   
@@ -133,9 +117,7 @@ function analyzeColorCombinations() {
 }
 
 async function findProblematicUsage() {
-  console.log('\n\n🔍 SCANNING FOR PROBLEMATIC COLOR USAGE:');
-  console.log('=========================================\n');
-  
+
   const problematicPatterns = [
     { pattern: 'bg-gold-[45]00.*text-white', issue: 'White text on gold - poor contrast' },
     { pattern: 'bg-gold.*text-white', issue: 'White text on gold - poor contrast' },
@@ -181,10 +163,9 @@ async function findProblematicUsage() {
       
       if (fileIssues.length > 0) {
         const relativePath = path.relative(path.join(__dirname, '..'), file);
-        console.log(`\n📄 ${relativePath}`);
+        
         fileIssues.forEach(({ line, issue, code }) => {
-          console.log(`   Line ${line}: ${issue}`);
-          console.log(`   > ${code}...`);
+
         });
         totalIssues += fileIssues.length;
       }
@@ -192,21 +173,19 @@ async function findProblematicUsage() {
   }
   
   if (totalIssues === 0) {
-    console.log('✅ No obvious contrast issues found in component files!');
+    
   } else {
-    console.log(`\n⚠️  Found ${totalIssues} potential contrast issues to review`);
+    
   }
 }
 
 function generateContrastMatrix() {
-  console.log('\n\n📊 FULL CONTRAST MATRIX:');
-  console.log('========================\n');
-  
+
   const colorNames = Object.keys(colors);
   const matrix = [];
   
-  console.log('                ', colorNames.map(name => name.substring(0, 8).padEnd(8)).join(' '));
-  console.log('                ', colorNames.map(() => '--------').join(' '));
+  .padEnd(8)).join(' '));
+   => '--------').join(' '));
   
   colorNames.forEach(fg => {
     const row = [];
@@ -220,38 +199,28 @@ function generateContrastMatrix() {
         row.push(`${ratio.toFixed(1).padStart(4)}:1${symbol} `);
       }
     });
-    console.log(fg.substring(0, 15).padEnd(16), row.join(' '));
+    .padEnd(16), row.join(' '));
   });
   
-  console.log('\n✓ = WCAG AA compliant (≥4.5:1)');
-  console.log('✗ = Below WCAG AA threshold');
+  ');
+  
 }
 
 async function main() {
   const results = analyzeColorCombinations();
   await findProblematicUsage();
   generateContrastMatrix();
-  
-  console.log('\n\n🎯 RECOMMENDATIONS:');
-  console.log('===================');
-  console.log('\n1. IMMEDIATE FIXES NEEDED:');
-  console.log('   • Change gold button text from white to gunmetal (#1F2320)');
-  console.log('   • Or use gold-600 (#A58341) background with white text');
-  console.log('   • Review all gold/amber elements for contrast');
-  
-  console.log('\n2. BEST PRACTICES:');
-  console.log('   • Always test color combinations with a contrast checker');
-  console.log('   • Use semantic color classes instead of hardcoding');
-  console.log('   • Provide alternative visual indicators (icons, borders)');
-  console.log('   • Test with color blindness simulators');
-  
-  console.log('\n3. SAFE COLOR COMBINATIONS:');
-  console.log('   • Gunmetal on Light Sand (12.8:1) ✅');
-  console.log('   • White on Deep Olive (7.8:1) ✅');
-  console.log('   • Warm Gray on Charcoal Olive (6.2:1) ✅');
-  console.log('   • Deep Olive on Light Sand (6.9:1) ✅');
-  
-  console.log('\n✨ Analysis complete!');
+
+  ');
+   background with white text');
+
+  ');
+
+   ✅');
+   ✅');
+   ✅');
+   ✅');
+
 }
 
 main().catch(console.error);

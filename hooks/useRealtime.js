@@ -169,9 +169,7 @@ export const useRealtime = () => {
         
         setIsConnected(true)
         connectionAttempts.current = 0
-        
-        console.log('✅ Real-time connection established:', data.channelName)
-        
+
       } else {
         throw new Error(data.error || 'Failed to connect')
       }
@@ -184,7 +182,7 @@ export const useRealtime = () => {
       if (connectionAttempts.current < maxRetries) {
         const retryDelay = Math.pow(2, connectionAttempts.current) * 1000
         setTimeout(() => {
-          console.log(`Retrying connection (${connectionAttempts.current}/${maxRetries})...`)
+          ...`)
           connect()
         }, retryDelay)
       }
@@ -222,9 +220,7 @@ export const useRealtime = () => {
       setPusherClient(null)
       setChannel(null)
       setRealtimeMetrics(null)
-      
-      console.log('⏹️ Real-time connection disconnected')
-      
+
     } catch (error) {
       console.error('Disconnect error:', error)
     }

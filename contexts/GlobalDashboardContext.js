@@ -87,7 +87,7 @@ export function GlobalDashboardProvider({ children }) {
   // Load user's accessible locations
   const loadAvailableLocations = useCallback(async () => {
     if (!user || !user.id) {
-      console.log('🔍 [DASHBOARD] No authenticated user, skipping location loading')
+      
       return
     }
     
@@ -312,15 +312,11 @@ export function GlobalDashboardProvider({ children }) {
   // Initialize on mount
   useEffect(() => {
     if (user && user.id && profile) {
-      console.log('🔍 [DASHBOARD] User authenticated, loading dashboard context for:', user.email)
+      
       loadContext()
       loadAvailableLocations()
     } else {
-      console.log('🔍 [DASHBOARD] Waiting for authentication to complete...', {
-        hasUser: !!user,
-        hasUserId: !!user?.id,
-        hasProfile: !!profile
-      })
+      
     }
   }, [user, profile, loadContext, loadAvailableLocations])
   

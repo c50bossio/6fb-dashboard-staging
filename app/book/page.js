@@ -23,7 +23,6 @@ import { useState, useEffect } from 'react'
 
 import { createClient } from '../../lib/supabase/client'
 
-
 const SHOP_INFO = {
   name: '6FB Barbershop',
   address: '123 Main Street, Downtown, CA 90210',
@@ -325,8 +324,6 @@ export default function CustomerBookingPage() {
         marketing_opt_in: customerDetails.marketingOptIn
       }
 
-      console.log('📤 Submitting booking:', bookingData)
-
       // Call the booking API
       const response = await fetch('/api/bookings/create', {
         method: 'POST',
@@ -341,8 +338,6 @@ export default function CustomerBookingPage() {
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create booking')
       }
-
-      console.log('✅ Booking created successfully:', result)
 
       // Store the booking result for confirmation display
       setBookingConfirmed({

@@ -22,21 +22,15 @@ export function OnboardingProvider({ children }) {
     setHasUnsavedChanges(true)
   }, [])
 
-  const saveStep = useCallback(async (sessionType, stepId, data) => {
+  const saveStep = useCallback(async (sessionType, data) => {
     setSaveStatus('saving')
     setHasUnsavedChanges(false)
     
-    // Simulate saving
+    // Simulate saving - in production this would save to database
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    setOnboardingData(prev => ({
-      ...prev,
-      [sessionType]: {
-        ...prev[sessionType],
-        [stepId]: data
-      }
-    }))
-    
+    // Don't update state here to avoid re-render loops
+    // Just mark as saved
     setSaveStatus('saved')
     return { success: true }
   }, [])

@@ -143,7 +143,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       }
       
       if (!currentUser) {
-        console.log('No authenticated user found')
+        
         setLoading(false)
         return
       }
@@ -165,9 +165,7 @@ export default function OnboardingFlow({ onComplete, onSkip }) {
       const extractedData = extractUserData(currentUser)
       const formattedData = formatForForm(extractedData)
       const onboardingStatus = getOnboardingStatus(currentUser, profile)
-      
-      console.log('Pre-populated data:', formattedData)
-      
+
       setPrePopulatedData(formattedData)
       setFormData({
         barbershopName: formattedData.barbershopName,

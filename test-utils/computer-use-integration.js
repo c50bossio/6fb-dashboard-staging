@@ -31,7 +31,7 @@ class ComputerUseIntegration {
 
     try {
       await fs.access(this.pythonScript)
-      console.log('✓ Computer Use Python script found')
+      
     } catch (error) {
       console.warn('⚠ Computer Use Python script not found at:', this.pythonScript)
       console.warn('AI visual analysis will be skipped')
@@ -81,7 +81,6 @@ class ComputerUseIntegration {
         metadata: options.metadata || {}
       }, null, 2))
 
-      console.log('🤖 AI Visual Analysis completed')
       return {
         success: true,
         response: response.response,
@@ -113,8 +112,7 @@ class ComputerUseIntegration {
       } else {
         throw new Error(`Unsupported platform: ${process.platform}`)
       }
-      
-      console.log('📸 Screenshot taken:', outputPath)
+
       return outputPath
     } catch (error) {
       console.error('Screenshot failed:', error.message)
@@ -126,8 +124,7 @@ class ComputerUseIntegration {
    * Validate booking flow UX with AI
    */
   async validateBookingFlowUX(page) {
-    console.log('🔍 AI UX Validation - Booking Flow')
-    
+
     const results = []
 
     if (page) {
@@ -184,8 +181,7 @@ class ComputerUseIntegration {
    * Validate dashboard UX with AI
    */
   async validateDashboardUX(page) {
-    console.log('🔍 AI UX Validation - Dashboard')
-    
+
     if (page) {
       await page.goto('/dashboard')
       await page.waitForSelector('[data-testid="dashboard-content"]')
@@ -235,8 +231,7 @@ class ComputerUseIntegration {
    * Check accessibility with AI analysis
    */
   async validateAccessibility(page, pageUrl) {
-    console.log(`🔍 AI Accessibility Validation - ${pageUrl}`)
-    
+
     if (page) {
       await page.goto(pageUrl)
       await page.waitForLoadState('networkidle')
@@ -264,8 +259,7 @@ class ComputerUseIntegration {
    * Validate responsive design across viewports
    */
   async validateResponsiveDesign(page, pageUrl) {
-    console.log(`🔍 AI Responsive Design Validation - ${pageUrl}`)
-    
+
     const viewports = [
       { name: 'desktop', width: 1280, height: 720 },
       { name: 'tablet', width: 768, height: 1024 },
@@ -310,8 +304,7 @@ class ComputerUseIntegration {
    * Detect visual bugs and inconsistencies
    */
   async detectVisualBugs(page, pageUrl) {
-    console.log(`🔍 AI Visual Bug Detection - ${pageUrl}`)
-    
+
     if (page) {
       await page.goto(pageUrl)
       await page.waitForLoadState('networkidle')
@@ -356,8 +349,7 @@ class ComputerUseIntegration {
     }
 
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2))
-    
-    console.log(`📋 UX Report generated: ${reportPath}`)
+
     return report
   }
 
@@ -437,8 +429,7 @@ class ComputerUseIntegration {
    * Run comprehensive UX audit
    */
   async runComprehensiveAudit(page) {
-    console.log('🚀 Starting Comprehensive AI UX Audit')
-    
+
     const auditResults = {
       timestamp: new Date().toISOString(),
       results: {}
@@ -471,9 +462,6 @@ class ComputerUseIntegration {
         `comprehensive-audit-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
       )
       await fs.writeFile(masterReportPath, JSON.stringify(auditResults, null, 2))
-
-      console.log('✅ Comprehensive AI UX Audit completed')
-      console.log(`📋 Master report: ${masterReportPath}`)
 
       return auditResults
 

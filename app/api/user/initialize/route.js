@@ -7,10 +7,7 @@ export async function POST(request) {
   try {
     const { sessionId, plan, billing } = await request.json()
     const supabase = await createClient()
-    
-    console.log('User initialization request:', { sessionId, plan, billing })
-    
-    
+
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ 
@@ -19,8 +16,7 @@ export async function POST(request) {
         code: 'AUTH_REQUIRED'
       }, { status: 401 })
     }
-    
-    
+
     // Create profile data with proper user information and name structure
     const userDisplayName = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0]
     const nameData = normalizeNameData({
@@ -38,9 +34,7 @@ export async function POST(request) {
     } else if (plan === 'enterprise') {
       role = 'ENTERPRISE_OWNER'
     }
-    
-    console.log('Mapped plan to role:', { plan, role })
-    
+
     const profileData = {
       id: user.id,
       email: user.email,
@@ -51,8 +45,7 @@ export async function POST(request) {
       onboarding_completed: false,
       onboarding_step: 0
     }
-    
-    
+
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .upsert(profileData, { 
@@ -111,8 +104,7 @@ export async function POST(request) {
     let barbershop = null
     if (role === 'BARBER' || role === 'SHOP_OWNER') {
       try {
-        console.log(`Creating barbershop for ${role}...`)
-        
+
         // For individual barbers, they ARE the barbershop (solo practitioner)
         const shopName = role === 'BARBER' 
           ? `${nameData.first_name || userDisplayName}'s Chair` 
@@ -125,9 +117,7 @@ export async function POST(request) {
           // Individual barbers get a "single-barber" shop
           type: role === 'BARBER' ? 'individual' : 'multi-barber'
         })
-        
-        console.log('✅ Barbershop created:', barbershop.id)
-        
+
         // Update profile with shop_id
         const { error: updateError } = await supabase
           .from('profiles')
@@ -137,7 +127,7 @@ export async function POST(request) {
         if (updateError) {
           console.warn('⚠️ Failed to update profile with shop_id:', updateError)
         } else {
-          console.log('✅ Profile updated with shop_id')
+          
         }
         
       } catch (barbershopError) {
@@ -150,8 +140,7 @@ export async function POST(request) {
     // For enterprise owners, create organization
     if (role === 'ENTERPRISE_OWNER') {
       try {
-        console.log('Creating organization for enterprise owner...')
-        
+
         const { data: organization, error: orgError } = await supabase
           .from('organizations')
           .insert({
@@ -163,22 +152,19 @@ export async function POST(request) {
           .single()
           
         if (!orgError && organization) {
-          console.log('✅ Organization created:', organization.id)
-          
+
           // Create first barbershop under the organization
           barbershop = await createBarbershopForOwner(user, {
             name: `${organization.name} - Main Location`,
             organization_id: organization.id
           })
-          
-          console.log('✅ First barbershop created under organization')
+
         }
       } catch (orgError) {
         console.error('⚠️ Organization creation failed:', orgError)
       }
     }
-    
-    
+
     if (sessionId && sessionId.startsWith('cs_')) {
       try {
         // Link Stripe session if needed

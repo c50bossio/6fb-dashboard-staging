@@ -45,8 +45,7 @@ export function useRealtimeAppointmentsSimple(shopId) {
   }, [])
 
   useEffect(() => {
-    console.log('🎯 Simple WebSocket hook starting for shop:', shopId)
-    
+
     // Don't attempt connection if no shop ID (user in onboarding)
     if (!shopId) {
       console.info('⏸️ Skipping WebSocket connection - no shop ID (user may be in onboarding)')
@@ -73,12 +72,10 @@ export function useRealtimeAppointmentsSimple(shopId) {
     const cleanKey = supabaseAnonKey.trim()
     
     const supabase = createClient(cleanUrl, cleanKey)
-    console.log('✅ Simple hook: Supabase client created with anon key for realtime')
-    
+
     const fetchAppointments = async () => {
       try {
-        console.log('📡 Fetching initial appointments...')
-        
+
         const { data, error } = await supabase
           .from('bookings')
           .select('*')
@@ -90,8 +87,7 @@ export function useRealtimeAppointmentsSimple(shopId) {
         const events = data.map(transformToEvent)
         setAppointments(events)
         setLoading(false)
-        
-        console.log('✅ Loaded', events.length, 'appointments')
+
       } catch (err) {
         console.error('❌ Error fetching appointments:', err)
         setError(err.message)
@@ -100,9 +96,7 @@ export function useRealtimeAppointmentsSimple(shopId) {
     }
     
     fetchAppointments()
-    
-    console.log('📡 Setting up realtime subscription...')
-    
+
     const channel = supabase
       .channel(`simple-bookings-${shopId}`)
       .on('postgres_changes',
@@ -113,8 +107,7 @@ export function useRealtimeAppointmentsSimple(shopId) {
           filter: `shop_id=eq.${shopId}`
         },
         (payload) => {
-          console.log('📦 Simple hook received event:', payload.eventType)
-          
+
           const eventType = payload.eventType
           setLastUpdate(new Date().toISOString())
           
@@ -124,10 +117,10 @@ export function useRealtimeAppointmentsSimple(shopId) {
             setAppointments(prev => {
               const exists = prev.some(apt => apt.id === newEvent.id)
               if (exists) {
-                console.log('🔄 Skipping duplicate INSERT for ID:', newEvent.id)
+                
                 return prev // Don't add duplicate
               }
-              console.log('➕ Adding new appointment:', newEvent.id)
+              
               return [...prev, newEvent]
             })
           } else if (eventType === 'UPDATE') {
@@ -143,10 +136,9 @@ export function useRealtimeAppointmentsSimple(shopId) {
         }
       )
       .subscribe((status) => {
-        console.log('🔔 Simple hook subscription status:', status)
-        
+
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Simple hook CONNECTED!')
+          
           setIsConnected(true)
           setStats(prev => ({ ...prev, connected: true }))
           
@@ -160,20 +152,20 @@ export function useRealtimeAppointmentsSimple(shopId) {
           setStats(prev => ({ ...prev, connected: false }))
           setError(`Connection failed: ${status}`)
         } else if (status === 'CLOSED') {
-          console.log('⚠️ Simple hook connection closed')
+          
           setIsConnected(false)
           setStats(prev => ({ ...prev, connected: false }))
         }
       })
     
     return () => {
-      console.log('🧹 Cleaning up simple hook subscription')
+      
       supabase.removeChannel(channel)
     }
   }, [shopId]) // Removed transformToEvent to prevent infinite loop
 
   const refresh = useCallback(async () => {
-    console.log('🔄 Manual refresh triggered')
+    
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     

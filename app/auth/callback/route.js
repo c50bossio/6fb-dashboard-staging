@@ -7,9 +7,7 @@ export async function GET(request) {
   const error = requestUrl.searchParams.get('error')
   const errorDescription = requestUrl.searchParams.get('error_description')
 
-  console.log('OAuth callback - URL:', requestUrl.toString())
-  console.log('OAuth callback - Code present:', !!code)
-  console.log('OAuth callback - Error:', error)
+  )
 
   // Handle OAuth errors
   if (error) {
@@ -28,18 +26,16 @@ export async function GET(request) {
   }
 
   try {
-    console.log('Attempting to exchange code for session...')
-    console.log('OAuth callback - Authorization code:', code?.substring(0, 20) + '...')
+    
+     + '...')
     
     // The fix is now in server-client.js - it will handle unquoting PKCE cookies
     // Just create the client normally and let it handle the cookie fixing
-    console.log('Creating Supabase client with automatic PKCE fix...')
+    
     const supabase = await createClient()
-    
-    console.log('Calling exchangeCodeForSession...')
+
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-    console.log('exchangeCodeForSession result:', exchangeError ? 'FAILED' : 'SUCCESS')
-    
+
     if (exchangeError) {
       console.error('Code exchange failed:', exchangeError)
       
@@ -54,15 +50,9 @@ export async function GET(request) {
       )
     }
 
-    console.log('OAuth exchange successful:', {
-      user: data.user?.email,
-      session: !!data.session
-    })
-
     // Get plan and billing parameters from OAuth flow (passed from pricing page)
     const plan = requestUrl.searchParams.get('plan')
     const billing = requestUrl.searchParams.get('billing')
-    console.log('OAuth callback - Plan:', plan, 'Billing:', billing)
 
     // Check for stored return URL from ProtectedRoute
     // This will be set if the user was redirected from a protected page
@@ -73,10 +63,8 @@ export async function GET(request) {
     // If we have plan info, this is a new signup - redirect to success page
     if (plan) {
       returnUrl = `/success?plan=${plan}&billing=${billing || 'monthly'}`
-      console.log('OAuth callback - New signup detected, redirecting to success page')
+      
     }
-    
-    console.log('OAuth callback - Return URL:', returnUrl)
 
     // Successful authentication - redirect to original page or dashboard
     return NextResponse.redirect(new URL(returnUrl, request.url))

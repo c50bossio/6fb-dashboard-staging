@@ -111,7 +111,7 @@ test.describe('Role-Based Functionality Testing', () => {
         
         const section = page.locator(sectionSelectors[sectionName])
         await expect(section).toBeVisible()
-        console.log(`✅ ${roleName} can see ${sectionName} section`)
+        
       }
       
       // Check that inappropriate sections are hidden
@@ -127,7 +127,7 @@ test.describe('Role-Based Functionality Testing', () => {
         
         const section = page.locator(sectionSelectors[hiddenSection])
         await expect(section).toHaveCount(0)
-        console.log(`✅ ${roleName} correctly hides ${hiddenSection} section`)
+        
       }
     })
 
@@ -150,7 +150,7 @@ test.describe('Role-Based Functionality Testing', () => {
           page.locator('[class*="bg-gray-50"]').filter({ hasText: /./ })
         )
         await expect(sectionContent.first()).toBeVisible()
-        console.log(`✅ ${roleName} has ${roleData.primarySection} section auto-expanded`)
+        
       }
     })
 
@@ -203,8 +203,7 @@ test.describe('Progressive Disclosure & UI Interactions', () => {
       // Test collapse
       await sectionButton.click()
       await page.waitForTimeout(300)
-      
-      console.log(`✅ ${section.name} expansion/collapse works`)
+
     }
   })
 
@@ -222,8 +221,7 @@ test.describe('Progressive Disclosure & UI Interactions', () => {
     // Chevron should still be visible but potentially different
     const toggledChevron = sectionButton.locator('svg').last()
     await expect(toggledChevron).toBeVisible()
-    
-    console.log('✅ Chevron icons function correctly')
+
   })
 
   test('color coding for different sections', async ({ page }) => {
@@ -238,8 +236,7 @@ test.describe('Progressive Disclosure & UI Interactions', () => {
     // Enterprise section - green
     const enterpriseIcon = page.locator('text="Multi-Location Management"').locator('..').locator('[class*="bg-green-50"]')
     await expect(enterpriseIcon).toBeVisible()
-    
-    console.log('✅ Color coding for sections works correctly')
+
   })
 })
 
@@ -270,8 +267,7 @@ test.describe('Interactive Elements & Button Functionality', () => {
     
     await supportButton.hover()
     await page.waitForTimeout(100)
-    
-    console.log('✅ Help section buttons are functional and interactive')
+
   })
 
   test('section header buttons are clickable and responsive', async ({ page }) => {
@@ -293,8 +289,7 @@ test.describe('Interactive Elements & Button Functionality', () => {
       await button.click()
       await page.waitForTimeout(200)
     }
-    
-    console.log(`✅ All ${buttonCount} section header buttons are responsive`)
+
   })
 
   test('embedded customization components load correctly', async ({ page }) => {
@@ -314,8 +309,7 @@ test.describe('Interactive Elements & Button Functionality', () => {
         // Look for form elements, buttons, or other interactive components
         const interactiveElements = contentArea.locator('input, button, select, textarea')
         const elementCount = await interactiveElements.count()
-        
-        console.log(`✅ ${sectionName} component loaded with ${elementCount} interactive elements`)
+
       }
     }
   })
@@ -334,8 +328,7 @@ test.describe('Performance & Load Testing', () => {
     
     // Should load within 3 seconds on localhost
     expect(loadTime).toBeLessThan(3000)
-    
-    console.log(`✅ Page loaded in ${loadTime}ms`)
+
   })
 
   test('sections expand without performance delays', async ({ page }) => {
@@ -358,8 +351,7 @@ test.describe('Performance & Load Testing', () => {
       
       // Should expand within 500ms
       expect(expansionTime).toBeLessThan(500)
-      
-      console.log(`✅ ${sectionName} expanded in ${expansionTime}ms`)
+
     }
   })
 })
@@ -378,8 +370,7 @@ test.describe('Accessibility Compliance', () => {
     // Check if focus is visible
     const focusedElement = page.locator(':focus')
     await expect(focusedElement).toBeVisible()
-    
-    console.log('✅ Keyboard navigation functions correctly')
+
   })
 
   test('section buttons have proper ARIA labels', async ({ page }) => {
@@ -401,8 +392,7 @@ test.describe('Accessibility Compliance', () => {
       const textContent = await button.textContent()
       expect(textContent?.length || 0).toBeGreaterThan(0)
     }
-    
-    console.log(`✅ ${buttonCount} buttons have accessible properties`)
+
   })
 
   test('color contrast meets WCAG standards', async ({ page }) => {
@@ -416,7 +406,7 @@ test.describe('Accessibility Compliance', () => {
     const elementCount = await colorElements.count()
     
     expect(elementCount).toBeGreaterThan(0)
-    console.log(`✅ ${elementCount} text elements available for contrast testing`)
+    
   })
 })
 
@@ -433,7 +423,7 @@ test.describe('Error Handling & Edge Cases', () => {
     const hasContent = await page.locator('h1').count() > 0
     
     expect(hasLoginUrl || hasErrorMessage || hasContent).toBeTruthy()
-    console.log('✅ Handles missing authentication gracefully')
+    
   })
 
   test('handles component loading failures', async ({ page }) => {
@@ -447,8 +437,7 @@ test.describe('Error Handling & Edge Cases', () => {
     
     // Should show page structure even if components fail to load
     await expect(page.locator('h1')).toContainText('Customize Your Experience')
-    
-    console.log('✅ Page structure remains intact with component failures')
+
   })
 })
 
@@ -466,8 +455,7 @@ test.describe('Cross-Browser Compatibility', () => {
       const sectionButton = page.locator('text="Barber Profile"').locator('..').locator('button')
       await sectionButton.click()
       await page.waitForTimeout(300)
-      
-      console.log(`✅ Basic functionality works in ${browserName}`)
+
     })
   })
 })
@@ -488,8 +476,7 @@ test.describe('Mobile Responsive Testing', () => {
     const sectionButton = page.locator('text="Barber Profile"').locator('..').locator('button')
     await sectionButton.click()
     await page.waitForTimeout(300)
-    
-    console.log('✅ Mobile layout renders and functions correctly')
+
   })
 
   test('tablet layout renders correctly', async ({ page }) => {
@@ -508,8 +495,7 @@ test.describe('Mobile Responsive Testing', () => {
     for (const section of sections) {
       await expect(page.locator(`text="${section}"`)).toBeVisible()
     }
-    
-    console.log('✅ Tablet layout renders correctly')
+
   })
 })
 
@@ -547,7 +533,6 @@ test.describe('End-to-End Integration Testing', () => {
     await page.locator('text="Watch Tutorial"').scrollIntoViewIfNeeded()
     await expect(page.locator('button:has-text("Watch Tutorial")')).toBeVisible()
     await expect(page.locator('button:has-text("Contact Support")')).toBeVisible()
-    
-    console.log('✅ Complete end-to-end workflow functions correctly')
+
   })
 })

@@ -57,7 +57,7 @@ export async function GET(request) {
       .order('created_at', { ascending: true })
 
     if (staffError) {
-      console.error('Error fetching staff:', staffError)
+      // console.error('Error fetching staff:', staffError)
       return NextResponse.json({ error: 'Failed to fetch staff' }, { status: 500 })
     }
 
@@ -76,27 +76,23 @@ export async function GET(request) {
       .in('id', userIds)
 
     if (profilesError) {
-      console.error('Error fetching staff profiles:', profilesError)
+      // console.error('Error fetching staff profiles:', profilesError)
       return NextResponse.json({ error: 'Failed to fetch staff details' }, { status: 500 })
     }
 
-    // Combine staff data with profile information
+    // Combine staff data with profile information - SIMPLIFIED
     const staffWithProfiles = staff.map(staffMember => {
       const profile = profiles.find(p => p.id === staffMember.user_id)
       
-      // Normalize name data for consistent handling  
-      // Note: users table only has full_name field, split it for compatibility
-      const nameData = normalizeNameData({
-        fullName: profile?.full_name
-      })
+      // Simple name handling - store exactly what we have
+      let firstName = '', lastName = '', fullName = profile?.full_name || ''
       
-      const displayName = getDisplayName({
-        firstName: nameData.firstName,
-        lastName: nameData.lastName,
-        fullName: nameData.fullName,
-        email: profile?.email,
-        defaultName: 'Staff Member'
-      })
+      // If we have a full name, split it simply
+      if (fullName && fullName.trim()) {
+        const parts = fullName.trim().split(' ')
+        firstName = parts[0] || ''
+        lastName = parts.slice(1).join(' ') || ''
+      }
       
       return {
         // STANDARDIZED: Use user_id as primary identifier
@@ -107,16 +103,16 @@ export async function GET(request) {
         role: staffMember.role,
         is_active: staffMember.is_active,
         created_at: staffMember.created_at,
-        // Provide both name formats for backward compatibility
-        first_name: nameData.firstName,
-        last_name: nameData.lastName,
-        full_name: nameData.fullName,
-        firstName: nameData.firstName, // camelCase version
-        lastName: nameData.lastName,   // camelCase version
-        fullName: nameData.fullName,   // camelCase version
+        // Simple name fields
+        first_name: firstName,
+        last_name: lastName,
+        full_name: fullName,
         email: profile?.email || '',
         avatar_url: profile?.avatar_url || null,
-        display_name: displayName
+        // Simple display name - just combine what we have
+        display_name: fullName || profile?.email || 'Staff Member',
+        // Include the raw user data for reference
+        user: profile
       }
     })
 
@@ -128,7 +124,6 @@ export async function GET(request) {
     })
 
   } catch (error) {
-    console.error('Staff API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

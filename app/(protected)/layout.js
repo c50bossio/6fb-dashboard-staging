@@ -22,8 +22,7 @@ function ProtectedLayoutContent({ children }) {
     
     if (stripeSuccess) {
       // Show success notification (could add a toast here)
-      console.log('✅ Payment setup completed successfully!')
-      
+
       // Clean up URL params
       const newUrl = new URL(window.location)
       newUrl.searchParams.delete('stripe_success')

@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 import { useFeatureFlag } from '@/hooks/useFeatureFlags'
 import { useAnalytics } from '../providers/PostHogProvider'
 
-
 /**
  * Analytics Dashboard Component
  * Shows real-time analytics and insights for barbershop owners
@@ -55,13 +54,7 @@ export default function AnalyticsDashboard() {
             dataSource: metricsResult.data_source,
             lastUpdated: metricsData.last_updated
           })
-          
-          console.log('📊 Analytics Dashboard loaded:', {
-            appointments: metricsData.total_appointments,
-            revenue: metricsData.total_revenue,
-            services: popularServices.length,
-            source: metricsResult.data_source
-          })
+
         } else {
           throw new Error(metricsResult.error || 'Failed to fetch analytics data')
         }

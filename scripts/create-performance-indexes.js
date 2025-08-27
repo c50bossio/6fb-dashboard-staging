@@ -5,15 +5,14 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('❌ Missing Supabase environment variables')
-  console.log('Required: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY')
+  
   process.exit(1)
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function createPerformanceIndexes() {
-  console.log('🚀 Creating strategic performance indexes for bookings table...')
-  
+
   const indexes = [
     {
       name: 'idx_bookings_barbershop_scheduled',
@@ -51,21 +50,11 @@ async function createPerformanceIndexes() {
       description: 'Optimizes revenue analytics for completed bookings'
     }
   ]
-  
-  console.log(`📝 Processing ${indexes.length} strategic indexes...\n`)
-  
-  console.log('📋 MANUAL SQL FOR SUPABASE DASHBOARD:')
-  console.log('=====================================')
-  console.log('Copy and paste this SQL into Supabase Dashboard → SQL Editor:\n')
-  
+
   for (const index of indexes) {
-    console.log(`-- ${index.description}`)
-    console.log(index.sql)
-    console.log('')
+
   }
-  
-  console.log('⚡ Testing current query performance...')
-  
+
   const testQueries = [
     {
       name: 'Barbershop bookings in date range',
@@ -112,37 +101,20 @@ async function createPerformanceIndexes() {
   for (const testQuery of testQueries) {
     const result = await testQuery.test()
     if (result.error) {
-      console.log(`❌ ${testQuery.name}: Error - ${result.error.message}`)
+      
     } else {
-      console.log(`⏱️ ${testQuery.name}: ${result.duration.toFixed(2)}ms (${result.count} records)`)
+      }ms (${result.count} records)`)
     }
   }
-  
-  console.log('\n📊 Performance Index Summary:')
-  console.log('==============================')
-  console.log('These indexes will optimize:')
-  console.log('✅ Dashboard loading (barbershop_id + scheduled_at)')
-  console.log('✅ Booking conflict detection (barber_id + scheduled_at)')
-  console.log('✅ Status filtering (status + scheduled_at)')
-  console.log('✅ Customer history (client_id + created_at)')
-  console.log('✅ Service analytics (service_id + service_price)')
-  console.log('✅ Activity feeds (created_at DESC)')
-  console.log('✅ Revenue analytics (composite index with WHERE clause)')
-  
-  console.log('\n🎯 Expected Performance Gains:')
-  console.log('• 50-80% faster dashboard queries')
-  console.log('• 90% faster booking conflict detection')
-  console.log('• 70% faster revenue analytics')
-  console.log('• Better concurrent user support')
-  console.log('• Reduced database CPU usage')
-  
-  console.log('\n💡 Next Steps:')
-  console.log('1. Copy the SQL above into Supabase Dashboard')
-  console.log('2. Run it in the SQL Editor')
-  console.log('3. Verify indexes were created successfully')
-  console.log('4. Test dashboard performance improvements')
-  
-  console.log('\n✨ Index creation script complete!')
+
+  ')
+  ')
+  ')
+  ')
+  ')
+  ')
+  ')
+
 }
 
 createPerformanceIndexes().catch(console.error)

@@ -17,12 +17,12 @@ export function usePusher() {
     pusherRef.current = pusher
 
     pusher.connection.bind('connected', () => {
-      console.log('Pusher connected')
+      
       setIsConnected(true)
     })
 
     pusher.connection.bind('disconnected', () => {
-      console.log('Pusher disconnected')
+      
       setIsConnected(false)
     })
 
@@ -56,7 +56,7 @@ export function usePusher() {
     })
 
     channel.bind('pusher:subscription_succeeded', () => {
-      console.log(`Subscribed to ${channelName}`)
+      
     })
 
     channel.bind('pusher:subscription_error', (error) => {

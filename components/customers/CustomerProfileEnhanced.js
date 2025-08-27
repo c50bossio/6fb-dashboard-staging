@@ -419,13 +419,13 @@ export default function CustomerProfileEnhanced({ customerId, onClose }) {
     {
       label: 'Book Appointment',
       icon: CalendarDaysIcon,
-      action: () => console.log('Book appointment'),
+      action: () => {},
       className: 'bg-blue-600 hover:bg-blue-700'
     },
     {
       label: 'Send Message',
       icon: ChatBubbleLeftRightIcon,
-      action: () => console.log('Send message'),
+      action: () => {},
       className: 'bg-green-600 hover:bg-green-700'
     },
     {

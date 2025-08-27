@@ -41,7 +41,7 @@ describe('Button Functionality Tests', () => {
       // Create a button without click handler
       document.body.innerHTML = `
         <button id="broken-button">Broken Button</button>
-        <button id="working-button" onclick="console.log('works')">Working Button</button>
+        <button id="working-button" onclick="">Working Button</button>
       `
 
       const results = await buttonHealthMonitor.runFullScan()
@@ -414,11 +414,9 @@ export const testUtilities = {
    * Run a quick test of all buttons on current page
    */
   async testCurrentPage() {
-    console.log('🧪 Testing current page buttons...')
-    
+
     const healthResults = await buttonHealthMonitor.runFullScan()
-    console.log('📊 Health Results:', healthResults.summary)
-    
+
     // Auto-enhance any problematic buttons
     universalButtonHandler.autoEnhanceButtons()
     
@@ -438,19 +436,17 @@ export const testUtilities = {
     }
     
     const issues = await buttonHealthMonitor.testButton(buttonElement)
-    console.log(`🔍 Button test results:`, issues)
-    
+
     if (issues.length === 0) {
-      console.log('✅ Button appears to be working correctly')
-    } else {
-      console.log('⚠️ Issues found:', issues)
       
+    } else {
+
       // Auto-enhance if there are issues
       universalButtonHandler.enhanceButton(buttonElement, () => {
-        console.log('Fallback action executed')
+        
       }, {
         errorText: 'Button enhanced with fallback',
-        fallbackAction: () => console.log('Enhanced button fallback')
+        fallbackAction: () => 
       })
     }
     
@@ -466,7 +462,7 @@ export const testUtilities = {
     
     for (const button of buttons) {
       try {
-        console.log(`🖱️ Testing click on:`, button.textContent?.trim())
+        )
         
         if (button.onclick) {
           await button.onclick()

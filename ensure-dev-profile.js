@@ -22,20 +22,15 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 async function ensureDevProfile() {
   // ⚠️  PRODUCTION WARNING CHECK
   if (process.env.NODE_ENV === 'production' || supabaseUrl.includes('supabase.co')) {
-    console.log('🚨 PRODUCTION DATABASE DETECTED!')
-    console.log('❌ This script creates TEST DATA and should NOT be run against production.')
-    console.log('💡 Use this script only for local development.')
-    console.log('\nTo override (NOT recommended):')
-    console.log('   FORCE_TEST_DATA=true node ensure-dev-profile.js')
-    
+
+    :')
+
     if (!process.env.FORCE_TEST_DATA) {
-      console.log('\n❌ Aborting to protect production data.')
+      
       process.exit(1)
     }
   }
 
-  console.log('🔧 Ensuring dev-enterprise profile exists...')
-  
   try {
     // First, check if the user exists
     const { data: users, error: userError } = await supabase.auth.admin.listUsers()
@@ -48,9 +43,7 @@ async function ensureDevProfile() {
     const devUser = users.users.find(u => u.email === 'dev-enterprise@test.com')
     
     if (!devUser) {
-      console.log('⚠️ Dev user not found in auth.users')
-      console.log('Creating dev user...')
-      
+
       const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
         email: 'dev-enterprise@test.com',
         password: 'dev123456',
@@ -65,11 +58,10 @@ async function ensureDevProfile() {
         console.error('Error creating user:', createUserError)
         return
       }
-      
-      console.log('✅ Dev user created:', newUser.user.id)
+
       devUser = newUser.user
     } else {
-      console.log('✅ Dev user found:', devUser.id)
+      
     }
     
     // Now ensure the profile exists
@@ -85,8 +77,7 @@ async function ensureDevProfile() {
     }
     
     if (!existingProfile) {
-      console.log('📝 Creating new profile...')
-      
+
       const { data: newProfile, error: insertError } = await supabase
         .from('profiles')
         .insert({
@@ -110,12 +101,9 @@ async function ensureDevProfile() {
         console.error('Error creating profile:', insertError)
         return
       }
-      
-      console.log('✅ Profile created successfully')
-      console.log('Profile data:', newProfile)
+
     } else {
-      console.log('✅ Profile already exists')
-      
+
       // Update to ensure all fields are present
       const { data: updatedProfile, error: updateError } = await supabase
         .from('profiles')
@@ -135,9 +123,7 @@ async function ensureDevProfile() {
         console.error('Error updating profile:', updateError)
         return
       }
-      
-      console.log('✅ Profile updated with missing fields')
-      console.log('Profile data:', updatedProfile)
+
     }
     
     // Verify the final state
@@ -151,16 +137,7 @@ async function ensureDevProfile() {
       console.error('Error verifying profile:', finalError)
       return
     }
-    
-    console.log('\n📊 Final Profile State:')
-    console.log('- ID:', finalProfile.id)
-    console.log('- Email:', finalProfile.email)
-    console.log('- Role:', finalProfile.role)
-    console.log('- Shop Name:', finalProfile.shop_name)
-    console.log('- Onboarding Step:', finalProfile.onboarding_step)
-    console.log('- Onboarding Progress:', finalProfile.onboarding_progress_percentage + '%')
-    console.log('- Has Onboarding Data:', !!finalProfile.onboarding_data)
-    
+
   } catch (error) {
     console.error('Unexpected error:', error)
   }

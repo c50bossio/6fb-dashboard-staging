@@ -79,8 +79,7 @@ export async function GET(request) {
     
     // Development mode bypass - check for credentials without user auth
     if (shouldBypass) {
-      console.log('🔧 Dev mode: Checking Cin7 credentials without user auth')
-      
+
       // Try to get any existing credentials (for development testing)
       const { data: credentials, error } = await supabase
         .from('cin7_credentials')
@@ -144,7 +143,6 @@ export async function GET(request) {
       // TEMPORARY: For testing purposes, allow access for the owner in production
       // This helps us test Cin7 integration while fixing OAuth session issues
       if (process.env.NODE_ENV === 'production' && isKnownUser) {
-        console.log('🔧 TEMP: Allowing access for testing (OAuth session will be fixed)')
         
         // Use a fallback approach to get credentials for testing
         const { data: testCredentials, error: testError } = await supabase
@@ -287,8 +285,7 @@ export async function DELETE() {
         message: 'No barbershop found for user'
       }, { status: 404 })
     }
-    
-    
+
     const { data: existingCreds, error: checkError } = await supabase
       .from('cin7_credentials')
       .select('barbershop_id')
@@ -314,8 +311,7 @@ export async function DELETE() {
         message: 'Could not delete credentials'
       }, { status: 500 })
     }
-    
-    
+
     return NextResponse.json({
       success: true,
       message: 'Cin7 credentials deleted successfully',
@@ -359,8 +355,7 @@ export async function PUT(request) {
     
     // Development mode bypass
     if (shouldBypass) {
-      console.log('🔧 Dev mode: Cin7 credentials require a barbershop')
-      
+
       // Even in dev mode, we need a real barbershop from the database
       return NextResponse.json({
         error: 'No barbershop found',
@@ -402,8 +397,7 @@ export async function PUT(request) {
         message: 'Both API key and Account ID are required'
       }, { status: 400 })
     }
-    
-    
+
     // Test credentials with Cin7 API v2
     const testResponse = await fetch('https://inventory.dearsystems.com/ExternalAPI/v2/me', {
       method: 'GET',
@@ -460,8 +454,7 @@ export async function PUT(request) {
         message: 'Could not save updated credentials'
       }, { status: 500 })
     }
-    
-    
+
     return NextResponse.json({
       success: true,
       message: 'Cin7 credentials updated successfully',

@@ -8,12 +8,7 @@ let supabaseClient = null
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
-  console.log('🔑 V2 Creating Supabase client with:', { 
-    url: supabaseUrl,
-    hasKey: !!supabaseAnonKey 
-  })
-  
+
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error('❌ V2: Supabase environment variables missing')
     return null
@@ -26,14 +21,12 @@ function getSupabaseClient() {
       }
     }
   })
-  
-  console.log('✅ V2: Supabase client created')
+
   return client
 }
 
 export function useRealtimeAppointmentsV2(shopId) {
-  console.log('🚀 useRealtimeAppointmentsV2 HOOK CALLED with shopId:', shopId)
-  
+
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -51,8 +44,7 @@ export function useRealtimeAppointmentsV2(shopId) {
   
   const log = useCallback((message, data = {}) => {
     const timestamp = new Date().toISOString()
-    console.log(`[${timestamp}] 🔄 WebSocket V2: ${message}`, data)
-    
+
     if (typeof window !== 'undefined') {
       if (!window.websocketLogs) {
         window.websocketLogs = []
@@ -190,8 +182,7 @@ export function useRealtimeAppointmentsV2(shopId) {
   }, [shopId, transformToEvent, log])
   
   useEffect(() => {
-    console.log('🔄 V2 useEffect running for shopId:', shopId)
-    
+
     if (typeof window !== 'undefined') {
       window.v2HookRunning = true
       window.v2ShopId = shopId
@@ -244,7 +235,7 @@ export function useRealtimeAppointmentsV2(shopId) {
         }
       )
       .subscribe((status, err) => {
-        console.log('🔔 V2 SUBSCRIPTION STATUS:', status, 'Error:', err)
+        
         log('Channel subscription status', { status, error: err })
         
         if (typeof window !== 'undefined') {
@@ -258,7 +249,7 @@ export function useRealtimeAppointmentsV2(shopId) {
         }
         
         if (status === 'SUBSCRIBED') {
-          console.log('✅ V2 CONNECTED! Setting isConnected to true')
+          
           setIsConnected(true)
           setStats(prev => ({ ...prev, connected: true }))
           log('✅ WebSocket connected successfully!')
@@ -274,7 +265,7 @@ export function useRealtimeAppointmentsV2(shopId) {
           setError(`WebSocket error: ${status}`)
           log('❌ WebSocket connection failed', { status, error: err })
         } else if (status === 'CLOSED') {
-          console.log('⚠️ V2 CONNECTION CLOSED')
+          
           setIsConnected(false)
           setStats(prev => ({ ...prev, connected: false }))
           log('WebSocket connection closed')

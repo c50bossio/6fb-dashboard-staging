@@ -32,20 +32,16 @@ const testBooking = {
 
 // Step 1: Test Service Discovery
 async function testServiceDiscovery() {
-  console.log('\n🔍 Step 1: Testing Service Discovery...')
-  
+
   try {
     const response = await fetch(`${API_BASE}/api/public/services?barbershop_id=${TEST_BARBERSHOP_ID}`)
     const data = await response.json()
-    
-    console.log(`   📊 Response status: ${response.status}`)
-    
+
     if (response.ok && data.services) {
-      console.log(`   ✅ Found ${data.services.length} services available`)
-      console.log(`   📋 Sample service: ${data.services[0]?.name || 'N/A'}`)
+
       return { success: true, services: data.services }
     } else if (response.status === 404) {
-      console.log('   ℹ️  Services endpoint not found (using demo data)')
+      ')
       return { 
         success: true, 
         services: [
@@ -53,31 +49,27 @@ async function testServiceDiscovery() {
         ]
       }
     } else {
-      console.log(`   ❌ Service discovery failed: ${data.error || 'Unknown error'}`)
+      
       return { success: false, error: data.error }
     }
   } catch (error) {
-    console.log(`   ❌ Service discovery error: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 // Step 2: Test Barbershop Information
 async function testBarbershopInfo() {
-  console.log('\n🏪 Step 2: Testing Barbershop Information...')
-  
+
   try {
     const response = await fetch(`${API_BASE}/api/public/barbershop/${TEST_BARBERSHOP_ID}`)
     const data = await response.json()
-    
-    console.log(`   📊 Response status: ${response.status}`)
-    
+
     if (response.ok && data.barbershop) {
-      console.log(`   ✅ Barbershop found: ${data.barbershop.name || 'Unknown'}`)
-      console.log(`   🕒 Business hours: ${data.barbershop.business_hours ? 'Available' : 'Not configured'}`)
+
       return { success: true, barbershop: data.barbershop }
     } else if (response.status === 404) {
-      console.log('   ℹ️  Barbershop endpoint not found (will use demo data)')
+      ')
       return { 
         success: true, 
         barbershop: { 
@@ -87,25 +79,21 @@ async function testBarbershopInfo() {
         }
       }
     } else {
-      console.log(`   ❌ Barbershop info failed: ${data.error || 'Unknown error'}`)
+      
       return { success: false, error: data.error }
     }
   } catch (error) {
-    console.log(`   ❌ Barbershop info error: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 // Step 3: Test Booking Creation (Core Journey)
 async function testBookingCreation() {
-  console.log('\n📅 Step 3: Testing Booking Creation...')
-  
+
   try {
-    console.log('   📝 Submitting booking request...')
-    console.log(`   👤 Customer: ${testCustomer.name}`)
-    console.log(`   📞 Phone: ${testCustomer.phone}`)
-    console.log(`   📧 Email: ${testCustomer.email}`)
-    console.log(`   ⏰ Time: ${new Date(testBooking.scheduled_at).toLocaleString()}`)
+
+    .toLocaleString()}`)
     
     const response = await fetch(`${API_BASE}/api/public/bookings/create`, {
       method: 'POST',
@@ -116,41 +104,34 @@ async function testBookingCreation() {
     })
     
     const data = await response.json()
-    
-    console.log(`   📊 Response status: ${response.status}`)
-    console.log(`   📨 Response: ${data.message || data.error || 'No message'}`)
-    
+
     if (response.ok && data.success) {
-      console.log('   ✅ Booking created successfully!')
-      console.log(`   🎫 Booking ID: ${data.booking?.id || 'Not provided'}`)
-      console.log(`   📧 Confirmation sent to: ${data.booking?.confirmation_sent_to || 'N/A'}`)
+
       return { success: true, booking: data.booking }
     } else {
-      console.log(`   ❌ Booking creation failed: ${data.error}`)
-      
+
       // Analyze the specific error
       if (response.status === 400) {
-        console.log('   🔍 Analysis: Invalid request data')
+        
       } else if (response.status === 404) {
-        console.log('   🔍 Analysis: Barbershop not found in database')
+        
       } else if (response.status === 409) {
-        console.log('   🔍 Analysis: Time slot conflict')
+        
       } else if (response.status === 500) {
-        console.log('   🔍 Analysis: Server or database error')
+        
       }
       
       return { success: false, error: data.error, status: response.status }
     }
   } catch (error) {
-    console.log(`   ❌ Booking creation error: ${error.message}`)
+    
     return { success: false, error: error.message }
   }
 }
 
 // Step 4: Test Input Validation
 async function testInputValidation() {
-  console.log('\n✅ Step 4: Testing Input Validation...')
-  
+
   const validationTests = [
     {
       name: 'Missing required fields',
@@ -182,24 +163,22 @@ async function testInputValidation() {
       const data = await response.json()
       
       if (response.status === test.expectedStatus) {
-        console.log(`   ✅ ${test.name}: Properly validated`)
+        
         passedTests++
       } else {
-        console.log(`   ❌ ${test.name}: Expected ${test.expectedStatus}, got ${response.status}`)
+        
       }
     } catch (error) {
-      console.log(`   ⚠️  ${test.name}: Test error - ${error.message}`)
+      
     }
   }
-  
-  console.log(`   📊 Validation tests: ${passedTests}/${validationTests.length} passed`)
+
   return { success: passedTests >= 2, passedTests, totalTests: validationTests.length }
 }
 
 // Step 5: Test Rate Limiting
 async function testRateLimiting() {
-  console.log('\n🛡️  Step 5: Testing Rate Limiting...')
-  
+
   const promises = []
   
   // Attempt 5 bookings rapidly (should trigger rate limiting)
@@ -223,25 +202,19 @@ async function testRateLimiting() {
   const results = await Promise.all(promises)
   const rateLimited = results.filter(r => r.status === 429).length
   const successful = results.filter(r => r.status === 200 || r.status === 201).length
-  
-  console.log(`   📊 Rate limit responses: ${rateLimited}/5`)
-  console.log(`   📊 Successful requests: ${successful}/5`)
-  
+
   if (rateLimited > 0) {
-    console.log('   ✅ Rate limiting is working')
+    
     return { success: true, rateLimited, successful }
   } else {
-    console.log('   ⚠️  Rate limiting may not be configured')
+    
     return { success: successful <= 3, rateLimited, successful }
   }
 }
 
 // Main validation function
 async function validateCustomerJourney() {
-  console.log('🎯 CUSTOMER BOOKING JOURNEY VALIDATION')
-  console.log('=============================================')
-  console.log('Testing complete end-to-end customer experience...')
-  
+
   const results = {
     serviceDiscovery: { success: false },
     barbershopInfo: { success: false },
@@ -259,9 +232,7 @@ async function validateCustomerJourney() {
     results.rateLimiting = await testRateLimiting()
     
     // Generate comprehensive summary
-    console.log('\n📋 CUSTOMER JOURNEY VALIDATION SUMMARY')
-    console.log('=============================================')
-    
+
     const steps = [
       { name: 'Service Discovery', result: results.serviceDiscovery, critical: false },
       { name: 'Barbershop Information', result: results.barbershopInfo, critical: false },
@@ -277,34 +248,24 @@ async function validateCustomerJourney() {
     steps.forEach(step => {
       const status = step.result.success ? '✅ PASS' : '❌ FAIL'
       const priority = step.critical ? '[CRITICAL]' : '[OPTIONAL]'
-      console.log(`${step.name}: ${status} ${priority}`)
-      
+
       if (step.result.success) allPassed++
       if (step.critical) {
         totalCritical++
         if (step.result.success) criticalPassed++
       }
     })
-    
-    console.log(`\\nResults: ${allPassed}/${steps.length} total, ${criticalPassed}/${totalCritical} critical`)
-    
+
     // Final assessment
-    console.log('\\n🎯 CUSTOMER EXPERIENCE READINESS:')
-    
+
     if (criticalPassed === totalCritical && allPassed >= 4) {
-      console.log('✅ EXCELLENT CUSTOMER EXPERIENCE')
-      console.log('   Complete booking journey works flawlessly')
-      console.log('   Customers can easily book appointments')
+
       return true
     } else if (criticalPassed === totalCritical) {
-      console.log('🟡 GOOD CUSTOMER EXPERIENCE') 
-      console.log('   Core booking works, minor features missing')
-      console.log('   Acceptable for live customer operations')
+
       return true
     } else {
-      console.log('❌ POOR CUSTOMER EXPERIENCE')
-      console.log('   Critical booking issues prevent customer success')
-      console.log('   Must fix core issues before customer launch')
+
       return false
     }
     
@@ -318,7 +279,7 @@ async function validateCustomerJourney() {
 if (process.argv[1] === new URL(import.meta.url).pathname) {
   validateCustomerJourney()
     .then(success => {
-      console.log(success ? '\\n🎉 Customer journey ready for live use!' : '\\n⚠️  Customer journey needs attention')
+      
       process.exit(success ? 0 : 1)
     })
     .catch(error => {

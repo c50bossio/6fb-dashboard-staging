@@ -533,16 +533,13 @@ test.describe('Onboarding Enhancement System - Orchestrated Testing Suite', () =
     const htmlReportPath = path.join(process.cwd(), 'test-results', 'onboarding-enhancement-report.html')
     fs.writeFileSync(htmlReportPath, htmlReport)
     
-    console.log('\n' + '='.repeat(80))
-    console.log('🎉 ONBOARDING ENHANCEMENT SYSTEM - TESTING COMPLETE')
-    console.log('='.repeat(80))
-    console.log(`📊 Success Rate: ${testResults.summary.successRate}%`)
-    console.log(`✅ Passed Tests: ${testResults.summary.passedTests}`)
-    console.log(`❌ Failed Tests: ${testResults.summary.failedTests}`)
-    console.log(`⏱️  Execution Time: ${Math.round(testResults.summary.executionTime / 1000)}s`)
-    console.log(`📁 Report Location: ${reportPath}`)
-    console.log(`🌐 HTML Report: ${htmlReportPath}`)
-    console.log('='.repeat(80))
+    )
+    
+    )
+
+    }s`)
+
+    )
   })
 })
 

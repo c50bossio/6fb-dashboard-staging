@@ -28,12 +28,10 @@ class PayoutScheduler {
    * Main scheduling function - called by cron job or manual trigger
    */
   async processScheduledPayouts() {
-    console.log('🔄 Starting automated payout processing...')
-    
+
     try {
       // Get all active financial arrangements
       const arrangements = await this.getActiveArrangements()
-      console.log(`📋 Found ${arrangements.length} active arrangements`)
 
       let processedCount = 0
       let errorCount = 0
@@ -43,13 +41,13 @@ class PayoutScheduler {
           const shouldProcess = await this.shouldProcessPayout(arrangement)
           
           if (shouldProcess.process) {
-            console.log(`💰 Processing payout for ${arrangement.barber_name} (${shouldProcess.reason})`)
+            `)
             
             const result = await this.processPayout(arrangement, shouldProcess.amount)
             
             if (result.success) {
               processedCount++
-              console.log(`✅ Payout processed: $${shouldProcess.amount} to ${arrangement.barber_name}`)
+              
             } else {
               errorCount++
               console.error(`❌ Payout failed for ${arrangement.barber_name}: ${result.error}`)
@@ -61,8 +59,6 @@ class PayoutScheduler {
         }
       }
 
-      console.log(`🎉 Payout processing complete: ${processedCount} successful, ${errorCount} errors`)
-      
       return {
         success: true,
         processed: processedCount,
@@ -391,7 +387,6 @@ class PayoutScheduler {
       }
 
       // Log notification (could integrate with email service here)
-      console.log(`📧 Payout notification: $${amount} to ${arrangement.barber_name} via ${method}`)
 
       // TODO: Integrate with actual notification service (email, SMS, etc.)
       

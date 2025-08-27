@@ -5,7 +5,7 @@ const port = process.env.PORT || 7080;
 
 const downloadCoder = () => {
   return new Promise((resolve, reject) => {
-    console.log('Downloading Coder...');
+    
     const curl = spawn('curl', ['-fsSL', 'https://coder.com/install.sh']);
     const sh = spawn('sh', [], { stdio: ['pipe', 'inherit', 'inherit'] });
     
@@ -13,7 +13,7 @@ const downloadCoder = () => {
     
     sh.on('close', (code) => {
       if (code === 0) {
-        console.log('Coder installed successfully');
+        
         resolve();
       } else {
         reject(new Error(`Installation failed with code ${code}`));
@@ -23,7 +23,7 @@ const downloadCoder = () => {
 };
 
 const startCoder = () => {
-  console.log('Starting Coder server...');
+  
   const coder = spawn('coder', [
     'server',
     '--http-address=0.0.0.0:7080',
@@ -43,7 +43,7 @@ const startCoder = () => {
   });
 
   coder.on('close', (code) => {
-    console.log(`Coder server exited with code ${code}`);
+    
   });
 };
 
@@ -57,8 +57,7 @@ const setup = async () => {
     startCoder();
     
     app.listen(port, '0.0.0.0', () => {
-      console.log(`Coder proxy server listening on port ${port}`);
-      console.log(`Access URL: ${process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : `http://localhost:${port}`}`);
+
     });
   } catch (error) {
     console.error('Setup failed:', error);

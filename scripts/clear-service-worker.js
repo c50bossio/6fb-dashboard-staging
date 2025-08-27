@@ -5,16 +5,7 @@
  * Run this script and follow the instructions
  */
 
-console.log(`
-╔══════════════════════════════════════════════════════════════════╗
-║                  SERVICE WORKER CACHE CLEAR GUIDE                ║
-╚══════════════════════════════════════════════════════════════════╝
-
-The payment setup issue has been fixed! To apply the fix, you need to:
-
-1. CLEAR BROWSER CACHE & SERVICE WORKER:
-   
-   Option A - Quick Clear (Chrome/Edge):
+:
    • Press Cmd+Shift+R (Mac) or Ctrl+Shift+F5 (Windows)
    • This forces a hard reload and clears the cache
    
@@ -57,7 +48,7 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then(function(registrations) {
     for(let registration of registrations) {
       registration.unregister()
-      console.log('✓ Service worker unregistered:', registration.scope)
+      
     }
   })
   
@@ -66,7 +57,7 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     caches.keys().then(names => {
       names.forEach(name => {
         caches.delete(name)
-        console.log('✓ Cache cleared:', name)
+        
       })
     })
   }

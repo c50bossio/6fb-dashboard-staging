@@ -344,7 +344,7 @@ function BarberClientsPageContent({ onAction }) {
               <ExportCSV
                 customers={filteredClients}
                 onExport={(data) => {
-                  console.log('Exported:', data)
+                  
                   toast.success(`Exported ${data.customers.length} customers`)
                 }}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center space-x-2"
@@ -551,7 +551,7 @@ function BarberClientsPageContent({ onAction }) {
             <div className="p-6">
               <PlatformTailoredImport
                 onComplete={(importData) => {
-                  console.log('Import completed:', importData)
+                  
                   if (!importData.skipped) {
                     toast.success('Import completed successfully!')
                     loadClients() // Reload the client list

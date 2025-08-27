@@ -72,11 +72,7 @@ export default function ActionCenter({ data }) {
         }))
         
         setPriorityTasks(formattedActions)
-        console.log('📋 Priority actions loaded:', {
-          count: formattedActions.length,
-          source: 'AI-generated from real data',
-          barbershop_id: barbershopId
-        })
+        
       } else {
         throw new Error(result.error || 'Failed to load priority actions')
       }

@@ -25,10 +25,7 @@ export function useRealtimeAppointments(barbershopId) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     
-    console.log('🔐 Initializing Supabase client in hook:', {
-      url: supabaseUrl,
-      hasKey: !!supabaseAnonKey,
-      keyPrefix: supabaseAnonKey?.substring(0, 40) + '...'
+     + '...'
     })
     
     setDiagnostics(prev => ({
@@ -40,20 +37,17 @@ export function useRealtimeAppointments(barbershopId) {
     setConnectionAttempts(prev => prev + 1)
     
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.log('❌ Supabase not configured')
+      
       setLoading(false)
       setAppointments([])
       return
     }
     
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
-    
-    console.log('🔄 Initializing real-time connection for shop:', barbershopId)
 
     const fetchAppointments = async () => {
       try {
-        console.log('📡 Fetching initial appointments...')
-        
+
         const { data, error } = await supabase
           .from('bookings')
           .select(`
@@ -66,8 +60,6 @@ export function useRealtimeAppointments(barbershopId) {
           .order('start_time')
         
         if (error) throw error
-
-        console.log('📡 Found', data?.length || 0, 'appointments')
 
         const events = data.map(booking => {
           const isCancelled = booking.status === 'cancelled'
@@ -113,11 +105,7 @@ export function useRealtimeAppointments(barbershopId) {
 
     const handleRealtimeEvent = async (eventType, payload) => {
       const eventTime = new Date().toISOString()
-      console.log(`📡 Real-time ${eventType} event:`, {
-        appointmentId: payload.new?.id || payload.old?.id,
-        timestamp: eventTime
-      })
-      
+
       setLastUpdate(eventTime)
       setDiagnostics(prev => ({
         ...prev,
@@ -169,12 +157,12 @@ export function useRealtimeAppointments(barbershopId) {
           setAppointments(prev => {
             const existingIndex = prev.findIndex(apt => apt.id === newEvent.id)
             if (existingIndex !== -1) {
-              console.log('📡 Appointment exists, updating:', newEvent.id)
+              
               const updated = [...prev]
               updated[existingIndex] = newEvent
               return updated
             }
-            console.log('📡 Adding new appointment:', newEvent.id)
+            
             return [...prev, newEvent]
           })
         }
@@ -220,16 +208,15 @@ export function useRealtimeAppointments(barbershopId) {
         }
       } else if (eventType === 'DELETE' && payload.old) {
         const deletedId = payload.old.id
-        console.log('📡 DELETE received for:', deletedId)
-        
+
         setAppointments(prev => {
           const exists = prev.find(event => event.id === deletedId)
           if (exists) {
             const filtered = prev.filter(event => event.id !== deletedId)
-            console.log('📡 Removed appointment from our shop. Count:', prev.length, '→', filtered.length)
+            
             return filtered
           } else {
-            console.log('📡 Ignoring DELETE - appointment not in our shop')
+            
             return prev
           }
         })
@@ -238,8 +225,6 @@ export function useRealtimeAppointments(barbershopId) {
 
     fetchAppointments()
 
-    console.log('📡 Setting up real-time subscription for shop:', barbershopId)
-    
     const channel = supabase
       .channel(`bookings-${barbershopId}`)
       .on(
@@ -272,14 +257,13 @@ export function useRealtimeAppointments(barbershopId) {
         (payload) => {
           const appointmentId = payload.old?.id
           if (appointmentId) {
-            console.log('📡 DELETE event for appointment:', appointmentId)
+            
             handleRealtimeEvent('DELETE', payload)
           }
         }
       )
       .subscribe((status) => {
-        console.log('📡 Subscription status:', status)
-        
+
         setDiagnostics(prev => ({
           ...prev,
           channelStatus: status
@@ -292,7 +276,7 @@ export function useRealtimeAppointments(barbershopId) {
             subscriptionStatus: 'connected',
             connectionTime: Date.now() - startTime
           }))
-          console.log('✅ Real-time subscription established')
+          
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           setIsConnected(false)
           setError('Real-time connection failed')
@@ -302,7 +286,7 @@ export function useRealtimeAppointments(barbershopId) {
       })
 
     return () => {
-      console.log('🧹 Cleaning up real-time subscription')
+      
       if (channel) {
         supabase.removeChannel(channel)
       }
@@ -311,11 +295,7 @@ export function useRealtimeAppointments(barbershopId) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log('📊 Real-time diagnostics:', {
-        connected: isConnected,
-        appointments: appointments.length,
-        events: diagnostics.eventCounts
-      })
+      
     }, 30000)
     
     return () => clearInterval(interval)

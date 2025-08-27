@@ -517,7 +517,7 @@ export function CustomerKeyboardProvider({
         onFilterChange?.('new')
         break
       default:
-        console.log('Unknown action:', action)
+        
     }
   }
 

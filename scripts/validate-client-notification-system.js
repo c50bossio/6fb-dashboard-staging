@@ -66,9 +66,7 @@ class ClientValidationSuite {
   }
 
   async initialize() {
-    console.log('🔧 Initializing Client Notification System Validation')
-    console.log('='*60)
-    
+
     // Resolve barbershop ID
     const barbershopId = getArg('barbershop-id')
     const barbershopName = getArg('barbershop-name')
@@ -79,7 +77,7 @@ class ClientValidationSuite {
     } else if (barbershopName || ownerEmail) {
       this.barbershopId = await this.resolveBarbershopId(barbershopName, ownerEmail)
     } else {
-      console.log('📝 Available barbershops:')
+      
       await this.listAvailableBarbershops()
       process.exit(0)
     }
@@ -93,8 +91,8 @@ class ClientValidationSuite {
     const shop = await this.getBarbershopDetails()
     this.barbershopName = shop.name
     
-    console.log(`✅ Testing barbershop: ${this.barbershopName} (ID: ${this.barbershopId})`)
-    console.log()
+    `)
+    
   }
 
   async resolveBarbershopId(name, email) {
@@ -125,11 +123,11 @@ class ClientValidationSuite {
       }
 
       if (shops.length > 1) {
-        console.log('🔍 Multiple barbershops found:')
+        
         shops.forEach((shop, i) => {
-          console.log(`  ${i + 1}. ${shop.name} (ID: ${shop.id})`)
+          `)
         })
-        console.log('Please specify --barbershop-id=<id> for exact match')
+        
         return null
       }
 
@@ -149,12 +147,9 @@ class ClientValidationSuite {
 
     shops.forEach(shop => {
       const location = shop.city && shop.state ? ` (${shop.city}, ${shop.state})` : ''
-      console.log(`  • ${shop.name}${location} - ID: ${shop.id}`)
+      
     })
 
-    console.log('\\nUsage:')
-    console.log('  node scripts/validate-client-notification-system.js --barbershop-id=<id>')
-    console.log('  node scripts/validate-client-notification-system.js --barbershop-name="Shop Name"')
   }
 
   async getBarbershopDetails() {
@@ -168,8 +163,6 @@ class ClientValidationSuite {
   }
 
   async runValidationSuite() {
-    console.log('🧪 Running Comprehensive Validation Tests')
-    console.log('-'*50)
 
     await this.testDatabaseConnectivity()
     await this.testRiskAssessmentEngine()
@@ -183,8 +176,7 @@ class ClientValidationSuite {
   }
 
   async testDatabaseConnectivity() {
-    console.log('📡 Testing Database Connectivity...')
-    
+
     try {
       // Test core tables access
       const tests = [
@@ -231,7 +223,6 @@ class ClientValidationSuite {
   }
 
   async testRiskAssessmentEngine() {
-    console.log('🎯 Testing Risk Assessment Engine...')
 
     for (const [tierName, scenario] of Object.entries(TEST_SCENARIOS)) {
       try {
@@ -273,7 +264,6 @@ class ClientValidationSuite {
   }
 
   async testNotificationTemplates() {
-    console.log('📝 Testing Notification Templates...')
 
     try {
       const engine = riskBasedNotifications
@@ -326,7 +316,6 @@ class ClientValidationSuite {
   }
 
   async testTierSpecificScenarios() {
-    console.log('🎭 Testing Tier-Specific Communication Plans...')
 
     for (const [tierName, scenario] of Object.entries(TEST_SCENARIOS)) {
       try {
@@ -391,7 +380,6 @@ class ClientValidationSuite {
   }
 
   async testPerformanceBenchmarks() {
-    console.log('⚡ Testing Performance Benchmarks...')
 
     const performanceTests = [
       {
@@ -456,7 +444,6 @@ class ClientValidationSuite {
   }
 
   async testErrorHandling() {
-    console.log('🛡️  Testing Error Handling...')
 
     // Test invalid data handling
     try {
@@ -497,7 +484,6 @@ class ClientValidationSuite {
   }
 
   async testDataIntegrity() {
-    console.log('🔒 Testing Data Integrity...')
 
     try {
       // Check if barbershop has real customer data
@@ -561,7 +547,7 @@ class ClientValidationSuite {
     })
 
     const icon = passed ? '✅' : '❌'
-    console.log(`  ${icon} ${test}: ${details}`)
+    
   }
 
   generateReport() {
@@ -570,14 +556,7 @@ class ClientValidationSuite {
     const passedTests = this.testResults.filter(r => r.passed).length
     const successRate = ((passedTests / totalTests) * 100).toFixed(1)
 
-    console.log('\\n' + '='*60)
-    console.log('📊 VALIDATION REPORT')
-    console.log('='*60)
-    console.log(`🏪 Barbershop: ${this.barbershopName}`)
-    console.log(`🆔 ID: ${this.barbershopId}`)
-    console.log(`⏱️  Duration: ${duration}ms`)
-    console.log(`📈 Success Rate: ${successRate}% (${passedTests}/${totalTests})`)
-    console.log()
+    `)
 
     // Group results by category
     const categories = [...new Set(this.testResults.map(r => r.category))]
@@ -588,34 +567,26 @@ class ClientValidationSuite {
       const categoryTotal = categoryResults.length
       const categoryRate = ((categoryPassed / categoryTotal) * 100).toFixed(1)
 
-      console.log(`📂 ${category}: ${categoryRate}% (${categoryPassed}/${categoryTotal})`)
+      `)
       
       const failedTests = categoryResults.filter(r => !r.passed)
       if (failedTests.length > 0) {
         failedTests.forEach(test => {
-          console.log(`   ❌ ${test.test}: ${test.details}`)
+          
         })
       }
     }
 
-    console.log()
-    console.log('🎯 RECOMMENDATIONS:')
-    
     const overallHealth = successRate >= 90 ? 'EXCELLENT' :
                          successRate >= 80 ? 'GOOD' :
                          successRate >= 70 ? 'FAIR' : 'NEEDS ATTENTION'
-    
-    console.log(`   Overall System Health: ${overallHealth}`)
 
     if (successRate >= 90) {
-      console.log('   ✅ Risk-based notification system is working optimally')
-      console.log('   ✅ Ready for production use with expected 25-40% no-show reduction')
+
     } else if (successRate >= 80) {
-      console.log('   ⚠️  System is functional but some optimizations recommended')
-      console.log('   📈 Expected no-show reduction: 15-30%')
+
     } else {
-      console.log('   ❌ System issues detected - address failed tests before relying on automated notifications')
-      console.log('   📞 Consider manual follow-up until issues are resolved')
+
     }
 
     // Save detailed report
@@ -633,7 +604,7 @@ class ClientValidationSuite {
 
     const filename = `validation-report-${this.barbershopId}-${Date.now()}.json`
     require('fs').writeFileSync(filename, JSON.stringify(reportData, null, 2))
-    console.log(`\\n📄 Detailed report saved: ${filename}`)
+    
   }
 
   generateRecommendations(successRate) {

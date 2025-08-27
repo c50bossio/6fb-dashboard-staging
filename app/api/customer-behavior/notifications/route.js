@@ -97,8 +97,6 @@ async function processNewBookingNotifications(bookingData) {
       )
     }
 
-    console.log(`Processing risk-based notifications for booking ${bookingData.booking_id}`)
-
     // Process through the notification engine
     const result = await riskBasedNotifications.processNewBooking(bookingData)
 
@@ -424,7 +422,7 @@ async function getUpcomingNotifications(supabase, barbershopId) {
 
 async function logNotificationMetrics(barbershopId, metrics) {
   // Implementation would log to analytics system
-  console.log(`Notification metrics for ${barbershopId}:`, metrics)
+  
 }
 
 async function updateCustomerEngagementScore(supabase, customerId, barbershopId) {

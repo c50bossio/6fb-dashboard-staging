@@ -50,13 +50,7 @@ export const getCalendarConfig = (timezone = 'America/New_York') => {
           delete eventData.end;
           
           // Log recurring event processing for debugging
-          console.log('Processed recurring event:', {
-            id: eventData.id,
-            title: eventData.title,
-            rrule: eventData.rrule,
-            duration: eventData.duration,
-            timezone: timezone
-          });
+          
         }
       }
       

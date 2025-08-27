@@ -31,9 +31,7 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
   const loadStaff = async (locationId) => {
     try {
       setLoading(true)
-      
-      console.log('🔄 PerspectiveSelector: Loading staff for location', locationId)
-      
+
       // Use unified staff service with location ID as barbershop ID
       const staffData = await unifiedStaffService.getStaff(locationId, {
         useCache: true,
@@ -42,8 +40,7 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
       })
       
       if (staffData.staff && staffData.staff.length > 0) {
-        console.log(`✅ PerspectiveSelector: Found ${staffData.staff.length} staff members via ${staffData.source} endpoint`)
-        
+
         // Transform staff data for perspective selector format
         const perspectiveStaff = staffData.staff.map(member => ({
           id: member.user_id || member.id,
@@ -68,7 +65,7 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
       }
       
       // Fallback to dev mock data if no real staff found
-      console.log('⚠️ PerspectiveSelector: No staff found, using fallback mock data')
+      
       const mockStaff = [
         {
           id: 'dev-barber-1',

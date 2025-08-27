@@ -33,7 +33,7 @@ export async function POST(request) {
     const isOnboarding = request.headers.get('x-onboarding-flow') === 'true'
     
     if (!isOnboarding && !user) {
-      console.log('🔒 No authenticated user and not in onboarding flow')
+      
       return NextResponse.json({ 
         success: false,
         error: 'Authentication required' 
@@ -46,11 +46,7 @@ export async function POST(request) {
     const barbershopId = formData.get('barbershopId')
     
     // Debug logging
-    console.log('📥 Platform Import Request:', {
-      platform,
-      barbershopId,
-      isOnboarding,
-      formDataEntries: Array.from(formData.entries()).map(([key, value]) => 
+    ).map(([key, value]) => 
         [key, value instanceof File ? `File: ${value.name}` : value]
       )
     })
@@ -69,8 +65,6 @@ export async function POST(request) {
     
     if (singleFile) files.push(singleFile)
     files.push(...multipleFiles)
-
-    console.log(`📁 Found ${files.length} files`)
 
     // Validation
     if (!platform) {
@@ -175,13 +169,6 @@ export async function POST(request) {
         message: 'No data was imported. Please check your CSV file format and content.'
       })
     }
-
-    console.log('Platform import completed:', {
-      platform: platform,
-      barbershopId: barbershopId,
-      imported: importResults.imported,
-      processingTime: importResults.details.processingTime
-    })
 
     return NextResponse.json(importResults)
 

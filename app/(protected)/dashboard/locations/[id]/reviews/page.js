@@ -82,7 +82,7 @@ export default function LocationReviewsPage() {
     const result = await syncReviews()
     if (result.success) {
       // Show success message
-      console.log('Reviews synced successfully')
+      
     }
   }
 

@@ -26,9 +26,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 })
 
-console.log('🧹 COMPREHENSIVE PRODUCTION DATABASE CLEANUP')
-console.log('=' * 50)
-
 // Test data identifiers
 const testBarbershops = [
   'My Barbershop',
@@ -50,8 +47,6 @@ async function comprehensiveCleanup() {
   try {
     let totalDeleted = 0
 
-    console.log('\n🔍 Step 1: Identifying test barbershops and their IDs...')
-    
     // Get all test barbershop IDs (by name and hardcoded)
     const { data: testShops, error: shopError } = await supabase
       .from('barbershops')
@@ -64,13 +59,11 @@ async function comprehensiveCleanup() {
     }
 
     const allTestShopIds = testShops.map(s => s.id)
-    console.log(`   ✅ Found ${testShops.length} test barbershops to remove`)
+    
     testShops.forEach(shop => {
-      console.log(`      - ${shop.name} (ID: ${shop.id}, Owner: ${shop.owner_id})`)
+      `)
     })
 
-    console.log('\n🗑️  Step 2: Removing barbershop staff records...')
-    
     if (allTestShopIds.length > 0) {
       const { data: deletedStaff, error: staffError } = await supabase
         .from('barbershop_staff')
@@ -83,12 +76,10 @@ async function comprehensiveCleanup() {
       } else {
         const staffCount = deletedStaff?.length || 0
         totalDeleted += staffCount
-        console.log(`   ✅ Deleted ${staffCount} staff record(s)`)
+        `)
       }
     }
 
-    console.log('\n👤 Step 3: Removing profiles linked to test barbershops...')
-    
     if (allTestShopIds.length > 0) {
       const { data: deletedProfiles, error: profileError } = await supabase
         .from('profiles')
@@ -101,12 +92,10 @@ async function comprehensiveCleanup() {
       } else {
         const profileCount = deletedProfiles?.length || 0
         totalDeleted += profileCount
-        console.log(`   ✅ Deleted ${profileCount} profile(s) linked to test shops`)
+         linked to test shops`)
       }
     }
 
-    console.log('\n📧 Step 4: Removing profiles by test email addresses...')
-    
     for (const email of testUsers) {
       const { data: deletedByEmail, error: emailError } = await supabase
         .from('profiles')
@@ -120,15 +109,13 @@ async function comprehensiveCleanup() {
         const emailCount = deletedByEmail?.length || 0
         totalDeleted += emailCount
         if (emailCount > 0) {
-          console.log(`   ✅ Deleted profile for "${email}"`)
+          
         } else {
-          console.log(`   ℹ️  No profile found for "${email}"`)
+          
         }
       }
     }
 
-    console.log('\n🔐 Step 5: Removing auth users...')
-    
     // Get all auth users first
     const { data: allUsers, error: usersError } = await supabase.auth.admin.listUsers()
     
@@ -143,16 +130,14 @@ async function comprehensiveCleanup() {
             console.error(`   ❌ Error deleting auth user "${email}":`, deleteUserError.message)
           } else {
             totalDeleted += 1
-            console.log(`   ✅ Deleted auth user "${email}"`)
+            
           }
         } else {
-          console.log(`   ℹ️  Auth user "${email}" not found`)
+          
         }
       }
     }
 
-    console.log('\n🏪 Step 6: Finally removing test barbershops...')
-    
     if (allTestShopIds.length > 0) {
       const { data: deletedShops, error: deleteShopsError } = await supabase
         .from('barbershops')
@@ -165,17 +150,16 @@ async function comprehensiveCleanup() {
       } else {
         const shopsCount = deletedShops?.length || 0
         totalDeleted += shopsCount
-        console.log(`   ✅ Deleted ${shopsCount} test barbershop(s)`)
+        `)
         deletedShops.forEach(shop => {
-          console.log(`      - Removed: ${shop.name}`)
+          
         })
       }
     }
 
-    console.log('\n' + '='.repeat(50))
-    console.log('🎉 COMPREHENSIVE CLEANUP COMPLETE!')
-    console.log('='.repeat(50))
-    console.log(`📊 Total records deleted: ${totalDeleted}`)
+    )
+    
+    )
 
     return true
 
@@ -186,7 +170,6 @@ async function comprehensiveCleanup() {
 }
 
 async function verifyCleanState() {
-  console.log('\n🔍 Verifying completely clean state...')
 
   try {
     // Check remaining barbershops
@@ -195,18 +178,14 @@ async function verifyCleanState() {
       .select('id, name, city, state, owner_id')
       .order('created_at', { ascending: false })
 
-    console.log(`📍 Remaining barbershops: ${shops.length}`)
-    
     if (shops.length === 0) {
-      console.log('   🎉 PERFECT! No barbershops remain - completely clean slate!')
+      
     } else {
       shops.forEach((shop, i) => {
         const isTestData = testBarbershops.includes(shop.name) || testBarbershopIds.includes(shop.id)
         const status = isTestData ? '🧪 STILL TEST DATA' : '✅ LEGITIMATE'
-        console.log(`   ${i + 1}. ${shop.name} (${shop.city}, ${shop.state}) - ${status}`)
-        console.log(`      ID: ${shop.id}`)
-        console.log(`      Owner: ${shop.owner_id}`)
-        console.log('')
+         - ${status}`)
+
       })
     }
 
@@ -214,30 +193,22 @@ async function verifyCleanState() {
     const { data: allUsers } = await supabase.auth.admin.listUsers()
     const remainingTestUsers = allUsers.users.filter(u => testUsers.includes(u.email))
 
-    console.log(`👤 Remaining test users: ${remainingTestUsers.length}`)
     if (remainingTestUsers.length > 0) {
       remainingTestUsers.forEach(user => {
-        console.log(`   🧪 ${user.email} (ID: ${user.id})`)
+        `)
       })
     } else {
-      console.log('   ✅ No test users remain')
+      
     }
 
     // Final verdict
     const isCompletelyClean = shops.length === 0 && remainingTestUsers.length === 0
     
     if (isCompletelyClean) {
-      console.log('\n🚀 SUCCESS! Database is completely clean!')
-      console.log('🎯 Ready for first legitimate barbershop registration!')
-      console.log('\n💡 Next steps:')
-      console.log('   1. Test user registration at /signup')
-      console.log('   2. Verify onboarding appears automatically')
-      console.log('   3. Test barbershop creation flow')
-      console.log('   4. Confirm dashboard loads for new user')
+
       return true
     } else {
-      console.log('\n⚠️  Database may not be completely clean.')
-      console.log('   Manual review recommended before production launch.')
+
       return false
     }
 
@@ -248,7 +219,6 @@ async function verifyCleanState() {
 }
 
 async function main() {
-  console.log('Starting comprehensive production database cleanup...\n')
 
   const success = await comprehensiveCleanup()
   
@@ -256,13 +226,12 @@ async function main() {
     const isClean = await verifyCleanState()
     
     if (isClean) {
-      console.log('\n🎉 PRODUCTION READY!')
-      console.log('Database is clean and ready for first legitimate user.')
+
     } else {
-      console.log('\n⚠️  Manual review needed before production launch.')
+      
     }
   } else {
-    console.log('\n❌ Cleanup failed. Manual intervention required.')
+    
   }
 }
 

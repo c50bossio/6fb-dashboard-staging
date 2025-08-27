@@ -37,7 +37,7 @@ export async function GET(request) {
         email: 'c50bossio@gmail.com'
       }
       userId = user.id
-      console.log('🔧 Using development bypass for product fetch')
+      
     } else {
       // Production path - use normal client
       supabase = createClient()
@@ -89,7 +89,7 @@ export async function GET(request) {
       
       if (profileShop) {
         shop = profileShop
-        console.log('Found barbershop via profile shop_id:', profileShop.name)
+        
       }
     }
     
@@ -103,12 +103,12 @@ export async function GET(request) {
       
       if (ownedShop) {
         shop = ownedShop
-        console.log('Found barbershop via ownership:', ownedShop.name)
+        
       }
     }
     
     if (!shop) {
-      console.log('No barbershop found for user:', userId, 'profile:', profile)
+      
       return NextResponse.json({
         products: [],
         metrics: {
@@ -129,8 +129,7 @@ export async function GET(request) {
       .select('*')
       .eq('barbershop_id', shop.id)
       .order('name', { ascending: true })
-    
-    
+
     if (productsError) {
       console.error('Error fetching products:', productsError)
       return NextResponse.json({
@@ -212,7 +211,6 @@ export async function GET(request) {
     )
   }
 }
-
 
 export async function POST(request) {
   try {

@@ -83,13 +83,7 @@ export function withProfileValidation(handler) {
               headers: request.headers,
               body: JSON.stringify(validation.data)
             })
-            
-            console.log('Profile validation applied fixes:', {
-              original: body,
-              fixed: validation.data,
-              fixes: validation.fixes
-            })
-            
+
             return handler(fixedRequest, context)
           }
         }

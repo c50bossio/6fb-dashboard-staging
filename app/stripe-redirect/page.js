@@ -14,13 +14,7 @@ function StripeRedirectContent() {
     const success = searchParams.get('success')
     const step = searchParams.get('step')
     const refresh = searchParams.get('refresh')
-    
-    console.log('🔄 Stripe redirect handler:', {
-      success,
-      step,
-      hostname: window.location.hostname
-    })
-    
+
     setIsRedirecting(true)
     
     // Handle refresh case (user needs to complete more requirements)

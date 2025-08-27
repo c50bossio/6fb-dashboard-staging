@@ -25,7 +25,7 @@ test.describe('Mobile Authentication Testing', () => {
       
       const page = await context.newPage();
       
-      console.log(`📱 Testing login form on ${device.name} (${device.viewport.width}x${device.viewport.height})`);
+      `);
       
       await page.context().clearCookies();
       await page.evaluate(() => {
@@ -44,8 +44,7 @@ test.describe('Mobile Authentication Testing', () => {
       if (await emailInput.count() > 0) {
         await expect(emailInput).toBeVisible();
         const emailBox = await emailInput.boundingBox();
-        console.log(`📱 [${device.name}] Email input size: ${emailBox?.width}x${emailBox?.height}`);
-        
+
         if (emailBox && emailBox.height < 44) {
           console.warn(`⚠️ [${device.name}] Email input too small for touch: ${emailBox.height}px height`);
         }
@@ -54,14 +53,13 @@ test.describe('Mobile Authentication Testing', () => {
       if (await passwordInput.count() > 0) {
         await expect(passwordInput).toBeVisible();
         const passwordBox = await passwordInput.boundingBox();
-        console.log(`📱 [${device.name}] Password input size: ${passwordBox?.width}x${passwordBox?.height}`);
+        
       }
       
       if (await loginButton.count() > 0) {
         await expect(loginButton).toBeVisible();
         const buttonBox = await loginButton.boundingBox();
-        console.log(`📱 [${device.name}] Login button size: ${buttonBox?.width}x${buttonBox?.height}`);
-        
+
         if (buttonBox && (buttonBox.height < 44 || buttonBox.width < 44)) {
           console.warn(`⚠️ [${device.name}] Login button too small for touch: ${buttonBox.width}x${buttonBox.height}px`);
         }
@@ -73,7 +71,7 @@ test.describe('Mobile Authentication Testing', () => {
           await emailInput.fill('mobile.test@example.com');
           
           const emailValue = await emailInput.inputValue();
-          console.log(`📱 [${device.name}] Email input value: "${emailValue}"`);
+          
         }
         
         if (await passwordInput.count() > 0) {
@@ -81,7 +79,7 @@ test.describe('Mobile Authentication Testing', () => {
           await passwordInput.fill('mobiletest123');
           
           const passwordValue = await passwordInput.inputValue();
-          console.log(`📱 [${device.name}] Password input works: ${passwordValue.length > 0}`);
+          
         }
       } catch (error) {
         console.warn(`⚠️ [${device.name}] Form interaction error:`, error.message);
@@ -98,7 +96,7 @@ test.describe('Mobile Authentication Testing', () => {
         const element = page.locator(selector);
         const count = await element.count();
         const visible = count > 0 ? await element.first().isVisible() : false;
-        console.log(`📱 [${device.name}] ${elementName}: ${count} found, visible: ${visible}`);
+        
       }
       
       await page.screenshot({ 
@@ -107,7 +105,7 @@ test.describe('Mobile Authentication Testing', () => {
       });
       
       await context.close();
-      console.log(`✅ [${device.name}] Mobile login form test completed`);
+      
     });
   });
   
@@ -118,9 +116,7 @@ test.describe('Mobile Authentication Testing', () => {
     });
     
     const page = await context.newPage();
-    
-    console.log('📱 Testing mobile navigation interactions...');
-    
+
     await page.goto('/', { waitUntil: 'networkidle' });
     
     const menuSelectors = [
@@ -138,8 +134,7 @@ test.describe('Mobile Authentication Testing', () => {
     for (const selector of menuSelectors) {
       const menuButton = page.locator(selector);
       if (await menuButton.count() > 0 && await menuButton.isVisible()) {
-        console.log(`📱 Found mobile menu button: ${selector}`);
-        
+
         try {
           await page.screenshot({ 
             path: `test-results/mobile-menu-before.png`,
@@ -165,9 +160,7 @@ test.describe('Mobile Authentication Testing', () => {
               break;
             }
           }
-          
-          console.log(`📱 Mobile menu opened: ${menuOpened}`);
-          
+
           await page.screenshot({ 
             path: `test-results/mobile-menu-after.png`,
             fullPage: true 
@@ -182,11 +175,11 @@ test.describe('Mobile Authentication Testing', () => {
     }
     
     if (!menuInteraction) {
-      console.log('📱 No mobile menu found or menu interaction not available');
+      
     }
     
     await context.close();
-    console.log('✅ Mobile navigation test completed');
+    
   });
   
   test('should handle touch interactions properly', async ({ browser }) => {
@@ -196,34 +189,27 @@ test.describe('Mobile Authentication Testing', () => {
     });
     
     const page = await context.newPage();
-    
-    console.log('👆 Testing touch interactions...');
-    
+
     await page.goto('/login', { waitUntil: 'networkidle' });
     
     const initialScrollY = await page.evaluate(() => window.scrollY);
-    console.log(`👆 Initial scroll position: ${initialScrollY}`);
-    
+
     await page.evaluate(() => window.scrollBy(0, 200));
     await page.waitForTimeout(500);
     
     const scrolledY = await page.evaluate(() => window.scrollY);
-    console.log(`👆 After scroll: ${scrolledY}`);
-    
+
     const scrollWorking = scrolledY > initialScrollY;
-    console.log(`👆 Scroll functionality: ${scrollWorking ? 'Working' : 'Not working'}`);
-    
+
     const touchElements = page.locator('input, button, a, .touchable, [role="button"]');
     const touchCount = await touchElements.count();
-    
-    console.log(`👆 Found ${touchCount} touchable elements`);
-    
+
     if (touchCount > 0) {
       try {
         const firstInput = touchElements.first();
         if (await firstInput.isVisible()) {
           await firstInput.tap();
-          console.log('👆 Touch interaction on first input: Success');
+          
         }
       } catch (error) {
         console.warn('⚠️ Touch interaction failed:', error.message);
@@ -239,9 +225,7 @@ test.describe('Mobile Authentication Testing', () => {
         tooSmallElements++;
       }
     }
-    
-    console.log(`👆 Elements too small for touch: ${tooSmallElements} out of ${elements.length}`);
-    
+
     if (tooSmallElements > 0) {
       console.warn(`⚠️ ${tooSmallElements} elements are smaller than 44px (recommended touch target size)`);
     }
@@ -252,7 +236,7 @@ test.describe('Mobile Authentication Testing', () => {
     });
     
     await context.close();
-    console.log('✅ Touch interaction test completed');
+    
   });
   
   test('should work in both portrait and landscape orientations', async ({ browser }) => {
@@ -270,7 +254,7 @@ test.describe('Mobile Authentication Testing', () => {
       
       const page = await context.newPage();
       
-      console.log(`🔄 Testing ${orientation.name} orientation (${orientation.width}x${orientation.height})`);
+      `);
       
       await page.goto('/login', { waitUntil: 'networkidle' });
       await page.waitForTimeout(2000);
@@ -291,22 +275,17 @@ test.describe('Mobile Authentication Testing', () => {
         if (await element.count() > 0) {
           const isVisible = await element.isVisible();
           if (isVisible) elementsVisible++;
-          
-          console.log(`🔄 [${orientation.name}] ${elementName}: ${isVisible ? 'Visible' : 'Hidden'}`);
-          
+
           const box = await element.boundingBox();
           if (box) {
             const inViewport = box.x >= 0 && box.y >= 0 && 
                              (box.x + box.width) <= orientation.width && 
                              (box.y + box.height) <= orientation.height;
-            
-            console.log(`🔄 [${orientation.name}] ${elementName} in viewport: ${inViewport}`);
+
           }
         }
       }
-      
-      console.log(`🔄 [${orientation.name}] Elements visible: ${elementsVisible}/${elementsTotal}`);
-      
+
       await page.screenshot({ 
         path: `test-results/orientation-${orientation.name.toLowerCase()}.png`,
         fullPage: true 
@@ -314,8 +293,7 @@ test.describe('Mobile Authentication Testing', () => {
       
       await context.close();
     }
-    
-    console.log('✅ Orientation testing completed');
+
   });
   
 });

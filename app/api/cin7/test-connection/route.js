@@ -3,10 +3,9 @@ import { NextResponse } from 'next/server'
 export async function POST(request) {
   try {
     const { accountId, apiKey } = await request.json()
-    
-    console.log('🔍 Testing Cin7 connection...')
-    console.log('📝 Account ID (first 8 chars):', accountId ? accountId.substring(0, 8) + '...' : 'not provided')
-    console.log('🔑 API Key (first 8 chars):', apiKey ? apiKey.substring(0, 8) + '...' : 'not provided')
+
+    :', accountId ? accountId.substring(0, 8) + '...' : 'not provided')
+    :', apiKey ? apiKey.substring(0, 8) + '...' : 'not provided')
     
     if (!accountId || !apiKey) {
       return NextResponse.json(
@@ -17,9 +16,8 @@ export async function POST(request) {
     
     // Log the exact request we're making
     const apiUrl = 'https://inventory.dearsystems.com/externalapi/me'
-    console.log('🌐 API URL:', apiUrl)
-    console.log('📤 Request headers:', {
-      'api-auth-accountid': accountId.substring(0, 8) + '...',
+    
+     + '...',
       'api-auth-applicationkey': apiKey.substring(0, 8) + '...',
       'Accept': 'application/json',
       'Content-Type': 'application/json'
@@ -38,10 +36,9 @@ export async function POST(request) {
     })
     
     const responseText = await response.text()
-    
-    console.log('📥 Response status:', response.status)
-    console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()))
-    console.log('📥 Response body (first 200 chars):', responseText.substring(0, 200))
+
+    ))
+    :', responseText.substring(0, 200))
     
     if (response.status === 403 && responseText.includes('Incorrect credentials')) {
       console.error('❌ Cin7 authentication failed - incorrect credentials')

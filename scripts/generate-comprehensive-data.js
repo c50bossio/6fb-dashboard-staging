@@ -40,12 +40,9 @@ const supabase = createClient(
 
 faker.seed(12345)
 
-console.log('🚀 Starting comprehensive test data generation...')
-
 async function generateTestData() {
   try {
-    console.log('📍 Creating barbershop...')
-    
+
     const barbershopData = {
       id: 'demo-shop-001',
       name: 'Elite Cuts & Grooming',
@@ -82,10 +79,7 @@ async function generateTestData() {
       console.error('Error creating barbershop:', barbershopError)
       throw barbershopError
     }
-    console.log('✅ Barbershop created/updated')
 
-    console.log('✂️ Creating professional barbers...')
-    
     const barbers = [
       {
         id: 'barber-1',
@@ -187,10 +181,7 @@ async function generateTestData() {
     if (barbersError && barbersError.code !== '23505') {
       console.error('Error creating barbers:', barbersError)
     }
-    console.log('✅ 4 barbers created/updated')
 
-    console.log('💼 Creating service menu...')
-    
     const services = [
       {
         id: 'service-1',
@@ -297,10 +288,7 @@ async function generateTestData() {
     if (servicesError && servicesError.code !== '23505') {
       console.error('Error creating services:', servicesError)
     }
-    console.log('✅ 8 services created/updated')
 
-    console.log('📅 Generating realistic appointments...')
-    
     const appointments = []
     const today = new Date()
     
@@ -372,8 +360,6 @@ async function generateTestData() {
       }
     }
 
-    console.log(`📝 Inserting ${appointments.length} appointments...`)
-    
     const batchSize = 10
     let insertedCount = 0
     
@@ -390,14 +376,7 @@ async function generateTestData() {
       }
     }
 
-    console.log('✅ Test data generation completed successfully!')
-    console.log('\n📊 Summary:')
-    console.log('• 1 Elite barbershop created')
-    console.log('• 4 Professional barbers with specialties')  
-    console.log('• 8 Service categories ($20-$120 range)')
-    console.log(`• ${insertedCount} Realistic appointments over 7 days`)
-    console.log('\n🎯 Your calendar is now populated with professional demo data!')
-    console.log('🔗 Test at: http://localhost:9999/dashboard/calendar')
+    ')
 
   } catch (error) {
     console.error('❌ Error generating test data:', error)

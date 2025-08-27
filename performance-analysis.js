@@ -1,8 +1,7 @@
 const puppeteer = require('puppeteer');
 
 (async () => {
-  console.log('🔍 Analyzing network requests and resource timing...');
-  
+
   const browser = await puppeteer.launch({ 
     headless: false,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -39,8 +38,7 @@ const puppeteer = require('puppeteer');
       });
     }
   });
-  
-  console.log('📡 Starting navigation with network monitoring...');
+
   const startTime = Date.now();
   
   await page.goto('http://localhost:9999/login', {
@@ -52,14 +50,12 @@ const puppeteer = require('puppeteer');
   
   await new Promise(resolve => setTimeout(resolve, 2000));
   
-  console.log(`\n🌐 NETWORK ANALYSIS (${endTime - startTime}ms total):`);
-  console.log(`   Total requests: ${networkRequests.length}`);
-  console.log(`   Failed requests: ${failedRequests.length}`);
-  
+  :`);
+
   if (failedRequests.length > 0) {
-    console.log('\n❌ FAILED REQUESTS:');
+    
     failedRequests.forEach(req => {
-      console.log(`   ${req.status} - ${req.url}`);
+      
     });
   }
   
@@ -68,9 +64,9 @@ const puppeteer = require('puppeteer');
     .sort((a, b) => (b.duration || 0) - (a.duration || 0));
   
   if (slowRequests.length > 0) {
-    console.log('\n🐌 SLOW REQUESTS (>500ms):');
+    :');
     slowRequests.forEach(req => {
-      console.log(`   ${req.duration}ms - ${req.resourceType} - ${req.url.substring(0, 80)}...`);
+      }...`);
     });
   }
   
@@ -78,10 +74,9 @@ const puppeteer = require('puppeteer');
     acc[req.resourceType] = (acc[req.resourceType] || 0) + 1;
     return acc;
   }, {});
-  
-  console.log('\n📊 REQUESTS BY TYPE:');
+
   Object.entries(byType).forEach(([type, count]) => {
-    console.log(`   ${type}: ${count}`);
+    
   });
   
   const resourceTimings = await page.evaluate(() => {
@@ -93,11 +88,10 @@ const puppeteer = require('puppeteer');
       startTime: Math.round(resource.startTime)
     })).sort((a, b) => b.duration - a.duration);
   });
-  
-  console.log('\n⏱️  SLOWEST RESOURCES:');
+
   resourceTimings.slice(0, 10).forEach(resource => {
     const fileName = resource.name.split('/').pop().substring(0, 50);
-    console.log(`   ${resource.duration}ms - ${resource.type} - ${fileName}`);
+    
   });
   
   const jsMetrics = await page.evaluate(() => {
@@ -111,10 +105,6 @@ const puppeteer = require('puppeteer');
       totalMeasures: entries.length
     };
   });
-  
-  console.log('\n⚡ JAVASCRIPT PERFORMANCE:');
-  console.log(`   JS execution time: ${jsMetrics.jsExecutionTime}ms`);
-  console.log(`   Performance measures: ${jsMetrics.totalMeasures}`);
-  
+
   await browser.close();
 })().catch(console.error);

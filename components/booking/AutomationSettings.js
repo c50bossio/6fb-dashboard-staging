@@ -307,14 +307,13 @@ export default function AutomationSettings({
             setAnalyticsError(error.message)
           },
           onReconnect: () => {
-            console.log('Real-time analytics subscription reconnected')
+            
             setAnalyticsError(null)
           }
         }
       )
 
       setRealtimeSubscription(subscription)
-      console.log('Real-time analytics subscription established for shop:', shopId)
 
     } catch (error) {
       console.error('Failed to setup real-time subscription:', error)
@@ -329,7 +328,7 @@ export default function AutomationSettings({
     if (realtimeSubscription) {
       try {
         realtimeSubscription.unsubscribe()
-        console.log('Real-time analytics subscription cleaned up')
+        
       } catch (error) {
         console.warn('Error cleaning up subscription:', error)
       }

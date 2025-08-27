@@ -415,7 +415,7 @@ export default function CustomerQuickView({
             
             <Tooltip content="Send gift card">
               <button
-                onClick={() => console.log('Send gift card')}
+                onClick={() => {}}
                 className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
               >
                 <GiftIcon className="h-5 w-5" />

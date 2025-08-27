@@ -56,8 +56,7 @@ test.describe('Payroll System User Experience Tests', () => {
       // Verify charts are rendered
       const chartElements = await page.locator('[data-testid*="chart"]').count()
       expect(chartElements).toBeGreaterThanOrEqual(2)
-      
-      console.log(`✅ Payroll dashboard loaded in ${loadTime}ms`)
+
     })
 
     test('should display real-time commission updates', async ({ page }) => {

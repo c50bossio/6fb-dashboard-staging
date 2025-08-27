@@ -30,10 +30,6 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey)
 const verbose = process.argv.includes('--verbose')
 
-console.log('🧪 Settings Deduplication Test Suite')
-console.log('=====================================')
-console.log('')
-
 /**
  * Test Results Tracking
  */
@@ -46,10 +42,9 @@ const testResults = {
 
 function logTest(name, passed, message, isWarning = false) {
   const status = passed ? '✅ PASS' : isWarning ? '⚠️  WARN' : '❌ FAIL'
-  console.log(`${status} ${name}`)
-  
+
   if (message && (verbose || !passed)) {
-    console.log(`    ${message}`)
+    
   }
   
   testResults.details.push({ name, passed, message, isWarning })
@@ -67,9 +62,7 @@ function logTest(name, passed, message, isWarning = false) {
  * Test 1: Verify Database Schema Migration
  */
 async function testSchemaMigration() {
-  console.log('📊 Test Group 1: Database Schema Migration')
-  console.log('------------------------------------------')
-  
+
   try {
     // Test if all new tables exist
     const tables = ['organizations', 'user_organization_memberships', 'settings_hierarchy']
@@ -126,17 +119,14 @@ async function testSchemaMigration() {
   } catch (error) {
     logTest('Schema migration test', false, `Test group failed: ${error.message}`)
   }
-  
-  console.log('')
+
 }
 
 /**
  * Test 2: Verify Data Migration Accuracy
  */
 async function testDataMigration() {
-  console.log('🔄 Test Group 2: Data Migration Accuracy')
-  console.log('---------------------------------------')
-  
+
   try {
     // Compare barbershops vs organizations
     const { data: barbershops } = await supabase
@@ -188,17 +178,14 @@ async function testDataMigration() {
   } catch (error) {
     logTest('Data migration test', false, `Test group failed: ${error.message}`)
   }
-  
-  console.log('')
+
 }
 
 /**
  * Test 3: Settings Inheritance Functionality
  */
 async function testSettingsInheritance() {
-  console.log('🏗️  Test Group 3: Settings Inheritance')
-  console.log('-------------------------------------')
-  
+
   try {
     // Test if inheritance function exists and works
     const testUserId = 'test-user-id'
@@ -251,17 +238,14 @@ async function testSettingsInheritance() {
   } catch (error) {
     logTest('Settings inheritance test', false, `Test group failed: ${error.message}`)
   }
-  
-  console.log('')
+
 }
 
 /**
  * Test 4: API Compatibility Layer
  */
 async function testAPICompatibility() {
-  console.log('🔌 Test Group 4: API Compatibility')
-  console.log('----------------------------------')
-  
+
   try {
     // Test if new v2 API endpoints would work (simulate)
     // Note: We can't actually call the API endpoints in this test environment
@@ -305,17 +289,14 @@ async function testAPICompatibility() {
   } catch (error) {
     logTest('API compatibility test', false, `Test group failed: ${error.message}`)
   }
-  
-  console.log('')
+
 }
 
 /**
  * Test 5: Duplication Elimination Verification
  */
 async function testDuplicationElimination() {
-  console.log('🎯 Test Group 5: Duplication Elimination')
-  console.log('---------------------------------------')
-  
+
   try {
     // Test 1: Business contact information consolidation
     const { data: orgs } = await supabase
@@ -376,17 +357,14 @@ async function testDuplicationElimination() {
   } catch (error) {
     logTest('Duplication elimination test', false, `Test group failed: ${error.message}`)
   }
-  
-  console.log('')
+
 }
 
 /**
  * Test 6: Migration Safety Verification
  */
 async function testMigrationSafety() {
-  console.log('🛡️  Test Group 6: Migration Safety')
-  console.log('----------------------------------')
-  
+
   try {
     // Verify old tables still exist (for rollback capability)
     const oldTables = ['barbershops', 'profiles']
@@ -444,8 +422,7 @@ async function testMigrationSafety() {
   } catch (error) {
     logTest('Migration safety test', false, `Test group failed: ${error.message}`)
   }
-  
-  console.log('')
+
 }
 
 /**
@@ -463,58 +440,38 @@ async function runAllTests() {
     await testMigrationSafety()
     
     const duration = ((Date.now() - startTime) / 1000).toFixed(2)
-    
-    console.log('📊 Test Results Summary')
-    console.log('=======================')
-    console.log(`Duration: ${duration}s`)
-    console.log(`✅ Passed: ${testResults.passed}`)
-    console.log(`❌ Failed: ${testResults.failed}`)
-    console.log(`⚠️  Warnings: ${testResults.warnings}`)
-    console.log(`📋 Total: ${testResults.passed + testResults.failed + testResults.warnings}`)
-    console.log('')
-    
+
     if (testResults.failed > 0) {
-      console.log('❌ FAILED TESTS:')
+      
       testResults.details
         .filter(test => !test.passed && !test.isWarning)
         .forEach(test => {
-          console.log(`   • ${test.name}: ${test.message || 'No details'}`)
+          
         })
-      console.log('')
+      
     }
     
     if (testResults.warnings > 0) {
-      console.log('⚠️  WARNINGS:')
+      
       testResults.details
         .filter(test => test.isWarning)
         .forEach(test => {
-          console.log(`   • ${test.name}: ${test.message || 'No details'}`)
+          
         })
-      console.log('')
+      
     }
     
     // Overall assessment
     const successRate = (testResults.passed / (testResults.passed + testResults.failed)) * 100
     
     if (testResults.failed === 0) {
-      console.log('🎉 ALL TESTS PASSED!')
-      console.log('Settings deduplication system is working correctly.')
-      console.log('')
-      console.log('✅ VERIFIED CAPABILITIES:')
-      console.log('   • Database schema migration successful')
-      console.log('   • Data migration preserves integrity') 
-      console.log('   • Settings inheritance functions properly')
-      console.log('   • API compatibility layer active')
-      console.log('   • Data duplication eliminated')
-      console.log('   • Migration is safely reversible')
+
     } else if (successRate >= 80) {
-      console.log(`⚠️  MOSTLY WORKING (${successRate.toFixed(1)}% success rate)`)
-      console.log('Settings deduplication system is functional with some issues.')
-      console.log('Review failed tests above and address before production deployment.')
+      }% success rate)`)
+
     } else {
-      console.log(`❌ SYSTEM NOT READY (${successRate.toFixed(1)}% success rate)`)
-      console.log('Settings deduplication system has significant issues.')
-      console.log('Address all failed tests before proceeding.')
+      }% success rate)`)
+
       process.exit(1)
     }
     

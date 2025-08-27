@@ -21,11 +21,10 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function fixUser() {
-  console.log('🔧 Fixing user c50bossio@gmail.com...\n')
-  
+
   try {
     // Step 1: Get the user
-    console.log('📊 Fetching user...')
+    
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('*')
@@ -41,17 +40,10 @@ async function fixUser() {
       console.error('❌ User not found!')
       return
     }
-    
-    console.log('✅ Found user:', {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      barbershop_id: user.barbershop_id
-    })
-    
+
     // Step 2: Update user role if needed
     if (user.role !== 'SHOP_OWNER' && user.role !== 'shop_owner') {
-      console.log('\n🔄 Updating user role to SHOP_OWNER...')
+      
       // Only update fields that exist
       // Note: role might be lowercase in the database
       const updateData = { 
@@ -76,11 +68,11 @@ async function fixUser() {
         console.error('❌ Error updating user role:', updateError.message)
         return
       }
-      console.log('✅ User role updated to SHOP_OWNER')
+      
     }
     
     // Step 3: Check for existing barbershop
-    console.log('\n🏪 Checking for existing barbershop...')
+    
     const { data: existingShop, error: shopError } = await supabase
       .from('barbershops')
       .select('*')
@@ -96,7 +88,7 @@ async function fixUser() {
     
     // Step 4: Create barbershop if needed
     if (!existingShop) {
-      console.log('📝 Creating new barbershop...')
+      
       const { data: newShop, error: createError } = await supabase
         .from('barbershops')
         .insert({
@@ -117,20 +109,14 @@ async function fixUser() {
       }
       
       barbershopId = newShop.id
-      console.log('✅ Barbershop created:', {
-        id: newShop.id,
-        name: newShop.name
-      })
+      
     } else {
-      console.log('✅ Found existing barbershop:', {
-        id: existingShop.id,
-        name: existingShop.name
-      })
+      
     }
     
     // Step 5: Update user with barbershop_id if needed
     if (!user.barbershop_id && barbershopId) {
-      console.log('\n🔗 Linking barbershop to user...')
+      
       const { error: linkError } = await supabase
         .from('users')
         .update({ barbershop_id: barbershopId })
@@ -140,11 +126,11 @@ async function fixUser() {
         console.error('❌ Error linking barbershop:', linkError.message)
         return
       }
-      console.log('✅ Barbershop linked to user')
+      
     }
     
     // Step 6: Final verification
-    console.log('\n📊 Final verification...')
+    
     const { data: finalUser, error: finalError } = await supabase
       .from('users')
       .select(`
@@ -165,31 +151,11 @@ async function fixUser() {
         .select('*')
         .eq('email', 'c50bossio@gmail.com')
         .single()
-      
-      console.log('\n✨ User fixed successfully!')
-      console.log('Final state:', {
-        id: simpleUser.id,
-        email: simpleUser.email,
-        role: simpleUser.role,
-        barbershop_id: simpleUser.barbershop_id,
-        subscription_status: simpleUser.subscription_status,
-        onboarding_completed: simpleUser.onboarding_completed
-      })
+
     } else {
-      console.log('\n✨ User fixed successfully!')
-      console.log('Final state:', {
-        id: finalUser.id,
-        email: finalUser.email,
-        role: finalUser.role,
-        barbershop_id: finalUser.barbershop_id,
-        barbershop_name: finalUser.barbershops?.name,
-        subscription_status: finalUser.subscription_status,
-        onboarding_completed: finalUser.onboarding_completed
-      })
+
     }
-    
-    console.log('\n✅ All done! You can now log in and access the dashboard.')
-    
+
   } catch (error) {
     console.error('\n❌ Unexpected error:', error)
   }

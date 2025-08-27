@@ -31,7 +31,7 @@ class ProductionTestSuite {
   }
 
   async runTest(name, testFunction) {
-    console.log(`🧪 Running test: ${name}`);
+    
     const startTime = Date.now();
     
     try {
@@ -46,7 +46,7 @@ class ProductionTestSuite {
         timestamp: new Date().toISOString()
       });
       
-      console.log(`   ✅ PASSED (${duration}ms)`);
+      `);
       return true;
       
     } catch (error) {
@@ -60,7 +60,7 @@ class ProductionTestSuite {
         timestamp: new Date().toISOString()
       });
       
-      console.log(`   ❌ FAILED (${duration}ms): ${error.message}`);
+      : ${error.message}`);
       return false;
     }
   }
@@ -243,7 +243,7 @@ class ProductionTestSuite {
         };
         
         if (duration > CONFIG.alert_thresholds.response_time) {
-          console.log(`   ⚠️ Slow response for ${endpoint.name}: ${duration}ms`);
+          
         }
         
       } catch (error) {
@@ -259,9 +259,7 @@ class ProductionTestSuite {
   }
 
   async runAllTests() {
-    console.log('🚀 Starting Production Test Suite');
-    console.log('=================================\n');
-    
+
     const tests = [
       { name: 'Health Endpoint', fn: () => this.testHealthEndpoint() },
       { name: 'Billing Plans API', fn: () => this.testBillingPlansEndpoint() },
@@ -281,16 +279,12 @@ class ProductionTestSuite {
     
     this.results.success_rate = (passed / tests.length) * 100;
     this.results.overall_status = passed === tests.length ? 'passed' : 'failed';
-    
-    console.log('\n📊 Test Results Summary');
-    console.log('=====================');
-    console.log(`✅ Passed: ${passed}/${tests.length}`);
-    console.log(`📈 Success Rate: ${this.results.success_rate.toFixed(1)}%`);
-    console.log(`🎯 Overall Status: ${this.results.overall_status.toUpperCase()}`);
+
+    }%`);
+    }`);
     
     fs.writeFileSync('production-test-results.json', JSON.stringify(this.results, null, 2));
-    console.log('💾 Results saved to production-test-results.json');
-    
+
     return this.results;
   }
 }
@@ -359,12 +353,12 @@ class ProductionMonitor {
         this.metrics.successful_checks++;
       } else {
         this.metrics.failed_checks++;
-        console.log(`🚨 ALERT: ${result.name} is DOWN - ${result.error}`);
+        
         this.metrics.alerts_sent++;
       }
       
       if (result.response_time > CONFIG.alert_thresholds.response_time) {
-        console.log(`⚠️ SLOW RESPONSE: ${result.name} - ${result.response_time}ms`);
+        
       }
     }
     
@@ -374,19 +368,19 @@ class ProductionMonitor {
     this.metrics.last_check = new Date().toISOString();
     
     const timestamp = new Date().toLocaleTimeString();
-    console.log(`[${timestamp}] ✓ Health check complete - Uptime: ${uptime.toFixed(2)}%`);
+    }%`);
     
     return results;
   }
 
   start() {
     if (this.isRunning) {
-      console.log('Monitor is already running');
+      
       return;
     }
     
     this.isRunning = true;
-    console.log(`🔍 Starting production monitoring (${CONFIG.monitoring_interval / 1000}s interval)`);
+    `);
     
     this.performHealthCheck();
     
@@ -399,10 +393,9 @@ class ProductionMonitor {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.isRunning = false;
-      console.log('🛑 Production monitoring stopped');
-      
+
       fs.writeFileSync('monitoring-metrics.json', JSON.stringify(this.metrics, null, 2));
-      console.log('💾 Monitoring metrics saved');
+      
     }
   }
 
@@ -424,7 +417,7 @@ async function main() {
   
   switch (command) {
     case 'test':
-      console.log('🧪 Running production test suite...\n');
+      
       const testSuite = new ProductionTestSuite();
       const results = await testSuite.runAllTests();
       
@@ -434,12 +427,12 @@ async function main() {
       break;
       
     case 'monitor':
-      console.log('🔍 Starting production monitoring...\n');
+      
       const monitor = new ProductionMonitor();
       monitor.start();
       
       process.on('SIGINT', () => {
-        console.log('\n🛑 Shutting down monitor...');
+        
         monitor.stop();
         process.exit(0);
       });
@@ -448,30 +441,18 @@ async function main() {
       break;
       
     case 'status':
-      console.log('📊 Production system status...\n');
+      
       const statusMonitor = new ProductionMonitor();
       const healthResults = await statusMonitor.performHealthCheck();
-      
-      console.log('\n📈 Current Status:');
+
       healthResults.forEach(result => {
         const status = result.status === 'up' ? '🟢' : '🔴';
-        console.log(`   ${status} ${result.name}: ${result.response_time}ms`);
+        
       });
       break;
       
     default:
-      console.log('6FB AI Production Monitoring & Testing Suite');
-      console.log('===========================================');
-      console.log('');
-      console.log('Commands:');
-      console.log('  test     - Run comprehensive production test suite');
-      console.log('  monitor  - Start continuous monitoring');
-      console.log('  status   - Check current system status');
-      console.log('');
-      console.log('Examples:');
-      console.log('  node launch-monitoring.js test');
-      console.log('  node launch-monitoring.js monitor');
-      console.log('  node launch-monitoring.js status');
+
   }
 }
 

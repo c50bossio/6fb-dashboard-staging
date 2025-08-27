@@ -23,7 +23,7 @@ class NotificationService {
   }
 
   async init() {
-    console.log('🔔 Initializing Notification Service...')
+    
     this.initialized = true
   }
 
@@ -422,7 +422,6 @@ class NotificationService {
    */
   async processScheduledNotifications() {
     try {
-      console.log('🔔 Processing scheduled notifications...')
 
       // Get appointments that need reminders
       const now = new Date()
@@ -499,7 +498,7 @@ class NotificationService {
         }
       }
 
-      console.log(`🔔 Processed ${(upcoming24h?.length || 0) + (upcoming2h?.length || 0)} reminder notifications`)
+       + (upcoming2h?.length || 0)} reminder notifications`)
 
       return {
         success: true,

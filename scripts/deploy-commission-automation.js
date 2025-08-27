@@ -17,8 +17,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function deployMigration() {
-  console.log('🚀 Deploying Commission Automation Migration...')
-  
+
   try {
     // Read the migration file
     const migrationPath = path.join(__dirname, '../database/migrations/005_commission_automation.sql')
@@ -29,8 +28,7 @@ async function deployMigration() {
     }
     
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8')
-    console.log('📄 Migration file loaded successfully')
-    
+
     // Check if tables already exist
     const { data: existingTables } = await supabase
       .from('information_schema.tables')
@@ -39,31 +37,28 @@ async function deployMigration() {
       .in('table_name', ['commission_transactions', 'barber_commission_balances', 'payout_transactions'])
     
     if (existingTables && existingTables.length > 0) {
-      console.log('⚠️  Some commission tables already exist:')
-      existingTables.forEach(table => console.log(`   - ${table.table_name}`))
-      console.log('   Proceeding with migration (CREATE IF NOT EXISTS will handle conflicts)')
+      
+      existingTables.forEach(table => )
+      ')
     }
     
     // Execute the migration
-    console.log('⚡ Executing migration...')
-    
+
     // Split migration into individual statements and execute
     const statements = migrationSQL
       .split(';')
       .map(stmt => stmt.trim())
       .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'))
-    
-    console.log(`📝 Executing ${statements.length} SQL statements...`)
-    
+
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i]
       if (statement.trim()) {
         try {
           await supabase.rpc('exec_sql', { query: statement })
-          console.log(`   ✅ Statement ${i + 1}/${statements.length} executed`)
+          
         } catch (error) {
           if (error.message.includes('already exists')) {
-            console.log(`   ⚠️  Statement ${i + 1}/${statements.length} skipped (already exists)`)
+            `)
           } else {
             console.error(`   ❌ Statement ${i + 1}/${statements.length} failed:`, error.message)
             throw error
@@ -73,8 +68,7 @@ async function deployMigration() {
     }
     
     // Verify tables were created
-    console.log('\n🔍 Verifying table creation...')
-    
+
     const tablesToCheck = [
       'commission_transactions',
       'barber_commission_balances', 
@@ -91,16 +85,13 @@ async function deployMigration() {
         if (error) {
           console.error(`❌ Table ${tableName}: ${error.message}`)
         } else {
-          console.log(`✅ Table ${tableName}: accessible`)
+          
         }
       } catch (error) {
         console.error(`❌ Table ${tableName}: ${error.message}`)
       }
     }
-    
-    console.log('\n🎉 Commission Automation Migration Complete!')
-    console.log('📊 Your financial system is now ready for automated commission tracking')
-    
+
   } catch (error) {
     console.error('❌ Migration failed:', error.message)
     process.exit(1)

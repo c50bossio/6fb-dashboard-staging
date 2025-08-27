@@ -144,17 +144,9 @@ export default function CustomerIntelligenceDashboard() {
   useEffect(() => {
     // Try multiple possible barbershop ID fields
     const barbershopId = profile?.barbershop_id || profile?.shop_id || profile?.barbershopId
-    
-    console.log('🔍 Intelligence Dashboard: Looking for barbershop ID', {
-      profile,
-      barbershop_id: profile?.barbershop_id,
-      shop_id: profile?.shop_id,
-      barbershopId: profile?.barbershopId,
-      resolvedId: barbershopId
-    })
-    
+
     if (!user || !barbershopId) {
-      console.log('⚠️ Intelligence Dashboard: Missing user or barbershop ID')
+      
       setLoading(false)
       return
     }
@@ -162,16 +154,15 @@ export default function CustomerIntelligenceDashboard() {
     const fetchCustomerCount = async () => {
       try {
         setLoading(true)
-        console.log('📊 Intelligence Dashboard: Fetching customer count for barbershop:', barbershopId)
+        
         const response = await fetch(`/api/customers?barbershop_id=${barbershopId}&limit=1`)
         const data = await response.json()
-        console.log('📊 Intelligence Dashboard: Customer API response:', data)
-        
+
         if (data.success && data.total !== undefined) {
           setActualCustomerCount(data.total)
-          console.log('✅ Intelligence Dashboard: Customer count set to:', data.total)
+          
         } else {
-          console.log('⚠️ Intelligence Dashboard: No customer count in response')
+          
         }
       } catch (error) {
         console.error('❌ Intelligence Dashboard: Failed to fetch customer count:', error)
@@ -223,7 +214,7 @@ export default function CustomerIntelligenceDashboard() {
 
       } catch (err) {
         setAnalyticsError(err.message)
-        console.log('Analytics temporarily unavailable:', err.message)
+        
         // Don't set main error - this is expected when FastAPI isn't running
       } finally {
         setAnalyticsLoading(false)
@@ -245,14 +236,7 @@ export default function CustomerIntelligenceDashboard() {
 
   // Determine empty state type based on data availability
   const getEmptyStateType = () => {
-    console.log('🎯 Intelligence Dashboard Debug:', {
-      totalCustomers: summaryMetrics.totalCustomers,
-      loading,
-      analyticsLoading,
-      error,
-      analyticsError
-    })
-    
+
     if (summaryMetrics.totalCustomers === 0) return 'no-customers'
     if (summaryMetrics.totalCustomers < 5) return 'insufficient-data'
     if (summaryMetrics.totalCustomers < 10) return 'new-barbershop'
@@ -261,12 +245,6 @@ export default function CustomerIntelligenceDashboard() {
 
   const emptyStateType = getEmptyStateType()
   const hasInsufficientData = emptyStateType !== null
-  
-  console.log('🔧 Intelligence Dashboard State:', {
-    emptyStateType,
-    hasInsufficientData,
-    willShowEmptyState: hasInsufficientData
-  })
 
   // Journey stage distribution
   const stageDistribution = journeyStages.reduce((acc, stage) => {

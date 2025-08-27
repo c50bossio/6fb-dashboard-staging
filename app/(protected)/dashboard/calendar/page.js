@@ -36,12 +36,12 @@ import {
   DEFAULT_RESOURCES, 
   EMPTY_BARBER_PLACEHOLDER,
   DEFAULT_SERVICES, 
-  fetchRealBarbers,
   fetchRealEvents,
   fetchRecurringEvents,
   formatAppointment,
   exportToCSV 
 } from '../../../../lib/calendar-data'
+import unifiedStaffService from '../../../../lib/unified-staff-service'
 import { FULLCALENDAR_VIEW_MAP } from '../../../../lib/calendar-permissions'
 import { getOrAssignShopId } from '../../../../lib/ensure-user-shop'
 
@@ -155,8 +155,7 @@ export default function CalendarPage() {
   const [realtimeConnected, setRealtimeConnected] = useState(false)
   const [realtimeError, setRealtimeError] = useState(null)
   const [calendarFilters, setCalendarFilters] = useState({})
-  
-  
+
   const { 
     appointments: realtimeAppointments, 
     loading: realtimeLoading, 
@@ -179,10 +178,9 @@ export default function CalendarPage() {
   }), [realtimeHookConnected, realtimeStats, realtimeErrorMsg])
   
   const connectionAttempts = 1 // V2 always connects on first attempt
-  
 
   const handleViewChange = useCallback((newView) => {
-    console.log('📅 View changed to:', newView)
+    
     setSelectedView(newView)
     
     // Map the logical view to FullCalendar view
@@ -201,18 +199,18 @@ export default function CalendarPage() {
   }, [])
   
   const handleLocationChange = useCallback((locationIds) => {
-    console.log('📍 Locations changed:', locationIds)
+    
     setSelectedLocations(locationIds)
     loadCalendarDataForLocations(locationIds)
   }, [])
   
   const handleBarbersChange = useCallback((barberIds) => {
-    console.log('👥 Barbers changed:', barberIds)
+    
     setSelectedBarbers(barberIds)
   }, [])
   
   const handleFiltersChange = useCallback((filters) => {
-    console.log('🔍 Filters changed:', filters)
+    
     setAdvancedFilters(filters)
     setCalendarFilters(filters) // Keep for backward compatibility
     applyFiltersToEvents(filters)
@@ -225,7 +223,7 @@ export default function CalendarPage() {
     const setupShopId = async () => {
       const shopId = await getOrAssignShopId(user, profile)
       setBarbershopId(shopId)
-      console.log('Calendar using shop ID:', shopId)
+      
     }
     setupShopId()
     
@@ -272,16 +270,39 @@ export default function CalendarPage() {
     }
     
     try {
-      // Load barbers and services concurrently
-      const [barbersData, servicesData] = await Promise.all([
-        fetchRealBarbers(barbershopId),
+      // Load barbers using unified staff service and regular services
+      const [staffResponse, servicesData] = await Promise.all([
+        unifiedStaffService.getStaff(barbershopId, { useCache: true, includeAvailability: false }),
         fetchServices()
       ])
-      
-      console.log('📅 Loaded calendar data:', { barbers: barbersData.length, shopId: barbershopId })
-      
-      setResources(barbersData)
-      generateQuickLinks(barbersData)
+
+      if (staffResponse?.success && staffResponse?.staff?.length > 0) {
+        // Transform staff data to calendar resource format
+        const barbersData = staffResponse.staff.map(staff => ({
+          id: staff.id,
+          title: staff.name || staff.full_name || 'Barber',
+          eventColor: staff.calendar_color || '#546355',
+          extendedProps: {
+            email: staff.email,
+            phone: staff.phone,
+            specialties: staff.specialties || [],
+            isActive: staff.is_active !== false,
+            isRealData: true
+          }
+        }))
+        
+        setResources(barbersData)
+        generateQuickLinks(barbersData)
+        
+        // Cache invalidation handler for staff updates
+        unifiedStaffService.onStaffUpdate(() => {
+          
+          loadCalendarData()
+        })
+      } else {
+        console.warn('📅 No staff found, showing empty state')
+        setResources(EMPTY_BARBER_PLACEHOLDER)
+      }
     } catch (error) {
       console.error('Error loading calendar data:', error)
       setResources(EMPTY_BARBER_PLACEHOLDER)
@@ -309,7 +330,7 @@ export default function CalendarPage() {
       if (response.ok) {
         const data = await response.json()
         setEvents(data.events || [])
-        console.log('📍 Loaded multi-location data:', data.events?.length, 'events')
+        
       }
     } catch (error) {
       console.error('Error loading multi-location data:', error)
@@ -415,8 +436,7 @@ export default function CalendarPage() {
       
       return true
     })
-    
-    console.log('🔍 Applied filters:', events.length, '→', filteredEvents.length, 'events')
+
     // Note: We're not updating events state here to preserve the original data
     // The calendar component should handle the filtering display
   }
@@ -442,11 +462,6 @@ export default function CalendarPage() {
       const idKey = apt.id.toString()
       
       if (seen.has(idKey) || seen.has(dedupKey)) {
-        console.log('🔄 DEDUP: Skipping duplicate appointment:', {
-          id: apt.id,
-          title: apt.title,
-          reason: seen.has(idKey) ? 'same ID' : 'same time/barber/customer'
-        })
         continue
       }
       
@@ -454,15 +469,12 @@ export default function CalendarPage() {
       seen.set(dedupKey, true)
       result.push(apt)
     }
-    
-    console.log('🔄 DEDUP: Processed', appointments.length, 'appointments, kept', result.length)
+
     return result
   }
 
   useEffect(() => {
-    console.log('🔍 CALENDAR PAGE: Realtime appointments changed:', {
-      hasAppointments: !!realtimeAppointments,
-      appointmentsLength: Array.isArray(realtimeAppointments) ? realtimeAppointments.length : 'not array',
+     ? realtimeAppointments.length : 'not array',
       isConnected: realtimeHookConnected,
       lastUpdate: lastUpdate,
       timestamp: new Date().toISOString()
@@ -470,20 +482,18 @@ export default function CalendarPage() {
     
     if (realtimeAppointments && Array.isArray(realtimeAppointments) && realtimeAppointments.length > 0) {
       // 🚨 CRITICAL FIX: Use WebSocket data directly instead of ignoring it
-      console.log('📡 CALENDAR PAGE: Updating with', realtimeAppointments.length, 'appointments from WebSocket')
-      
+
       const cancelledCount = realtimeAppointments.filter(apt => 
         apt.extendedProps?.status === 'cancelled' || apt.title?.startsWith('❌')
       ).length
-      console.log('📡 CALENDAR PAGE: Cancelled appointments:', cancelledCount)
-      
+
       setEvents(realtimeAppointments)
       setRealtimeConnected(realtimeHookConnected)
       
       const newIds = new Set(realtimeAppointments.map(apt => apt.id))
       setAppointmentIds(newIds)
     } else if (!realtimeLoading && (!realtimeAppointments || realtimeAppointments.length === 0)) {
-      console.log('📅 CALENDAR PAGE: WebSocket has no data, fetching from API as fallback')
+      
       fetchRealAppointments()
     }
   }, [realtimeAppointments, realtimeHookConnected, lastUpdate]) // Removed .length to prevent infinite loops
@@ -491,7 +501,7 @@ export default function CalendarPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (events.length === 0 && !realtimeLoading) {
-        console.log('📅 Real-time timeout - using manual fetch as fallback')
+        
         fetchRealAppointments()
       }
     }, 5000) // Increased to 5 seconds to give real-time more time
@@ -501,14 +511,13 @@ export default function CalendarPage() {
   
   useEffect(() => {
     if (resources.length > 0) {
-      console.log('📅 Calendar resources loaded:', resources.length)
+      
     }
   }, [resources])
 
   const fetchRealAppointments = async () => {
-    console.log('🚨 CRITICAL: fetchRealAppointments called at', new Date().toISOString())
-    console.log('🚨 CRITICAL: Current events count before fetch:', events.length)
-    
+    .toISOString())
+
     try {
       const params = new URLSearchParams()
       const now = new Date()
@@ -524,16 +533,11 @@ export default function CalendarPage() {
       params.append('shop_id', barbershopId)
 
       const apiUrl = `/api/calendar/appointments?${params.toString()}`
-      console.log('🚨 CRITICAL: Making API request with shop filter:', apiUrl)
-      
+
       const response = await fetch(apiUrl)
-      console.log('🚨 CRITICAL: Response status:', response.status, response.ok)
-      
+
       const result = await response.json()
-      console.log('🚨 CRITICAL: Raw API result:', {
-        hasAppointments: !!result.appointments,
-        appointmentCount: result.appointments?.length || 0,
-        appointmentsArray: Array.isArray(result.appointments),
+      ,
         firstAppointment: result.appointments?.[0] || 'none',
         cancelledCount: result.appointments?.filter(apt => apt.extendedProps?.status === 'cancelled').length || 0,
         fullResult: result
@@ -543,19 +547,12 @@ export default function CalendarPage() {
         const combined = [...events, ...result.appointments]
         const uniqueAppointments = deduplicateAppointments(combined)
         
-        console.log('🚨 CRITICAL FIX: Processing appointments:', {
-          previousCount: events.length,
-          newDataCount: result.appointments.length,
-          combinedCount: combined.length,
-          finalCount: uniqueAppointments.length,
-          cancelledCount: uniqueAppointments.filter(apt => apt.extendedProps?.status === 'cancelled').length,
+        .length,
           optimisticCount: uniqueAppointments.filter(apt => apt.extendedProps?.isOptimistic).length
         })
         
         setEvents(uniqueAppointments)
-        
-        console.log('✅ CRITICAL FIX: setEvents called with', uniqueAppointments.length, 'appointments')
-        
+
         const newIds = new Set(uniqueAppointments.map(apt => apt.id))
         setAppointmentIds(newIds)
       } else {
@@ -568,7 +565,7 @@ export default function CalendarPage() {
   }
 
   const handleAutoRefresh = async () => {
-    console.log('🔄 Auto-refresh triggered (WebSocket fallback mode)')
+    ')
     await fetchRealAppointments()
   }
 
@@ -576,9 +573,7 @@ export default function CalendarPage() {
     try {
       const response = await fetch('/api/calendar/services')
       const result = await response.json()
-      
-      console.log('📅 Fetched services:', result)
-      
+
       if (response.ok && result.services?.length) {
         setServices(result.services)
       } else {
@@ -627,7 +622,6 @@ export default function CalendarPage() {
     setQuickLinks(QuickLinks)
   }
 
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (shareDropdownOpen && !event.target.closest('.share-dropdown')) {
@@ -669,22 +663,14 @@ export default function CalendarPage() {
     const barbers = quickLinks.filter(link => link.type === 'barber')
     return { locations, barbers }
   }, [quickLinks])
-  
-  
+
   const filteredEvents = useMemo(() => {
     // 🚨 CRITICAL FIX: Merge both events and appointments arrays
     const safeEvents = Array.isArray(events) ? events : []
     const safeRealtimeAppointments = Array.isArray(realtimeAppointments) ? realtimeAppointments : []
     const combinedEvents = [...safeEvents, ...safeRealtimeAppointments]
     const uniqueEvents = deduplicateAppointments(combinedEvents)
-    
-    console.log('Events debug:', {
-      eventsCount: events.length,
-      realtimeAppointmentsCount: realtimeAppointments.length,
-      combinedCount: combinedEvents.length,
-      uniqueCount: uniqueEvents.length
-    })
-    
+
     let currentEvents = [...uniqueEvents]
     
     // Apply search term filter
@@ -788,14 +774,7 @@ export default function CalendarPage() {
 
   const handleEventClick = useCallback((clickInfo) => {
     const event = clickInfo.event
-    
-    console.log('🔍 Event clicked - Debug data:', {
-      resourceId: event.resourceId,
-      extendedProps: event.extendedProps,
-      service_id: event.extendedProps.service_id,
-      barber_id: event.extendedProps.barber_id
-    })
-    
+
     setSelectedEvent({
       id: event.id,
       title: event.title,
@@ -819,14 +798,7 @@ export default function CalendarPage() {
   }, [])
 
   const handleDateSelect = useCallback((selectInfo) => {
-    console.log('📅 Calendar slot selected:', {
-      type: selectInfo.selectionType || 'unknown',
-      start: selectInfo.start,
-      end: selectInfo.end,
-      duration: selectInfo.duration,
-      barber: selectInfo.barberName || selectInfo.resourceTitle
-    })
-    
+
     const slotData = {
       start: selectInfo.start,
       end: selectInfo.end,
@@ -929,21 +901,18 @@ export default function CalendarPage() {
 
   const handleAppointmentSave = async (appointmentData) => {
     if (appointmentData?.isDeleted) {
-      console.log('Appointment deleted, waiting for real-time update...')
-      
+
       success('Appointment deleted successfully!', {
         title: 'Success',
         duration: 3000
       })
       setShowAppointmentModal(false)
-      
-      
+
       return
     }
 
     if (appointmentData?.isCancelled) {
-      console.log('Appointment cancelled, waiting for real-time update...')
-      
+
       success('Appointment cancelled successfully!', {
         title: 'Success',
         duration: 3000
@@ -954,8 +923,7 @@ export default function CalendarPage() {
     }
 
     if (appointmentData?.isUncancelled) {
-      console.log('Appointment uncancelled, waiting for real-time update...')
-      
+
       success('Appointment uncancelled successfully!', {
         title: 'Success',
         duration: 3000
@@ -966,8 +934,7 @@ export default function CalendarPage() {
     }
     
     if (appointmentData?.id && appointmentData?.is_recurring) {
-      console.log('Appointment converted to recurring, refreshing calendar...')
-      
+
       setConfirmedAppointment(appointmentData)
       
       setShowAppointmentModal(false)
@@ -977,14 +944,7 @@ export default function CalendarPage() {
     }
     
     let optimisticAppointment = null
-    
-    console.log('📅 Creating optimistic appointment with data:', {
-      scheduled_at: appointmentData.scheduled_at,
-      duration_minutes: appointmentData.duration_minutes,
-      client_name: appointmentData.client_name,
-      fullData: appointmentData
-    })
-    
+
     const scheduledDate = appointmentData.scheduled_at || appointmentData.start_time || appointmentData.start || appointmentData.dateTime
     if (!scheduledDate) {
       console.error('No valid date field found in appointment data:', appointmentData)
@@ -999,10 +959,7 @@ export default function CalendarPage() {
     const durationMinutes = appointmentData.duration_minutes || 60
     const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
     
-    console.log('📅 Creating appointment with service-based duration:', {
-      service: appointmentData.service_name,
-      duration: durationMinutes,
-      startTime: startDate.toLocaleTimeString(),
+    ,
       endTime: endDate.toLocaleTimeString()
     })
     
@@ -1037,10 +994,10 @@ export default function CalendarPage() {
       setEvents(prev => {
         const exists = prev.some(apt => apt.id === optimisticAppointment.id)
         if (exists) {
-          console.log('📅 Appointment already exists, skipping optimistic update')
+          
           return prev
         }
-        console.log('📅 Adding optimistic appointment to calendar:', optimisticAppointment.id)
+        
         return [...prev, optimisticAppointment]
       })
       info('Booking appointment...', {
@@ -1092,23 +1049,17 @@ export default function CalendarPage() {
                 isOptimistic: false // Real appointment
               }
             }
-            
-            console.log('📅 OPTIMISTIC REPLACEMENT: Replaced optimistic with real appointment:', {
-              oldId: optimisticAppointment.id,
-              newId: realAppointment.id,
-              title: realAppointment.title
-            })
-            
+
             const combined = [...withoutOptimistic, realAppointment]
             return deduplicateAppointments(combined)
           })
         } else {
-          console.log('📅 No optimistic appointment to replace or no API response data')
+          
         }
       } else {
         if (optimisticAppointment) {
           setEvents(prev => prev.filter(event => event.id !== optimisticAppointment.id))
-          console.log('📅 Removed optimistic appointment due to failure:', optimisticAppointment.id)
+          
         }
         
         showError(result.error || 'Failed to book appointment', {
@@ -1119,7 +1070,7 @@ export default function CalendarPage() {
     } catch (error) {
       if (optimisticAppointment) {
         setEvents(prev => prev.filter(event => event.id !== optimisticAppointment.id))
-        console.log('📅 Removed optimistic appointment due to error:', optimisticAppointment.id)
+        
       }
       
       showError('Failed to book appointment: ' + error.message, {
@@ -1287,8 +1238,7 @@ export default function CalendarPage() {
   const shopName = profile?.shop_name || user?.user_metadata?.shop_name || 'your barbershop'
 
   const handleAddBarber = () => {
-    console.log('🔍 Complete Setup clicked - launching onboarding')
-    
+
     // Use the existing global onboarding system
     // This will trigger the DashboardOnboarding component in the protected layout
     window.dispatchEvent(new CustomEvent('launchOnboarding', { 
@@ -1342,8 +1292,7 @@ export default function CalendarPage() {
     <div className="min-h-screen bg-gray-50 relative">
       {/* WebSocket Debug Panel - Temporarily disabled due to logs error */}
       {/* <WebSocketDebugPanel /> */}
-      
-      
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="px-6 py-4">
@@ -1614,7 +1563,6 @@ export default function CalendarPage() {
         </div>
       </div>
 
-
       {/* Calendar Container */}
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
@@ -1626,8 +1574,7 @@ export default function CalendarPage() {
             onEventClick={handleEventClick}
             onSlotClick={handleDateSelect}
             onEventDrop={(dropInfo) => {
-              console.log('Event dropped:', dropInfo)
-              
+
               const appointment = {
                 id: dropInfo.event.id,
                 title: dropInfo.event.title,
@@ -1930,7 +1877,7 @@ export default function CalendarPage() {
           {/* Action Buttons */}
           <div className="flex items-center space-x-3 mt-4 pt-3 border-t border-gray-700">
             <button
-              onClick={() => console.log('Full diagnostics:', diagnostics)}
+              onClick={() => }
               className="px-3 py-1 bg-olive-600 hover:bg-olive-700 rounded text-xs"
             >
               Log Full Diagnostics

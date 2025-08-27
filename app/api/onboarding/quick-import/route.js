@@ -133,10 +133,7 @@ export async function POST(request) {
     importResults.nextSteps = generateNextSteps(importResults.summary, importResults.warnings)
 
     // Log final results for debugging
-    console.log('Quick import completed:', {
-      barbershopId,
-      filesProcessed: importResults.summary.filesProcessed,
-      totalImported: Object.values(importResults.summary.imported).reduce((a, b) => a + b, 0),
+    .reduce((a, b) => a + b, 0),
       success: importResults.success
     })
 

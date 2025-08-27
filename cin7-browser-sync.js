@@ -12,8 +12,7 @@ class CIN7BrowserSync {
   }
 
   async initialize() {
-    console.log('🚀 Starting CIN7 Browser Automation...\n');
-    
+
     // Launch browser with persistent context to maintain login
     this.browser = await chromium.launch({
       headless: false,  // Set to true in production
@@ -24,13 +23,11 @@ class CIN7BrowserSync {
     
     // Set realistic viewport
     await this.page.setViewportSize({ width: 1280, height: 720 });
-    
-    console.log('✅ Browser initialized\n');
+
   }
 
   async login(email, password) {
-    console.log('🔐 Logging into CIN7 Core...\n');
-    
+
     try {
       // Navigate to CIN7 login
       await this.page.goto('https://inventory.dearsystems.com/Login', {
@@ -39,7 +36,7 @@ class CIN7BrowserSync {
       
       // Check if already logged in
       if (this.page.url().includes('/Dashboard')) {
-        console.log('✅ Already logged in!\n');
+        
         this.isLoggedIn = true;
         return true;
       }
@@ -53,8 +50,7 @@ class CIN7BrowserSync {
       
       // Wait for navigation
       await this.page.waitForURL('**/Dashboard**', { timeout: 10000 });
-      
-      console.log('✅ Successfully logged in!\n');
+
       this.isLoggedIn = true;
       return true;
       
@@ -65,8 +61,7 @@ class CIN7BrowserSync {
   }
 
   async navigateToAPIExplorer() {
-    console.log('🔍 Navigating to API Explorer...\n');
-    
+
     try {
       // Go to integrations/API section
       await this.page.goto('https://inventory.dearsystems.com/ExternalApi/Settings', {
@@ -79,8 +74,7 @@ class CIN7BrowserSync {
         await explorerTab.click();
         await this.page.waitForTimeout(2000);
       }
-      
-      console.log('✅ API Explorer ready\n');
+
       return true;
       
     } catch (error) {
@@ -90,8 +84,7 @@ class CIN7BrowserSync {
   }
 
   async executeAPICall(endpoint, method = 'GET', params = {}) {
-    console.log(`📡 Executing API call: ${method} ${endpoint}`);
-    
+
     try {
       // Intercept the API response
       const responsePromise = this.page.waitForResponse(
@@ -131,7 +124,7 @@ class CIN7BrowserSync {
       }, { url, method });
       
       if (result.success) {
-        console.log(`✅ Success! Retrieved ${JSON.stringify(result.data).length} bytes of data\n`);
+        .length} bytes of data\n`);
         return result.data;
       } else {
         console.error(`❌ API call failed: ${result.error}\n`);
@@ -145,7 +138,7 @@ class CIN7BrowserSync {
   }
 
   async getProducts(limit = 100, page = 1) {
-    console.log(`📦 Fetching products (page ${page}, limit ${limit})...\n`);
+    ...\n`);
     
     const data = await this.executeAPICall('/products', 'GET', {
       limit: limit,
@@ -153,8 +146,7 @@ class CIN7BrowserSync {
     });
     
     if (data && data.Products) {
-      console.log(`✅ Retrieved ${data.Products.length} products`);
-      console.log(`   Total available: ${data.Total}\n`);
+
       return data;
     }
     
@@ -162,7 +154,7 @@ class CIN7BrowserSync {
   }
 
   async getInventory(limit = 100, page = 1) {
-    console.log(`📊 Fetching inventory levels (page ${page}, limit ${limit})...\n`);
+    ...\n`);
     
     const data = await this.executeAPICall('/stock', 'GET', {
       limit: limit,
@@ -170,7 +162,7 @@ class CIN7BrowserSync {
     });
     
     if (data) {
-      console.log(`✅ Retrieved inventory data\n`);
+      
       return data;
     }
     
@@ -178,7 +170,7 @@ class CIN7BrowserSync {
   }
 
   async getCustomers(limit = 100, page = 1) {
-    console.log(`👥 Fetching customers (page ${page}, limit ${limit})...\n`);
+    ...\n`);
     
     const data = await this.executeAPICall('/customers', 'GET', {
       limit: limit,
@@ -186,8 +178,7 @@ class CIN7BrowserSync {
     });
     
     if (data && data.Customers) {
-      console.log(`✅ Retrieved ${data.Customers.length} customers`);
-      console.log(`   Total available: ${data.Total}\n`);
+
       return data;
     }
     
@@ -195,8 +186,7 @@ class CIN7BrowserSync {
   }
 
   async getAllProducts() {
-    console.log('📦 Fetching ALL products from CIN7...\n');
-    
+
     const allProducts = [];
     let page = 1;
     const limit = 100;
@@ -213,7 +203,7 @@ class CIN7BrowserSync {
         hasMore = totalFetched < data.Total;
         
         if (hasMore) {
-          console.log(`   Progress: ${allProducts.length} / ${data.Total} products\n`);
+          
           page++;
           await this.page.waitForTimeout(1000); // Rate limiting
         }
@@ -221,20 +211,17 @@ class CIN7BrowserSync {
         hasMore = false;
       }
     }
-    
-    console.log(`✅ Fetched ${allProducts.length} total products\n`);
+
     return allProducts;
   }
 
   async saveToDatabase(data, type = 'products') {
-    console.log(`💾 Saving ${type} to database...\n`);
-    
+
     try {
       // Save to JSON file as backup
       const filename = `cin7_${type}_${Date.now()}.json`;
       await fs.writeFile(filename, JSON.stringify(data, null, 2));
-      console.log(`✅ Saved to ${filename}\n`);
-      
+
       // TODO: Integrate with Supabase database
       // This would normally save to your actual database
       
@@ -246,8 +233,7 @@ class CIN7BrowserSync {
   }
 
   async calculateInventoryValue(products) {
-    console.log('💰 Calculating total inventory value...\n');
-    
+
     let totalValue = 0;
     let totalQuantity = 0;
     
@@ -258,13 +244,10 @@ class CIN7BrowserSync {
         totalQuantity += product.QuantityOnHand;
       }
     }
-    
-    console.log(`📊 Inventory Summary:`);
-    console.log(`   Total Products: ${products.length}`);
-    console.log(`   Total Quantity: ${totalQuantity.toLocaleString()}`);
-    console.log(`   Total Value: $${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-    console.log('');
-    
+
+    }`);
+    }`);
+
     return {
       productCount: products.length,
       totalQuantity,
@@ -275,7 +258,7 @@ class CIN7BrowserSync {
   async close() {
     if (this.browser) {
       await this.browser.close();
-      console.log('🔚 Browser closed\n');
+      
     }
   }
 }
@@ -289,8 +272,8 @@ async function main() {
     await sync.initialize();
     
     // You'll need to provide credentials
-    console.log('⚠️  IMPORTANT: You need to provide CIN7 login credentials\n');
-    console.log('Please update the login() call with your email and password.\n');
+    
+     call with your email and password.\n');
     
     // Login to CIN7
     // await sync.login('your-email@example.com', 'your-password');
@@ -310,17 +293,10 @@ async function main() {
     //   
     //   // Verify we can sync $500,000+ inventory
     //   if (summary.totalValue >= 500000) {
-    //     console.log('✅ SUCCESS: Can sync $500,000+ inventory!');
+    //     
     //   }
     // }
-    
-    console.log('\n🎯 NEXT STEPS:');
-    console.log('1. Uncomment the login and sync code above');
-    console.log('2. Add your CIN7 email and password');
-    console.log('3. Run this script to sync your inventory');
-    console.log('4. The data will be saved to JSON files');
-    console.log('5. Integrate with your Supabase database\n');
-    
+
   } catch (error) {
     console.error('❌ Error:', error);
   } finally {

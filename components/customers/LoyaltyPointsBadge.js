@@ -42,17 +42,15 @@ export default function LoyaltyPointsBadge({
       balanceUrl.searchParams.set('action', 'balance')
       if (programId) balanceUrl.searchParams.set('program_id', programId)
 
-      console.log('🔍 [LOYALTY BADGE] Fetching points for customer:', customerId)
       const balanceResponse = await fetch(balanceUrl)
 
       if (balanceResponse.ok) {
         const balanceData = await balanceResponse.json()
-        console.log('✅ [LOYALTY BADGE] API response success:', balanceData.success)
-        
+
         if (balanceData.success) {
           const data = Array.isArray(balanceData.balances) ? balanceData.balances[0] : balanceData.balances
           setLoyaltyData(data)
-          console.log('✅ [LOYALTY BADGE] Loyalty data loaded for customer:', customerId)
+          
         } else {
           console.warn('⚠️  [LOYALTY BADGE] API returned success: false for customer:', customerId)
           setError('No loyalty data available')

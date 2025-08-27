@@ -17,8 +17,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 async function fixProductStockLevels() {
   try {
-    console.log('🔧 Fixing product stock levels...\n');
-    
+
     // Get all products with 0 stock
     const { data: products, error: fetchError } = await supabase
       .from('products')
@@ -31,12 +30,9 @@ async function fixProductStockLevels() {
     }
 
     if (!products || products.length === 0) {
-      console.log('✅ No products with 0 stock found!');
+      
       return;
     }
-
-    console.log(`📦 Found ${products.length} products with 0 stock`);
-    console.log('🔄 Setting realistic stock levels...\n');
 
     // Define realistic stock levels by category
     const getStockByCategory = (category, price) => {
@@ -72,13 +68,11 @@ async function fixProductStockLevels() {
       if (updateError) {
         console.error(`❌ Failed to update ${product.name}:`, updateError.message);
       } else {
-        console.log(`✅ ${product.name}: 0 → ${newStock} units`);
+        
         updatedCount++;
       }
     }
 
-    console.log(`\n🎉 Successfully updated ${updatedCount}/${products.length} products`);
-    
     // Show updated metrics
     const { data: updatedProducts } = await supabase
       .from('products')
@@ -92,11 +86,8 @@ async function fixProductStockLevels() {
         outOfStock: updatedProducts.filter(p => p.current_stock === 0).length
       };
 
-      console.log('\n📊 Updated Inventory Metrics:');
-      console.log(`   📦 Total Products: ${metrics.totalProducts}`);
-      console.log(`   💰 Inventory Value: $${metrics.totalValue.toLocaleString()}`);
-      console.log(`   ⚠️  Low Stock Items: ${metrics.lowStock}`);
-      console.log(`   ❌ Out of Stock: ${metrics.outOfStock}`);
+      }`);
+
     }
 
   } catch (error) {
@@ -105,15 +96,9 @@ async function fixProductStockLevels() {
 }
 
 async function main() {
-  console.log('🚀 Product Stock Level Fixer\n');
-  console.log('This script will set realistic stock levels for products that currently have 0 stock.\n');
-  
+
   await fixProductStockLevels();
-  
-  console.log('\n🔗 Next steps:');
-  console.log('1. Refresh your products page: http://localhost:9999/shop/products');
-  console.log('2. You should see products with realistic stock levels');
-  console.log('3. Set up your CIN7 credentials to sync real inventory data');
+
 }
 
 main().catch(console.error);

@@ -115,8 +115,7 @@ export default function QuickOnboardingFlow({ onComplete, initialData = {}, prof
     setIsProcessing(true)
     
     try {
-      console.log('🎉 Onboarding completed with data:', onboardingData)
-      
+
       // Save onboarding data to backend
       const response = await fetch('/api/onboarding/complete', {
         method: 'POST',
@@ -135,7 +134,7 @@ export default function QuickOnboardingFlow({ onComplete, initialData = {}, prof
         console.warn('Failed to save onboarding data to backend')
       } else {
         const result = await response.json()
-        console.log('✅ Onboarding saved successfully:', result)
+        
       }
       
       if (onComplete) {
@@ -225,8 +224,7 @@ export default function QuickOnboardingFlow({ onComplete, initialData = {}, prof
   }
 
   // Component render logging
-  console.log('🚀 QuickOnboardingFlow: Rendering', { hasUser: !!user, hasProfile: !!profile })
-  
+
   return (
     <>
       {/* Modal Overlay - FIXED POSITION TO APPEAR ON TOP */}
@@ -236,7 +234,7 @@ export default function QuickOnboardingFlow({ onComplete, initialData = {}, prof
           {/* Close Button */}
           <button
             onClick={() => {
-              console.log('🔚 User closed onboarding modal')
+              
               if (onComplete) {
                 onComplete({ skipped: true, ...onboardingData })
               }

@@ -15,27 +15,14 @@ async function verifySetup() {
     .single();
   
   if (profile) {
-    console.log('✅ Your account is ready!');
-    console.log('\n👤 Profile Details:');
-    console.log('   Name:', profile.full_name);
-    console.log('   Email:', profile.email);
-    console.log('   Role:', profile.role);
-    console.log('   Subscription:', profile.subscription_tier);
-    
+
     if (profile.barbershops) {
-      console.log('\n🏪 Your Barbershop:');
-      console.log('   Name:', profile.barbershops.name);
-      console.log('   Address:', profile.barbershops.address);
-      console.log('   Shop ID:', profile.shop_id);
+
     }
-    
-    console.log('\n✨ Available Features:');
-    console.log('   ✅ Add Barber - Create or invite staff members');
-    console.log('   ' + (profile.role === 'ENTERPRISE_OWNER' ? '✅' : '⚠️ ') + ' Add Location - ' + 
+
+     + ' Add Location - ' + 
       (profile.role === 'ENTERPRISE_OWNER' ? 'Create new locations' : 'Requires Enterprise upgrade'));
-    console.log('   ✅ Manage Services');
-    console.log('   ✅ View Dashboard');
-    console.log('   ✅ Process Payments');
+
   }
   
   process.exit(0);
