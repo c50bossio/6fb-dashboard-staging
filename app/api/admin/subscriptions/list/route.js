@@ -22,7 +22,7 @@ async function getSubscriptions(request) {
   const offset = (page - 1) * limit
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     let query = supabase
       .from('users')
@@ -87,9 +87,9 @@ async function getSubscriptions(request) {
       active: stats?.filter(s => s.subscription_status === 'active').length || 0,
       trialing: stats?.filter(s => s.subscription_status === 'trialing').length || 0,
       past_due: stats?.filter(s => s.subscription_status === 'past_due').length || 0,
-      individual: stats?.filter(s => s.subscription_tier === 'individual').length || 0,
-      shop: stats?.filter(s => s.subscription_tier === 'shop').length || 0,
-      enterprise: stats?.filter(s => s.subscription_tier === 'enterprise').length || 0
+      individual: stats?.filter(s => ['individual', 'INDIVIDUAL'].includes(s.subscription_tier)).length || 0,
+      shop: stats?.filter(s => ['shop', 'shop_owner', 'PROFESSIONAL'].includes(s.subscription_tier)).length || 0,
+      enterprise: stats?.filter(s => ['enterprise', 'ENTERPRISE'].includes(s.subscription_tier)).length || 0
     }
     
     await logAdminAction(request, 'view_subscriptions', {

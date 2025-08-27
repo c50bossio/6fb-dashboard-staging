@@ -1,6 +1,9 @@
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import webhookSecurity from '@/lib/webhook-security'
+import webhookRetryManager from '@/lib/webhook-retry-manager'
+import { handleProductSalePayment } from '@/lib/product-commission-webhook-handler'
 
 export const runtime = 'nodejs'
 
@@ -13,9 +16,38 @@ const stripe = process.env.STRIPE_SECRET_KEY
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_demo'
 
 export async function POST(request) {
+  const startTime = Date.now()
+  const headersList = headers()
+  const clientIp = headersList.get('x-forwarded-for') || 'unknown'
+  const userAgent = headersList.get('user-agent') || 'unknown'
+  
   try {
+    // Security: Rate limiting check
+    const rateLimitResult = webhookSecurity.checkRateLimit(clientIp)
+    if (!rateLimitResult.allowed) {
+      await webhookSecurity.logSecurityEvent('rate_limit_exceeded', {
+        client_ip: clientIp,
+        requests: rateLimitResult.requestCount,
+        limit: rateLimitResult.limit
+      }, 'warning')
+      
+      return NextResponse.json(
+        { 
+          error: 'Rate limit exceeded',
+          limit: rateLimitResult.limit,
+          reset_time: rateLimitResult.resetTime
+        },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
+            ...webhookSecurity.getSecurityHeaders()
+          }
+        }
+      )
+    }
+
     const body = await request.text()
-    const headersList = headers()
     const sig = headersList.get('stripe-signature')
 
     let event
@@ -24,16 +56,88 @@ export async function POST(request) {
       if (!stripe) {
         return NextResponse.json(
           { error: 'Stripe not configured - webhook processing unavailable' },
-          { status: 503 }
+          { 
+            status: 503,
+            headers: webhookSecurity.getSecurityHeaders()
+          }
         )
       }
       
+      // Enhanced signature verification
+      const signatureResult = webhookSecurity.verifyStripeSignature(body, sig, endpointSecret)
+      if (!signatureResult.valid) {
+        await webhookSecurity.logSecurityEvent('signature_verification_failed', {
+          error: signatureResult.error,
+          code: signatureResult.code,
+          client_ip: clientIp,
+          user_agent: userAgent
+        }, 'error')
+        
+        return NextResponse.json(
+          { error: 'Webhook signature verification failed' },
+          { 
+            status: 400,
+            headers: webhookSecurity.getSecurityHeaders()
+          }
+        )
+      }
+
       event = stripe.webhooks.constructEvent(body, sig, endpointSecret)
+      
+      // Validate event structure
+      const validationResult = webhookSecurity.validateWebhookPayload(event)
+      if (!validationResult.valid) {
+        await webhookSecurity.logSecurityEvent('payload_validation_failed', {
+          errors: validationResult.errors,
+          event_type: event?.type,
+          event_id: event?.id
+        }, 'error')
+        
+        return NextResponse.json(
+          { error: 'Invalid webhook payload' },
+          { 
+            status: 400,
+            headers: webhookSecurity.getSecurityHeaders()
+          }
+        )
+      }
+
+      // Check for replay attacks
+      const replayResult = await webhookSecurity.checkReplayAttack(event.id, event.created)
+      if (replayResult.isReplay) {
+        await webhookSecurity.logSecurityEvent('replay_attack_detected', {
+          event_id: event.id,
+          original_processed_at: replayResult.originalProcessedAt,
+          client_ip: clientIp
+        }, 'warning')
+        
+        return NextResponse.json(
+          { error: 'Event already processed' },
+          { 
+            status: 409,
+            headers: webhookSecurity.getSecurityHeaders()
+          }
+        )
+      }
+
+      // Sanitize event data
+      event = webhookSecurity.sanitizeWebhookEvent(event)
+      
     } catch (err) {
-      console.error('Webhook signature verification failed:', err.message)
+      console.error('Webhook processing error:', err.message)
+      
+      await webhookSecurity.logSecurityEvent('webhook_processing_error', {
+        error: err.message,
+        client_ip: clientIp,
+        user_agent: userAgent
+      }, 'error')
+      
       return NextResponse.json(
         { error: 'Webhook signature verification failed' },
-        { status: 400 }
+        { 
+          status: 400,
+          headers: webhookSecurity.getSecurityHeaders()
+        }
       )
     }
 
@@ -122,19 +226,100 @@ export async function POST(request) {
         await handlePaymentIntentFailed(event.data.object)
         break
 
+      // Transfer webhook events for commission tracking
+      case 'transfer.created':
+        await handleTransferCreated(event.data.object)
+        break
+
+      case 'transfer.paid':
+        await handleTransferPaid(event.data.object)
+        break
+
+      case 'transfer.failed':
+        await handleTransferFailed(event.data.object)
+        break
+
+      case 'transfer.reversed':
+        await handleTransferReversed(event.data.object)
+        break
+
       default:
         // Unhandled event type
         break
     }
 
-    return NextResponse.json({ received: true })
+    // Record successful processing
+    const processingTime = Date.now() - startTime
+    
+    // Update processing statistics
+    await updateWebhookStats(event.type, true, processingTime)
+    
+    // Log successful processing
+    await webhookSecurity.logSecurityEvent('webhook_processed_successfully', {
+      event_type: event.type,
+      event_id: event.id,
+      processing_time_ms: processingTime,
+      client_ip: clientIp
+    }, 'info')
+
+    return NextResponse.json({ 
+      received: true,
+      processed_at: new Date().toISOString(),
+      processing_time_ms: processingTime
+    }, {
+      headers: webhookSecurity.getSecurityHeaders()
+    })
 
   } catch (error) {
+    const processingTime = Date.now() - startTime
+    
     console.error('Webhook error:', error)
+    
+    // Record failed processing
+    await updateWebhookStats(event?.type || 'unknown', false, processingTime)
+    
+    // Log error
+    await webhookSecurity.logSecurityEvent('webhook_processing_failed', {
+      error: error.message,
+      stack: error.stack,
+      event_type: event?.type,
+      event_id: event?.id,
+      processing_time_ms: processingTime,
+      client_ip: clientIp
+    }, 'error')
+    
+    // Add to dead letter queue for manual review
+    if (event) {
+      await webhookRetryManager.createDeadLetterRecord(
+        event.type,
+        event,
+        `Processing failed: ${error.message}`
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Webhook handler failed', details: error.message },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: webhookSecurity.getSecurityHeaders()
+      }
     )
+  }
+}
+
+// Helper function to update webhook statistics
+async function updateWebhookStats(eventType, success, processingTimeMs) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    
+    await supabase.rpc('update_webhook_stats', {
+      p_event_type: eventType,
+      p_success: success,
+      p_processing_time_ms: processingTimeMs
+    })
+  } catch (error) {
+    console.error('Failed to update webhook stats:', error)
   }
 }
 
@@ -329,34 +514,132 @@ async function handleTrialWillEnd(subscription) {
 }
 
 async function handleCheckoutCompleted(session) {
-  const tenantId = session.metadata?.tenant_id
-  const planName = session.metadata?.plan
+  const userId = session.client_reference_id || session.metadata?.userId
+  const plan = session.metadata?.plan
+  const billing = session.metadata?.billing
   
-  if (!tenantId) {
-    console.error('No tenant_id in checkout session metadata')
+  console.log('Checkout completed:', { userId, plan, billing })
+  
+  if (!userId) {
+    console.error('No user ID in checkout session')
     return
   }
 
   try {
-    const checkoutData = {
-      tenant_id: tenantId,
-      stripe_checkout_session_id: session.id,
-      stripe_customer_id: session.customer,
-      subscription_id: session.subscription,
-      plan_name: planName,
-      amount_total: session.amount_total / 100,
-      currency: session.currency,
-      payment_status: session.payment_status,
-      completed_at: new Date()
+    const { createClient } = await import('@/lib/supabase/server')
+    const { createBarbershopForOwner } = await import('@/lib/barbershop-helper')
+    const supabase = await createClient()
+    
+    // Map plan to role and standardize tier naming
+    let role = 'SHOP_OWNER'
+    let subscription_tier = 'PROFESSIONAL'  // Default to PROFESSIONAL for backwards compatibility
+    
+    if (plan === 'barber') {
+      role = 'BARBER'
+      subscription_tier = 'INDIVIDUAL'
+    } else if (plan === 'shop') {
+      role = 'SHOP_OWNER'
+      subscription_tier = 'PROFESSIONAL'  // Shop Owner = PROFESSIONAL tier
+    } else if (plan === 'enterprise') {
+      role = 'ENTERPRISE_OWNER'
+      subscription_tier = 'ENTERPRISE'
     }
-
-
-    await sendSubscriptionEmail(tenantId, 'checkout_completed', {
-      plan_name: planName,
-      amount: checkoutData.amount_total,
+    
+    console.log('Updating user role based on subscription:', { userId, role, plan })
+    
+    // Update user profile with role and subscription info
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .update({ 
+        role: role,
+        subscription_status: 'active',
+        subscription_tier: subscription_tier,
+        stripe_customer_id: session.customer,
+        stripe_subscription_id: session.subscription
+      })
+      .eq('id', userId)
+      .select()
+      .single()
+      
+    if (profileError) {
+      console.error('Failed to update profile:', profileError)
+      return
+    }
+    
+    console.log('Profile updated successfully')
+    
+    // Get user details for barbershop creation
+    const { data: { user } } = await supabase.auth.admin.getUserById(userId)
+    
+    if (!user) {
+      console.error('User not found:', userId)
+      return
+    }
+    
+    // Create barbershop for barbers and shop owners
+    if (role === 'BARBER' || role === 'SHOP_OWNER') {
+      try {
+        const userName = profile.first_name || profile.full_name || user.email?.split('@')[0]
+        const shopName = role === 'BARBER' 
+          ? `${userName}'s Chair` 
+          : `${userName}'s Barbershop`
+        
+        const barbershop = await createBarbershopForOwner(user, {
+          name: shopName,
+          email: user.email,
+          type: role === 'BARBER' ? 'individual' : 'multi-barber'
+        })
+        
+        console.log('✅ Barbershop created via webhook:', barbershop.id)
+        
+        // Update profile with shop_id
+        await supabase
+          .from('profiles')
+          .update({ shop_id: barbershop.id })
+          .eq('id', userId)
+          
+      } catch (barbershopError) {
+        console.error('Barbershop creation failed in webhook:', barbershopError)
+      }
+    }
+    
+    // For enterprise owners, create organization
+    if (role === 'ENTERPRISE_OWNER') {
+      try {
+        const userName = profile.first_name || profile.full_name || user.email?.split('@')[0]
+        
+        const { data: organization } = await supabase
+          .from('organizations')
+          .insert({
+            name: `${userName}'s Organization`,
+            owner_id: userId,
+            tier: 'enterprise'
+          })
+          .select()
+          .single()
+          
+        if (organization) {
+          console.log('✅ Organization created via webhook:', organization.id)
+          
+          // Create first barbershop
+          const barbershop = await createBarbershopForOwner(user, {
+            name: `${organization.name} - Main Location`,
+            organization_id: organization.id
+          })
+          
+          console.log('✅ First barbershop created under organization')
+        }
+      } catch (orgError) {
+        console.error('Organization creation failed in webhook:', orgError)
+      }
+    }
+    
+    // Send welcome email
+    await sendSubscriptionEmail(userId, 'checkout_completed', {
+      plan_name: plan,
+      amount: session.amount_total / 100,
       customer_portal_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`
     })
-
 
   } catch (error) {
     console.error('Error handling checkout completed:', error)
@@ -405,7 +688,7 @@ async function handleAccountUpdated(account) {
   try {
     // Import Supabase client
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Update account status in database
     const { error } = await supabase
@@ -468,7 +751,7 @@ async function handleAccountUpdated(account) {
 async function handleAccountDeauthorized(account) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Mark account as deauthorized
     await supabase
@@ -491,7 +774,7 @@ async function handleAccountDeauthorized(account) {
 async function handleCapabilityUpdated(capability) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Update capability status
     const { data: account } = await supabase
@@ -522,7 +805,7 @@ async function handleCapabilityUpdated(capability) {
 async function handlePayoutCreated(payout) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get connected account
     const { data: account } = await supabase
@@ -560,7 +843,7 @@ async function handlePayoutCreated(payout) {
 async function handlePayoutPaid(payout) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Update payout status
     await supabase
@@ -608,7 +891,7 @@ async function handlePayoutPaid(payout) {
 async function handlePayoutFailed(payout) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Update payout status
     await supabase
@@ -636,7 +919,7 @@ async function handlePersonUpdated(person) {
 async function handleExternalAccountCreated(externalAccount) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get connected account
     const { data: account } = await supabase
@@ -672,7 +955,7 @@ async function handleExternalAccountCreated(externalAccount) {
 async function handleExternalAccountUpdated(externalAccount) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Update bank account status
     await supabase
@@ -697,7 +980,7 @@ async function handleExternalAccountUpdated(externalAccount) {
 async function handlePaymentIntentSucceeded(paymentIntent) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Check if this is a booking payment
     const bookingId = paymentIntent.metadata?.booking_id
@@ -773,8 +1056,47 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
       paymentMethod: 'card'
     })
 
-    // Calculate and record commission if financial arrangement exists
-    await processCommissionCalculation(paymentIntent, supabase)
+    // Process product sale commission if applicable
+    const productSaleResult = await handleProductSalePayment(paymentIntent, supabase)
+    
+    if (productSaleResult.success && productSaleResult.reason !== 'no_product_sale') {
+      console.log(`🛍️ Product commission processed: $${productSaleResult.commission_amount} (${productSaleResult.processing_time}ms)`)
+    }
+
+    // Calculate and record service commission if financial arrangement exists
+    const commissionResult = await processCommissionCalculation(paymentIntent, supabase)
+    
+    if (commissionResult.success) {
+      console.log(`💰 Service commission calculated: $${commissionResult.commission_amount} (${commissionResult.arrangement_type})`)
+      
+      // Update booking metadata with commission info
+      const commissionMetadata = {
+        commission_calculated: true,
+        service_commission_amount: commissionResult.commission_amount,
+        product_commission_amount: productSaleResult.commission_amount || 0,
+        total_commission_amount: commissionResult.commission_amount + (productSaleResult.commission_amount || 0),
+        shop_amount: commissionResult.shop_amount,
+        transaction_id: commissionResult.transaction_id,
+        arrangement_type: commissionResult.arrangement_type,
+        has_product_sales: productSaleResult.success && productSaleResult.reason !== 'no_product_sale'
+      }
+      
+      // Add commission info to booking notes
+      let commissionNotes = booking.notes || ''
+      if (commissionNotes.trim()) {
+        commissionNotes += '\n\n'
+      }
+      commissionNotes += `COMMISSION_INFO: ${JSON.stringify(commissionMetadata)}`
+      
+      await supabase
+        .from('bookings')
+        .update({
+          notes: commissionNotes
+        })
+        .eq('id', bookingId)
+    } else if (commissionResult.reason !== 'no_arrangement') {
+      console.warn(`⚠️ Service commission calculation failed: ${commissionResult.reason}`)
+    }
 
     // Send notification via booking notification service
     await sendBookingNotification({
@@ -800,7 +1122,7 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
 async function handlePaymentIntentFailed(paymentIntent) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Check if this is a booking payment
     const bookingId = paymentIntent.metadata?.booking_id
@@ -893,40 +1215,108 @@ async function processCommissionCalculation(paymentIntent, supabase) {
     const barberId = metadata.barber_id
     const barbershopId = metadata.barbershop_id
     
-    // Skip if no arrangement data
+    // Skip if no arrangement data - this is normal for non-commission payments
     if (!arrangementId || !barberId || !barbershopId) {
       console.log('No commission arrangement found for payment:', paymentIntent.id)
-      return
+      return { success: false, reason: 'no_arrangement' }
     }
 
-    // Get the financial arrangement details
-    const { data: arrangement, error: arrangementError } = await supabase
-      .from('financial_arrangements')
-      .select('*')
-      .eq('id', arrangementId)
-      .eq('is_active', true)
-      .single()
+    // Get the financial arrangement details with retry mechanism
+    let arrangement, arrangementError
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const result = await supabase
+        .from('financial_arrangements')
+        .select('*')
+        .eq('id', arrangementId)
+        .eq('is_active', true)
+        .single()
+      
+      arrangement = result.data
+      arrangementError = result.error
+      
+      if (!arrangementError) break
+      
+      console.warn(`Arrangement fetch attempt ${attempt + 1} failed:`, arrangementError.message)
+      if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1000))
+    }
 
     if (arrangementError || !arrangement) {
-      console.error('Error fetching arrangement:', arrangementError)
-      return
+      console.error('Error fetching arrangement after retries:', arrangementError)
+      await recordCommissionError(paymentIntent.id, 'arrangement_not_found', arrangementError?.message, supabase)
+      return { success: false, reason: 'arrangement_error', error: arrangementError }
     }
 
     const paymentAmount = paymentIntent.amount / 100 // Convert from cents
     let commissionAmount = 0
     let shopAmount = 0
+    let tierInfo = null
+    let tierBonus = 0
 
-    // Calculate commission based on arrangement type
-    if (arrangement.type === 'commission' || arrangement.type === 'hybrid') {
-      commissionAmount = paymentAmount * (arrangement.commission_percentage / 100)
-      shopAmount = paymentAmount - commissionAmount
-    } else if (arrangement.type === 'booth_rent') {
-      // For booth rent, barber keeps everything except fixed rent
-      commissionAmount = paymentAmount
-      shopAmount = 0 // Shop gets their rent separately
+    // Check if barber is using tier system
+    if (arrangement.use_tier_system && arrangement.tier_structure_id) {
+      const tierCalculation = await calculateTieredCommissionWebhook(
+        paymentAmount, 
+        barberId, 
+        barbershopId, 
+        arrangement, 
+        supabase
+      )
+      
+      if (tierCalculation.success) {
+        commissionAmount = tierCalculation.barberAmount
+        shopAmount = tierCalculation.shopAmount
+        tierInfo = tierCalculation.tierInfo
+        tierBonus = tierCalculation.tierInfo?.tierBonus || 0
+        
+        console.log(`💎 Tier-based commission calculated: $${commissionAmount} at ${tierCalculation.commissionRate}% (Tier: ${tierCalculation.tierInfo?.applicableTier?.name})`)
+      } else {
+        console.warn(`⚠️ Tier calculation failed, falling back to standard: ${tierCalculation.error}`)
+        // Fall through to standard calculation
+      }
     }
 
-    // Record the commission transaction
+    // Standard calculation if not using tiers or tier calculation failed
+    if (!tierInfo) {
+      // Calculate commission based on arrangement type with proper validation
+      switch (arrangement.type) {
+        case 'commission':
+          if (!arrangement.commission_percentage || arrangement.commission_percentage < 0 || arrangement.commission_percentage > 100) {
+            throw new Error(`Invalid commission percentage: ${arrangement.commission_percentage}`)
+          }
+          commissionAmount = paymentAmount * (arrangement.commission_percentage / 100)
+          shopAmount = paymentAmount - commissionAmount
+          break
+          
+        case 'hybrid':
+          if (!arrangement.commission_percentage || arrangement.commission_percentage < 0 || arrangement.commission_percentage > 100) {
+            throw new Error(`Invalid hybrid commission percentage: ${arrangement.commission_percentage}`)
+          }
+          commissionAmount = paymentAmount * (arrangement.commission_percentage / 100)
+          shopAmount = paymentAmount - commissionAmount
+          // TODO: Add revenue threshold logic for hybrid model
+          break
+          
+        case 'booth_rent':
+          // For booth rent, barber keeps everything except fixed rent (handled separately)
+          commissionAmount = paymentAmount
+          shopAmount = 0
+          break
+          
+        default:
+          throw new Error(`Unknown arrangement type: ${arrangement.type}`)
+      }
+    }
+
+    // Validate calculated amounts
+    if (commissionAmount < 0 || shopAmount < 0) {
+      throw new Error(`Invalid calculated amounts: commission=$${commissionAmount}, shop=$${shopAmount}`)
+    }
+
+    if (Math.abs((commissionAmount + shopAmount) - paymentAmount) > 0.01 && arrangement.type !== 'booth_rent') {
+      throw new Error(`Amount mismatch: commission($${commissionAmount}) + shop($${shopAmount}) != payment($${paymentAmount})`)
+    }
+
+    // Record the commission transaction with comprehensive metadata
     const commissionTransaction = {
       payment_intent_id: paymentIntent.id,
       arrangement_id: arrangementId,
@@ -935,65 +1325,380 @@ async function processCommissionCalculation(paymentIntent, supabase) {
       payment_amount: paymentAmount,
       commission_amount: commissionAmount,
       shop_amount: shopAmount,
-      commission_percentage: arrangement.commission_percentage,
+      commission_percentage: tierInfo?.applicableTier?.commission_percentage || arrangement.commission_percentage || 0,
       arrangement_type: arrangement.type,
       status: 'pending_payout',
       created_at: new Date().toISOString(),
       metadata: {
         booking_id: metadata.booking_id,
         service_id: metadata.service_id,
-        payment_type: metadata.payment_type
+        payment_type: metadata.payment_type || 'card',
+        customer_email: metadata.customer_email,
+        webhook_processed_at: new Date().toISOString(),
+        calculation_method: tierInfo ? 'tiered_commission' : arrangement.type,
+        original_arrangement: {
+          id: arrangement.id,
+          commission_percentage: arrangement.commission_percentage,
+          type: arrangement.type
+        },
+        tier_information: tierInfo ? {
+          current_tier: tierInfo.currentTier,
+          applicable_tier: tierInfo.applicableTier,
+          tier_upgrade: tierInfo.tierUpgrade,
+          tier_bonus: tierInfo.tierBonus,
+          current_period_revenue: tierInfo.currentPeriodRevenue,
+          projected_revenue: tierInfo.projectedRevenue
+        } : null
       }
     }
 
-    const { error: insertError } = await supabase
+    // Add tier-specific fields if using tier system
+    if (tierInfo) {
+      commissionTransaction.tier_id = tierInfo.applicableTier?.id
+      commissionTransaction.tier_level = tierInfo.applicableTier?.tier_level
+      commissionTransaction.base_commission_rate = tierInfo.currentTier?.commission_percentage
+      commissionTransaction.tier_commission_rate = tierInfo.applicableTier?.commission_percentage
+      commissionTransaction.tier_bonus_amount = tierInfo.tierBonus || 0
+    }
+
+    const { data: insertedTransaction, error: insertError } = await supabase
       .from('commission_transactions')
       .insert(commissionTransaction)
+      .select()
+      .single()
 
     if (insertError) {
       console.error('Error recording commission transaction:', insertError)
-      return
+      await recordCommissionError(paymentIntent.id, 'transaction_insert_failed', insertError.message, supabase)
+      return { success: false, reason: 'insert_error', error: insertError }
     }
 
-    // Update barber's commission balance
-    const { data: existingBalance } = await supabase
-      .from('barber_commission_balances')
-      .select('*')
-      .eq('barber_id', barberId)
-      .eq('barbershop_id', barbershopId)
-      .single()
+    // Update barber's commission balance with atomic operations
+    const balanceResult = await updateBarberCommissionBalance(
+      barberId, 
+      barbershopId, 
+      commissionAmount, 
+      insertedTransaction.id, 
+      supabase
+    )
 
-    if (existingBalance) {
-      // Update existing balance
+    if (!balanceResult.success) {
+      console.error('Balance update failed:', balanceResult.error)
+      // Mark transaction as failed if balance update fails
       await supabase
-        .from('barber_commission_balances')
-        .update({
-          pending_amount: (existingBalance.pending_amount || 0) + commissionAmount,
-          total_earned: (existingBalance.total_earned || 0) + commissionAmount,
-          last_transaction_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+        .from('commission_transactions')
+        .update({ 
+          status: 'balance_update_failed',
+          metadata: { 
+            ...commissionTransaction.metadata, 
+            balance_error: balanceResult.error 
+          }
         })
-        .eq('id', existingBalance.id)
-    } else {
-      // Create new balance record
-      await supabase
-        .from('barber_commission_balances')
-        .insert({
-          barber_id: barberId,
-          barbershop_id: barbershopId,
-          pending_amount: commissionAmount,
-          paid_amount: 0,
-          total_earned: commissionAmount,
-          last_transaction_at: new Date().toISOString(),
-          created_at: new Date().toISOString()
-        })
+        .eq('id', insertedTransaction.id)
+      
+      return balanceResult
     }
 
-    console.log(`Commission calculated for payment ${paymentIntent.id}: $${commissionAmount} for barber ${barberId}`)
+    // Update arrangement totals
+    await supabase
+      .from('financial_arrangements')
+      .update({
+        total_commissions_earned: (arrangement.total_commissions_earned || 0) + commissionAmount,
+        last_commission_date: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', arrangementId)
+
+    console.log(`✅ Commission processed: $${commissionAmount} for barber ${barberId} (${arrangement.type} arrangement)`)
+
+    // Update tier progress if tier system is active
+    if (tierInfo) {
+      await updateBarberTierProgressWebhook(
+        barberId, 
+        barbershopId, 
+        paymentAmount, 
+        tierInfo, 
+        supabase
+      )
+    }
+
+    return { 
+      success: true, 
+      commission_amount: commissionAmount,
+      shop_amount: shopAmount,
+      transaction_id: insertedTransaction.id,
+      arrangement_type: arrangement.type,
+      tier_info: tierInfo
+    }
 
   } catch (error) {
     console.error('Error processing commission calculation:', error)
-    // Don't throw - webhook should still succeed even if commission calculation fails
+    await recordCommissionError(paymentIntent.id, 'calculation_failed', error.message, supabase)
+    return { success: false, reason: 'calculation_error', error: error.message }
+  }
+}
+
+// ==========================================
+// Tiered Commission Calculation for Webhooks
+// ==========================================
+
+async function calculateTieredCommissionWebhook(amount, barberId, barbershopId, arrangement, supabase) {
+  try {
+    // Get barber's current tier assignment
+    const { data: tierAssignment } = await supabase
+      .from('barber_tier_assignments')
+      .select(`
+        *,
+        current_tier:commission_tiers(*)
+      `)
+      .eq('barber_id', barberId)
+      .eq('barbershop_id', barbershopId)
+      .eq('is_active', true)
+      .single()
+
+    if (!tierAssignment) {
+      return { success: false, error: 'No tier assignment found' }
+    }
+
+    // Calculate what the new revenue will be after this transaction
+    const projectedRevenue = tierAssignment.current_period_revenue + amount
+
+    // Get all tiers for this structure to find the appropriate tier
+    const { data: allTiers } = await supabase
+      .from('commission_tiers')
+      .select('*')
+      .eq('structure_id', arrangement.tier_structure_id)
+      .order('tier_level', { ascending: true })
+
+    if (!allTiers || allTiers.length === 0) {
+      return { success: false, error: 'No tiers found for structure' }
+    }
+
+    // Find the highest tier this barber qualifies for with new transaction
+    let applicableTier = allTiers[0] // Default to lowest tier
+    for (const tier of allTiers) {
+      if (projectedRevenue >= tier.threshold_amount) {
+        applicableTier = tier
+      } else {
+        break
+      }
+    }
+
+    const tierRate = applicableTier.commission_percentage / 100
+    const barberAmount = amount * tierRate
+    const shopAmount = amount * (1 - tierRate)
+
+    // Calculate tier bonus if applicable
+    let tierBonus = 0
+    const currentTierLevel = tierAssignment.current_tier?.tier_level || 1
+    const newTierLevel = applicableTier.tier_level
+
+    if (newTierLevel > currentTierLevel) {
+      // Tier upgrade bonus (2% of transaction)
+      tierBonus = amount * 0.02
+    }
+
+    // Get next tier threshold for progress calculations
+    const nextTierThreshold = getNextTierThresholdWebhook(allTiers, applicableTier.tier_level)
+    const progressToNextTier = calculateTierProgressWebhook(projectedRevenue, allTiers, applicableTier.tier_level)
+
+    return {
+      success: true,
+      barberAmount: barberAmount + tierBonus,
+      shopAmount: shopAmount - tierBonus,
+      commissionRate: applicableTier.commission_percentage,
+      arrangementType: arrangement.type,
+      tierInfo: {
+        currentTier: tierAssignment.current_tier,
+        applicableTier: applicableTier,
+        tierUpgrade: newTierLevel > currentTierLevel,
+        tierBonus: tierBonus,
+        currentPeriodRevenue: tierAssignment.current_period_revenue,
+        projectedRevenue: projectedRevenue,
+        nextTierThreshold: nextTierThreshold,
+        progressToNextTier: progressToNextTier
+      }
+    }
+  } catch (error) {
+    console.error('Error calculating tiered commission:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+async function updateBarberTierProgressWebhook(barberId, barbershopId, transactionAmount, tierInfo, supabase) {
+  try {
+    const { data: assignment } = await supabase
+      .from('barber_tier_assignments')
+      .select('*')
+      .eq('barber_id', barberId)
+      .eq('barbershop_id', barbershopId)
+      .eq('is_active', true)
+      .single()
+
+    if (!assignment) {
+      console.error('No tier assignment found for progress update')
+      return
+    }
+
+    const newRevenue = assignment.current_period_revenue + transactionAmount
+    const newBookings = assignment.current_period_bookings + 1
+
+    // Calculate daily average and projection
+    const startDate = new Date(assignment.current_period_start)
+    const now = new Date()
+    const daysSinceStart = Math.max(1, Math.ceil((now - startDate) / (1000 * 60 * 60 * 24)))
+    const dailyAvg = newRevenue / daysSinceStart
+    
+    const endDate = new Date(assignment.current_period_end)
+    const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
+    const projectedRevenue = dailyAvg * totalDays
+
+    // Update tier assignment progress
+    const { error } = await supabase
+      .from('barber_tier_assignments')
+      .update({
+        current_period_revenue: newRevenue,
+        current_period_bookings: newBookings,
+        current_tier_id: tierInfo.applicableTier?.id || assignment.current_tier_id,
+        daily_avg_revenue: dailyAvg,
+        projected_period_revenue: projectedRevenue,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', assignment.id)
+
+    if (error) {
+      console.error('Error updating tier progress:', error)
+      return
+    }
+
+    // Log tier achievement if tier upgraded
+    if (tierInfo.tierUpgrade) {
+      await supabase
+        .from('commission_tier_history')
+        .insert({
+          barber_id: barberId,
+          barbershop_id: barbershopId,
+          tier_id: tierInfo.applicableTier.id,
+          period_start: assignment.current_period_start,
+          period_end: assignment.current_period_end,
+          achieved_at: new Date().toISOString(),
+          period_revenue: newRevenue,
+          period_bookings: newBookings,
+          final_tier_level: tierInfo.applicableTier.tier_level,
+          avg_commission_rate: tierInfo.applicableTier.commission_percentage
+        })
+
+      console.log(`🎉 Tier upgrade achieved! Barber ${barberId} reached ${tierInfo.applicableTier.name} tier (Level ${tierInfo.applicableTier.tier_level})`)
+    }
+
+    console.log(`📊 Tier progress updated: $${newRevenue}/${tierInfo.nextTierThreshold || 'MAX'} (${Math.round(tierInfo.progressToNextTier)}%)`)
+    
+  } catch (error) {
+    console.error('Error updating barber tier progress:', error)
+  }
+}
+
+// Helper functions for tier calculations
+function getNextTierThresholdWebhook(allTiers, currentLevel) {
+  const nextTier = allTiers.find(tier => tier.tier_level === currentLevel + 1)
+  return nextTier ? nextTier.threshold_amount : null
+}
+
+function calculateTierProgressWebhook(currentRevenue, allTiers, currentLevel) {
+  const currentTier = allTiers.find(tier => tier.tier_level === currentLevel)
+  const nextTier = allTiers.find(tier => tier.tier_level === currentLevel + 1)
+
+  if (!nextTier) return 100 // At highest tier
+
+  const rangeStart = currentTier?.threshold_amount || 0
+  const rangeEnd = nextTier.threshold_amount
+  const progress = ((currentRevenue - rangeStart) / (rangeEnd - rangeStart)) * 100
+
+  return Math.max(0, Math.min(100, progress))
+}
+
+// Helper function to update barber commission balance atomically
+async function updateBarberCommissionBalance(barberId, barbershopId, commissionAmount, transactionId, supabase) {
+  try {
+    // Use upsert with conflict resolution for atomic balance updates
+    const { data: balanceData, error: balanceError } = await supabase
+      .from('barber_commission_balances')
+      .upsert({
+        barber_id: barberId,
+        barbershop_id: barbershopId,
+        pending_amount: supabase.raw(`COALESCE(pending_amount, 0) + ${commissionAmount}`),
+        total_earned: supabase.raw(`COALESCE(total_earned, 0) + ${commissionAmount}`),
+        last_transaction_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'barber_id,barbershop_id',
+        returning: 'representation'
+      })
+      .select()
+
+    if (balanceError) {
+      // Fallback to manual update if upsert fails
+      console.warn('Upsert failed, attempting manual balance update:', balanceError.message)
+      
+      const { data: existingBalance } = await supabase
+        .from('barber_commission_balances')
+        .select('*')
+        .eq('barber_id', barberId)
+        .eq('barbershop_id', barbershopId)
+        .single()
+
+      if (existingBalance) {
+        const { error: updateError } = await supabase
+          .from('barber_commission_balances')
+          .update({
+            pending_amount: (existingBalance.pending_amount || 0) + commissionAmount,
+            total_earned: (existingBalance.total_earned || 0) + commissionAmount,
+            last_transaction_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingBalance.id)
+
+        if (updateError) {
+          return { success: false, error: updateError.message }
+        }
+      } else {
+        const { error: insertError } = await supabase
+          .from('barber_commission_balances')
+          .insert({
+            barber_id: barberId,
+            barbershop_id: barbershopId,
+            pending_amount: commissionAmount,
+            paid_amount: 0,
+            total_earned: commissionAmount,
+            last_transaction_at: new Date().toISOString(),
+            created_at: new Date().toISOString()
+          })
+
+        if (insertError) {
+          return { success: false, error: insertError.message }
+        }
+      }
+    }
+
+    return { success: true, balance_data: balanceData }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+// Helper function to record commission processing errors for debugging
+async function recordCommissionError(paymentIntentId, errorType, errorMessage, supabase) {
+  try {
+    await supabase
+      .from('commission_processing_errors')
+      .insert({
+        payment_intent_id: paymentIntentId,
+        error_type: errorType,
+        error_message: errorMessage,
+        created_at: new Date().toISOString()
+      })
+  } catch (error) {
+    console.error('Failed to record commission error:', error.message)
   }
 }
 
@@ -1027,6 +1732,227 @@ async function sendBookingNotification(webhookData) {
     console.error('Error sending booking notification:', error)
     // Don't throw - webhook should still succeed even if notification fails
     return false
+  }
+}
+
+// ==========================================
+// Transfer Webhook Handlers for Commission Tracking
+// ==========================================
+
+async function handleTransferCreated(transfer) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    
+    // Get commission transaction associated with this transfer
+    const commissionTransactionId = transfer.metadata?.commission_transaction_id
+    const payoutTransactionId = transfer.metadata?.payout_transaction_id
+    
+    if (commissionTransactionId) {
+      // This is a commission-based transfer
+      await supabase
+        .from('commission_transactions')
+        .update({
+          status: 'transferring',
+          metadata: supabase.raw(`metadata || '{"stripe_transfer_id": "${transfer.id}", "transfer_created_at": "${new Date().toISOString()}"}'::jsonb`)
+        })
+        .eq('id', commissionTransactionId)
+      
+      console.log(`📤 Transfer created for commission transaction ${commissionTransactionId}: $${transfer.amount / 100}`)
+    } else if (payoutTransactionId) {
+      // This is a manual payout transfer
+      await supabase
+        .from('commission_payout_records')
+        .update({
+          status: 'processing',
+          stripe_transfer_id: transfer.id,
+          metadata: supabase.raw(`metadata || '{"transfer_created_at": "${new Date().toISOString()}"}'::jsonb`)
+        })
+        .eq('id', payoutTransactionId)
+      
+      console.log(`📤 Transfer created for payout transaction ${payoutTransactionId}: $${transfer.amount / 100}`)
+    } else {
+      console.log(`📤 Transfer created without commission metadata: ${transfer.id}`)
+    }
+    
+  } catch (error) {
+    console.error('Error handling transfer created:', error)
+  }
+}
+
+async function handleTransferPaid(transfer) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    
+    const commissionTransactionId = transfer.metadata?.commission_transaction_id
+    const payoutTransactionId = transfer.metadata?.payout_transaction_id
+    const transferAmount = transfer.amount / 100 // Convert from cents
+    
+    if (commissionTransactionId) {
+      // Update commission transaction to completed
+      const { data: commissionTx } = await supabase
+        .from('commission_transactions')
+        .update({
+          status: 'paid_out',
+          paid_out_at: new Date().toISOString(),
+          metadata: supabase.raw(`metadata || '{"stripe_transfer_paid_at": "${new Date().toISOString()}", "transfer_amount": ${transferAmount}}'::jsonb`)
+        })
+        .eq('id', commissionTransactionId)
+        .select('barber_id, barbershop_id, commission_amount')
+        .single()
+      
+      if (commissionTx) {
+        // Update barber balance - move from pending to paid
+        await supabase
+          .from('barber_commission_balances')
+          .update({
+            pending_amount: supabase.raw(`GREATEST(pending_amount - ${transferAmount}, 0)`),
+            paid_amount: supabase.raw(`paid_amount + ${transferAmount}`),
+            updated_at: new Date().toISOString()
+          })
+          .eq('barber_id', commissionTx.barber_id)
+          .eq('barbershop_id', commissionTx.barbershop_id)
+        
+        // Send notification to barber
+        await sendCommissionPaidNotification({
+          barberId: commissionTx.barber_id,
+          barbershopId: commissionTx.barbershop_id,
+          amount: transferAmount,
+          transferId: transfer.id,
+          method: 'stripe_transfer'
+        })
+        
+        console.log(`✅ Commission transfer completed: $${transferAmount} paid to barber ${commissionTx.barber_id}`)
+      }
+      
+    } else if (payoutTransactionId) {
+      // Update payout record to completed
+      await supabase
+        .from('commission_payout_records')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+          metadata: supabase.raw(`metadata || '{"stripe_transfer_paid_at": "${new Date().toISOString()}"}'::jsonb`)
+        })
+        .eq('id', payoutTransactionId)
+      
+      console.log(`✅ Manual payout transfer completed: $${transferAmount}`)
+    }
+    
+  } catch (error) {
+    console.error('Error handling transfer paid:', error)
+  }
+}
+
+async function handleTransferFailed(transfer) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    
+    const commissionTransactionId = transfer.metadata?.commission_transaction_id
+    const payoutTransactionId = transfer.metadata?.payout_transaction_id
+    const failureCode = transfer.failure_code
+    const failureMessage = transfer.failure_message
+    
+    if (commissionTransactionId) {
+      // Mark commission transaction as failed
+      await supabase
+        .from('commission_transactions')
+        .update({
+          status: 'transfer_failed',
+          metadata: supabase.raw(`metadata || '{"transfer_failed_at": "${new Date().toISOString()}", "failure_code": "${failureCode}", "failure_message": "${failureMessage}"}'::jsonb`)
+        })
+        .eq('id', commissionTransactionId)
+      
+      console.error(`❌ Commission transfer failed: ${failureMessage} (${failureCode})`)
+      
+      // TODO: Create retry mechanism or alert shop owner
+      
+    } else if (payoutTransactionId) {
+      // Mark payout as failed
+      await supabase
+        .from('commission_payout_records')
+        .update({
+          status: 'failed',
+          metadata: supabase.raw(`metadata || '{"transfer_failed_at": "${new Date().toISOString()}", "failure_code": "${failureCode}", "failure_message": "${failureMessage}"}'::jsonb`)
+        })
+        .eq('id', payoutTransactionId)
+      
+      console.error(`❌ Payout transfer failed: ${failureMessage} (${failureCode})`)
+    }
+    
+  } catch (error) {
+    console.error('Error handling transfer failed:', error)
+  }
+}
+
+async function handleTransferReversed(transfer) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    
+    const commissionTransactionId = transfer.metadata?.commission_transaction_id
+    const payoutTransactionId = transfer.metadata?.payout_transaction_id
+    const reversedAmount = transfer.amount / 100
+    
+    if (commissionTransactionId) {
+      // Reverse commission transaction
+      const { data: commissionTx } = await supabase
+        .from('commission_transactions')
+        .update({
+          status: 'transfer_reversed',
+          metadata: supabase.raw(`metadata || '{"transfer_reversed_at": "${new Date().toISOString()}", "reversal_reason": "stripe_transfer_reversed"}'::jsonb`)
+        })
+        .eq('id', commissionTransactionId)
+        .select('barber_id, barbershop_id')
+        .single()
+      
+      if (commissionTx) {
+        // Reverse barber balance - move back from paid to pending
+        await supabase
+          .from('barber_commission_balances')
+          .update({
+            pending_amount: supabase.raw(`pending_amount + ${reversedAmount}`),
+            paid_amount: supabase.raw(`GREATEST(paid_amount - ${reversedAmount}, 0)`),
+            updated_at: new Date().toISOString()
+          })
+          .eq('barber_id', commissionTx.barber_id)
+          .eq('barbershop_id', commissionTx.barbershop_id)
+        
+        console.log(`🔄 Commission transfer reversed: $${reversedAmount} for barber ${commissionTx.barber_id}`)
+      }
+      
+    } else if (payoutTransactionId) {
+      // Mark payout as reversed
+      await supabase
+        .from('commission_payout_records')
+        .update({
+          status: 'reversed',
+          metadata: supabase.raw(`metadata || '{"transfer_reversed_at": "${new Date().toISOString()}"}'::jsonb`)
+        })
+        .eq('id', payoutTransactionId)
+      
+      console.log(`🔄 Payout transfer reversed: $${reversedAmount}`)
+    }
+    
+  } catch (error) {
+    console.error('Error handling transfer reversed:', error)
+  }
+}
+
+// Helper function to send commission paid notification
+async function sendCommissionPaidNotification(data) {
+  try {
+    const { barberId, barbershopId, amount, transferId, method } = data
+    
+    // TODO: Integrate with notification service
+    console.log(`📧 Commission paid notification: $${amount} to barber ${barberId} via ${method}`)
+    
+    // Could send email, SMS, or push notification here
+    
+  } catch (error) {
+    console.error('Failed to send commission paid notification:', error)
   }
 }
 

@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'
 import DashboardOnboarding from '../dashboard/DashboardOnboarding'
+import { isTier } from '@/lib/subscription-tiers'
 
 // Tier detection and flow routing
 const determineOnboardingFlow = (profile) => {
@@ -18,17 +19,17 @@ const determineOnboardingFlow = (profile) => {
   const { subscription_tier, role } = profile
   
   // Enterprise users (including SUPER_ADMIN) get enterprise features
-  if (subscription_tier === 'enterprise' || role === 'ENTERPRISE_OWNER' || role === 'SUPER_ADMIN') {
+  if (isTier(subscription_tier, 'ENTERPRISE') || role === 'ENTERPRISE_OWNER' || role === 'SUPER_ADMIN') {
     return 'enterprise'
   }
   
   // Shop owners get comprehensive flow
-  if (subscription_tier === 'shop_owner' || role === 'SHOP_OWNER') {
+  if (isTier(subscription_tier, 'PROFESSIONAL') || role === 'SHOP_OWNER') {
     return 'shop_owner'
   }
   
   // Individual barbers get simplified flow
-  if (subscription_tier === 'individual' || role === 'BARBER') {
+  if (isTier(subscription_tier, 'INDIVIDUAL') || role === 'BARBER') {
     return 'individual'
   }
   

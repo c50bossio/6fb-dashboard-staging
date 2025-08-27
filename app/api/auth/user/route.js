@@ -3,6 +3,8 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { getUserBarbershopId } from '@/lib/barbershop-helper'
 import { hasPermission } from '@/lib/permissions'
+import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
+import { isTier } from '@/lib/subscription-tiers'
 export const runtime = 'edge'
 
 export async function GET(request) {
@@ -66,10 +68,14 @@ export async function GET(request) {
               subscription_tier: 'enterprise',
               subscription_status: 'active',
               full_name: 'Christopher Bossio',
+              first_name: 'Christopher',
+              last_name: 'Bossio',
               onboarding_completed: true
             },
             role: 'SUPER_ADMIN',
-            full_name: 'Christopher Bossio'
+            full_name: 'Christopher Bossio',
+            first_name: 'Christopher',
+            last_name: 'Bossio'
           }
         })
       }
@@ -107,7 +113,7 @@ export async function GET(request) {
     const subscriptionTier = profile?.subscription_tier || 'individual'
     let hasCustomerAccess = false
     
-    if (subscriptionTier === 'individual') {
+    if (isTier(subscriptionTier, 'INDIVIDUAL')) {
       // Individual barber subscription gets automatic customer access
       hasCustomerAccess = true
     } else if (barbershopId) {
@@ -120,6 +126,21 @@ export async function GET(request) {
       }
     }
     
+    // Normalize name data for consistent handling
+    const nameData = normalizeNameData({
+      firstName: profile.first_name,
+      lastName: profile.last_name,
+      fullName: profile.full_name || session.user.user_metadata?.full_name
+    })
+    
+    const displayName = getDisplayName({
+      firstName: nameData.firstName,
+      lastName: nameData.lastName,
+      fullName: nameData.fullName,
+      email: session.user.email,
+      defaultName: 'User'
+    })
+
     // Return user data in format expected by customer management page
     return NextResponse.json({
       authenticated: true,
@@ -129,9 +150,26 @@ export async function GET(request) {
         barbershop_id: barbershopId,
         has_customer_access: hasCustomerAccess,
         subscription_tier: subscriptionTier,
-        profile: profile,
+        profile: {
+          ...profile,
+          // Add both name formats for backward compatibility
+          first_name: nameData.firstName,
+          last_name: nameData.lastName,
+          full_name: nameData.fullName,
+          firstName: nameData.firstName,  // camelCase version
+          lastName: nameData.lastName,    // camelCase version
+          fullName: nameData.fullName,    // camelCase version
+          display_name: displayName
+        },
         role: profile.role,
-        full_name: profile.full_name || session.user.user_metadata?.full_name
+        // Support both formats at top level too
+        first_name: nameData.firstName,
+        last_name: nameData.lastName,
+        full_name: nameData.fullName,
+        firstName: nameData.firstName,
+        lastName: nameData.lastName,
+        fullName: nameData.fullName,
+        display_name: displayName
       }
     })
     

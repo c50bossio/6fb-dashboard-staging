@@ -44,6 +44,7 @@ import SearchHighlight from '../../../../components/customers/SearchHighlight'
 import PlatformTailoredImport from '../../../../components/onboarding/PlatformTailoredImport'
 import { fuzzySearch } from '../../../../utils/fuzzySearch'
 import { AnimatedContainer, StaggeredList } from '../../../../utils/animations'
+import { isTier } from '@/lib/subscription-tiers'
 
 export default function CustomersPage() {
   const searchParams = useSearchParams()
@@ -137,7 +138,7 @@ export default function CustomersPage() {
       
       if (!userData.user?.has_customer_access) {
         const subscriptionTier = userData.user?.subscription_tier || 'individual'
-        if (subscriptionTier === 'individual') {
+        if (isTier(subscriptionTier, 'INDIVIDUAL')) {
           setError('Customer management is included with your subscription. Please contact support if you\'re seeing this message.')
         } else {
           setError('Customer management access not enabled. Please ask your shop owner to grant customer management permissions in Staff Settings.')
@@ -385,7 +386,7 @@ export default function CustomersPage() {
       
       if (!userData.user?.has_customer_access) {
         const subscriptionTier = userData.user?.subscription_tier || 'individual'
-        if (subscriptionTier === 'individual') {
+        if (isTier(subscriptionTier, 'INDIVIDUAL')) {
           throw new Error('Customer management is included with your subscription. Please contact support if you\'re seeing this message.')
         } else {
           throw new Error('Customer management access not enabled. Please ask your shop owner to grant customer management permissions in Staff Settings.')
