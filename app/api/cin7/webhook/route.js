@@ -39,9 +39,8 @@ export async function POST(request) {
     const url = new URL(request.url)
     const webhookPath = url.pathname.split('/').pop()
     
-    console.log(`📨 Received CIN7 webhook: ${webhookPath}`)
-    
-    // Get raw body for signature verification
+    // // Debug log removed for production
+// Get raw body for signature verification
     const rawBody = await request.text()
     const signature = request.headers.get('X-Cin7-Signature') || request.headers.get('X-Hub-Signature-256')
     
@@ -54,7 +53,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
     
-    console.log(`📋 Webhook data:`, JSON.stringify(body, null, 2).substring(0, 500))
+    // // Debug log removed for production
+.substring(0, 500))
     
     // Verify webhook signature (if configured)
     const webhookSecret = process.env.CIN7_WEBHOOK_SECRET

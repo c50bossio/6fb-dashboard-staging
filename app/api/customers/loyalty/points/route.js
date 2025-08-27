@@ -50,27 +50,8 @@ export async function GET(request) {
     let user = session?.user;
     let profile = null;
     
-    // Development fallback for testing loyalty points without proper authentication
-    if ((!session?.user || sessionError) && process.env.NODE_ENV === 'development') {
-
-      // Use the same hardcoded test user as /api/auth/user
-      user = {
-        id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
-        email: 'c50bossio@gmail.com'
-      };
-      
-      // Mock profile for development
-      profile = {
-        id: user.id,
-        email: user.email,
-        role: 'SUPER_ADMIN',
-        subscription_tier: 'enterprise',
-        subscription_status: 'active',
-        full_name: 'Christopher Bossio',
-        shop_id: 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9', // Known test barbershop ID
-        onboarding_completed: true
-      };
-
+    if (sessionError || !session?.user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     } else if (sessionError || !session?.user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
@@ -276,27 +257,8 @@ export async function POST(request) {
     let user = session?.user;
     let profile = null;
     
-    // Development fallback for testing loyalty points without proper authentication
-    if ((!session?.user || sessionError) && process.env.NODE_ENV === 'development') {
-
-      // Use the same hardcoded test user as /api/auth/user
-      user = {
-        id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
-        email: 'c50bossio@gmail.com'
-      };
-      
-      // Mock profile for development
-      profile = {
-        id: user.id,
-        email: user.email,
-        role: 'SUPER_ADMIN',
-        subscription_tier: 'enterprise',
-        subscription_status: 'active',
-        full_name: 'Christopher Bossio',
-        shop_id: 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9', // Known test barbershop ID
-        onboarding_completed: true
-      };
-
+    if (sessionError || !session?.user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     } else if (sessionError || !session?.user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }

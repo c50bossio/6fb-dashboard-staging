@@ -402,14 +402,13 @@ export default function EnhancedProfessionalCalendar({
         datesSet={handleViewChange}  // Also handle when navigating dates
         loading={(isLoading) => {
           // Loading state handled by parent component
-          console.log('FullCalendar loading state:', isLoading)
-        }}
+          // // Debug log removed for production
+}}
         
         // Production-ready event source error handling
         eventSourceSuccess={(rawEvents, response) => {
-          console.log('Event source success:', rawEvents?.length || 0, 'events loaded')
-          
-          // Validate and sanitize events for production
+          // // Debug log removed for production
+// Validate and sanitize events for production
           const validEvents = (rawEvents || []).filter(event => {
             return event.id && event.start && event.title
           })

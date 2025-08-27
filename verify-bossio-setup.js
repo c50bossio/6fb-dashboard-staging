@@ -11,7 +11,7 @@ async function verifySetup() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('*, barbershops!barbershop_id(*)')
-    .eq('email', 'c50bossio@gmail.com')
+    .eq('email', null /* hardcoded ID removed for production */)
     .single();
   
   if (profile) {

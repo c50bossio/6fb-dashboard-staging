@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Test barbershop ID - Elite Cuts GMB Test
-const barbershopId = 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9'
+const barbershopId = null /* hardcoded ID removed for production */
 
 // Sample services for a barbershop
 const services = [

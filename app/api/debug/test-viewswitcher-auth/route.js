@@ -6,7 +6,7 @@ export async function GET() {
     const supabase = createServiceClient()
     
     // Simulate what ViewSwitcher does for your user (c50bossio@gmail.com)
-    const testUserId = 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5' // Your user ID from the data
+    const testUserId = null /* hardcoded ID removed for production */ // Your user ID from the data
     
     // Get user profile (what auth would return)
     const { data: profile } = await supabase

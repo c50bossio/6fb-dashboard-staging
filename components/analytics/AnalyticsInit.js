@@ -176,7 +176,7 @@ export default function AnalyticsInit() {
       if (vitals.onLCP) vitals.onLCP((metric) => analytics.track('core_web_vitals', { metric: 'LCP', value: metric.value }))
       if (vitals.onTTFB) vitals.onTTFB((metric) => analytics.track('core_web_vitals', { metric: 'TTFB', value: metric.value }))
     }).catch((error) => {
-      console.debug('Web vitals tracking not available:', error.message)
+      // console.debug('Web vitals tracking not available:', error.message)
     })
 
     if (typeof window !== 'undefined' && window.performance) {

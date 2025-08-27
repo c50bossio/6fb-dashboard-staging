@@ -11,9 +11,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('Creating calendar data for user:', user.email)
-
-    // Get or create profile for current user
+    // // Debug log removed for production
+// Get or create profile for current user
     let { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
@@ -52,8 +51,8 @@ export async function POST(request) {
       
       if (existingShop) {
         barbershop = existingShop
-        console.log('Using existing barbershop:', barbershop.name)
-      }
+        // // Debug log removed for production
+}
     }
 
     // Create barbershop if none exists
@@ -90,9 +89,8 @@ export async function POST(request) {
       }
 
       barbershop = newShop
-      console.log('Created new barbershop:', barbershop.name)
-
-      // Update profile to link to barbershop
+      // // Debug log removed for production
+// Update profile to link to barbershop
       const { error: updateProfileError } = await supabase
         .from('profiles')
         .update({
@@ -163,8 +161,8 @@ export async function POST(request) {
       }
 
       services = newServices
-      console.log('Created services:', services.length)
-    }
+      // // Debug log removed for production
+}
 
     // Create sample client profiles
     const sampleClients = [
@@ -218,8 +216,8 @@ export async function POST(request) {
           console.error('Error creating clients:', clientsError)
         } else {
           clients = [...clients, ...newClients]
-          console.log('Created client profiles:', newClients.length)
-        }
+          // // Debug log removed for production
+}
       }
     }
 
@@ -287,12 +285,12 @@ export async function POST(request) {
         if (appointmentsError) {
           console.error('Error creating appointments:', appointmentsError)
         } else {
-          console.log('Created appointments:', newAppointments.length)
-        }
+          // // Debug log removed for production
+}
       }
     } else {
-      console.log('Using existing appointments:', existingAppointments.length)
-    }
+      // // Debug log removed for production
+}
 
     return NextResponse.json({
       success: true,

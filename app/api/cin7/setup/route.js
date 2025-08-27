@@ -25,8 +25,8 @@ export async function POST(request) {
     if (devBypass) {
       // Use mock user for development - use actual user ID from database
       user = {
-        id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5', // Actual user c50bossio@gmail.com
-        email: 'c50bossio@gmail.com'
+        id: null /* hardcoded ID removed for production */, // Actual user c50bossio@gmail.com
+        email: null /* hardcoded ID removed for production */
       }
     } else {
       // Get authenticated user

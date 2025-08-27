@@ -28,7 +28,7 @@ async function fixUser() {
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', 'c50bossio@gmail.com')
+      .eq('email', null /* hardcoded ID removed for production */)
       .single()
     
     if (userError) {
@@ -141,7 +141,7 @@ async function fixUser() {
           slug
         )
       `)
-      .eq('email', 'c50bossio@gmail.com')
+      .eq('email', null /* hardcoded ID removed for production */)
       .single()
     
     if (finalError) {
@@ -149,7 +149,7 @@ async function fixUser() {
       const { data: simpleUser } = await supabase
         .from('users')
         .select('*')
-        .eq('email', 'c50bossio@gmail.com')
+        .eq('email', null /* hardcoded ID removed for production */)
         .single()
 
     } else {

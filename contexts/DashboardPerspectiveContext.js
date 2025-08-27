@@ -17,11 +17,10 @@ export function DashboardPerspectiveProvider({ children }) {
 
   // Determine if current view is owner view
   // Debug logging to understand the perspective state
-  console.log('DashboardPerspectiveContext - selectedPerspective:', selectedPerspective)
-  const isOwnerView = !selectedPerspective || selectedPerspective.type === 'owner'
-  console.log('DashboardPerspectiveContext - isOwnerView:', isOwnerView)
-  
-  // Get the user ID for the current view
+  // // Debug log removed for production
+const isOwnerView = !selectedPerspective || selectedPerspective.type === 'owner'
+  // // Debug log removed for production
+// Get the user ID for the current view
   const currentViewUserId = selectedPerspective?.type === 'staff' 
     ? selectedPerspective.id 
     : null // null means owner view (show all data)

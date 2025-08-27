@@ -17,7 +17,7 @@ const colors = {
 }
 
 function log(color, message) {
-  console.log(`${colors[color]}${message}${colors.reset}`)
+  // // Debug log removed for production
 }
 
 async function testUnifiedService() {

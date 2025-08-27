@@ -35,10 +35,9 @@ class Cin7IntegrationTester {
   }
 
   async runAllTests() {
-    console.log('🧪 Starting Complete CIN7 Integration Test Suite\n')
-    console.log('=' * 60)
-    
-    const testSuites = [
+    // // Debug log removed for production
+// // Debug log removed for production
+const testSuites = [
       () => this.testDatabaseSchema(),
       () => this.testAPIAuthentication(), 
       () => this.testCredentialsManagement(),
@@ -58,16 +57,16 @@ class Cin7IntegrationTester {
       } catch (error) {
         this.recordTest(`Test Suite Error`, false, error.message)
       }
-      console.log('') // Add spacing between test suites
+      // // Debug log removed for production
+// Add spacing between test suites
     }
 
     this.printFinalResults()
   }
 
   async testDatabaseSchema() {
-    console.log('📊 Testing Database Schema...')
-    
-    // Test CIN7 connections table
+    // // Debug log removed for production
+// Test CIN7 connections table
     const { error: connError } = await this.supabase
       .from('cin7_connections')
       .select('*')
@@ -113,9 +112,8 @@ class Cin7IntegrationTester {
   }
 
   async testAPIAuthentication() {
-    console.log('🔐 Testing API Authentication...')
-    
-    // Test credentials endpoint
+    // // Debug log removed for production
+// Test credentials endpoint
     try {
       const response = await fetch(`${API_BASE}/api/cin7/credentials`, {
         method: 'GET',
@@ -154,9 +152,8 @@ class Cin7IntegrationTester {
   }
 
   async testCredentialsManagement() {
-    console.log('🗝️ Testing Credentials Management...')
-    
-    // Test with mock credentials
+    // // Debug log removed for production
+// Test with mock credentials
     const mockCredentials = {
       accountId: 'test-account-id',
       apiKey: 'test-api-key',
@@ -206,9 +203,8 @@ class Cin7IntegrationTester {
   }
 
   async testProductSync() {
-    console.log('📦 Testing Product Synchronization...')
-    
-    try {
+    // // Debug log removed for production
+try {
       // Test sync endpoint
       const syncResponse = await fetch(`${API_BASE}/api/cin7/sync`, {
         method: 'POST',
@@ -254,9 +250,8 @@ class Cin7IntegrationTester {
   }
 
   async testStockSync() {
-    console.log('📊 Testing Stock Synchronization...')
-    
-    // Test stock-only sync
+    // // Debug log removed for production
+// Test stock-only sync
     try {
       const stockSyncResponse = await fetch(`${API_BASE}/api/cin7/sync`, {
         method: 'POST',
@@ -301,9 +296,8 @@ class Cin7IntegrationTester {
   }
 
   async testWebhookHandling() {
-    console.log('🪝 Testing Webhook Handling...')
-    
-    // Test webhook endpoint with mock data
+    // // Debug log removed for production
+// Test webhook endpoint with mock data
     const mockWebhookData = {
       Type: 'Stock.Updated',
       ProductID: 'test-product-123',
@@ -362,9 +356,8 @@ class Cin7IntegrationTester {
   }
 
   async testBookingIntegration() {
-    console.log('📅 Testing Booking System Integration...')
-    
-    // Test service availability checking
+    // // Debug log removed for production
+// Test service availability checking
     try {
       // Create test service and product
       const testService = await this.createTestService()
@@ -438,9 +431,8 @@ class Cin7IntegrationTester {
   }
 
   async testErrorHandling() {
-    console.log('🚨 Testing Error Handling...')
-    
-    // Test invalid API credentials
+    // // Debug log removed for production
+// Test invalid API credentials
     try {
       const invalidCredsResponse = await fetch(`${API_BASE}/api/cin7/credentials`, {
         method: 'PUT',
@@ -496,9 +488,8 @@ class Cin7IntegrationTester {
   }
 
   async testRateLimiting() {
-    console.log('⏱️ Testing Rate Limiting...')
-    
-    // Test multiple rapid requests
+    // // Debug log removed for production
+// Test multiple rapid requests
     const rapidRequests = Array(5).fill().map(() => 
       fetch(`${API_BASE}/api/cin7/status`, {
         method: 'GET',
@@ -527,9 +518,8 @@ class Cin7IntegrationTester {
   }
 
   async testRealtimeSync() {
-    console.log('⚡ Testing Real-time Sync...')
-    
-    try {
+    // // Debug log removed for production
+try {
       // Test real-time sync service initialization
       const { default: cin7RealtimeSync } = await import('../lib/cin7-realtime-sync.js')
       
@@ -565,9 +555,8 @@ class Cin7IntegrationTester {
   }
 
   async testPerformance() {
-    console.log('🚀 Testing Performance...')
-    
-    // Test API response times
+    // // Debug log removed for production
+// Test API response times
     const performanceTests = [
       { name: 'Status endpoint', url: `${API_BASE}/api/cin7/status` },
       { name: 'Credentials endpoint', url: `${API_BASE}/api/cin7/credentials` }
@@ -751,37 +740,35 @@ class Cin7IntegrationTester {
 
     if (passed) {
       this.testResults.passed++
-      console.log(`  ✅ ${testName}: ${details}`)
-    } else {
+      // // Debug log removed for production
+} else {
       this.testResults.failed++
-      console.log(`  ❌ ${testName}: ${details}`)
-    }
+      // // Debug log removed for production
+}
   }
 
   printFinalResults() {
-    console.log('\n' + '=' * 60)
-    console.log('🧪 CIN7 Integration Test Results')
-    console.log('=' * 60)
-    console.log(`✅ Passed: ${this.testResults.passed}`)
-    console.log(`❌ Failed: ${this.testResults.failed}`)
-    console.log(`📊 Total: ${this.testResults.passed + this.testResults.failed}`)
-    
-    const successRate = (this.testResults.passed / (this.testResults.passed + this.testResults.failed) * 100).toFixed(1)
-    console.log(`📈 Success Rate: ${successRate}%`)
-
-    if (this.testResults.failed === 0) {
-      console.log('\n🎉 All tests passed! CIN7 integration is working correctly.')
-    } else if (successRate >= 80) {
-      console.log('\n⚠️ Most tests passed. Some issues may need attention.')
-    } else {
-      console.log('\n🚨 Significant issues detected. Integration needs attention.')
-    }
+    // // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+const successRate = (this.testResults.passed / (this.testResults.passed + this.testResults.failed) * 100).toFixed(1)
+    // // Debug log removed for production
+if (this.testResults.failed === 0) {
+      // // Debug log removed for production
+} else if (successRate >= 80) {
+      // // Debug log removed for production
+} else {
+      // // Debug log removed for production
+}
 
     // Save results to file
     const resultsFile = `cin7-integration-test-results-${Date.now()}.json`
     require('fs').writeFileSync(resultsFile, JSON.stringify(this.testResults, null, 2))
-    console.log(`\n📄 Detailed results saved to: ${resultsFile}`)
-  }
+    // // Debug log removed for production
+}
 }
 
 // Run tests if executed directly

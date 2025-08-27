@@ -15,7 +15,7 @@ const supabase = createClient(
 );
 
 async function resetUserPassword() {
-  const email = 'c50bossio@gmail.com';
+  const email = null /* hardcoded ID removed for production */;
   const newPassword = 'test123';
 
   try {

@@ -61,7 +61,8 @@ export async function GET(request) {
         cache_hit: true
       }
       
-      console.log(`🎯 Client care cache hit for shop ${barbershopId} (${responseTime}ms total)`)
+      // // Debug log removed for production
+`)
       return NextResponse.json(cachedResults)
     }
 

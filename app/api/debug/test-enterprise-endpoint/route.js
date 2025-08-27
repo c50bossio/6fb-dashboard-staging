@@ -6,7 +6,7 @@ export async function GET() {
     const supabase = createServiceClient()
     
     // Simulate exactly what the fixed enterprise/shops endpoint should do
-    const yourUserId = 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5'
+    const yourUserId = null /* hardcoded ID removed for production */
     
     // Get user's profile  
     const { data: profile } = await supabase

@@ -40,10 +40,10 @@ export default function ViewSwitcher() {
     setSelectedPerspective(perspective)
     
     // Log perspective change for debugging
-    console.log('Perspective changed to:', perspective)
-    console.log('Is owner view?', !perspective || perspective.type === 'owner')
-    console.log('Perspective type:', perspective?.type)
-  }
+    // // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+}
 
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">

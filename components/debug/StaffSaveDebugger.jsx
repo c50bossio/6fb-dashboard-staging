@@ -168,7 +168,7 @@ export default function StaffSaveDebugger({ staff, onSaveAttempt }) {
       </div>
       
       <div className="text-sm text-yellow-700 mb-3">
-        This debugger will test the staff save functionality and show exactly what's happening.
+        Thiswill test the staff save functionality and show exactly what's happening.
       </div>
       
       {debugLog.length > 0 && (

@@ -14,14 +14,8 @@ export async function POST(request) {
     const body = await request.json()
     const { locationIds, startDate, endDate } = body
 
-    console.log('Calendar multi-location-events request:', {
-      locationIds,
-      startDate,
-      endDate,
-      userEmail: user.email
-    })
-    
-    // Validate date parameters
+    // // Debug log removed for production
+// Validate date parameters
     if (startDate && isNaN(new Date(startDate).getTime())) {
       return NextResponse.json({ 
         error: 'Invalid startDate format. Use YYYY-MM-DD' 

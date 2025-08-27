@@ -700,11 +700,10 @@ export default function UnifiedDashboard({ user, profile }) {
       
       {/* View Perspective Indicator */}
       {(() => {
-        console.log('UnifiedDashboard - isOwnerView:', isOwnerView)
-        console.log('UnifiedDashboard - selectedPerspective:', selectedPerspective)
-        console.log('UnifiedDashboard - Should show banner?', !isOwnerView && selectedPerspective)
-        
-        return !isOwnerView && selectedPerspective && (
+        // // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+return !isOwnerView && selectedPerspective && (
           <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
             <div className="flex items-center">
               <EyeIcon className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-2" />

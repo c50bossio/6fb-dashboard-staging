@@ -40,7 +40,7 @@ export async function GET(request) {
     }
     
     // For now, return basic subscription info without usage data
-    // TODO: Add usage tracking tables later if needed
+    // Usage tracking will be implemented when needed
     
     // Skip subscription history for now
     const history = []

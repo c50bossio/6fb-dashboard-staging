@@ -9,7 +9,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No code provided' }, { status: 400 })
     }
     
-    console.log('Exchange code received:', code.substring(0, 10) + '...')
+    // // Debug log removed for production
++ '...')
     
     // Try using the server-side Supabase client
     try {

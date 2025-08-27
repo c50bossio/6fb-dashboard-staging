@@ -131,7 +131,7 @@ describe('Profile Consistency Prevention System', () => {
     test('should fix user by email', async () => {
       const userProfile = {
         id: 'chris-id',
-        email: 'c50bossio@gmail.com',
+        email: null /* hardcoded ID removed for production */,
         role: 'SHOP_OWNER',
         subscription_tier: 'free'
       }
@@ -144,10 +144,10 @@ describe('Profile Consistency Prevention System', () => {
           error: null 
         })
 
-      const result = await fixUserByEmail('c50bossio@gmail.com')
+      const result = await fixUserByEmail(null /* hardcoded ID removed for production */)
 
       expect(result.success).toBe(true)
-      expect(result.email).toBe('c50bossio@gmail.com')
+      expect(result.email).toBe(null /* hardcoded ID removed for production */)
       expect(result.changes).toContain('subscription_tier')
     })
   })

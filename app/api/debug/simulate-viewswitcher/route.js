@@ -6,7 +6,7 @@ export async function GET() {
     const supabase = createServiceClient()
     
     // Simulate the exact ViewSwitcher logic for your user
-    const yourUserId = 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5'
+    const yourUserId = null /* hardcoded ID removed for production */
     const yourShopId = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b' // Tomb45 Channelside
     
     // 1. What the enterprise/shops endpoint should return
@@ -71,7 +71,7 @@ export async function GET() {
       message: 'ViewSwitcher simulation complete',
       yourProfile: {
         id: yourUserId,
-        email: 'c50bossio@gmail.com',
+        email: null /* hardcoded ID removed for production */,
         role: 'ENTERPRISE_OWNER',
         shop_id: yourShopId
       },

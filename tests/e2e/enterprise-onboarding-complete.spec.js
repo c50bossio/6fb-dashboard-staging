@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Enterprise Onboarding Complete Experience', () => {
   const BASE_URL = 'http://localhost:9999';
-  const TEST_EMAIL = 'c50bossio@gmail.com';
+  const TEST_EMAIL = null /* hardcoded ID removed for production */;
   
   test.beforeEach(async ({ page }) => {
     // Set up test environment

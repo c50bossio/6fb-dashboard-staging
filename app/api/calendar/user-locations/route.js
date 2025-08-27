@@ -11,9 +11,8 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('Calendar user-locations request for user:', user.email)
-
-    // Get user's profile
+    // // Debug log removed for production
+// Get user's profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')

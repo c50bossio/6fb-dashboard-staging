@@ -30,7 +30,7 @@ const TEST_CONFIG = {
   
   // Test user credentials
   testUser: {
-    email: 'c50bossio@gmail.com',
+    email: null /* hardcoded ID removed for production */,
     password: 'testpass123'
   },
   

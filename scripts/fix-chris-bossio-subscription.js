@@ -28,7 +28,7 @@ async function fixChrisBossioAccount() {
     const { data: profile, error: fetchError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('email', 'c50bossio@gmail.com')
+      .eq('email', null /* hardcoded ID removed for production */)
       .single()
 
     if (fetchError || !profile) {
@@ -55,7 +55,7 @@ async function fixChrisBossioAccount() {
         subscription_status: 'active',
         updated_at: new Date().toISOString()
       })
-      .eq('email', 'c50bossio@gmail.com')
+      .eq('email', null /* hardcoded ID removed for production */)
       .select()
       .single()
 
@@ -116,7 +116,7 @@ async function testSubscriptionAPI() {
     const { data: profile } = await supabase
       .from('profiles')
       .select('subscription_tier, subscription_status, role')
-      .eq('email', 'c50bossio@gmail.com')
+      .eq('email', null /* hardcoded ID removed for production */)
       .single()
 
     if (profile) {

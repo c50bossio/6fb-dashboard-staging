@@ -24,7 +24,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 // Preserve these essential accounts for system administration
 const PRESERVE_ACCOUNTS = [
-  'c50bossio@gmail.com',           // Primary admin
+  null /* hardcoded ID removed for production */,           // Primary admin
   'justine.casiano@gmail.com'      // Secondary admin if needed
 ]
 

@@ -43,12 +43,12 @@ let jobStats = {
  * Main job execution function
  */
 async function executeClientCareJob() {
-  console.log('🤖 Starting Client Care Background Job...')
-  console.log(`   Started at: ${new Date().toISOString()}`)
-  console.log(`   Batch size: ${BATCH_SIZE}`)
-  console.log(`   Max runtime: ${MAX_RUNTIME_MINUTES} minutes\n`)
-
-  // Initialize Supabase with service role for background operations
+  // // Debug log removed for production
+// // Debug log removed for production
+.toISOString()}`)
+  // // Debug log removed for production
+// // Debug log removed for production
+// Initialize Supabase with service role for background operations
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -61,8 +61,8 @@ async function executeClientCareJob() {
     const targetBarbershopId = args.find(arg => arg.startsWith('--barbershop-id='))?.split('=')[1]
     
     if (isDryRun) {
-      console.log('🧪 DRY RUN MODE - No changes will be made\n')
-    }
+      // // Debug log removed for production
+}
 
     // Get all active barbershops or target specific one
     let barbershopsQuery = supabase
@@ -72,8 +72,8 @@ async function executeClientCareJob() {
     
     if (targetBarbershopId) {
       barbershopsQuery = barbershopsQuery.eq('id', targetBarbershopId)
-      console.log(`🎯 Targeting specific barbershop: ${targetBarbershopId}\n`)
-    }
+      // // Debug log removed for production
+}
 
     const { data: barbershops, error: barbershopsError } = await barbershopsQuery
     
@@ -82,11 +82,12 @@ async function executeClientCareJob() {
     }
 
     if (!barbershops || barbershops.length === 0) {
-      console.log('ℹ️ No active barbershops found to process')
-      return jobStats
+      // // Debug log removed for production
+return jobStats
     }
 
-    console.log(`📋 Found ${barbershops.length} barbershop(s) to process\n`)
+    // // Debug log removed for production
+to process\n`)
 
     // Process barbershops in batches
     for (let i = 0; i < barbershops.length; i += BATCH_SIZE) {
@@ -100,7 +101,8 @@ async function executeClientCareJob() {
         break
       }
 
-      console.log(`📦 Processing batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(barbershops.length/BATCH_SIZE)}`)
+      // // Debug log removed for production
++ 1}/${Math.ceil(barbershops.length/BATCH_SIZE)}`)
       
       // Process each barbershop in the batch
       const batchPromises = batch.map(barbershop => 
@@ -144,7 +146,8 @@ async function processBarbershop(supabase, barbershop, isDryRun) {
   const barbershopId = barbershop.id
   const barbershopName = barbershop.name
   
-  console.log(`  🏪 Processing: ${barbershopName} (ID: ${barbershopId})`)
+  // // Debug log removed for production
+`)
   
   const processingStats = {
     clientsUpdated: 0,
@@ -155,9 +158,8 @@ async function processBarbershop(supabase, barbershop, isDryRun) {
   try {
     // 1. Identify clients needing care
     const clientsNeedingCare = await identifyClientsNeedingCare(supabase, barbershopId)
-    console.log(`    📊 Found ${clientsNeedingCare.length} clients needing care`)
-
-    // 2. Update client care flags (if not dry run)
+    // // Debug log removed for production
+// 2. Update client care flags (if not dry run)
     if (!isDryRun && clientsNeedingCare.length > 0) {
       const updateResult = await updateClientCareFlags(supabase, barbershopId, clientsNeedingCare)
       processingStats.clientsUpdated = updateResult.updated
@@ -176,8 +178,8 @@ async function processBarbershop(supabase, barbershop, isDryRun) {
         await warmClientCareCache(barbershopId, ['high', 'medium'])
         processingStats.cacheWarmed = true
         
-        console.log(`    🔥 Cache warmed for ${barbershopName}`)
-      } catch (cacheError) {
+        // // Debug log removed for production
+} catch (cacheError) {
         console.warn(`    ⚠️ Cache warming failed for ${barbershopName}:`, cacheError.message)
         processingStats.errors.push(`Cache warming failed: ${cacheError.message}`)
       }
@@ -185,11 +187,12 @@ async function processBarbershop(supabase, barbershop, isDryRun) {
 
     // 4. Check if proactive notifications needed (Phase 3 feature)
     if (clientsNeedingCare.length > 5) {
-      console.log(`    📧 ${barbershopName} has ${clientsNeedingCare.length} clients needing care - consider staff notification`)
-    }
+      // // Debug log removed for production
+}
 
     const duration = Date.now() - jobStats.startTime
-    console.log(`    ✅ ${barbershopName} processed (${duration}ms)\n`)
+    // // Debug log removed for production
+\n`)
 
   } catch (error) {
     console.error(`    ❌ Error processing ${barbershopName}:`, error.message)
@@ -340,18 +343,18 @@ function generateJobReport(stats) {
   const duration = Date.now() - stats.startTime
   const durationMinutes = Math.round(duration / 60000)
   
-  console.log('\n📋 Client Care Background Job Report:')
-  console.log('=====================================')
-  console.log(`   Duration: ${durationMinutes} minutes`)
-  console.log(`   Barbershops processed: ${stats.barbershopsProcessed}`)
-  console.log(`   Clients updated: ${stats.clientsUpdated}`)
-  console.log(`   Caches warmed: ${stats.cacheWarmed}`)
-  console.log(`   Errors: ${stats.errors}`)
-  console.log(`   Warnings: ${stats.warnings}`)
-  console.log(`   Success rate: ${stats.barbershopsProcessed > 0 ? Math.round(((stats.barbershopsProcessed - stats.errors) / stats.barbershopsProcessed) * 100) : 0}%`)
-  console.log('=====================================')
-  
-  return {
+  // // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+/ stats.barbershopsProcessed) * 100) : 0}%`)
+  // // Debug log removed for production
+return {
     ...stats,
     duration_ms: duration,
     duration_minutes: durationMinutes,
@@ -369,7 +372,8 @@ async function main() {
     
     // Log to file or monitoring service in production
     if (process.env.NODE_ENV === 'production') {
-      console.log('📊 Job completed successfully:', JSON.stringify(report))
+      // // Debug log removed for production
+)
     }
     
     process.exit(0)
@@ -390,9 +394,10 @@ async function main() {
 
 // Graceful shutdown handling
 process.on('SIGINT', () => {
-  console.log('\n\n⏹️ Background job interrupted')
-  const report = generateJobReport(jobStats)
-  console.log('📊 Partial execution stats:', JSON.stringify(report))
+  // // Debug log removed for production
+const report = generateJobReport(jobStats)
+  // // Debug log removed for production
+)
   process.exit(1)
 })
 

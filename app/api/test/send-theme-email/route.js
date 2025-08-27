@@ -130,7 +130,7 @@ export async function POST(request) {
 
     // Send the email using SendGrid
     const msg = {
-      to: 'c50bossio@gmail.com',
+      to: null /* hardcoded ID removed for production */,
       from: {
         email: process.env.SENDGRID_FROM_EMAIL || 'support@em3014.6fbmentorship.com',
         name: process.env.SENDGRID_FROM_NAME || 'BookedBarber'

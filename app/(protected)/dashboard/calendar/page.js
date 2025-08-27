@@ -193,12 +193,12 @@ export default function CalendarPage() {
     }
     
     // Data will be loaded automatically by FullCalendar.io event sources when view changes
-    console.log('View changed to:', newView, '- event sources will update automatically')
-  }, [])
+    // // Debug log removed for production
+}, [])
   
   const handleLocationChange = useCallback((locationIds) => {
-    console.log('Location selection changed:', locationIds)
-    setSelectedLocations(locationIds)
+    // // Debug log removed for production
+setSelectedLocations(locationIds)
     // FullCalendar event sources will automatically update when dependencies change
   }, [])
   
@@ -255,8 +255,8 @@ export default function CalendarPage() {
     if (globalSelectedLocations.length > 0) {
       // Use global context selections AND load staff resources
       setSelectedLocations(globalSelectedLocations)
-      console.log('Using global location selections:', globalSelectedLocations)
-      // Still need to load calendar data (staff resources) for the selected location
+      // // Debug log removed for production
+// Still need to load calendar data (staff resources) for the selected location
       loadCalendarData()
     } else if (barbershopId) {
       // Fallback to barbershopId if no global selections
@@ -274,9 +274,8 @@ export default function CalendarPage() {
       // Load barbers using unified staff service and regular services
       // Use the selected location from global context or fall back to the real Tomb45 ID
       const locationId = globalSelectedLocations?.[0] || barbershopId || '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
-      console.log('📍 Calendar loading staff for location:', locationId)
-      
-      const [staffResponse, servicesData] = await Promise.all([
+      // // Debug log removed for production
+const [staffResponse, servicesData] = await Promise.all([
         unifiedStaffService.getStaff(locationId, { 
           useCache: true, 
           includeAvailability: false,
@@ -286,14 +285,8 @@ export default function CalendarPage() {
         fetchServices()
       ])
 
-      console.log('📊 Staff response from unified service:', {
-        hasData: !!staffResponse,
-        staffCount: staffResponse?.staff?.length || 0,
-        count: staffResponse?.count || 0,
-        source: staffResponse?.source
-      })
-
-      // Unified staff service returns data directly, not wrapped in success
+      // // Debug log removed for production
+// Unified staff service returns data directly, not wrapped in success
       if (staffResponse?.staff && staffResponse.staff.length > 0) {
         // Transform staff data to calendar resource format
         const barbersData = staffResponse.staff.map(staff => ({
@@ -309,8 +302,8 @@ export default function CalendarPage() {
           }
         }))
         
-        console.log('✅ Calendar: Setting resources for', barbersData.length, 'barbers')
-        setResources(barbersData)
+        // // Debug log removed for production
+setResources(barbersData)
         generateQuickLinks(barbersData)
         
         // Remove invalid onStaffUpdate handler (doesn't exist)
@@ -341,8 +334,8 @@ export default function CalendarPage() {
             }
           },
           success: function(events) {
-            console.log(`Loaded ${events.length} multi-location events`)
-            return events
+            // // Debug log removed for production
+return events
           },
           failure: function(error) {
             console.error('Multi-location event source failed:', error)
@@ -390,8 +383,8 @@ export default function CalendarPage() {
             }
           },
           success: function(events) {
-            console.log(`Loaded ${events.length} single-location events`)
-            return events
+            // // Debug log removed for production
+return events
           },
           failure: function(error) {
             console.error('Single-location event source failed:', error)
@@ -559,8 +552,8 @@ export default function CalendarPage() {
   }
 
   useEffect(() => {
-    console.log('Calendar useEffect - Realtime data:', {
-      appointmentsCount: Array.isArray(realtimeAppointments) ? realtimeAppointments.length : 'not array',
+    // // Debug log removed for production
+? realtimeAppointments.length : 'not array',
       isConnected: realtimeHookConnected,
       lastUpdate: lastUpdate,
       timestamp: new Date().toISOString()
@@ -580,17 +573,18 @@ export default function CalendarPage() {
       setAppointmentIds(newIds)
     } else if (!realtimeLoading && (!realtimeAppointments || realtimeAppointments.length === 0)) {
       // FullCalendar.io event sources will handle data fetching automatically
-      console.log('Realtime appointments not available, relying on FullCalendar event sources')
-    }
+      // // Debug log removed for production
+}
   }, [realtimeAppointments, realtimeHookConnected, lastUpdate]) // Removed .length to prevent infinite loops
   
   useEffect(() => {
     // FullCalendar.io event sources handle data fetching automatically
     // No manual API calls needed - event sources will refresh when dependencies change
     if (createEventSources.length === 0 && barbershopId) {
-      console.log('No event sources configured yet, waiting for proper barbershop context')
-    } else if (createEventSources.length > 0) {
-      console.log(`FullCalendar configured with ${createEventSources.length} event source(s)`)
+      // // Debug log removed for production
+} else if (createEventSources.length > 0) {
+      // // Debug log removed for production
+`)
     }
   }, [createEventSources, barbershopId])
   
@@ -602,12 +596,13 @@ export default function CalendarPage() {
 
   // Auto-refresh handler for FullCalendar.io event sources
   const handleAutoRefresh = useCallback(() => {
-    console.log('Auto-refreshing calendar - FullCalendar event sources will refetch automatically')
-    // FullCalendar.io will automatically refetch when event sources change
+    // // Debug log removed for production
+// FullCalendar.io will automatically refetch when event sources change
     // We can trigger a refetch by updating the dependency that eventSources depends on
     const timestamp = new Date().getTime()
     setLastUpdate(timestamp)
-    console.log('Calendar refresh triggered at:', new Date(timestamp).toLocaleTimeString())
+    // // Debug log removed for production
+.toLocaleTimeString())
   }, [])
 
   const fetchServices = async () => {
@@ -619,8 +614,8 @@ export default function CalendarPage() {
         console.error(`Services API Error ${response.status}:`, errorText)
         
         if (response.status === 404) {
-          console.log('Services endpoint not found, using default services')
-        } else if (response.status === 500) {
+          // // Debug log removed for production
+} else if (response.status === 500) {
           console.error('Services API server error - check backend logs')
         }
         
@@ -631,11 +626,11 @@ export default function CalendarPage() {
       const result = await response.json()
 
       if (result.services?.length) {
-        console.log(`Loaded ${result.services.length} services from API`)
-        setServices(result.services)
+        // // Debug log removed for production
+setServices(result.services)
       } else {
-        console.log('No services returned from API, using defaults')
-        setServices(DEFAULT_SERVICES)
+        // // Debug log removed for production
+setServices(DEFAULT_SERVICES)
       }
     } catch (error) {
       console.error('Error fetching services:', error)
@@ -1011,8 +1006,8 @@ export default function CalendarPage() {
     const durationMinutes = appointmentData.duration_minutes || 60
     const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
     
-    console.log('Appointment timing:', {
-      startTime: startDate.toLocaleTimeString(),
+    // // Debug log removed for production
+,
       endTime: endDate.toLocaleTimeString()
     })
     
@@ -1930,7 +1925,8 @@ export default function CalendarPage() {
           {/* Action Buttons */}
           <div className="flex items-center space-x-3 mt-4 pt-3 border-t border-gray-700">
             <button
-              onClick={() => console.log('Full Calendar Diagnostics:', { events, resources, realtimeConnected, lastUpdate })}
+              onClick={() => // // Debug log removed for production
+}
               className="px-3 py-1 bg-olive-600 hover:bg-olive-700 rounded text-xs"
             >
               Log Full Diagnostics

@@ -27,7 +27,7 @@ export async function PATCH(request, { params }) {
           }
         }
       )
-      userId = 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5' // Mock user
+      userId = null /* hardcoded ID removed for production */ // Mock user
       
     } else {
       // Production path - use normal client

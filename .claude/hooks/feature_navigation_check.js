@@ -95,71 +95,71 @@ function generateNavigationCode(pagePath) {
 }
 
 function main(changedFiles = []) {
-  console.log('🔍 Checking feature navigation integration...')
-  
-  const newPages = checkForNewPages(changedFiles)
+  // // Debug log removed for production
+const newPages = checkForNewPages(changedFiles)
   
   if (newPages.length === 0) {
-    console.log('✅ No new pages detected')
-    return { success: true }
+    // // Debug log removed for production
+return { success: true }
   }
 
-  console.log(`📄 Found ${newPages.length} new page(s):`)
+  // // Debug log removed for production
+:`)
   
   const issues = []
   
   newPages.forEach(page => {
-    console.log(`\n🔎 Analyzing: ${page}`)
-    
-    const integration = checkNavigationIntegration(page)
+    // // Debug log removed for production
+const integration = checkNavigationIntegration(page)
     
     if (!integration.hasNavigation || !integration.hasMobileNav) {
-      console.log('❌ Navigation integration issues found:')
-      integration.suggestions.forEach(suggestion => {
-        console.log(`   • ${suggestion}`)
-      })
+      // // Debug log removed for production
+integration.suggestions.forEach(suggestion => {
+        // // Debug log removed for production
+})
       
-      console.log('\n💡 Suggested navigation code:')
-      console.log(generateNavigationCode(page))
+      // // Debug log removed for production
+// // Debug log removed for production
+)
       
       issues.push({
         page,
         issues: integration.suggestions
       })
     } else {
-      console.log('✅ Navigation integration looks good!')
-    }
+      // // Debug log removed for production
+}
   })
 
   if (issues.length > 0) {
-    console.log('\n' + '='.repeat(60))
-    console.log('🚨 NAVIGATION INTEGRATION REQUIRED')
-    console.log('='.repeat(60))
-    console.log('\nThe following pages need navigation integration:')
-    
-    issues.forEach(({ page, issues: pageIssues }) => {
-      console.log(`\n📄 ${page}:`)
-      pageIssues.forEach(issue => console.log(`   ❌ ${issue}`))
+    // // Debug log removed for production
+)
+    // // Debug log removed for production
+// // Debug log removed for production
+)
+    // // Debug log removed for production
+issues.forEach(({ page, issues: pageIssues }) => {
+      // // Debug log removed for production
+pageIssues.forEach(issue => // // Debug log removed for production
+)
     })
     
-    console.log('\n📋 Action Required:')
-    console.log('1. Add navigation links to components/Navigation.js')
-    console.log('2. Update mobile navigation if needed')
-    console.log('3. Consider dashboard integration')
-    console.log('4. Test user discovery and access flows')
-    console.log('5. Verify role-based permissions')
-    
-    console.log('\n📖 See DEVELOPMENT_CHECKLIST.md for detailed guidance')
-    
-    return { 
+    // // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+return { 
       success: false, 
       message: 'Navigation integration required for new features',
       issues 
     }
   }
 
-  console.log('\n✅ All features properly integrated!')
-  return { success: true }
+  // // Debug log removed for production
+return { success: true }
 }
 
 module.exports = {

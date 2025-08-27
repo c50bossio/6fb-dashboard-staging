@@ -19,7 +19,7 @@ async function verifySettingsConsistency() {
       fullPage: true 
     });
     
-    await page.fill('input[type="email"]', 'c50bossio@gmail.com');
+    await page.fill('input[type="email"]', null /* hardcoded ID removed for production */);
     await page.fill('input[type="password"]', 'testpassword123');
     await page.click('button[type="submit"]');
     

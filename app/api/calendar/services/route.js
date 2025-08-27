@@ -41,16 +41,15 @@ export async function GET(request) {
     }
 
     if (!barbershopId) {
-      console.log('No barbershop found for user:', user.id)
-      return NextResponse.json({ 
+      // // Debug log removed for production
+return NextResponse.json({ 
         services: [],
         message: 'No barbershop found for user'
       })
     }
 
-    console.log('Fetching services for barbershop:', barbershopId)
-
-    // Fetch services for the barbershop - try both possible field names
+    // // Debug log removed for production
+// Fetch services for the barbershop - try both possible field names
     let services, servicesError
     
     // First try with shop_id (more common in the schema)
@@ -74,8 +73,8 @@ export async function GET(request) {
       .order('name', { ascending: true })
     
     if (shopIdResult.error) {
-      console.log('Trying barbershop_id field instead...')
-      // Fallback to barbershop_id
+      // // Debug log removed for production
+// Fallback to barbershop_id
       const barbershopResult = await supabase
         .from('services')
         .select(`
@@ -107,9 +106,8 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Failed to fetch services' }, { status: 500 })
     }
 
-    console.log(`Found ${services?.length || 0} services for barbershop ${barbershopId}`)
-
-    return NextResponse.json({
+    // // Debug log removed for production
+return NextResponse.json({
       services: services || [],
       barbershop_id: barbershopId,
       user_role: profile.role
@@ -198,9 +196,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Failed to create service' }, { status: 500 })
     }
 
-    console.log('Created new service:', newService.name, 'for barbershop:', barbershopId)
-
-    return NextResponse.json({
+    // // Debug log removed for production
+return NextResponse.json({
       success: true,
       service: newService
     })

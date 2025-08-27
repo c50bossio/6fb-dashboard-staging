@@ -4,8 +4,10 @@ export async function POST(request) {
   try {
     const { accountId, apiKey } = await request.json()
 
-    console.log('Account ID:', accountId ? accountId.substring(0, 8) + '...' : 'not provided')
-    console.log('API Key:', apiKey ? apiKey.substring(0, 8) + '...' : 'not provided')
+    // // Debug log removed for production
++ '...' : 'not provided')
+    // // Debug log removed for production
++ '...' : 'not provided')
     
     if (!accountId || !apiKey) {
       return NextResponse.json(

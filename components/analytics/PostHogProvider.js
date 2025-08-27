@@ -61,7 +61,7 @@ export default function PostHogProvider({ children }) {
       if (vitals.onLCP) vitals.onLCP(reportWebVitals)
       if (vitals.onTTFB) vitals.onTTFB(reportWebVitals)
     }).catch((error) => {
-      console.debug('Web vitals tracking not available:', error.message)
+      // console.debug('Web vitals tracking not available:', error.message)
     })
   }, [])
 

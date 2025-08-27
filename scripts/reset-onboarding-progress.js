@@ -7,7 +7,7 @@ const supabase = createClient(
 )
 
 async function resetOnboardingProgress() {
-  const email = 'c50bossio@gmail.com'
+  const email = null /* hardcoded ID removed for production */
 
   // Get user profile
   const { data: profile, error: profileError } = await supabase

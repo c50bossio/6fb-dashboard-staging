@@ -59,9 +59,8 @@ export default function StaffManagementDashboard() {
       
       // Get the selected location ID, fallback to mock location
       const locationId = selectedLocations?.[0] || 'tomb45-channelside'
-      console.log('📍 Staff Management loading staff for location:', locationId)
-      
-      // Use unified staff service to get comprehensive staff data for selected location
+      // // Debug log removed for production
+// Use unified staff service to get comprehensive staff data for selected location
       const staffData = await unifiedStaffService.getStaff(locationId, {
         useCache: true,
         includeAvailability: false, // Not needed in dashboard, prevents 400 errors

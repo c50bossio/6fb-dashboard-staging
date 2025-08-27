@@ -11,7 +11,7 @@ async function finalCheck() {
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('*')
-    .eq('email', 'c50bossio@gmail.com')
+    .eq('email', null /* hardcoded ID removed for production */)
     .single();
   
   if (error) {

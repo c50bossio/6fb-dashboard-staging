@@ -288,7 +288,7 @@
         data: data
       })
     }).catch(error => {
-      console.debug('Analytics tracking failed:', error);
+      // console.debug('Analytics tracking failed:', error);
     });
   };
 

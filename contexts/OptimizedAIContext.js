@@ -113,7 +113,7 @@ export function OptimizedAIProvider({ children }) {
       lastCleanupRemoved: cacheCleanedCount
     }
     
-    console.debug('🧹 Memory cleanup completed', {
+    // console.debug('🧹 Memory cleanup completed', {
       cacheEntriesRemoved: cacheCleanedCount,
       activeConversations: conversationHistoryRef.current.size,
       currentMessages: conversationState.messages.length

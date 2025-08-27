@@ -444,8 +444,8 @@ class SREDashboard:
             ws = new WebSocket(wsUrl);
             
             ws.onopen = function() {
-                console.log('WebSocket connected');
-            };
+                // // Debug log removed for production
+};
             
             ws.onmessage = function(event) {
                 const data = JSON.parse(event.data);
@@ -455,8 +455,8 @@ class SREDashboard:
             };
             
             ws.onclose = function() {
-                console.log('WebSocket disconnected, attempting to reconnect...');
-                setTimeout(initWebSocket, 5000);
+                // // Debug log removed for production
+setTimeout(initWebSocket, 5000);
             };
             
             ws.onerror = function(error) {

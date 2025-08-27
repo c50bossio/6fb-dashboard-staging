@@ -22,9 +22,8 @@ async function fetchCin7Products(accountId, apiKey) {
       
       // Use the correct lowercase endpoint that works (verified in quick-sync and test-connection)
       const url = `https://inventory.dearsystems.com/externalapi/products?limit=${pageSize}&page=${page}`
-      console.log('Fetching CIN7 data from URL:', url)
-      
-      const response = await fetch(url, {
+      // // Debug log removed for production
+const response = await fetch(url, {
         method: 'GET',
         headers: {
           'api-auth-accountid': accountId,
@@ -50,9 +49,8 @@ async function fetchCin7Products(accountId, apiKey) {
       const products = data?.ProductList || data?.Products || []
       totalProducts = data?.Total || 0
       
-      console.log('Page data:', { productsCount: products.length, totalProducts })
-      
-      if (products.length === 0) {
+      // // Debug log removed for production
+if (products.length === 0) {
         hasMorePages = false
       } else {
         allProducts = allProducts.concat(products)
@@ -122,13 +120,16 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
 
     // Check for nested inventory data
     if (cin7Product.Inventory) {
-      console.log('Inventory data found:', JSON.stringify(cin7Product.Inventory).substring(0, 200))
+      // // Debug log removed for production
+.substring(0, 200))
     }
     if (cin7Product.StockLevels) {
-      console.log('StockLevels data found:', JSON.stringify(cin7Product.StockLevels).substring(0, 200))
+      // // Debug log removed for production
+.substring(0, 200))
     }
     if (cin7Product.Locations) {
-      console.log('Locations data found:', JSON.stringify(cin7Product.Locations).substring(0, 200))
+      // // Debug log removed for production
+.substring(0, 200))
     }
     
     // Check any numeric fields
@@ -138,8 +139,8 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
         numericFields[key] = cin7Product[key]
       }
     })
-    console.log('Numeric fields:', numericFields)
-  }
+    // // Debug log removed for production
+}
   
   // Map category to barbershop-friendly categories
   const mapCategoryForBarbershop = (cin7Category) => {
@@ -342,8 +343,8 @@ export async function POST(request) {
     if (devBypass) {
       // Use mock user for development - use actual user ID from database
       user = {
-        id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5', // Actual user c50bossio@gmail.com
-        email: 'c50bossio@gmail.com'
+        id: null /* hardcoded ID removed for production */, // Actual user c50bossio@gmail.com
+        email: null /* hardcoded ID removed for production */
       }
     } else {
       // Get authenticated user
@@ -363,8 +364,8 @@ export async function POST(request) {
         
         // TEMPORARY: Allow sync for testing while we fix OAuth
         if (process.env.NODE_ENV === 'production' && isKnownUser) {
-          console.log('Using production test user')
-          user = {
+          // // Debug log removed for production
+user = {
             id: 'temp-production-user',
             email: 'production-test@bookedbarber.com'
           }
@@ -557,9 +558,8 @@ export async function POST(request) {
     }
     
     try {
-      console.log('Starting CIN7 sync process')
-
-      // Fetch both products and stock levels from Cin7
+      // // Debug log removed for production
+// Fetch both products and stock levels from Cin7
       const [cin7Products, stockLevels] = await Promise.all([
         fetchCin7Products(accountId, apiKey),
         fetchCin7StockLevels(accountId, apiKey)
@@ -573,13 +573,13 @@ export async function POST(request) {
           // Show all numeric fields that might contain stock data
           const stockFields = Object.keys(product).filter(key => {
             const value = product[key]
-            return typeof value === 'number' && key.toLowerCase().includes('qty') ||
+            return typeof value === 'number' && (key.toLowerCase().includes('qty') ||
                    key.toLowerCase().includes('stock') ||
                    key.toLowerCase().includes('available') ||
-                   key.toLowerCase().includes('quantity')
+                   key.toLowerCase().includes('quantity'))
           })
           if (stockFields.length > 0) {
-            }`)
+            console.log(`✅ Stock fields detected for ${product.name || 'product'}`)
           }
         })
       }

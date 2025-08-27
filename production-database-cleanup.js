@@ -57,7 +57,7 @@ const TEST_DATA_IDENTIFIERS = {
     'test@test.com'
   ],
   hardcodedIds: [
-    'c61b33d5-4a96-472b-8f97-d1a3ae5532f9' // Elite Cuts GMB Test ID from scripts
+    null /* hardcoded ID removed for production */ // Elite Cuts GMB Test ID from scripts
   ]
 }
 

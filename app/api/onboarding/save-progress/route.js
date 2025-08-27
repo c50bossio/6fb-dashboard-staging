@@ -139,7 +139,7 @@ export async function POST(request) {
       }
     } catch (error) {
       // Log analytics errors but continue
-      console.debug('Analytics error:', error.message)
+      // console.debug('Analytics error:', error.message)
     }
     
     // Update profile with current progress - try with all fields first

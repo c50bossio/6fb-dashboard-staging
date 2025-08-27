@@ -24,9 +24,8 @@ export async function GET(request, { params }) {
       }, { status: 500 })
     }
     
-    console.log('🔑 Using service client for public API')
-    
-    // Use the barbershop ID directly - no mock handling
+    // // Debug log removed for production
+// Use the barbershop ID directly - no mock handling
     const actualBarbershopId = barbershopId
     
     // First check if barbershop exists and allows public booking
@@ -59,8 +58,8 @@ export async function GET(request, { params }) {
     }
 
     // Get active staff for this barbershop
-    console.log('🔍 Querying staff for barbershop:', actualBarbershopId)
-    const { data: staff, error: staffError } = await supabase
+    // // Debug log removed for production
+const { data: staff, error: staffError } = await supabase
       .from('barbershop_staff')
       .select(`
         id,
@@ -75,13 +74,8 @@ export async function GET(request, { params }) {
       .eq('is_active', true)
       .order('created_at', { ascending: true })
     
-    console.log('📊 Staff query result:', { 
-      count: staff?.length || 0, 
-      staff: staff,
-      error: staffError 
-    })
-
-    if (staffError) {
+    // // Debug log removed for production
+if (staffError) {
       console.error('❌ Public barbers API: Error fetching staff')
       console.error('   Error details:', staffError)
       console.error('   Barbershop ID:', barbershopId)
@@ -94,8 +88,8 @@ export async function GET(request, { params }) {
 
     // If no staff found, return empty array
     if (!staff || staff.length === 0) {
-      console.log('📍 No staff found for barbershop:', barbershopId)
-      return NextResponse.json({
+      // // Debug log removed for production
+return NextResponse.json({
         success: true,
         staff: [],
         count: 0,

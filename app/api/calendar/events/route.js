@@ -13,9 +13,8 @@ export async function GET(request) {
     const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !authUser) {
-      console.log('⚠️ Calendar events API: No authenticated user, using service client fallback')
-      
-      // Use service client as fallback for development (similar to public barbers API)
+      // // Debug log removed for production
+// Use service client as fallback for development (similar to public barbers API)
       supabase = createServiceClient()
       usingServiceClient = true
       
@@ -31,15 +30,15 @@ export async function GET(request) {
       
       if (profiles && profiles.length > 0) {
         user = profiles[0]  // Use first profile for development
-        console.log('🔑 Using service client with fallback user:', user.email)
-      } else {
-        console.log('⚠️ No profiles found in database')
-        return NextResponse.json({ error: 'No user profiles available' }, { status: 404 })
+        // // Debug log removed for production
+} else {
+        // // Debug log removed for production
+return NextResponse.json({ error: 'No user profiles available' }, { status: 404 })
       }
     } else {
       user = authUser
-      console.log('🔑 Using authenticated user:', user.email)
-    }
+      // // Debug log removed for production
+}
 
     // Parse FullCalendar.io standard parameters
     const { searchParams } = new URL(request.url)
@@ -48,23 +47,16 @@ export async function GET(request) {
     const shopId = searchParams.get('shop_id')
     const locationIds = searchParams.get('location_ids')?.split(',').filter(Boolean) || []
 
-    console.log('FullCalendar.io events request:', {
-      start,
-      end,
-      shopId,
-      locationIds,
-      userEmail: user.email
-    })
-
-    // Get user's profile to find their barbershop - try both ID and email approaches
+    // // Debug log removed for production
+// Get user's profile to find their barbershop - try both ID and email approaches
     let profile, profileError
     
     if (usingServiceClient && user) {
       // When using service client, the user is already the profile from database
       profile = user
       profileError = null
-      console.log('🔑 Using service client profile directly:', profile.email)
-    } else {
+      // // Debug log removed for production
+} else {
       // First try with user.id (more reliable)
       const profileByIdResult = await supabase
         .from('profiles')
@@ -76,8 +68,8 @@ export async function GET(request) {
         profile = profileByIdResult.data
         profileError = profileByIdResult.error
       } else {
-        console.log('Profile not found by ID, trying email...')
-        // Fallback to email lookup
+        // // Debug log removed for production
+// Fallback to email lookup
         const profileByEmailResult = await supabase
           .from('profiles')
           .select('*')
@@ -114,8 +106,8 @@ export async function GET(request) {
       // Single shop request - for now, just use the shopId directly for Tomb45
       // This is a workaround for Chris Bossio not having proper shop association
       targetLocationIds.push(shopId)
-      console.log('📍 Using shopId directly for calendar events:', shopId)
-    } else {
+      // // Debug log removed for production
+} else {
       // Default - get user's primary shop
       const primaryShopId = await getUserPrimaryShop(supabase, profile)
       if (primaryShopId) {
@@ -124,8 +116,8 @@ export async function GET(request) {
     }
 
     if (targetLocationIds.length === 0) {
-      console.log('⚠️ No target locations found for calendar events, returning empty')
-      // Return empty array (FullCalendar.io standard)
+      // // Debug log removed for production
+// Return empty array (FullCalendar.io standard)
       return NextResponse.json([])
     }
 
@@ -165,8 +157,8 @@ export async function GET(request) {
 
     if (appointmentsError) {
       console.error('Error fetching appointments:', appointmentsError)
-      console.log('📅 No appointments table found or query failed, returning empty array for FullCalendar.io')
-      // Return empty array instead of error (FullCalendar.io expects this)
+      // // Debug log removed for production
+// Return empty array instead of error (FullCalendar.io expects this)
       return NextResponse.json([])
     }
 
@@ -183,9 +175,8 @@ export async function GET(request) {
       return transformAppointmentToEvent(appointment, { customers, services, barbers, locations, targetLocationIds })
     }).filter(event => event !== null)
 
-    console.log(`Returning ${events.length} events for FullCalendar.io`)
-    
-    // Return simple events array (FullCalendar.io standard)
+    // // Debug log removed for production
+// Return simple events array (FullCalendar.io standard)
     return NextResponse.json(events)
 
   } catch (error) {
@@ -238,14 +229,14 @@ async function getUserPrimaryShop(supabase, profile) {
   try {
     // Try profile shop_id first
     if (profile.shop_id) {
-      console.log('📍 Using profile.shop_id:', profile.shop_id)
-      return profile.shop_id
+      // // Debug log removed for production
+return profile.shop_id
     }
 
     // Try profile barbershop_id
     if (profile.barbershop_id) {
-      console.log('📍 Using profile.barbershop_id:', profile.barbershop_id)
-      return profile.barbershop_id
+      // // Debug log removed for production
+return profile.barbershop_id
     }
 
     // Check if user owns a barbershop
@@ -256,8 +247,8 @@ async function getUserPrimaryShop(supabase, profile) {
       .limit(1)
 
     if (ownedShops && ownedShops.length > 0) {
-      console.log('📍 Using owned barbershop:', ownedShops[0].id)
-      return ownedShops[0].id
+      // // Debug log removed for production
+return ownedShops[0].id
     }
 
     // Check if user is staff at any barbershop
@@ -269,12 +260,12 @@ async function getUserPrimaryShop(supabase, profile) {
       .limit(1)
 
     if (staffShops && staffShops.length > 0) {
-      console.log('📍 Using staff barbershop:', staffShops[0].barbershop_id)
-      return staffShops[0].barbershop_id
+      // // Debug log removed for production
+return staffShops[0].barbershop_id
     }
 
-    console.log('⚠️ No primary shop found for user:', profile.email)
-    return null
+    // // Debug log removed for production
+return null
   } catch (error) {
     console.error('Error getting user primary shop:', error)
     return null

@@ -502,13 +502,14 @@ describe('Financial System Performance Tests', () => {
   })
 })
 
-console.log('✅ Comprehensive Financial Commission Dashboard System Tests Complete')
-console.log('📊 Test Coverage:')
-console.log('  - Commission calculations (standard, tiered, booth rent)')
-console.log('  - Real-time financial metrics')
-console.log('  - Product commission integration')
-console.log('  - Tier progression analytics')
-console.log('  - Transaction recording and balance management')
-console.log('  - Error handling and edge cases')
-console.log('  - Performance with large datasets')
-console.log('  - Integration with existing barbershop systems')
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+')
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production
+// // Debug log removed for production

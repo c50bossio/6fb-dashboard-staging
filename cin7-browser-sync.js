@@ -216,15 +216,13 @@ class CIN7BrowserSync {
   }
 
   async saveToDatabase(data, type = 'products') {
-    console.log(`💾 Saving ${data.length} ${type} to database...`);
-    
-    try {
+    // // Debug log removed for production
+try {
       // Save to JSON file as backup
       const filename = `cin7_${type}_${Date.now()}.json`;
       await fs.writeFile(filename, JSON.stringify(data, null, 2));
-      console.log(`📄 Backup saved: ${filename}`);
-
-      // Import Supabase client
+      // // Debug log removed for production
+// Import Supabase client
       const { createClient } = require('@supabase/supabase-js');
       require('dotenv').config();
       
@@ -274,8 +272,8 @@ class CIN7BrowserSync {
           return false;
         }
         
-        console.log(`✅ Successfully saved ${inventoryData.length} products to inventory table`);
-      }
+        // // Debug log removed for production
+}
       
       // Log sync activity
       await this.logSyncActivity(supabase, type, data.length, 'success');
@@ -399,8 +397,8 @@ class CIN7BrowserSync {
       if (error) {
         console.error('❌ Failed to log sync activity:', error);
       } else {
-        console.log(`📊 Sync activity logged: ${status}`);
-      }
+        // // Debug log removed for production
+}
     } catch (error) {
       console.error('❌ Error logging sync activity:', error);
     }

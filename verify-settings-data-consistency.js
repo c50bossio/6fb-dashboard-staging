@@ -10,7 +10,7 @@ async function verifySettingsDataConsistency() {
   
   try {
     // Get test user profile
-    const testEmail = 'c50bossio@gmail.com';
+    const testEmail = null /* hardcoded ID removed for production */;
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')

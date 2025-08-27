@@ -46,10 +46,10 @@ export async function POST(request) {
     const barbershopId = formData.get('barbershopId')
     
     // Debug logging
-    ).map(([key, value]) => 
+    const formDataEntries = Array.from(formData.entries()).map(([key, value]) => 
         [key, value instanceof File ? `File: ${value.name}` : value]
       )
-    })
+    console.log('Form data received:', Object.fromEntries(formDataEntries))
     
     // Get all uploaded files (supports multiple files)
     const files = []

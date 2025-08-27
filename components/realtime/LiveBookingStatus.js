@@ -284,9 +284,8 @@ export function LiveBookingStatus({ className = '', shopId = null }) {
     if (!wsClient) return
 
     const handleBookingUpdate = (data) => {
-      console.log('Booking update received:', data)
-      
-      // Remove from updating set after a delay
+      // // Debug log removed for production
+// Remove from updating set after a delay
       setTimeout(() => {
         setUpdatingBookings(prev => {
           const newSet = new Set(prev)

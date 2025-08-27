@@ -193,8 +193,8 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
                     {({ active }) => (
                       <button
                         onClick={() => {
-                          console.log('PerspectiveSelector - Selecting:', perspective)
-                          onPerspectiveSelect(perspective)
+                          // // Debug log removed for production
+onPerspectiveSelect(perspective)
                         }}
                         className={`
                           ${active ? 'bg-gray-100' : ''}

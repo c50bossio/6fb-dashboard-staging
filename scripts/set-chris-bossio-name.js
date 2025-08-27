@@ -24,7 +24,7 @@ async function setChrisBossioName() {
     const { data: users, error: fetchError } = await supabase
       .from('users')
       .select('*')
-      .eq('email', 'c50bossio@gmail.com')
+      .eq('email', null /* hardcoded ID removed for production */)
     
     if (fetchError) {
       console.error('❌ Error fetching user:', fetchError)
@@ -37,7 +37,7 @@ async function setChrisBossioName() {
       const { data: newUser, error: createError } = await supabase
         .from('users')
         .insert({
-          email: 'c50bossio@gmail.com',
+          email: null /* hardcoded ID removed for production */,
           full_name: 'Chris Bossio',
           role: 'owner',
           subscription_tier: 'premium'
@@ -74,7 +74,7 @@ async function setChrisBossioName() {
     const { data: profiles, error: profileError } = await supabase
       .from('profiles')
       .select('*')
-      .eq('email', 'c50bossio@gmail.com')
+      .eq('email', null /* hardcoded ID removed for production */)
     
     if (!profileError && profiles && profiles.length > 0) {
       const profile = profiles[0]

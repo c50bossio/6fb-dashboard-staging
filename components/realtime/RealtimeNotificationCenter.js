@@ -147,7 +147,8 @@ export function RealtimeNotificationCenter({ className = '', maxHeight = '400px'
     if (soundEnabled && unreadCount > 0) {
       const audio = new Audio('/notification-sound.mp3')
       audio.volume = 0.3
-      audio.play().catch(e => console.log('Could not play notification sound:', e))
+      audio.play().catch(e => // // Debug log removed for production
+)
     }
   }, [unreadCount, soundEnabled])
 

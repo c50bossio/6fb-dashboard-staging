@@ -17,14 +17,8 @@ export async function GET(request) {
     const endDate = searchParams.get('end_date')
     const shopId = searchParams.get('shop_id')
 
-    console.log('Calendar appointments request:', {
-      startDate,
-      endDate,
-      shopId,
-      userEmail: user.email
-    })
-
-    // Get user's profile to find their barbershop - try both ID and email approaches
+    // // Debug log removed for production
+// Get user's profile to find their barbershop - try both ID and email approaches
     let profile, profileError
     
     // First try with user.id (more reliable)
@@ -38,8 +32,8 @@ export async function GET(request) {
       profile = profileByIdResult.data
       profileError = profileByIdResult.error
     } else {
-      console.log('Profile not found by ID, trying email...')
-      // Fallback to email lookup
+      // // Debug log removed for production
+// Fallback to email lookup
       const profileByEmailResult = await supabase
         .from('profiles')
         .select('*')
@@ -59,13 +53,8 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
     
-    console.log('Found profile:', { 
-      profileId: profile.id, 
-      shopId: profile.shop_id, 
-      barbershopId: profile.barbershop_id 
-    })
-
-    // Get barbershop ID from profile or parameter
+    // // Debug log removed for production
+// Get barbershop ID from profile or parameter
     let barbershopId = shopId || profile.shop_id || profile.barbershop_id
 
     if (!barbershopId) {
@@ -126,8 +115,8 @@ export async function GET(request) {
     }
 
     if (!appointments || appointments.length === 0) {
-      console.log('No appointments found for barbershop:', barbershopId)
-      return NextResponse.json({
+      // // Debug log removed for production
+return NextResponse.json({
         success: true,
         appointments: [],
         barbershop_id: barbershopId,
@@ -135,9 +124,8 @@ export async function GET(request) {
       })
     }
     
-    console.log(`Processing ${appointments.length} appointments...`)
-
-    // Get unique customer IDs, service IDs, and barber IDs for additional data
+    // // Debug log removed for production
+// Get unique customer IDs, service IDs, and barber IDs for additional data
     const customerIds = [...new Set(appointments.map(apt => apt.customer_id).filter(Boolean))]
     const serviceIds = [...new Set(appointments.map(apt => apt.service_id).filter(Boolean))]
     const barberIds = [...new Set(appointments.map(apt => apt.barber_id).filter(Boolean))]
@@ -145,8 +133,8 @@ export async function GET(request) {
     // Fetch customer data from profiles table
     let customers = []
     if (customerIds.length > 0) {
-      console.log(`Fetching customer data for ${customerIds.length} customers...`)
-      const { data: customerData, error: customerError } = await supabase
+      // // Debug log removed for production
+const { data: customerData, error: customerError } = await supabase
         .from('profiles')
         .select('id, full_name, first_name, last_name, email, phone')
         .in('id', customerIds)
@@ -156,14 +144,14 @@ export async function GET(request) {
         // Continue without customer data rather than failing completely
       }
       customers = customerData || []
-      console.log(`Found ${customers.length} customer records`)
-    }
+      // // Debug log removed for production
+}
 
     // Fetch services data
     let services = []
     if (serviceIds.length > 0) {
-      console.log(`Fetching service data for ${serviceIds.length} services...`)
-      const { data: serviceData, error: serviceError } = await supabase
+      // // Debug log removed for production
+const { data: serviceData, error: serviceError } = await supabase
         .from('services')
         .select('id, name, duration_minutes, price, description')
         .in('id', serviceIds)
@@ -173,14 +161,14 @@ export async function GET(request) {
         // Continue without service data rather than failing completely
       }
       services = serviceData || []
-      console.log(`Found ${services.length} service records`)
-    }
+      // // Debug log removed for production
+}
 
     // Fetch barber data (from profiles)
     let barbers = []
     if (barberIds.length > 0) {
-      console.log(`Fetching barber data for ${barberIds.length} barbers...`)
-      const { data: barberData, error: barberError } = await supabase
+      // // Debug log removed for production
+const { data: barberData, error: barberError } = await supabase
         .from('profiles')
         .select('id, full_name, first_name, last_name, email')
         .in('id', barberIds)
@@ -190,12 +178,12 @@ export async function GET(request) {
         // Continue without barber data rather than failing completely
       }
       barbers = barberData || []
-      console.log(`Found ${barbers.length} barber records`)
-    }
+      // // Debug log removed for production
+}
 
     // Transform appointments to include related data and calendar format
-    console.log('Starting appointment transformation...')
-    const transformedAppointments = appointments.map((appointment, index) => {
+    // // Debug log removed for production
+const transformedAppointments = appointments.map((appointment, index) => {
       try {
       const customer = customers.find(c => c.id === appointment.customer_id)
       const service = services.find(s => s.id === appointment.service_id)
@@ -307,9 +295,8 @@ export async function GET(request) {
       }
     }).filter(appointment => appointment !== null)  // Filter out invalid appointments
     
-    console.log(`Successfully transformed ${transformedAppointments.length} out of ${appointments.length} appointments`)
-
-    return NextResponse.json({
+    // // Debug log removed for production
+return NextResponse.json({
       success: true,
       appointments: transformedAppointments,
       barbershop_id: barbershopId,

@@ -12,7 +12,7 @@ test.describe('Enterprise Onboarding Visual Test', () => {
         refresh_token: 'mock-refresh',
         user: {
           id: 'c50-enterprise-test',
-          email: 'c50bossio@gmail.com',
+          email: null /* hardcoded ID removed for production */,
           user_metadata: {
             role: 'ENTERPRISE_OWNER',
             subscription_tier: 'enterprise',
@@ -24,7 +24,7 @@ test.describe('Enterprise Onboarding Visual Test', () => {
       // Mock window.supabase to prevent authentication calls
       window.mockUser = {
         id: 'c50-enterprise-test',
-        email: 'c50bossio@gmail.com',
+        email: null /* hardcoded ID removed for production */,
         user_metadata: {
           role: 'ENTERPRISE_OWNER',
           subscription_tier: 'enterprise',

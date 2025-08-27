@@ -22,7 +22,7 @@ const demoUsers = [
     shop_name: 'Demo Barbershop'
   },
   {
-    email: 'c50bossio@gmail.com',
+    email: null /* hardcoded ID removed for production */,
     password: 'test123',
     full_name: 'Carlos Bossio',
     shop_name: 'Bossio VIP Shop'

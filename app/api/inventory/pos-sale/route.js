@@ -160,7 +160,7 @@ async function recordCommission({ barber_id, barbershop_id, payment_amount, comm
       }
     }
 
-     for barber ${barber_id}`)
+    console.log(`✅ Commission recorded successfully for barber ${barber_id}`)
   } catch (error) {
     console.error('❌ Error in recordCommission:', error)
   }

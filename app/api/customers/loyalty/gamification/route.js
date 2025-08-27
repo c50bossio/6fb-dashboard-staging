@@ -1599,16 +1599,16 @@ async function getChallengeProgressLegacy(customerId, challengeId, barbershopId)
         };
 
       case 'referral_master':
-        const monthStart = new Date();
-        monthStart.setDate(1);
-        monthStart.setHours(0, 0, 0, 0);
+        const referralMonthStart = new Date();
+        referralMonthStart.setDate(1);
+        referralMonthStart.setHours(0, 0, 0, 0);
         
         const { data: monthlyReferrals } = await supabase
           .from('referral_tracking')
           .select('id')
           .eq('referrer_customer_id', customerId)
           .eq('barbershop_id', barbershopId)
-          .gte('created_at', monthStart.toISOString());
+          .gte('created_at', referralMonthStart.toISOString());
           
         return {
           current: monthlyReferrals?.length || 0,
