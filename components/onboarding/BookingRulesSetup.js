@@ -333,14 +333,7 @@ export default function BookingRulesSetup({ data = {}, updateData, onComplete })
         </div>
       )}
       
-      {saveStatus === 'saved' && hasUnsavedChanges === false && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-          <div className="flex items-center">
-            <CheckCircleIcon className="h-4 w-4 mr-2 text-green-600" />
-            <span className="text-sm text-green-800">All policy changes saved automatically</span>
-          </div>
-        </div>
-      )}
+{/* Autosave notification removed - no longer using autosave functionality */}
 
       {/* Policy Score Indicator */}
       <div className="bg-gray-50 rounded-lg p-4">

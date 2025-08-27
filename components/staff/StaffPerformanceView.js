@@ -14,7 +14,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useMemo } from 'react'
 import { Card } from "@/components/ui/card.jsx"
-import { getDisplayName } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
 
@@ -108,13 +107,7 @@ export default function StaffPerformanceView({ staff }) {
 
         staffMetrics[member.id] = {
           staffId: member.id,
-          name: getDisplayName({
-            firstName: member.user?.firstName || member.user?.first_name,
-            lastName: member.user?.lastName || member.user?.last_name,
-            fullName: member.user?.fullName || member.user?.full_name,
-            email: member.user?.email,
-            defaultName: 'Unknown'
-          }),
+          name: member.display_name || member.name || 'Unknown Staff',
           role: member.role,
           totalBookings: memberAppointments.length,
           completedBookings: completedAppointments.length,

@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Textarea } from '@/components/ui/Textarea'
 import ClientHistoryTracker from './ClientHistoryTracker'
+import { useAuth } from '../SupabaseAuthProvider'
 
 /**
  * ClientCareFlow - Relationship-focused client re-engagement system
@@ -53,6 +54,8 @@ export default function ClientCareFlow({
   isOpen = false,
   isManager = false
 }) {
+  const { user, profile } = useAuth()
+  
   // Care flow state
   const [currentStep, setCurrentStep] = useState(clientData ? 'understanding' : 'client_selection')
   const [selectedCareOption, setSelectedCareOption] = useState(null)
@@ -112,17 +115,29 @@ export default function ClientCareFlow({
       setError(null)
 
       // Search for clients with recent missed appointments or those who haven't visited recently
-      const response = await fetch('/api/no-show/strikes?needs_care=true', {
+      const response = await fetch('/api/client-care/needs-attention?priority=all&limit=50', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       })
 
       if (!response.ok) {
-        throw new Error('Failed to search for clients')
+        throw new Error('Failed to search for clients needing attention')
       }
 
       const results = await response.json()
-      setSearchResults(results.clients || [])
+      
+      // Transform the results to include care-specific information
+      const clientsWithCareInfo = (results.clients || []).map(client => ({
+        ...client,
+        // Add care-specific fields for the UI
+        care_priority: client.priority,
+        care_reason: client.reason,
+        suggested_action: client.suggested_action,
+        days_since_last_visit: client.last_visit_at ? 
+          Math.floor((new Date() - new Date(client.last_visit_at)) / (1000 * 60 * 60 * 24)) : null
+      }))
+      
+      setSearchResults(clientsWithCareInfo)
 
     } catch (err) {
       console.error('Error searching for clients:', err)
@@ -141,20 +156,29 @@ export default function ClientCareFlow({
       return
     }
 
+    // Get barbershop_id from profile
+    const barbershopId = profile?.shop_id || profile?.barbershop_id
+    if (!barbershopId) {
+      setError('No barbershop associated with your account')
+      return
+    }
+
     try {
       setLoadingSearch(true)
+      setError(null)
 
-      const response = await fetch(`/api/clients/search?q=${encodeURIComponent(query)}`, {
+      const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}&barbershop_id=${barbershopId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       })
 
       if (!response.ok) {
-        throw new Error('Failed to search clients')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to search customers')
       }
 
       const results = await response.json()
-      setSearchResults(results.clients || [])
+      setSearchResults(results.customers || [])
 
     } catch (err) {
       console.error('Error searching clients:', err)
@@ -449,40 +473,86 @@ Looking forward to seeing you again soon! 💙`
         </div>
       ) : searchResults.length > 0 ? (
         <div className="space-y-3 max-h-96 overflow-y-auto">
-          {searchResults.map((client) => (
-            <div
-              key={client.id}
-              onClick={() => handleClientSelect(client)}
-              className="p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-gray-900">{client.name}</h4>
-                  <p className="text-sm text-gray-600">{client.email}</p>
-                  {client.phone && (
-                    <p className="text-sm text-gray-500">{client.phone}</p>
-                  )}
-                  {client.missedAppointmentCount > 0 && (
-                    <p className="text-sm text-orange-600 mt-1">
-                      {client.missedAppointmentCount} missed appointment{client.missedAppointmentCount > 1 ? 's' : ''}
-                    </p>
-                  )}
-                  {client.lastVisit && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Last visit: {new Date(client.lastVisit).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
-                
-                {client.needsCare && (
-                  <div className="flex items-center text-orange-500">
-                    <InformationCircleIcon className="h-5 w-5 mr-1" />
-                    <span className="text-sm">Could use care</span>
+          {searchResults.map((client) => {
+            // Determine priority badge styling
+            const priorityStyles = {
+              high: 'bg-red-100 text-red-800 border-red-200',
+              medium: 'bg-yellow-100 text-yellow-800 border-yellow-200', 
+              low: 'bg-green-100 text-green-800 border-green-200'
+            }
+            
+            // Determine reason display
+            const reasonLabels = {
+              recent_no_show: 'Recent No-Show',
+              inactive: 'Inactive Client',
+              cancelled_not_rescheduled: 'Cancelled - Need Reschedule'
+            }
+            
+            return (
+              <div
+                key={client.id}
+                onClick={() => handleClientSelect(client)}
+                className="p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 hover:bg-blue-50 transition-all"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-medium text-gray-900">{client.name}</h4>
+                      {client.care_priority && (
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium border ${priorityStyles[client.care_priority] || priorityStyles.low}`}>
+                          {client.care_priority.toUpperCase()} PRIORITY
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-600">{client.email}</p>
+                      {client.phone && (
+                        <p className="text-sm text-gray-500">{client.phone}</p>
+                      )}
+                      
+                      {client.care_reason && (
+                        <div className="flex items-center gap-1">
+                          <InformationCircleIcon className="h-4 w-4 text-blue-500" />
+                          <span className="text-sm text-blue-600 font-medium">
+                            {reasonLabels[client.care_reason] || client.care_reason}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {client.suggested_action && (
+                        <p className="text-xs text-gray-600 italic mt-1">
+                          💡 {client.suggested_action}
+                        </p>
+                      )}
+                      
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        {client.total_visits && (
+                          <span>{client.total_visits} visits</span>
+                        )}
+                        {client.total_spent && (
+                          <span>${client.total_spent} spent</span>
+                        )}
+                        {client.days_since_last_visit !== null && (
+                          <span>{client.days_since_last_visit} days since last visit</span>
+                        )}
+                      </div>
+                      
+                      {(client.last_visit_at || client.lastVisit) && (
+                        <p className="text-xs text-gray-500">
+                          Last visit: {new Date(client.last_visit_at || client.lastVisit).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                )}
+                  
+                  <div className="ml-3">
+                    <HeartIcon className="h-5 w-5 text-rose-400" />
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       ) : searchQuery.length >= 2 ? (
         <div className="text-center py-8 text-gray-500">

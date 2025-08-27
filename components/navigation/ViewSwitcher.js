@@ -3,14 +3,19 @@
 import { useState, useEffect } from 'react'
 import { useSubscriptionAccess } from '../../hooks/useSubscriptionAccess'
 import { useAuth } from '../SupabaseAuthProvider'
+import { useDashboardPerspective } from '../../contexts/DashboardPerspectiveContext'
 import LocationSelector from './LocationSelector'
 import PerspectiveSelector from './PerspectiveSelector'
 
 export default function ViewSwitcher() {
   const { user, profile } = useAuth()
   const { isBusinessOwner, loading: accessLoading } = useSubscriptionAccess()
-  const [selectedLocation, setSelectedLocation] = useState(null)
-  const [selectedPerspective, setSelectedPerspective] = useState(null)
+  const { 
+    selectedLocation, 
+    selectedPerspective, 
+    setSelectedLocation, 
+    setSelectedPerspective 
+  } = useDashboardPerspective()
 
   const userRole = profile?.role || user?.user_metadata?.role || 'CLIENT'
 
@@ -34,9 +39,10 @@ export default function ViewSwitcher() {
   const handlePerspectiveSelect = (perspective) => {
     setSelectedPerspective(perspective)
     
-    // Update any global state or context here
-    // For example, you might want to update a global dashboard context
-    // or trigger analytics tracking for the perspective switch
+    // Log perspective change for debugging
+    console.log('Perspective changed to:', perspective)
+    console.log('Is owner view?', !perspective || perspective.type === 'owner')
+    console.log('Perspective type:', perspective?.type)
   }
 
   return (

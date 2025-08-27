@@ -22,7 +22,7 @@ async function fetchCin7Products(accountId, apiKey) {
       
       // Use the correct lowercase endpoint that works (verified in quick-sync and test-connection)
       const url = `https://inventory.dearsystems.com/externalapi/products?limit=${pageSize}&page=${page}`
-      ...`)
+      console.log('Fetching CIN7 data from URL:', url)
       
       const response = await fetch(url, {
         method: 'GET',
@@ -50,7 +50,7 @@ async function fetchCin7Products(accountId, apiKey) {
       const products = data?.ProductList || data?.Products || []
       totalProducts = data?.Total || 0
       
-      `)
+      console.log('Page data:', { productsCount: products.length, totalProducts })
       
       if (products.length === 0) {
         hasMorePages = false
@@ -122,13 +122,13 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
 
     // Check for nested inventory data
     if (cin7Product.Inventory) {
-      .substring(0, 200))
+      console.log('Inventory data found:', JSON.stringify(cin7Product.Inventory).substring(0, 200))
     }
     if (cin7Product.StockLevels) {
-      .substring(0, 200))
+      console.log('StockLevels data found:', JSON.stringify(cin7Product.StockLevels).substring(0, 200))
     }
     if (cin7Product.Locations) {
-      .substring(0, 200))
+      console.log('Locations data found:', JSON.stringify(cin7Product.Locations).substring(0, 200))
     }
     
     // Check any numeric fields
@@ -138,7 +138,7 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
         numericFields[key] = cin7Product[key]
       }
     })
-    )
+    console.log('Numeric fields:', numericFields)
   }
   
   // Map category to barbershop-friendly categories
@@ -363,7 +363,7 @@ export async function POST(request) {
         
         // TEMPORARY: Allow sync for testing while we fix OAuth
         if (process.env.NODE_ENV === 'production' && isKnownUser) {
-          ')
+          console.log('Using production test user')
           user = {
             id: 'temp-production-user',
             email: 'production-test@bookedbarber.com'
@@ -390,7 +390,7 @@ export async function POST(request) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, shop_id, barbershop_id, email')
-      .or(`(id.eq.${user.id}),(email.eq.${user.email})`)
+      .or(`id.eq.${user.id},email.eq.${user.email}`)
       .single()
     
     if (profile && (profile.shop_id || profile.barbershop_id)) {
@@ -557,7 +557,7 @@ export async function POST(request) {
     }
     
     try {
-      `)
+      console.log('Starting CIN7 sync process')
 
       // Fetch both products and stock levels from Cin7
       const [cin7Products, stockLevels] = await Promise.all([

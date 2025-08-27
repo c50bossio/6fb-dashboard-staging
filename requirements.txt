@@ -24,4 +24,4 @@ psutil==5.9.6
 
 # Additional dependencies for production
 bcrypt==4.1.2
-supabase==2.3.3
+supabase==2.1.0

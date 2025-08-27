@@ -18,8 +18,21 @@ try:
 except ImportError:
     NOTIFICATION_SERVICES_AVAILABLE = False
 
-# Import memory manager
+# Import memory manager and Supabase for notification persistence
 from services.memory_manager import memory_manager
+import os
+from supabase import create_client, Client
+
+# Initialize Supabase client for notification history
+supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+supabase_client = None
+
+if supabase_url and supabase_key:
+    try:
+        supabase_client: Client = create_client(supabase_url, supabase_key)
+    except Exception as e:
+        print(f"Failed to initialize Supabase client in notifications: {e}")
 
 # Notification models
 class NotificationRequest(BaseModel):
@@ -92,8 +105,8 @@ async def test_notification(
             else:
                 raise HTTPException(status_code=400, detail=f"Unsupported notification type: {notification.type}")
             
-            # Log to history
-            NOTIFICATION_HISTORY.append({
+            # Log to database and history
+            notification_record = {
                 "id": str(uuid.uuid4()),
                 "recipient": notification.recipient,
                 "message": notification.message,
@@ -101,8 +114,22 @@ async def test_notification(
                 "type": notification.type,
                 "status": "sent" if result.get("success") else "failed",
                 "sent_at": datetime.utcnow(),
-                "user_id": current_user.get("user_id")
-            })
+                "user_id": current_user.get("user_id"),
+                "barbershop_id": current_user.get("barbershop_id")
+            }
+            
+            # Store in database if available
+            if supabase_client:
+                try:
+                    supabase_client.table('notification_history').insert({
+                        **notification_record,
+                        "sent_at": notification_record["sent_at"].isoformat()
+                    }).execute()
+                except Exception as e:
+                    print(f"Failed to save notification to database: {e}")
+            
+            # Also store in memory for backward compatibility
+            NOTIFICATION_HISTORY.append(notification_record)
             
             return {
                 "status": "sent" if result.get("success") else "failed",
@@ -119,9 +146,9 @@ async def send_notification(
 ):
     """Send a notification"""
     if not NOTIFICATION_SERVICES_AVAILABLE:
-        # Mock successful send
+        # Mock successful send with database storage
         notification_id = str(uuid.uuid4())
-        NOTIFICATION_HISTORY.append({
+        notification_record = {
             "id": notification_id,
             "recipient": notification.recipient,
             "message": notification.message,
@@ -129,8 +156,21 @@ async def send_notification(
             "type": notification.type,
             "status": "sent",
             "sent_at": datetime.utcnow(),
-            "user_id": current_user.get("user_id")
-        })
+            "user_id": current_user.get("user_id"),
+            "barbershop_id": current_user.get("barbershop_id")
+        }
+        
+        # Store in database if available
+        if supabase_client:
+            try:
+                supabase_client.table('notification_history').insert({
+                    **notification_record,
+                    "sent_at": notification_record["sent_at"].isoformat()
+                }).execute()
+            except Exception as e:
+                print(f"Failed to save notification to database: {e}")
+        
+        NOTIFICATION_HISTORY.append(notification_record)
         
         return {
             "status": "sent",
@@ -161,9 +201,9 @@ async def send_notification(
             else:
                 raise HTTPException(status_code=400, detail=f"Unsupported notification type: {notification.type}")
             
-            # Log to history
+            # Log to database and history
             notification_id = str(uuid.uuid4())
-            NOTIFICATION_HISTORY.append({
+            notification_record = {
                 "id": notification_id,
                 "recipient": notification.recipient,
                 "message": notification.message,
@@ -172,8 +212,21 @@ async def send_notification(
                 "status": "sent" if result.get("success") else "failed",
                 "sent_at": datetime.utcnow(),
                 "user_id": current_user.get("user_id"),
+                "barbershop_id": current_user.get("barbershop_id"),
                 "result": result
-            })
+            }
+            
+            # Store in database if available
+            if supabase_client:
+                try:
+                    supabase_client.table('notification_history').insert({
+                        **{k: v for k, v in notification_record.items() if k != 'result'},
+                        "sent_at": notification_record["sent_at"].isoformat()
+                    }).execute()
+                except Exception as e:
+                    print(f"Failed to save notification to database: {e}")
+            
+            NOTIFICATION_HISTORY.append(notification_record)
             
             return {
                 "status": "sent" if result.get("success") else "failed",
@@ -189,13 +242,52 @@ async def get_notification_history(
     offset: int = 0,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get notification history"""
+    """Get notification history from database or fallback to memory"""
     user_id = current_user.get("user_id")
+    barbershop_id = current_user.get("barbershop_id")
     
-    # Filter by user and paginate
+    if supabase_client:
+        try:
+            # Query from database with pagination
+            query = supabase_client.table('notification_history').select('*')
+            
+            # Filter by user or barbershop
+            if barbershop_id:
+                query = query.eq('barbershop_id', barbershop_id)
+            else:
+                query = query.eq('user_id', user_id)
+            
+            # Order by sent_at descending and paginate
+            response = query.order('sent_at', desc=True).range(offset, offset + limit - 1).execute()
+            
+            notifications = response.data if response.data else []
+            
+            # Get total count for pagination
+            count_query = supabase_client.table('notification_history').select('*', count='exact')
+            if barbershop_id:
+                count_query = count_query.eq('barbershop_id', barbershop_id)
+            else:
+                count_query = count_query.eq('user_id', user_id)
+            
+            count_response = count_query.execute()
+            total = count_response.count if hasattr(count_response, 'count') else len(notifications)
+            
+            return {
+                "notifications": notifications,
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+                "has_more": offset + limit < total,
+                "data_source": "supabase_real"
+            }
+        except Exception as e:
+            print(f"Failed to fetch notification history from database: {e}")
+    
+    # Fallback to memory storage
     user_notifications = [
         notif for notif in NOTIFICATION_HISTORY 
-        if notif.get("user_id") == user_id
+        if notif.get("user_id") == user_id or 
+           (barbershop_id and notif.get("barbershop_id") == barbershop_id)
     ]
     
     total = len(user_notifications)
@@ -206,7 +298,8 @@ async def get_notification_history(
         "total": total,
         "limit": limit,
         "offset": offset,
-        "has_more": offset + limit < total
+        "has_more": offset + limit < total,
+        "data_source": "memory_fallback"
     }
 
 @router.post("/queue")

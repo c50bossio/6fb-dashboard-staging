@@ -10,6 +10,7 @@ import {
   PresentationChartLineIcon,
   XCircleIcon,
   PlayIcon,
+  EyeIcon,
 } from '@heroicons/react/24/outline'
 import { 
   ChartBarIcon as ChartBarSolid,
@@ -22,6 +23,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 
 import { getUserBarbershopId, createBarbershopForOwner } from '@/lib/barbershop-helper'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
+import { useDashboardPerspective } from '../../contexts/DashboardPerspectiveContext'
 import ActionCenter from './ActionCenter'
 import AICoachPanel from './AICoachPanel'
 import AnalyticsPanel from './AnalyticsPanel'
@@ -94,6 +96,7 @@ export default function UnifiedDashboard({ user, profile }) {
   const router = useRouter()
   const modeParam = searchParams.get('mode')
   const { selectedLocations, selectedBarbers, isMultiLocation, permissions, viewMode, availableLocations } = useGlobalDashboard()
+  const { selectedPerspective, isOwnerView, currentViewUserId } = useDashboardPerspective()
   
   const [currentMode, setCurrentMode] = useState(DASHBOARD_MODES.EXECUTIVE)
   const [isLoading, setIsLoading] = useState(false)
@@ -246,7 +249,11 @@ export default function UnifiedDashboard({ user, profile }) {
         // Use enhanced analytics endpoint with support for multiple locations
         const barbershopIds = Array.isArray(barbershopId) ? barbershopId : [barbershopId]
         const barberFilter = selectedBarbers.length > 0 ? `&barber_ids=${selectedBarbers.join(',')}` : ''
-        const response = await fetch(`/api/analytics/live-data?barbershop_ids=${barbershopIds.join(',')}&format=json&force_refresh=${forceRefresh}${barberFilter}`)
+        
+        // Add view perspective filter when not in owner view
+        const viewFilter = !isOwnerView && currentViewUserId ? `&view_user_id=${currentViewUserId}` : ''
+        
+        const response = await fetch(`/api/analytics/live-data?barbershop_ids=${barbershopIds.join(',')}&format=json&force_refresh=${forceRefresh}${barberFilter}${viewFilter}`)
         const result = await response.json()
         
         if (response.ok && result.success) {
@@ -319,7 +326,11 @@ export default function UnifiedDashboard({ user, profile }) {
         if (!barbershopId) {
           throw new Error('barbershopId became null during execution')
         }
-        const response = await fetch(`/api/dashboard/metrics?mode=${currentMode}&barbershop_id=${barbershopId}`)
+        
+        // Add view perspective filter when not in owner view
+        const viewFilter = !isOwnerView && currentViewUserId ? `&view_user_id=${currentViewUserId}` : ''
+        
+        const response = await fetch(`/api/dashboard/metrics?mode=${currentMode}&barbershop_id=${barbershopId}${viewFilter}`)
         const processedData = await response.json()
         
         if (!response.ok) {
@@ -686,6 +697,27 @@ export default function UnifiedDashboard({ user, profile }) {
           <ShareableBookingLink />
         )}
       </div>
+      
+      {/* View Perspective Indicator */}
+      {(() => {
+        console.log('UnifiedDashboard - isOwnerView:', isOwnerView)
+        console.log('UnifiedDashboard - selectedPerspective:', selectedPerspective)
+        console.log('UnifiedDashboard - Should show banner?', !isOwnerView && selectedPerspective)
+        
+        return !isOwnerView && selectedPerspective && (
+          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+            <div className="flex items-center">
+              <EyeIcon className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-2" />
+              <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                Viewing as: {selectedPerspective.name}
+              </span>
+              <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
+                ({selectedPerspective.role})
+              </span>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Welcome Setup Prompt or Error State Display */}
       {errorState && (

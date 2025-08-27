@@ -50,36 +50,6 @@ export async function GET(request) {
     }
     
     if (!session?.user) {
-      // Development fallback for hardcoded authentication
-      if (process.env.NODE_ENV === 'development') {
-        
-        return NextResponse.json({
-          authenticated: true,
-          user: {
-            id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
-            email: 'c50bossio@gmail.com',
-            barbershop_id: 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9', // Known test barbershop ID
-            has_customer_access: true,
-            subscription_tier: 'enterprise',
-            profile: {
-              id: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
-              email: 'c50bossio@gmail.com',
-              role: 'SUPER_ADMIN',
-              subscription_tier: 'enterprise',
-              subscription_status: 'active',
-              full_name: 'Christopher Bossio',
-              first_name: 'Christopher',
-              last_name: 'Bossio',
-              onboarding_completed: true
-            },
-            role: 'SUPER_ADMIN',
-            full_name: 'Christopher Bossio',
-            first_name: 'Christopher',
-            last_name: 'Bossio'
-          }
-        })
-      }
-      
       return NextResponse.json({ 
         authenticated: false, 
         error: 'No active session'

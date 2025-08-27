@@ -11,18 +11,12 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime, timedelta, date
 import os
 import asyncio
+import random
 from supabase import create_client, Client
 
-# Import memory manager
+# Import memory manager and Supabase proxy
 from services.memory_manager import memory_manager
-
-# Initialize Supabase client
-supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
-supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-if not supabase_url or not supabase_key:
-    raise Exception("Missing Supabase configuration. Check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.")
-
-supabase: Client = create_client(supabase_url, supabase_key)
+from services.supabase_api_proxy import supabase_proxy
 
 # Dashboard models
 class DashboardStats(BaseModel):
@@ -315,7 +309,7 @@ async def get_comprehensive_analytics(barbershop_id: str, period_days: int = 30)
 
 @router.get("/dashboard/stats")
 async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
-    """Get dashboard statistics from real Supabase data"""
+    """Get dashboard statistics using Supabase proxy"""
     barbershop_id = current_user.get("barbershop_id")
     
     if not barbershop_id:
@@ -325,17 +319,25 @@ async def get_dashboard_stats(current_user: dict = Depends(get_current_user)):
         )
     
     with memory_manager.memory_context("dashboard_stats"):
-        stats = await get_real_dashboard_stats(barbershop_id)
+        # Use the Supabase proxy for analytics data
+        analytics_data = await supabase_proxy.get_analytics_data(barbershop_id)
         
-        # Add additional calculated metrics
+        # Transform to expected format
         response = {
-            **stats.dict(),
+            "total_appointments": analytics_data["appointments"]["this_month"],
+            "total_revenue": analytics_data["revenue"]["this_month"],
+            "total_customers": analytics_data["customers"]["total"],
+            "average_rating": 4.5,  # Default until ratings implemented
+            "appointments_today": analytics_data["appointments"]["today"],
+            "revenue_today": analytics_data["revenue"]["today"],
             "barbershop_id": barbershop_id,
             "last_updated": datetime.utcnow(),
-            "conversion_rate": 0.25,  # Default conversion rate
-            "repeat_customer_rate": 0.75,  # Default repeat rate
-            "average_appointment_value": round(stats.total_revenue / max(stats.total_appointments, 1), 2),
-            "data_source": "supabase_real"
+            "conversion_rate": 0.25,
+            "repeat_customer_rate": 0.75,
+            "average_appointment_value": round(analytics_data["revenue"]["this_month"] / max(analytics_data["appointments"]["this_month"], 1), 2),
+            "growth_rate": analytics_data["revenue"]["growth_rate"],
+            "completion_rate": analytics_data["appointments"]["completion_rate"],
+            "data_source": analytics_data.get("data_source", "supabase_real")
         }
         
         return response
@@ -345,7 +347,7 @@ async def get_recent_bookings(
     limit: int = 10,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get recent bookings from real Supabase data"""
+    """Get recent bookings using Supabase proxy"""
     barbershop_id = current_user.get("barbershop_id")
     
     if not barbershop_id:
@@ -355,6 +357,7 @@ async def get_recent_bookings(
         )
     
     with memory_manager.memory_context("recent_bookings"):
+        # For now, use the existing function but we should move this to the proxy
         bookings = await get_real_recent_bookings(barbershop_id, limit)
         
         return {
@@ -368,16 +371,23 @@ async def get_recent_bookings(
 @router.get("/health")
 async def get_api_health():
     """API health check endpoint"""
+    # Check Supabase connection
+    supabase_health = await supabase_proxy.check_connection()
+    
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow(),
         "version": "1.0.0",
-        "service": "dashboard-api"
+        "service": "dashboard-api",
+        "supabase": supabase_health,
+        "integrations": {
+            "supabase_proxy": "enabled" if supabase_proxy.enabled else "disabled"
+        }
     }
 
 @router.get("/analytics/live-metrics")
 async def get_live_metrics(current_user: dict = Depends(get_current_user)):
-    """Get live analytics metrics from real Supabase data"""
+    """Get live analytics metrics using Supabase proxy"""
     barbershop_id = current_user.get("barbershop_id")
     
     if not barbershop_id:
@@ -387,32 +397,26 @@ async def get_live_metrics(current_user: dict = Depends(get_current_user)):
         )
     
     with memory_manager.memory_context("live_metrics"):
-        # Get real-time metrics from database
-        today = datetime.utcnow().date()
+        # Get analytics data from proxy
+        analytics_data = await supabase_proxy.get_analytics_data(barbershop_id)
         
-        # Today's appointments
-        appointments_response = supabase.table('appointments').select('*').eq('barbershop_id', barbershop_id).gte('start_time', today.isoformat()).execute()
-        today_appointments = appointments_response.data if appointments_response.data else []
-        
-        # Today's transactions
-        transactions_response = supabase.table('transactions').select('*').eq('barbershop_id', barbershop_id).gte('created_at', today.isoformat()).execute()
-        today_transactions = transactions_response.data if transactions_response.data else []
-        
-        # Service popularity
-        service_popularity = await get_service_popularity(barbershop_id)
+        # Get customer data for active users calculation
+        customers_data = await supabase_proxy.get_customers_data(barbershop_id)
+        active_customers_today = len([c for c in customers_data if c.get('last_visit') and 
+                                    datetime.fromisoformat(c['last_visit'].replace('Z', '+00:00')).date() == datetime.utcnow().date()])
         
         metrics = {
             "barbershop_id": barbershop_id,
             "timestamp": datetime.utcnow(),
-            "active_users": len(set(apt.get('customer_id') for apt in today_appointments if apt.get('customer_id'))),
-            "appointments_today": len(today_appointments),
-            "revenue_today": sum(float(t.get('total_amount', 0)) for t in today_transactions),
-            "conversion_rate": 0.25,  # Default conversion rate
-            "page_views": len(today_appointments) * 3,  # Estimate based on appointments
-            "bounce_rate": 0.30,  # Default bounce rate
-            "average_session_duration": 300,  # Default 5 minutes
-            "top_services": service_popularity[:3],
-            "data_source": "supabase_real"
+            "active_users": active_customers_today,
+            "appointments_today": analytics_data["appointments"]["today"],
+            "revenue_today": analytics_data["revenue"]["today"],
+            "conversion_rate": 0.25,
+            "page_views": analytics_data["appointments"]["today"] * 3,
+            "bounce_rate": 0.30,
+            "average_session_duration": 300,
+            "top_services": analytics_data["popular_services"][:3],
+            "data_source": analytics_data.get("data_source", "supabase_real")
         }
         
         return metrics
@@ -573,3 +577,10 @@ async def get_business_data_cache_status():
         "total_cache_size_mb": round(random.uniform(15, 50), 1),
         "global_hit_rate": round(random.uniform(0.80, 0.94), 3)
     }
+
+@router.get("/database/stats")
+async def get_database_stats(current_user: dict = Depends(get_current_user)):
+    """Get database statistics for monitoring"""
+    with memory_manager.memory_context("database_stats"):
+        stats = await supabase_proxy.get_table_stats()
+        return stats

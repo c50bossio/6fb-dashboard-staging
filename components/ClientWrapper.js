@@ -71,7 +71,7 @@ export default function ClientWrapper({ children }) {
   return (
     <>
       <SkipToContent />
-      <StripeModeBanner />
+      {/* <StripeModeBanner /> */}
       <AppErrorBoundary>
         <ServiceWorkerProvider>
           <CombinedProviders>

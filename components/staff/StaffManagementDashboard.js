@@ -27,8 +27,12 @@ import AddStaffModal from './AddStaffModal'
 import StaffAvailabilityEditor from './StaffAvailabilityEditor'
 import StaffDetailModal from './StaffDetailModal'
 import StaffPerformanceView from './StaffPerformanceView'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 
 export default function StaffManagementDashboard() {
+  // Get selected location from global context
+  const { selectedLocations } = useGlobalDashboard()
+  
   const [activeView, setActiveView] = useState('overview') // overview, schedule, performance, payroll
   const [staff, setStaff] = useState([])
   const [loading, setLoading] = useState(true)
@@ -53,8 +57,12 @@ export default function StaffManagementDashboard() {
     try {
       setLoading(true)
       
-      // Use unified staff service to get comprehensive staff data
-      const staffData = await unifiedStaffService.getStaff(null, {
+      // Get the selected location ID, fallback to mock location
+      const locationId = selectedLocations?.[0] || 'tomb45-channelside'
+      console.log('📍 Staff Management loading staff for location:', locationId)
+      
+      // Use unified staff service to get comprehensive staff data for selected location
+      const staffData = await unifiedStaffService.getStaff(locationId, {
         useCache: true,
         includeAvailability: false, // Not needed in dashboard, prevents 400 errors
         includeServices: false,     // Not needed in dashboard, prevents 400 errors
@@ -95,7 +103,7 @@ export default function StaffManagementDashboard() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [selectedLocations])
 
   useEffect(() => {
     loadStaffData()
@@ -123,10 +131,10 @@ export default function StaffManagementDashboard() {
     return staff.filter(member => {
       const matchesSearch = !searchQuery || 
         nameMatches({
-          firstName: member.user?.firstName || member.user?.first_name,
-          lastName: member.user?.lastName || member.user?.last_name,
-          fullName: member.user?.fullName || member.user?.full_name,
-          email: member.user?.email
+          firstName: member.first_name,
+          lastName: member.last_name,
+          fullName: member.full_name,
+          email: member.email
         }, searchQuery) ||
         (member.invitedName && member.invitedName.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (member.invitedEmail && member.invitedEmail.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -484,7 +492,10 @@ export default function StaffManagementDashboard() {
       )}
 
       {activeView === 'payroll' && (
-        <PayrollDashboard staff={staff} metrics={metrics} />
+        <PayrollDashboard 
+          staff={staff} 
+          metrics={metrics} 
+        />
       )}
 
       {/* Add Staff Modal */}

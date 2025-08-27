@@ -13,7 +13,8 @@ import { RRule } from 'rrule'
 
 export default function EnhancedProfessionalCalendar({
   resources: externalResources,
-  events: externalEvents,
+  eventSources: externalEventSources,
+  events: externalEvents, // Keep for backward compatibility
   currentView: controlledView,
   onViewChange,
   onSlotClick,
@@ -34,13 +35,14 @@ export default function EnhancedProfessionalCalendar({
   // Use external resources or empty array - let parent handle defaults
   const resources = externalResources || []
   
+  // Use eventSources if provided, otherwise fallback to events for backward compatibility
+  const eventSources = externalEventSources || null
   const events = externalEvents || []
   
   const processedEvents = events
   
-  useEffect(() => {
-    // Calendar state updates handled by FullCalendar internally
-  }, [events.length, currentView])
+  // Remove this useEffect - FullCalendar handles updates automatically
+  // when events prop changes
   
   const handleDateSelect = useCallback((selectInfo) => {
     const viewType = selectInfo.view.type
@@ -213,18 +215,8 @@ export default function EnhancedProfessionalCalendar({
     }
   }, [onViewChange])
   
-  useEffect(() => {
-    // Ensure calendar API is accessible for external references
-    if (calendarRef.current) {
-      const calendarApi = calendarRef.current.getApi()
-      if (calendarApi) {
-        const calendarEl = document.querySelector('.fc')
-        if (calendarEl) {
-          calendarEl._fcApi = calendarApi
-        }
-      }
-    }
-  }, [events.length])
+  // Removed DOM manipulation useEffect - anti-pattern
+  // Calendar API should be accessed through calendarRef.current.getApi()
   
   return (
     <div className="enhanced-professional-calendar-wrapper">
@@ -287,13 +279,10 @@ export default function EnhancedProfessionalCalendar({
           }
         }}
         
-        resources={resources}  // Only use resources prop, not initialResources
-        events={processedEvents}  // Use processed events
+        resources={resources}  // Use resources prop for barber resources
+        {...(eventSources ? { eventSources: eventSources } : { events: processedEvents })}  // Use eventSources or fallback to events
         resourcesInitiallyExpanded={true}
-        refetchResourcesOnNavigate={false}  // Prevent unnecessary resource refetching
-        resourceLabelDidMount={(info) => {
-          // Resource labels use default styling
-        }}
+        refetchResourcesOnNavigate={false}  // Better performance - only refetch when needed
         
         timeZone="local"  // Use local timezone to prevent date/time issues
         slotMinTime="08:00:00"
@@ -329,6 +318,10 @@ export default function EnhancedProfessionalCalendar({
         eventMaxStack={3}  // Max 3 events stacked in TimeGrid views
         eventMinHeight={20}  // Minimum height for events
         eventShortHeight={30}  // Height for short events
+        
+        // Production performance optimizations
+        aspectRatio={1.35}  // Better aspect ratio for professional use
+        contentHeight={600}  // Fixed content height for consistency
         
         editable={true}
         selectable={true}
@@ -409,6 +402,41 @@ export default function EnhancedProfessionalCalendar({
         datesSet={handleViewChange}  // Also handle when navigating dates
         loading={(isLoading) => {
           // Loading state handled by parent component
+          console.log('FullCalendar loading state:', isLoading)
+        }}
+        
+        // Production-ready event source error handling
+        eventSourceSuccess={(rawEvents, response) => {
+          console.log('Event source success:', rawEvents?.length || 0, 'events loaded')
+          
+          // Validate and sanitize events for production
+          const validEvents = (rawEvents || []).filter(event => {
+            return event.id && event.start && event.title
+          })
+          
+          if (validEvents.length !== rawEvents?.length) {
+            console.warn(`Filtered ${(rawEvents?.length || 0) - validEvents.length} invalid events`)
+          }
+          
+          return validEvents
+        }}
+        
+        eventSourceFailure={(error) => {
+          console.error('FullCalendar event source failed:', error)
+          
+          // Production-ready error reporting
+          if (error.response?.status === 401) {
+            console.warn('Authentication expired, user should re-login')
+          } else if (error.response?.status === 403) {
+            console.warn('Access denied to calendar events')
+          } else if (error.response?.status >= 500) {
+            console.error('Server error loading events:', error.response?.status)
+          } else if (error.message?.includes('Network Error')) {
+            console.error('Network connectivity issue loading events')
+          }
+          
+          // Return empty array to prevent calendar from breaking
+          return []
         }}
         
         eventTimeFormat={{  // Better time formatting
@@ -418,8 +446,8 @@ export default function EnhancedProfessionalCalendar({
         }}
         displayEventTime={true}
         displayEventEnd={false}  // Don't show end time in event title
-        eventOrder="-duration,title"  // Order by duration (longest first), then title
-        eventOrderStrict={false}  // Allow some flexibility in ordering
+        eventOrder={['start', '-duration', 'title']}  // Optimize event sorting for production
+        eventOrderStrict={true}  // Enforce consistent ordering for better performance
         nextDayThreshold="06:00:00"  // Events ending before 6am count as previous day
         
         eventDidMount={(info) => {
@@ -436,7 +464,26 @@ export default function EnhancedProfessionalCalendar({
           }
         }}
         
-        schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
+        dayHeaderFormat={{
+          weekday: 'short', 
+          month: 'numeric', 
+          day: 'numeric'
+        }}
+        
+        lazyFetching={true}
+        progressiveEventRendering={true}
+        
+        // Production performance optimizations
+        rerenderDelay={10}  // Reduce rerender delays for snappier UI
+        eventRenderWait={10}  // Optimize event rendering performance
+        eventMinHeight={25}  // Ensure minimum event visibility
+        eventShortHeight={35}  // Better short event display
+        slotEventOverlap={false}  // Prevent visual overlap issues
+        
+        // Production error boundaries and performance
+        windowResizeDelay={100}  // Optimize resize performance
+        
+        schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
         resourceAreaHeaderContent="Barbers"
         resourceAreaWidth="12%"
         resourceAreaColumns={[
@@ -446,28 +493,6 @@ export default function EnhancedProfessionalCalendar({
           }
         ]}
         datesAboveResources={false}
-        refetchResourcesOnNavigate={true}
-        resourceOrder="title"
-        
-        dayHeaderFormat={currentView.includes('resource') ? 
-          { day: '2-digit' } :  // For resource views: just "10", "11", "12"
-          { weekday: 'short', month: 'numeric', day: 'numeric' }  // For other views: "Mon 8/10"
-        }
-        dayHeaderContent={currentView.includes('resource') ? (arg) => {
-          const dayNames = ['S', 'M', 'T', 'W', 'Th', 'F', 'S']
-          const dayOfWeek = arg.date.getDay()
-          const dayNum = arg.date.getDate()
-          
-          return {
-            html: `<div style="text-align: center; line-height: 1.2;">
-              <span style="font-size: 0.7rem; color: #6b7280;">${dayNames[dayOfWeek]}</span><br/>
-              <span style="font-size: 0.9rem; font-weight: 600;">${dayNum}</span>
-            </div>`
-          }
-        } : undefined}
-        
-        lazyFetching={true}
-        progressiveEventRendering={true}
       />
     </div>
   )

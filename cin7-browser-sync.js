@@ -216,19 +216,193 @@ class CIN7BrowserSync {
   }
 
   async saveToDatabase(data, type = 'products') {
-
+    console.log(`💾 Saving ${data.length} ${type} to database...`);
+    
     try {
       // Save to JSON file as backup
       const filename = `cin7_${type}_${Date.now()}.json`;
       await fs.writeFile(filename, JSON.stringify(data, null, 2));
+      console.log(`📄 Backup saved: ${filename}`);
 
-      // TODO: Integrate with Supabase database
-      // This would normally save to your actual database
+      // Import Supabase client
+      const { createClient } = require('@supabase/supabase-js');
+      require('dotenv').config();
+      
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      );
+      
+      // Map CIN7 data to local inventory format
+      if (type === 'products') {
+        const inventoryData = data.map(product => ({
+          name: product.Name || '',
+          sku: product.SKU || '',
+          barcode: product.Barcode || '',
+          description: product.ShortDescription || product.Description || '',
+          category: this.mapCategoryForBarbershop(product.Category),
+          brand: product.Brand || '',
+          supplier: product.DefaultSupplier?.Name || '',
+          unit_cost: parseFloat(product.AverageCost || 0),
+          retail_price: parseFloat(product.PriceTier1 || 0),
+          current_stock: parseFloat(product.QuantityOnHand || 0),
+          min_stock: parseFloat(product.MinimumBeforeReorder || 0),
+          max_stock: parseFloat(product.MaximumStock || 0),
+          location: product.BinLocation || '',
+          professional_use: this.detectProfessionalUse(product),
+          usage_instructions: this.extractUsageInstructions(product),
+          cin7_product_id: product.ID,
+          cin7_sku: product.SKU,
+          cin7_barcode: product.Barcode,
+          cin7_last_sync: new Date().toISOString(),
+          cin7_sync_enabled: true,
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+        
+        // Upsert products to inventory table
+        const { data: insertedData, error } = await supabase
+          .from('inventory')
+          .upsert(inventoryData, { 
+            onConflict: 'cin7_product_id',
+            returning: 'minimal'
+          });
+          
+        if (error) {
+          console.error('❌ Supabase upsert error:', error);
+          return false;
+        }
+        
+        console.log(`✅ Successfully saved ${inventoryData.length} products to inventory table`);
+      }
+      
+      // Log sync activity
+      await this.logSyncActivity(supabase, type, data.length, 'success');
       
       return true;
     } catch (error) {
       console.error(`❌ Failed to save data: ${error.message}`);
+      
+      // Try to log the error
+      try {
+        const { createClient } = require('@supabase/supabase-js');
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+        await this.logSyncActivity(supabase, type, data.length, 'failed', error.message);
+      } catch (logError) {
+        console.error('❌ Failed to log sync error:', logError.message);
+      }
+      
       return false;
+    }
+  }
+  
+  // Helper method to map CIN7 categories to barbershop categories
+  mapCategoryForBarbershop(cin7Category) {
+    if (!cin7Category) return 'other';
+    
+    const category = cin7Category.toLowerCase();
+    
+    if (category.includes('shampoo') || category.includes('conditioner') || 
+        category.includes('hair') && category.includes('care')) {
+      return 'hair_care';
+    }
+    if (category.includes('beard') || category.includes('mustache')) {
+      return 'beard_care';
+    }
+    if (category.includes('clipper') || category.includes('trimmer') || 
+        category.includes('razor') || category.includes('scissors')) {
+      return 'tools';
+    }
+    if (category.includes('cape') || category.includes('towel') || 
+        category.includes('apron') || category.includes('accessory')) {
+      return 'accessories';
+    }
+    if (category.includes('styling') || category.includes('gel') || 
+        category.includes('pomade') || category.includes('wax')) {
+      return 'styling';
+    }
+    
+    return 'other';
+  }
+  
+  // Helper method to detect professional-use products
+  detectProfessionalUse(product) {
+    const name = (product.Name || '').toLowerCase();
+    const description = (product.Description || '').toLowerCase();
+    const brand = (product.Brand || '').toLowerCase();
+    
+    // Professional brands
+    const professionalBrands = [
+      'wahl', 'andis', 'oster', 'babyliss', 'conair', 'remington',
+      'redken', 'matrix', 'paul mitchell', 'tigi', 'american crew'
+    ];
+    
+    // Professional keywords
+    const professionalKeywords = [
+      'professional', 'salon', 'barber', 'stylist', 'commercial',
+      'heavy duty', 'industrial', 'pro grade'
+    ];
+    
+    return professionalBrands.some(brand_name => brand.includes(brand_name)) ||
+           professionalKeywords.some(keyword => name.includes(keyword) || description.includes(keyword));
+  }
+  
+  // Helper method to extract usage instructions
+  extractUsageInstructions(product) {
+    const description = product.Description || '';
+    const longDescription = product.LongDescription || '';
+    
+    // Look for usage patterns in descriptions
+    const usagePattern = /(?:directions|instructions|how to use|usage):\s*(.+?)(?:\.|$)/i;
+    const match = (description + ' ' + longDescription).match(usagePattern);
+    
+    return match ? match[1].trim() : '';
+  }
+  
+  // Helper method to log sync activity
+  async logSyncActivity(supabase, syncType, itemCount, status, errorMessage = null) {
+    try {
+      // Get connection ID - for now, use the first active connection
+      const { data: connection } = await supabase
+        .from('cin7_connections')
+        .select('id')
+        .eq('is_active', true)
+        .single();
+        
+      if (!connection) {
+        console.warn('⚠️ No active CIN7 connection found for logging');
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('cin7_sync_logs')
+        .insert({
+          connection_id: connection.id,
+          sync_type: 'browser_automation',
+          sync_direction: 'pull',
+          status: status,
+          items_synced: status === 'success' ? itemCount : 0,
+          items_failed: status === 'failed' ? itemCount : 0,
+          error_message: errorMessage,
+          completed_at: new Date().toISOString(),
+          details: {
+            data_type: syncType,
+            method: 'browser_sync',
+            timestamp: new Date().toISOString()
+          }
+        });
+        
+      if (error) {
+        console.error('❌ Failed to log sync activity:', error);
+      } else {
+        console.log(`📊 Sync activity logged: ${status}`);
+      }
+    } catch (error) {
+      console.error('❌ Error logging sync activity:', error);
     }
   }
 

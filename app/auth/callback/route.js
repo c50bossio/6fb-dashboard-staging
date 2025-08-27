@@ -7,8 +7,6 @@ export async function GET(request) {
   const error = requestUrl.searchParams.get('error')
   const errorDescription = requestUrl.searchParams.get('error_description')
 
-  )
-
   // Handle OAuth errors
   if (error) {
     console.error('OAuth error:', error, errorDescription)
@@ -26,9 +24,6 @@ export async function GET(request) {
   }
 
   try {
-    
-     + '...')
-    
     // The fix is now in server-client.js - it will handle unquoting PKCE cookies
     // Just create the client normally and let it handle the cookie fixing
     

@@ -30,39 +30,6 @@ export default function LocationSelector({ selectedLocation, onLocationSelect })
     try {
       setLoading(true)
       
-      // Helper function to setup mock data
-      const setupMockData = () => {
-        const mockLocations = [{
-          id: 'tomb45-channelside',
-          name: 'Tomb45 Channelside',
-          location: 'Tampa, FL',
-          address: '123 Channelside Dr, Tampa, FL 33602'
-        }]
-        
-        setLocations(mockLocations)
-        
-        // Auto-select user's current location based on shop_id
-        if (!selectedLocation && mockLocations.length > 0) {
-          const userLocation = mockLocations.find(loc => 
-            loc.id === profile?.shop_id || 
-            loc.slug === profile?.shop_id ||
-            loc.name.toLowerCase().includes('tomb45')
-          ) || mockLocations[0] // Fallback to first location
-          
-          onLocationSelect(userLocation)
-        }
-        
-        setLoading(false)
-        return true
-      }
-      
-      // Dev environment - provide mock location data
-      if (typeof window !== 'undefined' && 
-          (localStorage.getItem('dev_session') === 'true' || 
-           document.cookie.includes('dev_auth=true'))) {
-        setupMockData()
-        return
-      }
       
       // Production API calls - only for appropriate roles
       let response
@@ -104,32 +71,18 @@ export default function LocationSelector({ selectedLocation, onLocationSelect })
         apiCallFailed = true
       }
       
-      // Fallback to mock data if API calls fail
+      // Handle API failure properly
       if (apiCallFailed) {
-        setupMockData()
+        console.error('Failed to load locations from API')
+        setLocations([])
+        setLoading(false)
         return
       }
       
     } catch (error) {
-      // Final fallback to mock data on any error
-      const mockLocations = [{
-        id: 'tomb45-channelside',
-        name: 'Tomb45 Channelside',
-        location: 'Tampa, FL',
-        address: '123 Channelside Dr, Tampa, FL 33602'
-      }]
-      
-      setLocations(mockLocations)
-      
-      if (!selectedLocation && mockLocations.length > 0) {
-        const userLocation = mockLocations.find(loc => 
-          loc.id === profile?.shop_id || 
-          loc.slug === profile?.shop_id ||
-          loc.name.toLowerCase().includes('tomb45')
-        ) || mockLocations[0]
-        
-        onLocationSelect(userLocation)
-      }
+      // Handle errors without mock data
+      console.error('Error loading locations:', error)
+      setLocations([])
     } finally {
       setLoading(false)
     }

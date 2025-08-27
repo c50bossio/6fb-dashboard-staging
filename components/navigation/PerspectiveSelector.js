@@ -55,8 +55,11 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
         // Auto-select "My Dashboard" perspective if no perspective selected
         if (!selectedPerspective && perspectiveStaff.length > 0) {
           onPerspectiveSelect({
+            id: 'owner',
             type: 'owner',
-            label: 'My Dashboard'
+            name: 'My Dashboard',
+            role: 'Shop Owner',
+            isPrimary: true
           })
         }
         
@@ -64,24 +67,17 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
         return
       }
       
-      // Fallback to dev mock data if no real staff found
+      // No staff found - that's okay, just show owner view
+      setStaff([])
       
-      const mockStaff = [
-        {
-          id: 'dev-barber-1',
-          name: 'John Barber',
-          role: 'BARBER',
-          location_id: locationId
-        }
-      ]
-      
-      setStaff(mockStaff)
-      
-      // Auto-select "My Dashboard" perspective
+      // Auto-select "My Dashboard" perspective for owner view
       if (!selectedPerspective) {
         onPerspectiveSelect({
+          id: 'owner',
           type: 'owner',
-          label: 'My Dashboard'
+          name: 'My Dashboard',
+          role: 'Shop Owner',
+          isPrimary: true
         })
       }
       
@@ -90,22 +86,17 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
     } catch (error) {
       console.error('❌ PerspectiveSelector: Error loading staff:', error)
       
-      // Final fallback to mock data on any error
-      const mockStaff = [
-        {
-          id: 'dev-barber-1', 
-          name: 'John Barber',
-          role: 'BARBER',
-          location_id: locationId
-        }
-      ]
+      // Handle error without mock data
+      setStaff([])
       
-      setStaff(mockStaff)
-      
-      if (!selectedPerspective && mockStaff.length > 0) {
+      // Still allow owner view even if staff loading failed
+      if (!selectedPerspective) {
         onPerspectiveSelect({
+          id: 'owner',
           type: 'owner',
-          label: 'My Dashboard'
+          name: 'My Dashboard',
+          role: 'Shop Owner',
+          isPrimary: true
         })
       }
       
@@ -141,13 +132,15 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
     
     // Add staff members if any exist
     staff.forEach(member => {
+      // Even if this person is the owner, when selected from staff list, treat as staff view
       options.push({
         id: member.id,
-        type: 'staff',
+        type: 'staff',  // Always 'staff' type when from the staff list
         name: member.name || 'Unnamed Staff',
         role: member.role || 'Staff',
         email: member.email,
-        avatar: member.avatar
+        avatar: member.avatar,
+        isOwnerAsStaff: member.role === 'SHOP_OWNER' || member.role === 'ENTERPRISE_OWNER'  // Track if this is owner viewing as staff
       })
     })
     
@@ -199,7 +192,10 @@ export default function PerspectiveSelector({ selectedLocation, selectedPerspect
                   <Menu.Item key={perspective.id}>
                     {({ active }) => (
                       <button
-                        onClick={() => onPerspectiveSelect(perspective)}
+                        onClick={() => {
+                          console.log('PerspectiveSelector - Selecting:', perspective)
+                          onPerspectiveSelect(perspective)
+                        }}
                         className={`
                           ${active ? 'bg-gray-100' : ''}
                           group flex w-full items-center px-4 py-3 text-sm text-gray-700

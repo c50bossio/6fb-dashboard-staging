@@ -9,6 +9,7 @@ import { useAuth } from '../../components/SupabaseAuthProvider'
 import { GlobalDashboardProvider } from '../../contexts/GlobalDashboardContext'
 import { NavigationProvider, useNavigation } from '../../contexts/NavigationContext'
 import { TenantProvider } from '../../contexts/TenantContext'
+import { DashboardPerspectiveProvider } from '../../contexts/DashboardPerspectiveContext'
 // import { Toaster } from 'react-hot-toast'
 
 function ProtectedLayoutContent({ children }) {
@@ -82,7 +83,9 @@ export default function ProtectedLayout({ children }) {
       {/* <ProtectedRoute> */}
         <NavigationProvider>
           <GlobalDashboardProvider>
-            <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
+            <DashboardPerspectiveProvider>
+              <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
+            </DashboardPerspectiveProvider>
           </GlobalDashboardProvider>
         </NavigationProvider>
       {/* </ProtectedRoute> */}

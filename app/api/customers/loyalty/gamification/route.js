@@ -66,11 +66,13 @@ export async function GET(request) {
 
     if (action === 'leaderboard') {
       // Get customer leaderboard
-      const leaderboard = await getCustomerLeaderboard(barbershopId, programId, period, limit);
+      const leaderboardType = url.searchParams.get('type') || 'points';
+      const leaderboard = await getEnhancedLeaderboard(barbershopId, leaderboardType, period, limit);
       
       return NextResponse.json({ 
         success: true, 
         leaderboard,
+        leaderboard_type: leaderboardType,
         period,
         limit
       });
@@ -324,6 +326,267 @@ async function getCustomerLeaderboard(barbershopId, programId, period, limit) {
     console.error('Error getting customer leaderboard:', error);
     return [];
   }
+}
+
+/**
+ * Enhanced leaderboard function with multiple metrics
+ */
+async function getEnhancedLeaderboard(barbershopId, leaderboardType = 'points', period = 'all_time', limit = 10) {
+  try {
+    let leaderboardData = [];
+    
+    switch (leaderboardType) {
+      case 'points':
+        leaderboardData = await getPointsLeaderboard(barbershopId, period, limit);
+        break;
+      case 'visits':
+        leaderboardData = await getVisitsLeaderboard(barbershopId, period, limit);
+        break;
+      case 'spending':
+        leaderboardData = await getSpendingLeaderboard(barbershopId, period, limit);
+        break;
+      case 'streaks':
+        leaderboardData = await getStreaksLeaderboard(barbershopId, limit);
+        break;
+      case 'engagement':
+        leaderboardData = await getEngagementLeaderboard(barbershopId, period, limit);
+        break;
+      default:
+        leaderboardData = await getPointsLeaderboard(barbershopId, period, limit);
+    }
+    
+    return leaderboardData;
+    
+  } catch (error) {
+    console.error('Error getting enhanced leaderboard:', error);
+    return [];
+  }
+}
+
+/**
+ * Get points-based leaderboard
+ */
+async function getPointsLeaderboard(barbershopId, period, limit) {
+  const { data: enrollments } = await supabase
+    .from('loyalty_program_enrollments')
+    .select(`
+      customer_id,
+      current_points,
+      lifetime_points_earned,
+      current_tier,
+      member_since,
+      customers!inner(first_name, last_name, email)
+    `)
+    .eq('barbershop_id', barbershopId)
+    .eq('is_active', true)
+    .order('current_points', { ascending: false })
+    .limit(limit);
+    
+  if (!enrollments) return [];
+  
+  return await Promise.all(enrollments.map(async (enrollment, index) => {
+    const achievements = await getCustomerAchievementsCount(enrollment.customer_id, barbershopId);
+    const streak = await getCustomerStreak(enrollment.customer_id, barbershopId);
+    
+    return {
+      position: index + 1,
+      customer_id: enrollment.customer_id,
+      customer_name: `${enrollment.customers.first_name} ${enrollment.customers.last_name}`,
+      points: enrollment.current_points,
+      lifetime_points: enrollment.lifetime_points_earned,
+      tier: enrollment.current_tier,
+      member_since: enrollment.member_since,
+      badge: getPositionBadge(index + 1),
+      achievements_count: achievements,
+      current_streak: streak.current,
+      metric_type: 'points'
+    };
+  }));
+}
+
+/**
+ * Get visits-based leaderboard
+ */
+async function getVisitsLeaderboard(barbershopId, period, limit) {
+  let dateFilter = '';
+  const cutoffDate = getPeriodCutoffDate(period);
+  
+  if (period !== 'all_time') {
+    dateFilter = ` AND appointment_date >= '${cutoffDate.toISOString()}'`;
+  }
+  
+  const query = `
+    SELECT 
+      c.id as customer_id,
+      c.first_name,
+      c.last_name,
+      COUNT(a.id) as visit_count,
+      SUM(a.total_amount::numeric) as total_spent
+    FROM customers c
+    LEFT JOIN appointments a ON c.id = a.customer_id AND a.status = 'completed'${dateFilter}
+    WHERE c.barbershop_id = $1
+    GROUP BY c.id, c.first_name, c.last_name
+    HAVING COUNT(a.id) > 0
+    ORDER BY visit_count DESC
+    LIMIT $2
+  `;
+  
+  const { data: results } = await supabase.rpc('execute_sql', {
+    query: query,
+    params: [barbershopId, limit]
+  });
+  
+  if (!results) return [];
+  
+  return await Promise.all(results.map(async (customer, index) => {
+    const achievements = await getCustomerAchievementsCount(customer.customer_id, barbershopId);
+    const streak = await getCustomerStreak(customer.customer_id, barbershopId);
+    
+    return {
+      position: index + 1,
+      customer_id: customer.customer_id,
+      customer_name: `${customer.first_name} ${customer.last_name}`,
+      visits: customer.visit_count,
+      total_spent: parseFloat(customer.total_spent || 0),
+      badge: getPositionBadge(index + 1),
+      achievements_count: achievements,
+      current_streak: streak.current,
+      metric_type: 'visits'
+    };
+  }));
+}
+
+/**
+ * Get spending-based leaderboard
+ */
+async function getSpendingLeaderboard(barbershopId, period, limit) {
+  let dateFilter = '';
+  const cutoffDate = getPeriodCutoffDate(period);
+  
+  if (period !== 'all_time') {
+    dateFilter = ` AND appointment_date >= '${cutoffDate.toISOString()}'`;
+  }
+  
+  const query = `
+    SELECT 
+      c.id as customer_id,
+      c.first_name,
+      c.last_name,
+      COUNT(a.id) as visit_count,
+      SUM(a.total_amount::numeric) as total_spent
+    FROM customers c
+    LEFT JOIN appointments a ON c.id = a.customer_id AND a.status = 'completed'${dateFilter}
+    WHERE c.barbershop_id = $1
+    GROUP BY c.id, c.first_name, c.last_name
+    HAVING SUM(a.total_amount::numeric) > 0
+    ORDER BY total_spent DESC
+    LIMIT $2
+  `;
+  
+  const { data: results } = await supabase.rpc('execute_sql', {
+    query: query,
+    params: [barbershopId, limit]
+  });
+  
+  if (!results) return [];
+  
+  return await Promise.all(results.map(async (customer, index) => {
+    const achievements = await getCustomerAchievementsCount(customer.customer_id, barbershopId);
+    const streak = await getCustomerStreak(customer.customer_id, barbershopId);
+    
+    return {
+      position: index + 1,
+      customer_id: customer.customer_id,
+      customer_name: `${customer.first_name} ${customer.last_name}`,
+      total_spent: parseFloat(customer.total_spent || 0),
+      visits: customer.visit_count,
+      badge: getPositionBadge(index + 1),
+      achievements_count: achievements,
+      current_streak: streak.current,
+      metric_type: 'spending'
+    };
+  }));
+}
+
+/**
+ * Get streaks-based leaderboard
+ */
+async function getStreaksLeaderboard(barbershopId, limit) {
+  const { data: streaks } = await supabase
+    .from('customer_streaks')
+    .select(`
+      customer_id,
+      current_streak,
+      best_streak,
+      streak_type,
+      customers!inner(first_name, last_name)
+    `)
+    .eq('barbershop_id', barbershopId)
+    .eq('is_active', true)
+    .eq('streak_type', 'monthly_visits')
+    .order('current_streak', { ascending: false })
+    .limit(limit);
+    
+  if (!streaks) return [];
+  
+  return await Promise.all(streaks.map(async (streak, index) => {
+    const achievements = await getCustomerAchievementsCount(streak.customer_id, barbershopId);
+    
+    return {
+      position: index + 1,
+      customer_id: streak.customer_id,
+      customer_name: `${streak.customers.first_name} ${streak.customers.last_name}`,
+      current_streak: streak.current_streak,
+      best_streak: streak.best_streak,
+      streak_type: streak.streak_type,
+      badge: getPositionBadge(index + 1),
+      achievements_count: achievements,
+      metric_type: 'streaks'
+    };
+  }));
+}
+
+/**
+ * Get engagement-based leaderboard
+ */
+async function getEngagementLeaderboard(barbershopId, period, limit) {
+  // Get all customers and calculate engagement scores
+  const { data: customers } = await supabase
+    .from('customers')
+    .select('id, first_name, last_name')
+    .eq('barbershop_id', barbershopId);
+    
+  if (!customers) return [];
+  
+  const customerEngagement = await Promise.all(customers.map(async (customer) => {
+    const analytics = await getCustomerAnalytics(customer.id, barbershopId);
+    const achievements = await getCustomerAchievementsCount(customer.id, barbershopId);
+    const streak = await getCustomerStreak(customer.id, barbershopId);
+    
+    return {
+      customer_id: customer.id,
+      customer_name: `${customer.first_name} ${customer.last_name}`,
+      engagement_score: analytics.engagement_score,
+      total_visits: analytics.total_visits,
+      reviews_count: analytics.reviews_count,
+      referrals: analytics.total_referrals,
+      achievements_count: achievements,
+      current_streak: streak.current
+    };
+  }));
+  
+  // Sort by engagement score and take top results
+  const sortedCustomers = customerEngagement
+    .filter(c => c.engagement_score > 0)
+    .sort((a, b) => b.engagement_score - a.engagement_score)
+    .slice(0, limit);
+    
+  return sortedCustomers.map((customer, index) => ({
+    ...customer,
+    position: index + 1,
+    badge: getPositionBadge(index + 1),
+    metric_type: 'engagement'
+  }));
 }
 
 /**
@@ -866,12 +1129,29 @@ async function getCustomerAnalytics(customerId, barbershopId) {
     // Get basic customer stats
     const { data: appointments } = await supabase
       .from('appointments')
-      .select('total_amount, status, appointment_date')
+      .select('total_amount, status, appointment_date, created_at')
       .eq('customer_id', customerId)
       .eq('status', 'completed');
 
     const totalVisits = appointments?.length || 0;
     const totalSpent = appointments?.reduce((sum, apt) => sum + (parseFloat(apt.total_amount) || 0), 0) || 0;
+    
+    // Calculate days since first visit
+    const firstVisit = appointments?.sort((a, b) => new Date(a.appointment_date) - new Date(b.appointment_date))[0];
+    const daysSinceFirst = firstVisit ? 
+      Math.floor((new Date() - new Date(firstVisit.appointment_date)) / (1000 * 60 * 60 * 24)) : 0;
+    
+    // Calculate average days between visits
+    let averageDaysBetween = 0;
+    if (appointments && appointments.length > 1) {
+      const sortedAppointments = appointments.sort((a, b) => new Date(a.appointment_date) - new Date(b.appointment_date));
+      const gaps = [];
+      for (let i = 1; i < sortedAppointments.length; i++) {
+        const gap = Math.floor((new Date(sortedAppointments[i].appointment_date) - new Date(sortedAppointments[i-1].appointment_date)) / (1000 * 60 * 60 * 24));
+        gaps.push(gap);
+      }
+      averageDaysBetween = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length;
+    }
 
     // Get loyalty points
     const { data: pointsTransactions } = await supabase
@@ -882,6 +1162,19 @@ async function getCustomerAnalytics(customerId, barbershopId) {
       .gt('points_amount', 0);
 
     const totalPointsEarned = pointsTransactions?.reduce((sum, t) => sum + t.points_amount, 0) || 0;
+    
+    // Get current loyalty points balance
+    const { data: enrollment } = await supabase
+      .from('loyalty_program_enrollments')
+      .select('current_points, current_tier, member_since')
+      .eq('customer_id', customerId)
+      .eq('barbershop_id', barbershopId)
+      .eq('is_active', true)
+      .single();
+    
+    const currentPoints = enrollment?.current_points || 0;
+    const currentTier = enrollment?.current_tier || 'Bronze';
+    const memberSince = enrollment?.member_since;
 
     // Get reviews
     const { data: reviews } = await supabase
@@ -893,7 +1186,7 @@ async function getCustomerAnalytics(customerId, barbershopId) {
 
     const reviewsCount = reviews?.length || 0;
     const averageRating = reviewsCount > 0 ? 
-      reviews.reduce((sum, r) => sum + r.overall_rating, 0) / reviewsCount : 0;
+      Math.round((reviews.reduce((sum, r) => sum + r.overall_rating, 0) / reviewsCount) * 10) / 10 : 0;
 
     // Get referrals
     const { data: referrals } = await supabase
@@ -904,15 +1197,31 @@ async function getCustomerAnalytics(customerId, barbershopId) {
 
     const totalReferrals = referrals?.length || 0;
     const successfulReferrals = referrals?.filter(r => r.status === 'qualified' || r.status === 'rewarded').length || 0;
+    
+    // Calculate engagement score (0-100)
+    const engagementScore = calculateEngagementScore({
+      totalVisits,
+      totalSpent,
+      reviewsCount,
+      totalReferrals,
+      daysSinceFirst,
+      averageDaysBetween
+    });
 
     return {
       total_visits: totalVisits,
       total_spent: totalSpent,
       total_points_earned: totalPointsEarned,
+      current_points: currentPoints,
+      current_tier: currentTier,
+      member_since: memberSince,
       reviews_count: reviewsCount,
       average_rating: averageRating,
       total_referrals: totalReferrals,
-      successful_referrals: successfulReferrals
+      successful_referrals: successfulReferrals,
+      days_since_first_visit: daysSinceFirst,
+      average_days_between_visits: Math.round(averageDaysBetween),
+      engagement_score: engagementScore
     };
 
   } catch (error) {
@@ -921,12 +1230,48 @@ async function getCustomerAnalytics(customerId, barbershopId) {
       total_visits: 0,
       total_spent: 0,
       total_points_earned: 0,
+      current_points: 0,
+      current_tier: 'Bronze',
+      member_since: null,
       reviews_count: 0,
       average_rating: 0,
       total_referrals: 0,
-      successful_referrals: 0
+      successful_referrals: 0,
+      days_since_first_visit: 0,
+      average_days_between_visits: 0,
+      engagement_score: 0
     };
   }
+}
+
+/**
+ * Calculate customer engagement score (0-100)
+ */
+function calculateEngagementScore({ totalVisits, totalSpent, reviewsCount, totalReferrals, daysSinceFirst, averageDaysBetween }) {
+  let score = 0;
+  
+  // Visit frequency score (30 points max)
+  const visitFrequency = daysSinceFirst > 0 ? totalVisits / (daysSinceFirst / 30) : 0;
+  score += Math.min(30, visitFrequency * 10);
+  
+  // Spending score (25 points max)
+  const avgSpendPerVisit = totalVisits > 0 ? totalSpent / totalVisits : 0;
+  score += Math.min(25, (avgSpendPerVisit / 50) * 25);
+  
+  // Engagement activities (25 points max)
+  score += Math.min(15, reviewsCount * 3);
+  score += Math.min(10, totalReferrals * 5);
+  
+  // Consistency bonus (20 points max)
+  if (averageDaysBetween > 0 && averageDaysBetween <= 45) {
+    score += 20; // Regular customer
+  } else if (averageDaysBetween <= 60) {
+    score += 15; // Semi-regular
+  } else if (averageDaysBetween <= 90) {
+    score += 10; // Occasional
+  }
+  
+  return Math.min(100, Math.max(0, Math.round(score)));
 }
 
 /**
@@ -1137,6 +1482,84 @@ async function checkExistingAchievement(customerId, barbershopId, achievementNam
  */
 async function getChallengeProgress(customerId, challengeId, barbershopId) {
   try {
+    // Get specific challenge details from database
+    const { data: challenge } = await supabase
+      .from('gamification_challenges')
+      .select('*')
+      .eq('id', challengeId)
+      .eq('barbershop_id', barbershopId)
+      .single();
+      
+    if (!challenge) {
+      // Fallback for predefined challenges
+      return await getChallengeProgressLegacy(customerId, challengeId, barbershopId);
+    }
+    
+    // Get customer's participation record
+    const { data: participation } = await supabase
+      .from('customer_challenge_participations')
+      .select('*')
+      .eq('customer_id', customerId)
+      .eq('challenge_id', challengeId)
+      .single();
+    
+    if (!participation) {
+      return { current: 0, target: 1, percentage: 0 };
+    }
+    
+    const requirements = challenge.challenge_requirements;
+    const progress = participation.current_progress || {};
+    
+    let current = 0;
+    let target = 1;
+    
+    // Calculate progress based on challenge type
+    switch (challenge.challenge_type) {
+      case 'visits':
+        current = progress.visits_completed || 0;
+        target = requirements.visits_required || 1;
+        break;
+        
+      case 'spending':
+        current = progress.spending_completed || 0;
+        target = requirements.spending_required || 100;
+        break;
+        
+      case 'referrals':
+        current = progress.referrals_completed || 0;
+        target = requirements.referrals_required || 1;
+        break;
+        
+      case 'reviews':
+        current = progress.reviews_completed || 0;
+        target = requirements.reviews_required || 1;
+        break;
+        
+      default:
+        current = progress.custom_progress || 0;
+        target = requirements.target_value || 1;
+    }
+    
+    return {
+      current: current,
+      target: target,
+      percentage: Math.min(100, Math.round((current / target) * 100)),
+      status: participation.status,
+      joined_at: participation.joined_at,
+      rewards_earned: participation.rewards_earned || []
+    };
+
+  } catch (error) {
+    console.error('Error getting challenge progress:', error);
+    return { current: 0, target: 1, percentage: 0 };
+  }
+}
+
+/**
+ * Legacy challenge progress calculation for predefined challenges
+ */
+async function getChallengeProgressLegacy(customerId, challengeId, barbershopId) {
+  try {
     const analytics = await getCustomerAnalytics(customerId, barbershopId);
     
     // Calculate progress based on challenge type
@@ -1159,19 +1582,38 @@ async function getChallengeProgress(customerId, challengeId, barbershopId) {
         };
 
       case 'review_warrior':
-        // Would calculate reviews for current quarter
+        const quarterStart = new Date();
+        quarterStart.setMonth(Math.floor(quarterStart.getMonth() / 3) * 3, 1);
+        
+        const { data: quarterlyReviews } = await supabase
+          .from('customer_feedback')
+          .select('id')
+          .eq('customer_id', customerId)
+          .eq('barbershop_id', barbershopId)
+          .gte('created_at', quarterStart.toISOString());
+          
         return {
-          current: analytics.reviews_count,
+          current: quarterlyReviews?.length || 0,
           target: 3,
-          percentage: Math.min(100, (analytics.reviews_count / 3) * 100)
+          percentage: Math.min(100, ((quarterlyReviews?.length || 0) / 3) * 100)
         };
 
       case 'referral_master':
-        // Would calculate referrals for current month
+        const monthStart = new Date();
+        monthStart.setDate(1);
+        monthStart.setHours(0, 0, 0, 0);
+        
+        const { data: monthlyReferrals } = await supabase
+          .from('referral_tracking')
+          .select('id')
+          .eq('referrer_customer_id', customerId)
+          .eq('barbershop_id', barbershopId)
+          .gte('created_at', monthStart.toISOString());
+          
         return {
-          current: analytics.total_referrals,
+          current: monthlyReferrals?.length || 0,
           target: 2,
-          percentage: Math.min(100, (analytics.total_referrals / 2) * 100)
+          percentage: Math.min(100, ((monthlyReferrals?.length || 0) / 2) * 100)
         };
 
       default:
@@ -1179,7 +1621,163 @@ async function getChallengeProgress(customerId, challengeId, barbershopId) {
     }
 
   } catch (error) {
-    console.error('Error getting challenge progress:', error);
+    console.error('Error getting legacy challenge progress:', error);
     return { current: 0, target: 1, percentage: 0 };
+  }
+}
+
+/**
+ * Update customer challenge progress
+ */
+async function updateChallengeProgress(customerId, challengeId, barbershopId, progressData) {
+  try {
+    // Get current participation record
+    const { data: participation } = await supabase
+      .from('customer_challenge_participations')
+      .select('*')
+      .eq('customer_id', customerId)
+      .eq('challenge_id', challengeId)
+      .single();
+      
+    if (!participation) {
+      // Create new participation record
+      const { data: newParticipation, error } = await supabase
+        .from('customer_challenge_participations')
+        .insert({
+          barbershop_id: barbershopId,
+          customer_id: customerId,
+          challenge_id: challengeId,
+          current_progress: progressData,
+          progress_percentage: calculateProgressPercentage(progressData, challengeId)
+        })
+        .select()
+        .single();
+        
+      if (error) throw error;
+      return newParticipation;
+    } else {
+      // Update existing participation
+      const updatedProgress = { ...participation.current_progress, ...progressData };
+      const progressPercentage = calculateProgressPercentage(updatedProgress, challengeId);
+      
+      const { data: updatedParticipation, error } = await supabase
+        .from('customer_challenge_participations')
+        .update({
+          current_progress: updatedProgress,
+          progress_percentage: progressPercentage,
+          status: progressPercentage >= 100 ? 'completed' : 'active',
+          completed_at: progressPercentage >= 100 ? new Date().toISOString() : null
+        })
+        .eq('id', participation.id)
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      // Check if challenge completed and award rewards
+      if (progressPercentage >= 100 && participation.status !== 'completed') {
+        await awardChallengeRewards(customerId, challengeId, barbershopId);
+      }
+      
+      return updatedParticipation;
+    }
+    
+  } catch (error) {
+    console.error('Error updating challenge progress:', error);
+    return null;
+  }
+}
+
+/**
+ * Calculate progress percentage for a challenge
+ */
+function calculateProgressPercentage(progressData, challengeId) {
+  // This would be more sophisticated in a real implementation
+  // For now, use simple calculations
+  
+  if (progressData.visits_completed && progressData.visits_target) {
+    return Math.min(100, (progressData.visits_completed / progressData.visits_target) * 100);
+  }
+  
+  if (progressData.spending_completed && progressData.spending_target) {
+    return Math.min(100, (progressData.spending_completed / progressData.spending_target) * 100);
+  }
+  
+  if (progressData.reviews_completed && progressData.reviews_target) {
+    return Math.min(100, (progressData.reviews_completed / progressData.reviews_target) * 100);
+  }
+  
+  return 0;
+}
+
+/**
+ * Award challenge completion rewards
+ */
+async function awardChallengeRewards(customerId, challengeId, barbershopId) {
+  try {
+    const { data: challenge } = await supabase
+      .from('gamification_challenges')
+      .select('reward_structure')
+      .eq('id', challengeId)
+      .single();
+      
+    if (!challenge || !challenge.reward_structure.completion_reward) {
+      return;
+    }
+    
+    const reward = challenge.reward_structure.completion_reward;
+    
+    if (reward.type === 'points' && reward.amount) {
+      // Award loyalty points
+      await awardLoyaltyPoints(customerId, barbershopId, reward.amount, 'challenge_completion', challengeId);
+    }
+    
+    if (reward.type === 'badge' && reward.value) {
+      // Award badge through milestone system
+      await awardBadge(customerId, barbershopId, 'challenge', reward.value, `Completed challenge`);
+    }
+    
+  } catch (error) {
+    console.error('Error awarding challenge rewards:', error);
+  }
+}
+
+/**
+ * Award loyalty points helper
+ */
+async function awardLoyaltyPoints(customerId, barbershopId, points, source, sourceId) {
+  try {
+    // Get current balance
+    const { data: enrollment } = await supabase
+      .from('loyalty_program_enrollments')
+      .select('current_points')
+      .eq('customer_id', customerId)
+      .eq('barbershop_id', barbershopId)
+      .single();
+      
+    const currentBalance = enrollment?.current_points || 0;
+    
+    // Create points transaction
+    const { error } = await supabase
+      .from('loyalty_points')
+      .insert({
+        barbershop_id: barbershopId,
+        customer_id: customerId,
+        loyalty_program_id: enrollment.loyalty_program_id,
+        transaction_type: 'earned',
+        points_amount: points,
+        source_type: source,
+        source_id: sourceId,
+        balance_before: currentBalance,
+        balance_after: currentBalance + points,
+        description: `Points earned from ${source}`
+      });
+      
+    if (error) {
+      console.error('Error creating points transaction:', error);
+    }
+    
+  } catch (error) {
+    console.error('Error awarding loyalty points:', error);
   }
 }

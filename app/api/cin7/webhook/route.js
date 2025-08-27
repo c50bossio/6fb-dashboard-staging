@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import cin7RealtimeSync from '@/lib/cin7-realtime-sync.js'
 
 // Initialize Supabase with service role for webhook processing
 const supabase = createClient(
@@ -38,6 +39,7 @@ export async function POST(request) {
     const url = new URL(request.url)
     const webhookPath = url.pathname.split('/').pop()
     
+    console.log(`📨 Received CIN7 webhook: ${webhookPath}`)
     
     // Get raw body for signature verification
     const rawBody = await request.text()
@@ -52,6 +54,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
     
+    console.log(`📋 Webhook data:`, JSON.stringify(body, null, 2).substring(0, 500))
     
     // Verify webhook signature (if configured)
     const webhookSecret = process.env.CIN7_WEBHOOK_SECRET
@@ -60,23 +63,31 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Route to appropriate handler based on webhook path
-    switch (webhookPath) {
-      case 'stock-updated':
-        return await handleStockUpdated(body)
-      case 'product-modified':
-        return await handleProductModified(body)
-      case 'sale-completed':
-        return await handleSaleCompleted(body)
-      default:
-        return await handleGenericWebhook(body)
+    // Use the new real-time sync service for processing
+    const result = await cin7RealtimeSync.processWebhook(body, signature)
+    
+    if (result.success) {
+      return NextResponse.json({
+        success: true,
+        message: 'Webhook processed successfully',
+        type: body.Type || 'unknown',
+        timestamp: new Date().toISOString()
+      })
+    } else {
+      return NextResponse.json({
+        success: false,
+        error: result.error,
+        type: body.Type || 'unknown',
+        timestamp: new Date().toISOString()
+      }, { status: 500 })
     }
     
   } catch (error) {
     console.error('❌ Webhook processing error:', error)
     return NextResponse.json({
       error: 'Webhook processing failed',
-      message: error.message
+      message: error.message,
+      timestamp: new Date().toISOString()
     }, { status: 500 })
   }
 }

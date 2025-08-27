@@ -9,8 +9,9 @@ from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime, time
 
-# Import memory manager
+# Import memory manager and Supabase proxy
 from services.memory_manager import memory_manager
+from services.supabase_api_proxy import supabase_proxy
 
 # Settings models
 class BarbershopSettings(BaseModel):
@@ -55,7 +56,22 @@ security = HTTPBearer()
 # Import the real authentication function
 from routers.auth import get_current_user
 
-# Mock data storage (replace with real database)
+# Import Supabase for direct queries where needed
+import os
+from supabase import create_client, Client
+
+# Initialize Supabase client for settings operations
+supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+supabase_client = None
+
+if supabase_url and supabase_key:
+    try:
+        supabase_client: Client = create_client(supabase_url, supabase_key)
+    except Exception as e:
+        print(f"Failed to initialize Supabase client in settings: {e}")
+
+# Mock data storage as fallback
 BARBERSHOP_SETTINGS = {}
 NOTIFICATION_SETTINGS = {}
 BUSINESS_HOURS = {}
@@ -65,10 +81,36 @@ async def create_barbershop_settings(
     settings: BarbershopSettings,
     current_user: dict = Depends(get_current_user)
 ):
-    """Create barbershop settings"""
+    """Create barbershop settings using Supabase"""
     barbershop_id = current_user.get("barbershop_id")
     
+    if not barbershop_id:
+        raise HTTPException(status_code=400, detail="No barbershop associated with user")
+    
     with memory_manager.memory_context("create_barbershop_settings"):
+        if supabase_client:
+            try:
+                # Insert or update barbershop record
+                upsert_data = {
+                    "id": barbershop_id,
+                    **settings.dict(),
+                    "created_at": datetime.utcnow().isoformat(),
+                    "updated_at": datetime.utcnow().isoformat()
+                }
+                
+                response = supabase_client.table('barbershops').upsert(upsert_data).execute()
+                
+                return {
+                    "status": "created",
+                    "barbershop_id": barbershop_id,
+                    "settings": upsert_data,
+                    "data_source": "supabase_real"
+                }
+            except Exception as e:
+                print(f"Error creating barbershop settings in Supabase: {e}")
+                # Fall back to mock storage
+        
+        # Fallback to mock storage
         BARBERSHOP_SETTINGS[barbershop_id] = {
             **settings.dict(),
             "created_at": datetime.utcnow(),
@@ -78,7 +120,8 @@ async def create_barbershop_settings(
         return {
             "status": "created",
             "barbershop_id": barbershop_id,
-            "settings": BARBERSHOP_SETTINGS[barbershop_id]
+            "settings": BARBERSHOP_SETTINGS[barbershop_id],
+            "data_source": "mock"
         }
 
 @router.put("/settings/barbershop")
@@ -86,50 +129,56 @@ async def update_barbershop_settings(
     settings: BarbershopSettings,
     current_user: dict = Depends(get_current_user)
 ):
-    """Update barbershop settings"""
+    """Update barbershop settings using Supabase"""
     barbershop_id = current_user.get("barbershop_id")
     
-    if barbershop_id not in BARBERSHOP_SETTINGS:
-        raise HTTPException(status_code=404, detail="Barbershop settings not found")
+    if not barbershop_id:
+        raise HTTPException(status_code=400, detail="No barbershop associated with user")
     
     with memory_manager.memory_context("update_barbershop_settings"):
-        BARBERSHOP_SETTINGS[barbershop_id].update({
-            **settings.dict(),
-            "updated_at": datetime.utcnow()
-        })
+        # Use the Supabase proxy service
+        result = await supabase_proxy.update_barbershop_settings(barbershop_id, settings.dict())
+        
+        if result.get("status") == "error":
+            # Fallback to mock storage
+            if barbershop_id not in BARBERSHOP_SETTINGS:
+                BARBERSHOP_SETTINGS[barbershop_id] = {}
+            
+            BARBERSHOP_SETTINGS[barbershop_id].update({
+                **settings.dict(),
+                "updated_at": datetime.utcnow()
+            })
+            
+            return {
+                "status": "updated",
+                "barbershop_id": barbershop_id,
+                "settings": BARBERSHOP_SETTINGS[barbershop_id],
+                "data_source": "mock"
+            }
         
         return {
             "status": "updated",
             "barbershop_id": barbershop_id,
-            "settings": BARBERSHOP_SETTINGS[barbershop_id]
+            "settings": result,
+            "data_source": "supabase_real"
         }
 
 @router.get("/settings/barbershop")
 async def get_barbershop_settings(current_user: dict = Depends(get_current_user)):
-    """Get barbershop settings"""
+    """Get barbershop settings using Supabase"""
     barbershop_id = current_user.get("barbershop_id")
     
-    if barbershop_id not in BARBERSHOP_SETTINGS:
-        # Return default settings
+    if not barbershop_id:
+        raise HTTPException(status_code=400, detail="No barbershop associated with user")
+    
+    with memory_manager.memory_context("get_barbershop_settings"):
+        # Use the Supabase proxy service
+        settings = await supabase_proxy.get_barbershop_settings(barbershop_id)
+        
         return {
             "barbershop_id": barbershop_id,
-            "settings": {
-                "name": "Default Barbershop",
-                "address": None,
-                "phone": None,
-                "email": None,
-                "description": None,
-                "services": [],
-                "pricing": {},
-                "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow()
-            }
+            "settings": settings
         }
-    
-    return {
-        "barbershop_id": barbershop_id,
-        "settings": BARBERSHOP_SETTINGS[barbershop_id]
-    }
 
 @router.get("/billing/current")
 async def get_current_billing(current_user: dict = Depends(get_current_user)):
@@ -155,10 +204,37 @@ async def get_current_billing(current_user: dict = Depends(get_current_user)):
 
 @router.get("/settings/notifications")
 async def get_notification_settings(current_user: dict = Depends(get_current_user)):
-    """Get notification settings"""
+    """Get notification settings using Supabase"""
     user_id = current_user.get("user_id")
     
-    if user_id not in NOTIFICATION_SETTINGS:
+    if not user_id:
+        raise HTTPException(status_code=400, detail="User ID not found")
+    
+    with memory_manager.memory_context("get_notification_settings"):
+        if supabase_client:
+            try:
+                # Query user notification preferences
+                response = supabase_client.table('user_notification_preferences').select('*').eq('user_id', user_id).execute()
+                
+                if response.data:
+                    settings_data = response.data[0]
+                    return {
+                        "user_id": user_id,
+                        "settings": {
+                            "email_enabled": settings_data.get('email_enabled', True),
+                            "sms_enabled": settings_data.get('sms_enabled', True),
+                            "push_enabled": settings_data.get('push_enabled', True),
+                            "appointment_reminders": settings_data.get('appointment_reminders', True),
+                            "promotion_alerts": settings_data.get('promotion_alerts', True),
+                            "system_notifications": settings_data.get('system_notifications', True),
+                            "created_at": settings_data.get('created_at'),
+                            "updated_at": settings_data.get('updated_at'),
+                            "data_source": "supabase_real"
+                        }
+                    }
+            except Exception as e:
+                print(f"Error fetching notification settings from Supabase: {e}")
+        
         # Return default settings
         return {
             "user_id": user_id,
@@ -170,24 +246,45 @@ async def get_notification_settings(current_user: dict = Depends(get_current_use
                 "promotion_alerts": True,
                 "system_notifications": True,
                 "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow()
+                "updated_at": datetime.utcnow(),
+                "data_source": "default"
             }
         }
-    
-    return {
-        "user_id": user_id,
-        "settings": NOTIFICATION_SETTINGS[user_id]
-    }
 
 @router.put("/settings/notifications")
 async def update_notification_settings(
     settings: NotificationSettings,
     current_user: dict = Depends(get_current_user)
 ):
-    """Update notification settings"""
+    """Update notification settings using Supabase"""
     user_id = current_user.get("user_id")
     
+    if not user_id:
+        raise HTTPException(status_code=400, detail="User ID not found")
+    
     with memory_manager.memory_context("update_notification_settings"):
+        if supabase_client:
+            try:
+                # Upsert notification preferences
+                upsert_data = {
+                    "user_id": user_id,
+                    **settings.dict(),
+                    "updated_at": datetime.utcnow().isoformat()
+                }
+                
+                response = supabase_client.table('user_notification_preferences').upsert(upsert_data).execute()
+                
+                return {
+                    "status": "updated",
+                    "user_id": user_id,
+                    "settings": upsert_data,
+                    "data_source": "supabase_real"
+                }
+            except Exception as e:
+                print(f"Error updating notification settings in Supabase: {e}")
+                # Fall back to mock storage
+        
+        # Fallback to mock storage
         NOTIFICATION_SETTINGS[user_id] = {
             **settings.dict(),
             "updated_at": datetime.utcnow()
@@ -199,7 +296,8 @@ async def update_notification_settings(
         return {
             "status": "updated",
             "user_id": user_id,
-            "settings": NOTIFICATION_SETTINGS[user_id]
+            "settings": NOTIFICATION_SETTINGS[user_id],
+            "data_source": "mock"
         }
 
 @router.put("/settings/business-hours")

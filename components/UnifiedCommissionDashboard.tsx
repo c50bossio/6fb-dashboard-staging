@@ -36,7 +36,9 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import financialService from '@/lib/financial-service'
-import { DatePicker } from '@/components/ui/date-picker'
+import { createClient } from '@/lib/supabase/client'
+
+const supabase = createClient()
 
 // Register Chart.js components
 ChartJS.register(
@@ -133,14 +135,73 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
       
       setCommissionSummary(summaryResult.data)
 
-      // TODO: Load individual barber data with tier information
-      // This would require additional API calls to get current tier assignments
+      // Load individual barber data with tier information
+      await loadBarberCommissionData(summaryResult.data)
       
     } catch (error) {
       console.error('Error loading commission data:', error)
       toast.error('Failed to load commission data')
     }
     setLoading(false)
+  }
+
+  const loadBarberCommissionData = async (summaryData) => {
+    try {
+      // Get all barbers from the commission summary
+      const allBarberIds = new Set([
+        ...Object.keys(summaryData.service_commissions.barber_breakdown || {}),
+        ...Object.keys(summaryData.product_commissions.barber_breakdown || {})
+      ])
+
+      const barberPromises = Array.from(allBarberIds).map(async (barberId) => {
+        // Get barber's tier status
+        const { data: tierStatus } = await financialService.getBarberTierStatus(barberId, barbershopId)
+        
+        // Get barber profile info
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, full_name')
+          .eq('id', barberId)
+          .single()
+
+        const serviceData = summaryData.service_commissions.barber_breakdown[barberId] || { revenue: 0, commission: 0 }
+        const productData = summaryData.product_commissions.barber_breakdown[barberId] || { revenue: 0, commission: 0 }
+        const combinedData = summaryData.combined_totals.barber_breakdown[barberId] || {
+          total_revenue: 0, total_commission: 0, service_revenue: 0, service_commission: 0,
+          product_revenue: 0, product_commission: 0
+        }
+
+        return {
+          barberId: barberId,
+          barberName: profile?.full_name || profile?.first_name + ' ' + profile?.last_name || `Barber ${barberId.slice(-4)}`,
+          serviceCommission: serviceData.commission,
+          productCommission: productData.commission,
+          totalCommission: combinedData.total_commission,
+          serviceRevenue: serviceData.revenue,
+          productRevenue: productData.revenue,
+          combinedRevenue: combinedData.total_revenue,
+          
+          // Tier information
+          tierLevel: tierStatus?.current_tier?.tier_level || 1,
+          tierName: tierStatus?.current_tier?.name || 'Starter',
+          tierProgress: tierStatus?.progressToNextTier || 0,
+          nextTierThreshold: tierStatus?.nextTierThreshold || 0,
+          currentPeriodRevenue: tierStatus?.current_period_revenue || 0,
+          projectedRevenue: tierStatus?.projected_period_revenue || 0,
+          
+          // Additional metrics
+          totalTransactions: (serviceData.count || 0) + (productData.count || 0),
+          averageTransactionValue: combinedData.total_revenue > 0 
+            ? combinedData.total_revenue / ((serviceData.count || 0) + (productData.count || 0))
+            : 0
+        }
+      })
+
+      const barberDataResults = await Promise.all(barberPromises)
+      setBarberData(barberDataResults.sort((a, b) => b.totalCommission - a.totalCommission))
+    } catch (error) {
+      console.error('Error loading barber commission data:', error)
+    }
   }
 
   const chartOptions = {
@@ -337,7 +398,11 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Barbers</SelectItem>
-                {/* Add individual barber options */}
+                {barberData.map(barber => (
+                  <SelectItem key={barber.barberId} value={barber.barberId}>
+                    {barber.barberName}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}
@@ -439,11 +504,12 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
 
       {/* Main Dashboard Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="barbers">Barber Performance</TabsTrigger>
           <TabsTrigger value="products">Product Sales</TabsTrigger>
           <TabsTrigger value="tiers">Tier Progress</TabsTrigger>
+          <TabsTrigger value="individual">Individual Details</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -710,6 +776,129 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Individual Details Tab */}
+        <TabsContent value="individual" className="space-y-6">
+          {barberData.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {(selectedBarber === 'all' ? barberData : barberData.filter(b => b.barberId === selectedBarber))
+                .map((barber) => (
+                  <Card key={barber.barberId} className="overflow-hidden">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{barber.barberName}</CardTitle>
+                          <CardDescription>
+                            Tier {barber.tierLevel}: {barber.tierName}
+                          </CardDescription>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          {Array.from({ length: barber.tierLevel }, (_, i) => (
+                            <TrendingUp key={i} className="h-4 w-4 text-yellow-400" />
+                          ))}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-4">
+                      {/* Revenue & Commission Summary */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Total Revenue</p>
+                          <p className="text-lg font-bold text-gray-900">
+                            ${barber.combinedRevenue.toLocaleString()}
+                          </p>
+                          <div className="flex items-center text-xs text-gray-500">
+                            <span className="text-blue-600">
+                              Service: ${barber.serviceRevenue.toLocaleString()}
+                            </span>
+                            <span className="mx-1">•</span>
+                            <span className="text-green-600">
+                              Product: ${barber.productRevenue.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <p className="text-sm text-gray-600">Total Commission</p>
+                          <p className="text-lg font-bold text-green-600">
+                            ${barber.totalCommission.toLocaleString()}
+                          </p>
+                          <div className="flex items-center text-xs text-gray-500">
+                            <span className="text-blue-600">
+                              Service: ${barber.serviceCommission.toLocaleString()}
+                            </span>
+                            <span className="mx-1">•</span>
+                            <span className="text-green-600">
+                              Product: ${barber.productCommission.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tier Progress */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-600">Tier Progress</span>
+                          <span className="text-sm text-gray-500">{barber.tierProgress.toFixed(1)}%</span>
+                        </div>
+                        <Progress value={barber.tierProgress} className="h-2" />
+                        {barber.nextTierThreshold > 0 && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            ${(barber.nextTierThreshold - barber.currentPeriodRevenue).toLocaleString()} to next tier
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Performance Metrics */}
+                      <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                        <div>
+                          <p className="text-xs text-gray-600">Transactions</p>
+                          <p className="font-semibold">{barber.totalTransactions}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-600">Avg Transaction</p>
+                          <p className="font-semibold">${barber.averageTransactionValue.toFixed(0)}</p>
+                        </div>
+                      </div>
+
+                      {/* Projected Performance */}
+                      {barber.projectedRevenue > 0 && (
+                        <div className="pt-2 border-t">
+                          <p className="text-xs text-gray-600 mb-1">Projected Period Revenue</p>
+                          <p className="text-sm font-medium text-blue-600">
+                            ${barber.projectedRevenue.toLocaleString()}
+                          </p>
+                          <div className="flex items-center mt-1">
+                            {barber.projectedRevenue > barber.currentPeriodRevenue ? (
+                              <ArrowUp className="h-3 w-3 text-green-500 mr-1" />
+                            ) : (
+                              <ArrowDown className="h-3 w-3 text-red-500 mr-1" />
+                            )}
+                            <span className="text-xs text-gray-500">
+                              {((barber.projectedRevenue - barber.currentPeriodRevenue) / barber.currentPeriodRevenue * 100).toFixed(1)}% vs current
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+          )}
+          
+          {barberData.length === 0 && (
+            <Card>
+              <CardContent className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Barber Data Available</h3>
+                  <p className="text-gray-500">Commission data will appear here once barbers start processing payments.</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>

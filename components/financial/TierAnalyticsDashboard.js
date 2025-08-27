@@ -15,6 +15,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/card'
 import financialService from '@/lib/financial-service'
+import { createClient } from '@/lib/supabase/client'
+
+const supabase = createClient()
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', {
@@ -58,57 +61,107 @@ export default function TierAnalyticsDashboard({ barbershopId }) {
       const { data: structure } = await financialService.getTierStructure(barbershopId)
       setTierStructure(structure)
       
-      // TODO: Implement these API calls in the financial service
-      // For now, we'll simulate the data structure
+      // Load real tier history data
+      const { data: tierHistoryData, error: tierHistoryError } = await supabase
+        .from('commission_tier_history')
+        .select(`
+          id,
+          barber_id,
+          barbershop_id,
+          tier_id,
+          period_start,
+          period_end,
+          achieved_at,
+          period_revenue,
+          period_bookings,
+          final_tier_level,
+          avg_commission_rate,
+          period_product_revenue,
+          period_product_sales,
+          combined_period_revenue
+        `)
+        .eq('barbershop_id', barbershopId)
+        .gte('achieved_at', getDateRangeStart(dateRange))
+        .order('achieved_at', { ascending: false })
+
+      if (tierHistoryError) throw tierHistoryError
       
-      // Simulate tier history data
-      const simulatedHistory = [
-        {
-          id: '1',
-          barber_id: 'barber1',
-          barbershop_id: barbershopId,
-          tier_id: 'tier2',
-          period_start: '2024-01-01',
-          period_end: '2024-01-31',
-          achieved_at: '2024-01-15',
-          period_revenue: 8500,
-          period_bookings: 85,
-          final_tier_level: 2,
-          avg_commission_rate: 60.0,
-          barber_name: 'John Doe'
-        },
-        {
-          id: '2',
-          barber_id: 'barber1', 
-          barbershop_id: barbershopId,
-          tier_id: 'tier3',
-          period_start: '2024-02-01',
-          period_end: '2024-02-29',
-          achieved_at: '2024-02-20',
-          period_revenue: 16200,
-          period_bookings: 112,
-          final_tier_level: 3,
-          avg_commission_rate: 70.0,
-          barber_name: 'John Doe'
-        }
-      ]
+      // Get barber names for the tier history
+      const barberIds = [...new Set(tierHistoryData?.map(h => h.barber_id) || [])]
+      const { data: barberProfiles } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, full_name')
+        .in('id', barberIds)
       
-      setTierHistory(simulatedHistory)
+      const barberNameMap = new Map(barberProfiles?.map(p => [
+        p.id, 
+        p.full_name || `${p.first_name} ${p.last_name}`.trim() || `Barber ${p.id.slice(-4)}`
+      ]) || [])
       
-      // Simulate staff data
-      const simulatedStaff = [
-        { id: 'barber1', name: 'John Doe', current_tier_level: 3 },
-        { id: 'barber2', name: 'Jane Smith', current_tier_level: 2 },
-        { id: 'barber3', name: 'Mike Johnson', current_tier_level: 1 }
-      ]
+      // Enrich tier history with barber names
+      const enrichedTierHistory = tierHistoryData?.map(history => ({
+        ...history,
+        barber_name: barberNameMap.get(history.barber_id) || `Barber ${history.barber_id.slice(-4)}`
+      })) || []
       
-      setStaff(simulatedStaff)
+      setTierHistory(enrichedTierHistory)
+      
+      // Load current staff with tier assignments
+      const { data: staffWithTiers, error: staffError } = await supabase
+        .from('barber_tier_assignments')
+        .select(`
+          barber_id,
+          current_tier_id,
+          current_period_revenue,
+          current_period_bookings,
+          current_period_product_revenue,
+          combined_tier_progress_amount,
+          profiles:barber_id(id, first_name, last_name, full_name),
+          current_tier:commission_tiers(tier_level, name, commission_percentage)
+        `)
+        .eq('barbershop_id', barbershopId)
+        .eq('is_active', true)
+      
+      if (staffError) throw staffError
+      
+      const enrichedStaff = staffWithTiers?.map(assignment => ({
+        id: assignment.barber_id,
+        name: assignment.profiles?.full_name || 
+               `${assignment.profiles?.first_name} ${assignment.profiles?.last_name}`.trim() || 
+               `Barber ${assignment.barber_id.slice(-4)}`,
+        current_tier_level: assignment.current_tier?.tier_level || 1,
+        current_tier_name: assignment.current_tier?.name || 'Starter',
+        current_period_revenue: assignment.current_period_revenue || 0,
+        current_period_bookings: assignment.current_period_bookings || 0,
+        current_period_product_revenue: assignment.current_period_product_revenue || 0,
+        combined_tier_progress: assignment.combined_tier_progress_amount || 0,
+        commission_rate: assignment.current_tier?.commission_percentage || 50
+      })) || []
+      
+      setStaff(enrichedStaff)
       
     } catch (err) {
       console.error('Error loading tier analytics:', err)
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+  
+  // Helper function to get date range start based on selection
+  const getDateRangeStart = (range) => {
+    const now = new Date()
+    switch (range) {
+      case '1month':
+        return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()).toISOString()
+      case '3months':
+        return new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString()
+      case '6months':
+        return new Date(now.getFullYear(), now.getMonth() - 6, now.getDate()).toISOString()
+      case '1year':
+        return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString()
+      default:
+        return new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()).toISOString()
     }
   }
   

@@ -283,13 +283,7 @@ export default function PayrollDashboard({ staff = [], metrics = {}, barbershopI
                     <tr key={member.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {getDisplayName({
-                            firstName: member.user?.firstName || member.user?.first_name,
-                            lastName: member.user?.lastName || member.user?.last_name,
-                            fullName: member.user?.fullName || member.user?.full_name,
-                            email: member.user?.email,
-                            defaultName: 'Unnamed'
-                          })}
+                          {member.display_name || member.name || 'Unnamed Staff'}
                         </div>
                         <div className="text-sm text-gray-500">{member.role}</div>
                       </td>

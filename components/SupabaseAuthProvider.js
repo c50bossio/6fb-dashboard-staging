@@ -17,52 +17,6 @@ export const useAuth = () => {
 }
 
 function SupabaseAuthProvider({ children }) {
-  // Temporary dev bypass for testing ViewSwitcher functionality
-  if (typeof window !== 'undefined' && 
-      (localStorage.getItem('dev_session') === 'true' || 
-       document.cookie.includes('dev_auth=true'))) {
-    
-    const mockUser = {
-      id: 'dev-user-123',
-      email: 'dev@localhost.com'
-    }
-    
-    const mockProfile = {
-      id: 'dev-user-123',
-      email: 'dev@localhost.com',
-      full_name: 'Dev User',
-      role: 'SHOP_OWNER',
-      subscription_tier: 'PROFESSIONAL', // Use standardized tier format
-      subscription_status: 'active',
-      shop_id: 'tomb45-channelside',
-      onboarding_completed: true
-    }
-
-    const mockValue = {
-      user: mockUser,
-      profile: mockProfile,
-      loading: false,
-      supabase: createClient(),
-      signInWithGoogle: () => Promise.resolve(),
-      signIn: () => Promise.resolve(),
-      signUp: () => Promise.resolve(),
-      resetPassword: () => Promise.resolve(),
-      signOut: () => Promise.resolve(),
-      updateProfile: () => Promise.resolve(mockProfile),
-      refreshProfile: () => Promise.resolve(true),
-      subscriptionTier: 'PROFESSIONAL',
-      userRole: 'SHOP_OWNER',
-      isIndividualBarber: false,
-      isShopOwner: true,
-      isEnterprise: false,
-      isSuperAdmin: false,
-      isEnterpriseOwner: false,
-      hasTierAccess: () => true
-    }
-    
-    return <AuthContext.Provider value={mockValue}>{children}</AuthContext.Provider>
-  }
-
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)

@@ -192,16 +192,14 @@ export default function CalendarPage() {
       localStorage.setItem('selectedView', newView)
     }
     
-    // Load data based on view type
-    if (newView === 'all-locations' || newView === 'consolidated') {
-      loadMultiLocationData()
-    }
+    // Data will be loaded automatically by FullCalendar.io event sources when view changes
+    console.log('View changed to:', newView, '- event sources will update automatically')
   }, [])
   
   const handleLocationChange = useCallback((locationIds) => {
-    
+    console.log('Location selection changed:', locationIds)
     setSelectedLocations(locationIds)
-    loadCalendarDataForLocations(locationIds)
+    // FullCalendar event sources will automatically update when dependencies change
   }, [])
   
   const handleBarbersChange = useCallback((barberIds) => {
@@ -255,8 +253,11 @@ export default function CalendarPage() {
   // Load calendar data when barbershopId is available or global selections change
   useEffect(() => {
     if (globalSelectedLocations.length > 0) {
-      // Use global context selections
-      loadCalendarDataForLocations(globalSelectedLocations)
+      // Use global context selections AND load staff resources
+      setSelectedLocations(globalSelectedLocations)
+      console.log('Using global location selections:', globalSelectedLocations)
+      // Still need to load calendar data (staff resources) for the selected location
+      loadCalendarData()
     } else if (barbershopId) {
       // Fallback to barbershopId if no global selections
       loadCalendarData()
@@ -271,16 +272,33 @@ export default function CalendarPage() {
     
     try {
       // Load barbers using unified staff service and regular services
+      // Use the selected location from global context or fall back to the real Tomb45 ID
+      const locationId = globalSelectedLocations?.[0] || barbershopId || '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
+      console.log('📍 Calendar loading staff for location:', locationId)
+      
       const [staffResponse, servicesData] = await Promise.all([
-        unifiedStaffService.getStaff(barbershopId, { useCache: true, includeAvailability: false }),
+        unifiedStaffService.getStaff(locationId, { 
+          useCache: true, 
+          includeAvailability: false,
+          includeServices: false,
+          forceRefresh: false
+        }),
         fetchServices()
       ])
 
-      if (staffResponse?.success && staffResponse?.staff?.length > 0) {
+      console.log('📊 Staff response from unified service:', {
+        hasData: !!staffResponse,
+        staffCount: staffResponse?.staff?.length || 0,
+        count: staffResponse?.count || 0,
+        source: staffResponse?.source
+      })
+
+      // Unified staff service returns data directly, not wrapped in success
+      if (staffResponse?.staff && staffResponse.staff.length > 0) {
         // Transform staff data to calendar resource format
         const barbersData = staffResponse.staff.map(staff => ({
-          id: staff.id,
-          title: staff.name || staff.full_name || 'Barber',
+          id: staff.user_id || staff.id,
+          title: staff.display_name || staff.name || staff.full_name || 'Barber',
           eventColor: staff.calendar_color || '#546355',
           extendedProps: {
             email: staff.email,
@@ -291,14 +309,11 @@ export default function CalendarPage() {
           }
         }))
         
+        console.log('✅ Calendar: Setting resources for', barbersData.length, 'barbers')
         setResources(barbersData)
         generateQuickLinks(barbersData)
         
-        // Cache invalidation handler for staff updates
-        unifiedStaffService.onStaffUpdate(() => {
-          
-          loadCalendarData()
-        })
+        // Remove invalid onStaffUpdate handler (doesn't exist)
       } else {
         console.warn('📅 No staff found, showing empty state')
         setResources(EMPTY_BARBER_PLACEHOLDER)
@@ -309,48 +324,121 @@ export default function CalendarPage() {
     }
   }
   
-  // Load multi-location calendar data
-  const loadMultiLocationData = async () => {
-    try {
-      const response = await fetch('/api/calendar/multi-location-events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.access_token || ''}`
-        },
-        body: JSON.stringify({
-          locationIds: selectedLocations,
-          barberIds: selectedBarbers,
-          viewType: selectedView,
-          startDate: new Date().toISOString().split('T')[0],
-          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  // Create FullCalendar.io event sources following best practices
+  const createEventSources = useMemo(() => {
+    const eventSources = []
+    
+    if (selectedView === 'all-locations' || selectedView === 'consolidated') {
+      // Multi-location view with proper FullCalendar event source pattern
+      if (selectedLocations && selectedLocations.length > 0) {
+        eventSources.push({
+          url: '/api/calendar/events',
+          method: 'GET',
+          extraParams: function() {
+            return {
+              location_ids: selectedLocations.join(','),
+              // FullCalendar automatically adds start, end, timeZone parameters
+            }
+          },
+          success: function(events) {
+            console.log(`Loaded ${events.length} multi-location events`)
+            return events
+          },
+          failure: function(error) {
+            console.error('Multi-location event source failed:', error)
+            
+            // Production-ready error classification
+            let userMessage = 'Failed to load calendar events. Please refresh the page.'
+            let duration = 5000
+            
+            if (error.response?.status === 401) {
+              userMessage = 'Your session has expired. Please log in again.'
+              duration = 10000
+            } else if (error.response?.status === 403) {
+              userMessage = 'You do not have permission to view these calendar events.'
+              duration = 8000
+            } else if (error.response?.status === 429) {
+              userMessage = 'Too many requests. Please wait a moment and try again.'
+              duration = 6000
+            } else if (error.response?.status >= 500) {
+              userMessage = 'Server is temporarily unavailable. Please try again in a few moments.'
+              duration = 8000
+            } else if (error.message?.includes('Network Error')) {
+              userMessage = 'Network connection issue. Please check your internet connection.'
+              duration = 10000
+            }
+            
+            showError(userMessage, {
+              title: 'Calendar Error',
+              duration,
+              action: error.response?.status === 401 ? 'login' : 'retry'
+            })
+            return []
+          }
         })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setEvents(data.events || [])
-        
       }
-    } catch (error) {
-      console.error('Error loading multi-location data:', error)
-    }
-  }
-  
-  // Load calendar data for specific locations
-  const loadCalendarDataForLocations = async (locationIds) => {
-    if (!locationIds || locationIds.length === 0) {
-      setResources([])
-      setEvents([])
-      return
+    } else {
+      // Single location view with proper FullCalendar event source pattern
+      if (barbershopId) {
+        eventSources.push({
+          url: '/api/calendar/events', 
+          method: 'GET',
+          extraParams: function() {
+            return {
+              shop_id: barbershopId,
+              // FullCalendar automatically adds start, end, timeZone parameters
+            }
+          },
+          success: function(events) {
+            console.log(`Loaded ${events.length} single-location events`)
+            return events
+          },
+          failure: function(error) {
+            console.error('Single-location event source failed:', error)
+            
+            // Production-ready error classification
+            let userMessage = 'Failed to load calendar events. Please refresh the page.'
+            let duration = 5000
+            
+            if (error.response?.status === 401) {
+              userMessage = 'Your session has expired. Please log in again.'
+              duration = 10000
+            } else if (error.response?.status === 403) {
+              userMessage = 'You do not have permission to view these calendar events.'
+              duration = 8000
+            } else if (error.response?.status === 429) {
+              userMessage = 'Too many requests. Please wait a moment and try again.'
+              duration = 6000
+            } else if (error.response?.status >= 500) {
+              userMessage = 'Server is temporarily unavailable. Please try again in a few moments.'
+              duration = 8000
+            } else if (error.message?.includes('Network Error')) {
+              userMessage = 'Network connection issue. Please check your internet connection.'
+              duration = 10000
+            }
+            
+            showError(userMessage, {
+              title: 'Calendar Error',
+              duration,
+              action: error.response?.status === 401 ? 'login' : 'retry'
+            })
+            return []
+          }
+        })
+      }
     }
     
-    try {
-      // Use barbers from global context if available
+    return eventSources
+  }, [selectedView, selectedLocations, barbershopId, showError])
+  
+  // Create FullCalendar.io resources following best practices  
+  const createResources = useMemo(() => {
+    if (selectedView === 'all-locations' || selectedView === 'consolidated') {
+      // Multi-location resources
       if (globalAvailableBarbers.length > 0) {
         // Filter barbers for selected locations
         let barbersToShow = globalAvailableBarbers.filter(b => 
-          locationIds.includes(b.barbershop_id)
+          selectedLocations.includes(b.barbershop_id)
         )
         
         // Further filter by selected barbers if any
@@ -360,41 +448,38 @@ export default function CalendarPage() {
           )
         }
         
-        // Transform to calendar resource format
-        const calendarResources = barbersToShow.map(barber => ({
+        // Transform to FullCalendar resource format
+        return barbersToShow.map(barber => ({
           id: barber.id,
           title: barber.name,
           businessHours: {
             daysOfWeek: [1, 2, 3, 4, 5, 6],
             startTime: '09:00',
             endTime: '18:00'
+          },
+          extendedProps: {
+            locationId: barber.barbershop_id,
+            email: barber.email,
+            phone: barber.phone,
+            specialties: barber.specialties || [],
+            isActive: barber.is_active !== false
           }
         }))
-        
-        setResources(calendarResources)
-      } else {
-        // Fallback to fetching barbers
-        const response = await fetch('/api/calendar/location-barbers', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user?.access_token || ''}`
-          },
-          body: JSON.stringify({ locationIds })
-        })
-        
-        if (response.ok) {
-          const data = await response.json()
-          setResources(data.barbers || [])
-        }
       }
-      
-      // Then fetch events for these locations and barbers
-      await loadMultiLocationData()
-    } catch (error) {
-      console.error('Error loading location data:', error)
+    } else {
+      // Single location resources
+      return resources.map(resource => ({
+        ...resource,
+        businessHours: {
+          daysOfWeek: [1, 2, 3, 4, 5, 6],
+          startTime: '09:00',
+          endTime: '18:00'
+        }
+      }))
     }
-  }
+    
+    return []
+  }, [selectedView, selectedLocations, globalAvailableBarbers, globalSelectedBarbers, resources])
   
   // Apply filters to calendar events
   const applyFiltersToEvents = (filters) => {
@@ -474,7 +559,8 @@ export default function CalendarPage() {
   }
 
   useEffect(() => {
-     ? realtimeAppointments.length : 'not array',
+    console.log('Calendar useEffect - Realtime data:', {
+      appointmentsCount: Array.isArray(realtimeAppointments) ? realtimeAppointments.length : 'not array',
       isConnected: realtimeHookConnected,
       lastUpdate: lastUpdate,
       timestamp: new Date().toISOString()
@@ -493,21 +579,20 @@ export default function CalendarPage() {
       const newIds = new Set(realtimeAppointments.map(apt => apt.id))
       setAppointmentIds(newIds)
     } else if (!realtimeLoading && (!realtimeAppointments || realtimeAppointments.length === 0)) {
-      
-      fetchRealAppointments()
+      // FullCalendar.io event sources will handle data fetching automatically
+      console.log('Realtime appointments not available, relying on FullCalendar event sources')
     }
   }, [realtimeAppointments, realtimeHookConnected, lastUpdate]) // Removed .length to prevent infinite loops
   
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (events.length === 0 && !realtimeLoading) {
-        
-        fetchRealAppointments()
-      }
-    }, 5000) // Increased to 5 seconds to give real-time more time
-    
-    return () => clearTimeout(timer)
-  }, [events.length, realtimeLoading, realtimeConnected])
+    // FullCalendar.io event sources handle data fetching automatically
+    // No manual API calls needed - event sources will refresh when dependencies change
+    if (createEventSources.length === 0 && barbershopId) {
+      console.log('No event sources configured yet, waiting for proper barbershop context')
+    } else if (createEventSources.length > 0) {
+      console.log(`FullCalendar configured with ${createEventSources.length} event source(s)`)
+    }
+  }, [createEventSources, barbershopId])
   
   useEffect(() => {
     if (resources.length > 0) {
@@ -515,72 +600,48 @@ export default function CalendarPage() {
     }
   }, [resources])
 
-  const fetchRealAppointments = async () => {
-    .toISOString())
-
-    try {
-      const params = new URLSearchParams()
-      const now = new Date()
-      const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-      
-      params.append('start_date', now.toISOString())
-      params.append('end_date', oneWeekFromNow.toISOString())
-      // 🚨 CRITICAL FIX: Add shop_id parameter to prevent getting entire database
-      if (!barbershopId) {
-        console.error('No barbershop ID available for calendar')
-        return
-      }
-      params.append('shop_id', barbershopId)
-
-      const apiUrl = `/api/calendar/appointments?${params.toString()}`
-
-      const response = await fetch(apiUrl)
-
-      const result = await response.json()
-      ,
-        firstAppointment: result.appointments?.[0] || 'none',
-        cancelledCount: result.appointments?.filter(apt => apt.extendedProps?.status === 'cancelled').length || 0,
-        fullResult: result
-      })
-      
-      if (response.ok && result.appointments?.length) {
-        const combined = [...events, ...result.appointments]
-        const uniqueAppointments = deduplicateAppointments(combined)
-        
-        .length,
-          optimisticCount: uniqueAppointments.filter(apt => apt.extendedProps?.isOptimistic).length
-        })
-        
-        setEvents(uniqueAppointments)
-
-        const newIds = new Set(uniqueAppointments.map(apt => apt.id))
-        setAppointmentIds(newIds)
-      } else {
-        setEvents([])
-      }
-    } catch (error) {
-      console.error('❌ DEBUG: Error fetching appointments:', error)
-      setEvents([])
-    }
-  }
-
-  const handleAutoRefresh = async () => {
-    ')
-    await fetchRealAppointments()
-  }
+  // Auto-refresh handler for FullCalendar.io event sources
+  const handleAutoRefresh = useCallback(() => {
+    console.log('Auto-refreshing calendar - FullCalendar event sources will refetch automatically')
+    // FullCalendar.io will automatically refetch when event sources change
+    // We can trigger a refetch by updating the dependency that eventSources depends on
+    const timestamp = new Date().getTime()
+    setLastUpdate(timestamp)
+    console.log('Calendar refresh triggered at:', new Date(timestamp).toLocaleTimeString())
+  }, [])
 
   const fetchServices = async () => {
     try {
       const response = await fetch('/api/calendar/services')
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`Services API Error ${response.status}:`, errorText)
+        
+        if (response.status === 404) {
+          console.log('Services endpoint not found, using default services')
+        } else if (response.status === 500) {
+          console.error('Services API server error - check backend logs')
+        }
+        
+        setServices(DEFAULT_SERVICES)
+        return
+      }
+
       const result = await response.json()
 
-      if (response.ok && result.services?.length) {
+      if (result.services?.length) {
+        console.log(`Loaded ${result.services.length} services from API`)
         setServices(result.services)
       } else {
+        console.log('No services returned from API, using defaults')
         setServices(DEFAULT_SERVICES)
       }
     } catch (error) {
       console.error('Error fetching services:', error)
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error('Network error - check if backend is running')
+      }
       setServices(DEFAULT_SERVICES)
     }
   }
@@ -650,6 +711,14 @@ export default function CalendarPage() {
         }
       } catch (error) {
         console.error('Error loading user locations:', error)
+        
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          console.error('Network error loading locations')
+        } else {
+          console.error('Location API error:', error.message)
+        }
+        
+        setUserLocations([])
       }
     }
     
@@ -732,34 +801,17 @@ export default function CalendarPage() {
     return filteredResult
   }, [events, realtimeAppointments, searchTerm, selectedLocations, selectedBarbers, advancedFilters])
   
-  const filteredResources = useMemo(() => {
-    let filtered = resources
-    
-    // Filter by selected locations
-    if (selectedLocations.length > 0) {
-      filtered = filtered.filter(resource => 
-        selectedLocations.includes(resource.extendedProps?.locationId)
-      )
-    }
-    
-    // Filter by selected barbers
-    if (selectedBarbers.length > 0) {
-      filtered = filtered.filter(resource => 
-        selectedBarbers.includes(resource.id)
-      )
-    }
-    
-    return filtered
-  }, [resources, selectedLocations, selectedBarbers])
+  // Filtering is now handled by createResources useMemo - no separate filteredResources needed
   
   useEffect(() => {
     if (filterLocation !== 'all' && filterBarber !== 'all') {
-      const isBarberInLocation = filteredResources.some(resource => resource.id === filterBarber)
+      const currentResources = createResources
+      const isBarberInLocation = currentResources.some(resource => resource.id === filterBarber)
       if (!isBarberInLocation) {
         setFilterBarber('all')
       }
     }
-  }, [filterLocation, filterBarber, filteredResources])
+  }, [filterLocation, filterBarber, createResources])
   
   const uniqueServices = useMemo(() => {
     const services = new Set()
@@ -959,7 +1011,8 @@ export default function CalendarPage() {
     const durationMinutes = appointmentData.duration_minutes || 60
     const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
     
-    ,
+    console.log('Appointment timing:', {
+      startTime: startDate.toLocaleTimeString(),
       endTime: endDate.toLocaleTimeString()
     })
     
@@ -1567,8 +1620,8 @@ export default function CalendarPage() {
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
           <ProfessionalCalendar
-            resources={selectedView?.includes('resource') ? filteredResources : undefined} // Only use resources for resource views
-            events={filteredEvents} // Use filtered events
+            resources={currentCalendarView?.includes('resource') ? createResources : undefined} // Use production-ready resources for resource views
+            eventSources={createEventSources} // Use FullCalendar.io native event sources with error handling
             currentView={currentCalendarView}
             onViewChange={(view) => setCurrentCalendarView(view)}
             onEventClick={handleEventClick}
@@ -1877,7 +1930,7 @@ export default function CalendarPage() {
           {/* Action Buttons */}
           <div className="flex items-center space-x-3 mt-4 pt-3 border-t border-gray-700">
             <button
-              onClick={() => }
+              onClick={() => console.log('Full Calendar Diagnostics:', { events, resources, realtimeConnected, lastUpdate })}
               className="px-3 py-1 bg-olive-600 hover:bg-olive-700 rounded text-xs"
             >
               Log Full Diagnostics

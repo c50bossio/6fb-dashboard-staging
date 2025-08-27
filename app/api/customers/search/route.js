@@ -28,25 +28,32 @@ export async function GET(request) {
       })
     }
 
-    const { data: customers, error } = await supabase
+    // Build the query step by step like the main customers API
+    let searchQuery = supabase
       .from('customers')
       .select(`
         id,
         name,
         phone,
         email,
-        updated_at as last_visit_at,
+        last_visit_at,
         total_visits,
         preferences,
         vip_status
       `)
-      .eq('shop_id', barbershopId)
+      .or(`shop_id.eq.${barbershopId},barbershop_id.eq.${barbershopId}`)
       .eq('is_active', true)
-      .or(`name.ilike.%${query}%,phone.ilike.%${query}%,email.ilike.%${query}%`)
-      .order('last_visit_at', { ascending: false })
-      .limit(limit)
+    
+    // Add search filter conditionally
+    searchQuery = searchQuery.or(`name.ilike.%${query}%,phone.ilike.%${query}%,email.ilike.%${query}%`)
+    
+    // Apply ordering and limit
+    searchQuery = searchQuery.order('last_visit_at', { ascending: false }).limit(limit)
+
+    const { data: customers, error } = await searchQuery
 
     if (error) {
+      console.error('Customer search error:', error)
       if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
         return NextResponse.json({
           customers: [],
@@ -114,14 +121,14 @@ export async function POST(request) {
         name,
         phone,
         email,
-        updated_at as last_visit_at,
+        last_visit_at,
         total_visits,
         preferences,
         notes,
         notification_preferences,
         vip_status
       `)
-      .eq('shop_id', barbershop_id)
+      .or(`shop_id.eq.${barbershop_id},barbershop_id.eq.${barbershop_id}`)
       .eq('is_active', true)
 
     if (phone && email) {

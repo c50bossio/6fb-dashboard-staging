@@ -132,11 +132,6 @@ export async function POST(request) {
     // Generate next steps
     importResults.nextSteps = generateNextSteps(importResults.summary, importResults.warnings)
 
-    // Log final results for debugging
-    .reduce((a, b) => a + b, 0),
-      success: importResults.success
-    })
-
     return NextResponse.json(importResults)
 
   } catch (error) {
