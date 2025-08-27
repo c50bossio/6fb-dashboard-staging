@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import LoadingSpinner from './LoadingSpinner'
 import { useAuth } from './SupabaseAuthProvider'
 
@@ -20,20 +20,41 @@ export default function TierProtection({
 }) {
   const { profile, loading, hasTierAccess } = useAuth()
   const router = useRouter()
+  const [timeoutReached, setTimeoutReached] = useState(false)
+
+  // Set a timeout for loading state to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn('TierProtection: Loading timeout reached, proceeding anyway')
+        setTimeoutReached(true)
+      }
+    }, 5000) // 5 second timeout
+    
+    return () => clearTimeout(timeout)
+  }, [loading])
 
   useEffect(() => {
     if (!loading && profile) {
+      // Check if user has enterprise_owner role (highest access)
+      const isEnterpriseOwner = profile.role === 'enterprise_owner' || profile.role === 'ENTERPRISE_OWNER'
+      
+      // Enterprise owners have access to everything
+      if (isEnterpriseOwner) {
+        return
+      }
+      
       const hasAccess = hasTierAccess(requiredTier)
       
       if (!hasAccess) {
-        console.log(`Access denied: User tier ${profile.subscription_tier} cannot access ${requiredTier} features`)
+        console.log(`Access denied: User tier ${profile.subscription_tier} (role: ${profile.role}) cannot access ${requiredTier} features`)
         router.push(`${redirectTo}?required=${requiredTier}`)
       }
     }
   }, [profile, loading, requiredTier, hasTierAccess, router, redirectTo])
 
-  // Show loading while checking auth
-  if (loading) {
+  // Show loading while checking auth (unless timeout reached)
+  if (loading && !timeoutReached) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex items-center justify-center min-h-screen">
@@ -46,22 +67,46 @@ export default function TierProtection({
     )
   }
 
-  // If no profile or no access, show loading (redirect will happen)
-  if (!profile || !hasTierAccess(requiredTier)) {
+  // If timeout reached or we have a profile, check access
+  if (profile) {
+    // Enterprise owners always have access
+    const isEnterpriseOwner = profile.role === 'enterprise_owner' || profile.role === 'ENTERPRISE_OWNER'
+    
+    if (isEnterpriseOwner || hasTierAccess(requiredTier)) {
+      return <>{children}</>
+    }
+  }
+
+  // If no profile after loading or timeout, show subscription check
+  if (!profile && (timeoutReached || !loading)) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <LoadingSpinner size="large" />
             <p className="mt-4 text-gray-600">Checking subscription...</p>
+            {timeoutReached && (
+              <p className="mt-2 text-xs text-red-500">
+                Loading timeout - if this persists, please refresh the page
+              </p>
+            )}
           </div>
         </div>
       </div>
     )
   }
 
-  // Access granted
-  return <>{children}</>
+  // Default loading state
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LoadingSpinner size="large" />
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 /**

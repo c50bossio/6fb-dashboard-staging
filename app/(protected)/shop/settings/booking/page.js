@@ -101,8 +101,10 @@ export default function BookingRulesPage() {
   const hasAccess = isDev || (profile?.role && authorizedRoles.includes(profile.role))
 
   useEffect(() => {
-    loadBookingRules()
-  }, [user?.id, isDev])
+    if (profile?.id) {
+      loadBookingRules()
+    }
+  }, [profile?.id, isDev])
 
   // Check if user has complex benefits setup and should use advanced mode
   useEffect(() => {
@@ -228,8 +230,15 @@ export default function BookingRulesPage() {
   }
 
   const loadBookingRules = async () => {
-    // Skip loading in dev mode
-    if (isDev) {
+    // Skip loading in dev mode or if running on localhost (auto-detected dev mode)
+    const isLocalhost = typeof window !== 'undefined' && (
+      window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.includes('192.168.') ||
+      window.location.port === '9999'
+    )
+    
+    if (isDev || isLocalhost) {
       setLoading(false)
       setBarbershopId('mock-barbershop-id')
       setBookingRules({})
@@ -237,7 +246,7 @@ export default function BookingRulesPage() {
       return
     }
     
-    if (!user) return
+    if (!user || !profile) return
     
     // Don't reload if already loading or saving
     if (loading || saving) return

@@ -16,36 +16,51 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
   
   const loadBarbers = async () => {
     try {
-      // First try to load real barbers from database  
-      const response = await fetch(`/api/staff`)
+      // First try to load real barbers from authenticated endpoint
+      let response = await fetch(`/api/staff`)
+      let data = null
       
       if (response.ok) {
-        const data = await response.json()
-        if (data.staff && data.staff.length > 0) {
-          // Transform staff data to match barber component expectations
-          const transformedBarbers = data.staff.map(staff => ({
-            id: staff.user_id,
-            name: staff.display_name || staff.full_name,
-            title: staff.role === 'OWNER' ? 'Owner/Master Barber' : 'Barber',
-            experience: '5+ years', // Default since we don't have this data
-            rating: 4.8, // Default
-            reviewCount: 0, // Default
-            image: staff.avatar_url || null,
-            specialties: ['Haircuts', 'Styling'], // Default
-            availability: 'Available today',
-            nextAvailable: '2:00 PM', // Default
-            bio: `Professional ${staff.role.toLowerCase()} providing quality service`,
-            services: [], // Will be populated separately if needed
-            stats: {
-              completedCuts: 0,
-              repeatClients: 85,
-              responseTime: '5 min'
-            }
-          }))
-          setBarbers(transformedBarbers)
-          setLoading(false)
-          return
+        data = await response.json()
+      } else if (response.status === 401) {
+        // User not authenticated, try public endpoint
+        // Need to get barbershop ID from booking data or URL
+        const urlParams = new URLSearchParams(window.location.search)
+        const barbershopId = bookingData.location?.id || urlParams.get('shop_id') || urlParams.get('barbershop_id')
+        
+        if (barbershopId) {
+          console.log('Using public endpoint for barbershop:', barbershopId)
+          response = await fetch(`/api/public/barbershop/${barbershopId}/barbers`)
+          if (response.ok) {
+            data = await response.json()
+          }
         }
+      }
+      
+      if (data && data.staff && data.staff.length > 0) {
+        // Transform staff data to match barber component expectations
+        const transformedBarbers = data.staff.map(staff => ({
+          id: staff.user_id || staff.id,
+          name: staff.display_name || staff.full_name || staff.name,
+          title: staff.title || (staff.role === 'OWNER' ? 'Owner/Master Barber' : 'Barber'),
+          experience: staff.experience || '5+ years',
+          rating: staff.rating || 4.8,
+          reviewCount: staff.reviewCount || 0,
+          image: staff.avatar_url || staff.image || null,
+          specialties: staff.specialties || ['Haircuts', 'Styling'],
+          availability: staff.availability || 'Available today',
+          nextAvailable: staff.nextAvailable || '2:00 PM',
+          bio: staff.bio || `Professional ${(staff.role || 'barber').toLowerCase()} providing quality service`,
+          services: staff.services || [],
+          stats: staff.stats || {
+            completedCuts: 0,
+            repeatClients: 85,
+            responseTime: '5 min'
+          }
+        }))
+        setBarbers(transformedBarbers)
+        setLoading(false)
+        return
       }
       
       // Fallback to mock data if no real barbers found
