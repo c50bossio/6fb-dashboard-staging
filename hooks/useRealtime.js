@@ -182,7 +182,7 @@ export const useRealtime = () => {
       if (connectionAttempts.current < maxRetries) {
         const retryDelay = Math.pow(2, connectionAttempts.current) * 1000
         setTimeout(() => {
-          ...`)
+          console.log(`Retrying connection in ${retryDelay}ms...`)
           connect()
         }, retryDelay)
       }

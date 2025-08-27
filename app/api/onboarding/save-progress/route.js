@@ -277,7 +277,6 @@ export async function GET(request) {
 
     // Calculate the next step based on completed steps
     const completedStepNames = new Set((progress || []).map(p => p.step_name))
-    )
     
     const stepOrder = ['business', 'schedule', 'services', 'staff', 'financial', 'booking', 'branding']
     
@@ -292,7 +291,7 @@ export async function GET(request) {
 
     // Use calculated step if it's more advanced than stored step, otherwise use stored step
     const currentStep = Math.max(profile?.onboarding_step || 0, calculatedCurrentStep)
-    :', currentStep)
+    console.log('Current onboarding step:', currentStep)
     
     const combinedData = {
       completed: profile?.onboarding_completed || false,

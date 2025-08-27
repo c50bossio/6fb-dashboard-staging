@@ -17,7 +17,8 @@ export async function POST(request) {
     // Log the exact request we're making
     const apiUrl = 'https://inventory.dearsystems.com/externalapi/me'
     
-     + '...',
+    console.log('CIN7 Request headers:', {
+      'api-auth-accountid': accountId.substring(0, 8) + '...',
       'api-auth-applicationkey': apiKey.substring(0, 8) + '...',
       'Accept': 'application/json',
       'Content-Type': 'application/json'
@@ -37,8 +38,10 @@ export async function POST(request) {
     
     const responseText = await response.text()
 
-    ))
-    :', responseText.substring(0, 200))
+    console.log('CIN7 Response:', {
+      status: response.status,
+      text: responseText.substring(0, 200)
+    })
     
     if (response.status === 403 && responseText.includes('Incorrect credentials')) {
       console.error('❌ Cin7 authentication failed - incorrect credentials')

@@ -20,7 +20,8 @@ export async function POST(request) {
     const webhookData = Object.fromEntries(formData.entries())
     
     // Log webhook for debugging
-    .toISOString()
+    console.log('Twilio webhook received:', {
+      timestamp: new Date().toISOString()
     })
 
     // Handle SMS status updates
@@ -143,7 +144,7 @@ async function handleIncomingSMS(webhookData) {
     // Check if this is a reply to a specific campaign
     await processCampaignReply(cleanPhone, messageBody, messageSid)
 
-    }...`)
+    console.log(`Processed incoming SMS from ${cleanPhone.substring(0, 6)}...`)
 
   } catch (error) {
     console.error('Error handling incoming SMS:', error)

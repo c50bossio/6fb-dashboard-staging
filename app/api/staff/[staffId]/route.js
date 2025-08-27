@@ -169,7 +169,8 @@ export async function PUT(request, { params }) {
       if (body.phone !== undefined) profileUpdate.phone = body.phone
       if (body.email !== undefined) profileUpdate.email = body.email
 
-      // ,
+      console.log('Profile update data:', {
+        profileUpdate,
         hasUpdates: Object.keys(profileUpdate).length > 0
       })
 
@@ -218,7 +219,7 @@ export async function PUT(request, { params }) {
       // 
 
       if (profileError) {
-        // console.error('🚨 [STAFF PROFILE PUT] Profile update failed:', {
+        console.error('🚨 [STAFF PROFILE PUT] Profile update failed:', {
           error: profileError,
           staffId: params.staffId,
           userId: updatedStaff.user_id,
@@ -236,7 +237,7 @@ export async function PUT(request, { params }) {
         }, { status: 500 })
       }
 
-      // ,
+      console.log('Profile update successful:', {
         profileData
       })
       
@@ -340,7 +341,7 @@ export async function PATCH(request, { params }) {
 
     // AUTHORIZATION: Verify user owns the barbershop
     if (barbershop.owner_id !== user.id) {
-      // console.warn('⚠️ [API ROUTE] Unauthorized access attempt:', {
+      console.warn('⚠️ [API ROUTE] Unauthorized access attempt:', {
         requestingUser: user.id,
         barbershopOwner: barbershop.owner_id,
         targetStaff: userId
@@ -424,7 +425,8 @@ export async function PATCH(request, { params }) {
     if (body.phone !== undefined) profileUpdates.phone = body.phone
     if (body.email !== undefined) profileUpdates.email = body.email
 
-    // .length > 0,
+    console.log('Profile updates to apply:', {
+      hasUpdates: Object.keys(profileUpdates).length > 0,
       updates: profileUpdates,
       originalRequestBody: {
         first_name: body.first_name,
@@ -437,8 +439,7 @@ export async function PATCH(request, { params }) {
     })
 
     if (Object.keys(profileUpdates).length > 0) {
-      // 
-      })
+      console.log('Applying profile updates:', profileUpdates)
 
       // Use service client for profile updates to bypass RLS restrictions
       // Shop owners are authorized to update their staff's profile information
@@ -482,7 +483,7 @@ export async function PATCH(request, { params }) {
       // 
 
       if (profileError) {
-        // console.error('🚨 [STAFF PROFILE UPDATE] Profile update failed:', {
+        console.error('🚨 [STAFF PROFILE UPDATE] Profile update failed:', {
           error: profileError,
           errorDetails: {
             message: profileError.message,
@@ -511,7 +512,7 @@ export async function PATCH(request, { params }) {
         }, { status: 500 })
       }
 
-      // ,
+      console.log('Profile update successful:', {
         profileData
       })
       

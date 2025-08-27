@@ -61,8 +61,7 @@ export async function GET(request) {
         cache_hit: true
       }
       
-      // // Debug log removed for production
-`)
+      console.log(`Using cached client-care results for barbershop ${barbershopId}`)
       return NextResponse.json(cachedResults)
     }
 

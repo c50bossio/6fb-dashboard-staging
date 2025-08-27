@@ -88,6 +88,7 @@
     "@google/generative-ai": "^0.24.1",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
+    "@hookform/resolvers": "^5.2.1",
     "@next/bundle-analyzer": "^14.0.3",
     "@playwright/test": "^1.40.0",
     "@radix-ui/react-alert-dialog": "^1.0.5",
@@ -149,7 +150,7 @@
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.8.0",
     "uuid": "^11.1.0",
-    "zod": "^3.22.4"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@babel/core": "^7.23.3",

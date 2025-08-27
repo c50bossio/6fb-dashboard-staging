@@ -53,8 +53,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
     
-    // // Debug log removed for production
-.substring(0, 500))
+    console.log('CIN7 Webhook payload:', JSON.stringify(body).substring(0, 500))
     
     // Verify webhook signature (if configured)
     const webhookSecret = process.env.CIN7_WEBHOOK_SECRET

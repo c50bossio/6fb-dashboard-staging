@@ -39,7 +39,7 @@ export async function POST(request) {
       inv => {
         const hasToken = inv.metadata?.invitation_token === token
         if (inv.metadata?.invitation_token) {
-           + '...', 'Match:', hasToken)
+          console.log('Token:', inv.metadata.invitation_token.substring(0, 8) + '...', 'Match:', hasToken)
         }
         return hasToken
       }

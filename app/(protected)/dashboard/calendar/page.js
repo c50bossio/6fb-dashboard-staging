@@ -1003,8 +1003,8 @@ setServices(DEFAULT_SERVICES)
     const durationMinutes = appointmentData.duration_minutes || 60
     const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
     
-    // // Debug log removed for production
-,
+    console.log('Optimistic appointment:', {
+      startTime: startDate.toLocaleTimeString(),
       endTime: endDate.toLocaleTimeString()
     })
     
@@ -1922,8 +1922,7 @@ setServices(DEFAULT_SERVICES)
           {/* Action Buttons */}
           <div className="flex items-center space-x-3 mt-4 pt-3 border-t border-gray-700">
             <button
-              onClick={() => // // Debug log removed for production
-}
+              onClick={() => console.log('Full diagnostics clicked')}
               className="px-3 py-1 bg-olive-600 hover:bg-olive-700 rounded text-xs"
             >
               Log Full Diagnostics

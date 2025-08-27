@@ -1035,14 +1035,14 @@ async function handlePaymentIntentSucceeded(paymentIntent) {
     const productSaleResult = await handleProductSalePayment(paymentIntent, supabase)
     
     if (productSaleResult.success && productSaleResult.reason !== 'no_product_sale') {
-      `)
+      console.log(`Product sale commission processed successfully`)
     }
 
     // Calculate and record service commission if financial arrangement exists
     const commissionResult = await processCommissionCalculation(paymentIntent, supabase)
     
     if (commissionResult.success) {
-      `)
+      console.log(`Commission processed successfully`)
       
       // Update booking metadata with commission info
       const commissionMetadata = {
@@ -1241,7 +1241,7 @@ async function processCommissionCalculation(paymentIntent, supabase) {
         tierInfo = tierCalculation.tierInfo
         tierBonus = tierCalculation.tierInfo?.tierBonus || 0
         
-        `)
+        console.log(`Using tier-based commission calculation`)
       } else {
         console.warn(`⚠️ Tier calculation failed, falling back to standard: ${tierCalculation.error}`)
         // Fall through to standard calculation
@@ -1382,7 +1382,7 @@ async function processCommissionCalculation(paymentIntent, supabase) {
       })
       .eq('id', arrangementId)
 
-    `)
+    console.log(`Updated arrangement totals for arrangement ${arrangementId}`)
 
     // Update tier progress if tier system is active
     if (tierInfo) {
@@ -1420,10 +1420,7 @@ async function calculateTieredCommissionWebhook(amount, barberId, barbershopId, 
     // Get barber's current tier assignment
     const { data: tierAssignment } = await supabase
       .from('barber_tier_assignments')
-      .select(`
-        *,
-        current_tier:commission_tiers(*)
-      `)
+      .select('*')
       .eq('barber_id', barberId)
       .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
@@ -1432,6 +1429,13 @@ async function calculateTieredCommissionWebhook(amount, barberId, barbershopId, 
     if (!tierAssignment) {
       return { success: false, error: 'No tier assignment found' }
     }
+
+    // Fetch the current tier details separately
+    const { data: currentTier } = await supabase
+      .from('commission_tiers')
+      .select('*')
+      .eq('id', tierAssignment.current_tier_id)
+      .single()
 
     // Calculate what the new revenue will be after this transaction
     const projectedRevenue = tierAssignment.current_period_revenue + amount
@@ -1561,10 +1565,11 @@ async function updateBarberTierProgressWebhook(barberId, barbershopId, transacti
           avg_commission_rate: tierInfo.applicableTier.commission_percentage
         })
 
-      `)
+      console.log(`Tier commission calculated successfully`)
     }
 
-    }%)`)
+    console.log(`Commission processed: ${(commissionAmount / 100).toFixed(2)}`)
+    console.log(`Arrangement type: ${arrangement.type} (${arrangement.percentage * 100}%)`)
     
   } catch (error) {
     console.error('Error updating barber tier progress:', error)

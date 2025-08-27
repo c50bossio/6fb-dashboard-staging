@@ -230,8 +230,7 @@ if (!supabase) {
     
     // FIXED: Single source of truth - only check barbershop_id field
     if (profile.barbershop_id) {
-      // // Debug log removed for production
-:', profile.barbershop_id)
+      console.log('User barbershop_id from profile:', profile.barbershop_id)
       return profile.barbershop_id
     }
     
@@ -365,13 +364,12 @@ const staffWithProfiles = staff.map(staffMember => {
         commission_rate: staffMember.commission_rate || null
       }
       
-      // // Debug log removed for production
-`)
+      console.log(`Staff profile merged successfully`)
       return mergedRecord
     })
 
-    // // Debug log removed for production
-return staffWithProfiles
+    console.log(`Returning ${staffWithProfiles.length} staff members with profiles`)
+    return staffWithProfiles
   } catch (error) {
     console.error('💥 fetchStaffWithProfiles: Unexpected error:', error)
     throw error // Re-throw to be caught by main function
