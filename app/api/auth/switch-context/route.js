@@ -208,13 +208,13 @@ async function logContextSwitch(userId, contextType, contextId, supabase) {
     if (error) {
       console.error('Database logging failed:', error)
       // Fallback to console logging if database insert fails
-      // // Debug log removed for production
-.toISOString(),
+      console.log('Context switch logged to console:', {
+        userId: user.id,
+        timestamp: new Date().toISOString(),
         action: 'context_switch'
       })
     } else {
-      // // Debug log removed for production
-.toISOString())
+      console.log('Context switch logged to database:', new Date().toISOString())
     }
     
   } catch (error) {

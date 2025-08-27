@@ -552,8 +552,8 @@ return events
   }
 
   useEffect(() => {
-    // // Debug log removed for production
-? realtimeAppointments.length : 'not array',
+    console.log('Realtime debug:', {
+      appointmentsCount: Array.isArray(realtimeAppointments) ? realtimeAppointments.length : 'not array',
       isConnected: realtimeHookConnected,
       lastUpdate: lastUpdate,
       timestamp: new Date().toISOString()

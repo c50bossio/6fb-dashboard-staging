@@ -9,8 +9,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No code provided' }, { status: 400 })
     }
     
-    // // Debug log removed for production
-+ '...')
+    console.log('Processing auth code exchange:', code.substring(0, 10) + '...')
     
     // Try using the server-side Supabase client
     try {
