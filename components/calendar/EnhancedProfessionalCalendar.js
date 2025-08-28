@@ -8,10 +8,10 @@ import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import rrulePlugin from '@fullcalendar/rrule'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
+import React, { useRef, useCallback, useEffect, useState, useMemo, useImperativeHandle } from 'react'
 import { RRule } from 'rrule'
 
-export default function EnhancedProfessionalCalendar({
+const EnhancedProfessionalCalendar = React.forwardRef(({
   resources: externalResources,
   eventSources: externalEventSources,
   events: externalEvents, // Keep for backward compatibility
@@ -22,9 +22,19 @@ export default function EnhancedProfessionalCalendar({
   onEventDrop,
   height = '700px',
   defaultView = 'resourceTimeGridDay'
-}) {
+}, ref) => {
   const calendarRef = useRef(null)
   const [currentView, setCurrentView] = useState(controlledView || defaultView)
+
+  // Expose calendar API methods to parent
+  useImperativeHandle(ref, () => ({
+    refetchEvents: () => {
+      if (calendarRef.current) {
+        calendarRef.current.getApi().refetchEvents()
+      }
+    },
+    getApi: () => calendarRef.current?.getApi()
+  }))
   
   useEffect(() => {
     if (controlledView && controlledView !== currentView) {
@@ -495,4 +505,7 @@ export default function EnhancedProfessionalCalendar({
       />
     </div>
   )
-}
+})
+
+EnhancedProfessionalCalendar.displayName = 'EnhancedProfessionalCalendar'
+export default EnhancedProfessionalCalendar

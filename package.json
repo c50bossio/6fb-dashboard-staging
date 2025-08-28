@@ -109,6 +109,7 @@
     "@sentry/nextjs": "^7.82.0",
     "@stripe/react-stripe-js": "^3.9.0",
     "@stripe/stripe-js": "^2.1.11",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.0.10",
     "@supabase/supabase-js": "^2.56.0",
     "@vercel/edge-config": "^1.4.0",

@@ -1189,11 +1189,19 @@ export default function AutomationSettings({
               {analyticsError && (
                 <div className="flex items-center space-x-2">
                   <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />
-                  <span className="text-sm text-red-600">Data loading error</span>
+                  <div className="flex-1">
+                    <span className="text-sm text-red-600 font-medium">Analytics Loading Error</span>
+                    <div className="text-xs text-red-500 mt-1">
+                      {typeof analyticsError === 'string' 
+                        ? analyticsError 
+                        : analyticsError.message || 'Failed to load analytics data'
+                      }
+                    </div>
+                  </div>
                   <button
                     onClick={refreshAnalytics}
-                    className="text-xs text-blue-600 hover:text-blue-800 ml-2"
-                    title="Refresh analytics data"
+                    className="text-xs text-blue-600 hover:text-blue-800 ml-2 px-2 py-1 border border-blue-200 rounded"
+                    title="Retry loading analytics data"
                   >
                     Retry
                   </button>

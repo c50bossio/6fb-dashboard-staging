@@ -49,6 +49,7 @@ const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
   { 
     ssr: false,
+    forwardRef: true, // Enable ref forwarding for dynamically imported component
     loading: () => (
       <div className="flex items-center justify-center h-[600px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
@@ -110,6 +111,7 @@ export default function CalendarPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [copied, setCopied] = useState({})
   const [quickLinks, setQuickLinks] = useState([])
+  const calendarRef = useRef(null)
   const [shareDropdownOpen, setShareDropdownOpen] = useState(false)
   const [currentTime, setCurrentTime] = useState('')
   const { success, error: showError, info } = useToast()
@@ -978,147 +980,37 @@ setServices(DEFAULT_SERVICES)
     }
     
     if (appointmentData?.id && appointmentData?.is_recurring) {
-
       setConfirmedAppointment(appointmentData)
-      
       setShowAppointmentModal(false)
       setShowBookingConfirmation(true)
-      
       return
     }
-    
-    let optimisticAppointment = null
 
-    const scheduledDate = appointmentData.scheduled_at || appointmentData.start_time || appointmentData.start || appointmentData.dateTime
-    if (!scheduledDate) {
-      console.error('No valid date field found in appointment data:', appointmentData)
-      showError('Invalid appointment date', {
-        title: 'Booking Failed',
+    // SIMPLE SOLUTION: Just refetch events and show success (FullCalendar.io best practice)
+    try {
+      // Determine if this is blocked time
+      const isBlocked = appointmentData.is_blocked_time === true || 
+                        appointmentData.status === 'blocked' ||
+                        appointmentData.client_name === 'BLOCKED' ||
+                        appointmentData.customer_name === 'BLOCKED' ||
+                        appointmentData.customer_name === null
+      
+      // Show success message
+      success(isBlocked ? 'Time blocked successfully!' : 'Appointment saved successfully!', {
+        title: 'Success',
         duration: 3000
       })
-      return
-    }
-    
-    const startDate = new Date(scheduledDate)
-    const durationMinutes = appointmentData.duration_minutes || 60
-    const endDate = new Date(startDate.getTime() + durationMinutes * 60000)
-    
-    console.log('Optimistic appointment:', {
-      startTime: startDate.toLocaleTimeString(),
-      endTime: endDate.toLocaleTimeString()
-    })
-    
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-      console.error('Invalid date for optimistic appointment:', {
-        scheduled_at: scheduledDate,
-        startDate: startDate.toString(),
-        endDate: endDate.toString(),
-        rawData: appointmentData
-      })
-    } else {
-      const barberColor = resources.find(r => r.id === appointmentData.barber_id)?.eventColor || '#546355'
-      
-      optimisticAppointment = {
-        id: `temp-${Date.now()}`, // Temporary ID
-        title: `${appointmentData.client_name} - ${appointmentData.service_name || 'Unknown Service'}`,
-        start: startDate.toISOString(),
-        end: endDate.toISOString(),
-        resourceId: appointmentData.barber_id,
-        backgroundColor: `${barberColor}88`, // Add transparency (88 = ~53% opacity)
-        borderColor: barberColor,
-        classNames: ['optimistic-appointment'], // Add CSS class for additional styling
-        extendedProps: {
-          customer_name: appointmentData.client_name,
-          customer_phone: appointmentData.client_phone,
-          service_name: appointmentData.service_name || 'Unknown Service',
-          status: 'booking', // Special status for optimistic update
-          isOptimistic: true // Flag to identify optimistic appointments
-        }
-      }
-      
-      setEvents(prev => {
-        const exists = prev.some(apt => apt.id === optimisticAppointment.id)
-        if (exists) {
-          
-          return prev
-        }
-        
-        return [...prev, optimisticAppointment]
-      })
-      info('Booking appointment...', {
-        title: 'Processing',
-        duration: 2000
-      })
-    }
 
-    try {
-      const response = await fetch('/api/calendar/appointments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...appointmentData,
-          shop_id: barbershopId, // Include shop ID
-          customer_name: appointmentData.client_name,
-          customer_email: appointmentData.client_email,
-          customer_phone: appointmentData.client_phone
-        })
-      })
-      
-      const result = await response.json()
-      
-      if (response.ok) {
-        setConfirmedAppointment(result.appointment || result)
-        
-        setShowAppointmentModal(false)
-        setShowBookingConfirmation(true)
-        
-        if (optimisticAppointment && result.appointment) {
-          setEvents(prev => {
-            const withoutOptimistic = prev.filter(event => event.id !== optimisticAppointment.id)
-            
-            const realAppointment = {
-              id: result.appointment.id,
-              title: `${result.appointment.customer_name} - ${result.appointment.service_name}`,
-              start: result.appointment.start_time,
-              end: result.appointment.end_time,
-              resourceId: result.appointment.barber_id,
-              backgroundColor: resources.find(r => r.id === result.appointment.barber_id)?.eventColor || '#546355',
-              borderColor: resources.find(r => r.id === result.appointment.barber_id)?.eventColor || '#546355',
-              extendedProps: {
-                customer_name: result.appointment.customer_name,
-                customer_phone: result.appointment.customer_phone,
-                service_name: result.appointment.service_name,
-                status: result.appointment.status,
-                isOptimistic: false // Real appointment
-              }
-            }
+      // Close modal
+      setShowAppointmentModal(false)
 
-            const combined = [...withoutOptimistic, realAppointment]
-            return deduplicateAppointments(combined)
-          })
-        } else {
-          
-        }
-      } else {
-        if (optimisticAppointment) {
-          setEvents(prev => prev.filter(event => event.id !== optimisticAppointment.id))
-          
-        }
-        
-        showError(result.error || 'Failed to book appointment', {
-          title: 'Booking Failed',
-          duration: 5000
-        })
+      // Refetch events from server (FullCalendar.io best practice)
+      if (calendarRef.current) {
+        calendarRef.current.refetchEvents()
       }
     } catch (error) {
-      if (optimisticAppointment) {
-        setEvents(prev => prev.filter(event => event.id !== optimisticAppointment.id))
-        
-      }
-      
-      showError('Failed to book appointment: ' + error.message, {
+      console.error('Error handling appointment save:', error)
+      showError('Failed to process appointment: ' + error.message, {
         title: 'Error',
         duration: 5000
       })
@@ -1141,7 +1033,7 @@ setServices(DEFAULT_SERVICES)
       showError('Failed to export calendar')
     }
   }
-  
+
   const handleExportICS = () => {
     try {
       let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//BookedBarber//Calendar Export//EN\n'
@@ -1612,6 +1504,7 @@ setServices(DEFAULT_SERVICES)
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
           <ProfessionalCalendar
+            ref={calendarRef}
             resources={currentCalendarView?.includes('resource') ? createResources : undefined} // Use production-ready resources for resource views
             eventSources={createEventSources} // Use FullCalendar.io native event sources with error handling
             currentView={currentCalendarView}

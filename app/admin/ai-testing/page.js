@@ -75,25 +75,39 @@ export default function AITestingLab() {
     const startTime = Date.now()
     
     try {
-      const response = await fetch('/api/ai/agentic-executor', {
+      const response = await fetch('/api/ai/v2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: scenario.message,
+          agent: 'auto', // Let the system choose the best agent for testing
           context: {
             shopId: 'test-shop-123',
             testMode: true,
             dryRun: true,
             expectedTools: scenario.expectedTools
           },
-          mode: 'tools'
+          stream: false // Use JSON response for testing
         }),
       })
 
-      const result = await response.json()
+      const rawResult = await response.json()
       const executionTime = Date.now() - startTime
+
+      // Map new AI v2 API response to expected format for compatibility
+      const result = {
+        success: response.ok && (rawResult.message || rawResult.content || rawResult.text),
+        message: rawResult.message || rawResult.content || rawResult.text,
+        agent: rawResult.agent || { id: 'auto', name: 'AI Assistant' },
+        toolsUsed: rawResult.toolsUsed || [],
+        model: rawResult.model,
+        cost: rawResult.cost,
+        executionTime: executionTime,
+        // Include raw response for debugging
+        rawResponse: rawResult
+      }
 
       // Validate the test result
       const validation = validateTest(result, scenario, executionTime)

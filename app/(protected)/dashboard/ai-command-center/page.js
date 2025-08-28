@@ -130,11 +130,16 @@ function QuickActions({ onQuickAction, isLoading }) {
 }
 
 function MessageBubble({ message, isUser, agent, isLoading = false, handleExecuteAction, isError = false, onRetry }) {
+  // Handle both string messages and object messages for backward compatibility
+  const messageText = typeof message === 'string' ? message : message.text || message.content || ''
+  const messageModel = typeof message === 'object' ? message.model : null
+  const messageCost = typeof message === 'object' ? message.cost : null
+
   if (isUser) {
     return (
       <div className="flex justify-end mb-6" role="article" aria-label="User message">
         <div className="bg-gradient-to-br from-olive-600 to-olive-700 text-white rounded-2xl rounded-br-md px-5 py-3 max-w-xs lg:max-w-md shadow-lg">
-          <p className="text-sm leading-relaxed">{message}</p>
+          <p className="text-sm leading-relaxed">{messageText}</p>
         </div>
       </div>
     )
@@ -184,16 +189,30 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
                     }`}>
                       {agent.confidence ? `${(agent.confidence * 100).toFixed(0)}% confident` : 'AI Response'}
                     </span>
+                    {messageModel && (
+                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                        {messageModel.includes('gemini') ? '🧠 Gemini' : 
+                         messageModel.includes('gpt') ? '⚡ GPT' : 
+                         messageModel.includes('claude') ? '🎭 Claude' : '🤖 AI'}
+                      </span>
+                    )}
                   </div>
-                  <span className="text-xs text-gray-400">
-                    {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    {messageCost && (
+                      <span className="text-xs text-green-600 font-medium" title={`API Cost: $${messageCost.toFixed(4)}`}>
+                        ${(messageCost * 1000).toFixed(2)}¢
+                      </span>
+                    )}
+                    <span className="text-xs text-gray-400">
+                      {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </span>
+                  </div>
                 </div>
               )}
 
               {/* Message Content */}
               <div className="prose prose-sm max-w-none">
-                <div className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{message}</div>
+                <div className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{messageText}</div>
               </div>
 
               {/* Recommendations */}
@@ -692,13 +711,14 @@ Try the quick actions below or just start chatting! 💬`,
       }
       setMessages(prev => [...prev, loadingMessage])
 
-      const response = await fetch('/api/ai/agentic-executor', {
+      const response = await fetch('/api/ai/v2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: messageText,
+          agent: 'auto', // Let the system choose the best agent
           context: {
             shopId: user?.id || 'command-center-user',
             testMode: false,
@@ -706,7 +726,8 @@ Try the quick actions below or just start chatting! 💬`,
             userId: user?.id,
             businessName: 'Elite Cuts Barbershop',
             conversationId: activeConversation || `conv_${Date.now()}`,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            conversationHistory: messages.slice(-6) // Last 6 messages for context
           },
           mode: 'tools'
         }),
@@ -716,33 +737,99 @@ Try the quick actions below or just start chatting! 💬`,
         throw new Error('Failed to get AI response')
       }
 
-      const data = await response.json()
+      // Check if response is streaming (has content-type application/octet-stream)
+      const contentType = response.headers.get('content-type')
+      let data
+      
+      if (contentType?.includes('text/plain') || contentType?.includes('application/octet-stream')) {
+        // Handle streaming response
+        const reader = response.body?.getReader()
+        if (reader) {
+          let aiMessageId = `ai-${Date.now()}`
+          let streamedContent = ''
+          
+          // Initialize streaming message
+          setMessages(prev => {
+            const filtered = prev.filter(msg => !msg.isLoading)
+            return [...filtered, {
+              id: aiMessageId,
+              text: '',
+              isUser: false,
+              agent: {
+                name: 'AI Assistant',
+                personality: 'strategic_mindset',
+                confidence: 0.95
+              },
+              timestamp: new Date().toISOString(),
+              isStreaming: true,
+              model: 'gemini-2.5-flash-lite',
+              cost: 0.0001
+            }]
+          })
+          
+          const decoder = new TextDecoder()
+          let done = false
+          
+          while (!done) {
+            const { value, done: streamDone } = await reader.read()
+            done = streamDone
+            
+            if (value) {
+              const chunk = decoder.decode(value, { stream: true })
+              streamedContent += chunk
+              
+              // Update the streaming message
+              setMessages(prev => 
+                prev.map(msg => 
+                  msg.id === aiMessageId 
+                    ? { ...msg, text: streamedContent }
+                    : msg
+                )
+              )
+            }
+          }
+          
+          // Mark streaming as complete
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === aiMessageId 
+                ? { ...msg, isStreaming: false, model: 'gemini-2.5-flash-lite', cost: 0.0001 }
+                : msg
+            )
+          )
+        }
+      } else {
+        // Handle JSON response
+        data = await response.json()
+        
+        setMessages(prev => {
+          const filtered = prev.filter(msg => !msg.isLoading)
+          const aiMessage = {
+            id: `ai-${Date.now()}`,
+            text: data.message || data.content || 'I apologize, but I encountered an issue processing your request. Please try again.',
+            isUser: false,
+            agent: {
+              name: data.agent?.name || 'AI Assistant',
+              id: data.agent?.id || 'auto',
+              specialties: data.agent?.specialties || [],
+              personality: data.agent?.personality || 'strategic_mindset',
+              confidence: data.confidence || 0.95,
+              recommendations: data.recommendations || [],
+              action_items: data.action_items || [],
+              follow_up_questions: data.follow_up_questions || [],
+              toolsUsed: data.toolsUsed || []
+            },
+            timestamp: new Date().toISOString(),
+            executionTime: data.executionTime || 0,
+            model: data.model,
+            cost: data.cost
+          }
+          return [...filtered, aiMessage]
+        })
+      }
 
       setRetryCount(0)
       setLastFailedMessage(null)
-      
-      setMessages(prev => {
-        const filtered = prev.filter(msg => !msg.isLoading)
-        const aiMessage = {
-          id: `ai-${Date.now()}`,
-          text: data.message || 'I apologize, but I encountered an issue processing your request. Please try again.',
-          isUser: false,
-          agent: {
-            name: data.agent?.name || 'AI Agent',
-            id: data.agent?.id || 'unknown',
-            specialties: data.agent?.specialties || [],
-            personality: data.agent?.personality || 'strategic_mindset',
-            confidence: 0.95,
-            recommendations: [],
-            action_items: [],
-            follow_up_questions: [],
-            toolsUsed: data.toolsUsed || []
-          },
-          timestamp: new Date().toISOString(),
-          executionTime: data.executionTime || 0
-        }
-        return [...filtered, aiMessage]
-      })
 
     } catch (error) {
       console.error('Error sending message:', error)
@@ -1061,7 +1148,7 @@ What would you like to work on today?`,
             {messages.map((message) => (
               <MessageBubble
                 key={message.id}
-                message={message.text}
+                message={{...message, text: message.text, model: message.model, cost: message.cost}}
                 isUser={message.isUser}
                 agent={message.agent}
                 isLoading={message.isLoading}

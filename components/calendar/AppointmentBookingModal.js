@@ -730,7 +730,20 @@ export default function AppointmentBookingModal({
       onClose()
       
       if (onBookingComplete) {
-        await onBookingComplete({ isBlocked: true })
+        // Pass the complete appointment data from API response instead of just {isBlocked: true}
+        const appointmentData = data.appointment || data.event || {
+          id: data.appointment?.id,
+          start_time: startDate.toISOString(),
+          end_time: endDate.toISOString(), 
+          scheduled_at: startDate.toISOString(),
+          status: 'blocked',
+          customer_name: 'BLOCKED',
+          notes: blockReason || 'Time blocked',
+          duration_minutes: formData.duration_minutes || 60,
+          barber_id: formData.barber_id || selectedSlot?.barberId || barbers?.[0]?.id,
+          is_blocked_time: true
+        }
+        await onBookingComplete(appointmentData)
       }
       
     } catch (error) {

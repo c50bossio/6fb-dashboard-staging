@@ -34,7 +34,7 @@ export async function GET(request) {
     const { data: settings, error: settingsError } = await supabase
       .from('business_settings')
       .select('automation_settings')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
     
     if (settingsError && settingsError.code !== 'PGRST116') { // PGRST116 = no rows
@@ -168,7 +168,7 @@ export async function POST(request) {
     const { data: existing, error: checkError } = await supabase
       .from('business_settings')
       .select('id')
-      .eq('user_id', session.user.id)
+      .eq('user_id', user.id)
       .single()
     
     if (checkError && checkError.code !== 'PGRST116') {
@@ -183,7 +183,7 @@ export async function POST(request) {
           automation_settings: automationSettings,
           updated_at: new Date().toISOString()
         })
-        .eq('user_id', session.user.id)
+        .eq('user_id', user.id)
       
       if (updateError) throw updateError
     } else {
@@ -191,7 +191,7 @@ export async function POST(request) {
       const { error: insertError } = await supabase
         .from('business_settings')
         .insert({
-          user_id: session.user.id,
+          user_id: user.id,
           automation_settings: automationSettings,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -204,7 +204,7 @@ export async function POST(request) {
     await supabase
       .from('activity_logs')
       .insert({
-        user_id: session.user.id,
+        user_id: user.id,
         action: 'update_automation_settings',
         details: {
           barbershop_id: profile.barbershop_id,

@@ -3,6 +3,8 @@
 import { useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import errorTracker from '../lib/error-tracker'
+import { getProductionMonitor } from '../lib/production-monitor'
+import { initializeFallbackSystems } from '../lib/fallback-systems'
 import { AppErrorBoundary } from './error-boundary'
 import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 import { ToastProvider } from './ToastContainer'
@@ -50,6 +52,24 @@ export default function ClientWrapper({ children }) {
       
       if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
         errorTracker.initSentry()
+      }
+    }
+    
+    // Initialize production monitoring (always active for metrics collection)
+    const monitor = getProductionMonitor()
+    
+    // Initialize fallback systems for graceful degradation
+    initializeFallbackSystems()
+    
+    // Set up global error handlers
+    const originalConsoleError = console.error
+    console.error = (...args) => {
+      originalConsoleError(...args)
+      // Track console errors in production monitoring
+      if (args[0] instanceof Error) {
+        monitor.trackError(args[0], { type: 'console_error', args: args.slice(1) })
+      } else if (typeof args[0] === 'string' && args[0].toLowerCase().includes('error')) {
+        monitor.trackError(new Error(args[0]), { type: 'console_error', args: args.slice(1) })
       }
     }
     

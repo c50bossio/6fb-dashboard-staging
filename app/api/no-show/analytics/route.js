@@ -9,12 +9,13 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function GET(request) {
   try {
-    const session = await getServerSession()
-    if (!session?.user) {
+    const supabase = await createClient()
+    
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     
     // Parse and validate date range from query params
@@ -45,8 +46,8 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
-      .eq('id', session.user.id)
+      .select('barbershop_id, shop_id, role')
+      .eq('id', user.id)
       .single()
     
     if (profileError) {
@@ -57,14 +58,26 @@ export async function GET(request) {
       }, { status: 500 })
     }
     
-    if (!profile?.barbershop_id) {
-      return NextResponse.json({ 
-        error: 'No barbershop associated with this user account',
-        action: 'Please contact support to set up your barbershop association'
-      }, { status: 404 })
-    }
+    // Check both barbershop_id and shop_id fields
+    let barbershopId = profile?.barbershop_id || profile?.shop_id
+    
+    if (!barbershopId) {
+      // Try to get barbershop from ownership
+      const { data: ownedShops } = await supabase
+        .from('barbershops')
+        .select('id')
+        .eq('owner_id', user.id)
+        .limit(1)
 
-    const barbershopId = profile.barbershop_id
+      if (!ownedShops || ownedShops.length === 0) {
+        return NextResponse.json({ 
+          error: 'No barbershop associated with this user account',
+          action: 'Please contact support to set up your barbershop association'
+        }, { status: 404 })
+      }
+      
+      barbershopId = ownedShops[0].id
+    }
 
     // 1. Get no-show incidents in date range
     let incidentsQuery = supabase
@@ -82,6 +95,39 @@ export async function GET(request) {
     
     if (incidentsError) {
       console.error('Failed to load no-show incidents:', incidentsError)
+      
+      // Check if table doesn't exist (common in development)
+      if (incidentsError.message?.includes('relation') && incidentsError.message?.includes('does not exist')) {
+        console.warn('No-show tables not found, returning empty data structure')
+        // Return empty but valid structure
+        return NextResponse.json({
+          dateRange: { start: startDate, end: endDate },
+          kpis: {
+            totalNoShows: 0,
+            noShowRate: 0,
+            revenueImpact: { lost: 0, recovered: 0 },
+            feeCollection: { total: 0, collected: 0, pending: 0, failed: 0 },
+            gracePeriodsApplied: 0,
+            averageArrivalDelay: 0
+          },
+          trends: [],
+          strikeSegments: { '1_strike': 0, '2_strikes': 0, '3_plus_strikes': 0 },
+          blockedSummary: { currentlyBlocked: 0, inRecovery: 0, totalFeesOwed: 0 },
+          policyEffectiveness: { hasPolicyConfigured: false, metrics: {} },
+          topOffenders: [],
+          serviceAnalysis: [],
+          timePatterns: { byDayOfWeek: {}, byHour: {}, peakTimes: [] },
+          summary: {
+            totalIncidents: 0,
+            totalAppointments: 0,
+            noShowRate: 0,
+            totalRevenueLost: 0,
+            totalRevenueRecovered: 0,
+            recoveryRate: 0
+          }
+        })
+      }
+      
       return NextResponse.json({ 
         error: 'Failed to load no-show data',
         details: process.env.NODE_ENV === 'development' ? incidentsError.message : undefined
@@ -418,12 +464,15 @@ function getTimePatterns(incidents) {
  */
 export async function POST(request) {
   try {
-    const session = await getServerSession()
-    if (!session?.user) {
+    const supabase = await createClient()
+    
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { format, dateRange } = await request.json()
+    const { format: exportFormat, dateRange } = await request.json()
     
     // Get analytics data (reuse GET logic)
     const analyticsResponse = await GET(new Request(
@@ -432,7 +481,7 @@ export async function POST(request) {
     
     const analyticsData = await analyticsResponse.json()
     
-    if (format === 'csv') {
+    if (exportFormat === 'csv') {
       // Generate CSV content
       const csvContent = generateCSVContent(analyticsData)
       

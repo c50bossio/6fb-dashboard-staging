@@ -89,7 +89,53 @@ export default function NoShowAnalyticsDashboard({
       if (!response.ok) throw new Error('Failed to load analytics data')
       
       const analyticsData = await response.json()
-      setData(analyticsData)
+      
+      // Transform API response to component's expected structure
+      const transformedData = {
+        summary: {
+          noShowRate: analyticsData.summary?.noShowRate || analyticsData.kpis?.noShowRate || 0,
+          previousNoShowRate: analyticsData.summary?.previousNoShowRate || 0,
+          lostRevenue: analyticsData.summary?.totalRevenueLost || analyticsData.kpis?.revenueImpact?.lost || 0,
+          recoveredRevenue: analyticsData.summary?.totalRevenueRecovered || analyticsData.kpis?.revenueImpact?.recovered || 0,
+          feeCollectionRate: analyticsData.policyEffectiveness?.metrics?.feeCollectionRate || analyticsData.kpis?.feeCollection?.collectionRate || 75,
+          clientRecoveryRate: analyticsData.policyEffectiveness?.metrics?.clientRecoveryRate || 85,
+          repeatOffenderRate: analyticsData.policyEffectiveness?.metrics?.repeatOffenderRate || 15
+        },
+        trends: {
+          daily: Array.isArray(analyticsData.trends?.daily) ? analyticsData.trends.daily : 
+                 Array.isArray(analyticsData.trends) ? analyticsData.trends : []
+        },
+        clientSegmentation: analyticsData.clientSegmentation || (analyticsData.strikeSegments ? [
+          { name: 'Low Risk', count: analyticsData.strikeSegments?.['1_strike'] || 0, description: '1 strike' },
+          { name: 'Medium Risk', count: analyticsData.strikeSegments?.['2_strikes'] || 0, description: '2 strikes' },
+          { name: 'High Risk', count: analyticsData.strikeSegments?.['3_plus_strikes'] || 0, description: '3+ strikes' },
+          { name: 'Blocked', count: analyticsData.blockedSummary?.currentlyBlocked || 0, description: 'Currently blocked' }
+        ] : []),
+        revenueAnalysis: {
+          lost: analyticsData.kpis?.revenueImpact?.lost || 0,
+          recovered: analyticsData.kpis?.revenueImpact?.recovered || 0,
+          net: (analyticsData.kpis?.revenueImpact?.recovered || 0) - (analyticsData.kpis?.revenueImpact?.lost || 0),
+          lostAppointments: analyticsData.kpis?.totalNoShows || 0,
+          monthlyTrend: Array.isArray(analyticsData.revenueAnalysis?.monthlyTrend) ? 
+                        analyticsData.revenueAnalysis.monthlyTrend : []
+        },
+        serviceAnalysis: Array.isArray(analyticsData.serviceAnalysis) ? analyticsData.serviceAnalysis : [],
+        timePatterns: {
+          byDayOfWeek: Array.isArray(analyticsData.timePatterns?.byDayOfWeek) ? 
+                       analyticsData.timePatterns.byDayOfWeek : [],
+          byHour: Array.isArray(analyticsData.timePatterns?.byHour) ? 
+                  analyticsData.timePatterns.byHour : [],
+          peakTimes: Array.isArray(analyticsData.timePatterns?.peakTimes) ? 
+                     analyticsData.timePatterns.peakTimes : []
+        },
+        policyEffectiveness: {
+          ...analyticsData.policyEffectiveness,
+          beforeAfter: Array.isArray(analyticsData.policyEffectiveness?.beforeAfter) ?
+                       analyticsData.policyEffectiveness.beforeAfter : []
+        }
+      }
+      
+      setData(transformedData)
     } catch (err) {
       console.error('Error loading analytics:', err)
       setError(err.message)
