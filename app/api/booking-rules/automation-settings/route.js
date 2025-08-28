@@ -30,10 +30,10 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    // Get automation settings from business_settings
+    // Get automation settings from business_settings (stored in booking_rules JSONB)
     const { data: settings, error: settingsError } = await supabase
       .from('business_settings')
-      .select('automation_settings')
+      .select('booking_rules')
       .eq('user_id', user.id)
       .single()
     
@@ -42,7 +42,7 @@ export async function GET(request) {
     }
 
     // Return settings or default values
-    const automationSettings = settings?.automation_settings || {
+    const automationSettings = settings?.booking_rules?.automation || {
       automaticFeeCollection: {
         enabled: false,
         retryAttempts: 3,
@@ -176,11 +176,22 @@ export async function POST(request) {
     }
 
     if (existing) {
-      // Update existing settings
+      // Update existing settings - merge with existing booking_rules
+      const { data: currentSettings } = await supabase
+        .from('business_settings')
+        .select('booking_rules')
+        .eq('user_id', user.id)
+        .single()
+      
+      const updatedBookingRules = {
+        ...(currentSettings?.booking_rules || {}),
+        automation: automationSettings
+      }
+      
       const { error: updateError } = await supabase
         .from('business_settings')
         .update({
-          automation_settings: automationSettings,
+          booking_rules: updatedBookingRules,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id)
@@ -192,7 +203,7 @@ export async function POST(request) {
         .from('business_settings')
         .insert({
           user_id: user.id,
-          automation_settings: automationSettings,
+          booking_rules: { automation: automationSettings },
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })

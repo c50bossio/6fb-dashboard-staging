@@ -2,15 +2,12 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '../../../../lib/supabase/server'
 
-// Import the existing services - temporarily disabled for deployment
-// const { calendarIntegrationService } = require('@/services/calendar-integration-service')
-// const { integrationConfigService } = require('@/services/integration-config-service')
-// const { notificationService } = require('@/services/notification-service')
+// Import the real notification service
+import NotificationService from '@/lib/notifications/notification-service.js'
 
-// Temporary mock services for deployment
+// Calendar integration temporarily disabled for deployment
 const calendarIntegrationService = { createAppointmentEvent: async () => ({ success: false, message: 'Calendar integration disabled for deployment' }) }
 const integrationConfigService = { checkIntegrationStatus: async () => ({ enabled: false, healthy: false }) }
-const notificationService = { sendAppointmentConfirmation: async () => ({ success: true, results: [] }) }
 
 export const runtime = 'nodejs'
 
@@ -42,47 +39,47 @@ async function sendNotificationsAndSync(booking, barbershopData, barberData) {
 
   try {
 
-    // Prepare notification data structure
+    // Prepare notification data structure matching the expected format
     const notificationData = {
-      booking: {
-        id: booking.id,
-        appointment_date: booking.scheduled_at.split('T')[0],
-        appointment_time: new Date(booking.scheduled_at).toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        }),
-        service_name: booking.service?.name || 'Service',
-        total_amount: booking.total_amount,
-        notes: booking.client_notes
-      },
-      customer: {
-        id: booking.id, // Using booking ID as customer identifier
-        first_name: booking.client_name.split(' ')[0] || booking.client_name,
-        last_name: booking.client_name.split(' ').slice(1).join(' ') || '',
-        name: booking.client_name,
-        email: booking.client_email,
-        phone: booking.client_phone,
-        sms_opt_in: booking.sms_opt_in || false,
-        email_opt_in: booking.email_opt_in !== false
-      },
-      barbershop: {
-        id: booking.barbershop_id,
-        name: barbershopData?.name || 'Barbershop',
-        phone: barbershopData?.phone || '',
-        address: barbershopData?.address || ''
-      },
-      barber: {
-        first_name: barberData?.name?.split(' ')[0] || barberData?.name || 'Barber',
-        last_name: barberData?.name?.split(' ').slice(1).join(' ') || '',
-        name: barberData?.name || 'Barber'
-      }
+      // Flat structure expected by notification services
+      customerName: booking.client_name,
+      customerEmail: booking.client_email,
+      customerPhone: booking.client_phone,
+      appointmentDate: booking.scheduled_at.split('T')[0],
+      appointmentTime: new Date(booking.scheduled_at).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }),
+      appointmentDateTime: booking.scheduled_at,
+      serviceName: booking.service?.name || 'Service',
+      barberName: barberData?.name || 'Barber',
+      shopName: barbershopData?.name || 'Barbershop',
+      shopPhone: barbershopData?.phone || '',
+      shopAddress: barbershopData?.address || '',
+      totalPrice: `$${booking.total_amount?.toFixed(2) || '0.00'}`,
+      notes: booking.client_notes || '',
+      confirmationNumber: booking.id,
+      // SMS/Email opt-in preferences
+      sms_opt_in: booking.sms_opt_in || false,
+      email_opt_in: booking.email_opt_in !== false
     }
 
-    // Send notifications via notification service
+    // Send notifications via notification service (respecting opt-in preferences)
     try {
-      const notificationResult = await notificationService.sendAppointmentConfirmation(notificationData)
-      results.notifications = notificationResult
+      // Only send notifications if customer has opted in
+      if (notificationData.email_opt_in || notificationData.sms_opt_in) {
+        const notificationResult = await NotificationService.sendAppointmentConfirmation(notificationData)
+        results.notifications = notificationResult
+        console.log('✅ Notification service called successfully:', notificationResult)
+      } else {
+        results.notifications = {
+          success: true,
+          message: 'Customer opted out of notifications',
+          results: { email: { success: false, skipped: true }, sms: { success: false, skipped: true } }
+        }
+        console.log('📵 Notifications skipped - customer opted out')
+      }
       
     } catch (error) {
       console.error('❌ Notification service error:', error)

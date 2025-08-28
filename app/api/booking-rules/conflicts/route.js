@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { ConflictDetector } from '@/lib/booking-rules-engine/ConflictDetector'
-import { createClient } from '@/lib/supabase/server-client'
+import { createClient } from '@/lib/supabase/server'
 
 // Initialize conflict detector singleton
 let conflictDetector = null

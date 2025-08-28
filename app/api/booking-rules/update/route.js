@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { RuleAuditor } from '@/lib/booking-rules-engine/RuleAuditor'
 import { cacheManager } from '@/lib/booking-rules-engine/RuleCache'
 import { RuleValidator } from '@/lib/booking-rules-engine/RuleValidator'
-import { createClient } from '@/lib/supabase/server-client'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
