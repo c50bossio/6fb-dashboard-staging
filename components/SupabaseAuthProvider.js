@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { validateAndFixAuthProfile, getTierForRole } from '../lib/profile-sync-service'
 import { hasAccessToTier, normalizeTierName } from '../lib/subscription-tiers'
 import { createClient } from '../lib/supabase/browser-client'
@@ -23,6 +23,11 @@ function SupabaseAuthProvider({ children }) {
   const [initialized, setInitialized] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  
+  // Tab switch protection refs
+  const hasUserNavigatedRef = useRef(false)
+  const pageLoadTimeRef = useRef(Date.now())
+  const lastPathRef = useRef(null)
 
   // Simplified profile fetch without race conditions
   const fetchProfile = async (userId) => {
@@ -124,6 +129,11 @@ function SupabaseAuthProvider({ children }) {
           
           setLoading(false)
           setInitialized(true)
+          
+          // Track initial path
+          if (typeof window !== 'undefined') {
+            lastPathRef.current = window.location.pathname
+          }
         }
       } catch (error) {
         console.error('Auth initialization error:', error)
@@ -144,9 +154,90 @@ function SupabaseAuthProvider({ children }) {
   // Listen for auth changes after initialization
   useEffect(() => {
     if (!initialized) return
+    
+    // Track visibility changes for debugging and reset navigation flag
+    const handleVisibilityChange = () => {
+      console.log('👁️ [TAB DEBUG] Visibility changed:', {
+        hidden: document.hidden,
+        visibilityState: document.visibilityState,
+        time: new Date().toISOString()
+      })
+      
+      // When tab becomes hidden, reset the page load timer to prevent false positives
+      if (document.hidden) {
+        pageLoadTimeRef.current = Date.now()
+        console.log('🔄 [TAB DEBUG] Reset page load timer due to tab hide')
+      }
+    }
+    
+    // Track navigation to distinguish from tab switches
+    const handleNavigation = () => {
+      const currentPath = window.location.pathname
+      if (lastPathRef.current !== currentPath) {
+        console.log('🔄 [NAV DEBUG] Path changed:', {
+          from: lastPathRef.current,
+          to: currentPath
+        })
+        hasUserNavigatedRef.current = true
+        lastPathRef.current = currentPath
+      }
+    }
+    
+    if (typeof window !== 'undefined') {
+      document.addEventListener('visibilitychange', handleVisibilityChange)
+      // Use popstate to detect browser navigation
+      window.addEventListener('popstate', handleNavigation)
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        const currentPath = window.location.pathname
+        const isProtectedPath = !currentPath.startsWith('/login') && 
+                               !currentPath.startsWith('/register') && 
+                               currentPath !== '/'
+        
+        console.log('🔐 [AUTH DEBUG] Auth event:', {
+          event,
+          hasSession: !!session,
+          hasNavigated: hasUserNavigatedRef.current,
+          timeSinceLoad: Date.now() - pageLoadTimeRef.current,
+          currentPath,
+          isProtectedPath
+        })
+        
+        // Filter out tab switch events
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('✅ [AUTH DEBUG] Token refreshed (tab switch/focus) - NO REDIRECT')
+          // Update session but don't redirect
+          if (session?.user) {
+            setUser(session.user)
+            if (!profile || profile.id !== session.user.id) {
+              await fetchProfile(session.user.id)
+            }
+          }
+          return // NO REDIRECT
+        }
+        
+        // Handle INITIAL_SESSION carefully - only on real navigation
+        if (event === 'INITIAL_SESSION') {
+          // If we're already on a protected page, don't redirect
+          if (isProtectedPath && session?.user) {
+            console.log('⏩ [AUTH DEBUG] INITIAL_SESSION but already on protected page - NO REDIRECT')
+            // Just update the session
+            setUser(session.user)
+            if (!profile || profile.id !== session.user.id) {
+              await fetchProfile(session.user.id)
+            }
+            return // NO REDIRECT
+          }
+          
+          // If we haven't navigated and it's within 5 seconds of page load, ignore
+          const timeSinceLoad = Date.now() - pageLoadTimeRef.current
+          if (!hasUserNavigatedRef.current && timeSinceLoad < 5000) {
+            console.log('⏩ [AUTH DEBUG] Ignoring INITIAL_SESSION (no navigation detected)')
+            return // NO REDIRECT
+          }
+        }
 
         // Update auth state based on session
         if (session?.user) {
@@ -161,30 +252,74 @@ function SupabaseAuthProvider({ children }) {
           setProfile(null)
         }
 
-        // Handle redirects for actual sign-in events
+        // Handle redirects ONLY for actual sign-in events (not tab switches)
+        // SIGNED_IN can fire on tab focus, so we need to be VERY careful
         if (event === 'SIGNED_IN' && session) {
-          // Check for stored return URL
-          const returnUrl = typeof window !== 'undefined' 
-            ? sessionStorage.getItem('auth_return_url') 
-            : null
-            
-          if (returnUrl) {
-            sessionStorage.removeItem('auth_return_url')
-            router.push(returnUrl)
+          // Never redirect if we're already on a protected page
+          if (isProtectedPath) {
+            console.log('➡️ [AUTH DEBUG] SIGNED_IN but already on protected page - NO REDIRECT')
+            // Just update the session
+            setUser(session.user)
+            if (!profile || profile.id !== session.user.id) {
+              await fetchProfile(session.user.id)
+            }
+            return // NO REDIRECT
+          }
+          
+          // Only redirect if this is a real login action (user actively navigated)
+          // AND we're not within the first 10 seconds of page load (tab switch protection)
+          const timeSinceLoad = Date.now() - pageLoadTimeRef.current
+          const shouldRedirect = hasUserNavigatedRef.current && timeSinceLoad > 10000
+          
+          console.log('➡️ [AUTH DEBUG] SIGNED_IN event', {
+            shouldRedirect,
+            hasNavigated: hasUserNavigatedRef.current,
+            timeSinceLoad,
+            currentPath,
+            isProtectedPath
+          })
+          
+          if (shouldRedirect) {
+            // Check for stored return URL
+            const returnUrl = typeof window !== 'undefined' 
+              ? sessionStorage.getItem('auth_return_url') 
+              : null
+              
+            if (returnUrl) {
+              console.log('➡️ [AUTH DEBUG] Redirecting to stored URL:', returnUrl)
+              sessionStorage.removeItem('auth_return_url')
+              router.push(returnUrl)
+            } else {
+              // Only redirect to dashboard if we're on an auth page
+              if (currentPath === '/login' || currentPath === '/register' || currentPath === '/') {
+                console.log('➡️ [AUTH DEBUG] Redirecting from auth page to dashboard')
+                router.push('/dashboard')
+              } else {
+                console.log('➡️ [AUTH DEBUG] Not on auth page, NO REDIRECT')
+              }
+            }
           } else {
-            router.push('/dashboard')
+            console.log('➡️ [AUTH DEBUG] Skipping SIGNED_IN redirect (tab switch protection active)')
           }
         }
         
         if (event === 'SIGNED_OUT') {
+          console.log('👋 [AUTH DEBUG] SIGNED_OUT - redirecting to login')
           setUser(null)
           setProfile(null)
+          hasUserNavigatedRef.current = true // Mark as navigation
           router.push('/login')
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      if (typeof window !== 'undefined') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange)
+        window.removeEventListener('popstate', handleNavigation)
+      }
+    }
   }, [initialized, profile?.id, router, supabase])
 
   // Update profile function
@@ -211,6 +346,9 @@ function SupabaseAuthProvider({ children }) {
 
   // Sign in with Google
   const signInWithGoogle = async () => {
+    // Mark as user navigation since they're explicitly signing in
+    hasUserNavigatedRef.current = true
+    
     const returnUrl = typeof window !== 'undefined' 
       ? sessionStorage.getItem('auth_return_url') || '/dashboard'
       : '/dashboard'
@@ -231,6 +369,9 @@ function SupabaseAuthProvider({ children }) {
 
   // Email/password sign in
   const signIn = async ({ email, password }) => {
+    // Mark as user navigation since they're explicitly signing in
+    hasUserNavigatedRef.current = true
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
