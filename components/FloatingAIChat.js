@@ -14,11 +14,27 @@ import {
 import { useState, useRef, useEffect } from 'react'
 import { createClient } from '../lib/supabase/client'
 import { useAuth } from './SupabaseAuthProvider'
+import { useAIChat } from '../hooks/useAISDK'
 
 export default function FloatingAIChat() {
   const { user } = useAuth()
+  
+  // Modern AI SDK integration
+  const {
+    messages: aiMessages,
+    input: aiInput,
+    handleInputChange: handleAIInputChange,
+    handleSubmit: handleAISubmit,
+    isLoading: aiIsLoading,
+    currentAgent,
+    agentInfo,
+    totalCost,
+    sendMessage: sendAIMessage,
+    switchAgent,
+    clearMessages: clearAIMessages
+  } = useAIChat('auto') // Let system choose best agent
+  
   const [isOpen, setIsOpen] = useState(false)
-  const [message, setMessage] = useState('')
   const [position, setPosition] = useState('bottom-right') // bottom-right, bottom-left, top-right, top-left
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
@@ -66,15 +82,35 @@ export default function FloatingAIChat() {
     return `${greeting} ${proactiveSuggestion}`
   }
   
-  const [messages, setMessages] = useState([
+  // Combine AI messages with emotion analysis and automation features
+  const [emotionMessages, setEmotionMessages] = useState([
     {
-      id: 1,
+      id: 'welcome-floating',
       type: 'assistant',
       content: getProactiveGreeting(),
-      timestamp: new Date()
+      timestamp: new Date(),
+      agent: 'AI Assistant'
     }
   ])
-  const [isLoading, setIsLoading] = useState(false)
+  
+  // Unified messages combining AI responses with emotion/automation features
+  const allMessages = [
+    ...aiMessages.map(msg => ({
+      id: msg.id,
+      type: msg.role === 'user' ? 'user' : 'assistant', 
+      content: msg.content,
+      timestamp: new Date(msg.timestamp || new Date()),
+      agent: agentInfo?.name || 'AI Assistant',
+      agentId: currentAgent,
+      model: msg.model,
+      cost: msg.cost,
+      toolsUsed: msg.toolsUsed || []
+    })),
+    ...emotionMessages
+  ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+  
+  // Use AI SDK loading state
+  const isLoading = aiIsLoading || isAnalyzingEmotion
   const [showRating, setShowRating] = useState(null)
   const [sessionId, setSessionId] = useState(null)
   const messagesEndRef = useRef(null)
@@ -137,9 +173,9 @@ export default function FloatingAIChat() {
   const recognitionRef = useRef(null)
   
   const [emotionAnalysis, setEmotionAnalysis] = useState(null)
-  const [isAnalyzingEmotion, setIsAnalyzingEmotion] = useState(false)
   const [userEmotionHistory, setUserEmotionHistory] = useState([])
   const [currentMood, setCurrentMood] = useState('neutral')
+  const [isAnalyzingEmotion, setIsAnalyzingEmotion] = useState(false)
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -296,7 +332,7 @@ export default function FloatingAIChat() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [allMessages])
 
   const getPositionClasses = (pos) => {
     switch(pos) {
@@ -577,10 +613,10 @@ export default function FloatingAIChat() {
       icon: '⚡'
     }
     
-    setMessages(prev => [...prev, notification])
+    setEmotionMessages(prev => [...prev, notification])
     
     setTimeout(() => {
-      setMessages(prev => prev.filter(msg => msg.id !== notification.id))
+      setEmotionMessages(prev => prev.filter(msg => msg.id !== notification.id))
     }, 5000)
   }
 
@@ -617,155 +653,41 @@ export default function FloatingAIChat() {
     return null
   }
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || isLoading || !sessionId) return
+  const handleSendMessage = async (e) => {
+    if (!aiInput.trim() || isLoading || !sessionId) return
 
-    const currentMessage = message
-    setMessage('')
-    setIsLoading(true)
-
-    const emotionAnalysis = await analyzeMessageEmotion(currentMessage)
-
+    // Analyze emotion for the current message before sending
+    const emotionAnalysis = await analyzeMessageEmotion(aiInput)
+    
     if (emotionAnalysis) {
-      await processAutomatedTriggers(emotionAnalysis, currentMessage)
-    }
-
-    const userMessage = {
-      id: Date.now(),
-      type: 'user',
-      content: currentMessage,
-      timestamp: new Date(),
-      emotion: emotionAnalysis ? {
+      // Add emotion to the next user message via context
+      const emotionContext = {
         type: emotionAnalysis.emotion,
         confidence: emotionAnalysis.confidence,
         icon: getEmotionIcon(emotionAnalysis.emotion)
-      } : null
-    }
-
-    setMessages(prev => [...prev, userMessage])
-
-    try {
-      const startTime = Date.now()
+      }
       
-      const enhancedBusinessContext = {
+      // Add emotional context to the existing business context
+      const enhancedContext = {
         ...businessContext,
-        current_emotion: emotionAnalysis ? {
+        current_emotion: {
           emotion: emotionAnalysis.emotion,
           confidence: emotionAnalysis.confidence,
-          empathetic_strategy: emotionAnalysis.empathetic_response.strategy
-        } : null,
-        emotion_history: userEmotionHistory.slice(-3), // Last 3 emotions for context
-        mood_trend: currentMood
-      }
-      
-      const response = await fetch('/api/ai/agentic-executor', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+          empathetic_strategy: emotionAnalysis.empathetic_response?.strategy
         },
-        body: JSON.stringify({
-          message: currentMessage,
-          context: {
-            shopId: profileData?.shop_id || 'floating-chat',
-            testMode: false,
-            dryRun: false,
-            sessionId: sessionId,
-            userId: user?.id,
-            businessContext: enhancedBusinessContext && contextLoaded ? {
-              shop: enhancedBusinessContext.shop,
-              analytics: enhancedBusinessContext.analytics,
-              predictions: enhancedBusinessContext.predictions,
-              alerts: enhancedBusinessContext.alerts
-            } : null,
-            shopName: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
-            customerCount: realTimeMetrics?.total_customers || 0,
-            monthlyRevenue: realTimeMetrics?.monthly_revenue || 0,
-            location: shopData?.location || 'Main Location',
-            staffCount: shopData?.staff_count || 1,
-            barbershopId: shopData?.shop_id || user?.id,
-            userRole: shopData?.user_role || 'owner',
-            todayAppointments: realTimeMetrics?.today_appointments || 0,
-            totalRevenue: realTimeMetrics?.total_revenue || 0
-          },
-          mode: 'tools'
-        })
-      })
-
-      const data = await response.json()
-      const responseTime = (Date.now() - startTime) / 1000 // Convert to seconds
-      
-      const responseText = data.message || "I'm here to help! What would you like to know about your business?"
-      const agentUsed = data.agent?.name || 'AI Assistant'
-      const toolsUsed = data.toolsUsed || []
-      const smartActions = []
-      
-      if (responseText.toLowerCase().includes('appointment') || responseText.toLowerCase().includes('booking')) {
-        smartActions.push({ text: 'Open Calendar', link: '/dashboard/calendar', icon: '📅' })
-      }
-      if (responseText.toLowerCase().includes('revenue') || responseText.toLowerCase().includes('money') || responseText.toLowerCase().includes('earnings')) {
-        smartActions.push({ text: 'View Analytics', link: '/dashboard/analytics-enhanced', icon: '📊' })
-      }
-      if (responseText.toLowerCase().includes('customer') || responseText.toLowerCase().includes('client')) {
-        smartActions.push({ text: 'Customer List', link: '/dashboard/customers', icon: '👥' })
-      }
-      if (responseText.toLowerCase().includes('marketing') || responseText.toLowerCase().includes('promotion')) {
-        smartActions.push({ text: 'Marketing Tools', link: '/dashboard/campaigns', icon: '🎯' })
+        emotion_history: userEmotionHistory.slice(-3),
+        mood_trend: currentMood,
+        shopId: shopData?.shop_id || 'floating-chat',
+        sessionId: sessionId,
+        userId: user?.id
       }
       
-      const aiMessage = {
-        id: Date.now() + 1,
-        type: 'assistant',
-        content: responseText,
-        agent: agentUsed,
-        agentId: data.agent?.id || 'unknown',
-        toolsUsed: toolsUsed,
-        timestamp: new Date(),
-        actions: smartActions
-      }
-
-      setMessages(prev => [...prev, aiMessage])
-      
-      try {
-        await fetch('/api/ai/analytics/usage', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'track_conversation',
-            data: {
-              agent: data.agent_details?.primary_agent || 'FloatingChat',
-              topic: data.message_type || 'general',
-              userId: user?.id || null,
-              sessionId: `floating_${Date.now()}`
-            }
-          })
-        })
-        
-        await fetch('/api/ai/analytics/usage', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'track_response_time',
-            data: {
-              responseTime: responseTime,
-              agent: data.agent_details?.primary_agent || 'FloatingChat'
-            }
-          })
-        })
-      } catch (analyticsError) {
-        console.warn('Analytics tracking failed:', analyticsError)
-      }
-    } catch (error) {
-      console.error('AI Chat error:', error)
-      const errorMessage = {
-        id: Date.now() + 1,
-        type: 'assistant',
-        content: "I'm having trouble connecting right now. Try asking me about your bookings, revenue, or customer insights!",
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-    } finally {
-      setIsLoading(false)
+      // Process automated triggers in the background
+      await processAutomatedTriggers(emotionAnalysis, aiInput)
     }
+
+    // Use the AI SDK's submit handler which handles the API call automatically
+    await handleAISubmit(e)
   }
 
   const handleKeyPress = (e) => {
@@ -775,9 +697,9 @@ export default function FloatingAIChat() {
     }
   }
 
-  const handleQuickAction = (query) => {
-    setMessage(query)
-    handleSendMessage()
+  const handleQuickAction = async (query) => {
+    // Use the AI SDK's sendMessage function directly with the query
+    await sendAIMessage(query)
   }
 
   const startVoiceRecognition = () => {
@@ -799,11 +721,13 @@ export default function FloatingAIChat() {
     
     recognition.onresult = async (event) => {
       const transcript = event.results[0][0].transcript
-      setMessage(transcript)
+      // Use the AI SDK's input change handler
+      handleAIInputChange({ target: { value: transcript } })
       setIsVoiceListening(false)
       
       const voiceEmotionHint = await analyzeVoiceEmotion(transcript, event)
       if (voiceEmotionHint) {
+        // Voice emotion analysis could enhance the context
       }
     }
     
@@ -844,7 +768,8 @@ export default function FloatingAIChat() {
       
       setShowRating(null)
       
-      setMessages(prev => prev.map(msg => 
+      // Update the rated status in emotion messages if it exists there
+      setEmotionMessages(prev => prev.map(msg => 
         msg.id === messageId 
           ? { ...msg, rated: rating }
           : msg
@@ -923,7 +848,7 @@ export default function FloatingAIChat() {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
-            {messages.map((msg) => (
+            {allMessages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -1035,7 +960,7 @@ export default function FloatingAIChat() {
           </div>
 
           {/* Quick Actions */}
-          {messages.length === 1 && (
+          {allMessages.length === 1 && (
             <div className="px-3 pb-2">
               <p className="text-xs text-gray-500 mb-2">Quick Actions:</p>
               <div className="flex flex-wrap gap-1">
@@ -1059,8 +984,8 @@ export default function FloatingAIChat() {
             <div className="flex space-x-2">
               <input
                 type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                value={aiInput}
+                onChange={handleAIInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about your business..."
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
@@ -1079,7 +1004,7 @@ export default function FloatingAIChat() {
               </button>
               <button
                 onClick={handleSendMessage}
-                disabled={!message.trim() || isLoading}
+                disabled={!aiInput.trim() || isLoading}
                 className="bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 text-white rounded-lg p-2 transition-colors"
               >
                 <PaperAirplaneIcon className="h-4 w-4" />

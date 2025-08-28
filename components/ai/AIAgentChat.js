@@ -75,21 +75,27 @@ export default function AIAgentChat({ barbershopId }) {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/ai/agentic-executor', {
+      const response = await fetch('/api/ai/v2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: message,
+          agent: 'auto', // Let the system choose the best agent
           context: {
             shopId: barbershopId || 'ai-agent-chat',
             testMode: false,
             dryRun: false,
             userId: 'ai-chat-user',
-            businessName: 'Barbershop'
+            businessName: 'Barbershop',
+            conversationHistory: messages.slice(-6).map(msg => ({
+              isUser: msg.type === 'user',
+              text: msg.content,
+              timestamp: msg.timestamp
+            }))
           },
-          mode: 'tools'
+          stream: false // Use JSON response
         }),
       })
 
@@ -102,10 +108,12 @@ export default function AIAgentChat({ barbershopId }) {
       const aiResponse = {
         id: Date.now() + 1,
         type: 'assistant',
-        content: data.message || "I apologize, but I'm having trouble accessing your business data right now. Please try again in a moment.",
+        content: data.message || data.content || data.text || "I apologize, but I'm having trouble accessing your business data right now. Please try again in a moment.",
         agent: data.agent?.name || 'AI Agent',
-        agentId: data.agent?.id || 'unknown',
+        agentId: data.agent?.id || 'auto',
         toolsUsed: data.toolsUsed || [],
+        model: data.model,
+        cost: data.cost,
         executionTime: data.executionTime || 0,
         timestamp: new Date()
       }

@@ -25,3 +25,12 @@ psutil==5.9.6
 # Additional dependencies for production
 bcrypt==4.1.2
 supabase==2.1.0
+
+# AI SDK Stack Dependencies
+crewai==0.165.1
+llama-index==0.13.3
+llama-index-vector-stores-supabase==0.4.0
+llama-index-llms-openai==0.5.4
+llama-index-llms-anthropic==0.8.5
+langchain-openai==0.3.30
+langchain-anthropic==0.3.19
