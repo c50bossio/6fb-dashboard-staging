@@ -131,6 +131,20 @@ const nextConfig = {
     }
     // Ensure .js extensions are resolved
     config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
+    
+    // Handle Node.js modules for Google Calendar API during build
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+      crypto: false,
+      path: false,
+      os: false,
+      stream: false,
+      util: false,
+    }
+    
     return config
   },
   
