@@ -45,12 +45,19 @@ export default function AuthDebug() {
     }
 
     try {
-      setStatus('Testing sign in...')
+      setStatus('Testing sign in with timeout...')
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Add a timeout to prevent hanging forever
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Authentication timeout after 10 seconds')), 10000)
+      )
+      
+      const authPromise = supabase.auth.signInWithPassword({
         email: 'test@bookedbarber.com',
         password: 'testpass123'
       })
+      
+      const { data, error } = await Promise.race([authPromise, timeoutPromise])
       
       if (error) {
         setStatus(`Sign in error: ${error.message}`)
@@ -63,6 +70,35 @@ export default function AuthDebug() {
     } catch (error) {
       setStatus(`Exception: ${error.message}`)
       console.error('Sign in exception:', error)
+    }
+  }
+
+  const testConnection = async () => {
+    if (!supabase) {
+      setStatus('Supabase not initialized')
+      return
+    }
+
+    try {
+      setStatus('Testing basic connection...')
+      
+      // Test a simple query instead of auth
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('count(*)')
+        .limit(1)
+      
+      if (error) {
+        setStatus(`Connection error: ${error.message}`)
+        console.error('Connection error:', error)
+      } else {
+        setStatus(`Connection OK! Can query database.`)
+        console.log('Connection success:', data)
+      }
+      
+    } catch (error) {
+      setStatus(`Connection exception: ${error.message}`)
+      console.error('Connection exception:', error)
     }
   }
 
@@ -87,13 +123,23 @@ export default function AuthDebug() {
             </div>
           </div>
 
-          <button
-            onClick={testSignIn}
-            disabled={!supabase}
-            className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-          >
-            Test Sign In
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={testConnection}
+              disabled={!supabase}
+              className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+            >
+              Test Basic Connection
+            </button>
+
+            <button
+              onClick={testSignIn}
+              disabled={!supabase}
+              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+            >
+              Test Sign In (with timeout)
+            </button>
+          </div>
 
           <div className="mt-6 text-sm text-gray-600">
             <p>This page tests the Supabase connection directly without complex UI.</p>
