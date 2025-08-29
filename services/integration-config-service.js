@@ -76,8 +76,13 @@ class IntegrationConfigService {
           serviceCache[serviceName] = sendgridModule.enhancedSendGridService
           break
         case 'google_calendar':
-          const calendarModule = await import('./calendar-integration-service.js')
-          serviceCache[serviceName] = calendarModule.calendarIntegrationService
+          // Skip Google Calendar during build to avoid Node.js module issues
+          if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
+            serviceCache[serviceName] = { getServiceHealth: () => ({ providers: { google: { configured: false } } }) }
+          } else {
+            const calendarModule = await import('./calendar-integration-service.js')
+            serviceCache[serviceName] = calendarModule.calendarIntegrationService
+          }
           break
         case 'notifications':
           const notificationModule = await import('./notification-service.js')
@@ -264,7 +269,17 @@ class IntegrationConfigService {
    */
   async checkSendGridStatus() {
     try {
-      const statusCheck = enhancedSendGridService.getServiceStatus()
+      const sendgridService = await this.getService('sendgrid')
+      if (!sendgridService) {
+        return {
+          configured: false,
+          enabled: false,
+          healthy: false,
+          error: 'Service not available'
+        }
+      }
+
+      const statusCheck = sendgridService.getServiceStatus()
       
       return {
         configured: statusCheck.apiKeyConfigured,
@@ -288,7 +303,17 @@ class IntegrationConfigService {
    */
   async checkGoogleCalendarStatus(userId) {
     try {
-      const healthCheck = await calendarIntegrationService.getServiceHealth()
+      const calendarService = await this.getService('google_calendar')
+      if (!calendarService) {
+        return {
+          configured: false,
+          enabled: false,
+          healthy: false,
+          error: 'Service not available'
+        }
+      }
+
+      const healthCheck = await calendarService.getServiceHealth()
       
       let userConnected = false
       if (userId) {
@@ -304,9 +329,9 @@ class IntegrationConfigService {
       }
 
       return {
-        configured: healthCheck.providers.google.configured,
+        configured: healthCheck.providers?.google?.configured || false,
         enabled: userConnected,
-        healthy: healthCheck.providers.google.initialized && userConnected,
+        healthy: (healthCheck.providers?.google?.initialized || false) && userConnected,
         user_connected: userConnected,
         details: healthCheck
       }
@@ -326,6 +351,16 @@ class IntegrationConfigService {
    */
   async checkNotificationStatus() {
     try {
+      const notificationService = await this.getService('notifications')
+      if (!notificationService) {
+        return {
+          configured: true,
+          enabled: false,
+          healthy: false,
+          error: 'Service not available'
+        }
+      }
+
       const healthCheck = await notificationService.getServiceHealth()
       
       return {
@@ -460,24 +495,27 @@ class IntegrationConfigService {
           break
         
         case 'twilio':
-          testResult = await twilioSMSService.getServiceHealth()
+          const twilioService = await this.getService('twilio')
+          testResult = twilioService ? await twilioService.getServiceHealth() : { success: false, error: 'Service not available' }
           break
         
         case 'sendgrid':
-          // Test by sending a test email if configured
-          if (enhancedSendGridService.getServiceStatus().apiKeyConfigured) {
-            testResult = await enhancedSendGridService.sendTestEmail('test@example.com')
+          const sendgridService = await this.getService('sendgrid')
+          if (sendgridService && sendgridService.getServiceStatus().apiKeyConfigured) {
+            testResult = await sendgridService.sendTestEmail('test@example.com')
           } else {
             testResult = { success: false, error: 'SendGrid not configured' }
           }
           break
         
         case 'google_calendar':
-          testResult = await calendarIntegrationService.getServiceHealth()
+          const calendarService = await this.getService('google_calendar')
+          testResult = calendarService ? await calendarService.getServiceHealth() : { success: false, error: 'Service not available' }
           break
         
         case 'notifications':
-          testResult = await notificationService.getServiceHealth()
+          const notificationService = await this.getService('notifications')
+          testResult = notificationService ? await notificationService.getServiceHealth() : { success: false, error: 'Service not available' }
           break
         
         default:

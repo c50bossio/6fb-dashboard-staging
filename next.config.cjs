@@ -1,8 +1,6 @@
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+const path = require('path')
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const __dirname = path.resolve()
 
 const nextConfig = {
   reactStrictMode: true,
@@ -228,4 +226,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

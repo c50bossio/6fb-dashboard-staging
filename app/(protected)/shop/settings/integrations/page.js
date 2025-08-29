@@ -11,7 +11,6 @@ import { CalendarDaysIcon as CalendarSolid } from '@heroicons/react/24/solid'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../../../components/SupabaseAuthProvider'
-import { integrationConfigService } from '../../../../../services/integration-config-service'
 
 export default function IntegrationsPage() {
   const { user } = useAuth()

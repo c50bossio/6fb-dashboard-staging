@@ -3,7 +3,8 @@
  * Production Stripe API integration
  */
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+import Stripe from 'stripe';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 class StripeService {
   constructor() {
@@ -622,7 +623,7 @@ class StripeService {
 
 const stripeService = new StripeService();
 
-module.exports = {
+export {
   stripeService,
   StripeService
 };
