@@ -7,10 +7,14 @@ async function retryDatabaseOperation(operation, maxRetries = 2, delay = 1000) {
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      // // Debug log removed for production
-const result = await operation()
-      // // Debug log removed for production
-return result
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔄 Staff API: Retry attempt ${attempt}/${maxRetries}`)
+      }
+      const result = await operation()
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ Staff API: Operation succeeded on attempt ${attempt}`)
+      }
+      return result
     } catch (error) {
       lastError = error
       console.warn(`⚠️ Attempt ${attempt} failed:`, error.message)
@@ -19,19 +23,25 @@ return result
       if (error.message?.includes('authentication') || 
           error.message?.includes('permission') || 
           error.message?.includes('unauthorized')) {
-        // // Debug log removed for production
-throw error
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`🚫 Staff API: Not retrying auth/permission error: ${error.message}`)
+        }
+        throw error
       }
       
       // Don't retry if this is the last attempt
       if (attempt === maxRetries) {
-        // // Debug log removed for production
-throw error
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`❌ Staff API: Final attempt failed: ${error.message}`)
+        }
+        throw error
       }
       
       // Wait before retry
-      // // Debug log removed for production
-await new Promise(resolve => setTimeout(resolve, delay))
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⏳ Staff API: Waiting ${delay}ms before retry...`)
+      }
+      await new Promise(resolve => setTimeout(resolve, delay))
       delay *= 1.5 // Exponential backoff
     }
   }
@@ -40,11 +50,15 @@ await new Promise(resolve => setTimeout(resolve, delay))
 }
 
 export async function GET(request) {
-  // // Debug log removed for production
-try {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🏁 Staff API: Starting request processing')
+  }
+  try {
     // Step 1: Create Supabase client with detailed logging
-    // // Debug log removed for production
-const supabase = await createClient()
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 Staff API: Creating Supabase client...')
+    }
+    const supabase = await createClient()
     
     if (!supabase) {
       console.error('❌ Staff API: Supabase client creation failed - client is null')
@@ -53,10 +67,15 @@ const supabase = await createClient()
         details: 'Supabase client could not be created' 
       }, { status: 500 })
     }
-    // // Debug log removed for production
-// Step 1.5: Health check - test database connection
-    // // Debug log removed for production
-try {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Staff API: Supabase client created successfully')
+    }
+    
+    // Step 1.5: Health check - test database connection
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🏥 Staff API: Performing database health check...')
+    }
+    try {
       const healthCheck = await supabase
         .from('profiles')
         .select('id')
@@ -89,8 +108,10 @@ try {
         }
       }
       
-      // // Debug log removed for production
-} catch (healthError) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Staff API: Database health check passed')
+      }
+    } catch (healthError) {
       console.error('❌ Staff API: Database health check exception:', healthError)
       return NextResponse.json({ 
         error: 'Database connection failed', 
@@ -98,24 +119,61 @@ try {
       }, { status: 503 })
     }
     
-    // Step 2: Get authenticated user with detailed logging
-    // // Debug log removed for production
-const { data: { user }, error: authError } = await supabase.auth.getUser()
+    // Step 2: Get authenticated user with detailed logging and retry logic
+    // This handles cases where the session cookie isn't immediately available after OAuth
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔐 Staff API: Starting authentication check...')
+    }
+    
+    let user = null
+    let authError = null
+    
+    // Try to get user, with one retry if it fails
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`🔍 Staff API: Authentication attempt ${attempt}/2`)
+      }
+      
+      const result = await supabase.auth.getUser()
+      user = result.data?.user
+      authError = result.error
+      
+      if (user) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`✅ Staff API: User authenticated on attempt ${attempt}:`, {
+            id: user.id,
+            email: user.email,
+            provider: user.app_metadata?.provider
+          })
+        }
+        break
+      }
+      
+      if (attempt === 1) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⏳ Staff API: No user on first attempt, retrying after 1000ms...')
+        }
+        // Wait a bit for cookie to be available
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
     
     if (authError) {
-      console.error('❌ Staff API: Authentication error:', authError)
+      console.error('❌ Staff API: Authentication error after retries:', authError)
       return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
     }
     
     if (!user) {
-      console.warn('⚠️ Staff API: No authenticated user found')
+      console.warn('⚠️ Staff API: No authenticated user found after retries')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // // Debug log removed for production
-// Step 3: Get user profile with retry logic
-    // // Debug log removed for production
-const profile = await retryDatabaseOperation(async () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`👤 Staff API: Fetching profile for user ${user.id}...`)
+    }
+    
+    // Step 3: Get user profile with retry logic
+    const profile = await retryDatabaseOperation(async () => {
       return await getUserProfile(supabase, user)
     })
     
@@ -123,10 +181,22 @@ const profile = await retryDatabaseOperation(async () => {
       console.error('❌ Staff API: Profile not found for user:', user.id)
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
-    // // Debug log removed for production
-// Step 4: Get barbershop ID with retry logic
-    // // Debug log removed for production
-const barbershopId = await retryDatabaseOperation(async () => {
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ Staff API: Profile found:`, {
+        id: profile.id,
+        role: profile.role,
+        shop_id: profile.shop_id,
+        barbershop_id: profile.barbershop_id
+      })
+    }
+    
+    // Step 4: Get barbershop ID with retry logic
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🏪 Staff API: Determining barbershop for user...`)
+    }
+    
+    const barbershopId = await retryDatabaseOperation(async () => {
       return await getUserBarbershop(supabase, profile)
     })
     
@@ -138,15 +208,25 @@ const barbershopId = await retryDatabaseOperation(async () => {
       })
       return NextResponse.json({ error: 'No barbershop found for user' }, { status: 404 })
     }
-    // // Debug log removed for production
-// Step 5: Get staff with profiles using retry logic
-    // // Debug log removed for production
-const staffWithProfiles = await retryDatabaseOperation(async () => {
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ Staff API: Barbershop ID determined: ${barbershopId}`)
+    }
+    
+    // Step 5: Get staff with profiles using retry logic
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`👥 Staff API: Fetching staff for barbershop ${barbershopId}...`)
+    }
+    
+    const staffWithProfiles = await retryDatabaseOperation(async () => {
       return await fetchStaffWithProfiles(supabase, barbershopId)
     })
-    // // Debug log removed for production
-// // Debug log removed for production
-return NextResponse.json({
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ Staff API: Found ${staffWithProfiles.length} staff members`)
+    }
+    
+    return NextResponse.json({
       success: true,
       staff: staffWithProfiles,
       barbershop_id: barbershopId,
@@ -177,8 +257,11 @@ return NextResponse.json({
 // Production-ready helper functions with enhanced error handling
 async function getUserProfile(supabase, user) {
   try {
-    // // Debug log removed for production
-if (!supabase) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🔍 getUserProfile: Looking up profile for user ${user.id}`)
+    }
+    
+    if (!supabase) {
       console.error('❌ getUserProfile: Supabase client is null')
       throw new Error('Database client not available')
     }
@@ -205,8 +288,14 @@ if (!supabase) {
     }
     
     if (profile) {
-      // // Debug log removed for production
-}
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ getUserProfile: Profile found for ${user.id}`)
+      }
+    } else {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⚠️ getUserProfile: No profile found for ${user.id}`)
+      }
+    }
     
     return profile
   } catch (error) {

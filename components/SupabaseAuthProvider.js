@@ -220,8 +220,21 @@ function SupabaseAuthProvider({ children }) {
         
         // Handle INITIAL_SESSION carefully - only on real navigation
         if (event === 'INITIAL_SESSION') {
-          // If we're already on a protected page, don't redirect
-          if (isProtectedPath && session?.user) {
+          // Check if we're coming from an OAuth callback
+          const isOAuthCallback = currentPath.includes('/auth/callback') || 
+                                 currentPath.includes('code=') ||
+                                 currentPath.includes('access_token=')
+          
+          // If this is an OAuth callback, always process it
+          if (isOAuthCallback && session?.user) {
+            console.log('✅ [AUTH DEBUG] Processing OAuth callback INITIAL_SESSION')
+            setUser(session.user)
+            if (!profile || profile.id !== session.user.id) {
+              await fetchProfile(session.user.id)
+            }
+            // Let the normal flow continue for redirect handling
+          } else if (isProtectedPath && session?.user) {
+            // If we're already on a protected page, don't redirect
             console.log('⏩ [AUTH DEBUG] INITIAL_SESSION but already on protected page - NO REDIRECT')
             // Just update the session
             setUser(session.user)
@@ -229,12 +242,9 @@ function SupabaseAuthProvider({ children }) {
               await fetchProfile(session.user.id)
             }
             return // NO REDIRECT
-          }
-          
-          // If we haven't navigated and it's within 5 seconds of page load, ignore
-          const timeSinceLoad = Date.now() - pageLoadTimeRef.current
-          if (!hasUserNavigatedRef.current && timeSinceLoad < 5000) {
-            console.log('⏩ [AUTH DEBUG] Ignoring INITIAL_SESSION (no navigation detected)')
+          } else if (!session) {
+            // No session - this is normal for initial page load without auth
+            console.log('⏩ [AUTH DEBUG] INITIAL_SESSION with no session - normal initial load')
             return // NO REDIRECT
           }
         }
@@ -255,7 +265,29 @@ function SupabaseAuthProvider({ children }) {
         // Handle redirects ONLY for actual sign-in events (not tab switches)
         // SIGNED_IN can fire on tab focus, so we need to be VERY careful
         if (event === 'SIGNED_IN' && session) {
-          // Never redirect if we're already on a protected page
+          // Check if this is from an OAuth callback
+          const isFromOAuth = currentPath.includes('/auth/callback') || 
+                             sessionStorage.getItem('auth_return_url') !== null
+          
+          // If we're coming from OAuth, always allow redirect
+          if (isFromOAuth) {
+            console.log('✅ [AUTH DEBUG] SIGNED_IN from OAuth - processing redirect')
+            
+            // Update session and profile
+            setUser(session.user)
+            if (!profile || profile.id !== session.user.id) {
+              await fetchProfile(session.user.id)
+            }
+            
+            // Handle redirect
+            const returnUrl = sessionStorage.getItem('auth_return_url') || '/dashboard'
+            sessionStorage.removeItem('auth_return_url')
+            console.log('➡️ [AUTH DEBUG] Redirecting to:', returnUrl)
+            router.push(returnUrl)
+            return
+          }
+          
+          // Never redirect if we're already on a protected page (tab switch scenario)
           if (isProtectedPath) {
             console.log('➡️ [AUTH DEBUG] SIGNED_IN but already on protected page - NO REDIRECT')
             // Just update the session

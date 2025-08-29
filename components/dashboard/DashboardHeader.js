@@ -15,8 +15,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useSubscription } from '../../hooks/useSubscription'
 import { useSubscriptionAccess } from '../../hooks/useSubscriptionAccess'
 import { getDisplayName, getInitials } from '../../lib/name-utils'
-// Use the new hierarchical ViewSwitcher system
-import ViewSwitcher from '../navigation/ViewSwitcher'
+// Use the unified context selector for navigation
+import UnifiedContextSelector from '../shared/UnifiedContextSelector'
 import { useAuth } from '../SupabaseAuthProvider'
 
 export default function DashboardHeader() {
@@ -172,10 +172,10 @@ export default function DashboardHeader() {
             </div>
           </div>
 
-          {/* Center - ViewSwitcher */}
+          {/* Center - Unified Context Selector */}
           <div className="flex-1 flex justify-center min-w-0 mx-1 sm:mx-2 px-2">
             <div className="w-full sm:w-auto max-w-full">
-              <ViewSwitcher />
+              <UnifiedContextSelector />
             </div>
           </div>
 

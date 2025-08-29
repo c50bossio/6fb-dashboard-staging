@@ -277,7 +277,7 @@ build_test_command() {
     cmd="$cmd --reporter=html --reporter=json --reporter=github"
     
     # Add output directory
-    cmd="$cmd --output-dir=$RESULTS_DIR"
+    cmd="$cmd --output-dir=\"$RESULTS_DIR\""
     
     echo "$cmd"
 }

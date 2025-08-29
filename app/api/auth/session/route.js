@@ -8,6 +8,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const includeProfile = searchParams.get('profile') === 'true'
   const validateConsistency = searchParams.get('validate') === 'true'
+  const includeTokens = searchParams.get('tokens') === 'true'
   
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -70,6 +71,19 @@ export async function GET(request) {
         },
         timestamp,
         source: 'valid_session'
+      }
+
+      // Include full session data with tokens if requested (for session sync)
+      if (includeTokens) {
+        console.log('🔑 [Session API] Including full session tokens for sync')
+        responseData.session_data = {
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          expires_at: session.expires_at,
+          expires_in: session.expires_in,
+          token_type: session.token_type || 'bearer',
+          user: session.user
+        }
       }
       
       // Include profile data if requested

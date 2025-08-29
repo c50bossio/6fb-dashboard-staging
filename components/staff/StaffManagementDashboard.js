@@ -14,107 +14,91 @@ import {
   XCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import Button from '@/components/ui/Button'
 import { Card } from "@/components/ui/card.jsx"
 import { getDisplayName, nameMatches } from '@/lib/name-utils'
-import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
-import unifiedStaffService from '@/lib/unified-staff-service'
 import PayrollDashboard from '../payroll/PayrollDashboard'
 import AddStaffModal from './AddStaffModal'
 import StaffAvailabilityEditor from './StaffAvailabilityEditor'
 import StaffDetailModal from './StaffDetailModal'
 import StaffPerformanceView from './StaffPerformanceView'
-import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+import { StaffHeader } from '@/components/layout/UnifiedDashboardHeader'
+
+// React Query hooks
+import { 
+  useStaffWithRealtime, 
+  useCreateStaffMember, 
+  useUpdateStaffMember, 
+  useDeactivateStaffMember 
+} from '@/hooks/useStaffQuery'
+import { useBusinessContext, useCurrentShopId } from '@/hooks/useBusinessContext'
 
 export default function StaffManagementDashboard() {
-  // Get selected location from global context
-  const { selectedLocations } = useGlobalDashboard()
+  // Get current shop ID and business context
+  const shopId = useCurrentShopId()
+  const { businessContext, isLoading: contextLoading, canManageStaff } = useBusinessContext()
+  
+  // Staff data with real-time updates
+  const { 
+    data: staff = [], 
+    isLoading, 
+    error, 
+    refetch: refetchStaff 
+  } = useStaffWithRealtime(shopId, {
+    includeAvailability: false, // Not needed in dashboard, prevents 400 errors
+    includeServices: false,     // Not needed in dashboard, prevents 400 errors
+  })
+
+  // Staff mutations
+  const createStaffMutation = useCreateStaffMember()
+  const updateStaffMutation = useUpdateStaffMember()
+  const deactivateStaffMutation = useDeactivateStaffMember()
   
   const [activeView, setActiveView] = useState('overview') // overview, schedule, performance, payroll
-  const [staff, setStaff] = useState([])
-  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedStaff, setSelectedStaff] = useState(null)
   const [addButtonLoading, setAddButtonLoading] = useState(false)
   const [editingAvailability, setEditingAvailability] = useState(null)
-  const [metrics, setMetrics] = useState({
-    totalStaff: 0,
-    activeToday: 0,
-    pendingPayroll: 0,
-    avgRating: 0
-  })
   
   // Ref to prevent multiple rapid clicks
   const addStaffTimeoutRef = useRef(null)
 
-  // Load staff data
-  const loadStaffData = useCallback(async () => {
-    try {
-      setLoading(true)
-      
-      // Get the selected location ID, fallback to mock location
-      const locationId = selectedLocations?.[0] || 'tomb45-channelside'
-      // // Debug log removed for production
-// Use unified staff service to get comprehensive staff data for selected location
-      const staffData = await unifiedStaffService.getStaff(locationId, {
-        useCache: true,
-        includeAvailability: false, // Not needed in dashboard, prevents 400 errors
-        includeServices: false,     // Not needed in dashboard, prevents 400 errors
-        forceRefresh: false
-      })
-      
-      if (staffData.staff && staffData.staff.length > 0) {
-        
-        // The unified staff service already provides enhanced staff data
-        setStaff(staffData.staff)
-        
-        // Calculate metrics from the enhanced staff data
-        const totalStaff = staffData.staff.length
-        const activeToday = staffData.staff.filter(s => s.is_active).length
-        const pendingPayroll = staffData.staff.reduce((sum, s) => sum + (s.metrics?.pendingCommission || 0), 0)
-        const avgRating = staffData.staff.reduce((sum, s) => sum + (s.metrics?.averageRating || 0), 0) / totalStaff || 0
-        
-        setMetrics({
-          totalStaff,
-          activeToday,
-          pendingPayroll,
-          avgRating
-        })
-        
-      } else {
-        setStaff([])
-        setMetrics({
-          totalStaff: 0,
-          activeToday: 0,
-          pendingPayroll: 0,
-          avgRating: 0
-        })
+  // Calculate metrics from staff data
+  const metrics = useMemo(() => {
+    if (!staff || staff.length === 0) {
+      return {
+        totalStaff: 0,
+        activeToday: 0,
+        pendingPayroll: 0,
+        avgRating: 0
       }
-      
-    } catch (error) {
-      toast.error('Failed to load staff members')
-      setStaff([])
-    } finally {
-      setLoading(false)
     }
-  }, [selectedLocations])
 
-  useEffect(() => {
-    loadStaffData()
-  }, [loadStaffData])
+    const totalStaff = staff.length
+    const activeToday = staff.filter(s => s.is_active).length
+    const pendingPayroll = staff.reduce((sum, s) => sum + (s.metrics?.pendingCommission || 0), 0)
+    const avgRating = staff.reduce((sum, s) => sum + (s.metrics?.averageRating || 0), 0) / totalStaff || 0
 
-  // Handle staff added - refresh data and invalidate cache
+    return {
+      totalStaff,
+      activeToday,
+      pendingPayroll,
+      avgRating
+    }
+  }, [staff])
+
+  // Handle staff added - use React Query mutations
   const handleStaffAdded = useCallback(() => {
-    unifiedStaffService.invalidateCache()
-    loadStaffData()
-  }, [loadStaffData])
+    // React Query will automatically refetch due to cache invalidation in the mutation
+    toast.success('Staff member added successfully')
+  }, [])
 
-  // Handle Add Staff button click - Fixed missing function error
+  // Handle Add Staff button click
   const handleAddStaffClick = useCallback(() => {
     setAddButtonLoading(true)
     setShowAddModal(true)
@@ -167,10 +151,11 @@ export default function StaffManagementDashboard() {
   const StaffCard = ({ member }) => {
     const statusColor = member.is_active ? 'green' : 'gray'
     const hasCommission = member.metrics?.pendingCommission > 0
+    const isUpdating = updateStaffMutation.isPending || deactivateStaffMutation.isPending
 
     return (
-      <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => setSelectedStaff(member)}>
+      <Card className={`p-6 hover:shadow-lg transition-shadow cursor-pointer ${isUpdating ? 'opacity-50' : ''}`}
+            onClick={() => !isUpdating && setSelectedStaff(member)}>
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
             {/* Avatar */}
@@ -321,11 +306,25 @@ export default function StaffManagementDashboard() {
             <button
               onClick={(e) => {
                 e.stopPropagation() // Prevent card click event
-                setEditingAvailability(member)
+                if (!isUpdating) {
+                  setEditingAvailability(member)
+                }
               }}
-              className="w-full mt-2 px-3 py-1.5 text-sm text-olive-700 bg-olive-50 hover:bg-olive-100 rounded-lg transition-colors duration-200"
+              disabled={isUpdating}
+              className={`w-full mt-2 px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 flex items-center justify-center ${
+                isUpdating 
+                  ? 'text-gray-500 bg-gray-100 cursor-not-allowed' 
+                  : 'text-olive-700 bg-olive-50 hover:bg-olive-100'
+              }`}
             >
-              Edit Availability
+              {isUpdating ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500 mr-2"></div>
+                  Updating...
+                </>
+              ) : (
+                'Edit Availability'
+              )}
             </button>
           )}
         </div>
@@ -333,7 +332,8 @@ export default function StaffManagementDashboard() {
     )
   }
 
-  if (loading) {
+  // Show loading state while fetching context or staff data
+  if (contextLoading || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
@@ -341,13 +341,61 @@ export default function StaffManagementDashboard() {
     )
   }
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Staff Management</h1>
-        <p className="text-gray-600 mt-2">Manage your team, schedules, and performance</p>
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="p-8 max-w-md mx-4">
+          <div className="text-center">
+            <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Staff</h3>
+            <p className="text-gray-600 mb-4">There was an error loading your staff members.</p>
+            <Button 
+              onClick={() => refetchStaff()} 
+              disabled={isLoading}
+            >
+              {isLoading ? 'Retrying...' : 'Try Again'}
+            </Button>
+          </div>
+        </Card>
       </div>
+    )
+  }
+
+  // Check permissions
+  if (!canManageStaff) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="p-8 max-w-md mx-4">
+          <div className="text-center">
+            <XCircleIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Restricted</h3>
+            <p className="text-gray-600">You don't have permission to manage staff members.</p>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Unified Context Header */}
+      <StaffHeader>
+        <Button
+          onClick={handleAddStaffClick}
+          disabled={addButtonLoading || createStaffMutation.isPending}
+          className="flex items-center"
+        >
+          {addButtonLoading || createStaffMutation.isPending ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+          ) : (
+            <PlusIcon className="h-4 w-4 mr-2" />
+          )}
+          {createStaffMutation.isPending ? 'Adding...' : 'Add Staff'}
+        </Button>
+      </StaffHeader>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* View Tabs */}
       <div className="border-b border-gray-200 mb-6">
@@ -435,13 +483,13 @@ export default function StaffManagementDashboard() {
             {/* Add Staff Button */}
             <Button
               onClick={handleAddStaffClick}
-              disabled={addButtonLoading}
+              disabled={addButtonLoading || createStaffMutation.isPending}
               className="flex items-center"
             >
-              {addButtonLoading ? (
+              {addButtonLoading || createStaffMutation.isPending ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Opening...
+                  {createStaffMutation.isPending ? 'Adding...' : 'Opening...'}
                 </>
               ) : (
                 <>
@@ -463,12 +511,12 @@ export default function StaffManagementDashboard() {
               {!searchQuery && (
                 <Button 
                   onClick={handleAddStaffClick}
-                  disabled={addButtonLoading}
+                  disabled={addButtonLoading || createStaffMutation.isPending}
                 >
-                  {addButtonLoading ? (
+                  {addButtonLoading || createStaffMutation.isPending ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Opening...
+                      {createStaffMutation.isPending ? 'Adding...' : 'Opening...'}
                     </>
                   ) : (
                     'Add Your First Staff Member'
@@ -521,15 +569,40 @@ export default function StaffManagementDashboard() {
       {/* Edit Availability Modal */}
       {editingAvailability && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-lg">
+          <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-lg relative">
+            {updateStaffMutation.isPending && (
+              <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-olive-600"></div>
+                  <span className="text-olive-600 font-medium">Updating availability...</span>
+                </div>
+              </div>
+            )}
             <StaffAvailabilityEditor
               staffMember={editingAvailability}
               currentAvailability={editingAvailability.metadata?.availability || editingAvailability.availability}
-              onSave={() => {
-                setEditingAvailability(null)
-                loadStaffData()
+              onSave={async (availabilityData) => {
+                try {
+                  // Update staff availability using React Query mutation
+                  await updateStaffMutation.mutateAsync({
+                    staffId: editingAvailability.id || editingAvailability.user_id,
+                    updates: {
+                      availability: availabilityData,
+                      metadata: {
+                        ...editingAvailability.metadata,
+                        availability: availabilityData
+                      }
+                    }
+                  })
+                  
+                  setEditingAvailability(null)
+                  
+                } catch (error) {
+                  console.error('Failed to update staff availability:', error)
+                  // Error toast is handled by the mutation hook
+                }
               }}
-              onCancel={() => setEditingAvailability(null)}
+              onCancel={() => !updateStaffMutation.isPending && setEditingAvailability(null)}
             />
           </div>
         </div>
@@ -539,9 +612,9 @@ export default function StaffManagementDashboard() {
       {selectedStaff && (
         <StaffDetailModal
           staff={selectedStaff}
-          onClose={() => setSelectedStaff(null)}
-          onUpdate={(updatedStaff) => {
-            
+          onClose={() => !updateStaffMutation.isPending && setSelectedStaff(null)}
+          isUpdating={updateStaffMutation.isPending}
+          onUpdate={async (updatedStaff) => {
             // Validate updatedStaff data to prevent crashes
             if (!updatedStaff || typeof updatedStaff !== 'object') {
               toast.error('Invalid staff data received from server')
@@ -557,36 +630,37 @@ export default function StaffManagementDashboard() {
             // Use user_id as fallback if id is missing
             const staffId = updatedStaff.id || updatedStaff.user_id
             
-            // Update the staff member in the list
-            setStaff(prevStaff => 
-              prevStaff.map(member => {
-                const currentId = member.id || member.user_id
-                return currentId === staffId 
-                  ? { ...member, ...updatedStaff, id: currentId } // Preserve the ID
-                  : member
+            try {
+              // Use React Query mutation for optimistic updates
+              await updateStaffMutation.mutateAsync({
+                staffId,
+                updates: updatedStaff
               })
-            )
-            
-            
-            // Note: Removed loadStaffData() call to prevent race condition
-            // The local state update above is sufficient since we have fresh API data
-            // Close modal if staff was deactivated
-            if (!updatedStaff.is_active) {
-              setSelectedStaff(null)
-            } else {
-              // Update selected staff with new data - with validation
-              setSelectedStaff(current => {
-                if (!current) return current
-                return {
-                  ...current,
-                  ...updatedStaff,
-                  id: current.id || current.user_id // Preserve original ID
-                }
-              })
+              
+              // Close modal if staff was deactivated
+              if (!updatedStaff.is_active) {
+                setSelectedStaff(null)
+              } else {
+                // Update selected staff with new data
+                setSelectedStaff(current => {
+                  if (!current) return current
+                  return {
+                    ...current,
+                    ...updatedStaff,
+                    id: current.id || current.user_id // Preserve original ID
+                  }
+                })
+              }
+              
+            } catch (error) {
+              console.error('Staff update failed:', error)
+              // Error toast is handled by the mutation hook
             }
           }}
         />
       )}
+      
+      </div>
     </div>
   )
 }

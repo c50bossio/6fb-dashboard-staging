@@ -16,73 +16,56 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useShopDashboard, useCurrentShopId } from '@/hooks'
+import UnifiedDashboardHeader from '@/components/layout/UnifiedDashboardHeader'
 
 export default function ShopDashboard() {
   const { user, profile } = useAuth()
-  const [shopData, setShopData] = useState(null)
-  const [barbers, setBarbers] = useState([])
-  const [metrics, setMetrics] = useState({
-    totalRevenue: 0,
-    monthlyRevenue: 0,
-    totalBookings: 0,
-    todayBookings: 0,
-    activeBarbers: 0,
-    totalClients: 0,
-    avgRating: 0,
-    revenueChange: 0,
-    bookingsChange: 0
-  })
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    loadShopData()
-  }, [user])
-
-  const loadShopData = async () => {
-    try {
-      // Load real shop data - no demo fallback
-      const [shopResponse, barbersResponse, metricsResponse] = await Promise.all([
-        fetch('/api/shop/info'),
-        fetch('/api/shop/barbers'),
-        fetch('/api/shop/metrics')
-      ])
-
-      if (shopResponse.ok) {
-        const shop = await shopResponse.json()
-        setShopData(shop)
-      } else if (shopResponse.status === 404) {
-        // Shop not found - needs setup
-        setShopData({
-          setup_required: true,
-          error: 'No barbershop found. Please complete shop setup.'
-        })
-      }
-
-      if (barbersResponse.ok) {
-        const { barbers } = await barbersResponse.json()
-        setBarbers(barbers || [])
-      }
-
-      if (metricsResponse.ok) {
-        const metricsData = await metricsResponse.json()
-        setMetrics(metricsData)
-      }
-    } catch (error) {
-      console.error('Error loading shop data:', error)
-      setShopData({
-        error: 'Failed to load shop data. Please refresh the page.'
-      })
-    } finally {
-      setLoading(false)
-    }
+  const shopId = useCurrentShopId()
+  const { shop, metrics, analytics, isLoading, error } = useShopDashboard(shopId)
+  
+  // Extract data from the hook response
+  const shopData = shop
+  const barbers = analytics?.barbers || []
+  
+  // Provide default metrics structure
+  const dashboardMetrics = {
+    totalRevenue: metrics?.totalRevenue || 0,
+    monthlyRevenue: metrics?.monthlyRevenue || 0,
+    totalBookings: metrics?.totalBookings || 0,
+    todayBookings: metrics?.todayBookings || 0,
+    activeBarbers: metrics?.activeBarbers || 0,
+    totalClients: metrics?.totalClients || 0,
+    avgRating: metrics?.avgRating || 0,
+    revenueChange: metrics?.revenueChange || 0,
+    bookingsChange: metrics?.bookingsChange || 0
   }
 
-  if (loading) {
+  // Loading state
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
+          <ExclamationTriangleIcon className="h-16 w-16 text-red-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Shop Data</h2>
+          <p className="text-gray-600 mb-6">{error.message || 'Failed to load shop data. Please refresh the page.'}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Refresh Page
+          </button>
+        </div>
       </div>
     )
   }
@@ -118,61 +101,32 @@ export default function ShopDashboard() {
     )
   }
 
-  // Check for errors
-  if (shopData?.error && !shopData?.setup_required) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-16">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
-          <ExclamationTriangleIcon className="h-16 w-16 text-red-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Shop Data</h2>
-          <p className="text-gray-600 mb-6">{shopData.error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="inline-flex items-center px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
-          >
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Shop Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="h-16 w-16 rounded-lg bg-indigo-100 flex items-center justify-center">
-              <BuildingStorefrontIcon className="h-10 w-10 text-olive-600" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {shopData?.name || 'My Barbershop'}
-              </h1>
-              <p className="text-gray-600">
-                {shopData?.address && `${shopData.address}, ${shopData.city}, ${shopData.state}`}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex space-x-3">
-            <Link
-              href="/shop/settings"
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Shop Settings
-            </Link>
-            <Link
-              href="/shop/barbers/add"
-              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
-            >
-              <UserPlusIcon className="h-5 w-5 mr-2" />
-              Add Barber
-            </Link>
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Unified Header */}
+      <UnifiedDashboardHeader
+        title="Shop Dashboard"
+        subtitle={shopData?.address && `${shopData.address}, ${shopData.city}, ${shopData.state}`}
+        customQuickActions={['Shop Settings', 'Add Barber', 'View Analytics', 'Manage Services']}
+      >
+        <div className="flex space-x-3">
+          <Link
+            href="/shop/settings"
+            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Shop Settings
+          </Link>
+          <Link
+            href="/shop/barbers/add"
+            className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
+          >
+            <UserPlusIcon className="h-5 w-5 mr-2" />
+            Add Barber
+          </Link>
         </div>
-      </div>
+      </UnifiedDashboardHeader>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -183,18 +137,18 @@ export default function ShopDashboard() {
               <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
             </div>
             <span className={`text-sm font-medium flex items-center ${
-              metrics.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'
+              dashboardMetrics.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
-              {metrics.revenueChange >= 0 ? (
+              {dashboardMetrics.revenueChange >= 0 ? (
                 <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
-              {Math.abs(metrics.revenueChange)}%
+              {Math.abs(dashboardMetrics.revenueChange)}%
             </span>
           </div>
           <p className="text-2xl font-bold text-gray-900">
-            ${metrics.monthlyRevenue.toLocaleString()}
+            ${dashboardMetrics.monthlyRevenue.toLocaleString()}
           </p>
           <p className="text-sm text-gray-600 mt-1">Monthly Revenue</p>
         </div>
@@ -206,17 +160,17 @@ export default function ShopDashboard() {
               <CalendarDaysIcon className="h-6 w-6 text-olive-600" />
             </div>
             <span className={`text-sm font-medium flex items-center ${
-              metrics.bookingsChange >= 0 ? 'text-green-600' : 'text-red-600'
+              dashboardMetrics.bookingsChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
-              {metrics.bookingsChange >= 0 ? (
+              {dashboardMetrics.bookingsChange >= 0 ? (
                 <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
-              {Math.abs(metrics.bookingsChange)}%
+              {Math.abs(dashboardMetrics.bookingsChange)}%
             </span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{metrics.todayBookings}</p>
+          <p className="text-2xl font-bold text-gray-900">{dashboardMetrics.todayBookings}</p>
           <p className="text-sm text-gray-600 mt-1">Today's Bookings</p>
         </div>
 
@@ -227,7 +181,7 @@ export default function ShopDashboard() {
               <ScissorsIcon className="h-6 w-6 text-olive-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{metrics.activeBarbers}</p>
+          <p className="text-2xl font-bold text-gray-900">{dashboardMetrics.activeBarbers}</p>
           <p className="text-sm text-gray-600 mt-1">Active Barbers</p>
         </div>
 
@@ -238,7 +192,7 @@ export default function ShopDashboard() {
               <StarIcon className="h-6 w-6 text-amber-800" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{metrics.avgRating.toFixed(1)}</p>
+          <p className="text-2xl font-bold text-gray-900">{dashboardMetrics.avgRating.toFixed(1)}</p>
           <p className="text-sm text-gray-600 mt-1">Average Rating</p>
         </div>
       </div>
@@ -368,6 +322,8 @@ export default function ShopDashboard() {
             <p className="text-sm text-gray-600">Performance insights & reports</p>
           </div>
         </Link>
+      </div>
+      
       </div>
     </div>
   )

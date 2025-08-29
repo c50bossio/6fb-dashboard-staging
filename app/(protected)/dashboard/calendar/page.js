@@ -30,8 +30,11 @@ import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator
 import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { useToast } from '../../../../components/ToastContainer'
-import { useGlobalDashboard } from '../../../../contexts/GlobalDashboardContext'
-import { useRealtimeAppointmentsSimple as useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointmentsSimple' // Simplified version
+import { useRealtimeAppointments } from '../../../../hooks/useRealtimeAppointments' // React Query version
+import { useUserPreferences } from '../../../../hooks/useUserPreferences'
+import { useBusinessContext } from '../../../../hooks/useBusinessContext'
+import { useStaffWithRealtime, useActiveStaff } from '../../../../hooks/useStaffQuery'
+import { useShopData } from '../../../../hooks/useShopData'
 import { 
   DEFAULT_RESOURCES, 
   EMPTY_BARBER_PLACEHOLDER,
@@ -49,7 +52,6 @@ const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
   { 
     ssr: false,
-    forwardRef: true, // Enable ref forwarding for dynamically imported component
     loading: () => (
       <div className="flex items-center justify-center h-[600px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
@@ -64,6 +66,11 @@ import '../../../../styles/cancelled-appointments.css'
 
 const AppointmentBookingModal = dynamic(
   () => import('../../../../components/calendar/AppointmentBookingModal'),
+  { ssr: false }
+)
+
+const BlockTimeModal = dynamic(
+  () => import('../../../../components/calendar/BlockTimeModal'),
   { ssr: false }
 )
 
@@ -86,37 +93,62 @@ export default function CalendarPage() {
   // Get auth context
   const { user, profile, loading } = useAuth()
   
-  // Get global dashboard context
-  const {
-    selectedLocations: globalSelectedLocations,
-    selectedBarbers: globalSelectedBarbers,
-    availableLocations,
-    availableBarbers: globalAvailableBarbers,
-    permissions,
-    isMultiLocation,
-    viewMode
-  } = useGlobalDashboard()
+  // Get user preferences (Supabase-backed)
+  const { 
+    preferences, 
+    updatePreference, 
+    getSafeCalendarView,
+    loading: preferencesLoading 
+  } = useUserPreferences()
+  
+  // Get business context and permissions
+  const { 
+    businessContext, 
+    shopId, 
+    permissions, 
+    isLoading: businessContextLoading,
+    role,
+    isStaff,
+    isOwner 
+  } = useBusinessContext()
+
+  // Get shop data including staff and locations
+  const { 
+    shop, 
+    staff: availableBarbers,
+    isLoading: shopDataLoading,
+    error: shopDataError 
+  } = useShopData(shopId, {
+    includeStaff: true,
+    includeServices: false,
+    includeCustomers: false,
+    includeAppointments: false
+  })
+
+  // Get active staff for calendar resources
+  const { 
+    data: activeStaff, 
+    isLoading: staffLoading 
+  } = useActiveStaff(shopId)
   
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
   const [resources, setResources] = useState([])
   const [showQRModal, setShowQRModal] = useState(false)
+  // Use safe calendar view from preferences (defaults to timeGridWeek)
   const [currentCalendarView, setCurrentCalendarView] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('calendarView') || 'resourceTimeGridDay'
-    }
-    return 'resourceTimeGridDay'
+    return 'timeGridWeek' // Safe default while preferences load
   })
   const [selectedResource, setSelectedResource] = useState(null)
   const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [copied, setCopied] = useState({})
   const [quickLinks, setQuickLinks] = useState([])
-  const calendarRef = useRef(null)
   const [shareDropdownOpen, setShareDropdownOpen] = useState(false)
   const [currentTime, setCurrentTime] = useState('')
   const { success, error: showError, info } = useToast()
   
   const [showAppointmentModal, setShowAppointmentModal] = useState(false)
+  const [showBlockTimeModal, setShowBlockTimeModal] = useState(false)
   const [showRescheduleModal, setShowRescheduleModal] = useState(false)
   const [showBookingConfirmation, setShowBookingConfirmation] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
@@ -127,7 +159,70 @@ export default function CalendarPage() {
   const [appointmentToCancel, setAppointmentToCancel] = useState(null)
   const [cancelling, setCancelling] = useState(false)
   const [services, setServices] = useState([])
-  const [barbershopId, setBarbershopId] = useState(null) // Dynamic shop ID from user context
+  // Legacy state - now handled by React Query hooks but kept for compatibility
+  const [selectedLocations, setSelectedLocations] = useState([])
+  const [selectedBarbers, setSelectedBarbers] = useState([])
+  
+  // Computed values to replace GlobalDashboardContext
+  const isMultiLocation = false // This shop system is single-location focused
+  const viewMode = role === 'CLIENT' ? 'customer' : 'staff'
+  const contextLoading = businessContextLoading || shopDataLoading || staffLoading
+  
+  // Compatibility aliases for existing code
+  const globalSelectedLocations = selectedLocations
+  const globalSelectedBarbers = selectedBarbers  
+  const globalAvailableBarbers = availableBarbers || []
+  const availableLocations = shop ? [shop] : []
+  
+  // Use shopId from business context instead of separate state
+  const barbershopId = shopId
+
+  // Helper functions to replace GlobalDashboardContext methods
+  const getOptimalCalendarView = useCallback(() => {
+    // Return optimal view based on user role and screen size
+    if (role === 'CLIENT') return 'timeGridWeek'
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return 'listWeek'
+    return preferences?.defaultCalendarView || 'timeGridWeek'
+  }, [role, preferences?.defaultCalendarView])
+
+  const getPageDefaults = useCallback(() => {
+    return {
+      view: getOptimalCalendarView(),
+      locations: shopId ? [shopId] : [],
+      barbers: [],
+      filters: {
+        status: 'all',
+        dateRange: 'today'
+      }
+    }
+  }, [getOptimalCalendarView, shopId])
+
+  // Create contextual data structure for compatibility
+  const contextualData = useMemo(() => {
+    if (!activeStaff || !availableBarbers) return null
+    
+    return {
+      availableBarbers: activeStaff.map(staff => ({
+        id: staff.user_id,
+        name: staff.profile?.full_name || 'Staff Member',
+        barbershop_id: staff.barbershop_id
+      })),
+      calendarEvents: [], // Events come from useRealtimeAppointments
+      selectedLocation: shopId
+    }
+  }, [activeStaff, availableBarbers, shopId])
+
+  const activeContext = useMemo(() => {
+    if (!shop) return null
+    
+    return {
+      type: 'shop',
+      locationId: shopId,
+      displayName: shop.name || 'Barbershop',
+      data: shop
+    }
+  }, [shop, shopId])
+  const [shopIdResolved, setShopIdResolved] = useState(false) // Track if shop ID has been properly resolved
   
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBarber, setFilterBarber] = useState('all')
@@ -136,11 +231,8 @@ export default function CalendarPage() {
   const [filterLocation, setFilterLocation] = useState('all')
   
   // New state for dynamic calendar views
-  const [selectedView, setSelectedView] = useState('personal')
-  const [selectedLocations, setSelectedLocations] = useState([])
-  const [selectedBarbers, setSelectedBarbers] = useState([])
+  const [selectedView, setSelectedView] = useState('book-appointment')
   const [userLocations, setUserLocations] = useState([])
-  const [availableBarbers, setAvailableBarbers] = useState([])
   const [advancedFilters, setAdvancedFilters] = useState({
     status: 'all',
     serviceCategories: [],
@@ -158,6 +250,9 @@ export default function CalendarPage() {
   const [realtimeError, setRealtimeError] = useState(null)
   const [calendarFilters, setCalendarFilters] = useState({})
 
+  // Use contextual barbershop ID from active context, fallback to legacy barbershopId
+  const contextualBarbershopId = activeContext?.locationId || barbershopId
+  
   const { 
     appointments: realtimeAppointments, 
     loading: realtimeLoading, 
@@ -167,7 +262,7 @@ export default function CalendarPage() {
     stats: realtimeStats,
     refresh: refreshAppointments,
     log: websocketLog
-  } = useRealtimeAppointments(barbershopId)
+  } = useRealtimeAppointments(contextualBarbershopId)
   
   const diagnostics = useMemo(() => ({
     subscriptionStatus: realtimeHookConnected ? 'connected' : 'disconnected',
@@ -181,22 +276,151 @@ export default function CalendarPage() {
   
   const connectionAttempts = 1 // V2 always connects on first attempt
 
-  const handleViewChange = useCallback((newView) => {
-    
+  const handleViewChange = useCallback(async (newView) => {
+    console.log('[Calendar] View changing from', selectedView, 'to', newView)
     setSelectedView(newView)
     
     // Map the logical view to FullCalendar view
     const fullCalendarView = FULLCALENDAR_VIEW_MAP[newView] || newView
     setCurrentCalendarView(fullCalendarView)
     
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('calendarView', fullCalendarView)
-      localStorage.setItem('selectedView', newView)
+    // Apply view-specific filters for booking flow
+    switch (newView) {
+      case 'book-appointment':
+        // Main booking view - show all available appointments
+        console.log('[Calendar] Applying book-appointment view')
+        setSelectedBarbers([]) // Show all barbers
+        setSelectedLocations(barbershopId ? [barbershopId] : [])
+        setAdvancedFilters(prev => ({
+          ...prev,
+          customerType: 'all',
+          status: 'available' // Only show available slots
+        }))
+        break
+        
+      case 'choose-barber':
+        // Barber selection view - show all barbers with their availability
+        console.log('[Calendar] Applying choose-barber view')
+        setSelectedBarbers([]) // Show all barbers to choose from
+        setAdvancedFilters(prev => ({
+          ...prev,
+          customerType: 'all',
+          status: 'available'
+        }))
+        break
+        
+      case 'choose-time':
+        // Time slot selection - focus on specific day
+        console.log('[Calendar] Applying choose-time view')
+        setAdvancedFilters(prev => ({
+          ...prev,
+          customerType: 'all',
+          status: 'available',
+          timeRange: {
+            start: new Date().toISOString().split('T')[0] + 'T00:00:00',
+            end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] + 'T23:59:59'
+          }
+        }))
+        break
+        
+      case 'my-appointments':
+        // Customer's appointments
+        console.log('[Calendar] Applying my-appointments view')
+        if (userRole === 'CLIENT' || userRole === 'CUSTOMER') {
+          setAdvancedFilters(prev => ({
+            ...prev,
+            customerType: 'my-appointments',
+            status: 'all'
+          }))
+        } else {
+          // For barbers, show their client appointments
+          setSelectedBarbers([user?.id || profile?.id].filter(Boolean))
+        }
+        break
+        
+      case 'my-schedule':
+        // Personal schedule view
+        console.log('[Calendar] Applying my-schedule view')
+        setSelectedBarbers([user?.id || profile?.id].filter(Boolean))
+        setAdvancedFilters(prev => ({
+          ...prev,
+          customerType: 'all',
+          status: 'all'
+        }))
+        break
+        
+      case 'my-clients':
+        // Barber's client list
+        console.log('[Calendar] Applying my-clients view')
+        setSelectedBarbers([user?.id || profile?.id].filter(Boolean))
+        setAdvancedFilters(prev => ({
+          ...prev,
+          customerType: 'returning',
+          status: 'all'
+        }))
+        break
+        
+      case 'availability':
+        // Set availability - show current user's blocked times
+        console.log('[Calendar] Applying availability view')
+        setSelectedBarbers([user?.id || profile?.id].filter(Boolean))
+        setAdvancedFilters(prev => ({
+          ...prev,
+          status: 'blocked',
+          customerType: 'all'
+        }))
+        break
+        
+      case 'all-barbers':
+        // Show all staff schedules
+        console.log('[Calendar] Applying all-barbers view')
+        setSelectedBarbers([])
+        setAdvancedFilters(prev => ({
+          ...prev,
+          customerType: 'all',
+          status: 'all'
+        }))
+        break
+        
+      case 'shop-calendar':
+        // Shop overview
+        console.log('[Calendar] Applying shop-calendar view')
+        setSelectedBarbers([])
+        setSelectedLocations(barbershopId ? [barbershopId] : [])
+        setAdvancedFilters(prev => ({
+          ...prev,
+          customerType: 'all',
+          status: 'all'
+        }))
+        break
+        
+      default:
+        // Default booking view
+        console.log('[Calendar] Applying default booking view')
+        setSelectedBarbers([])
+        setAdvancedFilters(prev => ({
+          ...prev,
+          customerType: 'all',
+          status: 'available'
+        }))
+        break
     }
     
-    // Data will be loaded automatically by FullCalendar.io event sources when view changes
-    // // Debug log removed for production
-}, [])
+    // Save to Supabase preferences
+    await updatePreference('calendar_view', fullCalendarView)
+    await updatePreference('selected_view', newView)
+    console.log('[Calendar] Saved view preferences to Supabase:', { fullCalendarView, selectedView: newView })
+    
+    // Force calendar refresh to apply new filters
+    setTimeout(() => {
+      if (window.fullCalendarApi) {
+        console.log('[Calendar] Refreshing calendar with new view filters')
+        window.fullCalendarApi.refetchEvents()
+      }
+      handleAutoRefresh()
+    }, 100)
+    
+}, [selectedView, user?.id, profile?.id, barbershopId, globalSelectedLocations, globalSelectedBarbers, updatePreference, handleAutoRefresh])
   
   const handleLocationChange = useCallback((locationIds) => {
     // // Debug log removed for production
@@ -216,27 +440,22 @@ setSelectedLocations(locationIds)
     applyFiltersToEvents(filters)
   }, [])
 
+  // Load calendar view from preferences when they're ready
+  useEffect(() => {
+    if (!preferencesLoading && preferences.calendar_view) {
+      const safeView = getSafeCalendarView()
+      setCurrentCalendarView(safeView)
+      console.log('[Calendar] Loaded view from preferences:', safeView)
+    }
+  }, [preferencesLoading, preferences.calendar_view, getSafeCalendarView])
+
   useEffect(() => {
     setMounted(true)
     
-    // Get or assign shop ID for the user
-    const setupShopId = async () => {
-      const shopId = await getOrAssignShopId(user, profile)
-      setBarbershopId(shopId)
-      
-    }
-    setupShopId()
-    
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('componentDebugAfter', JSON.stringify({
-        hookReturned: true,
-        hasAppointments: !!realtimeAppointments,
-        appointmentCount: realtimeAppointments?.length || 0,
-        loading: realtimeLoading,
-        error: realtimeErrorMsg,
-        isConnected: realtimeHookConnected,
-        timestamp: new Date().toISOString()
-      }))
+    // Mark shop ID as resolved when business context loads
+    if (shopId) {
+      setShopIdResolved(true)
+      console.log('[Calendar] Shop ID from business context:', shopId)
     }
     
     const updateTime = () => {
@@ -246,28 +465,71 @@ setSelectedLocations(locationIds)
     updateTime() // Set initial time
     const timeInterval = setInterval(updateTime, 1000)
     
-    // Don't set default resources immediately - let loadCalendarData handle it
+    // Set default services
     setServices(DEFAULT_SERVICES)
     
     return () => clearInterval(timeInterval)
-  }, [user, profile])
+  }, [shopId])
   
-  // Load calendar data when barbershopId is available or global selections change
+  // Load calendar data when context or legacy selections change
+  // Initialize calendar data when business context loads
   useEffect(() => {
-    if (globalSelectedLocations.length > 0) {
+    if (shopId && !contextLoading) {
+      console.log('[Calendar] Shop context loaded:', shopId)
+      
+      // Initialize selected locations with current shop
+      if (selectedLocations.length === 0) {
+        setSelectedLocations([shopId])
+      }
+      
+      // Load calendar data
+      loadCalendarData()
+    }
+  }, [shopId, contextLoading, selectedLocations.length])
+
+  // Legacy effect for compatibility - now simplified
+  useEffect(() => {
+    if (activeContext) {
+      // Use new contextual approach
+      console.log('[Calendar] Active context changed:', activeContext.displayName)
+      loadCalendarData()
+    } else if (globalSelectedLocations.length > 0) {
       // Use global context selections AND load staff resources
-      setSelectedLocations(globalSelectedLocations)
-      // // Debug log removed for production
-// Still need to load calendar data (staff resources) for the selected location
+      console.log('[Calendar] Global locations selected:', globalSelectedLocations)
       loadCalendarData()
     } else if (barbershopId) {
       // Fallback to barbershopId if no global selections
       loadCalendarData()
     }
-  }, [barbershopId, globalSelectedLocations, globalSelectedBarbers])
+  }, [activeContext, barbershopId, globalSelectedLocations, globalSelectedBarbers, contextualData])
   
   const loadCalendarData = async () => {
-    if (!barbershopId) {
+    // Prefer contextual data if available
+    if (contextualData?.availableBarbers?.length > 0) {
+      console.log('📅 Using contextual barber data:', contextualData.availableBarbers.length)
+      
+      // Transform contextual barbers to resource format
+      const barbersData = contextualData.availableBarbers.map(barber => ({
+        id: barber.id,
+        title: barber.name,
+        eventColor: barber.color || '#546355',
+        extendedProps: {
+          email: barber.email,
+          avatar: barber.avatar,
+          role: barber.role,
+          isActive: true,
+          isRealData: true,
+          isContextual: true
+        }
+      }))
+      
+      setResources(barbersData)
+      generateQuickLinks(barbersData)
+      return
+    }
+    
+    // Fallback to legacy data loading
+    if (!barbershopId && !contextualBarbershopId) {
       console.warn('No barbershop ID available for loading calendar data')
       return
     }
@@ -275,8 +537,9 @@ setSelectedLocations(locationIds)
     try {
       // Load barbers using unified staff service and regular services
       // Use the selected location from global context or fall back to the real Tomb45 ID
-      const locationId = globalSelectedLocations?.[0] || barbershopId || '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
-      // // Debug log removed for production
+      const locationId = globalSelectedLocations?.[0] || contextualBarbershopId || barbershopId || '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
+      console.log('📅 Loading legacy calendar data for location:', locationId)
+      
 const [staffResponse, servicesData] = await Promise.all([
         unifiedStaffService.getStaff(locationId, { 
           useCache: true, 
@@ -304,14 +567,53 @@ const [staffResponse, servicesData] = await Promise.all([
           }
         }))
         
+        // CRITICAL FIX: Also check if we need to add the current user as a barber resource
+        // This ensures blocked times with the user's ID can display
+        const currentUserId = profile?.id || user?.id
+        if (currentUserId && !barbersData.find(b => b.id === currentUserId)) {
+          console.log('[Calendar] Adding current user as barber resource for blocked times:', currentUserId)
+          barbersData.push({
+            id: currentUserId,
+            title: profile?.full_name || profile?.name || 'You',
+            eventColor: '#546355',
+            extendedProps: {
+              email: profile?.email || user?.email,
+              phone: profile?.phone,
+              specialties: [],
+              isActive: true,
+              isRealData: true,
+              isCurrentUser: true
+            }
+          })
+        }
+        
         // // Debug log removed for production
 setResources(barbersData)
         generateQuickLinks(barbersData)
         
         // Remove invalid onStaffUpdate handler (doesn't exist)
       } else {
-        console.warn('📅 No staff found, showing empty state')
-        setResources(EMPTY_BARBER_PLACEHOLDER)
+        console.warn('📅 No staff found, creating resource for current user')
+        // Even if no staff found, create a resource for the current user so blocked times can display
+        const currentUserId = profile?.id || user?.id
+        if (currentUserId) {
+          const userResource = [{
+            id: currentUserId,
+            title: profile?.full_name || profile?.name || 'You',
+            eventColor: '#546355',
+            extendedProps: {
+              email: profile?.email || user?.email,
+              phone: profile?.phone,
+              specialties: [],
+              isActive: true,
+              isRealData: true,
+              isCurrentUser: true
+            }
+          }]
+          setResources(userResource)
+        } else {
+          setResources(EMPTY_BARBER_PLACEHOLDER)
+        }
       }
     } catch (error) {
       console.error('Error loading calendar data:', error)
@@ -323,11 +625,24 @@ setResources(barbersData)
   const createEventSources = useMemo(() => {
     const eventSources = []
     
+    // Don't create event sources until shop ID is resolved
+    if (!shopIdResolved) {
+      console.log('[Calendar] Event sources not created - waiting for shop ID resolution')
+      return eventSources
+    }
+    
+    console.log('[Calendar] Creating event sources with:', {
+      selectedView,
+      barbershopId,
+      shopIdResolved,
+      globalSelectedLocations: globalSelectedLocations?.length || 0
+    })
+    
     if (selectedView === 'all-locations' || selectedView === 'consolidated') {
       // Multi-location view with proper FullCalendar event source pattern
       if (selectedLocations && selectedLocations.length > 0) {
         eventSources.push({
-          url: '/api/calendar/events',
+          url: '/api/calendar/appointments',
           method: 'GET',
           extraParams: function() {
             return {
@@ -336,8 +651,13 @@ setResources(barbersData)
             }
           },
           success: function(events) {
-            // // Debug log removed for production
-return events
+            console.log('[Calendar Page] Event source success, received events:', events?.length || 0)
+            if (events && events.length > 0) {
+              console.log('[Calendar Page] First event:', events[0])
+              const blockedEvents = events.filter(e => e.extendedProps?.is_blocked_time || e.title?.includes('🚫'))
+              console.log(`[Calendar Page] Blocked events count:`, blockedEvents.length)
+            }
+            return events
           },
           failure: function(error) {
             console.error('Multi-location event source failed:', error)
@@ -376,7 +696,7 @@ return events
       // Single location view with proper FullCalendar event source pattern
       if (barbershopId) {
         eventSources.push({
-          url: '/api/calendar/events', 
+          url: '/api/calendar/appointments', 
           method: 'GET',
           extraParams: function() {
             return {
@@ -385,8 +705,13 @@ return events
             }
           },
           success: function(events) {
-            // // Debug log removed for production
-return events
+            console.log('[Calendar Page] Event source success, received events:', events?.length || 0)
+            if (events && events.length > 0) {
+              console.log('[Calendar Page] First event:', events[0])
+              const blockedEvents = events.filter(e => e.extendedProps?.is_blocked_time || e.title?.includes('🚫'))
+              console.log(`[Calendar Page] Blocked events count:`, blockedEvents.length)
+            }
+            return events
           },
           failure: function(error) {
             console.error('Single-location event source failed:', error)
@@ -423,8 +748,17 @@ return events
       }
     }
     
+    console.log('[Calendar] Event sources created:', eventSources.length, 'sources')
+    if (eventSources.length > 0) {
+      console.log('[Calendar] First event source config:', {
+        url: eventSources[0].url,
+        hasExtraParams: !!eventSources[0].extraParams,
+        barbershopId: barbershopId
+      })
+    }
+    
     return eventSources
-  }, [selectedView, selectedLocations, barbershopId, showError])
+  }, [selectedView, selectedLocations, barbershopId, showError, shopIdResolved])
   
   // Create FullCalendar.io resources following best practices  
   const createResources = useMemo(() => {
@@ -463,7 +797,7 @@ return events
       }
     } else {
       // Single location resources
-      return resources.map(resource => ({
+      const mappedResources = resources.map(resource => ({
         ...resource,
         businessHours: {
           daysOfWeek: [1, 2, 3, 4, 5, 6],
@@ -471,10 +805,27 @@ return events
           endTime: '18:00'
         }
       }))
+      
+      // Ensure we have at least one resource for blocked times to display
+      if (mappedResources.length === 0 && (profile?.id || user?.id)) {
+        console.log('[Calendar Resources] No resources found, adding current user as default resource')
+        const currentUserId = profile?.id || user?.id
+        mappedResources.push({
+          id: currentUserId,
+          title: profile?.full_name || profile?.name || 'You',
+          businessHours: {
+            daysOfWeek: [1, 2, 3, 4, 5, 6],
+            startTime: '09:00',
+            endTime: '18:00'
+          }
+        })
+      }
+      
+      return mappedResources
     }
     
     return []
-  }, [selectedView, selectedLocations, globalAvailableBarbers, globalSelectedBarbers, resources])
+  }, [selectedView, selectedLocations, globalAvailableBarbers, globalSelectedBarbers, resources, profile, user])
   
   // Apply filters to calendar events
   const applyFiltersToEvents = (filters) => {
@@ -561,23 +912,30 @@ return events
       timestamp: new Date().toISOString()
     })
     
-    if (realtimeAppointments && Array.isArray(realtimeAppointments) && realtimeAppointments.length > 0) {
-      // 🚨 CRITICAL FIX: Use WebSocket data directly instead of ignoring it
+    // Prioritize contextual data if available, fallback to realtime appointments
+    const calendarEvents = contextualData?.calendarEvents?.length > 0 
+      ? contextualData.calendarEvents 
+      : realtimeAppointments
 
-      const cancelledCount = realtimeAppointments.filter(apt => 
+    if (calendarEvents && Array.isArray(calendarEvents) && calendarEvents.length > 0) {
+      // 🚨 CRITICAL FIX: Use contextual data or WebSocket data directly
+
+      const cancelledCount = calendarEvents.filter(apt => 
         apt.extendedProps?.status === 'cancelled' || apt.title?.startsWith('❌')
       ).length
 
-      setEvents(realtimeAppointments)
+      setEvents(calendarEvents)
       setRealtimeConnected(realtimeHookConnected)
       
-      const newIds = new Set(realtimeAppointments.map(apt => apt.id))
+      const newIds = new Set(calendarEvents.map(apt => apt.id))
       setAppointmentIds(newIds)
-    } else if (!realtimeLoading && (!realtimeAppointments || realtimeAppointments.length === 0)) {
+      
+      console.log(`📅 Calendar updated: ${calendarEvents.length} events (${contextualData?.calendarEvents?.length > 0 ? 'contextual' : 'realtime'} data)`)
+    } else if (!realtimeLoading && !contextLoading && (!calendarEvents || calendarEvents.length === 0)) {
       // FullCalendar.io event sources will handle data fetching automatically
-      // // Debug log removed for production
+      console.log('📅 No calendar events available')
 }
-  }, [realtimeAppointments, realtimeHookConnected, lastUpdate]) // Removed .length to prevent infinite loops
+  }, [realtimeAppointments, realtimeHookConnected, lastUpdate, contextualData, contextLoading]) // Include contextual data
   
   useEffect(() => {
     // FullCalendar.io event sources handle data fetching automatically
@@ -598,11 +956,18 @@ return events
   // Auto-refresh handler for FullCalendar.io event sources
   const handleAutoRefresh = useCallback(() => {
     // FullCalendar.io will automatically refetch when event sources change
-    // We can trigger a refetch by updating the dependency that eventSources depends on
-    const timestamp = new Date().getTime()
-    setLastUpdate(timestamp)
-    console.log('Calendar refresh triggered:', new Date().toLocaleTimeString())
-  }, [])
+    // Use the refresh function from useRealtimeAppointments hook
+    if (refreshAppointments) {
+      refreshAppointments()
+      console.log('Calendar refresh triggered:', new Date().toLocaleTimeString())
+    }
+    
+    // Force FullCalendar to refetch events
+    if (window.fullCalendarApi) {
+      console.log('Forcing FullCalendar refetch...')
+      window.fullCalendarApi.refetchEvents()
+    }
+  }, [refreshAppointments])
 
   const fetchServices = async () => {
     try {
@@ -820,27 +1185,63 @@ setServices(DEFAULT_SERVICES)
 
   const handleEventClick = useCallback((clickInfo) => {
     const event = clickInfo.event
+    
+    // Check if it's a blocked time
+    const isBlockedTime = event.extendedProps?.is_blocked_time || 
+                         event.extendedProps?.status === 'blocked' ||
+                         event.title?.includes('🚫')
 
-    setSelectedEvent({
+    // Calculate duration from event start and end times
+    let calculatedDuration = 30 // Final fallback
+    if (event.start && event.end) {
+      const startTime = new Date(event.start)
+      const endTime = new Date(event.end)
+      const diffMs = endTime - startTime
+      calculatedDuration = Math.round(diffMs / (1000 * 60)) // Convert to minutes
+      
+      // Debug logging for blocked times
+      if (isBlockedTime) {
+        console.log('[Calendar] Blocked time clicked:', {
+          id: event.id,
+          start: startTime.toLocaleTimeString(),
+          end: endTime.toLocaleTimeString(),
+          calculatedDuration: calculatedDuration + ' minutes',
+          extendedPropsDuration: event.extendedProps.duration_minutes || event.extendedProps.duration,
+          title: event.title
+        })
+      }
+    }
+
+    const eventData = {
       id: event.id,
       title: event.title,
       scheduled_at: event.start,
       end_time: event.end,
       start: event.start, // Add start for delete handler
+      end: event.end, // Add end for duration calculation
       barber_id: event.extendedProps.barber_id || event.resourceId, // Use extendedProps barber_id first, fallback to resourceId
       service_id: event.extendedProps.service_id || '',
       service: event.extendedProps.service,
       client_name: event.extendedProps.customer,
       client_phone: event.extendedProps.customerPhone || '',
       client_email: event.extendedProps.customerEmail || '',
-      duration_minutes: event.extendedProps.duration || 30,
+      // Use duration from extendedProps if available, otherwise use calculated duration
+      duration_minutes: event.extendedProps.duration_minutes || event.extendedProps.duration || calculatedDuration,
       service_price: event.extendedProps.price || 0,
       client_notes: event.extendedProps.notes || '',
+      notes: event.extendedProps.notes || '',
       status: event.extendedProps.status || 'confirmed',
       isRecurring: event.extendedProps.isRecurring || false,
       extendedProps: event.extendedProps // Pass all extended props for delete handler
-    })
-    setShowAppointmentModal(true)
+    }
+
+    setSelectedEvent(eventData)
+    
+    if (isBlockedTime) {
+      setShowBlockTimeModal(true)
+    } else {
+      setShowAppointmentModal(true)
+    }
   }, [])
 
   const handleDateSelect = useCallback((selectInfo) => {
@@ -864,15 +1265,6 @@ setServices(DEFAULT_SERVICES)
     } else if (selectInfo.isListView) {
       slotData.nearbyEvents = selectInfo.nearbyEvents
       info('Smart booking mode - checking availability...')
-    } else if (selectInfo.isTimeGrid && !selectInfo.resourceId) {
-      if (selectInfo.suggestedBarber?.available) {
-        slotData.barberId = selectInfo.suggestedBarber.id
-        slotData.barberName = selectInfo.suggestedBarber.name
-        info(`Auto-selected ${selectInfo.suggestedBarber.name} for this time slot`)
-      } else {
-        showError('No barbers available for this time slot')
-        return
-      }
     }
     
     if (selectInfo.exactTime) {
@@ -978,6 +1370,51 @@ setServices(DEFAULT_SERVICES)
       
       return
     }
+
+    // Handle blocked time creation with optimistic update
+    if (appointmentData?.is_blocked_time) {
+      success('Time blocked successfully!', {
+        title: 'Success',
+        duration: 3000
+      })
+      
+      // Optimistic update: Add the block to calendar immediately
+      if (window.fullCalendarApi && appointmentData) {
+        const calendarEvent = {
+          id: appointmentData.id || `temp-block-${Date.now()}`,
+          title: '🚫 Time Blocked',
+          start: appointmentData.start_time || appointmentData.scheduled_at,
+          end: appointmentData.end_time || new Date(new Date(appointmentData.scheduled_at).getTime() + (appointmentData.duration_minutes || 60) * 60000).toISOString(),
+          backgroundColor: '#6B7280',
+          borderColor: '#4B5563',
+          textColor: '#FFFFFF',
+          extendedProps: {
+            is_blocked_time: true,
+            status: 'blocked',
+            notes: appointmentData.notes || 'Time blocked',
+            customer_name: 'BLOCKED',
+            barber_id: appointmentData.barber_id
+          }
+        }
+        
+        // Add event immediately for instant visual feedback
+        console.log('Adding blocked time to calendar optimistically:', calendarEvent)
+        window.fullCalendarApi.addEvent(calendarEvent)
+      }
+      
+      // Schedule background refresh to ensure consistency with database
+      setTimeout(() => {
+        console.log('Refreshing calendar after block creation delay...')
+        handleAutoRefresh()
+        
+        if (window.fullCalendarApi) {
+          window.fullCalendarApi.refetchEvents()
+        }
+      }, 1500) // 1.5 seconds to ensure database has committed
+      
+      setShowAppointmentModal(false)
+      return
+    }
     
     if (appointmentData?.id && appointmentData?.is_recurring) {
       setConfirmedAppointment(appointmentData)
@@ -995,19 +1432,70 @@ setServices(DEFAULT_SERVICES)
                         appointmentData.customer_name === 'BLOCKED' ||
                         appointmentData.customer_name === null
       
+      console.log('Appointment save completed:', {
+        isBlocked,
+        appointmentData,
+        barbershopId,
+        timestamp: new Date().toISOString()
+      })
+      
       // Show success message
       success(isBlocked ? 'Time blocked successfully!' : 'Appointment saved successfully!', {
         title: 'Success',
         duration: 3000
       })
 
+      // For regular appointments, add optimistic update (similar to blocked times)
+      if (!isBlocked && window.fullCalendarApi && appointmentData) {
+        const startDate = new Date(appointmentData.start_time || appointmentData.scheduled_at)
+        const endDate = new Date(appointmentData.end_time || new Date(startDate.getTime() + (appointmentData.duration_minutes || 60) * 60000))
+        
+        const calendarEvent = {
+          id: appointmentData.id || `temp-appointment-${Date.now()}`,
+          title: appointmentData.customer_name || appointmentData.client_name || 'New Appointment',
+          start: startDate.toISOString(),
+          end: endDate.toISOString(),
+          backgroundColor: appointmentData.status === 'cancelled' ? '#DC2626' : '#10B981',
+          borderColor: appointmentData.status === 'cancelled' ? '#B91C1C' : '#059669',
+          textColor: '#FFFFFF',
+          resourceId: appointmentData.barber_id,
+          extendedProps: {
+            id: appointmentData.id,
+            customer_name: appointmentData.customer_name || appointmentData.client_name,
+            customer_phone: appointmentData.customer_phone || appointmentData.client_phone,
+            customer_email: appointmentData.customer_email || appointmentData.client_email,
+            service_name: appointmentData.service_name,
+            service_price: appointmentData.service_price,
+            duration_minutes: appointmentData.duration_minutes,
+            status: appointmentData.status || 'confirmed',
+            notes: appointmentData.notes,
+            barber_id: appointmentData.barber_id,
+            is_blocked_time: false
+          }
+        }
+        
+        // Add event immediately for instant visual feedback
+        console.log('Adding appointment to calendar optimistically:', calendarEvent)
+        window.fullCalendarApi.addEvent(calendarEvent)
+      }
+
       // Close modal
       setShowAppointmentModal(false)
 
-      // Refetch events from server (FullCalendar.io best practice)
-      if (calendarRef.current) {
-        calendarRef.current.refetchEvents()
-      }
+      // Schedule background refresh to ensure consistency with database
+      setTimeout(() => {
+        console.log('Triggering calendar refresh after appointment save delay...')
+        
+        // Refetch events from server (FullCalendar.io best practice)
+        handleAutoRefresh()
+        
+        // Also try direct FullCalendar refresh
+        if (window.fullCalendarApi) {
+          console.log('Forcing FullCalendar to refetch all event sources')
+          window.fullCalendarApi.refetchEvents()
+        }
+      }, 1500) // Wait 1.5 seconds to ensure backend has committed
+      
     } catch (error) {
       console.error('Error handling appointment save:', error)
       showError('Failed to process appointment: ' + error.message, {
@@ -1068,6 +1556,42 @@ setServices(DEFAULT_SERVICES)
     } catch (error) {
       console.error('Export error:', error)
       showError('Failed to export calendar')
+    }
+  }
+
+  const handleBookingComplete = async (result) => {
+    // Refresh the calendar after booking/updating/deleting
+    if (result?.isDeleted) {
+      success('Block removed successfully')
+      
+      // Remove the deleted event from local state immediately
+      if (result.deletedId) {
+        setEvents(prevEvents => prevEvents.filter(event => event.id !== result.deletedId))
+      }
+    } else if (result?.isBlocked) {
+      success('Time blocked successfully')
+    } else {
+      success('Appointment updated successfully')
+    }
+    
+    // Refresh calendar events to get latest from server
+    await handleAutoRefresh()
+    
+    // Force FullCalendar to refetch events
+    if (window.fullCalendarApi) {
+      // First, immediately remove the event from display
+      if (result?.isDeleted && result.deletedId) {
+        const event = window.fullCalendarApi.getEventById(result.deletedId)
+        if (event) {
+          event.remove()
+          console.log('Removed event from calendar:', result.deletedId)
+        }
+      }
+      
+      // Then refetch all events to ensure consistency
+      setTimeout(() => {
+        window.fullCalendarApi.refetchEvents()
+      }, 500)
     }
   }
 
@@ -1503,9 +2027,16 @@ setServices(DEFAULT_SERVICES)
       {/* Calendar Container */}
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
+          {!shopIdResolved ? (
+            <div className="flex items-center justify-center h-[600px]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Initializing calendar...</p>
+              </div>
+            </div>
+          ) : (
           <ProfessionalCalendar
-            ref={calendarRef}
-            resources={currentCalendarView?.includes('resource') ? createResources : undefined} // Use production-ready resources for resource views
+            // Resources removed - premium feature not available
             eventSources={createEventSources} // Use FullCalendar.io native event sources with error handling
             currentView={currentCalendarView}
             onViewChange={(view) => setCurrentCalendarView(view)}
@@ -1540,6 +2071,7 @@ setServices(DEFAULT_SERVICES)
             }}
             height="650px"
           />
+          )}
         </div>
 
       </div>
@@ -1838,7 +2370,38 @@ setServices(DEFAULT_SERVICES)
         />
       )}
       
-      {/* Dialogs removed - using global onboarding system instead */}
+      {/* Block Time Modal - Only for editing existing blocks */}
+      <BlockTimeModal
+        isOpen={showBlockTimeModal}
+        onClose={() => {
+          setShowBlockTimeModal(false)
+          setSelectedEvent(null)
+        }}
+        editingBlock={selectedEvent}
+        onBlockComplete={handleBookingComplete}
+        barbershopId={barbershopId}
+      />
+      
+      <RescheduleConfirmationModal
+        isOpen={showRescheduleModal}
+        onClose={() => setShowRescheduleModal(false)}
+        onConfirm={handleRescheduleConfirm}
+        pendingReschedule={pendingReschedule}
+      />
+      
+      <BookingConfirmationModal
+        isOpen={showBookingConfirmation}
+        onClose={() => setShowBookingConfirmation(false)}
+        appointment={confirmedAppointment}
+      />
+      
+      <CancelConfirmationModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        appointment={appointmentToCancel}
+        onCancel={handleCancelAppointment}
+        cancelling={cancelling}
+      />
       
       {/* Diagnostics Toggle Button */}
       <button

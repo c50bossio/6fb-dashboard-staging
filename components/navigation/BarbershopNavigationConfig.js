@@ -186,17 +186,25 @@ export const BARBERSHOP_NAVIGATION = [
     name: 'Operations',
     href: '/dashboard/operations',
     icon: CogIcon,
-    description: 'Staff, inventory & settings',
+    description: 'POS, inventory & shop management',
     children: [
+      {
+        name: 'Point of Sales',
+        href: '/dashboard/pos',
+        icon: CurrencyDollarIcon,
+        description: 'Customer checkout and payment processing',
+        badge: 'POS'
+      },
+      {
+        name: 'Inventory & Marketplace',
+        href: '/dashboard/inventory',
+        icon: ScissorsIcon,
+        description: 'Stock tracking with smart wholesale reordering'
+      },
       {
         name: 'Staff Schedule',
         href: '/shop/settings/staff',
         icon: UserGroupIcon
-      },
-      {
-        name: 'Inventory',
-        href: '/dashboard/inventory',
-        icon: ScissorsIcon
       },
       {
         name: 'Shop Settings',
@@ -228,11 +236,11 @@ export const QUICK_ACTIONS = [
     description: 'Mark customer as arrived'
   },
   {
-    name: 'Quick Payment',
-    href: '/dashboard/payment',
+    name: 'Process Sale',
+    href: '/dashboard/pos',
     icon: CurrencyDollarIcon,
     color: 'bg-gold-600 hover:bg-gold-700',
-    description: 'Process payment'
+    description: 'Customer checkout and payment'
   },
   {
     name: 'AI Chat',

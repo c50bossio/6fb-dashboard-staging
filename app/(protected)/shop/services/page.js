@@ -28,6 +28,8 @@ import ServiceTemplateSelector from '@/components/shop/ServiceTemplateSelector'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import ServiceImageUpload from '@/components/ui/ServiceImageUpload'
 import { createClient } from '@/lib/supabase/client'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+import { ServicesHeader } from '@/components/layout/UnifiedDashboardHeader'
 
 export default function ShopServicesAndPricing() {
   const { user, profile } = useAuth()

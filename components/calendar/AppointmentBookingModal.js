@@ -7,6 +7,7 @@ import { Fragment } from 'react'
 
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import CustomerSearchModal from './CustomerSearchModal'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 
 export default function AppointmentBookingModal({
   isOpen,
@@ -19,6 +20,7 @@ export default function AppointmentBookingModal({
   editingAppointment = null
 }) {
   const { user } = useAuth()
+  const { activeContext, contextualData } = useGlobalDashboard()
   const isEditing = !!editingAppointment
   
   const getInitialDateTime = () => {
@@ -34,11 +36,43 @@ export default function AppointmentBookingModal({
     return ''
   }
   
+  // Smart barber auto-selection logic
+  const getSmartBarberId = () => {
+    // Priority 1: If selectedSlot has barberId (from calendar click), use it
+    if (selectedSlot?.barberId) {
+      return selectedSlot.barberId
+    }
+    
+    // Priority 2: If single barber in context (solo practitioner), auto-select them
+    if (contextualData?.availableBarbers?.length === 1) {
+      return contextualData.availableBarbers[0].id
+    }
+    
+    // Priority 3: If current user is in available barbers, auto-select current user
+    if (user?.id && contextualData?.availableBarbers) {
+      const currentUserBarber = contextualData.availableBarbers.find(
+        barber => barber.user_id === user.id || barber.id === user.id
+      )
+      if (currentUserBarber) {
+        return currentUserBarber.id || currentUserBarber.user_id
+      }
+    }
+    
+    // Priority 4: Fallback to empty for manual selection
+    return ''
+  }
+  
   // Initialize with dragged duration or default
   const initialDuration = selectedSlot?.duration || 60
 
+  // Track which fields were auto-populated
+  const [autoPopulated, setAutoPopulated] = useState({
+    barber: false,
+    location: false
+  })
+  
   const [formData, setFormData] = useState({
-    barber_id: selectedSlot?.barberId || '',
+    barber_id: getSmartBarberId(),
     service_id: '',
     scheduled_at: getInitialDateTime(),
     duration_minutes: initialDuration,
@@ -97,6 +131,23 @@ export default function AppointmentBookingModal({
     setActionType('cancel')
     setShowDeleteConfirmation(false)
     
+    // Check if editing a blocked time
+    if (isEditing && editingAppointment) {
+      const isBlockedTime = editingAppointment.extendedProps?.is_blocked_time || 
+                           editingAppointment.extendedProps?.status === 'blocked' ||
+                           editingAppointment.status === 'blocked'
+      
+      if (isBlockedTime) {
+        setIsBlockMode(true)
+        setBlockReason(
+          editingAppointment.client_notes || 
+          editingAppointment.notes || 
+          editingAppointment.title?.replace('🚫 ', '').replace('Time Blocked - ', '') || 
+          ''
+        )
+      }
+    }
+    
     if (isEditing && editingAppointment) {
       let scheduledAt = ''
       if (editingAppointment.scheduled_at) {
@@ -152,12 +203,31 @@ export default function AppointmentBookingModal({
         dateTime = `${year}-${month}-${day}T${hours}:${minutes}`
       }
       
+      // Get smart barber ID
+      const smartBarberId = getSmartBarberId()
+      
+      // Check if barber was auto-populated
+      const wasBarberAutoPopulated = !selectedSlot.barberId && smartBarberId && (
+        // Single barber scenario
+        contextualData?.availableBarbers?.length === 1 ||
+        // Current user is a barber scenario
+        (user?.id && contextualData?.availableBarbers?.some(
+          b => b.user_id === user.id || b.id === user.id
+        ))
+      )
+      
       setFormData(prev => ({
         ...prev,
-        barber_id: selectedSlot.barberId || '',
+        barber_id: smartBarberId,
         scheduled_at: dateTime,
         duration_minutes: selectedSlot.duration || 60  // Use dragged duration or default to 60
       }))
+      
+      // Track auto-population
+      setAutoPopulated({
+        barber: wasBarberAutoPopulated,
+        location: !!activeContext?.locationId
+      })
     }
   }, [isEditing, editingAppointment, selectedSlot])
 
@@ -507,13 +577,29 @@ export default function AppointmentBookingModal({
         throw new Error('Customer name is required')
       }
       
+      // Calculate start and end times for API validation
+      const startDate = new Date(formData.scheduled_at)
+      const endDate = new Date(startDate.getTime() + formData.duration_minutes * 60000)
+      
+      // Extract complete service information for proper database persistence
+      const selectedService = services.find(s => s.id === formData.service_id)
+      
       const appointmentData = {
         ...formData,
         barbershop_id: barbershopId,
         client_id: user?.id || null,
         total_amount: formData.service_price + (formData.tip_amount || 0),
-        scheduled_at: new Date(formData.scheduled_at).toISOString(),
+        scheduled_at: startDate.toISOString(),
+        start_time: startDate.toISOString(), // Required by API schema
+        end_time: endDate.toISOString(),     // Required by API schema
         recurrence_rule: generateRRule(),
+        
+        // Complete service information for database persistence
+        service_id: formData.service_id,
+        service_name: selectedService?.name || '',
+        service_type: selectedService?.type || selectedService?.category || selectedService?.name || '',
+        service_description: selectedService?.description || '',
+        service_price: formData.service_price || selectedService?.price || 0,
         
         customer_id: selectedCustomer?.id || null,
         customer_mode: customerMode,
@@ -611,32 +697,35 @@ export default function AppointmentBookingModal({
     setError('')
     
     try {
-      const response = await fetch('/api/calendar/appointments/uncancel', {
-        method: 'POST',
+      const response = await fetch(`/api/calendar/appointments?id=${editingAppointment.id}&action=restore`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          appointmentId: editingAppointment.id
-        })
+        body: JSON.stringify({})
       })
       
       const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to uncancel appointment')
+        throw new Error(data.error || 'Failed to restore appointment')
       }
 
+      console.log('[AppointmentModal] Successfully restored appointment')
       setShowDeleteConfirmation(false)
       onClose()
       
       if (onBookingComplete) {
-        await onBookingComplete({ isUncancelled: true })
+        await onBookingComplete({ 
+          isUncancelled: true,
+          appointment: data.appointment,
+          message: 'Appointment restored successfully'
+        })
       }
       
     } catch (error) {
-      console.error('Error uncancelling appointment:', error)
-      setError('Failed to uncancel appointment: ' + error.message)
+      console.error('Error restoring appointment:', error)
+      setError('Failed to restore appointment: ' + error.message)
     } finally {
       setDeletingAppointment(false)
     }
@@ -653,14 +742,12 @@ export default function AppointmentBookingModal({
     setError('')
     
     try {
-      const response = await fetch('/api/calendar/appointments/cancel', {
-        method: 'POST',
+      const response = await fetch(`/api/calendar/appointments?id=${editingAppointment.id}&action=cancel`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          appointmentId: editingAppointment.id
-        })
+        body: JSON.stringify({})
       })
       
       const data = await response.json()
@@ -669,11 +756,16 @@ export default function AppointmentBookingModal({
         throw new Error(data.error || 'Failed to cancel appointment')
       }
 
+      console.log('[AppointmentModal] Successfully cancelled appointment')
       setShowDeleteConfirmation(false)
       onClose()
       
       if (onBookingComplete) {
-        await onBookingComplete({ isCancelled: true })
+        await onBookingComplete({ 
+          isCancelled: true,
+          appointment: data.appointment,
+          message: 'Appointment cancelled successfully'
+        })
       }
       
     } catch (error) {
@@ -685,6 +777,7 @@ export default function AppointmentBookingModal({
   }
 
   const handleQuickBlock = async () => {
+    console.log('handleQuickBlock called with barbershopId:', barbershopId)
     setLoading(true)
     setError('')
     
@@ -694,25 +787,23 @@ export default function AppointmentBookingModal({
       
       const blockData = {
         barber_id: formData.barber_id || selectedSlot?.barberId || barbers?.[0]?.id,
-        service_id: null, // No service for blocked time
-        customer_id: null, // Null for blocked slots to avoid foreign key constraint
         start_time: startDate.toISOString(),
         end_time: endDate.toISOString(),
-        scheduled_at: startDate.toISOString(),
-        duration_minutes: formData.duration_minutes || 60,
-        status: 'blocked',
-        notes: blockReason || 'Time blocked',
-        client_name: 'BLOCKED',
-        client_phone: '',
-        client_email: '',
-        service_price: 0,
-        tip_amount: 0,
+        reason: blockReason || 'Time blocked',
         shop_id: barbershopId,
-        is_blocked_time: true // Special flag for UI handling
+        barbershop_id: barbershopId
       }
+      
+      console.log('Sending block data to API:', {
+        shop_id: blockData.shop_id,
+        barber_id: blockData.barber_id,
+        start_time: blockData.start_time,
+        status: blockData.status,
+        barbershopId_prop: barbershopId
+      })
 
-      const response = await fetch('/api/calendar/appointments', {
-        method: 'POST',
+      const response = await fetch(`/api/calendar/appointments?action=block`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -754,7 +845,7 @@ export default function AppointmentBookingModal({
     }
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (retryCount = 0) => {
     if (!editingAppointment || !editingAppointment.id) {
       console.error('No appointment to delete', editingAppointment)
       setError('No appointment ID found. This may be demo data that cannot be deleted.')
@@ -765,36 +856,18 @@ export default function AppointmentBookingModal({
     setError('')
     
     try {
-      let deleteUrl = `/api/calendar/appointments/${editingAppointment.id}`
-      const params = new URLSearchParams()
+      // Use the new DELETE endpoint with query parameter
+      const deleteUrl = `/api/calendar/appointments?id=${editingAppointment.id}`
       
-      const isCancelled = editingAppointment.extendedProps?.status === 'cancelled'
+      console.log('[AppointmentModal] Deleting appointment:', editingAppointment.id)
       
-      if (isCancelled) {
-        // Handle cancelled appointment
-      } else {
-        const isActuallyRecurring = editingAppointment.isRecurring || editingAppointment.extendedProps?.isRecurring
-        
-        const debugInfo = {
-          isRecurring: editingAppointment.isRecurring,
-          extendedPropsRecurring: editingAppointment.extendedProps?.isRecurring,
-          status: editingAppointment.extendedProps?.status,
-          isActuallyRecurring,
-          deleteOption
-        };
-        
-        if (isActuallyRecurring) {
-          if (deleteOption === 'all') {
-            params.append('deleteAll', 'true')
-          } else if (deleteOption === 'single' && editingAppointment.start) {
-            const occurrenceDate = new Date(editingAppointment.start)
-            params.append('cancelDate', occurrenceDate.toISOString().split('T')[0])
-          }
-        }
-      }
+      // Check if this is a blocked time
+      const isBlockedTime = editingAppointment.extendedProps?.is_blocked_time || 
+                           editingAppointment.extendedProps?.status === 'blocked' ||
+                           editingAppointment.title?.includes('🚫')
       
-      if (params.toString()) {
-        deleteUrl += `?${params.toString()}`
+      if (isBlockedTime) {
+        console.log('[AppointmentModal] Deleting blocked time slot')
       }
 
       const response = await fetch(deleteUrl, {
@@ -807,19 +880,44 @@ export default function AppointmentBookingModal({
       const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete appointment')
+        // If unauthorized and we have retries left, try once more
+        if (response.status === 403 && retryCount < 1) {
+          console.log('[AppointmentModal] Retrying delete with delay...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          return handleDelete(retryCount + 1)
+        }
+        
+        // Provide more specific error messages
+        if (response.status === 404) {
+          throw new Error('Appointment not found. It may have already been deleted.')
+        } else if (response.status === 403) {
+          throw new Error('You do not have permission to delete this appointment.')
+        } else {
+          throw new Error(data.error || 'Failed to delete appointment')
+        }
       }
 
+      console.log('[AppointmentModal] Successfully deleted appointment')
       setShowDeleteConfirmation(false)
       onClose()
       
       if (onBookingComplete) {
-        await onBookingComplete({ isDeleted: true })
+        await onBookingComplete({ 
+          isDeleted: true,
+          deletedId: editingAppointment.id,
+          message: 'Appointment permanently deleted'
+        })
       }
       
     } catch (error) {
       console.error('Error deleting appointment:', error)
-      setError('Failed to delete appointment: ' + error.message)
+      
+      // Check for network errors
+      if (error.message === 'Failed to fetch') {
+        setError('Network error. Please check your connection and try again.')
+      } else {
+        setError(error.message || 'Failed to delete appointment')
+      }
     } finally {
       setDeletingAppointment(false)
     }
@@ -1122,17 +1220,33 @@ export default function AppointmentBookingModal({
                       {/* Regular Booking Form Fields */}
                       {/* Barber Selection */}
                       <div>
-                        <label htmlFor="barber_id" className="block text-sm font-medium text-gray-700">
-                          Barber <span className="text-red-500">*</span>
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label htmlFor="barber_id" className="block text-sm font-medium text-gray-700">
+                            Barber <span className="text-red-500">*</span>
+                          </label>
+                          {autoPopulated.barber && formData.barber_id && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              <CheckIcon className="w-3 h-3 mr-1" />
+                              Auto-selected
+                            </span>
+                          )}
+                        </div>
                         <select
                           id="barber_id"
                           name="barber_id"
                           value={formData.barber_id}
-                          onChange={handleInputChange}
+                          onChange={(e) => {
+                            handleInputChange(e)
+                            // Clear auto-populated flag when user manually changes selection
+                            if (autoPopulated.barber) {
+                              setAutoPopulated(prev => ({ ...prev, barber: false }))
+                            }
+                          }}
                           className={`mt-1 block w-full rounded-md shadow-sm ${
                             fieldErrors.barber_id 
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
+                              : autoPopulated.barber && formData.barber_id
+                              ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
                               : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
                           } ${loading ? 'bg-gray-50' : ''}`}
                           disabled={loading}
@@ -1142,6 +1256,8 @@ export default function AppointmentBookingModal({
                           {barbers.map(barber => (
                             <option key={barber.id} value={barber.id}>
                               {barber.name}
+                              {/* Show indicator if this is the current user */}
+                              {(barber.user_id === user?.id || barber.id === user?.id) && ' (You)'}
                             </option>
                           ))}
                         </select>

@@ -1,3 +1,14 @@
+// Real-time Booking Integration
+export { default as RealtimeBookingWrapper } from './RealtimeBookingWrapper'
+export { default as RealtimeAvailabilityChecker } from './RealtimeAvailabilityChecker'
+export { useRealtimeBooking } from './RealtimeBookingWrapper'
+
+// Core Booking Flows
+export { default as PublicBookingFlow } from './PublicBookingFlow'
+export { default as EnhancedBookingFlow } from './EnhancedBookingFlow'
+export { default as BookingFlowOrchestrator } from './BookingFlowOrchestrator'
+export { default as MobileBookingOptimizer } from './MobileBookingOptimizer'
+
 // Client Care & Relationship Building Components
 export { default as ClientSegmentationEditor } from './ClientSegmentationEditor'
 export { default as ClientCareEditor } from './ClientCareEditor'
@@ -13,7 +24,6 @@ export { default as ClientCareFlow } from './ClientCareFlow'
 export { default as PolicyPreview } from './PolicyPreview'
 export { default as PolicyTemplateGenerator } from './PolicyTemplateGenerator'
 export { default as ProgressiveAccountCreation } from './ProgressiveAccountCreation'
-export { default as PublicBookingFlow } from './PublicBookingFlow'
 export { default as RuleConflictWarning } from './RuleConflictWarning'
 
 // Booking Steps

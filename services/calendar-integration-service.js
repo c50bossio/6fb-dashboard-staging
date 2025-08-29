@@ -3,9 +3,10 @@
  * Handles appointment sync, calendar management, and iCal export
  */
 
-const { google } = require('googleapis')
-const { createClient } = require('@supabase/supabase-js')
-const ical = require('ical-generator')
+import { google } from 'googleapis'
+import { createClient } from '@supabase/supabase-js'
+import ical from 'ical-generator'
+import { encryptionService } from './encryption-service.js'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -22,22 +23,45 @@ class CalendarIntegrationService {
 
   async init() {
     try {
-      if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-        console.warn('⚠️ Google Calendar credentials not configured')
+      // Validate required environment variables
+      const requiredVars = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'NEXT_PUBLIC_APP_URL']
+      const missing = requiredVars.filter(varName => !process.env[varName])
+      
+      if (missing.length > 0) {
+        console.warn(`⚠️ Google Calendar credentials not configured. Missing: ${missing.join(', ')}`)
+        console.warn('📖 To configure Google Calendar integration:')
+        console.warn('1. Create a Google Cloud project at https://console.cloud.google.com/')
+        console.warn('2. Enable the Calendar API')
+        console.warn('3. Create OAuth2 credentials')
+        console.warn('4. Set environment variables: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET')
+        return
+      }
+
+      // Validate callback URL format
+      const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/google/callback`
+      try {
+        new URL(callbackUrl)
+      } catch (urlError) {
+        console.error('❌ Invalid NEXT_PUBLIC_APP_URL format:', process.env.NEXT_PUBLIC_APP_URL)
         return
       }
 
       this.oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/google/callback`
+        callbackUrl
       )
 
       this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client })
       this.initialized = true
 
+      console.log('✅ Google Calendar service initialized successfully')
+      console.log(`📍 OAuth callback URL: ${callbackUrl}`)
+
     } catch (error) {
       console.error('❌ Failed to initialize Calendar service:', error)
+      console.error('🔧 Check your Google Cloud project configuration')
+      this.initialized = false
     }
   }
 
@@ -81,8 +105,8 @@ class CalendarIntegrationService {
           user_id: userId,
           barbershop_id: barbershopId,
           provider: 'google',
-          access_token: this.encryptToken(tokens.access_token),
-          refresh_token: this.encryptToken(tokens.refresh_token),
+          access_token: encryptionService.encryptToken(tokens.access_token, 'access_token'),
+          refresh_token: encryptionService.encryptToken(tokens.refresh_token, 'refresh_token'),
           token_expires_at: tokens.expiry_date ? new Date(tokens.expiry_date).toISOString() : null,
           is_active: true,
           connected_at: new Date().toISOString(),
@@ -124,8 +148,8 @@ class CalendarIntegrationService {
       }
 
       return {
-        access_token: this.decryptToken(data.access_token),
-        refresh_token: this.decryptToken(data.refresh_token),
+        access_token: encryptionService.decryptToken(data.access_token),
+        refresh_token: encryptionService.decryptToken(data.refresh_token),
         expiry_date: data.token_expires_at ? new Date(data.token_expires_at).getTime() : null
       }
 
@@ -152,8 +176,35 @@ class CalendarIntegrationService {
    * Create calendar event for appointment
    */
   async createAppointmentEvent(userId, appointmentData) {
+    const startTime = Date.now()
+    
     try {
+      // Validate inputs
+      if (!userId || !appointmentData) {
+        throw new Error('Missing required parameters: userId and appointmentData')
+      }
+
+      const requiredFields = ['startDateTime', 'endDateTime', 'customerName', 'serviceName', 'bookingId']
+      const missing = requiredFields.filter(field => !appointmentData[field])
+      if (missing.length > 0) {
+        throw new Error(`Missing required appointment data: ${missing.join(', ')}`)
+      }
+
+      // Validate date/time formats
+      const startDate = new Date(appointmentData.startDateTime)
+      const endDate = new Date(appointmentData.endDateTime)
+      
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new Error('Invalid date format in appointment data')
+      }
+
+      if (startDate >= endDate) {
+        throw new Error('Start time must be before end time')
+      }
+
+      // Set up authentication
       await this.setupAuthForUser(userId)
+      console.log(`📅 Creating Google Calendar event for appointment ${appointmentData.bookingId}`)
 
       const {
         title,
@@ -204,20 +255,27 @@ class CalendarIntegrationService {
             booking_id: bookingId,
             customer_phone: customerPhone,
             barber_name: barberName,
-            service_name: serviceName
+            service_name: serviceName,
+            created_by: '6fb_booking_system',
+            created_at: new Date().toISOString()
           }
         }
       }
 
+      // Create event in Google Calendar
       const response = await this.calendar.events.insert({
         calendarId: 'primary',
         resource: event,
         sendUpdates: 'all'
       })
 
+      if (!response.data?.id) {
+        throw new Error('Google Calendar did not return an event ID')
+      }
+
       // Store calendar event ID in database
-      await supabase
-        .from('bookings')
+      const { error: updateError } = await supabase
+        .from('appointments') // Updated from 'bookings' to match schema
         .update({
           google_calendar_event_id: response.data.id,
           calendar_synced: true,
@@ -225,24 +283,57 @@ class CalendarIntegrationService {
         })
         .eq('id', bookingId)
 
+      if (updateError) {
+        console.warn(`⚠️ Failed to update appointment ${bookingId} with calendar event ID:`, updateError)
+        // Don't fail the whole operation if DB update fails
+      }
+
+      const duration = Date.now() - startTime
+      console.log(`✅ Calendar event created in ${duration}ms: ${response.data.id}`)
+
       return {
         success: true,
         eventId: response.data.id,
         eventUrl: response.data.htmlLink,
-        message: 'Appointment added to Google Calendar'
+        message: 'Appointment added to Google Calendar',
+        duration: duration
       }
 
     } catch (error) {
-      console.error('Error creating calendar event:', error)
+      const duration = Date.now() - startTime
+      console.error(`❌ Error creating calendar event (${duration}ms):`, error)
       
       // Handle specific Google API errors
-      if (error.code === 401) {
-        await this.refreshTokens(userId)
-        // Retry once after token refresh
-        return this.createAppointmentEvent(userId, appointmentData)
+      if (error.code === 401 || error.message?.includes('unauthorized')) {
+        console.log('🔄 Token expired, attempting refresh...')
+        try {
+          await this.refreshTokens(userId)
+          console.log('✅ Tokens refreshed, retrying event creation...')
+          return this.createAppointmentEvent(userId, appointmentData)
+        } catch (refreshError) {
+          console.error('❌ Token refresh failed:', refreshError)
+          throw new Error('Calendar authentication failed. Please reconnect your Google Calendar.')
+        }
       }
 
-      throw error
+      // Handle rate limiting
+      if (error.code === 403 && error.message?.includes('Rate Limit Exceeded')) {
+        throw new Error('Google Calendar rate limit exceeded. Please try again in a few minutes.')
+      }
+
+      // Handle quota errors
+      if (error.code === 403 && error.message?.includes('Daily Limit Exceeded')) {
+        throw new Error('Google Calendar daily quota exceeded. Contact support if this persists.')
+      }
+
+      // Handle calendar not found
+      if (error.code === 404) {
+        throw new Error('Google Calendar not found. Please check your calendar permissions.')
+      }
+
+      // Generic error with helpful message
+      const errorMessage = error.message || 'Unknown error occurred'
+      throw new Error(`Failed to create calendar event: ${errorMessage}`)
     }
   }
 
@@ -250,8 +341,35 @@ class CalendarIntegrationService {
    * Update calendar event for appointment
    */
   async updateAppointmentEvent(userId, eventId, appointmentData) {
+    const startTime = Date.now()
+    
     try {
+      // Validate inputs
+      if (!userId || !eventId || !appointmentData) {
+        throw new Error('Missing required parameters: userId, eventId, and appointmentData')
+      }
+
+      const requiredFields = ['startDateTime', 'endDateTime', 'customerName', 'serviceName']
+      const missing = requiredFields.filter(field => !appointmentData[field])
+      if (missing.length > 0) {
+        throw new Error(`Missing required appointment data: ${missing.join(', ')}`)
+      }
+
+      // Validate date/time formats
+      const startDate = new Date(appointmentData.startDateTime)
+      const endDate = new Date(appointmentData.endDateTime)
+      
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new Error('Invalid date format in appointment data')
+      }
+
+      if (startDate >= endDate) {
+        throw new Error('Start time must be before end time')
+      }
+
+      // Set up authentication
       await this.setupAuthForUser(userId)
+      console.log(`📅 Updating Google Calendar event ${eventId} for user ${userId}`)
 
       const {
         title,
@@ -299,6 +417,14 @@ class CalendarIntegrationService {
         sendUpdates: 'all'
       })
 
+      const duration = Date.now() - startTime
+      console.log(`✅ Updated Google Calendar event in ${duration}ms:`, {
+        eventId: response.data.id,
+        summary: response.data.summary,
+        start: response.data.start.dateTime,
+        end: response.data.end.dateTime
+      })
+
       return {
         success: true,
         eventId: response.data.id,
@@ -307,14 +433,40 @@ class CalendarIntegrationService {
       }
 
     } catch (error) {
-      console.error('Error updating calendar event:', error)
+      const duration = Date.now() - startTime
+      console.error(`❌ Error updating calendar event (${duration}ms):`, error)
       
-      if (error.code === 401) {
-        await this.refreshTokens(userId)
-        return this.updateAppointmentEvent(userId, eventId, appointmentData)
+      // Handle specific Google API errors
+      if (error.code === 401 || error.message?.includes('unauthorized')) {
+        console.log('🔄 Token expired, attempting refresh...')
+        try {
+          await this.refreshTokens(userId)
+          console.log('✅ Tokens refreshed, retrying event update...')
+          return this.updateAppointmentEvent(userId, eventId, appointmentData)
+        } catch (refreshError) {
+          console.error('❌ Token refresh failed:', refreshError)
+          throw new Error('Calendar authentication failed. Please reconnect your Google Calendar.')
+        }
       }
 
-      throw error
+      // Handle rate limiting
+      if (error.code === 403 && error.message?.includes('Rate Limit Exceeded')) {
+        throw new Error('Google Calendar rate limit exceeded. Please try again in a few minutes.')
+      }
+
+      // Handle quota errors
+      if (error.code === 403 && error.message?.includes('Daily Limit Exceeded')) {
+        throw new Error('Google Calendar daily quota exceeded. Contact support if this persists.')
+      }
+
+      // Handle event not found
+      if (error.code === 404) {
+        throw new Error('Calendar event not found. It may have been deleted or moved.')
+      }
+
+      // Generic error with helpful message
+      const errorMessage = error.message || 'Unknown error occurred'
+      throw new Error(`Failed to update calendar event: ${errorMessage}`)
     }
   }
 
@@ -322,8 +474,17 @@ class CalendarIntegrationService {
    * Delete calendar event for appointment
    */
   async deleteAppointmentEvent(userId, eventId) {
+    const startTime = Date.now()
+    
     try {
+      // Validate inputs
+      if (!userId || !eventId) {
+        throw new Error('Missing required parameters: userId and eventId')
+      }
+
+      // Set up authentication
       await this.setupAuthForUser(userId)
+      console.log(`📅 Deleting Google Calendar event ${eventId} for user ${userId}`)
 
       await this.calendar.events.delete({
         calendarId: 'primary',
@@ -331,20 +492,53 @@ class CalendarIntegrationService {
         sendUpdates: 'all'
       })
 
+      const duration = Date.now() - startTime
+      console.log(`✅ Deleted Google Calendar event in ${duration}ms:`, { eventId })
+
       return {
         success: true,
         message: 'Appointment removed from Google Calendar'
       }
 
     } catch (error) {
-      console.error('Error deleting calendar event:', error)
+      const duration = Date.now() - startTime
+      console.error(`❌ Error deleting calendar event (${duration}ms):`, error)
       
-      if (error.code === 401) {
-        await this.refreshTokens(userId)
-        return this.deleteAppointmentEvent(userId, eventId)
+      // Handle specific Google API errors
+      if (error.code === 401 || error.message?.includes('unauthorized')) {
+        console.log('🔄 Token expired, attempting refresh...')
+        try {
+          await this.refreshTokens(userId)
+          console.log('✅ Tokens refreshed, retrying event deletion...')
+          return this.deleteAppointmentEvent(userId, eventId)
+        } catch (refreshError) {
+          console.error('❌ Token refresh failed:', refreshError)
+          throw new Error('Calendar authentication failed. Please reconnect your Google Calendar.')
+        }
       }
 
-      throw error
+      // Handle rate limiting
+      if (error.code === 403 && error.message?.includes('Rate Limit Exceeded')) {
+        throw new Error('Google Calendar rate limit exceeded. Please try again in a few minutes.')
+      }
+
+      // Handle quota errors
+      if (error.code === 403 && error.message?.includes('Daily Limit Exceeded')) {
+        throw new Error('Google Calendar daily quota exceeded. Contact support if this persists.')
+      }
+
+      // Handle event not found (may already be deleted)
+      if (error.code === 404) {
+        console.log('⚠️ Calendar event already deleted or not found')
+        return {
+          success: true,
+          message: 'Appointment was already removed from Google Calendar'
+        }
+      }
+
+      // Generic error with helpful message
+      const errorMessage = error.message || 'Unknown error occurred'
+      throw new Error(`Failed to delete calendar event: ${errorMessage}`)
     }
   }
 
@@ -352,8 +546,17 @@ class CalendarIntegrationService {
    * Sync all appointments to calendar
    */
   async syncAllAppointments(userId, barbershopId) {
+    const startTime = Date.now()
+    
     try {
-      // Get all confirmed appointments for the barbershop
+      // Validate inputs
+      if (!userId || !barbershopId) {
+        throw new Error('Missing required parameters: userId and barbershopId')
+      }
+
+      console.log(`📅 Starting full calendar sync for barbershop ${barbershopId}`)
+
+      // Get all confirmed appointments for the barbershop that don't have calendar events
       const { data: appointments, error } = await supabase
         .from('bookings')
         .select(`
@@ -368,32 +571,117 @@ class CalendarIntegrationService {
         .is('google_calendar_event_id', null)
 
       if (error) {
-        throw error
+        console.error('❌ Database error fetching appointments:', error)
+        throw new Error(`Failed to fetch appointments: ${error.message}`)
       }
 
-      const results = []
-
-      for (const appointment of appointments || []) {
-        try {
-          const appointmentData = this.buildAppointmentData(appointment)
-          const result = await this.createAppointmentEvent(userId, appointmentData)
-          results.push({ bookingId: appointment.id, success: true, result })
-        } catch (error) {
-          console.error(`Failed to sync appointment ${appointment.id}:`, error)
-          results.push({ bookingId: appointment.id, success: false, error: error.message })
+      if (!appointments || appointments.length === 0) {
+        console.log('ℹ️ No appointments found to sync')
+        return {
+          success: true,
+          synced: 0,
+          failed: 0,
+          message: 'No appointments found to sync',
+          results: []
         }
       }
 
+      console.log(`📋 Found ${appointments.length} appointments to sync`)
+
+      const results = []
+      let successCount = 0
+      let failedCount = 0
+
+      // Process appointments with rate limiting awareness
+      for (let i = 0; i < appointments.length; i++) {
+        const appointment = appointments[i]
+        
+        try {
+          console.log(`⏳ Syncing appointment ${i + 1}/${appointments.length}: ${appointment.id}`)
+          
+          const appointmentData = this.buildAppointmentData(appointment)
+          const result = await this.createAppointmentEvent(userId, appointmentData)
+          
+          if (result.success) {
+            // Update appointment with Google Calendar event ID
+            await supabase
+              .from('bookings')
+              .update({ google_calendar_event_id: result.eventId })
+              .eq('id', appointment.id)
+          }
+
+          results.push({ 
+            bookingId: appointment.id, 
+            success: result.success, 
+            result,
+            appointmentData: {
+              customerName: appointmentData.customerName,
+              serviceName: appointmentData.serviceName,
+              startDateTime: appointmentData.startDateTime
+            }
+          })
+          successCount++
+          
+        } catch (error) {
+          console.error(`❌ Failed to sync appointment ${appointment.id}:`, error)
+          results.push({ 
+            bookingId: appointment.id, 
+            success: false, 
+            error: error.message,
+            appointmentData: {
+              customerName: appointment.customers?.name || 'Unknown',
+              serviceName: appointment.service_name || 'Unknown Service',
+              startDateTime: appointment.appointment_date
+            }
+          })
+          failedCount++
+
+          // If we hit rate limits, wait before continuing
+          if (error.message?.includes('rate limit')) {
+            console.log('⏱️ Rate limit detected, waiting 60 seconds...')
+            await new Promise(resolve => setTimeout(resolve, 60000))
+          }
+        }
+
+        // Small delay between requests to avoid rate limiting
+        if (i < appointments.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 100))
+        }
+      }
+
+      const duration = Date.now() - startTime
+      console.log(`✅ Calendar sync completed in ${duration}ms:`, {
+        total: appointments.length,
+        synced: successCount,
+        failed: failedCount
+      })
+
       return {
         success: true,
-        synced: results.filter(r => r.success).length,
-        failed: results.filter(r => !r.success).length,
+        synced: successCount,
+        failed: failedCount,
+        total: appointments.length,
+        duration: duration,
+        message: `Synced ${successCount} of ${appointments.length} appointments`,
         results: results
       }
 
     } catch (error) {
-      console.error('Error syncing appointments:', error)
-      throw error
+      const duration = Date.now() - startTime
+      console.error(`❌ Error during full calendar sync (${duration}ms):`, error)
+      
+      // Provide helpful error messages based on error type
+      let userMessage = 'Failed to sync appointments to calendar'
+      
+      if (error.message?.includes('unauthorized') || error.message?.includes('authentication')) {
+        userMessage = 'Calendar authentication failed. Please reconnect your Google Calendar.'
+      } else if (error.message?.includes('quota') || error.message?.includes('rate limit')) {
+        userMessage = 'Google Calendar usage limit reached. Please try again later.'
+      } else if (error.message?.includes('database') || error.message?.includes('fetch appointments')) {
+        userMessage = 'Database error while fetching appointments. Please try again.'
+      }
+
+      throw new Error(userMessage)
     }
   }
 
@@ -482,7 +770,38 @@ class CalendarIntegrationService {
    * Build appointment data for calendar integration
    */
   buildAppointmentData(appointment) {
-    const startDateTime = new Date(`${appointment.appointment_date}T${appointment.appointment_time}`)
+    // Handle various date/time formats
+    let startDateTime
+    
+    try {
+      // If appointment_date and appointment_time are separate
+      if (appointment.appointment_date && appointment.appointment_time) {
+        // Handle time format (could be "10:00" or "10:00:00")
+        const time = appointment.appointment_time.includes(':') 
+          ? appointment.appointment_time 
+          : '10:00' // Default time if missing
+        startDateTime = new Date(`${appointment.appointment_date}T${time}`)
+      } 
+      // If it's a combined datetime field
+      else if (appointment.datetime || appointment.start_time) {
+        startDateTime = new Date(appointment.datetime || appointment.start_time)
+      }
+      // Fallback to current time + 1 day for testing
+      else {
+        console.warn('⚠️ No valid date/time found in appointment, using default')
+        startDateTime = new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+      
+      // Validate the date
+      if (isNaN(startDateTime.getTime())) {
+        console.warn('⚠️ Invalid date generated, using fallback')
+        startDateTime = new Date(Date.now() + 24 * 60 * 60 * 1000)
+      }
+    } catch (error) {
+      console.error('Date parsing error:', error)
+      startDateTime = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    }
+    
     const endDateTime = new Date(startDateTime.getTime() + (appointment.duration || 60) * 60000)
 
     return {
@@ -547,7 +866,7 @@ class CalendarIntegrationService {
       await supabase
         .from('calendar_integrations')
         .update({
-          access_token: this.encryptToken(credentials.access_token),
+          access_token: encryptionService.encryptToken(credentials.access_token, 'access_token'),
           token_expires_at: credentials.expiry_date ? new Date(credentials.expiry_date).toISOString() : null,
           updated_at: new Date().toISOString()
         })
@@ -574,23 +893,6 @@ class CalendarIntegrationService {
     }
   }
 
-  /**
-   * Simple token encryption (replace with proper encryption in production)
-   */
-  encryptToken(token) {
-    if (!token) return null
-    // In production, use proper encryption with a secret key
-    return Buffer.from(token).toString('base64')
-  }
-
-  /**
-   * Simple token decryption (replace with proper decryption in production)
-   */
-  decryptToken(encryptedToken) {
-    if (!encryptedToken) return null
-    // In production, use proper decryption with a secret key
-    return Buffer.from(encryptedToken, 'base64').toString('utf-8')
-  }
 
   /**
    * Get service health status
@@ -617,7 +919,7 @@ class CalendarIntegrationService {
 
 const calendarIntegrationService = new CalendarIntegrationService()
 
-module.exports = {
+export {
   calendarIntegrationService,
   CalendarIntegrationService
 }

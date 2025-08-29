@@ -12,7 +12,6 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { LogoHeader } from '@/components/ui/Logo'
 import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
-import { createClient } from '@/lib/supabase/browser-client'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -24,7 +23,7 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const router = useRouter()
-  const { signIn, signUp, resetPassword } = useAuth()
+  const { signIn, signUp, resetPassword, signInWithGoogle } = useAuth()
   
   // Check for OAuth errors on page load - let Supabase handle session detection automatically
   useEffect(() => {
@@ -53,22 +52,14 @@ export default function LoginPage() {
     setError('')
     
     try {
-      const supabase = createClient()
+      // Store the intended destination
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('auth_return_url', '/dashboard')
+      }
       
-      // OAuth flow with PKCE - cookie parsing issue has been fixed
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'select_account'  // Always show account selection
-          },
-          skipBrowserRedirect: false
-        }
-      })
-      
-      if (error) throw error
+      // Use the centralized auth provider's Google sign-in method
+      // This ensures proper PKCE flow and session management
+      await signInWithGoogle()
       
       // OAuth initiated successfully - browser will redirect
     } catch (err) {

@@ -3,26 +3,13 @@
  * Generates smart business alerts based on real data patterns and configurable thresholds
  */
 
-import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import optimizedSupabase, { batchQueries } from '../../../../lib/performance/optimized-supabase.js';
 import { cacheQuery } from '../../../../lib/analytics-cache.js';
 export const runtime = 'nodejs'
 
-// Initialize Supabase client inside functions to avoid build-time errors
-function getSupabaseClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  
-  if (!url || !key) {
-    throw new Error('Supabase credentials not configured');
-  }
-  
-  return createClient(url, key);
-}
-
 export async function GET(request) {
   try {
-    const supabase = getSupabaseClient();
     const { searchParams } = new URL(request.url);
     const barbershopId = searchParams.get('barbershop_id');
     if (!barbershopId) {
@@ -32,9 +19,11 @@ export async function GET(request) {
       }, { status: 400 });
     }
 
-    const alerts = await cacheQuery('intelligent-alerts', { barbershopId }, async () => {
+    // Use optimized caching with the new service
+    const queryKey = `intelligent-alerts-${barbershopId}`;
+    const alerts = await optimizedSupabase.executeQuery(queryKey, async () => {
       return await generateIntelligentAlerts(barbershopId);
-    });
+    }, { cacheTTL: 180000 }); // 3 minute cache
 
     return NextResponse.json({
       success: true,
@@ -42,11 +31,12 @@ export async function GET(request) {
       priorityActions: alerts.priorityActions || [],
       thresholds: alerts.thresholds || {},
       insights: alerts.insights || [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      performance: optimizedSupabase.getPerformanceMetrics()
     });
 
   } catch (error) {
-    // Error handling - return appropriate response
+    console.error('[Alerts API] Error generating intelligent alerts:', error);
     return NextResponse.json({
       success: false,
       error: 'Failed to generate intelligent alerts',
@@ -102,19 +92,36 @@ export async function POST(request) {
  */
 async function generateIntelligentAlerts(barbershopId) {
   try {
-    const supabase = getSupabaseClient();
+    // Use batch queries to fetch data more efficiently
+    const results = await batchQueries([
+      {
+        key: `bookings-${barbershopId}`,
+        fn: (client) => client
+          .from('bookings')
+          .select('*, customers:customer_id(id, email, created_at)')
+          .gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false }),
+        options: { cacheTTL: 300000 } // 5 minute cache
+      },
+      {
+        key: `customers-recent-${barbershopId}`,
+        fn: (client) => client
+          .from('customers')
+          .select('*')
+          .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+        options: { cacheTTL: 600000 } // 10 minute cache
+      }
+    ]);
+
+    const bookingsResult = results.find(r => r.key.includes('bookings'));
+    const customersResult = results.find(r => r.key.includes('customers'));
     
-    const { data: bookings } = await supabase
-      .from('bookings')
-      .select('*')
-      .gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false });
+    if (!bookingsResult.success || !customersResult.success) {
+      throw new Error('Failed to fetch required data');
+    }
 
-    const { data: customers } = await supabase
-      .from('customers')
-      .select('*')
-      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
-
+    const bookings = bookingsResult.data?.data || [];
+    const customers = customersResult.data?.data || [];
     const currentMetrics = calculateCurrentMetrics(bookings, customers);
     
     const thresholds = getAlertThresholds();
@@ -242,6 +249,7 @@ async function generateIntelligentAlerts(barbershopId) {
       thresholds,
       insights,
       metrics: currentMetrics,
+      performance: optimizedSupabase.getPerformanceMetrics(),
       generated_at: new Date().toISOString()
     };
 

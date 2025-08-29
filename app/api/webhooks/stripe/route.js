@@ -170,6 +170,15 @@ export async function POST(request) {
         await handleCheckoutCompleted(event.data.object)
         break
 
+      // Terminal Payment Events
+      case 'terminal.reader.action_succeeded':
+        await handleTerminalActionSucceeded(event.data.object)
+        break
+
+      case 'terminal.reader.action_failed':
+        await handleTerminalActionFailed(event.data.object)
+        break
+
       case 'customer.created':
         await handleCustomerCreated(event.data.object)
         break
@@ -218,7 +227,7 @@ export async function POST(request) {
 
       // Booking Payment Events
       case 'payment_intent.succeeded':
-        await handlePaymentIntentSucceeded(event.data.object)
+        await handlePaymentIntentSucceededEnhanced(event.data.object)
         break
 
       case 'payment_intent.payment_failed':
@@ -504,6 +513,18 @@ async function handleTrialWillEnd(subscription) {
 }
 
 async function handleCheckoutCompleted(session) {
+  // Route to appropriate handler based on payment type
+  if (session.metadata?.source === 'pos_system') {
+    await handlePOSPaymentLinkCompleted(session)
+    return
+  }
+  
+  // Check if this is a QR code payment
+  if (session.metadata?.payment_type === 'qr_code_pos') {
+    await handleQRPaymentCompleted(session)
+    return
+  }
+
   const userId = session.client_reference_id || session.metadata?.userId
   const plan = session.metadata?.plan
   const billing = session.metadata?.billing
@@ -1927,6 +1948,296 @@ async function sendCommissionPaidNotification(data) {
   }
 }
 
+// ==========================================
+// POS Payment Link Handler
+// ==========================================
+
+async function handlePOSPaymentLinkCompleted(session) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+
+    const barbershopId = session.metadata?.barbershop_id
+    const barberId = session.metadata?.barber_id
+    const customerContact = session.metadata?.customer_contact
+    const contactMethod = session.metadata?.contact_method
+
+    console.log('Processing POS payment link completion:', {
+      session_id: session.id,
+      barbershop_id: barbershopId,
+      amount: session.amount_total / 100
+    })
+
+    // Find the payment link record
+    let { data: paymentLink, error: linkError } = await supabase
+      .from('pos_payment_links')
+      .select('*')
+      .eq('stripe_session_id', session.id)
+      .single()
+
+    if (linkError && linkError.code === 'PGRST116') {
+      // Try to find by metadata if not found by session_id
+      const { data: linkByMetadata } = await supabase
+        .from('pos_payment_links')
+        .select('*')
+        .eq('barbershop_id', barbershopId)
+        .eq('status', 'pending')
+        .eq('customer_contact', customerContact)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (linkByMetadata) {
+        // Update with the session ID
+        const { error: updateError } = await supabase
+          .from('pos_payment_links')
+          .update({ stripe_session_id: session.id })
+          .eq('id', linkByMetadata.id)
+
+        if (!updateError) {
+          paymentLink = linkByMetadata
+        }
+      }
+    }
+
+    if (!paymentLink) {
+      console.error('Payment link not found for session:', session.id)
+      return
+    }
+
+    const cartData = paymentLink.cart_data
+    const amountPaid = session.amount_total / 100
+
+    // Update payment link status
+    const { error: statusError } = await supabase
+      .from('pos_payment_links')
+      .update({
+        status: 'paid',
+        paid_at: new Date().toISOString(),
+        stripe_session_id: session.id,
+        metadata: {
+          ...paymentLink.metadata,
+          payment_completed_at: new Date().toISOString(),
+          stripe_payment_intent: session.payment_intent,
+          customer_details: session.customer_details
+        }
+      })
+      .eq('id', paymentLink.id)
+
+    if (statusError) {
+      console.error('Error updating payment link status:', statusError)
+      return
+    }
+
+    // Process each item in the cart - update inventory and record sales
+    const receiptNumber = `PL-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`
+
+    for (const item of cartData.items) {
+      try {
+        // Record the sale
+        const { error: saleError } = await supabase
+          .from('pos_sales') // Note: This table may need to be created if it doesn't exist
+          .insert({
+            barbershop_id: barbershopId,
+            product_id: item.id,
+            quantity: item.quantity,
+            unit_price: item.price,
+            total_price: item.price * item.quantity,
+            barber_id: barberId,
+            payment_method: 'stripe_payment_link',
+            receipt_number: receiptNumber,
+            payment_link_id: paymentLink.id,
+            customer_contact: customerContact,
+            created_at: new Date().toISOString()
+          })
+
+        if (saleError) {
+          console.error(`Error recording sale for product ${item.id}:`, saleError)
+        }
+
+        // Update inventory - reduce stock
+        const { error: inventoryError } = await supabase
+          .rpc('update_inventory_stock', {
+            p_product_id: item.id,
+            p_quantity_change: -item.quantity,
+            p_reason: 'pos_sale',
+            p_reference_id: paymentLink.id
+          })
+
+        if (inventoryError) {
+          console.error(`Error updating inventory for product ${item.id}:`, inventoryError)
+        }
+
+        // Calculate and record commission if applicable
+        if (barberId && item.commission_rate) {
+          const commissionAmount = (item.price * item.quantity * item.commission_rate) / 100
+
+          const { error: commissionError } = await supabase
+            .from('pos_commissions')
+            .insert({
+              barber_id: barberId,
+              barbershop_id: barbershopId,
+              product_id: item.id,
+              sale_amount: item.price * item.quantity,
+              commission_rate: item.commission_rate,
+              commission_amount: commissionAmount,
+              payment_link_id: paymentLink.id,
+              status: 'pending_payout',
+              created_at: new Date().toISOString()
+            })
+
+          if (commissionError) {
+            console.error(`Error recording commission for product ${item.id}:`, commissionError)
+          }
+        }
+      } catch (itemError) {
+        console.error(`Error processing item ${item.id}:`, itemError)
+      }
+    }
+
+    // Send confirmation message to customer
+    try {
+      if (contactMethod === 'sms') {
+        await sendPOSConfirmationSMS(customerContact, {
+          receiptNumber,
+          total: amountPaid,
+          items: cartData.items
+        })
+      } else if (contactMethod === 'email') {
+        await sendPOSConfirmationEmail(customerContact, {
+          receiptNumber,
+          total: amountPaid,
+          items: cartData.items,
+          barbershopId
+        })
+      }
+    } catch (confirmationError) {
+      console.error('Error sending confirmation:', confirmationError)
+    }
+
+    console.log(`POS payment link completed successfully: ${receiptNumber}, Amount: $${amountPaid}`)
+
+  } catch (error) {
+    console.error('Error handling POS payment link completion:', error)
+  }
+}
+
+// Helper functions for POS confirmations
+async function sendPOSConfirmationSMS(phoneNumber, details) {
+  try {
+    const accountSid = process.env.TWILIO_ACCOUNT_SID
+    const authToken = process.env.TWILIO_AUTH_TOKEN
+    const fromNumber = process.env.TWILIO_PHONE_NUMBER
+
+    if (!accountSid || !authToken || !fromNumber) {
+      console.log('Twilio not configured for POS confirmations')
+      return
+    }
+
+    const twilio = require('twilio')(accountSid, authToken)
+
+    const itemsList = details.items
+      .map(item => `${item.name} (${item.quantity}x)`)
+      .join(', ')
+
+    const message = `Payment confirmed! Receipt: ${details.receiptNumber}. Items: ${itemsList}. Total: $${details.total.toFixed(2)}. Thank you for your purchase!`
+
+    await twilio.messages.create({
+      body: message,
+      from: fromNumber,
+      to: phoneNumber
+    })
+
+    console.log('POS confirmation SMS sent successfully')
+  } catch (error) {
+    console.error('Error sending POS confirmation SMS:', error)
+  }
+}
+
+async function sendPOSConfirmationEmail(email, details) {
+  try {
+    const sgMail = require('@sendgrid/mail')
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+
+    if (!process.env.SENDGRID_API_KEY) {
+      console.log('SendGrid not configured for POS confirmations')
+      return
+    }
+
+    const itemsList = details.items
+      .map(item => `• ${item.name} (${item.quantity}x) - $${(item.price * item.quantity).toFixed(2)}`)
+      .join('\n')
+
+    const emailContent = {
+      to: email,
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@bookedbarber.com',
+      subject: 'Payment Confirmed - Thank you!',
+      text: `
+Payment Confirmed!
+
+Receipt Number: ${details.receiptNumber}
+
+Items:
+${itemsList}
+
+Total: $${details.total.toFixed(2)}
+
+Thank you for your purchase!
+      `,
+      html: `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmed</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #28a745; color: white; padding: 20px; text-align: center; border-radius: 8px; }
+        .content { padding: 20px 0; }
+        .receipt { background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .items { margin: 15px 0; }
+        .total { font-size: 18px; font-weight: bold; text-align: center; margin: 20px 0; background-color: #e9ecef; padding: 15px; border-radius: 8px; }
+        .footer { margin-top: 30px; font-size: 12px; color: #666; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✅ Payment Confirmed!</h1>
+    </div>
+    
+    <div class="content">
+        <div class="receipt">
+            <h3>Receipt Number: ${details.receiptNumber}</h3>
+        </div>
+        
+        <div class="items">
+            <h3>Items Purchased:</h3>
+            ${details.items.map(item => `
+                <p>• ${item.name} (${item.quantity}x) - $${(item.price * item.quantity).toFixed(2)}</p>
+            `).join('')}
+        </div>
+        
+        <div class="total">Total: $${details.total.toFixed(2)}</div>
+        
+        <p>Thank you for your purchase!</p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated confirmation email.</p>
+    </div>
+</body>
+</html>
+      `
+    }
+
+    await sgMail.send(emailContent)
+    console.log('POS confirmation email sent successfully')
+  } catch (error) {
+    console.error('Error sending POS confirmation email:', error)
+  }
+}
+
 async function sendSubscriptionEmail(tenantId, emailType, data) {
   
   const emailTemplates = {
@@ -1945,4 +2256,331 @@ async function sendSubscriptionEmail(tenantId, emailType, data) {
   
   // Email would be sent through email service here
   return true
+}
+
+// ==========================================
+// UNIFIED POS PAYMENT WEBHOOK HANDLERS
+// ==========================================
+
+/**
+ * Handle QR code payment completion
+ */
+async function handleQRPaymentCompleted(session) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+
+    const sessionId = session.id
+    const barbershopId = session.metadata?.barbershop_id
+    const barberId = session.metadata?.barber_id
+    const customerId = session.metadata?.customer_id
+
+    console.log('Processing QR payment completion:', {
+      session_id: sessionId,
+      barbershop_id: barbershopId,
+      amount: session.amount_total / 100
+    })
+
+    // Find and update the QR payment session
+    const { data: qrSession, error: sessionError } = await supabase
+      .from('qr_payment_sessions')
+      .select('*')
+      .eq('session_id', sessionId)
+      .single()
+
+    if (sessionError || !qrSession) {
+      console.error('QR payment session not found:', sessionId)
+      return
+    }
+
+    // Update session status
+    const { error: updateError } = await supabase
+      .from('qr_payment_sessions')
+      .update({
+        status: 'completed',
+        processed_at: new Date().toISOString(),
+        stripe_payment_intent_id: session.payment_intent
+      })
+      .eq('id', qrSession.id)
+
+    if (updateError) {
+      console.error('Error updating QR session status:', updateError)
+      return
+    }
+
+    // Process unified sales and inventory
+    await processUnifiedPOSSale({
+      barbershopId,
+      barberId,
+      customerId,
+      cartItems: qrSession.cart_items,
+      paymentMethod: 'qr_code',
+      paymentReference: {
+        qr_session_id: qrSession.id,
+        stripe_session_id: sessionId
+      },
+      receiptPrefix: 'QR',
+      supabase
+    })
+
+    console.log(`QR payment completed successfully: ${sessionId}`)
+
+  } catch (error) {
+    console.error('Error handling QR payment completion:', error)
+  }
+}
+
+/**
+ * Handle Terminal payment action success
+ */
+async function handleTerminalActionSucceeded(reader) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+
+    // Update reader status
+    await supabase
+      .from('terminal_readers')
+      .update({ 
+        status: 'online',
+        last_seen_at: new Date().toISOString()
+      })
+      .eq('stripe_reader_id', reader.id)
+
+    console.log(`Terminal reader ${reader.id} action succeeded`)
+
+  } catch (error) {
+    console.error('Error handling terminal action succeeded:', error)
+  }
+}
+
+/**
+ * Handle Terminal payment action failure
+ */
+async function handleTerminalActionFailed(reader) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+
+    // Update reader status and log failure
+    await supabase
+      .from('terminal_readers')
+      .update({ 
+        status: 'online', // Reset to online after failure
+        last_seen_at: new Date().toISOString(),
+        metadata: supabase.raw(`metadata || '"action_failed_at": "${new Date().toISOString()}"}'::jsonb`)
+      })
+      .eq('stripe_reader_id', reader.id)
+
+    console.error(`Terminal reader ${reader.id} action failed:`, reader.failure_reason)
+
+  } catch (error) {
+    console.error('Error handling terminal action failed:', error)
+  }
+}
+
+/**
+ * Enhanced Payment Intent handler for Terminal payments
+ */
+async function handlePaymentIntentSucceededEnhanced(paymentIntent) {
+  // Check if this is a Terminal payment
+  if (paymentIntent.metadata?.payment_type === 'terminal') {
+    await handleTerminalPaymentSucceeded(paymentIntent)
+    return
+  }
+
+  // Fall back to existing handler
+  await handlePaymentIntentSucceeded(paymentIntent)
+}
+
+/**
+ * Handle Terminal payment success
+ */
+async function handleTerminalPaymentSucceeded(paymentIntent) {
+  try {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+
+    const barbershopId = paymentIntent.metadata?.barbershop_id
+    const barberId = paymentIntent.metadata?.barber_id
+    const customerId = paymentIntent.metadata?.customer_id
+    const readerId = paymentIntent.metadata?.reader_id
+
+    console.log('Processing Terminal payment success:', {
+      payment_intent_id: paymentIntent.id,
+      barbershop_id: barbershopId,
+      amount: paymentIntent.amount / 100
+    })
+
+    // Find and update the terminal payment intent
+    const { data: terminalPayment, error: paymentError } = await supabase
+      .from('terminal_payment_intents')
+      .select('*')
+      .eq('stripe_payment_intent_id', paymentIntent.id)
+      .single()
+
+    if (paymentError || !terminalPayment) {
+      console.error('Terminal payment intent not found:', paymentIntent.id)
+      return
+    }
+
+    // Update payment status
+    const { error: updateError } = await supabase
+      .from('terminal_payment_intents')
+      .update({
+        status: 'succeeded',
+        charges: paymentIntent.charges,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', terminalPayment.id)
+
+    if (updateError) {
+      console.error('Error updating terminal payment status:', updateError)
+      return
+    }
+
+    // Reset reader status to online
+    if (readerId) {
+      await supabase
+        .from('terminal_readers')
+        .update({ 
+          status: 'online',
+          last_seen_at: new Date().toISOString()
+        })
+        .eq('id', readerId)
+    }
+
+    // Process sales if cart items exist
+    const cartItems = terminalPayment.metadata?.cart_items
+    if (cartItems && cartItems.length > 0) {
+      await processUnifiedPOSSale({
+        barbershopId,
+        barberId,
+        customerId,
+        cartItems,
+        paymentMethod: 'terminal',
+        paymentReference: {
+          terminal_payment_intent_id: terminalPayment.id,
+          stripe_payment_intent_id: paymentIntent.id
+        },
+        receiptPrefix: 'TRM',
+        supabase
+      })
+    }
+
+    console.log(`Terminal payment completed successfully: ${paymentIntent.id}`)
+
+  } catch (error) {
+    console.error('Error handling Terminal payment success:', error)
+  }
+}
+
+/**
+ * Unified POS sale processing function
+ * Works for all payment types: Payment Links, QR Codes, Terminal
+ */
+async function processUnifiedPOSSale({
+  barbershopId,
+  barberId,
+  customerId,
+  cartItems,
+  paymentMethod,
+  paymentReference,
+  receiptPrefix,
+  supabase
+}) {
+  try {
+    const receiptNumber = `${receiptPrefix}-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`
+
+    // Process each cart item
+    for (const item of cartItems) {
+      // Record the sale
+      const saleData = {
+        barbershop_id: barbershopId,
+        product_id: item.id,
+        quantity: item.quantity,
+        unit_price: item.price,
+        total_price: item.price * item.quantity,
+        barber_id: barberId,
+        customer_id: customerId,
+        payment_method: paymentMethod,
+        receipt_number: receiptNumber,
+        created_at: new Date().toISOString()
+      }
+
+      // Add payment-specific references
+      if (paymentReference.payment_link_id) {
+        saleData.payment_link_id = paymentReference.payment_link_id
+      }
+      if (paymentReference.qr_session_id) {
+        saleData.qr_session_id = paymentReference.qr_session_id
+      }
+      if (paymentReference.terminal_payment_intent_id) {
+        saleData.terminal_payment_intent_id = paymentReference.terminal_payment_intent_id
+      }
+
+      const { error: saleError } = await supabase
+        .from('pos_sales')
+        .insert(saleData)
+
+      if (saleError) {
+        console.error(`Error recording sale for product ${item.id}:`, saleError)
+        continue
+      }
+
+      // Update inventory
+      const { error: inventoryError } = await supabase
+        .rpc('update_inventory_stock', {
+          p_product_id: item.id,
+          p_quantity_change: -item.quantity,
+          p_reason: `pos_sale_${paymentMethod}`,
+          p_reference_id: paymentReference.payment_link_id || paymentReference.qr_session_id || paymentReference.terminal_payment_intent_id
+        })
+
+      if (inventoryError) {
+        console.error(`Error updating inventory for product ${item.id}:`, inventoryError)
+      }
+
+      // Calculate and record commission if applicable
+      if (barberId && item.commission_rate) {
+        const commissionAmount = (item.price * item.quantity * item.commission_rate) / 100
+
+        const commissionData = {
+          barber_id: barberId,
+          barbershop_id: barbershopId,
+          product_id: item.id,
+          sale_amount: item.price * item.quantity,
+          commission_rate: item.commission_rate,
+          commission_amount: commissionAmount,
+          status: 'pending_payout',
+          created_at: new Date().toISOString()
+        }
+
+        // Add payment-specific references
+        if (paymentReference.payment_link_id) {
+          commissionData.payment_link_id = paymentReference.payment_link_id
+        }
+        if (paymentReference.qr_session_id) {
+          commissionData.qr_session_id = paymentReference.qr_session_id
+        }
+        if (paymentReference.terminal_payment_intent_id) {
+          commissionData.terminal_payment_intent_id = paymentReference.terminal_payment_intent_id
+        }
+
+        const { error: commissionError } = await supabase
+          .from('pos_commissions')
+          .insert(commissionData)
+
+        if (commissionError) {
+          console.error(`Error recording commission for product ${item.id}:`, commissionError)
+        }
+      }
+    }
+
+    console.log(`Unified POS sale processed: ${receiptNumber}, Items: ${cartItems.length}, Method: ${paymentMethod}`)
+
+  } catch (error) {
+    console.error('Error processing unified POS sale:', error)
+    throw error
+  }
 }

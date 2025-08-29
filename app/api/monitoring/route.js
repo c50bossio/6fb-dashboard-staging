@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/client'
+import optimizedSupabase, { batchQueries } from '../../../lib/performance/optimized-supabase.js'
 
 // GET - Retrieve monitoring data and system health
 export async function GET(request) {
@@ -8,8 +8,8 @@ export async function GET(request) {
     const type = searchParams.get('type') || 'health'
     const hours = parseInt(searchParams.get('hours')) || 24
 
-    const supabase = createClient()
     const timeThreshold = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
+    const client = optimizedSupabase.getClient()
 
     switch (type) {
       case 'health': {
@@ -18,7 +18,7 @@ export async function GET(request) {
         let errorCount = 0
         
         try {
-          const { data, error: healthError } = await supabase
+          const { data, error: healthError } = await client
             .from('system_health_snapshots')
             .select('*')
             .order('timestamp', { ascending: false })
@@ -36,7 +36,7 @@ export async function GET(request) {
 
         // Get recent error count - gracefully handle missing table
         try {
-          const { count } = await supabase
+          const { count } = await client
             .from('production_errors')
             .select('*', { count: 'exact', head: true })
             .gte('timestamp', timeThreshold)
@@ -70,7 +70,7 @@ export async function GET(request) {
 
       case 'metrics': {
         // Get metrics for the specified time period
-        const { data: metrics, error: metricsError } = await supabase
+        const { data: metrics, error: metricsError } = await client
           .from('production_metrics')
           .select('*')
           .gte('timestamp', timeThreshold)
@@ -113,7 +113,7 @@ export async function GET(request) {
 
       case 'errors': {
         // Get recent errors with aggregation
-        const { data: errors, error: errorsError } = await supabase
+        const { data: errors, error: errorsError } = await client
           .from('production_errors')
           .select('*')
           .gte('timestamp', timeThreshold)
@@ -161,7 +161,7 @@ export async function GET(request) {
 
       case 'ai-usage': {
         // Get AI usage statistics
-        const { data: aiUsage, error: aiError } = await supabase
+        const { data: aiUsage, error: aiError } = await client
           .from('ai_model_usage')
           .select('*')
           .gte('timestamp', timeThreshold)
@@ -219,7 +219,14 @@ export async function GET(request) {
     }
 
   } catch (error) {
-    console.error('Monitoring API error:', error)
+    // Better error logging for debugging
+    console.error('Monitoring API error:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    })
     return NextResponse.json(
       { error: error.message || 'Failed to fetch monitoring data' },
       { status: 500 }
@@ -240,12 +247,12 @@ export async function POST(request) {
       )
     }
 
-    const supabase = createClient()
+    const client = optimizedSupabase.getClient()
 
     switch (type) {
       case 'metrics': {
         // Store system metrics
-        const { error } = await supabase
+        const { error } = await client
           .from('production_metrics')
           .insert({
             timestamp: new Date().toISOString(),
@@ -260,7 +267,7 @@ export async function POST(request) {
 
       case 'error': {
         // Store error information
-        const { error } = await supabase
+        const { error } = await client
           .from('production_errors')
           .insert({
             timestamp: new Date().toISOString(),
@@ -279,7 +286,7 @@ export async function POST(request) {
 
       case 'health-snapshot': {
         // Store system health snapshot
-        const { error } = await supabase
+        const { error } = await client
           .from('system_health_snapshots')
           .insert({
             timestamp: new Date().toISOString(),
@@ -303,7 +310,7 @@ export async function POST(request) {
 
       case 'ai-usage': {
         // Store AI model usage
-        const { error } = await supabase
+        const { error } = await client
           .from('ai_model_usage')
           .insert({
             timestamp: new Date().toISOString(),
@@ -328,7 +335,7 @@ export async function POST(request) {
 
       case 'alert': {
         // Store alert
-        const { error } = await supabase
+        const { error } = await client
           .from('production_alerts')
           .insert({
             alert_type: monitoringData.alert_type || 'system',
@@ -349,7 +356,14 @@ export async function POST(request) {
     }
 
   } catch (error) {
-    console.error('Monitoring storage error:', error)
+    // Better error logging for debugging
+    console.error('Monitoring storage error:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    })
     return NextResponse.json(
       { error: error.message || 'Failed to store monitoring data' },
       { status: 500 }
@@ -370,12 +384,12 @@ export async function PUT(request) {
       )
     }
 
-    const supabase = createClient()
+    const client = optimizedSupabase.getClient()
 
     switch (type) {
       case 'error': {
         // Update error status (mark as resolved)
-        const { error } = await supabase
+        const { error } = await client
           .from('production_errors')
           .update({
             ...updates,
@@ -392,7 +406,7 @@ export async function PUT(request) {
 
       case 'alert': {
         // Update alert status (acknowledge, resolve)
-        const { error } = await supabase
+        const { error } = await client
           .from('production_alerts')
           .update({
             ...updates,
@@ -411,7 +425,14 @@ export async function PUT(request) {
     }
 
   } catch (error) {
-    console.error('Monitoring update error:', error)
+    // Better error logging for debugging
+    console.error('Monitoring update error:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    })
     return NextResponse.json(
       { error: error.message || 'Failed to update monitoring data' },
       { status: 500 }

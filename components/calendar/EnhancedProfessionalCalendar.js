@@ -4,14 +4,15 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
 import FullCalendar from '@fullcalendar/react'
+// Premium plugins enabled with proper licensing
 import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
 import rrulePlugin from '@fullcalendar/rrule'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import React, { useRef, useCallback, useEffect, useState, useMemo, useImperativeHandle } from 'react'
+import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
 import { RRule } from 'rrule'
 
-const EnhancedProfessionalCalendar = React.forwardRef(({
+export default function EnhancedProfessionalCalendar({
   resources: externalResources,
   eventSources: externalEventSources,
   events: externalEvents, // Keep for backward compatibility
@@ -21,20 +22,18 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
   onEventClick,
   onEventDrop,
   height = '700px',
-  defaultView = 'resourceTimeGridDay'
-}, ref) => {
+  defaultView = 'timeGridDay'
+}) {
   const calendarRef = useRef(null)
   const [currentView, setCurrentView] = useState(controlledView || defaultView)
-
-  // Expose calendar API methods to parent
-  useImperativeHandle(ref, () => ({
-    refetchEvents: () => {
-      if (calendarRef.current) {
-        calendarRef.current.getApi().refetchEvents()
-      }
-    },
-    getApi: () => calendarRef.current?.getApi()
-  }))
+  
+  // Expose calendar API globally for debugging and manual refresh
+  useEffect(() => {
+    if (calendarRef.current) {
+      window.fullCalendarApi = calendarRef.current.getApi()
+      console.log('FullCalendar API exposed as window.fullCalendarApi')
+    }
+  }, [])
   
   useEffect(() => {
     if (controlledView && controlledView !== currentView) {
@@ -64,9 +63,9 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
       endStr: selectInfo.endStr,
       allDay: selectInfo.allDay,
       viewType: viewType,
-      resource: selectInfo.resource,
-      resourceId: selectInfo.resource?.id,
-      resourceTitle: selectInfo.resource?.title,
+      resource: selectInfo.resource,  // Premium feature enabled
+      resourceId: selectInfo.resource?.id,  // Premium feature enabled
+      resourceTitle: selectInfo.resource?.title,  // Premium feature enabled
       jsEvent: selectInfo.jsEvent,
       selectionType: 'drag',
       duration: Math.round((selectInfo.end - selectInfo.start) / 60000)
@@ -91,12 +90,15 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
         minute: '2-digit'
       })
       slotData.suggestedBarber = findAvailableBarber(selectInfo.start, selectInfo.end)
-    } else if (viewType.includes('resourceTimeGrid')) {
+    } else if (viewType.includes('resourceTimeGrid') || viewType.includes('resourceTimeline')) {
+      // Premium resource view handling enabled
       slotData.isResourceView = true
       slotData.exactTime = selectInfo.start.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit'
       })
+      slotData.selectedBarber = selectInfo.resource?.id
+      slotData.selectedBarberName = selectInfo.resource?.title
     }
     
     const durationHours = Math.round(slotData.duration / 60 * 10) / 10  // Round to 1 decimal place
@@ -139,6 +141,11 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
   }
   
   const findAvailableBarber = (start, end) => {
+    // Handle case when resources is undefined (premium feature removed)
+    if (!resources || resources.length === 0) {
+      return null
+    }
+    
     if (!events || events.length === 0) {
       return resources.length > 0 ? {
         id: resources[0].id,
@@ -240,6 +247,7 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
           border-color: #ef4444 !important;
           border-width: 2px !important;
         }
+        /* Premium resource area styling enabled */
         .fc-resource-area {
           min-width: 120px !important;
         }
@@ -247,10 +255,17 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
           background: #f3f4f6 !important;
           font-weight: 600 !important;
         }
+        .fc-resource-cell {
+          border-right: 1px solid #e5e7eb !important;
+        }
+        .fc-resource {
+          padding: 8px !important;
+        }
       `}</style>
       <FullCalendar
         ref={calendarRef}
         plugins={[
+          // Premium plugins enabled with proper licensing
           resourceTimeGridPlugin,
           resourceTimelinePlugin,
           dayGridPlugin,
@@ -259,12 +274,13 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
           interactionPlugin,
           rrulePlugin
         ]}
+        schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
         
         initialView={controlledView || defaultView}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'resourceTimeGridDay,timeGridWeek,resourceTimeGridWeek,dayGridMonth,listWeek'
+          right: 'resourceTimeGridDay,resourceTimeGridWeek,resourceTimelineWeek,timeGridWeek,listWeek'
         }}
         views={{
           dayGridMonth: {
@@ -273,6 +289,7 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
           timeGridWeek: {
             buttonText: 'Week'
           },
+          // Premium resource views enabled with proper licensing
           resourceTimeGridWeek: {
             buttonText: 'Barber Week'
           },
@@ -289,10 +306,11 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
           }
         }}
         
+        // Premium resources enabled with proper licensing
         resources={resources}  // Use resources prop for barber resources
         {...(eventSources ? { eventSources: eventSources } : { events: processedEvents })}  // Use eventSources or fallback to events
-        resourcesInitiallyExpanded={true}
-        refetchResourcesOnNavigate={false}  // Better performance - only refetch when needed
+        // resourcesInitiallyExpanded={true}
+        // refetchResourcesOnNavigate={false}  // Better performance - only refetch when needed
         
         timeZone="local"  // Use local timezone to prevent date/time issues
         slotMinTime="08:00:00"
@@ -342,26 +360,26 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
         unselectCancel=".fc-event,.modal"  // Don't unselect when clicking events or modals
         select={handleDateSelect}
         dateClick={(info) => {
-          if (info.view.type.includes('timeGrid') || info.view.type.includes('resource')) {
+          if (info.view.type.includes('timeGrid')) {
             const provisionalEnd = new Date(info.date)
-            provisionalEnd.setHours(provisionalEnd.getHours() + 1)
+            provisionalEnd.setMinutes(provisionalEnd.getMinutes() + 30) // Default to 30-minute slot duration
             
             const slotData = {
               start: info.date,
-              end: provisionalEnd, // This is provisional and will be recalculated based on service
+              end: provisionalEnd, // Default 30-minute duration matching slot duration
               startStr: info.dateStr,
               endStr: provisionalEnd.toISOString(),
               allDay: false,
               viewType: info.view.type,
-              resource: info.resource,
-              resourceId: info.resource?.id,
-              resourceTitle: info.resource?.title,
+              // resource: info.resource,  // Removed due to license compliance
+              // resourceId: info.resource?.id,  // Removed due to license compliance
+              // resourceTitle: info.resource?.title,  // Removed due to license compliance
               jsEvent: info.jsEvent,
               selectionType: 'click',
-              duration: null, // Will be determined by service selection
-              isProvisional: true, // Indicates duration needs to be set by service
-              barberId: info.resource?.id || null,
-              barberName: info.resource?.title || null
+              duration: 30, // Default to 30 minutes matching the calendar slot duration
+              isProvisional: true, // Indicates duration can be changed by service selection
+              barberId: null, // Removed due to license compliance
+              barberName: null // Removed due to license compliance
             }
             
             if (onSlotClick) {
@@ -417,16 +435,29 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
         
         // Production-ready event source error handling
         eventSourceSuccess={(rawEvents, response) => {
-          // // Debug log removed for production
-// Validate and sanitize events for production
+          console.log('[FullCalendar] Received events from API:', rawEvents?.length || 0)
+          if (rawEvents && rawEvents.length > 0) {
+            console.log('[FullCalendar] First event:', rawEvents[0])
+            const blockedEvents = rawEvents.filter(e => e.extendedProps?.is_blocked_time || e.title?.includes('🚫'))
+            if (blockedEvents.length > 0) {
+              console.log(`[FullCalendar] Found ${blockedEvents.length} blocked events:`, blockedEvents)
+            }
+          }
+          
+          // Validate and sanitize events for production
           const validEvents = (rawEvents || []).filter(event => {
-            return event.id && event.start && event.title
+            const isValid = event.id && event.start && event.title
+            if (!isValid) {
+              console.warn('[FullCalendar] Invalid event filtered out:', event)
+            }
+            return isValid
           })
           
           if (validEvents.length !== rawEvents?.length) {
-            console.warn(`Filtered ${(rawEvents?.length || 0) - validEvents.length} invalid events`)
+            console.warn(`[FullCalendar] Filtered ${(rawEvents?.length || 0) - validEvents.length} invalid events`)
           }
           
+          console.log(`[FullCalendar] Returning ${validEvents.length} valid events to calendar`)
           return validEvents
         }}
         
@@ -482,30 +513,12 @@ const EnhancedProfessionalCalendar = React.forwardRef(({
         lazyFetching={true}
         progressiveEventRendering={true}
         
-        // Production performance optimizations
-        rerenderDelay={10}  // Reduce rerender delays for snappier UI
-        eventRenderWait={10}  // Optimize event rendering performance
-        eventMinHeight={25}  // Ensure minimum event visibility
-        eventShortHeight={35}  // Better short event display
-        slotEventOverlap={false}  // Prevent visual overlap issues
-        
-        // Production error boundaries and performance
-        windowResizeDelay={100}  // Optimize resize performance
-        
-        schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
-        resourceAreaHeaderContent="Barbers"
-        resourceAreaWidth="12%"
-        resourceAreaColumns={[
-          {
-            field: 'title',
-            headerContent: 'Barbers'
-          }
-        ]}
-        datesAboveResources={false}
+        rerenderDelay={10}
+        eventMinHeight={25}
+        eventShortHeight={35}
+        slotEventOverlap={false}
+        windowResizeDelay={100}
       />
     </div>
   )
-})
-
-EnhancedProfessionalCalendar.displayName = 'EnhancedProfessionalCalendar'
-export default EnhancedProfessionalCalendar
+}

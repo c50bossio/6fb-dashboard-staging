@@ -74,10 +74,10 @@ const coreOperations = [
   },
   { 
     name: 'Point of Sale', 
-    href: '/shop/products?pos=true', 
+    href: '/pos', 
     icon: BanknotesIcon,
     description: 'Process sales, checkout appointments, and manage transactions',
-    badge: 'Daily'
+    badge: 'POS'
   },
   { 
     name: 'Customer Management', 
@@ -164,11 +164,11 @@ const shopManagement = [
     description: 'Manage retail products and track inventory'
   },
   { 
-    name: 'Inventory Management', 
-    href: '/inventory', 
+    name: 'Inventory & Marketplace', 
+    href: '/dashboard/inventory', 
     icon: ShoppingBagIcon,
-    description: 'Manage inventory and browse wholesale marketplace',
-    badge: 'Wholesale'
+    description: 'Stock tracking with smart wholesale reordering from CIN7',
+    badge: 'Marketplace'
   }
   // - Point of Sale (process sales)
   // - Advanced Reports (detailed analytics)

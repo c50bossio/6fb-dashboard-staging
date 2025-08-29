@@ -17,6 +17,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
 
 export default function FinancialSetupEnhanced({ onComplete, initialData = {}, subscriptionTier = 'shop' }) {
   const [currentSection, setCurrentSection] = useState('payment')
@@ -24,17 +25,12 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   
-  // Stripe Connect States
+  // Unified Stripe Management States
+  const [stripeStatus, setStripeStatus] = useState(null)
   const [stripeAccountId, setStripeAccountId] = useState(initialData.stripeAccountId || null)
-  const [accountStatus, setAccountStatus] = useState({
-    onboardingCompleted: false,
-    chargesEnabled: false,
-    payoutsEnabled: false,
-    requirementsCount: 0,
-    verificationStatus: 'pending'
-  })
   const [bankAccounts, setBankAccounts] = useState([])
   const [payoutSettings, setPayoutSettings] = useState(null)
+  const [barbershopId, setBarbershopId] = useState(null)
   
   const supabase = createClient()
   const router = useRouter()
@@ -92,88 +88,85 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
     { id: 'business', label: 'Business Details', icon: BuildingLibraryIcon }
   ]
 
-  // Load existing Stripe account on mount
+  // Initialize barbershop ID and load unified Stripe status
   useEffect(() => {
-    const loadExistingAccount = async () => {
+    const initializeStripeStatus = async () => {
       try {
-        const response = await fetch('/api/payments/connect/create', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        })
+        // Get user profile to determine barbershop ID
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('shop_id, barbershop_id')
+          .eq('id', user.id)
+          .single()
+
+        const shopId = profile?.shop_id || profile?.barbershop_id
+        if (!shopId) return
+
+        setBarbershopId(shopId)
+
+        // Get unified Stripe status
+        const status = await unifiedStripeManager.getUnifiedStatus(shopId)
+        setStripeStatus(status)
         
-        if (response.ok) {
-          const data = await response.json()
-          
-          if (data.account_id) {
-            setStripeAccountId(data.account_id)
-            setAccountStatus({
-              onboardingCompleted: data.onboarding_completed,
-              chargesEnabled: data.charges_enabled,
-              payoutsEnabled: data.payouts_enabled,
-              requirementsCount: 0,
-              verificationStatus: data.verification_status || 'pending'
-            })
-            
-            // If account is fully set up and we're resuming from Stripe
-            if (data.onboarding_completed && data.charges_enabled && data.payouts_enabled) {
-              // Check if we're resuming from Stripe redirect
-              const urlParams = new URLSearchParams(window.location.search)
-              const paymentComplete = urlParams.get('payment_setup_complete') === 'true'
-              
-              if (paymentComplete) {
-                setSuccess('Payment setup successfully completed!')
-                // Auto-advance to next step after showing success
-                setTimeout(() => {
-                  if (onComplete) {
-                    onComplete({
-                      ...formData,
-                      stripeConnected: true,
-                      stripeAccountId: data.account_id
-                    })
-                  }
-                }, 2000)
-              } else {
-                // Just show the connected state
-                setSuccess('Payment account already connected!')
-              }
-            }
-          }
+        if (status.connect_account?.account_id) {
+          setStripeAccountId(status.connect_account.account_id)
         }
+
+        // Handle Stripe redirect completion
+        const urlParams = new URLSearchParams(window.location.search)
+        const paymentComplete = urlParams.get('payment_setup_complete') === 'true'
+        
+        if (paymentComplete && status.overall_status === 'completed') {
+          setSuccess('Payment setup successfully completed!')
+          setTimeout(() => {
+            if (onComplete) {
+              onComplete({
+                ...formData,
+                stripeConnected: true,
+                stripeAccountId: status.connect_account.account_id
+              })
+            }
+          }, 2000)
+        } else if (status.overall_status === 'completed') {
+          setFormData(prev => ({ ...prev, stripeConnected: true }))
+          setSuccess('Payment account already connected!')
+        }
+
       } catch (err) {
-        console.error('Error loading existing account:', err)
+        console.error('Error initializing Stripe status:', err)
       }
     }
     
-    loadExistingAccount()
+    initializeStripeStatus()
   }, [])
   
-  // Load existing Stripe Connect account status
+  // Poll for unified Stripe status updates during onboarding
   useEffect(() => {
-    const loadAccountStatus = async () => {
-      if (!stripeAccountId) return
-      
+    if (!barbershopId) return
+    
+    const pollStripeStatus = async () => {
       try {
-        const response = await fetch(`/api/payments/connect/status/${stripeAccountId}`)
-        if (response.ok) {
-          const data = await response.json()
-          setAccountStatus({
-            onboardingCompleted: data.onboarding_completed,
-            chargesEnabled: data.charges_enabled,
-            payoutsEnabled: data.payouts_enabled,
-            requirementsCount: data.requirements?.currently_due?.length || 0,
-            verificationStatus: data.verification_status
-          })
+        const status = await unifiedStripeManager.getUnifiedStatus(barbershopId, true) // Force refresh
+        setStripeStatus(status)
+        
+        if (status.connect_account?.account_id) {
+          setStripeAccountId(status.connect_account.account_id)
         }
       } catch (err) {
-        console.error('Error loading account status:', err)
+        console.error('Error polling Stripe status:', err)
       }
     }
     
-    loadAccountStatus()
-    // Poll for status updates every 5 seconds while onboarding
-    const interval = setInterval(loadAccountStatus, 5000)
-    return () => clearInterval(interval)
-  }, [stripeAccountId])
+    // Poll for status updates every 10 seconds while setup is in progress
+    const shouldPoll = stripeStatus?.overall_status === 'in_progress'
+    if (shouldPoll) {
+      const interval = setInterval(pollStripeStatus, 10000)
+      return () => clearInterval(interval)
+    }
+  }, [barbershopId, stripeStatus?.overall_status])
 
   // Load bank accounts
   useEffect(() => {
@@ -210,83 +203,72 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
   }, [])
 
   const createStripeConnectAccount = async () => {
+    if (!barbershopId) {
+      setError('Unable to determine barbershop. Please try again.')
+      return
+    }
+
     setLoading(true)
     setError('')
     setSuccess('')
     
-    // Add timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      if (loading) {
-        setLoading(false)
-        setError('Request timed out. Please check your connection and try again.')
-      }
-    }, 30000) // 30 second timeout
-    
     try {
       const { data: { user } } = await supabase.auth.getUser()
       
-      // Use fallback email if user is not authenticated
-      const email = user?.email || 'demo@bookedbarber.com'
-
-      const response = await fetch('/api/payments/connect/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          business_type: formData.businessType,
-          business_name: formData.businessName,
-          email: email,
-          country: 'US',
-          account_type: 'express'
-        })
+      // Use unified setup orchestration
+      const result = await unifiedStripeManager.orchestrateSetup(barbershopId, {
+        email: user?.email || 'demo@bookedbarber.com',
+        businessType: formData.businessType,
+        enableTerminal: true,
+        enableSplitPayments: true,
+        returnUrl: `${window.location.origin}/stripe-redirect?step=banking&success=true`
       })
       
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || data.details || 'Failed to create payment account')
+      if (result.error) {
+        throw new Error(result.error)
       }
       
-      // If account already exists, use it
-      if (data.account_id) {
-        setStripeAccountId(data.account_id)
+      if (result.setup_url) {
+        // Store session data for return handling
+        sessionStorage.setItem('stripe_onboarding_flow', 'true')
+        sessionStorage.setItem('stripe_return_path', window.location.pathname + window.location.search)
+        sessionStorage.setItem('onboarding_step', currentSection)
         
-        // Check if onboarding is already completed
-        if (data.onboarding_completed) {
-          setSuccess('Payment account already set up!')
-          setAccountStatus({
-            onboardingCompleted: true,
-            chargesEnabled: data.charges_enabled,
-            payoutsEnabled: data.payouts_enabled,
-            requirementsCount: 0,
-            verificationStatus: data.verification_status || 'verified'
-          })
-        } else {
-          setSuccess('Payment account created! Redirecting to Stripe...')
-          // Start onboarding flow for incomplete accounts
-          await startStripeOnboarding(data.account_id)
-        }
+        setSuccess('Payment account created! Redirecting to Stripe...')
+        
+        // Open Stripe onboarding in same window
+        setTimeout(() => {
+          window.location.href = result.setup_url
+        }, 1000)
+        
+      } else if (result.current_status?.overall_status === 'completed') {
+        setSuccess('Payment account already set up!')
+        setFormData(prev => ({ ...prev, stripeConnected: true }))
+        
+        // Refresh status
+        const status = await unifiedStripeManager.getUnifiedStatus(barbershopId, true)
+        setStripeStatus(status)
+        
+      } else {
+        setSuccess('Payment setup initiated. Please complete the required steps.')
       }
       
     } catch (err) {
-      console.error('Stripe Connect creation error:', err)
+      console.error('Unified Stripe setup error:', err)
       
-      // Provide more specific error messages
       if (err.message.includes('Authentication required')) {
         setError('Please log in to set up payment processing.')
-      } else if (err.message.includes('Payment system not configured')) {
-        setError('Payment system is not configured. Please contact support.')
-      } else if (err.message.includes('Network error') || err.message.includes('Failed to fetch')) {
-        setError('Connection error. Please check your internet connection and try again.')
+      } else if (err.message.includes('barbershop_id') && err.message.includes('required')) {
+        setError('Unable to identify your business. Please contact support.')
       } else {
         setError(err.message || 'Failed to create payment account. Please try again.')
       }
     } finally {
-      clearTimeout(timeoutId)
       setLoading(false)
     }
   }
 
-  const startStripeOnboarding = async (accountId = stripeAccountId) => {
+  const startStripeOnboarding = async (accountId = stripeStatus?.stripe_account_id) => {
     if (!accountId) return
     
     setLoading(true)
@@ -298,25 +280,22 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       sessionStorage.setItem('stripe_return_path', window.location.pathname + window.location.search)
       sessionStorage.setItem('onboarding_step', currentSection)
       
-      const response = await fetch('/api/payments/connect/onboarding-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          account_id: accountId,
-          refresh_url: `${window.location.origin}/stripe-redirect?refresh=true`,
-          return_url: `${window.location.origin}/stripe-redirect?step=banking&success=true`
-        })
+      // Use UnifiedStripeManager for onboarding link
+      const result = await unifiedStripeManager.generateOnboardingLink(barbershopId, {
+        refresh_url: `${window.location.origin}/stripe-redirect?refresh=true`,
+        return_url: `${window.location.origin}/stripe-redirect?step=banking&success=true`
       })
       
-      if (!response.ok) throw new Error('Failed to generate onboarding link')
-      
-      const data = await response.json()
-      
-      // Redirect in same window for smoother experience
-      window.location.href = data.url
+      if (result.success) {
+        // Redirect in same window for smoother experience
+        window.location.href = result.data.url
+      } else {
+        throw new Error(result.error || 'Failed to generate onboarding link')
+      }
       
     } catch (err) {
-      setError(err.message)
+      console.error('Onboarding link error:', err)
+      setError(err.message || 'Failed to start onboarding. Please try again.')
       setLoading(false)
     }
   }
@@ -326,25 +305,21 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
     setError('')
     
     try {
-      // This would normally open a modal to collect bank details
-      // For now, we'll redirect to Stripe dashboard
-      const response = await fetch('/api/payments/connect/login-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          account_id: stripeAccountId
-        })
+      // Use UnifiedStripeManager for dashboard link
+      const result = await unifiedStripeManager.generateOnboardingLink(barbershopId, {
+        type: 'dashboard' // Generate dashboard link instead of onboarding
       })
       
-      if (!response.ok) throw new Error('Failed to generate dashboard link')
-      
-      const data = await response.json()
-      window.open(data.url, '_blank')
-      
-      setSuccess('Manage your bank accounts in the Stripe dashboard')
+      if (result.success) {
+        window.open(result.data.url, '_blank')
+        setSuccess('Manage your bank accounts in the Stripe dashboard')
+      } else {
+        throw new Error(result.error || 'Failed to access dashboard')
+      }
       
     } catch (err) {
-      setError(err.message)
+      console.error('Dashboard link error:', err)
+      setError(err.message || 'Failed to access dashboard. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -363,18 +338,21 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       
       const settings = scheduleMap[formData.depositSchedule] || scheduleMap.daily
       
-      const response = await fetch('/api/payments/payout-settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
-      })
+      // Use UnifiedStripeManager for payout settings
+      const result = await unifiedStripeManager.updatePayoutSettings(barbershopId, settings)
       
-      if (!response.ok) throw new Error('Failed to update payout settings')
-      
-      setSuccess('Payout settings updated successfully')
+      if (result.success) {
+        setSuccess('Payout settings updated successfully')
+        // Refresh unified status to reflect changes
+        const refreshedStatus = await unifiedStripeManager.getUnifiedStatus(barbershopId, true)
+        setStripeStatus(refreshedStatus)
+      } else {
+        throw new Error(result.error || 'Failed to update payout settings')
+      }
       
     } catch (err) {
-      setError(err.message)
+      console.error('Payout settings error:', err)
+      setError(err.message || 'Failed to update payout settings. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -383,8 +361,8 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
   const handleComplete = () => {
     onComplete({
       ...formData,
-      stripeAccountId,
-      paymentSetupCompleted: accountStatus.onboardingCompleted
+      stripeAccountId: stripeStatus?.stripe_account_id,
+      paymentSetupCompleted: stripeStatus?.overall_status === 'completed'
     })
   }
 
@@ -393,7 +371,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       case 'payment':
         return formData.depositSchedule && formData.acceptedPayments.length > 0
       case 'banking':
-        return stripeAccountId && accountStatus.onboardingCompleted
+        return stripeStatus?.stripe_account_id && stripeStatus?.overall_status === 'completed'
       case 'payout':
         if (formData.payoutModel === 'commission') {
           return formData.commissionRate > 0
@@ -444,7 +422,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
             const Icon = section.icon
             const isActive = section.id === currentSection
             const isCompleted = sections.findIndex(s => s.id === currentSection) > index
-            const isBankingComplete = section.id === 'banking' && accountStatus.onboardingCompleted
+            const isBankingComplete = section.id === 'banking' && stripeStatus?.overall_status === 'completed'
             
             return (
               <div
@@ -593,7 +571,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
               Connect with Stripe to accept credit cards and get paid automatically. Takes about 2 minutes.
             </p>
             
-            {!stripeAccountId ? (
+            {!stripeStatus?.stripe_account_id ? (
               // No account yet - create one
               <div className="bg-white border-2 border-gray-200 rounded-lg p-6 text-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-olive-100 rounded-full mb-4">
@@ -640,7 +618,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
                   </p>
                 </div>
               </div>
-            ) : !accountStatus.onboardingCompleted ? (
+            ) : stripeStatus?.overall_status !== 'completed' ? (
               // Account created but onboarding not complete
               <div className="bg-white border-2 border-yellow-200 rounded-lg p-6">
                 <div className="text-center">

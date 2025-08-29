@@ -20,7 +20,8 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline'
 import { useSearchParams } from 'next/navigation'
-import React, { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, Suspense, useMemo } from 'react'
+import { toast } from 'react-hot-toast'
 
 import { isTier } from '@/lib/subscription-tiers'
 import { 
@@ -45,32 +46,94 @@ import SortOptions from '../../../../components/customers/SortOptions'
 import PlatformTailoredImport from '../../../../components/onboarding/PlatformTailoredImport'
 import { AnimatedContainer, StaggeredList } from '../../../../utils/animations'
 import { fuzzySearch } from '../../../../utils/fuzzySearch'
+import { CustomersHeader } from '@/components/layout/UnifiedDashboardHeader'
+
+// React Query hooks
+import { 
+  useCustomers, 
+  useCustomerSearch, 
+  useCustomersWithRealtime,
+  useCreateCustomer,
+  useUpdateCustomer,
+  useCustomerCount,
+  useAllCustomers,
+  useCustomerLoyaltyStats
+} from '@/hooks/useCustomersQuery'
+import { useBusinessContext } from '@/hooks/useBusinessContext'
 
 function CustomersPageContent() {
   const searchParams = useSearchParams()
-  const [customers, setCustomers] = useState([])
-  const [filteredCustomers, setFilteredCustomers] = useState([])
+  
+  // React Query hooks for business context and permissions
+  const { businessContext, shopId, isLoading: contextLoading, error: contextError } = useBusinessContext()
+  
+  // Local state
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSegment, setSelectedSegment] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
-  const [notification, setNotification] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [selectedCustomerForBadges, setSelectedCustomerForBadges] = useState(null)
   const [badgeView, setBadgeView] = useState('overview') // overview, customer-specific, leaderboard
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'intelligence')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [selectedJourneyCustomer, setSelectedJourneyCustomer] = useState(null)
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0)
+  const [pageSize] = useState(20)
+  
   // Advanced search and filtering state
-  const [searchResults, setSearchResults] = useState([])
   const [activeFilters, setActiveFilters] = useState({})
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' })
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false)
   const [searchHistory, setSearchHistory] = useState([])
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
+  
+  // React Query hooks for customer data
+  const { 
+    data: customersData, 
+    isLoading: customersLoading, 
+    error: customersError,
+    refetch: refetchCustomers,
+    isFetching: customersFetching,
+    isPlaceholderData
+  } = useCustomersWithRealtime(shopId, {
+    limit: pageSize,
+    offset: currentPage * pageSize,
+    enabled: !!shopId && businessContext?.canManageAppointments()
+  })
+  
+  // Search hook with debouncing
+  const {
+    data: searchResults,
+    isLoading: searchLoading,
+    error: searchError
+  } = useCustomerSearch(shopId, searchTerm, 300)
+  
+  // All customers for export and advanced operations
+  const {
+    data: allCustomers,
+    refetch: refetchAllCustomers
+  } = useAllCustomers(shopId)
+  
+  // Customer count for stats
+  const {
+    data: customerCount = 0
+  } = useCustomerCount(shopId)
+  
+  // Loyalty stats
+  const {
+    data: loyaltyStats
+  } = useCustomerLoyaltyStats(shopId)
+  
+  // Mutations with optimistic updates
+  const createCustomerMutation = useCreateCustomer()
+  const updateCustomerMutation = useUpdateCustomer()
+  
+  // Track mutation states for better UX
+  const isMutating = createCustomerMutation.isPending || updateCustomerMutation.isPending
 
+  // Data processing utilities
   const calculateSegment = (customer) => {
     const daysSinceLastVisit = customer.last_visit_at 
       ? Math.floor((Date.now() - new Date(customer.last_visit_at).getTime()) / (1000 * 60 * 60 * 24))
@@ -82,7 +145,8 @@ function CustomersPageContent() {
     return 'regular'
   }
 
-  const formatCustomerData = (apiCustomers, barbershopId) => {
+  const formatCustomerData = (apiCustomers) => {
+    if (!apiCustomers) return []
     return apiCustomers.map(customer => ({
       id: customer.id,
       name: customer.name || 'Unknown',
@@ -97,81 +161,44 @@ function CustomersPageContent() {
       notes: customer.notes || '',
       isVip: customer.vip_status || false,
       isActive: customer.is_active !== false,
-      barbershopId: barbershopId
+      barbershopId: customer.barbershop_id || shopId,
+      loyaltyPoints: customer.loyalty_points || 0
     }))
   }
+  
+  // Processed customer data with memoization for performance
+  const customers = useMemo(() => {
+    return formatCustomerData(customersData)
+  }, [customersData, shopId])
 
-  const fetchCustomers = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      // Get barbershop_id from user profile
-      const userResponse = await fetch('/api/auth/user')
-      const userData = await userResponse.json()
-
-      if (!userData.authenticated) {
-        setError('Please log in to access customer management.')
-        setCustomers([])
-        setFilteredCustomers([])
-        setLoading(false)
-        return
-      }
-      
-      if (!userData.user?.barbershop_id) {
-        setError('🏪 Barbershop setup incomplete. Your profile needs to be associated with a barbershop. Please contact support or try refreshing the page.')
-        setCustomers([])
-        setFilteredCustomers([])
-        setLoading(false)
-        return
-      }
-      
-      if (!userData.user?.has_customer_access) {
-        const subscriptionTier = userData.user?.subscription_tier || 'individual'
-        if (isTier(subscriptionTier, 'INDIVIDUAL')) {
-          setError('Customer management is included with your subscription. Please contact support if you\'re seeing this message.')
-        } else {
-          setError('Customer management access not enabled. Please ask your shop owner to grant customer management permissions in Staff Settings.')
-        }
-        setCustomers([])
-        setFilteredCustomers([])
-        setLoading(false)
-        return
-      }
-
-      const response = await fetch(`/api/customers?limit=100&barbershop_id=${userData.user.barbershop_id}`)
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch customers: ${response.statusText}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.error) {
-        throw new Error(data.error)
-      }
-
-      const formattedCustomers = formatCustomerData(data.customers || [], userData.user.barbershop_id)
-      setCustomers(formattedCustomers)
-      setFilteredCustomers(formattedCustomers)
-      
-      if (formattedCustomers.length === 0) {
-        
-      }
-      
-    } catch (err) {
-      console.error('❌ Error fetching customers:', err)
-      setError(`Failed to load customers: ${err.message}. Please try refreshing the page.`)
-      setCustomers([])
-      setFilteredCustomers([])
-    } finally {
-      setLoading(false)
+  // Determine loading and error states
+  const isLoadingState = contextLoading || customersLoading || isMutating
+  const isFetching = customersFetching || searchLoading
+  const error = contextError || customersError || searchError
+  
+  // Permission checks
+  const canManageCustomers = businessContext?.canManageAppointments() || false
+  const hasCustomerAccess = canManageCustomers && !!shopId
+  
+  // Error messages based on context
+  const getContextError = () => {
+    if (!businessContext) return null
+    if (!shopId) {
+      return '🏪 Barbershop setup incomplete. Your profile needs to be associated with a barbershop. Please contact support or try refreshing the page.'
     }
+    if (!canManageCustomers) {
+      const role = businessContext?.role || 'unknown'
+      if (role === 'CLIENT') {
+        return 'Customer management is included with your subscription. Please contact support if you\'re seeing this message.'
+      } else {
+        return 'Customer management access not enabled. Please ask your shop owner to grant customer management permissions in Staff Settings.'
+      }
+    }
+    return null
   }
-
-  useEffect(() => {
-    fetchCustomers()
-  }, [])
+  
+  const contextErrorMessage = getContextError()
+  const finalError = contextErrorMessage || (error?.message || error)
 
   // Handle URL parameters for auto-opening import modal
   useEffect(() => {
@@ -185,22 +212,18 @@ function CustomersPageContent() {
     }
   }, [searchParams])
 
-  // Advanced search and filtering with fuzzy matching
-  useEffect(() => {
-    let results = customers
-
-    // Apply fuzzy search if there's a search term
-    if (searchTerm && searchTerm.trim().length > 0) {
-      const fuzzyResults = fuzzySearch(customers, searchTerm, { minScore: 0.2 })
-      results = fuzzyResults.map(result => result.item)
-      setSearchResults(fuzzyResults)
-      
-      // Add to search history
-      if (searchTerm.length >= 2 && !searchHistory.includes(searchTerm)) {
-        setSearchHistory(prev => [searchTerm, ...prev.slice(0, 9)]) // Keep last 10 searches
-      }
-    } else {
-      setSearchResults([])
+  // Determine which data source to use
+  // When searching, use React Query's debounced search results for better performance
+  // Otherwise use the paginated customers from the main query
+  const customerDataSource = searchTerm && searchTerm.length >= 2 ? searchResults : customers
+  
+  // Advanced search and filtering with memoization for performance
+  const filteredCustomers = useMemo(() => {
+    let results = customerDataSource || []
+    
+    // Add to search history if we have a meaningful search term
+    if (searchTerm && searchTerm.length >= 2 && !searchHistory.includes(searchTerm)) {
+      setSearchHistory(prev => [searchTerm, ...prev.slice(0, 9)]) // Keep last 10 searches
     }
 
     // Apply segment filter
@@ -248,8 +271,14 @@ function CustomersPageContent() {
       })
     }
     
-    setFilteredCustomers(results)
-  }, [customers, searchTerm, selectedSegment, activeFilters, sortConfig, searchHistory])
+    return results
+  }, [customerDataSource, searchTerm, selectedSegment, activeFilters, sortConfig, searchHistory])
+  
+  // Compute fuzzy search results for highlighting when searching
+  const fuzzySearchResults = useMemo(() => {
+    if (!searchTerm || searchTerm.length < 2) return []
+    return fuzzySearch(customers, searchTerm, { minScore: 0.2 })
+  }, [customers, searchTerm])
 
   const getSegmentColor = (segment) => {
     switch (segment) {
@@ -279,7 +308,7 @@ function CustomersPageContent() {
       id: 'intelligence',
       label: 'Intelligence Dashboard',
       icon: ChartBarIcon,
-      component: <CustomerIntelligenceDashboardOptimized />
+      component: () => <CustomerIntelligenceDashboardOptimized />
     },
     {
       id: 'customers',
@@ -354,71 +383,47 @@ function CustomersPageContent() {
 
   const handleExportCustomers = (selectedFields, options) => {
     // Export logic will be handled by the ExportCSV component
-    
+    // The component now receives the allCustomers data for export
+    toast.success('Export initiated! Check your downloads folder.')
   }
 
+  // Customer CRUD operations using React Query mutations
   const addCustomer = async (customerData) => {
+    if (!shopId) {
+      toast.error('Please complete your barbershop setup first. Go to Settings > Barbershop Setup to get started.')
+      return
+    }
+    
+    if (!canManageCustomers) {
+      const role = businessContext?.role || 'unknown'
+      if (role === 'CLIENT') {
+        toast.error('Customer management is included with your subscription. Please contact support if you\'re seeing this message.')
+      } else {
+        toast.error('Customer management access not enabled. Please ask your shop owner to grant customer management permissions in Staff Settings.')
+      }
+      return
+    }
+
     try {
-      // Get barbershop_id from user context
-      const userResponse = await fetch('/api/auth/user')
-      const userData = await userResponse.json()
-      
-      if (!userData.user?.barbershop_id) {
-        throw new Error('Please complete your barbershop setup first. Go to Settings > Barbershop Setup to get started.')
-      }
-      
-      if (!userData.user?.has_customer_access) {
-        const subscriptionTier = userData.user?.subscription_tier || 'individual'
-        if (isTier(subscriptionTier, 'INDIVIDUAL')) {
-          throw new Error('Customer management is included with your subscription. Please contact support if you\'re seeing this message.')
-        } else {
-          throw new Error('Customer management access not enabled. Please ask your shop owner to grant customer management permissions in Staff Settings.')
+      await createCustomerMutation.mutateAsync({
+        barbershop_id: shopId,
+        name: customerData.name,
+        email: customerData.email,
+        phone: customerData.phone,
+        notes: customerData.notes,
+        notification_preferences: {
+          preferred_method: customerData.preferredContact,
+          sms: customerData.preferredContact === 'sms',
+          email: customerData.preferredContact === 'email',
+          reminders: true,
+          confirmations: true
         }
-      }
-
-      const response = await fetch('/api/customers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          barbershop_id: userData.user.barbershop_id,
-          name: customerData.name,
-          email: customerData.email,
-          phone: customerData.phone,
-          notes: customerData.notes,
-          notification_preferences: {
-            preferred_method: customerData.preferredContact,
-            sms: customerData.preferredContact === 'sms',
-            email: customerData.preferredContact === 'email',
-            reminders: true,
-            confirmations: true
-          }
-        })
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to add customer')
-      }
-
-      await fetchCustomers()
       
       setShowAddModal(false)
-      setNotification({
-        type: 'success',
-        message: 'Customer added successfully!'
-      })
-      setTimeout(() => setNotification(null), 3000)
-      
     } catch (err) {
       console.error('Error adding customer:', err)
-      setNotification({
-        type: 'error',
-        message: err.message || 'Failed to add customer. Please try again.'
-      })
-      setTimeout(() => setNotification(null), 5000)
+      // Error handling is already done by the mutation hook
     }
   }
 
@@ -430,38 +435,13 @@ function CustomersPageContent() {
     if (!newName || newName === customer.name) return
 
     try {
-      const response = await fetch('/api/customers', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: customerId,
-          name: newName
-        })
+      await updateCustomerMutation.mutateAsync({
+        customerId,
+        updates: { name: newName }
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update customer')
-      }
-
-      await fetchCustomers()
-      
-      setNotification({
-        type: 'success',
-        message: 'Customer updated successfully!'
-      })
-      setTimeout(() => setNotification(null), 3000)
-      
     } catch (err) {
       console.error('Error updating customer:', err)
-      setNotification({
-        type: 'error',
-        message: err.message || 'Failed to update customer. Please try again.'
-      })
-      setTimeout(() => setNotification(null), 5000)
+      // Error handling is already done by the mutation hook
     }
   }
 
@@ -474,38 +454,15 @@ function CustomersPageContent() {
     }
 
     try {
-      const response = await fetch('/api/customers', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: customerId,
-          is_active: false
-        })
+      await updateCustomerMutation.mutateAsync({
+        customerId,
+        updates: { is_active: false }
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete customer')
-      }
-
-      await fetchCustomers()
       
-      setNotification({
-        type: 'success',
-        message: `${customer.name} has been removed from your customer database.`
-      })
-      setTimeout(() => setNotification(null), 3000)
-      
+      toast.success(`${customer.name} has been removed from your customer database.`)
     } catch (err) {
       console.error('Error deleting customer:', err)
-      setNotification({
-        type: 'error',
-        message: err.message || 'Failed to delete customer. Please try again.'
-      })
-      setTimeout(() => setNotification(null), 5000)
+      // Error handling is already done by the mutation hook
     }
   }
 
@@ -747,16 +704,7 @@ function CustomersPageContent() {
 
   const renderCustomersList = () => (
     <div className="space-y-6">
-      {/* Notification */}
-      {notification && (
-        <div className={`mb-6 p-4 rounded-lg ${
-          notification.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
-          notification.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
-          'bg-olive-50 text-olive-800 border border-olive-200'
-        }`}>
-          {notification.message}
-        </div>
-      )}
+      {/* No notification div needed - using react-hot-toast */}
 
       {/* Page Header */}
       <div className="flex items-center justify-between">
@@ -766,11 +714,14 @@ function CustomersPageContent() {
         </div>
         <div className="flex items-center space-x-3">
           <button
-            onClick={fetchCustomers}
+            onClick={() => {
+              refetchCustomers()
+              toast.success('Refreshing customer data...')
+            }}
             className="btn-secondary flex items-center space-x-2"
-            disabled={loading}
+            disabled={isLoadingState || isFetching}
           >
-            <ArrowPathIcon className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <ArrowPathIcon className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
           <button
@@ -785,20 +736,20 @@ function CustomersPageContent() {
       </div>
 
       {/* Error Message */}
-      {error && (
+      {finalError && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
           <div className="flex items-start space-x-3">
             <ExclamationTriangleIcon className="h-5 w-5 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
               <p className="font-medium">Unable to load customer data</p>
-              <p className="text-sm mt-1">{error}</p>
+              <p className="text-sm mt-1">{finalError}</p>
               <div className="mt-3 flex space-x-3">
                 <button 
-                  onClick={fetchCustomers}
+                  onClick={() => refetchCustomers()}
                   className="text-sm bg-red-100 hover:bg-red-200 px-3 py-1 rounded border border-red-300 transition-colors"
-                  disabled={loading}
+                  disabled={isLoadingState || isFetching}
                 >
-                  {loading ? 'Retrying...' : 'Try Again'}
+                  {isFetching ? 'Retrying...' : 'Try Again'}
                 </button>
                 <button 
                   onClick={() => window.location.reload()}
@@ -819,10 +770,10 @@ function CustomersPageContent() {
             <UserIcon className="h-8 w-8 text-olive-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Customers</p>
-              {loading ? (
+              {isLoadingState ? (
                 <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-900">{customers.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{customerCount}</p>
               )}
             </div>
           </div>
@@ -833,7 +784,7 @@ function CustomersPageContent() {
             <StarIcon className="h-8 w-8 text-gold-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">VIP Customers</p>
-              {loading ? (
+              {isLoadingState ? (
                 <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900">
@@ -849,7 +800,7 @@ function CustomersPageContent() {
             <CalendarIcon className="h-8 w-8 text-green-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">New Customers</p>
-              {loading ? (
+              {isLoadingState ? (
                 <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900">
@@ -867,7 +818,7 @@ function CustomersPageContent() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Lapsed</p>
-              {loading ? (
+              {isLoadingState ? (
                 <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-900">
@@ -893,8 +844,14 @@ function CustomersPageContent() {
                   placeholder="Search customers with smart suggestions..."
                   value={searchTerm}
                   onChange={(e) => {
-                    setSearchTerm(e.target.value)
-                    setShowSearchSuggestions(e.target.value.length >= 2)
+                    const value = e.target.value
+                    setSearchTerm(value)
+                    setShowSearchSuggestions(value.length >= 2)
+                    
+                    // Reset pagination when searching
+                    if (value.length >= 2) {
+                      setCurrentPage(0)
+                    }
                   }}
                   onFocus={() => setShowSearchSuggestions(searchTerm.length >= 2)}
                   onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
@@ -955,7 +912,7 @@ function CustomersPageContent() {
               </button>
               
               <ExportCSV
-                customers={filteredCustomers}
+                customers={allCustomers || filteredCustomers}
                 onExport={handleExportCustomers}
                 filename={`customers-${new Date().toISOString().split('T')[0]}`}
               />
@@ -996,12 +953,34 @@ function CustomersPageContent() {
       </AnimatedContainer>
 
       {/* Customer List */}
-      {loading ? (
-        <div className="p-8 text-center">
-          <div className="inline-flex items-center space-x-2">
-            <ArrowPathIcon className="h-5 w-5 animate-spin text-gray-500" />
-            <span className="text-gray-500">Loading customers...</span>
-          </div>
+      {isLoadingState ? (
+        <div className="space-y-4">
+          {/* Skeleton loading for customer cards */}
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="border border-gray-200 rounded-lg p-6 animate-pulse">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+                </div>
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 bg-gray-200 rounded w-32"></div>
+                    <div className="h-5 bg-gray-200 rounded w-16"></div>
+                  </div>
+                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                  <div className="flex space-x-4">
+                    <div className="h-3 bg-gray-200 rounded w-40"></div>
+                    <div className="h-3 bg-gray-200 rounded w-32"></div>
+                  </div>
+                  <div className="flex space-x-4">
+                    <div className="h-3 bg-gray-200 rounded w-20"></div>
+                    <div className="h-3 bg-gray-200 rounded w-24"></div>
+                    <div className="h-3 bg-gray-200 rounded w-28"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : filteredCustomers.length === 0 ? (
         <div className="p-8 text-center">
@@ -1027,14 +1006,25 @@ function CustomersPageContent() {
           )}
         </div>
       ) : (
-        <StaggeredList 
-          animation="slideInFromLeft" 
-          staggerDelay={50}
-          className="grid gap-4"
-        >
-          {filteredCustomers.map((customer, index) => {
+        <div className="relative">
+          {/* Background fetch indicator */}
+          {isFetching && !isLoadingState && (
+            <div className="absolute top-0 right-0 z-10">
+              <div className="flex items-center space-x-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg border border-blue-200 text-sm">
+                <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                <span>Updating...</span>
+              </div>
+            </div>
+          )}
+          
+          <StaggeredList 
+            animation="slideInFromLeft" 
+            staggerDelay={50}
+            className="grid gap-4"
+          >
+            {filteredCustomers.map((customer, index) => {
             // Find the search result for this customer to get match information
-            const searchResult = searchResults.find(r => r.item.id === customer.id)
+            const searchResult = fuzzySearchResults.find(r => r.item.id === customer.id)
             const hasMatches = searchTerm && searchResult && searchResult.matches.length > 0
             
             return (
@@ -1157,8 +1147,8 @@ function CustomersPageContent() {
                       vip_status: customer.isVip
                     }}
                     onRebook={(id) => {
-                      
-                      fetchCustomers()
+                      // Optimistic update will be handled by the mutation
+                      refetchCustomers()
                     }}
                   />
                   <button
@@ -1178,14 +1168,70 @@ function CustomersPageContent() {
               </div>
             </div>
             )
-          })}
-        </StaggeredList>
+            })}
+          </StaggeredList>
+        
+        {/* Pagination */}
+        {!searchTerm && customersData && customersData.length >= pageSize && (
+          <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
+            <div className="flex items-center text-sm text-gray-500">
+              <span>
+                Showing {currentPage * pageSize + 1} to {Math.min((currentPage + 1) * pageSize, customerCount)} of {customerCount} customers
+                {isPlaceholderData && (
+                  <span className="ml-2 text-blue-600">(loading newer data...)</span>
+                )}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setCurrentPage(page => Math.max(0, page - 1))}
+                disabled={currentPage === 0 || isFetching}
+                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-700">
+                Page {currentPage + 1}
+              </span>
+              <button
+                onClick={() => setCurrentPage(page => page + 1)}
+                disabled={(customersData?.length || 0) < pageSize || isFetching}
+                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+        </div>
       )}
     </div>
   )
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Unified Context Header */}
+      <CustomersHeader>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => refetchCustomers()}
+            className="btn-secondary flex items-center space-x-2"
+            disabled={isLoadingState || isFetching}
+          >
+            <ArrowPathIcon className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+            <span>Refresh</span>
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="btn-primary flex items-center space-x-2"
+            data-testid="add-customer-btn"
+          >
+            <PlusIcon className="h-4 w-4" />
+            <span>Add Customer</span>
+          </button>
+        </div>
+      </CustomersHeader>
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tab Navigation */}
         <div className="bg-white shadow rounded-lg mb-6">
@@ -1222,7 +1268,7 @@ function CustomersPageContent() {
         <div className="bg-white shadow rounded-lg p-6">
           {activeTab === 'customers' ? renderCustomersList() :
            activeTab === 'badges' ? renderBadgesContent() :
-           tabs.find(tab => tab.id === activeTab)?.component}
+           tabs.find(tab => tab.id === activeTab)?.component?.()}
         </div>
 
         {/* Customer Profile Modal */}
@@ -1374,19 +1420,15 @@ function CustomersPageContent() {
               <div className="p-6">
                 <PlatformTailoredImport
                   onComplete={(importData) => {
-                    
                     if (!importData.skipped) {
-                      setNotification({
-                        type: 'success',
-                        message: `Successfully imported ${importData.imported_count || 0} customers!`
-                      })
-                      setTimeout(() => setNotification(null), 5000)
-                      fetchCustomers() // Reload the customer list
+                      toast.success(`Successfully imported ${importData.imported_count || 0} customers!`)
+                      refetchCustomers() // Reload the customer list
+                      refetchAllCustomers() // Also refresh the all customers cache
                     }
                     setShowImportModal(false)
                   }}
                   profile={{
-                    barbershop_id: customers.length > 0 ? customers[0].barbershopId : null
+                    barbershop_id: shopId
                   }}
                   initialData={{}}
                   context="company-wide"

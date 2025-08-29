@@ -12,11 +12,14 @@ import {
   ArrowPathIcon,
   DocumentTextIcon,
   CalendarIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  QrCodeIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
+import { TerminalSettings } from './TerminalSettings'
+import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
 
 export default function PaymentProcessingSettings() {
   // Enhanced Loading and Error States
@@ -27,24 +30,34 @@ export default function PaymentProcessingSettings() {
   const [retryAttempts, setRetryAttempts] = useState(0)
   const [networkError, setNetworkError] = useState(false)
   
-  // Stripe Connect States
-  const [stripeAccountId, setStripeAccountId] = useState(null)
-  const [accountStatus, setAccountStatus] = useState({
-    onboardingCompleted: false,
-    chargesEnabled: false,
-    payoutsEnabled: false,
-    requirementsCount: 0,
-    verificationStatus: 'pending'
-  })
+  // Unified Stripe States (replacing individual states)
+  const [stripeStatus, setStripeStatus] = useState(null)
   const [bankAccounts, setBankAccounts] = useState([])
-  const [payoutSettings, setPayoutSettings] = useState({
-    schedule: 'daily',
-    delay_days: 2
-  })
   const [recentPayouts, setRecentPayouts] = useState([])
   
   const supabase = createClient()
   const { user, profile } = useAuth()
+  
+  // Get barbershop ID (handles both individual and staff scenarios)
+  const getBarbershopId = async () => {
+    if (!profile) return null
+    
+    // For individual barbers or shop owners
+    let shopId = profile.shop_id || profile.barbershop_id
+    
+    // For staff members, get shop through barbershop_staff table
+    if (!shopId && profile.id) {
+      const { data: staffData } = await supabase
+        .from('barbershop_staff')
+        .select('barbershop_id')
+        .eq('user_id', profile.id)
+        .single()
+      
+      shopId = staffData?.barbershop_id
+    }
+    
+    return shopId
+  }
   
   // Enhanced error handling utility
   const handleError = (error, context = 'Unknown') => {
@@ -90,30 +103,32 @@ export default function PaymentProcessingSettings() {
     }
   }
 
-  // Load existing Stripe Connect account on mount - Enhanced
+  // Load payment data using UnifiedStripeManager
   useEffect(() => {
     const loadPaymentData = async () => {
-      if (!user) return
+      if (!user || !profile) return
       
       setInitialLoading(true)
       setError('')
       
       try {
+        const barbershopId = await getBarbershopId()
+        if (!barbershopId) {
+          setError('Unable to determine barbershop. Please contact support.')
+          return
+        }
+        
         await retryWithBackoff(async () => {
-          // Check if barbershop has a Connect account
-          const { data: connectData, error: dbError } = await supabase
-            .from('stripe_connected_accounts')
-            .select('*')
-            .eq('user_id', user.id)
-            .single()
+          // Use UnifiedStripeManager to get comprehensive status
+          const status = await unifiedStripeManager.getUnifiedStatus(barbershopId)
+          setStripeStatus(status)
           
-          if (dbError && !dbError.message.includes('No rows')) {
-            throw new Error(`Database error: ${dbError.message}`)
-          }
-          
-          if (connectData) {
-            setStripeAccountId(connectData.stripe_account_id)
-            await loadAccountStatus(connectData.stripe_account_id)
+          // Load additional data if Stripe account exists
+          if (status.stripe_account_id) {
+            await Promise.all([
+              loadBankAccounts(status.stripe_account_id),
+              loadRecentPayouts(status.stripe_account_id)
+            ])
           }
         })
       } catch (err) {
@@ -125,184 +140,157 @@ export default function PaymentProcessingSettings() {
     }
     
     loadPaymentData()
-  }, [user])
+  }, [user, profile])
   
-  // Load account status - Enhanced with error handling
-  const loadAccountStatus = async (accountId) => {
+  // Helper function to load bank accounts
+  const loadBankAccounts = async (accountId) => {
     if (!accountId) return
     
     try {
-      await retryWithBackoff(async () => {
-        const response = await fetch(`/api/payments/connect/status/${accountId}`)
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-        
+      const response = await fetch('/api/payments/bank-accounts')
+      if (response.ok) {
         const data = await response.json()
-        
-        if (data.error) {
-          throw new Error(data.error)
-        }
-        
-        setAccountStatus({
-          onboardingCompleted: data.onboarding_completed || false,
-          chargesEnabled: data.charges_enabled || false,
-          payoutsEnabled: data.payouts_enabled || false,
-          requirementsCount: data.requirements?.currently_due?.length || 0,
-          verificationStatus: data.verification_status || 'pending'
-        })
-      })
+        setBankAccounts(data.accounts || [])
+      }
     } catch (err) {
-      handleError(err, 'Account Status')
-      // Provide fallback state for better UX
-      setAccountStatus({
-        onboardingCompleted: false,
-        chargesEnabled: false,
-        payoutsEnabled: false,
-        requirementsCount: 0,
-        verificationStatus: 'pending'
-      })
+      console.error('Error loading bank accounts:', err)
     }
   }
   
-  // Load bank accounts
-  useEffect(() => {
-    const loadBankAccounts = async () => {
-      if (!stripeAccountId) return
-      
-      try {
-        const response = await fetch('/api/payments/bank-accounts')
-        if (response.ok) {
-          const data = await response.json()
-          setBankAccounts(data.accounts || [])
-        }
-      } catch (err) {
-        console.error('Error loading bank accounts:', err)
+  // Helper function to load recent payouts
+  const loadRecentPayouts = async (accountId) => {
+    if (!accountId) return
+    
+    try {
+      const response = await fetch('/api/payments/payouts')
+      if (response.ok) {
+        const data = await response.json()
+        setRecentPayouts(data.payouts || [])
       }
+    } catch (err) {
+      console.error('Error loading payouts:', err)
     }
-    
-    loadBankAccounts()
-  }, [stripeAccountId])
+  }
   
-  // Load payout settings
+  // Removed duplicate bank account and payout settings loading - now handled in main effect
+  
+  // Auto-refresh unified status while onboarding
   useEffect(() => {
-    const loadPayoutSettings = async () => {
-      if (!stripeAccountId) return
-      
-      try {
-        const response = await fetch('/api/payments/payout-settings')
-        if (response.ok) {
-          const data = await response.json()
-          if (data.settings) {
-            setPayoutSettings(data.settings)
-          }
-        }
-      } catch (err) {
-        console.error('Error loading payout settings:', err)
+    if (!stripeStatus?.stripe_account_id || stripeStatus?.overall_status === 'completed') return
+    
+    const interval = setInterval(async () => {
+      const barbershopId = await getBarbershopId()
+      if (barbershopId) {
+        const refreshedStatus = await unifiedStripeManager.getUnifiedStatus(barbershopId, true)
+        setStripeStatus(refreshedStatus)
       }
-    }
-    
-    loadPayoutSettings()
-  }, [stripeAccountId])
-  
-  // Auto-refresh status while onboarding
-  useEffect(() => {
-    if (!stripeAccountId || accountStatus.onboardingCompleted) return
-    
-    const interval = setInterval(() => {
-      loadAccountStatus(stripeAccountId)
     }, 5000)
     
     return () => clearInterval(interval)
-  }, [stripeAccountId, accountStatus.onboardingCompleted])
+  }, [stripeStatus?.stripe_account_id, stripeStatus?.overall_status, profile])
   
   const createStripeConnectAccount = async () => {
     setLoading(true)
     setError('')
     
     try {
-      const response = await fetch('/api/payments/connect/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          business_type: profile?.business_type || 'individual',
-          business_name: profile?.business_name || profile?.full_name,
-          email: user.email,
-          country: 'US',
-          account_type: 'express'
-        })
+      const barbershopId = await getBarbershopId()
+      if (!barbershopId) {
+        throw new Error('Unable to determine barbershop. Please contact support.')
+      }
+      
+      // Use UnifiedStripeManager for account creation and setup orchestration
+      const result = await unifiedStripeManager.orchestrateSetup(barbershopId, {
+        email: user.email,
+        businessType: profile?.business_type || 'individual',
+        businessName: profile?.business_name || profile?.full_name,
+        enableTerminal: true,
+        returnUrl: `${window.location.origin}/dashboard/settings?section=payments&success=true`,
+        refreshUrl: `${window.location.origin}/dashboard/settings#payments`
       })
       
-      if (!response.ok) throw new Error('Failed to create account')
-      
-      const data = await response.json()
-      setStripeAccountId(data.account_id)
-      
-      // Start onboarding flow
-      await startStripeOnboarding(data.account_id)
+      if (result.success) {
+        // Update local state
+        setStripeStatus(result.status)
+        
+        if (result.onboarding_url) {
+          // Open onboarding in new tab
+          window.open(result.onboarding_url, '_blank')
+          setSuccess('Complete the setup in the new tab. This page will update automatically.')
+        } else {
+          setSuccess('Stripe account setup initiated successfully.')
+        }
+      } else {
+        throw new Error(result.error || 'Failed to create Stripe account')
+      }
       
     } catch (err) {
-      setError(err.message)
+      console.error('Create Stripe account error:', err)
+      setError(err.message || 'Failed to create payment account. Please try again.')
     } finally {
       setLoading(false)
     }
   }
   
-  const startStripeOnboarding = async (accountId = stripeAccountId) => {
+  const startStripeOnboarding = async (accountId = stripeStatus?.stripe_account_id) => {
     if (!accountId) return
     
     setLoading(true)
     setError('')
     
     try {
-      const response = await fetch('/api/payments/connect/onboarding-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          account_id: accountId,
-          refresh_url: `${window.location.origin}/dashboard/settings#payments`,
-          return_url: `${window.location.origin}/dashboard/settings?section=payments&success=true`
-        })
+      const barbershopId = await getBarbershopId()
+      if (!barbershopId) {
+        throw new Error('Unable to determine barbershop. Please contact support.')
+      }
+      
+      // Use UnifiedStripeManager for onboarding link
+      const result = await unifiedStripeManager.generateOnboardingLink(barbershopId, {
+        refresh_url: `${window.location.origin}/dashboard/settings#payments`,
+        return_url: `${window.location.origin}/dashboard/settings?section=payments&success=true`
       })
       
-      if (!response.ok) throw new Error('Failed to generate onboarding link')
-      
-      const data = await response.json()
-      
-      // Open Stripe onboarding in new tab
-      window.open(data.url, '_blank')
-      
-      setSuccess('Complete the setup in the new tab. This page will update automatically.')
+      if (result.success) {
+        // Open Stripe onboarding in new tab
+        window.open(result.data.url, '_blank')
+        setSuccess('Complete the setup in the new tab. This page will update automatically.')
+      } else {
+        throw new Error(result.error || 'Failed to generate onboarding link')
+      }
       
     } catch (err) {
-      setError(err.message)
+      console.error('Start onboarding error:', err)
+      setError(err.message || 'Failed to start onboarding. Please try again.')
     } finally {
       setLoading(false)
     }
   }
   
   const openStripeDashboard = async () => {
-    if (!stripeAccountId) return
+    if (!stripeStatus?.stripe_account_id) return
     
     setLoading(true)
     
     try {
-      const response = await fetch('/api/payments/connect/login-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          account_id: stripeAccountId
-        })
+      const barbershopId = await getBarbershopId()
+      if (!barbershopId) {
+        throw new Error('Unable to determine barbershop. Please contact support.')
+      }
+      
+      // Use UnifiedStripeManager for dashboard link
+      const result = await unifiedStripeManager.generateOnboardingLink(barbershopId, {
+        type: 'dashboard' // Generate dashboard link instead of onboarding
       })
       
-      if (!response.ok) throw new Error('Failed to generate dashboard link')
-      
-      const data = await response.json()
-      window.open(data.url, '_blank')
+      if (result.success) {
+        window.open(result.data.url, '_blank')
+      } else {
+        throw new Error(result.error || 'Failed to generate dashboard link')
+      }
       
     } catch (err) {
-      setError(err.message)
+      console.error('Dashboard link error:', err)
+      setError(err.message || 'Failed to open dashboard. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -313,6 +301,11 @@ export default function PaymentProcessingSettings() {
     setError('')
     
     try {
+      const barbershopId = await getBarbershopId()
+      if (!barbershopId) {
+        throw new Error('Unable to determine barbershop. Please contact support.')
+      }
+      
       const scheduleMap = {
         'daily': { schedule: 'daily', delay_days: 2 },
         'weekly': { schedule: 'weekly', day_of_week: 5 }, // Friday
@@ -321,21 +314,23 @@ export default function PaymentProcessingSettings() {
       
       const settings = scheduleMap[schedule] || scheduleMap.daily
       
-      const response = await fetch('/api/payments/payout-settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
-      })
+      // Use UnifiedStripeManager for payout settings
+      const result = await unifiedStripeManager.updatePayoutSettings(barbershopId, settings)
       
-      if (!response.ok) throw new Error('Failed to update payout settings')
-      
-      setPayoutSettings(settings)
-      setSuccess('Payout schedule updated successfully')
-      
-      setTimeout(() => setSuccess(''), 3000)
+      if (result.success) {
+        // Refresh unified status to reflect changes
+        const refreshedStatus = await unifiedStripeManager.getUnifiedStatus(barbershopId, true)
+        setStripeStatus(refreshedStatus)
+        
+        setSuccess('Payout schedule updated successfully')
+        setTimeout(() => setSuccess(''), 3000)
+      } else {
+        throw new Error(result.error || 'Failed to update payout settings')
+      }
       
     } catch (err) {
-      setError(err.message)
+      console.error('Payout settings error:', err)
+      setError(err.message || 'Failed to update payout settings. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -411,7 +406,7 @@ export default function PaymentProcessingSettings() {
       )}
       
       {/* Main Status Card */}
-      {!stripeAccountId ? (
+      {!stripeStatus?.stripe_account_id ? (
         // No account yet - show setup prompt
         <div className="card">
           <div className="text-center py-8">
@@ -569,7 +564,7 @@ export default function PaymentProcessingSettings() {
             </div>
           </div>
         </div>
-      ) : !accountStatus.onboardingCompleted ? (
+      ) : stripeStatus?.overall_status !== 'completed' ? (
         // Account created but onboarding incomplete - Mobile Enhanced
         <div className="card border-2 border-yellow-200 bg-yellow-50">
           <div className="flex flex-col sm:flex-row items-start sm:items-center">
@@ -580,9 +575,9 @@ export default function PaymentProcessingSettings() {
               </h3>
               <p className="text-sm text-gray-700 mb-4">
                 Your Stripe account has been created but needs additional information before you can accept payments.
-                {accountStatus.requirementsCount > 0 && (
+                {stripeStatus?.requirements?.currently_due?.length > 0 && (
                   <span className="block mt-2 font-medium text-yellow-700 bg-yellow-100 rounded p-2">
-                    ⚠️ {accountStatus.requirementsCount} items need your attention
+                    ⚠️ {stripeStatus.requirements.currently_due.length} items need your attention
                   </span>
                 )}
               </p>
@@ -630,28 +625,28 @@ export default function PaymentProcessingSettings() {
               <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600">Charges</span>
-                  {accountStatus.chargesEnabled ? (
+                  {stripeStatus?.capabilities?.card_payments ? (
                     <CheckCircleIcon className="h-5 w-5 text-green-500" />
                   ) : (
                     <ClockIcon className="h-5 w-5 text-yellow-500" />
                   )}
                 </div>
                 <p className="font-medium text-gray-900">
-                  {accountStatus.chargesEnabled ? 'Enabled' : 'Pending'}
+                  {stripeStatus?.capabilities?.card_payments ? 'Enabled' : 'Pending'}
                 </p>
               </div>
               
               <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600">Payouts</span>
-                  {accountStatus.payoutsEnabled ? (
+                  {stripeStatus?.capabilities?.transfers ? (
                     <CheckCircleIcon className="h-5 w-5 text-green-500" />
                   ) : (
                     <ClockIcon className="h-5 w-5 text-yellow-500" />
                   )}
                 </div>
                 <p className="font-medium text-gray-900">
-                  {accountStatus.payoutsEnabled ? 'Enabled' : 'Pending'}
+                  {stripeStatus?.capabilities?.transfers ? 'Enabled' : 'Pending'}
                 </p>
               </div>
               
@@ -675,13 +670,13 @@ export default function PaymentProcessingSettings() {
                 Open Stripe Dashboard
               </button>
               
-              {accountStatus.requirementsCount > 0 && (
+              {stripeStatus?.requirements?.currently_due?.length > 0 && (
                 <button
                   onClick={() => startStripeOnboarding()}
                   className="inline-flex items-center justify-center px-4 py-3 bg-yellow-100 text-yellow-700 rounded-lg text-sm font-medium hover:bg-yellow-200 touch-manipulation"
                 >
                   <ExclamationCircleIcon className="h-4 w-4 mr-2" />
-                  Update Required Info
+                  Update Required Info ({stripeStatus.requirements.currently_due.length})
                 </button>
               )}
             </div>
@@ -748,7 +743,7 @@ export default function PaymentProcessingSettings() {
                   onClick={() => updatePayoutSchedule(schedule)}
                   disabled={loading}
                   className={`p-3 sm:p-4 rounded-lg border-2 font-medium transition-all touch-manipulation ${
-                    payoutSettings.schedule === schedule
+                    stripeStatus?.payout_settings?.schedule === schedule
                       ? 'border-olive-500 bg-olive-50 text-olive-700'
                       : 'border-gray-200 hover:border-gray-300 bg-white text-gray-700'
                   }`}
@@ -877,6 +872,111 @@ export default function PaymentProcessingSettings() {
               </p>
             </div>
           </div>
+          
+          {/* Terminal Settings Integration */}
+          {stripeStatus?.stripe_account_id && stripeStatus?.overall_status === 'completed' && (
+            <div className="mt-8">
+              <div className="border-t border-gray-200 pt-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                  Card Present Payments (Terminal)
+                </h2>
+                <p className="text-sm text-gray-600 mb-6">
+                  Accept payments with physical card readers for in-person transactions
+                </p>
+                <TerminalSettings barbershopId={profile?.barbershop_id} />
+              </div>
+            </div>
+          )}
+          
+          {/* Unified POS Payment Methods */}
+          {stripeStatus?.stripe_account_id && stripeStatus?.overall_status === 'completed' && (
+            <div className="card mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">POS Payment Methods</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                Choose which payment methods to enable in your Point of Sale system
+              </p>
+              
+              <div className="space-y-4">
+                {/* Payment Links */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                      <ArrowTopRightOnSquareIcon className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900">Payment Links</h4>
+                      <p className="text-sm text-gray-600">Send payment links via SMS or email</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full">
+                    <CheckCircleIcon className="h-4 w-4 mr-1" />
+                    <span className="text-sm font-medium">Active</span>
+                  </div>
+                </div>
+                
+                {/* QR Code Payments */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="bg-purple-100 p-2 rounded-lg mr-3">
+                      <svg className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900">QR Code Payments</h4>
+                      <p className="text-sm text-gray-600">Customers scan QR codes to pay</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full">
+                    <CheckCircleIcon className="h-4 w-4 mr-1" />
+                    <span className="text-sm font-medium">Active</span>
+                  </div>
+                </div>
+                
+                {/* Terminal Payments */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="bg-green-100 p-2 rounded-lg mr-3">
+                      <CreditCardIcon className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900">Terminal Payments</h4>
+                      <p className="text-sm text-gray-600">Physical card readers for in-person payments</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full">
+                    <CheckCircleIcon className="h-4 w-4 mr-1" />
+                    <span className="text-sm font-medium">Active</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">Payment Method Usage</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                  <div className="text-center">
+                    <div className="font-semibold text-blue-800">Payment Links</div>
+                    <div className="text-blue-600">Remote customers</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-semibold text-blue-800">QR Codes</div>
+                    <div className="text-blue-600">Quick self-service</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-semibold text-blue-800">Terminal</div>
+                    <div className="text-blue-600">Traditional card swipe</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>💡 Pro tip:</strong> All payment methods use the same fee structure (2.9% + $0.30) and 
+                  deposit to your connected bank account with the same schedule.
+                </p>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

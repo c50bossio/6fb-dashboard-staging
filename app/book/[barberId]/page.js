@@ -12,19 +12,31 @@ import {
   CheckCircleIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
-  TagIcon
+  TagIcon,
+  BoltIcon,
+  DevicePhoneMobileIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import Head from 'next/head'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useState, useEffect, useMemo, Suspense } from 'react'
 import { generatePageTitle, generateMetaDescription } from '../../../lib/seo-utils'
+import BookingFlowOrchestrator from '../../../components/booking/BookingFlowOrchestrator'
+import { useRealtimeAvailability } from '../../../components/booking/RealtimeAvailabilityChecker'
+import { getCachedFeatureFlags } from '../../../lib/feature-flags'
 
 function BookingPageContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
   
+  // Enhanced booking system state
+  const [useEnhancedFlow, setUseEnhancedFlow] = useState(false)
+  const [deviceInfo, setDeviceInfo] = useState(null)
+  const [featureFlags, setFeatureFlags] = useState({})
+  const [enhancementReady, setEnhancementReady] = useState(false)
+  
+  // Original booking state - maintained for backward compatibility
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [barberData, setBarberData] = useState(null)
@@ -39,16 +51,64 @@ function BookingPageContent() {
     smsConsent: false
   })
 
+  // URL parameters - enhanced with new options
   const urlServices = searchParams?.get('services')?.split(',') || []
   const urlTimeSlots = searchParams?.get('timeSlots')?.split(',') || []
   const urlDuration = searchParams?.get('duration')
   const urlPrice = searchParams?.get('price')
   const urlDiscount = searchParams?.get('discount')
   const urlExpires = searchParams?.get('expires')
+  
+  // Enhancement flags from URL
+  const urlEnhanced = searchParams?.get('enhanced') === 'true'
+  const urlMobile = searchParams?.get('mobile') === 'true'
+  const urlFlow = searchParams?.get('flow')
+  const urlExperiment = searchParams?.get('exp')
+  const urlDebug = searchParams?.get('debug') === 'true'
 
+  // Enhanced booking system initialization
   useEffect(() => {
+    const initializeEnhancedBooking = async () => {
+      try {
+        // Load feature flags
+        const flags = await getCachedFeatureFlags()
+        setFeatureFlags(flags)
+        
+        // Detect device capabilities
+        const device = detectDeviceCapabilities()
+        setDeviceInfo(device)
+        
+        // Determine if we should use enhanced flow
+        const shouldUseEnhanced = determineBookingFlow(flags, device, {
+          enhanced: urlEnhanced,
+          mobile: urlMobile,
+          flow: urlFlow,
+          experiment: urlExperiment
+        })
+        
+        setUseEnhancedFlow(shouldUseEnhanced)
+        setEnhancementReady(true)
+        
+        // Track component selection for analytics
+        if (shouldUseEnhanced) {
+          trackComponentSelection('enhanced', {
+            device,
+            urlParams: { enhanced: urlEnhanced, mobile: urlMobile, flow: urlFlow },
+            featureFlags: flags
+          })
+        }
+        
+      } catch (error) {
+        console.error('Failed to initialize enhanced booking:', error)
+        // Fallback to original flow
+        setUseEnhancedFlow(false)
+        setEnhancementReady(true)
+      }
+    }
+    
+    initializeEnhancedBooking()
     loadBarberData()
-  }, [params.barberId])
+  }, [params.barberId, urlEnhanced, urlMobile, urlFlow])
 
   useEffect(() => {
     const trackPageView = async () => {
@@ -102,7 +162,7 @@ function BookingPageContent() {
     try {
       setLoading(true)
       
-      const Barber = {
+      const mockBarber = {
         id: params.barberId,
         name: 'Marcus Johnson',
         title: 'Master Barber',
@@ -127,7 +187,7 @@ function BookingPageContent() {
         }
       }
 
-      const Services = [
+      const mockServices = [
         { id: 1, name: 'Classic Cut', duration: 30, price: 35, description: 'Traditional scissor cut and style', category: 'Haircuts' },
         { id: 2, name: 'Fade Cut', duration: 45, price: 45, description: 'Modern fade with scissor work on top', category: 'Haircuts' },
         { id: 3, name: 'Buzz Cut', duration: 15, price: 25, description: 'Clean, uniform length all around', category: 'Haircuts' },
@@ -293,14 +353,88 @@ function BookingPageContent() {
            customerInfo.phone.trim()
   }
 
+  // Device detection utility
+  const detectDeviceCapabilities = () => {
+    if (typeof window === 'undefined') return null
+    
+    const userAgent = navigator.userAgent.toLowerCase()
+    const screenWidth = window.innerWidth
+    const isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent) || screenWidth <= 768
+    const isTablet = screenWidth >= 768 && screenWidth <= 1024
+    const isTouchDevice = 'ontouchstart' in window
+    
+    return {
+      isMobile,
+      isTablet,
+      isDesktop: !isMobile && !isTablet,
+      isTouchDevice,
+      screenWidth,
+      screenHeight: window.innerHeight,
+      supportsAdvancedFeatures: !isMobile && screenWidth > 1024,
+      shouldUseEnhancedFlow: !isMobile || screenWidth > 900
+    }
+  }
+  
+  // Enhanced flow determination logic
+  const determineBookingFlow = (flags, device, urlParams) => {
+    // URL parameters take precedence
+    if (urlParams.enhanced) return true
+    if (urlParams.mobile) return false // Mobile forces original flow
+    if (urlParams.flow === 'enhanced') return true
+    if (urlParams.flow === 'original') return false
+    
+    // Feature flag checks
+    if (!flags.new_booking_flow) return false
+    
+    // Device-based decision
+    if (device?.isMobile && !flags.mobile_optimizer_enabled) return false
+    if (device?.supportsAdvancedFeatures && flags.enhanced_booking_flow) return true
+    
+    // Default to original for safety
+    return false
+  }
+  
+  // Analytics tracking
+  const trackComponentSelection = (type, context) => {
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'booking_component_selected', {
+          component_type: type,
+          device_type: context.device?.isMobile ? 'mobile' : context.device?.isTablet ? 'tablet' : 'desktop',
+          screen_width: context.device?.screenWidth,
+          enhanced_enabled: context.urlParams?.enhanced,
+          mobile_enabled: context.urlParams?.mobile,
+          flow_override: context.urlParams?.flow
+        })
+      }
+    } catch (error) {
+      console.error('Analytics tracking failed:', error)
+    }
+  }
+
   const availableSlots = useMemo(() => {
     return generateAvailableSlots()
   }, [urlTimeSlots, barberData])
 
+  // Enhanced loading state with system detection
   if (loading && !barberData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading booking system...</p>
+          {enhancementReady && deviceInfo && (
+            <div className="mt-2 flex items-center justify-center space-x-2 text-sm text-gray-500">
+              {deviceInfo.isMobile ? (
+                <DevicePhoneMobileIcon className="h-4 w-4" />
+              ) : (
+                <CheckCircleIcon className="h-4 w-4" />
+              )}
+              <span>{useEnhancedFlow ? 'Enhanced' : 'Standard'} experience</span>
+              {useEnhancedFlow && <BoltIcon className="h-4 w-4 text-olive-600" />}
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -316,6 +450,69 @@ function BookingPageContent() {
     )
   }
 
+  // Enhanced flow rendering - use BookingFlowOrchestrator if enabled
+  if (enhancementReady && useEnhancedFlow && barberData) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Enhanced flow indicator */}
+        {urlDebug && (
+          <div className="bg-blue-600 text-white px-4 py-2 text-center text-sm">
+            🚀 Enhanced Booking Flow Active - Barber: {barberData.name}
+          </div>
+        )}
+        
+        <BookingFlowOrchestrator
+          barbershopId={barberData.location?.name || '6fb-downtown'}
+          barbershopSlug="6fb-downtown"
+          preselectedBarber={params.barberId}
+          preselectedService={urlServices[0] || null}
+          
+          // URL parameter overrides
+          enhanced={urlEnhanced}
+          mobile={urlMobile}
+          service={urlServices[0] || null}
+          barber={params.barberId}
+          
+          // Configuration
+          defaultFlow="auto"
+          enableRealtimeAvailability={true}
+          enableProgressiveAccount={true}
+          
+          // A/B testing
+          experimentId={urlExperiment}
+          onComponentSelection={trackComponentSelection}
+          onConversionEvent={(event, data) => {
+            console.log('Booking conversion event:', event, data)
+          }}
+          
+          // Pass through all URL parameters for backward compatibility
+          urlParams={{
+            services: urlServices,
+            timeSlots: urlTimeSlots,
+            duration: urlDuration,
+            price: urlPrice,
+            discount: urlDiscount,
+            expires: urlExpires
+          }}
+          
+          // Barber data for context
+          barberData={barberData}
+          availableServices={availableServices}
+          
+          className="enhanced-booking-wrapper"
+        />
+        
+        {/* Development indicator */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="fixed bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium z-40">
+            Enhanced Flow
+          </div>
+        )}
+      </div>
+    )
+  }
+  
+  // Original flow - preserved for backward compatibility
   const searchParamsObj = Object.fromEntries(searchParams?.entries() || [])
   const pageTitle = barberData ? generatePageTitle(barberData, searchParamsObj) : 'Book Appointment'
   const metaDescription = barberData ? generateMetaDescription(barberData, searchParamsObj) : 'Book your appointment online'
@@ -326,6 +523,33 @@ function BookingPageContent() {
         <title>{pageTitle}</title>
         <meta name="description" content={metaDescription} />
       </Head>
+      
+      {/* Backward compatibility indicator */}
+      {urlDebug && (
+        <div className="bg-amber-600 text-white px-4 py-2 text-center text-sm">
+          📚 Original Booking Flow - Full Backward Compatibility Mode
+        </div>
+      )}
+      
+      {/* Enhancement available banner */}
+      {enhancementReady && !useEnhancedFlow && featureFlags.new_booking_flow && (
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 text-center text-sm">
+          <div className="flex items-center justify-center space-x-2">
+            <BoltIcon className="h-4 w-4" />
+            <span>Try our enhanced booking experience!</span>
+            <button
+              onClick={() => {
+                const url = new URL(window.location)
+                url.searchParams.set('enhanced', 'true')
+                window.location.href = url.toString()
+              }}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 px-2 py-1 rounded text-xs font-medium transition-colors"
+            >
+              Enable Now
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Header with enhanced SEO structure */}
       <header className="bg-white shadow-sm">
@@ -773,6 +997,18 @@ function BookingPageContent() {
           </div>
         </div>
       </div>
+      
+      {/* Development debug panel */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 right-4 bg-black bg-opacity-90 text-white px-3 py-1 rounded-full text-xs font-medium z-40 flex items-center space-x-2">
+          <span>Original Flow</span>
+          {deviceInfo && (
+            <span className="text-gray-300">
+              {deviceInfo.isMobile ? '📱' : deviceInfo.isTablet ? '📟' : '🖥️'}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }

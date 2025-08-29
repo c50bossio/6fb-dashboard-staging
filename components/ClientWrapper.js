@@ -9,6 +9,7 @@ import { AppErrorBoundary } from './error-boundary'
 import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
+import { QueryProvider } from './QueryProvider'
 
 // Lazy load non-critical providers
 const ServiceWorkerProvider = dynamic(() => import('./ServiceWorkerProvider'), {
@@ -26,6 +27,7 @@ function CombinedProviders({ children }) {
     () => [
       AccessibilityProvider,
       ToastProvider,
+      QueryProvider,
       SupabaseAuthProvider
     ],
     []

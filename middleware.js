@@ -1,11 +1,45 @@
 import { NextResponse } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
-export function middleware(request) {
+export async function middleware(request) {
   const { pathname } = request.nextUrl
   
-  // 🔓 Skip middleware for ALL auth routes to prevent OAuth interference
+  // Create a response object that we can modify
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
+
+  // Create Supabase client with cookie handling for auth refresh
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        get(name) {
+          return request.cookies.get(name)?.value
+        },
+        set(name, value, options) {
+          // Set cookie on both request and response
+          request.cookies.set({ name, value, ...options })
+          response.cookies.set({ name, value, ...options })
+        },
+        remove(name, options) {
+          // Remove cookie from both request and response
+          request.cookies.set({ name, value: '', ...options })
+          response.cookies.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
+
+  // Refresh session if expired - this is critical for OAuth
+  await supabase.auth.getSession()
+  
+  // 🔓 Skip additional middleware for auth routes to prevent OAuth interference
   if (pathname.startsWith('/auth/') || pathname.startsWith('/api/auth/')) {
-    return NextResponse.next()
+    return response
   }
   
   // 🛡️ Block access to sensitive files
@@ -26,8 +60,6 @@ export function middleware(request) {
   }
 
   // 🛡️ Basic security headers (simplified)
-  const response = NextResponse.next()
-  
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')  
   response.headers.set('X-XSS-Protection', '1; mode=block')

@@ -10,7 +10,14 @@ import { GlobalDashboardProvider } from '../../contexts/GlobalDashboardContext'
 import { NavigationProvider, useNavigation } from '../../contexts/NavigationContext'
 import { TenantProvider } from '../../contexts/TenantContext'
 import { DashboardPerspectiveProvider } from '../../contexts/DashboardPerspectiveContext'
+import dynamic from 'next/dynamic'
 // import { Toaster } from 'react-hot-toast'
+
+// Only load performance monitor in development
+const ContextPerformanceMonitor = dynamic(
+  () => import('../../components/dev/ContextPerformanceMonitor'),
+  { ssr: false }
+)
 
 function ProtectedLayoutContent({ children }) {
   const { isCollapsed } = useNavigation()
@@ -48,6 +55,11 @@ function ProtectedLayoutContent({ children }) {
       <div className="hidden lg:block">
         <FloatingAIChat />
       </div>
+      
+      {/* Context Performance Monitor - Development only */}
+      {process.env.NODE_ENV === 'development' && (
+        <ContextPerformanceMonitor />
+      )}
       
       {/* Toast notifications for the entire app */}
       {/* <Toaster 

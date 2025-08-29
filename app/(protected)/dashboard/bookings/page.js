@@ -7,11 +7,12 @@ export default function BookingsPage() {
   const router = useRouter()
   
   useEffect(() => {
+    // Redirect to calendar page
     router.push('/dashboard/calendar')
   }, [router])
   
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center min-h-[50vh]">
       <div className="text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
         <p className="mt-4 text-gray-600">Redirecting to calendar...</p>
