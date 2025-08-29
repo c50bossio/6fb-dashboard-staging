@@ -1,9 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
 import { 
   ArrowRight, 
   Check, 
@@ -18,17 +15,18 @@ import {
   Users,
   Calendar
 } from 'lucide-react'
+import React, { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import * as z from 'zod'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { 
   Card, 
   CardContent, 
   CardDescription, 
   CardFooter, 
   CardHeader, 
-  CardTitle,
-  StatCard 
+  CardTitle
 } from '@/components/ui/card'
 import {
   Form,
@@ -41,6 +39,8 @@ import {
   FormSection,
   FormActions,
 } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { StatsCard } from '@/components/ui/StatsCard'
 
 // Form validation schema
 const formSchema = z.object({
@@ -92,28 +92,28 @@ export default function TypeScriptDemoPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
+        <StatsCard
           title="Total Revenue"
           value="$12,456"
           description="12% increase from last month"
           icon={<DollarSign className="h-4 w-4" />}
           trend={{ value: 12, isPositive: true }}
         />
-        <StatCard
+        <StatsCard
           title="Active Customers"
           value="2,345"
           description="New customers this month"
           icon={<Users className="h-4 w-4" />}
           trend={{ value: 8, isPositive: true }}
         />
-        <StatCard
+        <StatsCard
           title="Appointments"
           value="189"
           description="Scheduled this week"
           icon={<Calendar className="h-4 w-4" />}
           trend={{ value: 5, isPositive: false }}
         />
-        <StatCard
+        <StatsCard
           title="Growth Rate"
           value="24.5%"
           description="Year over year"

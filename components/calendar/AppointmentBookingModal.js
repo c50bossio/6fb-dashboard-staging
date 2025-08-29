@@ -6,8 +6,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Fragment } from 'react'
 
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import CustomerSearchModal from './CustomerSearchModal'
 import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+import CustomerSearchModal from './CustomerSearchModal'
 
 export default function AppointmentBookingModal({
   isOpen,

@@ -23,7 +23,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 
-import ModelSelector from '../../../../components/chat/ModelSelector'
+import ModelSelector from '../../../../components/ai/ModelSelector'
 import ExecutableActionButton from '../../../../components/ExecutableActionButton'
 import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
@@ -745,7 +745,7 @@ Try the quick actions below or just start chatting! 💬`,
         // Handle streaming response
         const reader = response.body?.getReader()
         if (reader) {
-          let aiMessageId = `ai-${Date.now()}`
+          const aiMessageId = `ai-${Date.now()}`
           let streamedContent = ''
           
           // Initialize streaming message

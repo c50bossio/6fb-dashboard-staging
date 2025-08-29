@@ -5,39 +5,63 @@ export async function middleware(request) {
   const { pathname } = request.nextUrl
   
   // Create a response object that we can modify
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+  let supabaseResponse = NextResponse.next({
+    request,
   })
 
-  // Create Supabase client and refresh session
+  // Create Supabase client for middleware following best practices
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
-        get(name) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name, value, options) {
-          // Set cookie on both request and response
-          request.cookies.set({ name, value, ...options })
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name, options) {
-          // Remove cookie from both request and response
-          request.cookies.set({ name, value: '', ...options })
-          response.cookies.set({ name, value: '', ...options })
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
         },
       },
     }
   )
 
-  // This will refresh the session if expired - critical for auth
-  await supabase.auth.getSession()
+  // IMPORTANT: Avoid writing any logic between createServerClient and
+  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
 
-  return response
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  
+  // API routes should never be protected - they handle their own logic  
+  const isApiRoute = pathname.startsWith('/api/')
+  
+  // Public routes that don't need auth
+  const publicRoutes = ['/login', '/signup', '/', '/auth']
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  
+  // Protected routes that require authentication
+  const protectedRoutes = ['/dashboard', '/(protected)']
+  const isProtectedRoute = protectedRoutes.some(route => 
+    pathname.startsWith(route.replace('(protected)', '')) || 
+    pathname.includes('/(protected)/')
+  )
+  
+  // If accessing a protected route without user, redirect to login
+  if (isProtectedRoute && !user && !isApiRoute && !isPublicRoute) {
+    const redirectUrl = new URL('/login', request.url)
+    redirectUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // IMPORTANT: You *must* return the supabaseResponse object as it is.
+  return supabaseResponse
 }
 
 export const config = {

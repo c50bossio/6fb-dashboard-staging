@@ -17,9 +17,10 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
-import { TerminalSettings } from './TerminalSettings'
 import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
+import { createClient } from '@/lib/supabase/client'
+import { getTenant } from '@/lib/tenant-resolver-client'
+import { TerminalSettings } from './TerminalSettings'
 
 export default function PaymentProcessingSettings() {
   // Enhanced Loading and Error States
@@ -38,25 +39,17 @@ export default function PaymentProcessingSettings() {
   const supabase = createClient()
   const { user, profile } = useAuth()
   
-  // Get barbershop ID (handles both individual and staff scenarios)
+  // Get barbershop ID using unified tenant resolver
   const getBarbershopId = async () => {
     if (!profile) return null
     
-    // For individual barbers or shop owners
-    let shopId = profile.shop_id || profile.barbershop_id
-    
-    // For staff members, get shop through barbershop_staff table
-    if (!shopId && profile.id) {
-      const { data: staffData } = await supabase
-        .from('barbershop_staff')
-        .select('barbershop_id')
-        .eq('user_id', profile.id)
-        .single()
-      
-      shopId = staffData?.barbershop_id
+    try {
+      const { barbershopId } = await getTenant(profile.id, { supabase })
+      return barbershopId
+    } catch (error) {
+      console.error('Error getting barbershop ID:', error)
+      return null
     }
-    
-    return shopId
   }
   
   // Enhanced error handling utility

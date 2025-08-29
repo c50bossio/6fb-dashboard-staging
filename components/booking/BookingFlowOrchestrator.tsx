@@ -1,7 +1,5 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, Suspense, lazy, Component, ReactNode } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { 
   DevicePhoneMobileIcon, 
   ComputerDesktopIcon,
@@ -9,6 +7,8 @@ import {
   ExclamationTriangleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useEffect, useMemo, Suspense, lazy, Component, ReactNode } from 'react'
 import { getFeatureFlag, getCachedFeatureFlags } from '@/lib/feature-flags'
 
 // Type definitions

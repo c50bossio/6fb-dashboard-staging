@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getTenant } from '@/lib/tenant-resolver'
 
 // Simple retry utility for database operations
 async function retryDatabaseOperation(operation, maxRetries = 2, delay = 1000) {
@@ -238,8 +239,7 @@ export async function GET(request) {
       console.log(`✅ Staff API: Profile found:`, {
         id: profile.id,
         role: profile.role,
-        shop_id: profile.shop_id,
-        barbershop_id: profile.barbershop_id
+        email: profile.email
       })
     }
     
@@ -249,14 +249,14 @@ export async function GET(request) {
     }
     
     const barbershopId = await retryDatabaseOperation(async () => {
-      return await getUserBarbershop(supabase, profile)
+      const { barbershopId } = await getTenant(profile.id, { supabase })
+      return barbershopId
     })
     
     if (!barbershopId) {
       console.error('❌ Staff API: No barbershop found for user profile:', { 
-        profileId: profile.id, 
-        shopId: profile.shop_id,
-        barbershopId: profile.barbershop_id 
+        profileId: profile.id,
+        message: 'Tenant resolver returned no barbershop association'
       })
       return NextResponse.json({ error: 'No barbershop found for user' }, { status: 404 })
     }

@@ -1,14 +1,14 @@
 'use client'
 
-import { useParams, useSearchParams } from 'next/navigation'
-import { useEffect, useState, Suspense } from 'react'
-import { motion } from 'framer-motion'
 import { 
   DevicePhoneMobileIcon, 
   BoltIcon, 
   SparklesIcon,
   ArrowPathIcon 
 } from '@heroicons/react/24/outline'
+import { motion } from 'framer-motion'
+import { useParams, useSearchParams } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
 import BookingFlowOrchestrator from '@/components/booking/BookingFlowOrchestrator'
 import { trackEvent } from '@/lib/analytics'
 

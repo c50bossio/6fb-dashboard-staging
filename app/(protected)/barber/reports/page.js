@@ -1,13 +1,10 @@
 'use client'
 
 import { 
-  ChartBarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
   CalendarDaysIcon,
   ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-  ClockIcon,
   ScissorsIcon,
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline'
@@ -24,18 +21,17 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer
 } from 'recharts'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberReports() {
-  const { user, profile } = useAuth()
+  const { user } = useAuth()
   const supabase = createClient()
   
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [_error, setError] = useState(null)
   const [dateRange, setDateRange] = useState('week') // day, week, month, year
   const [reportData, setReportData] = useState({
     earnings: {

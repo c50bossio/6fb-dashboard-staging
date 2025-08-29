@@ -12,9 +12,9 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useRef, useEffect } from 'react'
+import { useAIChat } from '../hooks/useAISDK'
 import { createClient } from '../lib/supabase/client'
 import { useAuth } from './SupabaseAuthProvider'
-import { useAIChat } from '../hooks/useAISDK'
 
 export default function FloatingAIChat() {
   const { user } = useAuth()

@@ -18,6 +18,8 @@ import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/sol
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
+import { getTenant } from '@/lib/tenant-resolver-client'
+import { useAuth } from '../SupabaseAuthProvider'
 
 // Unified customization URL for all user roles
 const getCustomizationUrl = () => '/customize'
@@ -81,6 +83,7 @@ const getOnboardingSteps = (userRole) => [
 
 export default function OnboardingProgress({ user, profile }) {
   const router = useRouter()
+  const { supabase } = useAuth()
   const [isExpanded, setIsExpanded] = useState(true)
   const [onboardingStatus, setOnboardingStatus] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -93,10 +96,27 @@ export default function OnboardingProgress({ user, profile }) {
 
   // Determine user context for role-aware routing
   const userRole = profile?.role || 'SHOP_OWNER'
-  const barbershopId = profile?.shop_id || profile?.barbershop_id || 'default'
+  const [barbershopId, setBarbershopId] = useState('default')
   
   // Get dynamic steps based on user role and context
   const ONBOARDING_STEPS = getOnboardingSteps(userRole)
+
+  // Get barbershop ID using getTenant
+  useEffect(() => {
+    const resolveBarbershopId = async () => {
+      if (profile?.id) {
+        try {
+          const { barbershopId } = await getTenant(profile.id, { supabase })
+          setBarbershopId(barbershopId || 'default')
+        } catch (error) {
+          console.error('Error getting barbershop ID:', error)
+          setBarbershopId('default')
+        }
+      }
+    }
+    
+    resolveBarbershopId()
+  }, [profile?.id, supabase])
 
   // Load status from simplified API
   useEffect(() => {

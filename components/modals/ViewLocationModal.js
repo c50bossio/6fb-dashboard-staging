@@ -12,8 +12,8 @@ import {
   ClockIcon,
   StarIcon
 } from '@heroicons/react/24/outline'
-import { createClient } from '@/lib/supabase/browser-client'
 import { Fragment, useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/browser-client'
 import EditLocationModal from './EditLocationModal'
 
 export default function ViewLocationModal({ isOpen, onClose, location }) {

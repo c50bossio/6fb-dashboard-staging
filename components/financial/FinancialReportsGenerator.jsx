@@ -1,11 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { DatePicker } from '@/components/ui/date-picker'
-import { Input } from '@/components/ui/input'
 import { 
   FileText, 
   Download, 
@@ -17,7 +11,13 @@ import {
   Target,
   Clock
 } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import financialService from '@/lib/financial-service'
+import { DatePicker } from '@/components/ui/date-picker'
 
 const FinancialReportsGenerator = ({ barbershopId }) => {
   const [reportType, setReportType] = useState('comprehensive')

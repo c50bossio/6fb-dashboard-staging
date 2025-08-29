@@ -3,7 +3,6 @@
  * Real-time booking updates and calendar synchronization
  */
 
-import React, { useState, useEffect } from 'react'
 import { 
   Calendar, 
   Clock, 
@@ -17,6 +16,7 @@ import {
   Scissors,
   RefreshCw
 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
 import { useLiveData, useEnhancedWebSocket } from '@/hooks/useEnhancedWebSocket'
 
 const StatusBadge = ({ status }) => {

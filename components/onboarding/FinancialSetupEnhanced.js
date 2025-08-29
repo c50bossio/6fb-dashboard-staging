@@ -16,8 +16,9 @@ import {
 } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
+import { createClient } from '@/lib/supabase/client'
+import { getTenant } from '@/lib/tenant-resolver-client'
 
 export default function FinancialSetupEnhanced({ onComplete, initialData = {}, subscriptionTier = 'shop' }) {
   const [currentSection, setCurrentSection] = useState('payment')
@@ -98,11 +99,21 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('shop_id, barbershop_id')
+          .select('id')
           .eq('id', user.id)
           .single()
 
-        const shopId = profile?.shop_id || profile?.barbershop_id
+        if (!profile) return
+
+        let shopId
+        try {
+          const { barbershopId: resolvedShopId } = await getTenant(profile.id, { supabase })
+          shopId = resolvedShopId
+        } catch (error) {
+          console.error('Error getting barbershop ID:', error)
+          return
+        }
+
         if (!shopId) return
 
         setBarbershopId(shopId)

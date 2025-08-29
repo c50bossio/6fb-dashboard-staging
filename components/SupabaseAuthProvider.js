@@ -18,16 +18,26 @@ function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [hydrated, setHydrated] = useState(false)
   const router = useRouter()
   
   // Single Supabase client instance
   const supabase = useMemo(() => createClient(), [])
 
+  // Handle hydration
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
+
   // Fetch user profile
   const fetchProfile = async (userId) => {
-    if (!userId) return null
+    if (!userId) {
+      console.log('🔐 Auth: No userId provided to fetchProfile')
+      return null
+    }
     
     try {
+      console.log('🔐 Auth: Querying profiles table for userId:', userId)
       const { data: profileData, error } = await supabase
         .from('profiles')
         .select('*')
@@ -35,9 +45,11 @@ function SupabaseAuthProvider({ children }) {
         .single()
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error)
+        console.error('🔐 Auth: Error fetching profile:', error)
         return null
       }
+      
+      console.log('🔐 Auth: Profile query result:', profileData ? 'Profile found' : 'No profile found')
 
       if (profileData) {
         setProfile(profileData)
@@ -78,53 +90,164 @@ function SupabaseAuthProvider({ children }) {
 
   // Initialize auth state
   useEffect(() => {
+    // Don't initialize until hydration is complete
+    if (!hydrated) return
+
     let isMounted = true
+    let timeoutId = null
+    let initializationPromise = null
 
     const initialize = async () => {
       try {
-        // Get initial session
-        const { data: { session } } = await supabase.auth.getSession()
+        console.log('🔐 Auth: Initializing authentication after hydration...')
+        
+        // Check if we're in development mode with auth bypass
+        const isDevMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true'
+        
+        if (isDevMode && (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://your-project.supabase.co')) {
+          console.log('🔐 Auth: Development mode with auth bypass enabled')
+          // Set mock user for development
+          const mockUser = {
+            id: 'dev-user-123',
+            email: 'dev@6fb.local',
+            user_metadata: { full_name: 'Development User' }
+          }
+          const mockProfile = {
+            id: 'dev-user-123',
+            email: 'dev@6fb.local',
+            full_name: 'Development User',
+            subscription_tier: 'pro',
+            subscription_status: 'active',
+            role: 'BARBER'
+          }
+          
+          if (isMounted) {
+            setUser(mockUser)
+            setProfile(mockProfile)
+            setLoading(false)
+          }
+          return
+        }
+        
+        // Set a maximum timeout to ensure loading always resolves
+        timeoutId = setTimeout(() => {
+          if (isMounted) {
+            console.log('🔐 Auth: Timeout reached, forcing loading to false')
+            setLoading(false)
+          }
+        }, 3000) // Reduced to 3 seconds for faster resolution
+        
+        // Get initial session with explicit timeout
+        let session = null
+        try {
+          const sessionPromise = Promise.race([
+            supabase.auth.getSession(),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Session timeout')), 2000)
+            )
+          ])
+          
+          const result = await sessionPromise
+          session = result?.data?.session
+          console.log('🔐 Auth: Session check completed:', session?.user ? 'User found' : 'No user')
+        } catch (sessionError) {
+          console.log('🔐 Auth: Session check timed out or failed, continuing without session')
+          // Continue without session - this is fine for development
+          session = null
+        }
         
         if (isMounted) {
           if (session?.user) {
             setUser(session.user)
-            await fetchProfile(session.user.id)
+            console.log('🔐 Auth: Fetching profile for user:', session.user.id)
+            
+            // Profile fetch with timeout and error handling
+            try {
+              const profilePromise = Promise.race([
+                fetchProfile(session.user.id),
+                new Promise((resolve) => 
+                  setTimeout(() => {
+                    console.log('🔐 Auth: Profile fetch timed out, continuing without profile')
+                    resolve(null)
+                  }, 1500)
+                )
+              ])
+              
+              await profilePromise
+              console.log('🔐 Auth: Profile fetch completed')
+            } catch (profileError) {
+              console.error('🔐 Auth: Profile fetch failed:', profileError)
+              // Continue anyway, don't block the UI
+            }
+          } else {
+            // No user session, ensure we clear any existing state
+            setUser(null)
+            setProfile(null)
           }
+          
+          // Clear timeout since we completed successfully
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
+          
           setLoading(false)
+          console.log('🔐 Auth: Initialization completed, loading set to false')
         }
       } catch (error) {
-        console.error('Auth initialization error:', error)
+        console.error('🔐 Auth: Initialization error:', error)
         if (isMounted) {
+          // Clear timeout on error
+          if (timeoutId) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
           setLoading(false)
+          console.log('🔐 Auth: Error occurred, loading set to false')
         }
       }
     }
 
-    initialize()
+    // Ensure we don't have multiple initialization attempts
+    if (!initializationPromise) {
+      initializationPromise = initialize()
+    }
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (session?.user) {
-          setUser(session.user)
-          await fetchProfile(session.user.id)
-        } else {
-          setUser(null)
-          setProfile(null)
-        }
+        console.log('🔐 Auth: Auth state change event:', event)
+        
+        if (isMounted) {
+          if (session?.user) {
+            setUser(session.user)
+            try {
+              await fetchProfile(session.user.id)
+            } catch (error) {
+              console.error('🔐 Auth: Profile fetch failed during state change:', error)
+            }
+          } else {
+            setUser(null)
+            setProfile(null)
+          }
 
-        // Handle sign out
-        if (event === 'SIGNED_OUT') {
-          router.push('/login')
+          // Handle sign out
+          if (event === 'SIGNED_OUT') {
+            console.log('🔐 Auth: User signed out, redirecting to login')
+            router.push('/login')
+          }
         }
       }
     )
 
     return () => {
       isMounted = false
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
       subscription.unsubscribe()
     }
-  }, [supabase, router])
+  }, [hydrated, supabase, router])
 
   // Auth methods
   const signInWithGoogle = async () => {
@@ -190,7 +313,8 @@ function SupabaseAuthProvider({ children }) {
   const value = {
     user,
     profile,
-    loading,
+    loading: loading || !hydrated, // Include hydration state in loading
+    hydrated,
     supabase,
     signInWithGoogle,
     signIn,

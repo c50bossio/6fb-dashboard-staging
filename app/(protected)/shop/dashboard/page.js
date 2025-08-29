@@ -16,9 +16,9 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import UnifiedDashboardHeader from '@/components/layout/UnifiedDashboardHeader'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useShopDashboard, useCurrentShopId } from '@/hooks'
-import UnifiedDashboardHeader from '@/components/layout/UnifiedDashboardHeader'
 
 export default function ShopDashboard() {
   const { user, profile } = useAuth()

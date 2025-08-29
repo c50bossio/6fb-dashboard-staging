@@ -3,11 +3,6 @@
  * Displays subscription metrics, connection status, and optimization insights
  */
 
-import React from 'react'
-import { useRealtimePerformance, useConnectionStatus, usePerformanceBenchmark } from '@/hooks/useRealtimePerformance'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Wifi, 
   WifiOff, 
@@ -22,6 +17,11 @@ import {
   Layers,
   Signal
 } from 'lucide-react'
+import React from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRealtimePerformance, useConnectionStatus, usePerformanceBenchmark } from '@/hooks/useRealtimePerformance'
 
 export function RealtimePerformanceDashboard({ className = '', compact = false }) {
   const { metrics, connectionStatus, insights, isLoading, refetch } = useRealtimePerformance()

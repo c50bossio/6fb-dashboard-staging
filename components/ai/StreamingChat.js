@@ -1,7 +1,7 @@
 'use client'
 
-import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import { useChat } from '@ai-sdk/react'
+import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import { useState, useRef, useEffect } from 'react'
 
 import { captureException } from '@/lib/sentry'

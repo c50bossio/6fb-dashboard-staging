@@ -4,8 +4,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import optimizedSupabase, { batchQueries } from '../../../../lib/performance/optimized-supabase.js';
 import { cacheQuery } from '../../../../lib/analytics-cache.js';
+import optimizedSupabase, { batchQueries } from '../../../../lib/performance/optimized-supabase.js';
 export const runtime = 'nodejs'
 
 export async function GET(request) {

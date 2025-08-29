@@ -1,0 +1,178 @@
+/**
+ * React Query Hooks for Services
+ * Phase 3-4: Performance Optimization
+ * 
+ * These hooks replace the complex context-based service management
+ * with efficient React Query patterns.
+ */
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query-client'
+import supabaseService from '@/lib/supabase-service'
+
+/**
+ * Fetch all services for a barbershop
+ */
+export function useServices(shopId, options = {}) {
+  return useQuery({
+    queryKey: queryKeys.services.byShop(shopId),
+    queryFn: async () => {
+      // Ensure service is initialized
+      if (!supabaseService.isReady()) {
+        await supabaseService.initialize()
+      }
+      return supabaseService.getServices(shopId, options)
+    },
+    enabled: !!shopId,
+    staleTime: 10 * 60 * 1000, // Services don't change often - 10 minutes
+    ...options.queryOptions,
+  })
+}
+
+/**
+ * Fetch a single service
+ */
+export function useService(shopId, serviceId) {
+  return useQuery({
+    queryKey: queryKeys.services.detail(shopId, serviceId),
+    queryFn: async () => {
+      const services = await supabaseService.getServices(shopId)
+      return services.find(s => s.id === serviceId)
+    },
+    enabled: !!shopId && !!serviceId,
+    staleTime: 10 * 60 * 1000,
+  })
+}
+
+/**
+ * Create a new service with optimistic update
+ */
+export function useCreateService() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (serviceData) => supabaseService.createService(serviceData),
+    
+    // Optimistic update
+    onMutate: async (newService) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ 
+        queryKey: queryKeys.services.byShop(newService.barbershop_id) 
+      })
+      
+      // Snapshot previous value
+      const previousServices = queryClient.getQueryData(
+        queryKeys.services.byShop(newService.barbershop_id)
+      )
+      
+      // Optimistically update cache
+      queryClient.setQueryData(
+        queryKeys.services.byShop(newService.barbershop_id),
+        (old) => [...(old || []), { ...newService, id: 'temp-' + Date.now() }]
+      )
+      
+      return { previousServices, barbershop_id: newService.barbershop_id }
+    },
+    
+    // If mutation fails, rollback
+    onError: (err, newService, context) => {
+      queryClient.setQueryData(
+        queryKeys.services.byShop(context.barbershop_id),
+        context.previousServices
+      )
+    },
+    
+    // After success or error, refetch
+    onSettled: (data, error, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.services.byShop(variables.barbershop_id) 
+      })
+    },
+    
+    onSuccess: (data, variables) => {
+      // Show success message if needed
+      console.log('Service created successfully:', data)
+    }
+  })
+}
+
+/**
+ * Update an existing service
+ */
+export function useUpdateService() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ serviceId, updates }) => 
+      supabaseService.updateService(serviceId, updates),
+    
+    // Optimistic update
+    onMutate: async ({ serviceId, updates, barbershop_id }) => {
+      await queryClient.cancelQueries({ 
+        queryKey: queryKeys.services.byShop(barbershop_id) 
+      })
+      
+      const previousServices = queryClient.getQueryData(
+        queryKeys.services.byShop(barbershop_id)
+      )
+      
+      // Update the service in cache
+      queryClient.setQueryData(
+        queryKeys.services.byShop(barbershop_id),
+        (old) => old?.map(service => 
+          service.id === serviceId 
+            ? { ...service, ...updates }
+            : service
+        )
+      )
+      
+      return { previousServices, barbershop_id }
+    },
+    
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(
+        queryKeys.services.byShop(context.barbershop_id),
+        context.previousServices
+      )
+    },
+    
+    onSettled: (data, error, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.services.byShop(variables.barbershop_id) 
+      })
+    }
+  })
+}
+
+/**
+ * Delete (soft delete - sets active to false) a service
+ */
+export function useDeleteService() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (serviceId) => supabaseService.deleteService(serviceId),
+    
+    onSuccess: (data, serviceId, context) => {
+      // Invalidate services list
+      queryClient.invalidateQueries({ 
+        queryKey: queryKeys.services.all() 
+      })
+    }
+  })
+}
+
+/**
+ * Prefetch services for a shop (useful for navigation)
+ */
+export function usePrefetchServices() {
+  const queryClient = useQueryClient()
+  
+  return (shopId) => {
+    return queryClient.prefetchQuery({
+      queryKey: queryKeys.services.byShop(shopId),
+      queryFn: () => supabaseService.getServices(shopId),
+      staleTime: 10 * 60 * 1000,
+    })
+  }
+}

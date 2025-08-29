@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { POSInterface } from '@/components/pos/POSInterface'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { RefreshCw } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { POSInterface } from '@/components/pos/POSInterface'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function POSPage() {
   const { user, profile } = useAuth()

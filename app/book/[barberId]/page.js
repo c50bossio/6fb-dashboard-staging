@@ -20,10 +20,10 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import Head from 'next/head'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { useState, useEffect, useMemo, Suspense } from 'react'
-import { generatePageTitle, generateMetaDescription } from '../../../lib/seo-utils'
 import BookingFlowOrchestrator from '../../../components/booking/BookingFlowOrchestrator'
 import { useRealtimeAvailability } from '../../../components/booking/RealtimeAvailabilityChecker'
 import { getCachedFeatureFlags } from '../../../lib/feature-flags'
+import { generatePageTitle, generateMetaDescription } from '../../../lib/seo-utils'
 
 function BookingPageContent() {
   const params = useParams()

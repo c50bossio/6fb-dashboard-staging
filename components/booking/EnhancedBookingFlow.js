@@ -18,9 +18,9 @@ import {
   PhoneIcon
 } from '@heroicons/react/24/outline'
 import { CheckIcon, HeartIcon } from '@heroicons/react/24/solid'
+import { motion, AnimatePresence } from 'framer-motion'
 import Cookies from 'js-cookie'
 import { useState, useEffect, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 
 // Enhanced service images with better categorization
 const getServiceImage = (category, serviceName) => {

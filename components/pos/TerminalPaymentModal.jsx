@@ -1,11 +1,11 @@
 'use client'
 
+import { Loader2, Zap, CheckCircle2, XCircle, AlertCircle, Wifi, WifiOff, CreditCard, Smartphone } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Loader2, Zap, CheckCircle2, XCircle, AlertCircle, Wifi, WifiOff, CreditCard, Smartphone } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 
 export function TerminalPaymentModal({

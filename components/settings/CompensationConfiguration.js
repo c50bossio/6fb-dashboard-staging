@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
+import { getTenant } from '@/lib/tenant-resolver-client'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
@@ -56,8 +57,8 @@ export default function CompensationConfiguration() {
     try {
       setLoading(true)
       
-      // Get barbershop ID
-      const shopId = profile?.shop_id || profile?.barbershop_id
+      // Use getTenant() to get barbershop ID
+      const { barbershopId: shopId } = await getTenant(profile.id, { supabase })
       if (!shopId) {
         toast.error('No barbershop found')
         return

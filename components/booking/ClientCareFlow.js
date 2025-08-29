@@ -22,8 +22,9 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { Textarea } from '@/components/ui/Textarea'
-import ClientHistoryTracker from './ClientHistoryTracker'
+import { getTenant } from '@/lib/tenant-resolver-client'
 import { useAuth } from '../SupabaseAuthProvider'
+import ClientHistoryTracker from './ClientHistoryTracker'
 
 /**
  * ClientCareFlow - Relationship-focused client re-engagement system
@@ -156,14 +157,15 @@ export default function ClientCareFlow({
       return
     }
 
-    // Get barbershop_id from profile
-    const barbershopId = profile?.shop_id || profile?.barbershop_id
-    if (!barbershopId) {
-      setError('No barbershop associated with your account')
-      return
-    }
-
     try {
+      // Use getTenant() to get barbershop ID
+      const { barbershopId } = await getTenant(profile.id, { supabase: useAuth().supabase })
+      
+      if (!barbershopId) {
+        setError('No barbershop associated with your account')
+        return
+      }
+
       setLoadingSearch(true)
       setError(null)
 

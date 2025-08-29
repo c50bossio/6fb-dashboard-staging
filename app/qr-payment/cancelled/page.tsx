@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { XCircle, ArrowLeft, RefreshCw, Store } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 
 export default function QRPaymentCancelledPage() {
   const searchParams = useSearchParams()

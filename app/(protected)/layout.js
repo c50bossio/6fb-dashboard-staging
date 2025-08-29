@@ -1,23 +1,18 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useEffect } from 'react'
 import DashboardHeader from '../../components/dashboard/DashboardHeader'
 import FloatingAIChat from '../../components/FloatingAIChat'
 import Navigation from '../../components/Navigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
-import { useAuth } from '../../components/SupabaseAuthProvider'
+import { useAuth } from '../../components/AuthProvider'
+import { DashboardPerspectiveProvider } from '../../contexts/DashboardPerspectiveContext'
 import { GlobalDashboardProvider } from '../../contexts/GlobalDashboardContext'
 import { NavigationProvider, useNavigation } from '../../contexts/NavigationContext'
 import { TenantProvider } from '../../contexts/TenantContext'
-import { DashboardPerspectiveProvider } from '../../contexts/DashboardPerspectiveContext'
-import dynamic from 'next/dynamic'
 // import { Toaster } from 'react-hot-toast'
 
-// Only load performance monitor in development
-const ContextPerformanceMonitor = dynamic(
-  () => import('../../components/dev/ContextPerformanceMonitor'),
-  { ssr: false }
-)
 
 function ProtectedLayoutContent({ children }) {
   const { isCollapsed } = useNavigation()
@@ -56,10 +51,6 @@ function ProtectedLayoutContent({ children }) {
         <FloatingAIChat />
       </div>
       
-      {/* Context Performance Monitor - Development only */}
-      {process.env.NODE_ENV === 'development' && (
-        <ContextPerformanceMonitor />
-      )}
       
       {/* Toast notifications for the entire app */}
       {/* <Toaster 

@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { createClient } from '@supabase/supabase-js'
 import { useState, useEffect } from 'react'
+import { getTenant } from '@/lib/tenant-resolver-client'
 import { useAuth } from '../SupabaseAuthProvider'
 
 /**
@@ -34,43 +35,53 @@ export default function DataImportWidget({ profile, onStartImport }) {
   useEffect(() => {
     const checkShouldShowWidget = async () => {
       // Basic requirements check
-      if (!profile?.onboarding_completed || 
-          !(profile?.shop_id || profile?.barbershop_id)) {
+      if (!profile?.onboarding_completed || !profile?.id) {
         setShowWidget(false)
         return
       }
       
-      const barbershopId = profile?.shop_id || profile?.barbershop_id
-      
-      // Check if customers already exist for this barbershop
-      const { data: existingCustomers, error } = await supabase
-        .from('customers')
-        .select('id')
-        .eq('barbershop_id', barbershopId)
-        .limit(1)
-      
-      // If customers exist, don't show the import widget
-      if (!error && existingCustomers && existingCustomers.length > 0) {
-        setShowWidget(false)
-        return
-      }
-      
-      // No customers exist, show the widget
-      setShowWidget(true)
-      
-      // Check for ongoing import progress
-      const savedProgress = localStorage.getItem('data_import_progress')
-      if (savedProgress) {
-        try {
-          setImportProgress(JSON.parse(savedProgress))
-        } catch (e) {
-          console.warn('Invalid import progress data')
+      try {
+        // Use getTenant() to get barbershop ID
+        const { barbershopId } = await getTenant(profile.id, { supabase })
+        
+        if (!barbershopId) {
+          setShowWidget(false)
+          return
         }
+      
+        // Check if customers already exist for this barbershop
+        const { data: existingCustomers, error } = await supabase
+          .from('customers')
+          .select('id')
+          .eq('barbershop_id', barbershopId)
+          .limit(1)
+        
+        // If customers exist, don't show the import widget
+        if (!error && existingCustomers && existingCustomers.length > 0) {
+          setShowWidget(false)
+          return
+        }
+        
+        // No customers exist, show the widget
+        setShowWidget(true)
+        
+        // Check for ongoing import progress
+        const savedProgress = localStorage.getItem('data_import_progress')
+        if (savedProgress) {
+          try {
+            setImportProgress(JSON.parse(savedProgress))
+          } catch (e) {
+            console.warn('Invalid import progress data')
+          }
+        }
+      } catch (error) {
+        console.error('Error getting barbershop ID:', error)
+        setShowWidget(false)
       }
     }
     
     checkShouldShowWidget()
-  }, [profile])
+  }, [profile, supabase])
   
   const handleStartImport = () => {
     // Track the start of import flow

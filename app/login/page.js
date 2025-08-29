@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useAuth } from '@/components/AuthProvider'
 import { LogoHeader } from '@/components/ui/Logo'
 import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
 
@@ -23,7 +23,7 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const router = useRouter()
-  const { signIn, signUp, resetPassword, signInWithGoogle } = useAuth()
+  const { supabase } = useAuth()
   
   // Check for OAuth errors on page load - let Supabase handle session detection automatically
   useEffect(() => {
@@ -52,16 +52,8 @@ export default function LoginPage() {
     setError('')
     
     try {
-      // Store the intended destination
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('auth_return_url', '/dashboard')
-      }
-      
-      // Use the centralized auth provider's Google sign-in method
-      // This ensures proper PKCE flow and session management
-      await signInWithGoogle()
-      
-      // OAuth initiated successfully - browser will redirect
+      // Use the OAuth API route for proper server-side handling
+      window.location.href = '/api/auth/google?next=/dashboard'
     } catch (err) {
       console.error('OAuth initiation error:', err)
       setError('Failed to connect with Google. Please try again.')

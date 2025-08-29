@@ -9,14 +9,20 @@ from typing import Optional, Dict, Any
 from fastapi import HTTPException, status
 from supabase import create_client, Client
 
-# Initialize Supabase client
+# Initialize Supabase client with lazy initialization
 supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
-if not supabase_url or not supabase_key:
-    raise Exception("Missing Supabase configuration. Check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.")
+supabase: Optional[Client] = None
 
-supabase: Client = create_client(supabase_url, supabase_key)
+def get_supabase_client():
+    """Get Supabase client with lazy initialization"""
+    global supabase
+    if supabase is None:
+        if not supabase_url or not supabase_key:
+            raise Exception("Missing Supabase configuration. Check NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.")
+        supabase = create_client(supabase_url, supabase_key)
+    return supabase
 
 class SupabaseAuth:
     """Handle Supabase authentication and user validation"""
@@ -28,6 +34,7 @@ class SupabaseAuth:
         Returns user data if valid, None if invalid
         """
         try:
+            client = get_supabase_client()
             # For Supabase, we need to verify the JWT using the JWT secret
             # In production, this should use Supabase's JWT verification
             # For now, we'll decode without verification (development only)
@@ -35,8 +42,8 @@ class SupabaseAuth:
             # First try to get user from Supabase auth
             try:
                 # Set the authorization header for the supabase client
-                supabase.auth.set_session(token)
-                user = supabase.auth.get_user()
+                client.auth.set_session(token)
+                user = client.auth.get_user()
                 if user and user.user:
                     return {
                         "sub": user.user.id,
@@ -82,7 +89,8 @@ class SupabaseAuth:
         Get user profile from Supabase profiles table
         """
         try:
-            response = supabase.table('profiles').select('*').eq('id', user_id).execute()
+            client = get_supabase_client()
+            response = client.table('profiles').select('*').eq('id', user_id).execute()
             if response.data and len(response.data) > 0:
                 return response.data[0]
             return None
@@ -96,8 +104,9 @@ class SupabaseAuth:
         Get user's barbershop information from profiles and barbershops tables
         """
         try:
+            client = get_supabase_client()
             # First get the user's profile to get shop_id
-            profile_response = supabase.table('profiles').select('shop_id').eq('id', user_id).execute()
+            profile_response = client.table('profiles').select('shop_id').eq('id', user_id).execute()
             
             if not profile_response.data or len(profile_response.data) == 0:
                 print(f"No profile found for user {user_id}")
@@ -109,7 +118,7 @@ class SupabaseAuth:
                 return None
             
             # Now get the barbershop details
-            barbershop_response = supabase.table('barbershops').select('*').eq('id', shop_id).execute()
+            barbershop_response = client.table('barbershops').select('*').eq('id', shop_id).execute()
             
             if barbershop_response.data and len(barbershop_response.data) > 0:
                 return barbershop_response.data[0]

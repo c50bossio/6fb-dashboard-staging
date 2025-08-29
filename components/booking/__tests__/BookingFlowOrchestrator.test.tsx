@@ -1,6 +1,6 @@
-import React from 'react'
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
 import { jest } from '@jest/globals'
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
+import React from 'react'
 import BookingFlowOrchestrator, { 
   useDeviceDetection, 
   BookingErrorBoundary 

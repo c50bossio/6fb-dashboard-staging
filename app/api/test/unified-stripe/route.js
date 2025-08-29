@@ -55,7 +55,7 @@ export async function POST(request) {
     const { default: unifiedStripeManager } = await import('@/lib/stripe/UnifiedStripeManager')
     
     // Test method execution (this will likely fail due to missing auth/data, but we can see how it fails)
-    let methodTestResults = {}
+    const methodTestResults = {}
     
     try {
       const status = await unifiedStripeManager.getUnifiedStatus(testBarbershopId)

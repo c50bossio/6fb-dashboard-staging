@@ -1,7 +1,7 @@
 'use client'
 
-import React, { Component, createContext, useContext, useState, useEffect } from 'react'
 import { ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import React, { Component, createContext, useContext, useState, useEffect } from 'react'
 
 /**
  * Production-ready error boundary system for feature flags

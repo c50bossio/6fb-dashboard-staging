@@ -1,19 +1,19 @@
 'use client'
 
+import { ShoppingCart, Package, Search, Plus, Minus, Receipt, CreditCard, Link, Mail, MessageCircle, QrCode, Zap, Settings } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { ShoppingCart, Package, Search, Plus, Minus, Receipt, CreditCard, Link, Mail, MessageCircle, QrCode, Zap, Settings } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { QRPaymentModal } from './QRPaymentModal'
-import { TerminalPaymentModal } from './TerminalPaymentModal'
-import { StripeTerminalSetup } from './StripeTerminalSetup'
 import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
+import { QRPaymentModal } from './QRPaymentModal'
+import { StripeTerminalSetup } from './StripeTerminalSetup'
+import { TerminalPaymentModal } from './TerminalPaymentModal'
 
 interface Product {
   id: string

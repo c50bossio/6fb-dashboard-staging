@@ -5,12 +5,15 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
+import { getTenant } from '@/lib/tenant-resolver-client'
+import { createClient } from '@/lib/supabase/client'
 
 export default function PaymentSetupAlert() {
   const [showAlert, setShowAlert] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const [setupStatus, setSetupStatus] = useState(null)
   const { user, profile } = useAuth()
+  const supabase = createClient()
   
   useEffect(() => {
     const checkPaymentSetup = async () => {
@@ -28,8 +31,16 @@ export default function PaymentSetupAlert() {
         return
       }
       
-      // Determine barbershop ID
-      const shopId = profile.shop_id || profile.barbershop_id
+      // Get barbershop ID using unified tenant resolver
+      let shopId
+      try {
+        const { barbershopId } = await getTenant(profile.id, { supabase })
+        shopId = barbershopId
+      } catch (error) {
+        console.error('Error getting barbershop ID:', error)
+        return
+      }
+      
       if (!shopId) return
       
       try {

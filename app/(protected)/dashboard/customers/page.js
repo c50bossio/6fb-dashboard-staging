@@ -23,6 +23,18 @@ import { useSearchParams } from 'next/navigation'
 import React, { useState, useEffect, Suspense, useMemo } from 'react'
 import { toast } from 'react-hot-toast'
 
+import { CustomersHeader } from '@/components/layout/UnifiedDashboardHeader'
+import { useBusinessContext } from '@/hooks/useBusinessContext'
+import { 
+  useCustomers, 
+  useCustomerSearch, 
+  useCustomersWithRealtime,
+  useCreateCustomer,
+  useUpdateCustomer,
+  useCustomerCount,
+  useAllCustomers,
+  useCustomerLoyaltyStats
+} from '@/hooks/useCustomersQuery'
 import { isTier } from '@/lib/subscription-tiers'
 import { 
   CustomerIntelligenceDashboard,
@@ -46,20 +58,8 @@ import SortOptions from '../../../../components/customers/SortOptions'
 import PlatformTailoredImport from '../../../../components/onboarding/PlatformTailoredImport'
 import { AnimatedContainer, StaggeredList } from '../../../../utils/animations'
 import { fuzzySearch } from '../../../../utils/fuzzySearch'
-import { CustomersHeader } from '@/components/layout/UnifiedDashboardHeader'
 
 // React Query hooks
-import { 
-  useCustomers, 
-  useCustomerSearch, 
-  useCustomersWithRealtime,
-  useCreateCustomer,
-  useUpdateCustomer,
-  useCustomerCount,
-  useAllCustomers,
-  useCustomerLoyaltyStats
-} from '@/hooks/useCustomersQuery'
-import { useBusinessContext } from '@/hooks/useBusinessContext'
 
 function CustomersPageContent() {
   const searchParams = useSearchParams()

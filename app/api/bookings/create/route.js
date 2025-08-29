@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import NotificationService from '@/lib/notifications/notification-service.js'
 import { createClient } from '../../../../lib/supabase/server'
 
 // Import the real notification service
-import NotificationService from '@/lib/notifications/notification-service.js'
 
 // Calendar integration temporarily disabled for deployment
 const calendarIntegrationService = { createAppointmentEvent: async () => ({ success: false, message: 'Calendar integration disabled for deployment' }) }

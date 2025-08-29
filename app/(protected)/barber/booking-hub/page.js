@@ -3,12 +3,11 @@
 import { 
   LinkIcon,
   QrCodeIcon,
-  GlobeAltIcon,
   CodeBracketIcon,
   ChartBarIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 import AnalyticsTab from '../../../../components/barber/booking-hub/AnalyticsTab'
 import EmbedWidgetsTab from '../../../../components/barber/booking-hub/EmbedWidgetsTab'

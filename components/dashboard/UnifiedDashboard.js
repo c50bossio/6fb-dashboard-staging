@@ -22,12 +22,13 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 
 // React Query hooks replacing GlobalDashboardContext
+import { createBarbershopForOwner } from '@/lib/barbershop-helper'
+import { getTenant } from '@/lib/tenant-resolver-client'
+import { useDashboardPerspective } from '../../contexts/DashboardPerspectiveContext'
+import { useAppointments, useTodayAppointments } from '../../hooks/useAppointments'
 import { useBusinessContext, useCurrentShopId } from '../../hooks/useBusinessContext'
 import { useShopData, useShopDashboard } from '../../hooks/useShopData'
-import { useAppointments, useTodayAppointments } from '../../hooks/useAppointments'
 import { useStaff, useActiveStaff } from '../../hooks/useStaffQuery'
-import { createBarbershopForOwner } from '@/lib/barbershop-helper'
-import { useDashboardPerspective } from '../../contexts/DashboardPerspectiveContext'
 import ActionCenter from './ActionCenter'
 import AICoachPanel from './AICoachPanel'
 import AnalyticsPanel from './AnalyticsPanel'
@@ -104,10 +105,32 @@ export default function UnifiedDashboard({ user, profile }) {
   const { businessContext, user: contextUser, profile: contextProfile, shopId, isLoading: contextLoading } = useBusinessContext()
   const currentShopId = useCurrentShopId()
   
-  // Use the automatically detected shop ID or fallback to props
-  const effectiveShopId = currentShopId || profile?.shop_id || profile?.barbershop_id
   const effectiveUser = contextUser || user
   const effectiveProfile = contextProfile || profile
+  
+  // Use getTenant() to resolve shop ID
+  const [effectiveShopId, setEffectiveShopId] = useState(currentShopId)
+  
+  useEffect(() => {
+    const resolveShopId = async () => {
+      if (currentShopId) {
+        setEffectiveShopId(currentShopId)
+        return
+      }
+      
+      if (effectiveProfile?.id) {
+        try {
+          const { barbershopId } = await getTenant(effectiveProfile.id, { supabase: businessContext?.supabase })
+          setEffectiveShopId(barbershopId)
+        } catch (error) {
+          console.error('Error getting barbershop ID:', error)
+          setEffectiveShopId(null)
+        }
+      }
+    }
+    
+    resolveShopId()
+  }, [currentShopId, effectiveProfile?.id, businessContext?.supabase])
   
   // Dashboard data hooks
   const { 

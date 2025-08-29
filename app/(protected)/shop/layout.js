@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import TierProtection from '@/components/TierProtection'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import TierProtection from '@/components/TierProtection'
 
 /**
  * Shop Layout - Requires shop_owner tier or higher

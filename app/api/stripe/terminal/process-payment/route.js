@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { stripeConnectService } from '@/services/stripe-connect-service'
 import Stripe from 'stripe'
+import { createClient } from '@/lib/supabase/server'
 import { 
   PaymentResponseFormatters,
   formatPaymentStatusResponse,
@@ -10,6 +9,7 @@ import {
   createAuthErrorResponse,
   createNotFoundErrorResponse
 } from '@/lib/unified-pos-response-handler'
+import { stripeConnectService } from '@/services/stripe-connect-service'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',

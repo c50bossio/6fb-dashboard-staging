@@ -16,8 +16,8 @@ import {
   FunnelIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { useState, useEffect } from 'react'
 
 // Lazy load heavy chart components to reduce initial bundle size
 const LazyLineChart = dynamic(() => 
@@ -123,9 +123,9 @@ const LazyLegend = dynamic(() =>
   import('recharts').then(module => ({ default: module.Legend })),
   { ssr: false }
 )
+import { AnalyticsHeader } from '@/components/layout/UnifiedDashboardHeader'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
-import { AnalyticsHeader } from '@/components/layout/UnifiedDashboardHeader'
 
 export default function ShopAnalytics() {
   const { user, profile } = useAuth()

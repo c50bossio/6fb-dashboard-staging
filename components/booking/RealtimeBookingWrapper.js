@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { 
   ExclamationTriangleIcon,
   CheckCircleIcon,
@@ -13,6 +11,8 @@ import {
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 // Lazy load booking components for better performance
 const PublicBookingFlow = React.lazy(() => import('./PublicBookingFlow'))
@@ -225,7 +225,7 @@ export default function RealtimeBookingWrapper({
         supabase
           .from('bookings')
           .select('id, start_time, duration_minutes, status, customer_name')
-          .eq('shop_id', barbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('barber_id', preselectedBarber || 'any')
           .gte('start_time', new Date(selectedDate).toISOString().split('T')[0])
           .lt('start_time', new Date(selectedDate.getTime() + 24*60*60*1000).toISOString())
@@ -379,7 +379,7 @@ export default function RealtimeBookingWrapper({
       const { data: conflicts } = await supabase
         .from('bookings')
         .select('id, start_time, duration_minutes, customer_name')
-        .eq('shop_id', barbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('barber_id', preselectedBarber || 'any')
         .gte('start_time', slotStart.toISOString())
         .lt('start_time', slotEnd.toISOString())
@@ -389,7 +389,7 @@ export default function RealtimeBookingWrapper({
       const { data: overlapping } = await supabase
         .from('bookings')
         .select('id, start_time, duration_minutes, customer_name')
-        .eq('shop_id', barbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('barber_id', preselectedBarber || 'any')
         .in('status', ['confirmed', 'checked_in'])
         .filter('start_time', 'lt', slotEnd.toISOString())
@@ -452,7 +452,7 @@ export default function RealtimeBookingWrapper({
           event: '*',
           schema: 'public',
           table: 'bookings',
-          filter: `shop_id=eq.${barbershopId}`
+          filter: `barbershop_id=eq.${barbershopId}`
         },
         (payload) => {
           if (debugMode) {

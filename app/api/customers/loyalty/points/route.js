@@ -47,7 +47,7 @@ export async function GET(request) {
     // Get session from cookies
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    let user = session?.user;
+    const user = session?.user;
     let profile = null;
     
     if (sessionError || !session?.user) {
@@ -254,7 +254,7 @@ export async function POST(request) {
     // Get session from cookies
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    let user = session?.user;
+    const user = session?.user;
     let profile = null;
     
     if (sessionError || !session?.user) {

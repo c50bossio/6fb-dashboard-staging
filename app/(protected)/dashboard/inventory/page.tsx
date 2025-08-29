@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { LocalInventoryManager } from '@/components/inventory/LocalInventoryManager'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RefreshCw, ShoppingCart, Package, Store, TrendingUp, DollarSign, Zap } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { LocalInventoryManager } from '@/components/inventory/LocalInventoryManager'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function InventoryPage() {
   const { user, profile } = useAuth()

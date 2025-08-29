@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import { checkBarbershopAccess } from '../../../../../lib/tenant-resolver.js'
 
 /**
  * GET /api/stripe/unified/status
@@ -33,19 +34,23 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user's profile and verify barbershop access
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, shop_id, barbershop_id, role')
-      .eq('id', session.user.id)
-      .single()
-
-    const hasAccess = profile?.shop_id === barbershopId || 
-                     profile?.barbershop_id === barbershopId ||
-                     profile?.role === 'SUPER_ADMIN'
-
-    if (!hasAccess) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    // Verify barbershop access using unified tenant resolver
+    const accessResult = await checkBarbershopAccess(session.user.id, barbershopId, { supabase })
+    
+    // Also check for SUPER_ADMIN role
+    if (!accessResult.hasAccess) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+      
+      if (profile?.role !== 'SUPER_ADMIN') {
+        return NextResponse.json({ 
+          error: 'Access denied',
+          details: accessResult.metadata 
+        }, { status: 403 })
+      }
     }
 
     // Get comprehensive Stripe status

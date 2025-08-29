@@ -16,8 +16,16 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useCallback, useMemo, useRef } from 'react'
 import { toast } from 'react-hot-toast'
+import { StaffHeader } from '@/components/layout/UnifiedDashboardHeader'
 import Button from '@/components/ui/Button'
 import { Card } from "@/components/ui/card.jsx"
+import { useBusinessContext, useCurrentShopId } from '@/hooks/useBusinessContext'
+import { 
+  useStaffWithRealtime, 
+  useCreateStaffMember, 
+  useUpdateStaffMember, 
+  useDeactivateStaffMember 
+} from '@/hooks/useStaffQuery'
 import { getDisplayName, nameMatches } from '@/lib/name-utils'
 import { formatCurrency } from '@/lib/utils'
 import PayrollDashboard from '../payroll/PayrollDashboard'
@@ -25,16 +33,8 @@ import AddStaffModal from './AddStaffModal'
 import StaffAvailabilityEditor from './StaffAvailabilityEditor'
 import StaffDetailModal from './StaffDetailModal'
 import StaffPerformanceView from './StaffPerformanceView'
-import { StaffHeader } from '@/components/layout/UnifiedDashboardHeader'
 
 // React Query hooks
-import { 
-  useStaffWithRealtime, 
-  useCreateStaffMember, 
-  useUpdateStaffMember, 
-  useDeactivateStaffMember 
-} from '@/hooks/useStaffQuery'
-import { useBusinessContext, useCurrentShopId } from '@/hooks/useBusinessContext'
 
 export default function StaffManagementDashboard() {
   // Get current shop ID and business context

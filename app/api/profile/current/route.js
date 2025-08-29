@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/server'
+import { getTenant } from '@/lib/tenant-resolver'
 
 export async function GET(request) {
   try {
@@ -23,21 +24,8 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    // Get barbershop ID from profile (check both possible field names)
-    let barbershopId = profile.shop_id || profile.barbershop_id
-
-    if (!barbershopId) {
-      // Check if user owns a barbershop
-      const { data: ownedShops } = await supabase
-        .from('barbershops')
-        .select('id')
-        .eq('owner_id', profile.id)
-        .limit(1)
-
-      if (ownedShops && ownedShops.length > 0) {
-        barbershopId = ownedShops[0].id
-      }
-    }
+    // Get barbershop ID using unified tenant resolver
+    const { barbershopId } = await getTenant(profile.id, { supabase })
 
     // For barber role users, check if they are active staff
     let isActiveBarber = false

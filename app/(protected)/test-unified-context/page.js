@@ -1,7 +1,7 @@
 'use client'
 
-import { useGlobalDashboard } from '../../../contexts/GlobalDashboardContext'
 import { useEffect, useState } from 'react'
+import { useGlobalDashboard } from '../../../contexts/GlobalDashboardContext'
 
 export default function TestUnifiedContext() {
   const { 

@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { 
   ClockIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function RealtimeAvailabilityChecker({
   barbershopId,
@@ -203,7 +203,7 @@ export default function RealtimeAvailabilityChecker({
           event: '*',
           schema: 'public',
           table: 'bookings',
-          filter: `barbershop_id=eq.${barbershopId}`
+          filter: `barberbarbershop_id=eq.${barbershopId}`
         },
         (payload) => {
           console.log('Booking change detected:', payload)

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 
 /**
  * AI Chat Interface Component
@@ -68,14 +68,17 @@ export default function ChatInterface({
   // Fetch available agents from API
   const fetchAgents = async () => {
     try {
-      const response = await fetch('/api/v1/ai/agents');
-      if (response.ok) {
-        const data = await response.json();
-        setAgents(data);
-      } else {
-        // Use default agents if API fails
-        setAgents(defaultAgents);
-      }
+      // Import the AI client
+      const { default: aiClient } = await import('@/lib/api/ai-client');
+      const data = await aiClient.getAgents();
+      
+      // Map the response to include avatars
+      const agentsWithAvatars = data.map(agent => ({
+        ...agent,
+        avatar: defaultAgents.find(d => d.id === agent.id)?.avatar || '🤖'
+      }));
+      
+      setAgents(agentsWithAvatars);
     } catch (err) {
       console.error('Failed to fetch agents:', err);
       setAgents(defaultAgents);
@@ -107,26 +110,14 @@ export default function ChatInterface({
     setIsLoading(true);
     
     try {
-      // Call AI API
-      const response = await fetch('/api/v1/ai/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          agent_id: selectedAgent,
-          barbershop_id: barbershopId,
-          conversation_id: conversationId,
-          include_analytics: true
-        })
+      // Use AI client for chat
+      const { default: aiClient } = await import('@/lib/api/ai-client');
+      
+      const data = await aiClient.sendMessage(userMessage, selectedAgent, {
+        barbershopId: barbershopId,
+        conversationId: conversationId,
+        includeAnalytics: true
       });
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-      
-      const data = await response.json();
       
       // Add AI response to chat
       const aiMessage = {

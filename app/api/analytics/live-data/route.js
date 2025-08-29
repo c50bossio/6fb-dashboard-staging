@@ -167,12 +167,12 @@ async function getSupabaseAnalyticsData(barbershopIds, barberIds, format, metric
       transactionsResult,
       servicesResult
     ] = await Promise.all([
-      supabase.from('customers').select('*').in('shop_id', shopIds),
+      supabase.from('customers').select('*').in('barbershop_id', shopIds),
       barberIds.length > 0 
         ? supabase.from('appointments').select('*').in('barbershop_id', shopIds).in('barber_id', barberIds)
         : supabase.from('appointments').select('*').in('barbershop_id', shopIds),
       supabase.from('transactions').select('*').in('barbershop_id', shopIds),
-      supabase.from('services').select('*').in('shop_id', shopIds)
+      supabase.from('services').select('*').in('barbershop_id', shopIds)
     ]);
 
     const customers = customersResult.data || [];

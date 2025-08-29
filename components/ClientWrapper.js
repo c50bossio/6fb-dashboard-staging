@@ -1,15 +1,18 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
+import { useEffect, useMemo } from 'react'
+import { errorHandler } from '../lib/error-handler'
 import errorTracker from '../lib/error-tracker'
-import { getProductionMonitor } from '../lib/production-monitor'
 import { initializeFallbackSystems } from '../lib/fallback-systems'
+import { getProductionMonitor } from '../lib/production-monitor'
+import devErrorSuppressor from '../lib/dev-error-suppressor'
 import { AppErrorBoundary } from './error-boundary'
-import { SupabaseAuthProvider } from './SupabaseAuthProvider'
+import { QueryProvider } from './QueryProvider'
+import { AuthProvider } from './AuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
-import { QueryProvider } from './QueryProvider'
+import AuthErrorBoundary from './AuthErrorBoundary'
 
 // Lazy load non-critical providers
 const ServiceWorkerProvider = dynamic(() => import('./ServiceWorkerProvider'), {
@@ -28,7 +31,12 @@ function CombinedProviders({ children }) {
       AccessibilityProvider,
       ToastProvider,
       QueryProvider,
-      SupabaseAuthProvider
+      // Wrap AuthProvider with AuthErrorBoundary for extra protection
+      ({ children }) => (
+        <AuthErrorBoundary>
+          <AuthProvider>{children}</AuthProvider>
+        </AuthErrorBoundary>
+      )
     ],
     []
   )
@@ -41,6 +49,13 @@ function CombinedProviders({ children }) {
 
 export default function ClientWrapper({ children }) {
   useEffect(() => {
+    // Initialize development error suppression (development only)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🤫 Development error suppressor initialized')
+      // Dev error suppressor is already initialized in its constructor
+      // Just log that it's active
+    }
+    
     // Initialize error tracking in production only
     if (process.env.NODE_ENV === 'production') {
       errorTracker.init({
@@ -63,15 +78,27 @@ export default function ClientWrapper({ children }) {
     // Initialize fallback systems for graceful degradation
     initializeFallbackSystems()
     
+    // Initialize global error handler
+    errorHandler.setupGlobalHandlers()
+    
     // Set up global error handlers
     const originalConsoleError = console.error
     console.error = (...args) => {
       originalConsoleError(...args)
-      // Track console errors in production monitoring
+      // Track console errors in production monitoring with null checks
       if (args[0] instanceof Error) {
         monitor.trackError(args[0], { type: 'console_error', args: args.slice(1) })
+        // Add null check before error handler invocation
+        if (args[0] && errorHandler && typeof errorHandler.handleError === 'function') {
+          errorHandler.handleError(args[0], 'console_error', { args: args.slice(1) })
+        }
       } else if (typeof args[0] === 'string' && args[0].toLowerCase().includes('error')) {
-        monitor.trackError(new Error(args[0]), { type: 'console_error', args: args.slice(1) })
+        const error = new Error(args[0])
+        monitor.trackError(error, { type: 'console_error', args: args.slice(1) })
+        // Add null check before error handler invocation
+        if (error && errorHandler && typeof errorHandler.handleError === 'function') {
+          errorHandler.handleError(error, 'console_error', { args: args.slice(1) })
+        }
       }
     }
     

@@ -1,6 +1,19 @@
 'use client';
 
-import ChatInterface from '@/components/ai/ChatInterface';
+import dynamic from 'next/dynamic';
+
+// Dynamically import ChatInterface to avoid SSR issues with client-side dependencies
+const ChatInterface = dynamic(() => import('@/components/ai/ChatInterface'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[600px] flex items-center justify-center bg-white rounded-lg shadow">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+        <p className="text-gray-500">Loading AI Chat...</p>
+      </div>
+    </div>
+  )
+});
 
 /**
  * AI Chat Page - Standalone page for AI agent interactions

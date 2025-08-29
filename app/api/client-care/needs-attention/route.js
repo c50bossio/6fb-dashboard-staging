@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { getCachedResults, cacheResults } from '@/lib/redis-client'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * GET /api/client-care/needs-attention
@@ -177,7 +177,7 @@ export async function GET(request) {
     }
     
     // Sort by care score (highest first) and apply priority filter
-    let filteredClients = clientsNeedingAttention
+    const filteredClients = clientsNeedingAttention
       .filter(client => priority === 'all' || client.priority === priority)
       .sort((a, b) => (b.care_score || 0) - (a.care_score || 0))
       .slice(0, limit)

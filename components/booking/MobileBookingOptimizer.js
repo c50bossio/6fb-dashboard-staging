@@ -9,8 +9,8 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline'
 import { CheckIcon } from '@heroicons/react/24/solid'
-import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence, PanInfo } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
 
 export default function MobileBookingOptimizer({ 
   services = [], 

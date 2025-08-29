@@ -3,8 +3,8 @@
  * Provides live chat interface with AI agents via WebSocket
  */
 
-import React, { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, MessageSquare, Zap, RotateCcw, DollarSign } from 'lucide-react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useAIChat } from '@/hooks/useAISDK'
 
 const TypingIndicator = ({ agentName }) => (

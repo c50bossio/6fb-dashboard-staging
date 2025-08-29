@@ -261,7 +261,7 @@ export function GlobalDashboardProvider({ children }) {
       dataPromises.services = supabase
         .from('services')
         .select('*')
-        .eq('barbershop_id', context.locationId)
+        .eq('shop_id', context.locationId)
         .eq('is_active', true)
         .order('name')
       
@@ -270,7 +270,7 @@ export function GlobalDashboardProvider({ children }) {
         dataPromises.customers = supabase
           .from('customers')
           .select('*')
-          .eq('barbershop_id', context.locationId)
+          .eq('shop_id', context.locationId)
           .order('name')
       }
       

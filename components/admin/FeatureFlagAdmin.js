@@ -1,8 +1,5 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
-import { createClient } from '../../lib/supabase/client'
-import { FeatureFlagAdmin, FEATURE_FLAGS } from '../../hooks/useFeatureFlag'
 import {
   PlusIcon,
   TrashIcon,
@@ -14,6 +11,9 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
+import React, { useState, useEffect, useCallback } from 'react'
+import { FeatureFlagAdmin, FEATURE_FLAGS } from '../../hooks/useFeatureFlag'
+import { createClient } from '../../lib/supabase/client'
 
 const supabase = createClient()
 

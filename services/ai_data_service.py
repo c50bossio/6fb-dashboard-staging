@@ -8,24 +8,36 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 from supabase import create_client, Client
 
-# Initialize Supabase client
+# Initialize Supabase client with lazy initialization
 supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
-if not supabase_url or not supabase_key:
-    raise Exception("Missing Supabase configuration")
+supabase: Optional[Client] = None
 
-supabase: Client = create_client(supabase_url, supabase_key)
+def get_supabase_client():
+    """Get Supabase client with lazy initialization"""
+    global supabase
+    if supabase is None:
+        if not supabase_url or not supabase_key:
+            raise Exception("Missing Supabase configuration. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.")
+        supabase = create_client(supabase_url, supabase_key)
+    return supabase
 
 class AIDataService:
     """Service to aggregate real barbershop data for AI analysis"""
+    
+    @staticmethod
+    def _get_client():
+        """Helper method to get Supabase client"""
+        return get_supabase_client()
     
     @staticmethod
     async def get_barbershop_context(barbershop_id: str) -> Dict[str, Any]:
         """Get comprehensive barbershop context for AI analysis"""
         try:
             # Get barbershop basic info
-            barbershop_response = supabase.table('barbershops').select('*').eq('id', barbershop_id).execute()
+            client = AIDataService._get_client()
+            barbershop_response = client.table('barbershops').select('*').eq('id', barbershop_id).execute()
             if not barbershop_response.data:
                 return {"error": "Barbershop not found", "barbershop_id": barbershop_id}
             
@@ -60,10 +72,11 @@ class AIDataService:
     async def get_business_metrics(barbershop_id: str) -> Dict[str, Any]:
         """Get business performance metrics"""
         try:
+            client = AIDataService._get_client()
             # Get recent analytics events for revenue tracking
             thirty_days_ago = (datetime.now() - timedelta(days=30)).isoformat()
             
-            analytics_response = supabase.table('analytics_events').select('*').eq('barbershop_id', barbershop_id).gte('created_at', thirty_days_ago).execute()
+            analytics_response = client.table('analytics_events').select('*').eq('barbershop_id', barbershop_id).gte('created_at', thirty_days_ago).execute()
             
             # Calculate basic metrics from available data
             events = analytics_response.data or []
@@ -92,18 +105,19 @@ class AIDataService:
     async def get_staff_info(barbershop_id: str) -> Dict[str, Any]:
         """Get staff and barber information"""
         try:
+            client = AIDataService._get_client()
             # Get barbers
-            barbers_response = supabase.table('barbers').select('*').eq('barbershop_id', barbershop_id).execute()
+            barbers_response = client.table('barbers').select('*').eq('barbershop_id', barbershop_id).execute()
             barbers = barbers_response.data or []
             
             # Get staff if different table exists
-            staff_response = supabase.table('barbershop_staff').select('*').eq('barbershop_id', barbershop_id).execute()
+            staff_response = client.table('barbershop_staff').select('*').eq('barbershop_id', barbershop_id).execute()
             staff = staff_response.data or []
             
             # Get barber services
             barber_services = []
             for barber in barbers:
-                services_response = supabase.table('barber_services').select('*').eq('barber_id', barber['id']).execute()
+                services_response = client.table('barber_services').select('*').eq('barber_id', barber['id']).execute()
                 barber_services.extend(services_response.data or [])
             
             return {
@@ -124,20 +138,21 @@ class AIDataService:
     async def get_customer_insights(barbershop_id: str) -> Dict[str, Any]:
         """Get customer data and insights with intelligence metrics"""
         try:
+            client = AIDataService._get_client()
             # Get customers with intelligence data
-            customers_response = supabase.table('customers').select('*').eq('barbershop_id', barbershop_id).execute()
+            customers_response = client.table('customers').select('*').eq('barbershop_id', barbershop_id).execute()
             customers = customers_response.data or []
             
             # Get customer intelligence data
-            intelligence_response = supabase.table('customer_intelligence').select('*').eq('barbershop_id', barbershop_id).execute()
+            intelligence_response = client.table('customer_intelligence').select('*').eq('barbershop_id', barbershop_id).execute()
             intelligence_data = intelligence_response.data or []
             
             # Get customer segments
-            segments_response = supabase.table('customer_segments').select('*').eq('barbershop_id', barbershop_id).execute()
+            segments_response = client.table('customer_segments').select('*').eq('barbershop_id', barbershop_id).execute()
             segments = segments_response.data or []
             
             # Get loyalty data
-            loyalty_response = supabase.table('customer_loyalty').select('*').eq('barbershop_id', barbershop_id).execute()
+            loyalty_response = client.table('customer_loyalty').select('*').eq('barbershop_id', barbershop_id).execute()
             loyalty_data = loyalty_response.data or []
             
             # Calculate customer insights
@@ -223,13 +238,13 @@ class AIDataService:
             # Get recent appointments
             thirty_days_ago = (datetime.now() - timedelta(days=30)).isoformat()
             
-            appointments_response = supabase.table('appointments').select('*').eq('barbershop_id', barbershop_id).gte('created_at', thirty_days_ago).execute()
+            appointments_response = client.table('appointments').select('*').eq('barbershop_id', barbershop_id).gte('created_at', thirty_days_ago).execute()
             appointments = appointments_response.data or []
             
             # Get appointment details
             appointment_details = []
             for appointment in appointments:
-                details_response = supabase.table('appointment_details').select('*').eq('appointment_id', appointment['id']).execute()
+                details_response = client.table('appointment_details').select('*').eq('appointment_id', appointment['id']).execute()
                 appointment_details.extend(details_response.data or [])
             
             # Calculate patterns
@@ -259,7 +274,7 @@ class AIDataService:
         """Get revenue analysis from multiple sources"""
         try:
             # Try to get payment records if available
-            payment_response = supabase.table('payment_records').select('*').eq('barbershop_id', barbershop_id).execute()
+            payment_response = client.table('payment_records').select('*').eq('barbershop_id', barbershop_id).execute()
             payments = payment_response.data or []
             
             # Calculate revenue metrics
@@ -296,7 +311,7 @@ class AIDataService:
         """Get detailed customer intelligence data for AI analysis"""
         try:
             # Base query for customer intelligence
-            query = supabase.table('customer_intelligence').select('*').eq('barbershop_id', barbershop_id)
+            query = client.table('customer_intelligence').select('*').eq('barbershop_id', barbershop_id)
             
             if customer_id:
                 query = query.eq('customer_id', customer_id)
@@ -305,21 +320,21 @@ class AIDataService:
             intelligence_data = intelligence_response.data or []
             
             # Get related customer data
-            customer_query = supabase.table('customers').select('*').eq('barbershop_id', barbershop_id)
+            customer_query = client.table('customers').select('*').eq('barbershop_id', barbershop_id)
             if customer_id:
                 customer_query = customer_query.eq('id', customer_id)
             customer_response = customer_query.execute()
             customers = customer_response.data or []
             
             # Get loyalty data
-            loyalty_query = supabase.table('customer_loyalty').select('*').eq('barbershop_id', barbershop_id)
+            loyalty_query = client.table('customer_loyalty').select('*').eq('barbershop_id', barbershop_id)
             if customer_id:
                 loyalty_query = loyalty_query.eq('customer_id', customer_id)
             loyalty_response = loyalty_query.execute()
             loyalty_data = loyalty_response.data or []
             
             # Get feedback data
-            feedback_query = supabase.table('customer_feedback').select('*').eq('barbershop_id', barbershop_id)
+            feedback_query = client.table('customer_feedback').select('*').eq('barbershop_id', barbershop_id)
             if customer_id:
                 feedback_query = feedback_query.eq('customer_id', customer_id)
             feedback_response = feedback_query.execute()
@@ -341,7 +356,7 @@ class AIDataService:
     async def get_customer_segments_for_ai(barbershop_id: str) -> Dict[str, Any]:
         """Get customer segments with AI-ready analytics"""
         try:
-            segments_response = supabase.table('customer_segments').select('*').eq('barbershop_id', barbershop_id).execute()
+            segments_response = client.table('customer_segments').select('*').eq('barbershop_id', barbershop_id).execute()
             segments = segments_response.data or []
             
             # Get segment-specific intelligence data
@@ -350,7 +365,7 @@ class AIDataService:
                 segment_id = segment.get('id')
                 if segment_id:
                     # Get customers in this segment
-                    segment_customers_response = supabase.table('customer_segment_memberships')\
+                    segment_customers_response = client.table('customer_segment_memberships')\
                         .select('customer_id')\
                         .eq('segment_id', segment_id)\
                         .execute()
@@ -359,7 +374,7 @@ class AIDataService:
                     
                     if customer_ids:
                         # Get intelligence data for these customers
-                        intelligence_response = supabase.table('customer_intelligence')\
+                        intelligence_response = client.table('customer_intelligence')\
                             .select('*')\
                             .in_('customer_id', customer_ids)\
                             .execute()

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-
+import { getTenant } from '@/lib/tenant-resolver'
 import { createClient } from '@/lib/supabase/server'
 
 const serviceSchema = z.object({
-  shop_id: z.string().uuid(),  // services table uses 'shop_id' not 'barbershop_id'
   name: z.string().min(1).max(255),
   description: z.string().max(500).optional(),
   duration_minutes: z.number().min(15).max(480),
@@ -22,21 +21,33 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user's profile and barbershop access
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', user.email)
+      .single()
+
+    if (profileError || !profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // Get barbershop ID using unified tenant resolver
+    const { barbershopId } = await getTenant(profile.id, { supabase })
+    if (!barbershopId) {
+      return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
+    }
+
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id')
     const category = searchParams.get('category')
     const active_only = searchParams.get('active_only') !== 'false'
 
     let query = supabase
       .from('services')
-      .select('*')  // Simplified - avoid complex joins that may fail
+      .select('*')
+      .eq('barbershop_id', barbershopId)
       .order('category', { ascending: true })
       .order('name', { ascending: true })
-
-    if (barbershop_id) {
-      // Note: services table uses 'shop_id' not 'barbershop_id'
-      query = query.eq('shop_id', barbershop_id)
-    }
     
     if (category) {
       query = query.eq('category', category)
@@ -88,6 +99,23 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user's profile and barbershop access
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', user.email)
+      .single()
+
+    if (profileError || !profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // Get barbershop ID using unified tenant resolver
+    const { barbershopId } = await getTenant(profile.id, { supabase })
+    if (!barbershopId) {
+      return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
+    }
+
     const body = await request.json()
     
     const validationResult = serviceSchema.safeParse(body)
@@ -104,10 +132,11 @@ export async function POST(request) {
       .from('services')
       .insert({
         ...serviceData,
+        barbershop_id: barbershopId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .select('*')  // Simplified - avoid complex joins that may fail
+      .select('*')
       .single()
 
     if (error) {

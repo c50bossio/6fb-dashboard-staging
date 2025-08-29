@@ -26,6 +26,7 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import ConfirmationDialog, { SaveChangesDialog, DiscardChangesDialog } from '@/components/ui/ConfirmationDialog'
 import ImageUpload, { uploadImageToService } from '@/components/ui/ImageUpload'
 import { createClient } from '@/lib/supabase/client'
+import { getTenant } from '@/lib/tenant-resolver-client'
 
 export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
   const { user } = useAuth()
@@ -168,13 +169,22 @@ export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
       // Get user's barbershop
       const { data: profile } = await supabase
         .from('profiles')
-        .select('shop_id, barbershop_id')
+        .select('id')
         .eq('id', user.id)
         .single()
 
-      if (!profile?.shop_id && !profile?.barbershop_id) return
+      if (!profile) return
 
-      const shopId = profile.shop_id || profile.barbershop_id
+      let shopId
+      try {
+        const { barbershopId } = await getTenant(profile.id, { supabase })
+        shopId = barbershopId
+      } catch (error) {
+        console.error('Error getting barbershop ID:', error)
+        return
+      }
+      
+      if (!shopId) return
       
       const { data: barbershop } = await supabase
         .from('barbershops')
@@ -235,15 +245,26 @@ export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
     // Get shop ID
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id, barbershop_id')
+      .select('id')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.shop_id && !profile?.barbershop_id) {
-      throw new Error('No barbershop associated with your account')
+    if (!profile) {
+      throw new Error('Profile not found')
     }
 
-    const shopId = profile.shop_id || profile.barbershop_id
+    let shopId
+    try {
+      const { barbershopId } = await getTenant(profile.id, { supabase })
+      shopId = barbershopId
+    } catch (error) {
+      console.error('Error getting barbershop ID:', error)
+      throw new Error('No barbershop associated with your account')
+    }
+    
+    if (!shopId) {
+      throw new Error('No barbershop associated with your account')
+    }
 
     // Update barbershop
     const { error } = await supabase

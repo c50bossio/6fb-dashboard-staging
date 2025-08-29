@@ -10,9 +10,9 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, Fragment } from 'react'
+import unifiedStaffService from '@/lib/unified-staff-service'
 import { useAuth } from '../SupabaseAuthProvider'
 import AddBarberModal from './AddBarberModal'
-import unifiedStaffService from '@/lib/unified-staff-service'
 
 export default function PerspectiveSelector({ selectedLocation, selectedPerspective, onPerspectiveSelect }) {
   const { user, profile } = useAuth()

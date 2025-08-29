@@ -2,8 +2,8 @@
 
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { queryClient } from '@/lib/query-client'
 import { useEffect } from 'react'
+import { queryClient } from '@/lib/query-client'
 import supabaseService from '@/lib/supabase-service'
 
 /**

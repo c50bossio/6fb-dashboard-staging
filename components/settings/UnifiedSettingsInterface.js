@@ -13,6 +13,7 @@ import {
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import { getTenant } from '@/lib/tenant-resolver-client'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from '../ui/card'
@@ -30,6 +31,7 @@ export default function UnifiedSettingsInterface() {
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState({})
   const [activeCategory, setActiveCategory] = useState('business_info')
+  const [barbershopId, setBarbershopId] = useState(null)
   
   // Settings categories for navigation
   const categories = [
@@ -42,18 +44,32 @@ export default function UnifiedSettingsInterface() {
     { id: 'appearance', name: 'Appearance', icon: PaintBrushIcon }
   ]
 
+  // Resolve barbershop ID using getTenant
   useEffect(() => {
-    if (user && profile) {
+    const resolveBarbershopId = async () => {
+      if (profile?.id) {
+        try {
+          const { barbershopId } = await getTenant(profile.id, { supabase })
+          setBarbershopId(barbershopId)
+        } catch (error) {
+          console.error('Error getting barbershop ID:', error)
+          setBarbershopId(null)
+        }
+      }
+    }
+    
+    resolveBarbershopId()
+  }, [profile?.id, supabase])
+
+  useEffect(() => {
+    if (user && profile && barbershopId) {
       loadSettings()
     }
-  }, [user, profile])
+  }, [user, profile, barbershopId])
 
   const loadSettings = async () => {
     setLoading(true)
     try {
-      // Get barbershop data (primary source for business info)
-      const barbershopId = profile?.shop_id || profile?.barbershop_id
-      
       if (barbershopId) {
         const { data: barbershop } = await supabase
           .from('barbershops')
@@ -113,8 +129,6 @@ export default function UnifiedSettingsInterface() {
   const saveSettings = async () => {
     setSaving(true)
     try {
-      const barbershopId = profile?.shop_id || profile?.barbershop_id
-      
       if (barbershopId && settings.business_info) {
         // Update barbershop table with business info
         await supabase
@@ -325,7 +339,7 @@ export default function UnifiedSettingsInterface() {
 
           {activeCategory === 'tips' && (
             <div className="space-y-6">
-              <TipSettings barbershopId={profile?.shop_id || profile?.barbershop_id} />
+              <TipSettings barbershopId={barbershopId} />
             </div>
           )}
 

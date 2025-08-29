@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { stripeConnectService } from '@/services/stripe-connect-service';
 
@@ -41,7 +41,7 @@ export async function POST(request) {
     }
 
     // Check existing financial arrangement
-    let { data: arrangement } = await supabase
+    const { data: arrangement } = await supabase
       .from('financial_arrangements')
       .select('*')
       .eq('barber_id', barberId)

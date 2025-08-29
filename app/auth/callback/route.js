@@ -1,43 +1,40 @@
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
 export async function GET(request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const origin = requestUrl.origin
+  const next = requestUrl.searchParams.get('next') ?? '/dashboard'
 
   if (code) {
     const cookieStore = cookies()
     
-    // Create the redirect response FIRST
-    const redirectUrl = `${origin}/dashboard`
-    const response = NextResponse.redirect(redirectUrl)
-    
-    // Create Supabase client that will set cookies on the RESPONSE
+    // Following Supabase best practices - create supabase client with proper cookie handling
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       {
         cookies: {
-          get(name) {
-            return cookieStore.get(name)?.value
+          getAll() {
+            return cookieStore.getAll()
           },
-          set(name, value, options) {
-            // Set cookie on both the cookieStore AND the response
-            cookieStore.set({ name, value, ...options })
-            response.cookies.set({ name, value, ...options })
-          },
-          remove(name, options) {
-            // Remove cookie from both
-            cookieStore.set({ name, value: '', ...options })
-            response.cookies.set({ name, value: '', ...options })
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                cookieStore.set(name, value, options)
+              })
+            } catch (error) {
+              // The `setAll` method was called from a Server Component.
+              // This can be ignored if you have middleware refreshing
+              // user sessions.
+            }
           },
         },
       }
     )
 
-    // Exchange code for session - cookies will be set on the response
+    // Exchange code for session
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
@@ -86,12 +83,12 @@ export async function GET(request) {
           }
         }
         
-        // Return the response with cookies attached
-        return response
+        // URL to redirect to after sign in process completes
+        return NextResponse.redirect(new URL(next, requestUrl.origin))
       }
     }
   }
 
   // Auth failed or no code - redirect to login
-  return NextResponse.redirect(`${origin}/login`)
+  return NextResponse.redirect(new URL('/login', requestUrl.origin))
 }

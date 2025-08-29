@@ -3,7 +3,6 @@
  * Real-time business metrics and analytics display
  */
 
-import React, { useState, useEffect } from 'react'
 import { 
   TrendingUp, 
   Calendar, 
@@ -16,6 +15,7 @@ import {
   Eye,
   Clock
 } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
 import { useDashboardMetrics, useEnhancedWebSocket } from '@/hooks/useEnhancedWebSocket'
 
 const MetricCard = ({ title, value, change, icon: Icon, trend = 'neutral', isLive = false, lastUpdate }) => {

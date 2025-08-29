@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { ExclamationTriangleIcon, XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { getSystemStatus, getDegradedModeFeatures } from '@/lib/fallback-systems'
 
 export default function SystemStatusBanner() {

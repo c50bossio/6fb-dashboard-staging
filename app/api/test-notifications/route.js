@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import EmailService from '@/lib/notifications/email-service.js'
 import SMSService from '@/lib/notifications/sms-service.js'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * POST /api/test-notifications

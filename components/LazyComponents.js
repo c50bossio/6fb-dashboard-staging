@@ -5,8 +5,8 @@
  */
 
 import dynamic from 'next/dynamic'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useState, useEffect } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const ComponentLoader = () => (
   <div className="space-y-4 p-4">

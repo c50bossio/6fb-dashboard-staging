@@ -4,8 +4,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import unifiedStaffService from '@/lib/unified-staff-service';
 import { createClient } from '@/lib/supabase/server';
+import unifiedStaffService from '@/lib/unified-staff-service';
 
 export const runtime = 'nodejs'
 

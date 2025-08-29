@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getTenant } from '@/lib/tenant-resolver'
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -26,27 +27,21 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const periodDays = searchParams.get('period_days') || '30'
 
-    // CRITICAL FIX: Get barbershop ID for user
-    const { data: profile } = await supabase
+    // Get user's profile and barbershop access
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('shop_id, barbershop_id, role')
-      .eq('id', user.id)
+      .select('*')
+      .eq('email', user.email)
       .single()
 
-    let barbershopId = profile?.shop_id || profile?.barbershop_id
-    
-    // If no direct barbershop association, check if user is a staff member
-    if (!barbershopId && profile?.role === 'BARBER') {
-      const { data: staffRecord } = await supabase
-        .from('staff')
-        .select('barbershop_id')
-        .eq('user_id', user.id)
-        .single()
-      barbershopId = staffRecord?.barbershop_id
+    if (profileError || !profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
+    // Get barbershop ID using unified tenant resolver
+    const { barbershopId } = await getTenant(profile.id, { supabase })
     if (!barbershopId) {
-      return NextResponse.json({ error: 'No barbershop associated with user' }, { status: 403 })
+      return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
     }
 
     // Calculate date range

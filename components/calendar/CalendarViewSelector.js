@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
-import { useAuth } from '../SupabaseAuthProvider'
 import UnifiedContextSelector from '../shared/UnifiedContextSelector'
+import { useAuth } from '../SupabaseAuthProvider'
 
 export default function CalendarViewSelector({
   onViewChange,

@@ -23,13 +23,13 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
+import { ServicesHeader } from '@/components/layout/UnifiedDashboardHeader'
 import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import ServiceTemplateSelector from '@/components/shop/ServiceTemplateSelector'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import ServiceImageUpload from '@/components/ui/ServiceImageUpload'
-import { createClient } from '@/lib/supabase/client'
 import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
-import { ServicesHeader } from '@/components/layout/UnifiedDashboardHeader'
+import { createClient } from '@/lib/supabase/client'
 
 export default function ShopServicesAndPricing() {
   const { user, profile } = useAuth()

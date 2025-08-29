@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { getCacheStats, healthCheck } from '@/lib/redis-client'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * GET /api/client-care/cache-stats
