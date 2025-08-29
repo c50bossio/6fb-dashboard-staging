@@ -498,7 +498,7 @@ class NotificationService {
         }
       }
 
-       + (upcoming2h?.length || 0)} reminder notifications`)
+      console.log(`Processed ${(upcoming24h?.length || 0) + (upcoming2h?.length || 0)} reminder notifications`)
 
       return {
         success: true,
