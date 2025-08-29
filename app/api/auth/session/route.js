@@ -1,39 +1,15 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { createClient } from '../../../../lib/supabase/server-client'
 export const runtime = 'nodejs'
 
 export async function GET(request) {
-  const cookieStore = cookies()
   const { searchParams } = new URL(request.url)
   const includeProfile = searchParams.get('profile') === 'true'
   const validateConsistency = searchParams.get('validate') === 'true'
   const includeTokens = searchParams.get('tokens') === 'true'
   
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        get(name) {
-          const cookie = cookieStore.get(name)
-          return cookie?.value
-        },
-        set(name, value, options) {
-          try {
-            cookieStore.set({ name, value, ...options })
-          } catch (error) {
-          }
-        },
-        remove(name, options) {
-          try {
-            cookieStore.set({ name, value: '', ...options })
-          } catch (error) {
-          }
-        },
-      },
-    }
-  )
+  // Use the enhanced server client with proper cookie handling
+  const supabase = await createClient()
   
   try {
     
@@ -156,36 +132,12 @@ export async function GET(request) {
 
 // Add POST endpoint for session recovery operations
 export async function POST(request) {
-  const cookieStore = cookies()
-  
   try {
     const body = await request.json()
     const { action } = body
     
-    
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          get(name) {
-            return cookieStore.get(name)?.value
-          },
-          set(name, value, options) {
-            try {
-              cookieStore.set({ name, value, ...options })
-            } catch (error) {
-            }
-          },
-          remove(name, options) {
-            try {
-              cookieStore.set({ name, value: '', ...options })
-            } catch (error) {
-            }
-          },
-        },
-      }
-    )
+    // Use the enhanced server client with proper cookie handling
+    const supabase = await createClient()
     
     switch (action) {
       case 'refresh':

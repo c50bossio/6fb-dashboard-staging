@@ -646,7 +646,7 @@ test.describe('Performance and Load Tests', () => {
     const maxResponseTime = Math.max(...responseTimes);
     const avgResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
     
-    }ms`);
+    console.log(`Performance Test Results: Max: ${maxResponseTime.toFixed(2)}ms, Avg: ${avgResponseTime.toFixed(2)}ms`);
 
     expect(maxResponseTime).toBeLessThan(10000); // 10 seconds max
     expect(avgResponseTime).toBeLessThan(5000);  // 5 seconds average

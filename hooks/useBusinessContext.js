@@ -7,7 +7,15 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo } from 'react'
 import supabaseService from '@/lib/supabase-service'
-import { getCurrentUser, getSupabaseClient } from '@/lib/supabase-client'
+import { createClient } from '@/lib/supabase/browser-client'
+
+// Adapter functions
+const getCurrentUser = async () => {
+  const client = createClient()
+  const { data: { user } } = await client.auth.getUser()
+  return user
+}
+const getSupabaseClient = createClient
 
 // Query keys
 export const businessContextKeys = {

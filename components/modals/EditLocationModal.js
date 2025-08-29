@@ -2,7 +2,7 @@
 
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, BuildingOfficeIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/browser-client'
 import { Fragment, useState, useEffect } from 'react'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import { useAuth } from '../SupabaseAuthProvider'
@@ -26,10 +26,7 @@ export default function EditLocationModal({ isOpen, onClose, location }) {
     description: ''
   })
   
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  const supabase = createClient()
   
   // Populate form when location changes
   useEffect(() => {

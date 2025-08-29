@@ -99,6 +99,7 @@ const Logo = ({
           height={config.height}
           priority={priority}
           className={`object-contain ${className ? 'max-w-full max-h-full' : ''}`}
+          style={{ width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: '100%' }}
           onError={() => setImageError(true)}
           onLoad={() => setImageError(false)}
           placeholder="empty" // Prevent blur placeholder

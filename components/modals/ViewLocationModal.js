@@ -12,7 +12,7 @@ import {
   ClockIcon,
   StarIcon
 } from '@heroicons/react/24/outline'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/browser-client'
 import { Fragment, useState, useEffect } from 'react'
 import EditLocationModal from './EditLocationModal'
 
@@ -21,10 +21,7 @@ export default function ViewLocationModal({ isOpen, onClose, location }) {
   const [locationDetails, setLocationDetails] = useState(null)
   const [loading, setLoading] = useState(true)
   
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  const supabase = createClient()
   
   useEffect(() => {
     if (location && isOpen) {

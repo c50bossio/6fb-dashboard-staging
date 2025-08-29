@@ -5,7 +5,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getWebSocketClient } from '@/lib/enhanced-websocket-client'
-import { getSession } from '@/lib/supabase-client'
+import { createClient } from '@/lib/supabase/browser-client'
+
+// Adapter function
+const getSession = async () => {
+  const client = createClient()
+  const { data: { session } } = await client.auth.getSession()
+  return session
+}
 
 /**
  * Main WebSocket hook with full functionality

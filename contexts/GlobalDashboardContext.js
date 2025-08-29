@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import { useAuth } from '../components/SupabaseAuthProvider'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/browser-client'
 import { getDisplayName, normalizeNameData } from '../lib/name-utils'
 import unifiedStaffService from '../lib/unified-staff-service'
 import contextAwareCache from '../lib/context-aware-cache'
@@ -85,10 +85,7 @@ export function GlobalDashboardProvider({ children }) {
   const [availableBarbers, setAvailableBarbers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  const supabase = useMemo(() => createClient(), [])
 
   // Generate available contexts based on user's locations and role
   const generateAvailableContexts = useCallback((locations, userRole) => {

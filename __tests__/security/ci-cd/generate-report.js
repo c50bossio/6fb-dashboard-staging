@@ -99,7 +99,7 @@ class CICDReportGenerator {
         }
       }
 
-      .length} test categories`);
+    console.log(`📊 Scanned ${inputDirectories.length} test categories`);
 
     } catch (error) {
       console.warn(`⚠️ Could not read input directory: ${error.message}`);

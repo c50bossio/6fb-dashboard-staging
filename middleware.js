@@ -11,7 +11,7 @@ export async function middleware(request) {
     },
   })
 
-  // Create Supabase client with cookie handling for auth refresh
+  // Create Supabase client and refresh session
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -34,53 +34,8 @@ export async function middleware(request) {
     }
   )
 
-  // Refresh session if expired - this is critical for OAuth
+  // This will refresh the session if expired - critical for auth
   await supabase.auth.getSession()
-  
-  // 🔓 Skip additional middleware for auth routes to prevent OAuth interference
-  if (pathname.startsWith('/auth/') || pathname.startsWith('/api/auth/')) {
-    return response
-  }
-  
-  // 🛡️ Block access to sensitive files
-  const blockedPaths = [
-    '/.env',
-    '/.git',
-    '/node_modules',
-    '/.next/cache',
-    '/.next/server'
-  ]
-
-  const isBlockedPath = blockedPaths.some(blocked => 
-    pathname.startsWith(blocked) || pathname === blocked
-  )
-  
-  if (isBlockedPath) {
-    return new NextResponse('Not Found', { status: 404 })
-  }
-
-  // 🛡️ Basic security headers (simplified)
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-Content-Type-Options', 'nosniff')  
-  response.headers.set('X-XSS-Protection', '1; mode=block')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set(
-      'Strict-Transport-Security', 
-      'max-age=31536000; includeSubDomains'
-    )
-  }
-
-  // 🔐 Admin route protection (keep this - it's useful)
-  if (pathname.startsWith('/api/admin')) {
-    const authHeader = request.headers.get('authorization')
-    const sessionCookie = request.cookies.get('session')
-    
-    if (!authHeader && !sessionCookie) {
-      return new NextResponse('Unauthorized', { status: 401 })
-    }
-  }
 
   return response
 }

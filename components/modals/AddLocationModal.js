@@ -2,7 +2,7 @@
 
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/browser-client'
 import { Fragment, useState } from 'react'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import { useAuth } from '../SupabaseAuthProvider'
@@ -24,10 +24,7 @@ export default function AddLocationModal({ isOpen, onClose }) {
     description: ''
   })
   
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  const supabase = createClient()
   
   const handleSubmit = async (e) => {
     e.preventDefault()

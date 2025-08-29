@@ -410,7 +410,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
         expect(error).toBeNull()
         expect(queryTime).toBeLessThan(PRODUCTION_REQUIREMENTS.performance.maxDbQueryTime)
 
-        }ms`)
+        console.log(`Query "${name}" completed in ${queryTime.toFixed(2)}ms`)
       }
     })
 

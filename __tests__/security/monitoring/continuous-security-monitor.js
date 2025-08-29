@@ -602,7 +602,7 @@ export class ContinuousSecurityMonitor extends EventEmitter {
   }
 
   async handleAlertThresholdExceeded(data) {
-    `);
+    console.log(`🚨 Security threshold exceeded: ${data.type}`);
     
     const alert = {
       id: `threshold_${Date.now()}`,

@@ -89,10 +89,9 @@ function ProtectedLayoutContent({ children }) {
 }
 
 export default function ProtectedLayout({ children }) {
-  // Temporarily bypass ProtectedRoute for development
   return (
     <TenantProvider>
-      {/* <ProtectedRoute> */}
+      <ProtectedRoute>
         <NavigationProvider>
           <GlobalDashboardProvider>
             <DashboardPerspectiveProvider>
@@ -100,7 +99,7 @@ export default function ProtectedLayout({ children }) {
             </DashboardPerspectiveProvider>
           </GlobalDashboardProvider>
         </NavigationProvider>
-      {/* </ProtectedRoute> */}
+      </ProtectedRoute>
     </TenantProvider>
   )
 }

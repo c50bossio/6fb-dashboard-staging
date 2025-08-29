@@ -119,53 +119,105 @@ export async function GET(request) {
       }, { status: 503 })
     }
     
-    // Step 2: Get authenticated user with detailed logging and retry logic
-    // This handles cases where the session cookie isn't immediately available after OAuth
+    // Step 2: Enhanced authentication with session retry logic
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔐 Staff API: Starting authentication check...')
+      console.log('🔐 Staff API: Starting enhanced authentication check...')
     }
     
+    let session = null
     let user = null
     let authError = null
     
-    // Try to get user, with one retry if it fails
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    // Enhanced session retrieval with multiple strategies
+    for (let attempt = 1; attempt <= 3; attempt++) {
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🔍 Staff API: Authentication attempt ${attempt}/2`)
+        console.log(`🔍 Staff API: Authentication attempt ${attempt}/3`)
       }
       
-      const result = await supabase.auth.getUser()
-      user = result.data?.user
-      authError = result.error
-      
-      if (user) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`✅ Staff API: User authenticated on attempt ${attempt}:`, {
-            id: user.id,
-            email: user.email,
-            provider: user.app_metadata?.provider
-          })
+      try {
+        // Try getSession first (more reliable for server-side)
+        const sessionResult = await supabase.auth.getSession()
+        session = sessionResult.data?.session
+        authError = sessionResult.error
+        
+        if (session) {
+          user = session.user
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`✅ Staff API: Session authenticated on attempt ${attempt}:`, {
+              id: user.id,
+              email: user.email,
+              provider: user.app_metadata?.provider,
+              hasAccessToken: !!session.access_token,
+              sessionExpiry: session.expires_at
+            })
+          }
+          break
         }
-        break
-      }
-      
-      if (attempt === 1) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('⏳ Staff API: No user on first attempt, retrying after 1000ms...')
+        
+        // If no session, try getUser as fallback
+        if (!session && attempt <= 2) {
+          const userResult = await supabase.auth.getUser()
+          user = userResult.data?.user
+          authError = userResult.error || authError
+          
+          if (user) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`✅ Staff API: User authenticated via getUser on attempt ${attempt}:`, {
+                id: user.id,
+                email: user.email
+              })
+            }
+            break
+          }
         }
-        // Wait a bit for cookie to be available
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        if (authError) {
+          console.warn(`⚠️ Staff API: Auth error on attempt ${attempt}:`, authError.message)
+          
+          // Don't retry certain errors
+          if (authError.message?.includes('JWT') || 
+              authError.message?.includes('expired') ||
+              authError.message?.includes('malformed') ||
+              authError.message?.includes('unauthorized')) {
+            console.log('🚫 Staff API: Not retrying auth error:', authError.message)
+            break
+          }
+        }
+        
+        // Wait before retry with increasing delay
+        if (attempt < 3) {
+          const delay = 500 * attempt
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`⏳ Staff API: Waiting ${delay}ms before retry...`)
+          }
+          await new Promise(resolve => setTimeout(resolve, delay))
+        }
+        
+      } catch (error) {
+        console.error(`❌ Staff API: Exception during auth attempt ${attempt}:`, error.message)
+        authError = error
+        
+        if (attempt < 3) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        }
       }
     }
     
     if (authError) {
-      console.error('❌ Staff API: Authentication error after retries:', authError)
-      return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
+      console.error('❌ Staff API: Authentication failed after all retries:', authError.message)
+      return NextResponse.json({ 
+        error: 'Authentication failed', 
+        details: authError.message,
+        hint: 'Please refresh the page and try again'
+      }, { status: 401 })
     }
     
     if (!user) {
-      console.warn('⚠️ Staff API: No authenticated user found after retries')
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.warn('⚠️ Staff API: No authenticated user found after all attempts')
+      return NextResponse.json({ 
+        error: 'Unauthorized',
+        hint: 'Please log in again'
+      }, { status: 401 })
     }
     
     if (process.env.NODE_ENV === 'development') {

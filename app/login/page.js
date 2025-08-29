@@ -258,6 +258,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="w-full pl-10 pr-4 py-3 bg-sand-50 border border-sand-300 text-olive-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder-olive-400"
               />
             </div>
@@ -273,6 +274,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required={!isSignUp}
                 minLength={6}
+                autoComplete={isSignUp ? "new-password" : "current-password"}
                 className="w-full pl-10 pr-4 py-3 bg-sand-50 border border-sand-300 text-olive-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder-olive-400"
               />
             </div>

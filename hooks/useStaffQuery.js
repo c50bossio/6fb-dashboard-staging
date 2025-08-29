@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import supabaseService from '@/lib/supabase-service'
-import { getSupabaseClient } from '@/lib/supabase-client'
+import { createClient } from '@/lib/supabase/browser-client'
 import { toast } from 'react-hot-toast'
 
 // Query keys for consistent caching
@@ -52,7 +52,7 @@ export function useStaffMember(staffId) {
   return useQuery({
     queryKey: ['staff', 'member', staffId],
     queryFn: async () => {
-      const client = supabaseService.client || getSupabaseClient()
+      const client = supabaseService.client || createClient()
       if (!client) throw new Error('Supabase client not available')
       
       const { data, error } = await client
