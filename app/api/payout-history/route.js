@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * Comprehensive Payout History API Route
  * Provides detailed payout history with advanced filtering, pagination, and real-time status tracking

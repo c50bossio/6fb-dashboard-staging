@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * AI Task Management System
  * Automatically generates and manages business tasks based on analytics and insights

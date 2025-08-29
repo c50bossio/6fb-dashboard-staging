@@ -1,5 +1,5 @@
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * Real-time Dashboard Updates using Server-Sent Events (SSE)
  * Provides live updates for dashboard metrics and performance data

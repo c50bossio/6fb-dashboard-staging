@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * POST /api/alerts/acknowledge
  * Acknowledge and dismiss alerts with user feedback

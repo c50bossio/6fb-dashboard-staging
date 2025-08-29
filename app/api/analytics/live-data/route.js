@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cacheQuery, invalidateCache, getCacheStats } from '../../../../lib/analytics-cache.js';
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 export async function GET(request) {
   try {
     const authHeader = request.headers.get('authorization')

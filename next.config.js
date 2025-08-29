@@ -66,6 +66,15 @@ const nextConfig = {
       ],
     },
   },
+
+  // Configure output for deployment 
+  output: 'standalone',
+  
+  // Dynamic rendering configuration for production
+  ...(process.env.NODE_ENV === 'production' && {
+    // Configure static generation behavior
+    trailingSlash: false,
+  }),
   
   // Redirect all test routes in production
   ...(process.env.NODE_ENV === 'production' && {

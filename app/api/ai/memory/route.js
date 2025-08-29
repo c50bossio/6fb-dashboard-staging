@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * AI Agent Conversation Memory System
  * Stores conversation context and history for each user session

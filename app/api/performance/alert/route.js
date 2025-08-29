@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * Performance Alert API Endpoint
  * Receives Core Web Vitals performance alerts and logs them for monitoring

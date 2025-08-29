@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * Smart Business Monitoring System
  * Analyzes business metrics and generates intelligent alerts and recommendations

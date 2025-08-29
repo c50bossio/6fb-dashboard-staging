@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 const updateAppointmentSchema = z.object({
   scheduled_at: z.string().datetime().optional(),
   duration_minutes: z.number().min(15).max(480).optional(),

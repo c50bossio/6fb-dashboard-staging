@@ -3,7 +3,7 @@ import { getTenant } from '@/lib/tenant-resolver'
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 // FastAPI base URL
 const FASTAPI_BASE_URL = process.env.FASTAPI_URL || 'http://localhost:8001'
 

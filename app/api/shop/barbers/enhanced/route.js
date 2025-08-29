@@ -4,7 +4,7 @@ import { getDisplayName, splitFullName, combineNames, normalizeNameData, createN
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 // GET - Fetch all barbers with complete data
 export async function GET(request) {
   try {

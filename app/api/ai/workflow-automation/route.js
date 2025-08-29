@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import unifiedStaffService from '@/lib/unified-staff-service'
 
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * AI Workflow Automation System
  * Automatically executes business actions based on triggers and conditions

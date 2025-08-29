@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * Advanced Predictive Analytics Engine
  * Provides revenue forecasting, customer behavior prediction, and trend analysis

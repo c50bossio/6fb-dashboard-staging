@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import SMSService from '@/lib/notifications/sms-service'
 // Use Node.js runtime for Twilio compatibility
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY

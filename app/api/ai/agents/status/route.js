@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * AI Agent Status Endpoint
  * Returns the current status of all AI agents and system health

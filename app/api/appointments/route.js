@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 const bookingSchema = z.object({
   barbershop_id: z.string().uuid(),
   client_id: z.string().uuid().optional(),

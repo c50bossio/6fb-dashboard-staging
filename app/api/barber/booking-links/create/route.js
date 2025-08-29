@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 export async function POST(request) {
   // Create Supabase client inside the function to avoid build-time issues
   const supabase = createClient(

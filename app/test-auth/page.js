@@ -1,20 +1,36 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function TestAuth() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
+  const [initialized, setInitialized] = useState(false)
 
-  // Create Supabase client directly - no providers, no complexity
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  )
+  // Create Supabase client only once using useMemo
+  const supabase = useMemo(() => {
+    if (typeof window === 'undefined') return null
+    
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (!url || !key) {
+      console.error('Missing Supabase environment variables')
+      return null
+    }
+    
+    return createBrowserClient(url, key)
+  }, [])
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false)
+      setMessage('Supabase client not initialized')
+      return
+    }
+
     // Check current session
     checkSession()
 
@@ -23,12 +39,18 @@ export default function TestAuth() {
       console.log('Auth event:', event, 'Session:', session?.user?.email)
       setUser(session?.user || null)
       setMessage(`Auth event: ${event}`)
+      setInitialized(true)
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [supabase])
 
   const checkSession = async () => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+    
     try {
       const { data: { session }, error } = await supabase.auth.getSession()
       console.log('Current session:', session, 'Error:', error)

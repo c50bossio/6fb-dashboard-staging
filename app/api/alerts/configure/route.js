@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/alerts/configure
  * Get alert configuration and user preferences

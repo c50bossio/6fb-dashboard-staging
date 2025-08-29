@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import unifiedStaffService from '@/lib/unified-staff-service'
 
 export const runtime = 'nodejs'
-export const maxDuration = 10 // Reduced from 30 seconds - database operations are fast
+export const dynamic = 'force-dynamic'export const maxDuration = 10 // Reduced from 30 seconds - database operations are fast
 
 export async function GET(request) {
   try {

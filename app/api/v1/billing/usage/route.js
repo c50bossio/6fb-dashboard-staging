@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import UsageTracker from '@/lib/usage-tracker'
 
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/v1/billing/usage
  * Returns detailed usage history

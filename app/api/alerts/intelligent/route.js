@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
 import { cacheQuery } from '../../../../lib/analytics-cache.js';
 import optimizedSupabase, { batchQueries } from '../../../../lib/performance/optimized-supabase.js';
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);

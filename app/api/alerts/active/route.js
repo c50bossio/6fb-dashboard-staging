@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/alerts/active
  * Retrieve active alerts with intelligent filtering and prioritization

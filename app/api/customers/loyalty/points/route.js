@@ -8,7 +8,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
-
+export const dynamic = 'force-dynamic'
 /**
  * GET /api/customers/loyalty/points
  * Get customer points balance or transaction history

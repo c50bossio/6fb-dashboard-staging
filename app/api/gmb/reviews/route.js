@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { logGMBAPIRequest } from '@/lib/gmb-audit-logger'
 import { checkGMBRateLimit, logGMBApiUsage } from '@/lib/gmb-rate-limiter'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY

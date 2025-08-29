@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 const rateLimitStore = new Map();
 
 function validateInput(barbershopId, format) {

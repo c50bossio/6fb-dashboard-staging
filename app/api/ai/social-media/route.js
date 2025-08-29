@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * Social Media Integration & Auto-posting System
  * Manages social media presence, auto-posting, and engagement tracking

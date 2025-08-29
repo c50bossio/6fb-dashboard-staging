@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 /**
  * AI-Generated Daily Business Reports
  * Provides intelligent daily, weekly, and monthly business insights
