@@ -37,6 +37,12 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   },
   
+  // Skip static generation for test pages in production
+  ...(process.env.NODE_ENV === 'production' && {
+    skipMiddlewareUrlNormalize: true,
+    skipTrailingSlashRedirect: true,
+  }),
+
   // Experimental features for optimizing bundle
   experimental: {
     optimizeCss: true,
@@ -60,6 +66,27 @@ const nextConfig = {
       ],
     },
   },
+  
+  // Redirect all test routes in production
+  ...(process.env.NODE_ENV === 'production' && {
+    redirects: async () => [
+      {
+        source: '/test:path*',
+        destination: '/dashboard',
+        permanent: false,
+      },
+      {
+        source: '/simple-test',
+        destination: '/dashboard', 
+        permanent: false,
+      },
+      {
+        source: '/debug:path*',
+        destination: '/dashboard',
+        permanent: false,
+      },
+    ],
+  }),
   
   // Module optimization
   modularizeImports: {
