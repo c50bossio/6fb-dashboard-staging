@@ -150,7 +150,7 @@ const nextConfig = {
       zlib: false,
       https: false,
       http: false,
-      buffer: require.resolve('buffer'),
+      buffer: 'buffer',
     }
     
     // Handle node: protocol imports
