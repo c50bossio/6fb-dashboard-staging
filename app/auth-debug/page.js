@@ -74,31 +74,63 @@ export default function AuthDebug() {
   }
 
   const testConnection = async () => {
+    try {
+      setStatus('Testing direct fetch...')
+      
+      const response = await fetch('https://dfhqjdoydihajmjxniee.supabase.co/rest/v1/profiles', {
+        headers: {
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
+        }
+      })
+      
+      if (!response.ok) {
+        setStatus(`Fetch error: ${response.status} ${response.statusText}`)
+        return
+      }
+      
+      const data = await response.json()
+      setStatus(`Direct fetch works! Got ${data.length} profiles`)
+      console.log('Direct fetch success:', data)
+      
+    } catch (error) {
+      setStatus(`Fetch exception: ${error.message}`)
+      console.error('Fetch exception:', error)
+    }
+  }
+
+  const testSupabaseClient = async () => {
     if (!supabase) {
       setStatus('Supabase not initialized')
       return
     }
 
     try {
-      setStatus('Testing basic connection...')
+      setStatus('Testing Supabase client...')
       
-      // Test a simple query instead of auth
-      const { data, error } = await supabase
+      // Test with timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Supabase client timeout after 5 seconds')), 5000)
+      )
+      
+      const queryPromise = supabase
         .from('profiles')
         .select('count(*)')
         .limit(1)
       
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise])
+      
       if (error) {
-        setStatus(`Connection error: ${error.message}`)
-        console.error('Connection error:', error)
+        setStatus(`Supabase client error: ${error.message}`)
+        console.error('Supabase client error:', error)
       } else {
-        setStatus(`Connection OK! Can query database.`)
-        console.log('Connection success:', data)
+        setStatus(`Supabase client works! Got data.`)
+        console.log('Supabase client success:', data)
       }
       
     } catch (error) {
-      setStatus(`Connection exception: ${error.message}`)
-      console.error('Connection exception:', error)
+      setStatus(`Supabase client exception: ${error.message}`)
+      console.error('Supabase client exception:', error)
     }
   }
 
@@ -126,10 +158,17 @@ export default function AuthDebug() {
           <div className="space-y-3">
             <button
               onClick={testConnection}
-              disabled={!supabase}
-              className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:bg-gray-400"
+              className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700"
             >
-              Test Basic Connection
+              1. Test Direct Fetch (bypasses Supabase client)
+            </button>
+
+            <button
+              onClick={testSupabaseClient}
+              disabled={!supabase}
+              className="w-full bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-yellow-700 disabled:bg-gray-400"
+            >
+              2. Test Supabase Client (with timeout)
             </button>
 
             <button
@@ -137,7 +176,7 @@ export default function AuthDebug() {
               disabled={!supabase}
               className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
             >
-              Test Sign In (with timeout)
+              3. Test Sign In (with timeout)
             </button>
           </div>
 

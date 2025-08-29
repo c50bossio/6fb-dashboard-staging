@@ -3,12 +3,52 @@
  * Centralized management of all external service integrations
  */
 
-const { createClient } = require('@supabase/supabase-js')
-const { stripeService } = require('./stripe-service')
-const { twilioSMSService } = require('./twilio-service')
-const { enhancedSendGridService } = require('./sendgrid-service-fixed')
-const { calendarIntegrationService } = require('./calendar-integration-service')
-const { notificationService } = require('./notification-service')
+import { createClient } from '@supabase/supabase-js'
+
+// Dynamic imports for services to handle build-time issues
+let stripeService, twilioSMSService, enhancedSendGridService, calendarIntegrationService, notificationService
+
+async function initializeServices() {
+  try {
+    const stripeModule = await import('./stripe-service.js')
+    stripeService = stripeModule.stripeService
+  } catch (e) {
+    console.warn('Stripe service not available during build')
+    stripeService = { healthCheck: () => ({ status: 'not_configured' }) }
+  }
+  
+  try {
+    const twilioModule = await import('./twilio-service.js')
+    twilioSMSService = twilioModule.twilioSMSService
+  } catch (e) {
+    console.warn('Twilio service not available during build')
+    twilioSMSService = { getServiceHealth: () => ({ status: 'not_configured' }) }
+  }
+  
+  try {
+    const sendgridModule = await import('./sendgrid-service-fixed.js')
+    enhancedSendGridService = sendgridModule.enhancedSendGridService
+  } catch (e) {
+    console.warn('SendGrid service not available during build')
+    enhancedSendGridService = { getServiceStatus: () => ({ apiKeyConfigured: false }) }
+  }
+  
+  try {
+    const calendarModule = await import('./calendar-integration-service.js')
+    calendarIntegrationService = calendarModule.calendarIntegrationService
+  } catch (e) {
+    console.warn('Calendar service not available during build')
+    calendarIntegrationService = { getServiceHealth: () => ({ providers: { google: { configured: false } } }) }
+  }
+  
+  try {
+    const notificationModule = await import('./notification-service.js')
+    notificationService = notificationModule.notificationService
+  } catch (e) {
+    console.warn('Notification service not available during build')
+    notificationService = { getServiceHealth: () => ({ status: 'not_configured' }) }
+  }
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -17,6 +57,14 @@ const supabase = createClient(
 
 class IntegrationConfigService {
   constructor() {
+    this.integrations = {}
+    this.initialized = false
+    this.init()
+  }
+
+  async init() {
+    await initializeServices()
+    
     this.integrations = {
       stripe: {
         service: stripeService,
@@ -59,12 +107,6 @@ class IntegrationConfigService {
         features: ['appointment_confirmations', 'appointment_reminders', 'multi_channel']
       }
     }
-    
-    this.initialized = false
-    this.init()
-  }
-
-  async init() {
     
     this.initialized = true
   }
@@ -579,7 +621,7 @@ class IntegrationConfigService {
 
 const integrationConfigService = new IntegrationConfigService()
 
-module.exports = {
+export {
   integrationConfigService,
   IntegrationConfigService
 }
