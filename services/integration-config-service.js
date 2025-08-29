@@ -5,50 +5,8 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-// Dynamic imports for services to handle build-time issues
-let stripeService, twilioSMSService, enhancedSendGridService, calendarIntegrationService, notificationService
-
-async function initializeServices() {
-  try {
-    const stripeModule = await import('./stripe-service.js')
-    stripeService = stripeModule.stripeService
-  } catch (e) {
-    console.warn('Stripe service not available during build')
-    stripeService = { healthCheck: () => ({ status: 'not_configured' }) }
-  }
-  
-  try {
-    const twilioModule = await import('./twilio-service.js')
-    twilioSMSService = twilioModule.twilioSMSService
-  } catch (e) {
-    console.warn('Twilio service not available during build')
-    twilioSMSService = { getServiceHealth: () => ({ status: 'not_configured' }) }
-  }
-  
-  try {
-    const sendgridModule = await import('./sendgrid-service-fixed.js')
-    enhancedSendGridService = sendgridModule.enhancedSendGridService
-  } catch (e) {
-    console.warn('SendGrid service not available during build')
-    enhancedSendGridService = { getServiceStatus: () => ({ apiKeyConfigured: false }) }
-  }
-  
-  try {
-    const calendarModule = await import('./calendar-integration-service.js')
-    calendarIntegrationService = calendarModule.calendarIntegrationService
-  } catch (e) {
-    console.warn('Calendar service not available during build')
-    calendarIntegrationService = { getServiceHealth: () => ({ providers: { google: { configured: false } } }) }
-  }
-  
-  try {
-    const notificationModule = await import('./notification-service.js')
-    notificationService = notificationModule.notificationService
-  } catch (e) {
-    console.warn('Notification service not available during build')
-    notificationService = { getServiceHealth: () => ({ status: 'not_configured' }) }
-  }
-}
+// Lazy service loading - services are loaded only when actually called
+const serviceCache = {}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -57,17 +15,8 @@ const supabase = createClient(
 
 class IntegrationConfigService {
   constructor() {
-    this.integrations = {}
-    this.initialized = false
-    this.init()
-  }
-
-  async init() {
-    await initializeServices()
-    
     this.integrations = {
       stripe: {
-        service: stripeService,
         name: 'Stripe Payments',
         description: 'Accept online payments and manage payouts',
         category: 'payments',
@@ -75,7 +24,6 @@ class IntegrationConfigService {
         features: ['online_payments', 'stripe_connect', 'subscription_billing']
       },
       twilio: {
-        service: twilioSMSService,
         name: 'Twilio SMS',
         description: 'Send appointment reminders and marketing campaigns via SMS',
         category: 'communications',
@@ -83,7 +31,6 @@ class IntegrationConfigService {
         features: ['sms_reminders', 'marketing_campaigns', 'customer_notifications']
       },
       sendgrid: {
-        service: enhancedSendGridService,
         name: 'SendGrid Email',
         description: 'Send email confirmations, reminders, and newsletters',
         category: 'communications',
@@ -91,7 +38,6 @@ class IntegrationConfigService {
         features: ['email_confirmations', 'email_reminders', 'newsletter_campaigns']
       },
       google_calendar: {
-        service: calendarIntegrationService,
         name: 'Google Calendar',
         description: 'Sync appointments with Google Calendar',
         category: 'calendar',
@@ -99,7 +45,6 @@ class IntegrationConfigService {
         features: ['calendar_sync', 'ical_export', 'appointment_management']
       },
       notifications: {
-        service: notificationService,
         name: 'Notification System',
         description: 'Unified appointment notifications across all channels',
         category: 'communications',
@@ -109,6 +54,41 @@ class IntegrationConfigService {
     }
     
     this.initialized = true
+  }
+
+  async getService(serviceName) {
+    if (serviceCache[serviceName]) {
+      return serviceCache[serviceName]
+    }
+
+    try {
+      switch (serviceName) {
+        case 'stripe':
+          const stripeModule = await import('./stripe-service.js')
+          serviceCache[serviceName] = stripeModule.stripeService
+          break
+        case 'twilio':
+          const twilioModule = await import('./twilio-service.js')
+          serviceCache[serviceName] = twilioModule.twilioSMSService
+          break
+        case 'sendgrid':
+          const sendgridModule = await import('./sendgrid-service-fixed.js')
+          serviceCache[serviceName] = sendgridModule.enhancedSendGridService
+          break
+        case 'google_calendar':
+          const calendarModule = await import('./calendar-integration-service.js')
+          serviceCache[serviceName] = calendarModule.calendarIntegrationService
+          break
+        case 'notifications':
+          const notificationModule = await import('./notification-service.js')
+          serviceCache[serviceName] = notificationModule.notificationService
+          break
+      }
+      return serviceCache[serviceName]
+    } catch (error) {
+      console.warn(`Service ${serviceName} not available:`, error.message)
+      return null
+    }
   }
 
   /**
@@ -206,7 +186,17 @@ class IntegrationConfigService {
    */
   async checkStripeStatus(barbershopId, userId) {
     try {
-      const healthCheck = await stripeService.healthCheck()
+      const stripeService = await this.getService('stripe')
+      if (!stripeService) {
+        return {
+          configured: false,
+          enabled: false,
+          healthy: false,
+          error: 'Service not available'
+        }
+      }
+
+      const healthCheck = await (await this.getService('stripe'))?.healthCheck() || { status: 'not_configured' }
       
       // Check if Stripe Connect is set up
       let connectConfigured = false
@@ -249,7 +239,8 @@ class IntegrationConfigService {
    */
   async checkTwilioStatus() {
     try {
-      const healthCheck = await twilioSMSService.getServiceHealth()
+      const twilioService = await this.getService('twilio')
+      const healthCheck = await twilioService?.getServiceHealth() || { status: 'not_configured' }
       
       return {
         configured: healthCheck.status === 'healthy',
@@ -465,7 +456,7 @@ class IntegrationConfigService {
 
       switch (integrationKey) {
         case 'stripe':
-          testResult = await stripeService.healthCheck()
+          testResult = await (await this.getService('stripe'))?.healthCheck() || { status: 'not_configured' }
           break
         
         case 'twilio':

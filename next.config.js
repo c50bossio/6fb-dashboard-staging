@@ -143,7 +143,40 @@ const nextConfig = {
       os: false,
       stream: false,
       util: false,
+      child_process: false,
+      http2: false,
+      url: false,
+      querystring: false,
+      zlib: false,
+      https: false,
+      http: false,
+      buffer: require.resolve('buffer'),
     }
+    
+    // Handle node: protocol imports
+    config.plugins = [
+      ...config.plugins,
+      new config.webpack.NormalModuleReplacementPlugin(
+        /^node:/,
+        (resource) => {
+          const module = resource.request.replace(/^node:/, '')
+          switch (module) {
+            case 'buffer':
+              resource.request = 'buffer'
+              break
+            case 'fs':
+            case 'child_process':
+            case 'http2':
+            case 'net':
+            case 'tls':
+              resource.request = false
+              break
+            default:
+              resource.request = module
+          }
+        }
+      )
+    ]
     
     return config
   },
