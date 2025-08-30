@@ -26,25 +26,18 @@ export default function POSPage() {
       const response = await fetch('/api/profile/current')
       const data = await response.json()
 
-      if (response.ok) {
-        // Determine inventory scope based on subscription type
-        let contextId = null
-        
-        if (data.subscription_type === 'individual') {
-          // Individual subscriber - personal inventory
-          contextId = data.user_id
-        } else if (data.subscription_type === 'barbershop') {
-          // Barbershop subscription - shared shop inventory
-          contextId = data.barbershop_id
-        } else if (data.subscription_type === 'enterprise') {
-          // Enterprise subscription - multi-location access
-          contextId = data.current_location_id || data.barbershop_id
-        }
+      if (response.ok && data.profile) {
+        // Use the resolved barbershop ID from the API response
+        // This handles both individual barbers and shop employees
+        const contextId = data.profile.resolved_barbershop_id || 
+                         data.profile.barbershop_id || 
+                         data.profile.shop_id ||
+                         data.profile.id // Fallback to user ID for individual barbers
 
         if (contextId) {
           setBarbershopId(contextId)
         } else {
-          throw new Error('Unable to determine inventory access')
+          throw new Error('Unable to determine inventory access. Please complete your profile setup.')
         }
       } else {
         throw new Error(data.error || 'Failed to load user context')
