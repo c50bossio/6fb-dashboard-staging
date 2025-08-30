@@ -26,9 +26,9 @@ export async function POST(request) {
       )
     }
 
-    const { barbershopId } = await request.json()
+    const { barberbarbershopId } = await request.json()
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json(
         { error: 'Barbershop ID is required' },
         { status: 400 }
@@ -38,17 +38,17 @@ export async function POST(request) {
     // Verify user has access to this barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', user.id)
       .single()
 
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, owner_id')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
-    const hasAccess = profile?.barbershop_id === barbershopId || 
+    const hasAccess = profile?.barbershop_id === barberbarbershopId || 
                      barbershop?.owner_id === user.id ||
                      profile?.role === 'admin'
 
@@ -73,7 +73,7 @@ export async function POST(request) {
     await supabase
       .from('terminal_connection_tokens')
       .insert({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         token_secret: tokenHash,
         expires_at: new Date(Date.now() + (60 * 60 * 1000)), // 1 hour
         created_by: user.id

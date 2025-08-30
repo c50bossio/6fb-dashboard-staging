@@ -43,7 +43,7 @@ export async function GET(request) {
       // Metadata
       last_updated: currentDate.toISOString(),
       data_source: 'demo_preview',
-      shop_id: 'preview-analytics'
+      barbershop_id: 'preview-analytics'
     }
     
     // Format response based on requested format

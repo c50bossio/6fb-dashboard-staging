@@ -149,18 +149,18 @@ class CustomerServiceAgent {
     ]
   }
 
-  async executeFunction(functionName, args, customerId, barbershopId) {
+  async executeFunction(functionName, args, customerId, barberbarbershopId) {
     switch (functionName) {
       case 'book_appointment':
-        return await this.bookAppointment(args, customerId, barbershopId)
+        return await this.bookAppointment(args, customerId, barberbarbershopId)
       case 'reschedule_appointment':
         return await this.rescheduleAppointment(args, customerId)
       case 'cancel_appointment':
         return await this.cancelAppointment(args, customerId)
       case 'get_available_slots':
-        return await this.getAvailableSlots(args, barbershopId)
+        return await this.getAvailableSlots(args, barberbarbershopId)
       case 'get_service_info':
-        return await this.getServiceInfo(args, barbershopId)
+        return await this.getServiceInfo(args, barberbarbershopId)
       case 'process_payment':
         return await this.processPayment(args, customerId)
       default:
@@ -168,14 +168,14 @@ class CustomerServiceAgent {
     }
   }
 
-  async bookAppointment(args, customerId, barbershopId) {
+  async bookAppointment(args, customerId, barberbarbershopId) {
     const { service_id, date, time, barber_id, notes } = args
 
     // Check availability first
     const { data: existingAppointments } = await supabase
       .from('appointments')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('date', date)
       .eq('time', time)
       .eq('status', 'confirmed')
@@ -191,7 +191,7 @@ class CustomerServiceAgent {
     const { data: appointment, error } = await supabase
       .from('appointments')
       .insert({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         customer_id: customerId,
         service_id,
         barber_id: barber_id || null,
@@ -285,21 +285,21 @@ class CustomerServiceAgent {
     }
   }
 
-  async getAvailableSlots(args, barbershopId) {
+  async getAvailableSlots(args, barberbarbershopId) {
     const { date, service_id, barber_id } = args
 
     // Get business hours
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('business_hours')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
     // Get existing appointments
     let query = supabase
       .from('appointments')
       .select('time')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('date', date)
       .in('status', ['confirmed', 'pending'])
 
@@ -328,13 +328,13 @@ class CustomerServiceAgent {
     }
   }
 
-  async getServiceInfo(args, barbershopId) {
+  async getServiceInfo(args, barberbarbershopId) {
     const { service_name } = args
 
     const { data: services } = await supabase
       .from('services')
       .select('*')
-      .eq('shop_id', barbershopId)
+      .eq('barbershop_id', barberbarbershopId)
       .ilike('name', `%${service_name}%`)
 
     if (!services || services.length === 0) {
@@ -392,7 +392,7 @@ class CustomerServiceAgent {
 
 // Context Management
 class CustomerContextManager {
-  async getContext(customerId, barbershopId) {
+  async getContext(customerId, barberbarbershopId) {
     // Get customer profile
     const { data: customer } = await supabase
       .from('customers')
@@ -409,7 +409,7 @@ class CustomerContextManager {
         barbers:barber_id(full_name)
       `)
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .order('date', { ascending: false })
       .limit(5)
 
@@ -425,7 +425,7 @@ class CustomerContextManager {
       .from('loyalty_programs')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single()
 
     return {
@@ -549,7 +549,7 @@ export async function GET(request) {
  * {
  *   message: string,
  *   customer_id: string,
- *   barbershop_id: string,
+ *   barberbarbershop_id: string,
  *   channel: 'sms' | 'email' | 'chat' | 'voice',
  *   session_id?: string,
  *   context?: object
@@ -558,11 +558,11 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { message, customer_id, barbershop_id, channel, session_id, context: providedContext } = body
+    const { message, customer_id, barberbarbershop_id, channel, session_id, context: providedContext } = body
 
-    if (!message || !customer_id || !barbershop_id) {
+    if (!message || !customer_id || !barberbarbershop_id) {
       return NextResponse.json(
-        { error: 'Message, customer_id, and barbershop_id are required' },
+        { error: 'Message, customer_id, and barberbarbershop_id are required' },
         { status: 400 }
       )
     }
@@ -573,7 +573,7 @@ export async function POST(request) {
     const channelAdapter = new MultiChannelAdapter()
 
     // Get or build context
-    const context = providedContext || await contextManager.getContext(customer_id, barbershop_id)
+    const context = providedContext || await contextManager.getContext(customer_id, barberbarbershop_id)
 
     // Process the message through the agent
     const intent = await agent.processIntent(message, context)
@@ -585,7 +585,7 @@ export async function POST(request) {
         intent.function,
         intent.arguments,
         customer_id,
-        barbershop_id
+        barberbarbershop_id
       )
     }
 
@@ -611,7 +611,7 @@ export async function POST(request) {
       .insert({
         agent_type: 'customer_service',
         customer_id,
-        barbershop_id,
+        barberbarbershop_id,
         message,
         response: response.response,
         intent_type: intent.type,

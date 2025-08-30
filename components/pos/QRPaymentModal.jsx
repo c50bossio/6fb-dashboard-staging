@@ -13,7 +13,7 @@ export function QRPaymentModal({
   isOpen, 
   onClose, 
   cartItems, 
-  barbershopId, 
+  barberbarbershopId, 
   barberId, 
   customerId,
   totalAmount,
@@ -34,7 +34,7 @@ export function QRPaymentModal({
 
   // Generate QR code when modal opens
   useEffect(() => {
-    if (isOpen && cartItems?.length > 0 && barbershopId) {
+    if (isOpen && cartItems?.length > 0 && barberbarbershopId) {
       generateQRPayment()
     }
     
@@ -42,7 +42,7 @@ export function QRPaymentModal({
       clearPolling()
       clearTimer()
     }
-  }, [isOpen, cartItems, barbershopId])
+  }, [isOpen, cartItems, barberbarbershopId])
 
   // Start polling when we have a session ID
   useEffect(() => {
@@ -77,7 +77,7 @@ export function QRPaymentModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           cartItems,
-          barbershopId,
+          barberbarbershopId,
           barberId,
           customerId,
           expiresInMinutes: 30

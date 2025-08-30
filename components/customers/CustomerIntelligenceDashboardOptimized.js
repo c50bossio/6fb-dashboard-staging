@@ -176,15 +176,15 @@ export default function CustomerIntelligenceDashboard() {
   const abortControllerRef = useRef(null)
   
   // Get barbershop ID (using same pattern as original)
-  const getBarbershopId = useCallback(() => {
+  const getBarberbarbershopId = useCallback(() => {
     return profile?.barbershop_id || profile?.shop_id || profile?.barbershopId
   }, [profile])
 
   // Fetch customer count with abort control
   useEffect(() => {
-    const barbershopId = getBarbershopId()
+    const barberbarbershopId = getBarberbarbershopId()
     
-    if (!user || !barbershopId) {
+    if (!user || !barberbarbershopId) {
       setLoading(false)
       return
     }
@@ -195,7 +195,7 @@ export default function CustomerIntelligenceDashboard() {
       try {
         setLoading(true)
         const response = await fetch(
-          `/api/customers?barbershop_id=${barbershopId}&limit=1`,
+          `/api/customers?barberbarbershop_id=${barberbarbershopId}&limit=1`,
           { signal: controller.signal }
         )
         const data = await response.json()
@@ -215,15 +215,15 @@ export default function CustomerIntelligenceDashboard() {
     fetchCustomerCount()
     
     return () => controller.abort()
-  }, [user, getBarbershopId])
+  }, [user, getBarberbarbershopId])
 
   // Lazy load analytics with caching and pagination
   const fetchAnalyticsData = useCallback(async (forceRefresh = false) => {
-    const barbershopId = getBarbershopId()
-    if (!user || !barbershopId || actualCustomerCount < 5) return
+    const barberbarbershopId = getBarberbarbershopId()
+    if (!user || !barberbarbershopId || actualCustomerCount < 5) return
     
     // Check cache first
-    const cacheKey = `${barbershopId}-${selectedTimeframe}`
+    const cacheKey = `${barberbarbershopId}-${selectedTimeframe}`
     if (!forceRefresh && cacheRef.current[cacheKey]) {
       const cachedData = cacheRef.current[cacheKey]
       if (Date.now() - cachedData.timestamp < 5 * 60 * 1000) { // 5 minute cache
@@ -265,10 +265,10 @@ export default function CustomerIntelligenceDashboard() {
       
       // Fetch data with pagination limits and authentication
       const endpoints = [
-        `/api/customers/analytics/health-scores?barbershop_id=${barbershopId}&limit=${pagination.healthScores.limit}&page=${pagination.healthScores.page}`,
-        `/api/customers/analytics/clv?barbershop_id=${barbershopId}&limit=${pagination.clv.limit}&page=${pagination.clv.page}&sort_by=total_clv&sort_desc=true`,
-        `/api/customers/analytics/churn?barbershop_id=${barbershopId}&limit=${pagination.churn.limit}&page=${pagination.churn.page}&min_probability=0.3`,
-        `/api/customers/analytics/segments?barbershop_id=${barbershopId}`
+        `/api/customers/analytics/health-scores?barberbarbershop_id=${barberbarbershopId}&limit=${pagination.healthScores.limit}&page=${pagination.healthScores.page}`,
+        `/api/customers/analytics/clv?barberbarbershop_id=${barberbarbershopId}&limit=${pagination.clv.limit}&page=${pagination.clv.page}&sort_by=total_clv&sort_desc=true`,
+        `/api/customers/analytics/churn?barberbarbershop_id=${barberbarbershopId}&limit=${pagination.churn.limit}&page=${pagination.churn.page}&min_probability=0.3`,
+        `/api/customers/analytics/segments?barberbarbershop_id=${barberbarbershopId}`
       ]
       
       // Fetch in parallel with proper error handling and authentication
@@ -319,7 +319,7 @@ export default function CustomerIntelligenceDashboard() {
     } finally {
       setAnalyticsState(prev => ({ ...prev, loading: false }))
     }
-  }, [user, getBarbershopId, actualCustomerCount, selectedTimeframe, pagination])
+  }, [user, getBarberbarbershopId, actualCustomerCount, selectedTimeframe, pagination])
 
   // Lazy load analytics only when needed
   useEffect(() => {

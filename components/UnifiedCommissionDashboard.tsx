@@ -96,13 +96,13 @@ interface BarberCommissionData {
 }
 
 interface UnifiedCommissionDashboardProps {
-  barbershopId: string
+  barberbarbershopId: string
   currentUser?: any
   showBarberFilter?: boolean
 }
 
 const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
-  barbershopId,
+  barberbarbershopId,
   currentUser,
   showBarberFilter = true
 }) => {
@@ -118,14 +118,14 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
 
   useEffect(() => {
     loadCommissionData()
-  }, [barbershopId, dateRange, selectedBarber])
+  }, [barberbarbershopId, dateRange, selectedBarber])
 
   const loadCommissionData = async () => {
     setLoading(true)
     try {
       // Load comprehensive commission summary
       const summaryResult = await financialService.getComprehensiveCommissionSummary(
-        barbershopId, 
+        barberbarbershopId, 
         dateRange
       )
       
@@ -155,7 +155,7 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
 
       const barberPromises = Array.from(allBarberIds).map(async (barberId) => {
         // Get barber's tier status
-        const { data: tierStatus } = await financialService.getBarberTierStatus(barberId, barbershopId)
+        const { data: tierStatus } = await financialService.getBarberTierStatus(barberId, barberbarbershopId)
         
         // Get barber profile info
         const { data: profile } = await supabase

@@ -256,7 +256,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       // Log error for analytics
       logPaymentError(err, {
         bookingId: bookingData.id,
-        shopId: bookingData.shopId,
+        barbershopId: bookingData.barbershopId,
         amount: paymentAmount,
         retryCount
       })

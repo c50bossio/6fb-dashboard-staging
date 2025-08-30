@@ -13,12 +13,12 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id') || user.barbershop_id
+    const barberbarbershopId = searchParams.get('barberbarbershop_id') || user.barberbarbershop_id
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({
         success: false,
-        error: 'barbershop_id is required'
+        error: 'barberbarbershop_id is required'
       }, { status: 400 })
     }
     const forecastDays = Math.min(parseInt(searchParams.get('forecast_days')) || 30, 90) // Max 90 days
@@ -39,7 +39,7 @@ export async function GET(request) {
           created_at,
           services(name, price, duration_minutes)
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('scheduled_at', startDate.toISOString())
         .order('scheduled_at', { ascending: true })
 
@@ -49,7 +49,7 @@ export async function GET(request) {
       }
 
       const forecast = generateRealBookingForecast(
-        barbershopId,
+        barberbarbershopId,
         historicalBookings || [],
         forecastDays,
         serviceType
@@ -69,7 +69,7 @@ export async function GET(request) {
       return NextResponse.json({
         success: true,
         data: {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           forecast_type: 'booking_demand',
           forecast_period: {
             start_date: new Date().toISOString().split('T')[0],
@@ -119,12 +119,12 @@ export async function POST(request) {
     }
 
     const { action, parameters } = await request.json()
-    const barbershopId = parameters?.barbershop_id || user.barbershop_id
+    const barberbarbershopId = parameters?.barberbarbershop_id || user.barberbarbershop_id
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({
         success: false,
-        error: 'barbershop_id is required'
+        error: 'barberbarbershop_id is required'
       }, { status: 400 })
     }
     
@@ -133,15 +133,15 @@ export async function POST(request) {
       
       switch (action) {
         case 'analyze_booking_trends':
-          response = await analyzeBookingTrendsFromDatabase(supabase, barbershopId, parameters)
+          response = await analyzeBookingTrendsFromDatabase(supabase, barberbarbershopId, parameters)
           break
           
         case 'calculate_utilization':
-          response = await calculateRealUtilization(supabase, barbershopId, parameters)
+          response = await calculateRealUtilization(supabase, barberbarbershopId, parameters)
           break
           
         case 'identify_peak_periods':
-          response = await identifyPeakPeriodsFromDatabase(supabase, barbershopId, parameters)
+          response = await identifyPeakPeriodsFromDatabase(supabase, barberbarbershopId, parameters)
           break
           
         default:
@@ -178,10 +178,10 @@ export async function POST(request) {
   }
 }
 
-function generateRealBookingForecast(barbershopId, historicalBookings, forecastDays, serviceType) {
+function generateRealBookingForecast(barberbarbershopId, historicalBookings, forecastDays, serviceType) {
   if (!historicalBookings || historicalBookings.length < 7) {
     return {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       forecast_type: 'booking_demand',
       service_type: serviceType,
       generated_at: new Date().toISOString(),
@@ -214,7 +214,7 @@ function generateRealBookingForecast(barbershopId, historicalBookings, forecastD
   const forecasts = generateRealDailyForecasts(patterns, forecastDays)
   
   return {
-    barbershop_id: barbershopId,
+    barberbarbershop_id: barberbarbershopId,
     forecast_type: 'booking_demand',
     service_type: serviceType,
     generated_at: new Date().toISOString(),
@@ -413,7 +413,7 @@ function generateRealBusinessInsights(patterns, historicalBookings) {
 }
 
 
-async function analyzeBookingTrendsFromDatabase(supabase, barbershopId, parameters) {
+async function analyzeBookingTrendsFromDatabase(supabase, barberbarbershopId, parameters) {
   const period = parameters?.period || '30_days'
   const endDate = new Date()
   const startDate = new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000)
@@ -421,7 +421,7 @@ async function analyzeBookingTrendsFromDatabase(supabase, barbershopId, paramete
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select('scheduled_at, status, total_amount, services(name)')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .gte('scheduled_at', startDate.toISOString())
     .order('scheduled_at', { ascending: true })
   
@@ -439,11 +439,11 @@ async function analyzeBookingTrendsFromDatabase(supabase, barbershopId, paramete
   return trends
 }
 
-async function calculateRealUtilization(supabase, barbershopId, parameters) {
+async function calculateRealUtilization(supabase, barberbarbershopId, parameters) {
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select('scheduled_at, status')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .gte('scheduled_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
   
   if (error) throw error
@@ -460,11 +460,11 @@ async function calculateRealUtilization(supabase, barbershopId, parameters) {
   }
 }
 
-async function identifyPeakPeriodsFromDatabase(supabase, barbershopId, parameters) {
+async function identifyPeakPeriodsFromDatabase(supabase, barberbarbershopId, parameters) {
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select('scheduled_at, status')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .gte('scheduled_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
   
   if (error) throw error

@@ -31,46 +31,46 @@ async function verifyAuth(request) {
       return { error: 'Invalid token', status: 401 }
     }
 
-    // Get barbershop_id for the user
+    // Get barberbarbershop_id for the user
     const { data: barbershopData } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
       .single()
 
-    let barbershopId = null
+    let barberbarbershopId = null
     if (barbershopData) {
-      barbershopId = barbershopData.id
+      barberbarbershopId = barbershopData.id
     } else {
       // Check if user is a barber
       const { data: barberData } = await supabase
         .from('barbers')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .single()
       
       if (barberData) {
-        barbershopId = barberData.barbershop_id
+        barberbarbershopId = barberData.barberbarbershop_id
       }
     }
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return { error: 'User not associated with any barbershop', status: 403 }
     }
 
-    return { user, barbershopId }
+    return { user, barberbarbershopId }
   } catch (error) {
     return { error: 'Authentication failed', status: 401 }
   }
 }
 
 // Helper function to get automation settings
-async function getAutomationSettings(barbershopId) {
+async function getAutomationSettings(barberbarbershopId) {
   try {
     const { data: settings, error } = await supabase
       .from('feedback_automation_settings')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single()
 
     if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
@@ -98,7 +98,7 @@ async function getAutomationSettings(barbershopId) {
 }
 
 // Helper function to check if customer should receive feedback request
-async function shouldSendFeedbackRequest(customerId, barbershopId, settings) {
+async function shouldSendFeedbackRequest(customerId, barberbarbershopId, settings) {
   try {
     // Check monthly limit
     const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -106,7 +106,7 @@ async function shouldSendFeedbackRequest(customerId, barbershopId, settings) {
       .from('feedback_requests')
       .select('id')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', oneMonthAgo.toISOString())
 
     if (error) {
@@ -124,7 +124,7 @@ async function shouldSendFeedbackRequest(customerId, barbershopId, settings) {
         .from('customer_feedback')
         .select('rating, nps_score, sentiment_score')
         .eq('customer_id', customerId)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('created_at', oneMonthAgo.toISOString())
         .order('created_at', { ascending: false })
         .limit(3)
@@ -150,7 +150,7 @@ async function shouldSendFeedbackRequest(customerId, barbershopId, settings) {
 }
 
 // Helper function to create feedback request
-async function createFeedbackRequest(customerId, appointmentId, barbershopId, requestType, settings) {
+async function createFeedbackRequest(customerId, appointmentId, barberbarbershopId, requestType, settings) {
   try {
     let delayHours = 2
     let channels = ['email']
@@ -174,7 +174,7 @@ async function createFeedbackRequest(customerId, appointmentId, barbershopId, re
 
     const feedbackRequest = {
       id: crypto.randomUUID(),
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       customer_id: customerId,
       appointment_id: appointmentId,
       request_type: requestType,
@@ -214,13 +214,13 @@ async function createFeedbackRequest(customerId, appointmentId, barbershopId, re
 }
 
 // Helper function to generate feedback survey link
-function generateFeedbackLink(feedbackRequestId, barbershopId, customerId, appointmentId) {
+function generateFeedbackLink(feedbackRequestId, barberbarbershopId, customerId, appointmentId) {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://6fb.ai'
-  return `${baseUrl}/feedback/${feedbackRequestId}?barbershop=${barbershopId}&customer=${customerId}&appointment=${appointmentId}`
+  return `${baseUrl}/feedback/${feedbackRequestId}?barbershop=${barberbarbershopId}&customer=${customerId}&appointment=${appointmentId}`
 }
 
 // Helper function to process pending feedback requests
-async function processPendingRequests(barbershopId) {
+async function processPendingRequests(barberbarbershopId) {
   try {
     const now = new Date()
     
@@ -231,9 +231,9 @@ async function processPendingRequests(barbershopId) {
         *,
         customers!customer_id(name, email, phone),
         appointments!appointment_id(appointment_date, service_amount),
-        barbershops!barbershop_id(name, email)
+        barbershops!barberbarbershop_id(name, email)
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('status', 'scheduled')
       .lte('scheduled_for', now.toISOString())
       .lt('attempts', 3) // Haven't exceeded max attempts
@@ -255,7 +255,7 @@ async function processPendingRequests(barbershopId) {
         // Generate feedback link
         const feedbackLink = generateFeedbackLink(
           request.id,
-          request.barbershop_id,
+          request.barberbarbershop_id,
           request.customer_id,
           request.appointment_id
         )
@@ -369,7 +369,7 @@ export async function POST(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barbershopId } = authResult
+    const { barberbarbershopId } = authResult
     const body = await request.json()
 
     const {
@@ -387,13 +387,13 @@ export async function POST(request) {
     }
 
     // Get automation settings
-    const settings = await getAutomationSettings(barbershopId)
+    const settings = await getAutomationSettings(barberbarbershopId)
     if (!settings) {
       return NextResponse.json({ error: 'Failed to get automation settings' }, { status: 500 })
     }
 
     // Check if customer should receive feedback request
-    const eligibilityCheck = await shouldSendFeedbackRequest(customer_id, barbershopId, settings)
+    const eligibilityCheck = await shouldSendFeedbackRequest(customer_id, barberbarbershopId, settings)
     
     if (!force_send && !eligibilityCheck.should_send) {
       return NextResponse.json({ 
@@ -432,7 +432,7 @@ export async function POST(request) {
         const feedbackRequest = await createFeedbackRequest(
           customer_id,
           appointment_id,
-          barbershopId,
+          barberbarbershopId,
           requestType,
           settings
         )
@@ -470,10 +470,10 @@ export async function GET(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barbershopId } = authResult
+    const { barberbarbershopId } = authResult
 
     // Process pending requests
-    const results = await processPendingRequests(barbershopId)
+    const results = await processPendingRequests(barberbarbershopId)
 
     return NextResponse.json({
       success: true,
@@ -495,7 +495,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barbershopId } = authResult
+    const { barberbarbershopId } = authResult
     const body = await request.json()
 
     const {
@@ -514,7 +514,7 @@ export async function PUT(request) {
 
     // Prepare settings data
     const settingsData = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       post_appointment_enabled: post_appointment_enabled ?? true,
       post_appointment_delay_hours: post_appointment_delay_hours ?? 2,
       post_appointment_channels: post_appointment_channels ?? ['email'],
@@ -533,7 +533,7 @@ export async function PUT(request) {
     const { data: existingSettings } = await supabase
       .from('feedback_automation_settings')
       .select('id')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single()
 
     let result
@@ -542,7 +542,7 @@ export async function PUT(request) {
       const { data, error } = await supabase
         .from('feedback_automation_settings')
         .update(settingsData)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .select()
         .single()
 

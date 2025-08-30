@@ -259,7 +259,7 @@ export default function SegmentBuilder() {
 
     const fetchSegments = async () => {
       try {
-        const response = await fetch(`/api/customer-segments?barbershop_id=${profile.barbershop_id || profile.shop_id}`, {
+        const response = await fetch(`/api/customer-segments?barberbarbershop_id=${profile.barbershop_id || profile.shop_id}`, {
           credentials: 'include'
         })
 
@@ -304,7 +304,7 @@ export default function SegmentBuilder() {
     try {
       setPreviewLoading(true)
       const segmentData = {
-        barbershop_id: profile.barbershop_id || profile.shop_id,
+        barberbarbershop_id: profile.barbershop_id || profile.shop_id,
         conditions: validConditions
       }
 
@@ -341,7 +341,7 @@ export default function SegmentBuilder() {
         name: segmentName,
         description: segmentDescription,
         type: segmentType,
-        barbershop_id: profile.barbershop_id || profile.shop_id,
+        barberbarbershop_id: profile.barbershop_id || profile.shop_id,
         conditions: validConditions,
         created_by: user.id,
         auto_update: true

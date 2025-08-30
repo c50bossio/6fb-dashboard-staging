@@ -30,14 +30,14 @@ export async function POST(request) {
     
     // Get request body
     const { 
-      barbershop_id, 
+      barberbarbershop_id, 
       barber_id, 
       start_time, 
       duration,
       exclude_appointment_id // Optional: exclude a specific appointment (for rescheduling)
     } = await request.json()
     
-    if (!barbershop_id || !barber_id || !start_time || !duration) {
+    if (!barberbarbershop_id || !barber_id || !start_time || !duration) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -48,7 +48,7 @@ export async function POST(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', barbershop_id)
+      .eq('id', barberbarbershop_id)
       .single()
     
     const isOwner = barbershop?.owner_id === user.id
@@ -57,7 +57,7 @@ export async function POST(request) {
       const { data: staffRole } = await supabase
         .from('barbershop_staff')
         .select('role')
-        .eq('barbershop_id', barbershop_id)
+        .eq('barberbarbershop_id', barberbarbershop_id)
         .eq('user_id', user.id)
         .single()
       
@@ -72,7 +72,7 @@ export async function POST(request) {
     // Use conflict detector to find conflicts
     const detector = getConflictDetector()
     const conflicts = await detector.findConflicts({
-      barbershop_id,
+      barberbarbershop_id,
       barber_id,
       start_time,
       duration
@@ -123,14 +123,14 @@ export async function GET(request) {
     
     // Get query parameters
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id')
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id')
     const barber_id = searchParams.get('barber_id')
     const date = searchParams.get('date')
     const duration = parseInt(searchParams.get('duration') || '30')
     
-    if (!barbershop_id || !barber_id || !date) {
+    if (!barberbarbershop_id || !barber_id || !date) {
       return NextResponse.json(
-        { error: 'barbershop_id, barber_id, and date are required' },
+        { error: 'barberbarbershop_id, barber_id, and date are required' },
         { status: 400 }
       )
     }
@@ -139,7 +139,7 @@ export async function GET(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id, business_settings')
-      .eq('id', barbershop_id)
+      .eq('id', barberbarbershop_id)
       .single()
     
     const isOwner = barbershop?.owner_id === user.id
@@ -148,7 +148,7 @@ export async function GET(request) {
       const { data: staffRole } = await supabase
         .from('barbershop_staff')
         .select('role')
-        .eq('barbershop_id', barbershop_id)
+        .eq('barberbarbershop_id', barberbarbershop_id)
         .eq('user_id', user.id)
         .single()
       
@@ -177,7 +177,7 @@ export async function GET(request) {
     // Use conflict detector to find available slots
     const detector = getConflictDetector()
     const availableSlots = await detector.findAvailableSlots({
-      barbershop_id,
+      barberbarbershop_id,
       barber_id,
       date,
       duration,

@@ -55,7 +55,7 @@ export async function GET(request, { params }) {
     const response = {
       id: qrSession.id,
       session_id: qrSession.session_id,
-      barbershop_id: qrSession.barbershop_id,
+      barberbarbershop_id: qrSession.barberbarbershop_id,
       cart_items: qrSession.cart_items,
       total_amount: qrSession.total_amount,
       subtotal: qrSession.subtotal,

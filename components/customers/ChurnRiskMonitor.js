@@ -360,9 +360,9 @@ export default function ChurnRiskMonitor() {
         setLoading(true)
         // Fetch churn risk data from our Next.js API routes
         const [riskResponse, trendsResponse, summaryResponse] = await Promise.all([
-          fetch(`/api/customers/analytics/churn?barbershop_id=${profile.barbershop_id}&${selectedRiskLevel !== 'all' ? `risk_level=${selectedRiskLevel}&` : ''}limit=50`),
-          fetch(`/api/customers/analytics/insights?barbershop_id=${profile.barbershop_id}&type=churn_trends&time_period=month`),
-          fetch(`/api/customers/analytics/insights?barbershop_id=${profile.barbershop_id}&type=churn_summary`)
+          fetch(`/api/customers/analytics/churn?barberbarbershop_id=${profile.barbershop_id}&${selectedRiskLevel !== 'all' ? `risk_level=${selectedRiskLevel}&` : ''}limit=50`),
+          fetch(`/api/customers/analytics/insights?barberbarbershop_id=${profile.barbershop_id}&type=churn_trends&time_period=month`),
+          fetch(`/api/customers/analytics/insights?barberbarbershop_id=${profile.barbershop_id}&type=churn_summary`)
         ])
 
         if (riskResponse.ok) {
@@ -404,7 +404,7 @@ export default function ChurnRiskMonitor() {
       await fetch(`/api/customers/analytics/churn/${customerId}/dismiss`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barbershop_id: profile.barbershop_id })
+        body: JSON.stringify({ barberbarbershop_id: profile.barbershop_id })
       })
 
       // Remove from local state

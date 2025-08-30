@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { getUserBarbershopId } from '@/lib/barbershop-helper'
+import { getUserBarberbarbershopId } from '@/lib/barbershop-helper'
 import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
 import { hasPermission } from '@/lib/permissions'
 import { isTier } from '@/lib/subscription-tiers'
@@ -70,14 +70,14 @@ export async function GET(request) {
         user: {
           id: session.user.id,
           email: session.user.email,
-          barbershop_id: null
+          barberbarbershop_id: null
         },
         error: 'Profile not found'
       })
     }
     
     // Get barbershop ID using helper function
-    const barbershopId = await getUserBarbershopId(session.user, profile)
+    const barberbarbershopId = await getUserBarberbarbershopId(session.user, profile)
     
     // Determine customer management access based on subscription tier and permissions
     const subscriptionTier = profile?.subscription_tier || 'individual'
@@ -86,10 +86,10 @@ export async function GET(request) {
     if (isTier(subscriptionTier, 'INDIVIDUAL')) {
       // Individual barber subscription gets automatic customer access
       hasCustomerAccess = true
-    } else if (barbershopId) {
+    } else if (barberbarbershopId) {
       // Employee barber - check shop owner's permission settings
       try {
-        hasCustomerAccess = await hasPermission(session.user.id, barbershopId, 'can_view_all_clients')
+        hasCustomerAccess = await hasPermission(session.user.id, barberbarbershopId, 'can_view_all_clients')
       } catch (error) {
         console.warn('Error checking customer permission:', error)
         hasCustomerAccess = false
@@ -117,7 +117,7 @@ export async function GET(request) {
       user: {
         id: session.user.id,
         email: session.user.email,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         has_customer_access: hasCustomerAccess,
         subscription_tier: subscriptionTier,
         profile: {

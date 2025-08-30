@@ -15,7 +15,7 @@ export default function BarberServices() {
   const { user, profile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [permissions, setPermissions] = useState(null)
-  const [barbershopId, setBarbershopId] = useState(null)
+  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
@@ -28,15 +28,15 @@ export default function BarberServices() {
     try {
       setLoading(true)
       
-      const shopId = await getBarberBarbershop()
-      if (!shopId) {
+      const barbershopId = await getBarberBarbershop()
+      if (!barbershopId) {
         setError('No barbershop association found. Please contact your shop owner.')
         return
       }
       
-      setBarbershopId(shopId)
+      setBarberbarbershopId(barbershopId)
       
-      const perms = await getBarberPermissions(user.id, shopId)
+      const perms = await getBarberPermissions(user.id, barbershopId)
       setPermissions(perms)
       
     } catch (error) {
@@ -198,11 +198,11 @@ export default function BarberServices() {
       )}
 
       {/* Service Manager Component */}
-      {barbershopId && (
+      {barberbarbershopId && (
         <ServiceManager
           userRole="BARBER"
           userId={user?.id}
-          barbershopId={barbershopId}
+          barberbarbershopId={barberbarbershopId}
           permissions={permissions}
           onServiceUpdate={loadBarberData}
         />

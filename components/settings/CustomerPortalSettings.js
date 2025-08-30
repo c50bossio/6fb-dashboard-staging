@@ -18,7 +18,7 @@ import {
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-export default function CustomerPortalSettings({ barbershopId, subscriptionTier = 'basic' }) {
+export default function CustomerPortalSettings({ barberbarbershopId, subscriptionTier = 'basic' }) {
   const [settings, setSettings] = useState({
     // Basic Features (All Tiers)
     allowPublicBooking: true,
@@ -119,14 +119,14 @@ export default function CustomerPortalSettings({ barbershopId, subscriptionTier 
 
   useEffect(() => {
     loadSettings()
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   const loadSettings = async () => {
     try {
       const { data, error } = await supabase
         .from('barbershops')
         .select('customer_portal_settings, booking_settings')
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
         .single()
 
       if (data) {
@@ -162,7 +162,7 @@ export default function CustomerPortalSettings({ barbershopId, subscriptionTier 
           },
           updated_at: new Date().toISOString()
         })
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
 
       if (error) throw error
 

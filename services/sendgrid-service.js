@@ -314,7 +314,7 @@ class EnhancedSendGridService {
                     }],
                     customArgs: {
                         campaign_id: campaign.id,
-                        barbershop_id: barbershop.id,
+                        barberbarbershop_id: barbershop.id,
                         recipient_id: recipient.id || crypto.randomUUID()
                     }
                 })),

@@ -52,7 +52,7 @@ export default function LocationSelector({ selectedLocation, onLocationSelect })
           const locationList = data.shops || data.locations || []
           setLocations(locationList)
           
-          // Auto-select user's current location based on shop_id
+          // Auto-select user's current location based on barbershop_id
           if (!selectedLocation && locationList.length > 0) {
             const userLocation = locationList.find(loc => 
               loc.id === profile?.shop_id || 

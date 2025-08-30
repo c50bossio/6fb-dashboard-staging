@@ -43,7 +43,7 @@ export async function GET() {
           start_time: '2025-08-24T10:00:00Z',
           duration: 60, // 10:00-11:00
           barber_id: 'barber-1',
-          barbershop_id: 'test-shop',
+          barberbarbershop_id: 'test-shop',
           status: 'confirmed'
         },
         {
@@ -51,14 +51,14 @@ export async function GET() {
           start_time: '2025-08-24T11:30:00Z', 
           duration: 90, // 11:30-13:00
           barber_id: 'barber-1',
-          barbershop_id: 'test-shop',
+          barberbarbershop_id: 'test-shop',
           status: 'confirmed'
         }
       ]
       
       // Test exact overlap
       const conflicts = await detector.findConflicts({
-        barbershop_id: 'test-shop',
+        barberbarbershop_id: 'test-shop',
         barber_id: 'barber-1',
         start_time: '2025-08-24T10:00:00Z',
         duration: 60,
@@ -96,7 +96,7 @@ export async function GET() {
       }
       
       const availableSlots = await detector.findAvailableSlots({
-        barbershop_id: 'test-shop',
+        barberbarbershop_id: 'test-shop',
         barber_id: 'barber-1',
         date: '2025-08-24',
         duration: 60,

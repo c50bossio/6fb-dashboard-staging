@@ -67,7 +67,7 @@ export default function AddLocationModal({ isOpen, onClose }) {
       ]
       
       const servicesData = defaultServices.map(service => ({
-        barbershop_id: data.id,
+        barberbarbershop_id: data.id,
         name: service.name,
         duration: service.duration,
         price: service.price,

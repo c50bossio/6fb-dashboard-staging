@@ -30,9 +30,9 @@ export default function ActionCenter({ data }) {
   const appointments = data?.appointments || []
   const alerts = data?.alerts || []
   const realtime = data?.realtime || {}
-  const barbershopId = data?.barbershop_id
+  const barberbarbershopId = data?.barberbarbershop_id
   
-  if (!barbershopId) {
+  if (!barberbarbershopId) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="text-center text-gray-500">
@@ -46,14 +46,14 @@ export default function ActionCenter({ data }) {
   // Load dynamic priority actions from API
   useEffect(() => {
     loadPriorityActions()
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   const loadPriorityActions = async () => {
     try {
       setLoadingActions(true)
       setActionsError(null)
       
-      const response = await fetch(`/api/operations/priority-actions?barbershop_id=${barbershopId}`)
+      const response = await fetch(`/api/operations/priority-actions?barberbarbershop_id=${barberbarbershopId}`)
       const result = await response.json()
       
       if (result.success && result.data?.actions) {

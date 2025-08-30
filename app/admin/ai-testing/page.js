@@ -84,7 +84,7 @@ export default function AITestingLab() {
           message: scenario.message,
           agent: 'auto', // Let the system choose the best agent for testing
           context: {
-            shopId: 'test-shop-123',
+            barbershopId: 'test-shop-123',
             testMode: true,
             dryRun: true,
             expectedTools: scenario.expectedTools

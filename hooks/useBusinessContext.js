@@ -96,7 +96,7 @@ export function useBusinessContext() {
             subscription_tier: 'pro',
             subscription_status: 'active',
             role: 'SHOP_OWNER',
-            barbershop_id: 'dev-shop-123'
+            barberbarbershop_id: 'dev-shop-123'
           }
         }
         throw error
@@ -116,14 +116,14 @@ export function useBusinessContext() {
       }
       
       // Get shop ID using service
-      const shopId = await createClient().getUserShopId(userId)
+      const barbershopId = await createClient().getUserShopId(userId)
       
-      if (!shopId) {
+      if (!barbershopId) {
         return null
       }
       
       // Get the barbershop details
-      const shop = await createClient().getBarbershop(shopId)
+      const shop = await createClient().getBarbershop(barbershopId)
       
       // Determine user role
       let role = 'CLIENT'
@@ -145,7 +145,7 @@ export function useBusinessContext() {
             .from('barbershop_staff')
             .select('role, permissions')
             .eq('user_id', userId)
-            .eq('barbershop_id', shopId)
+            .eq('barberbarbershop_id', barbershopId)
             .eq('is_active', true)
             .single()
           
@@ -157,7 +157,7 @@ export function useBusinessContext() {
       }
       
       const result = {
-        shopId,
+        barbershopId,
         shop,
         role,
         permissions,
@@ -201,7 +201,7 @@ export function useBusinessContext() {
       profile,
       
       // Business context
-      shopId: shopContext?.shopId || null,
+      barbershopId: shopContext?.barbershopId || null,
       shop: shopContext?.shop || null,
       role: shopContext?.role || 'CLIENT',
       permissions: shopContext?.permissions || [],
@@ -250,7 +250,7 @@ export function useBusinessContext() {
     shopContext: shopContextQuery.data,
     
     // Convenience accessors
-    shopId: businessContext?.shopId,
+    barbershopId: businessContext?.barbershopId,
     role: businessContext?.role,
     permissions: businessContext?.permissions || [],
     isOwner: businessContext?.isOwner || false,
@@ -290,8 +290,8 @@ export function usePermissions() {
  * Current shop hook (shorthand)
  */
 export function useCurrentShopId() {
-  const { shopId } = useBusinessContext()
-  return shopId
+  const { barbershopId } = useBusinessContext()
+  return barbershopId
 }
 
 /**

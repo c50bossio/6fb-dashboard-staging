@@ -21,7 +21,7 @@ try {
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
-        const shopId = searchParams.get('shop_id');
+        const barbershopId = searchParams.get('barbershop_id');
         const accountType = searchParams.get('account_type');
         const userId = searchParams.get('user_id');
         const limit = parseInt(searchParams.get('limit') || '50');
@@ -37,9 +37,9 @@ export async function GET(request) {
                 .limit(limit);
             
             if (userId) {
-                query = query.or(`owner_id.eq.${userId},shop_id.eq.${shopId}`);
-            } else if (shopId) {
-                query = query.eq('shop_id', shopId);
+                query = query.or(`owner_id.eq.${userId},barbershop_id.eq.${barbershopId}`);
+            } else if (barbershopId) {
+                query = query.eq('barbershop_id', barbershopId);
             }
             
             const { data, error: dbError } = await query;
@@ -61,7 +61,7 @@ export async function GET(request) {
             campaigns: campaigns,
             count: campaigns.length,
             account_type: accountType,
-            shop_id: shopId
+            barbershop_id: barbershopId
         });
 
     } catch (error) {
@@ -86,7 +86,7 @@ export async function POST(request) {
             target_audience,
             billing_account,
             user_id,
-            shop_id 
+            barbershop_id 
         } = data;
 
         if (!type || (!subject && !message)) {
@@ -99,7 +99,7 @@ export async function POST(request) {
             );
         }
 
-        if (!shop_id || !user_id) {
+        if (!barbershop_id || !user_id) {
             return NextResponse.json(
                 { 
                     success: false, 
@@ -113,7 +113,7 @@ export async function POST(request) {
         const { data: shopData, error: shopError } = await supabase
             .from('barbershops')
             .select('*')
-            .eq('id', shop_id)
+            .eq('id', barbershop_id)
             .single();
 
         if (shopError || !shopData) {
@@ -130,7 +130,7 @@ export async function POST(request) {
         let customerQuery = supabase
             .from('customers')
             .select('*')
-            .eq('shop_id', shop_id)
+            .eq('barbershop_id', barbershop_id)
             .eq('is_active', true);
 
         // Apply target audience filters
@@ -163,7 +163,7 @@ export async function POST(request) {
         
         // Store campaign in Supabase
         const campaign = {
-            shop_id: shop_id,
+            barbershop_id: barbershop_id,
             owner_id: user_id,
             name: name || `${type} Campaign - ${new Date().toLocaleDateString()}`,
             type,

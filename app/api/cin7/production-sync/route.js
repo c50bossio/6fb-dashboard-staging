@@ -44,24 +44,24 @@ export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}))
     const { 
-      barbershopId, 
+      barberbarbershopId, 
       userId, 
       syncMode = 'manual', 
       options = {},
       forceFieldDiscovery = false 
     } = body
 
-    if (!barbershopId || !userId) {
+    if (!barberbarbershopId || !userId) {
       return NextResponse.json({
         error: 'Missing required parameters',
-        message: 'barbershopId and userId are required for sync operation'
+        message: 'barberbarbershopId and userId are required for sync operation'
       }, { status: 400 })
     }
 
 
-    syncOperation = await initializeSyncOperation(barbershopId, userId, syncMode, options)
+    syncOperation = await initializeSyncOperation(barberbarbershopId, userId, syncMode, options)
     
-    const connectionData = await getCin7Connection(barbershopId, userId)
+    const connectionData = await getCin7Connection(barberbarbershopId, userId)
     if (!connectionData.success) {
       await updateSyncOperation(syncOperation.id, SYNC_STATES.FAILED, {
         error: connectionData.error,
@@ -83,7 +83,7 @@ export async function POST(request) {
 
     await updateSyncOperation(syncOperation.id, SYNC_STATES.DISCOVERING_FIELDS)
     const fieldMapping = await getOrDiscoverFieldMapping(
-      barbershopId, 
+      barberbarbershopId, 
       connectionData.accountId, 
       connectionData.apiKey, 
       forceFieldDiscovery
@@ -115,14 +115,14 @@ export async function POST(request) {
       syncOperation.id,
       cin7Client,
       fieldMapping.mappingStrategy,
-      barbershopId,
+      barberbarbershopId,
       options
     )
 
     if (syncResult.successRate < SYNC_CONSTANTS.PARTIAL_FAILURE_THRESHOLD) {
       if (SYNC_CONSTANTS.ROLLBACK_ENABLED && options.allowRollback !== false) {
         await updateSyncOperation(syncOperation.id, SYNC_STATES.ROLLING_BACK)
-        await executeRollback(syncOperation.id, rollbackData, barbershopId)
+        await executeRollback(syncOperation.id, rollbackData, barberbarbershopId)
       }
       
       await updateSyncOperation(syncOperation.id, SYNC_STATES.FAILED, {
@@ -152,7 +152,7 @@ export async function POST(request) {
     await updateConnectionSyncStatus(connectionData.connectionId, 'success', syncResult.totalProcessed)
 
     if (options.generateAlerts !== false) {
-      await generateLowStockAlerts(barbershopId)
+      await generateLowStockAlerts(barberbarbershopId)
     }
 
     return NextResponse.json({
@@ -203,21 +203,21 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const operationId = searchParams.get('operationId')
-    const barbershopId = searchParams.get('barbershopId')
+    const barberbarbershopId = searchParams.get('barberbarbershopId')
 
     if (operationId) {
       const operation = await getSyncOperationStatus(operationId)
       return NextResponse.json(operation)
     }
 
-    if (barbershopId) {
-      const operations = await getRecentSyncOperations(barbershopId)
+    if (barberbarbershopId) {
+      const operations = await getRecentSyncOperations(barberbarbershopId)
       return NextResponse.json({ operations })
     }
 
     return NextResponse.json({
       error: 'Missing parameters',
-      message: 'Provide either operationId or barbershopId'
+      message: 'Provide either operationId or barberbarbershopId'
     }, { status: 400 })
 
   } catch (error) {
@@ -258,11 +258,11 @@ export async function DELETE(request) {
 /**
  * Initialize a new sync operation record
  */
-async function initializeSyncOperation(barbershopId, userId, syncMode, options) {
+async function initializeSyncOperation(barberbarbershopId, userId, syncMode, options) {
   const { data, error } = await supabase
     .from('bulk_operations')
     .insert({
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       operation_type: 'sync',
       status: SYNC_STATES.PENDING,
       operation_data: {
@@ -332,12 +332,12 @@ async function updateSyncOperation(operationId, status, details = {}) {
 /**
  * Get Cin7 connection details for a barbershop
  */
-async function getCin7Connection(barbershopId, userId) {
+async function getCin7Connection(barberbarbershopId, userId) {
   try {
     const { data, error } = await supabase
       .from('cin7_connections')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('user_id', userId)
       .eq('is_active', true)
       .single()
@@ -379,13 +379,13 @@ async function getCin7Connection(barbershopId, userId) {
 /**
  * Get or discover field mapping for the barbershop
  */
-async function getOrDiscoverFieldMapping(barbershopId, accountId, apiKey, forceDiscovery = false) {
+async function getOrDiscoverFieldMapping(barberbarbershopId, accountId, apiKey, forceDiscovery = false) {
   try {
     if (!forceDiscovery) {
       const { data } = await supabase
         .from('cin7_field_mappings')
         .select('mapping_config')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('is_active', true)
         .single()
 
@@ -401,7 +401,7 @@ async function getOrDiscoverFieldMapping(barbershopId, accountId, apiKey, forceD
     const discoveryResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/cin7/field-discovery`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey, accountId, barbershopId })
+      body: JSON.stringify({ apiKey, accountId, barberbarbershopId })
     })
 
     if (!discoveryResponse.ok) {
@@ -467,7 +467,7 @@ async function validateFieldMapping(mappingStrategy) {
 /**
  * Execute the production sync with comprehensive error handling
  */
-async function executeProductionSync(operationId, cin7Client, mappingStrategy, barbershopId, options) {
+async function executeProductionSync(operationId, cin7Client, mappingStrategy, barberbarbershopId, options) {
   const results = {
     totalProcessed: 0,
     successfulItems: 0,
@@ -496,7 +496,7 @@ async function executeProductionSync(operationId, cin7Client, mappingStrategy, b
         page, 
         SYNC_CONSTANTS.BATCH_SIZE, 
         mappingStrategy, 
-        barbershopId,
+        barberbarbershopId,
         operationId
       )
 
@@ -536,7 +536,7 @@ async function executeProductionSync(operationId, cin7Client, mappingStrategy, b
 /**
  * Process a single batch of products
  */
-async function processBatch(cin7Client, page, batchSize, mappingStrategy, barbershopId, operationId) {
+async function processBatch(cin7Client, page, batchSize, mappingStrategy, barberbarbershopId, operationId) {
   const batchResult = {
     processed: 0,
     successful: 0,
@@ -558,13 +558,13 @@ async function processBatch(cin7Client, page, batchSize, mappingStrategy, barber
     }
 
     const transformedProducts = products.map(product => 
-      transformProduct(product, mappingStrategy, barbershopId)
+      transformProduct(product, mappingStrategy, barberbarbershopId)
     ).filter(Boolean)
 
     if (transformedProducts.length > 0) {
       const { successCount, failedCount, errors } = await batchUpsertProducts(
         transformedProducts, 
-        barbershopId
+        barberbarbershopId
       )
       
       batchResult.successful = successCount
@@ -593,7 +593,7 @@ async function processBatch(cin7Client, page, batchSize, mappingStrategy, barber
 /**
  * Transform Cin7 product using field mapping strategy
  */
-function transformProduct(cin7Product, mappingStrategy, barbershopId) {
+function transformProduct(cin7Product, mappingStrategy, barberbarbershopId) {
   try {
     const getValue = (mapping, fallbackFields = []) => {
       if (mapping && cin7Product[mapping] !== undefined) {
@@ -610,7 +610,7 @@ function transformProduct(cin7Product, mappingStrategy, barbershopId) {
     }
 
     const transformed = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       cin7_product_id: getValue(mappingStrategy.identifierMapping?.productId),
       name: getValue(mappingStrategy.identifierMapping?.name),
       sku: getValue(mappingStrategy.identifierMapping?.sku),
@@ -648,7 +648,7 @@ function transformProduct(cin7Product, mappingStrategy, barbershopId) {
 /**
  * Batch upsert products to database with conflict resolution
  */
-async function batchUpsertProducts(products, barbershopId) {
+async function batchUpsertProducts(products, barberbarbershopId) {
   const results = {
     successCount: 0,
     failedCount: 0,
@@ -659,7 +659,7 @@ async function batchUpsertProducts(products, barbershopId) {
     const { data, error } = await supabase
       .from('products')
       .upsert(products, { 
-        onConflict: 'cin7_product_id,barbershop_id',
+        onConflict: 'cin7_product_id,barberbarbershop_id',
         ignoreDuplicates: false 
       })
       .select('id, cin7_product_id')
@@ -673,7 +673,7 @@ async function batchUpsertProducts(products, barbershopId) {
     if (data && data.length > 0) {
       const changeLogs = data.map(product => ({
         product_id: product.id,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         action: 'updated',
         source: 'cin7_sync',
         timestamp: new Date().toISOString()
@@ -756,12 +756,12 @@ async function logSyncBatch(operationId, batchNumber, batchResult) {
 /**
  * Generate low stock alerts after sync
  */
-async function generateLowStockAlerts(barbershopId) {
+async function generateLowStockAlerts(barberbarbershopId) {
   try {
     const { data: lowStockProducts } = await supabase
       .from('low_stock_products')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
 
     if (lowStockProducts && lowStockProducts.length > 0) {
     }
@@ -802,7 +802,7 @@ async function updateConnectionSyncStatus(connectionId, status, itemsSynced) {
 /**
  * Execute rollback for failed sync operations
  */
-async function executeRollback(operationId, rollbackData, barbershopId) {
+async function executeRollback(operationId, rollbackData, barberbarbershopId) {
   try {
     
     await supabase
@@ -811,7 +811,7 @@ async function executeRollback(operationId, rollbackData, barbershopId) {
         cin7_sync_enabled: false,
         last_cin7_sync: null
       })
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('last_cin7_sync', new Date(Date.now() - 3600000).toISOString()) // Last hour
 
   } catch (error) {
@@ -835,11 +835,11 @@ async function getSyncOperationStatus(operationId) {
 /**
  * Get recent sync operations for a barbershop
  */
-async function getRecentSyncOperations(barbershopId, limit = 10) {
+async function getRecentSyncOperations(barberbarbershopId, limit = 10) {
   const { data } = await supabase
     .from('bulk_operations')
     .select('*')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .eq('operation_type', 'sync')
     .order('created_at', { ascending: false })
     .limit(limit)

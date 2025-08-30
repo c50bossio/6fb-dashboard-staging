@@ -9,15 +9,15 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     
-    const barbershopId = searchParams.get('barbershop_id');
+    const barberbarbershopId = searchParams.get('barberbarbershop_id');
     const userId = searchParams.get('user_id');
     const priority = searchParams.get('priority');
     const category = searchParams.get('category');
     const limit = parseInt(searchParams.get('limit') || '50');
     
-    if (!barbershopId || !userId) {
+    if (!barberbarbershopId || !userId) {
       return NextResponse.json(
-        { error: 'barbershop_id and user_id are required parameters' },
+        { error: 'barberbarbershop_id and user_id are required parameters' },
         { status: 400 }
       );
     }
@@ -28,7 +28,7 @@ export async function GET(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         user_id: userId,
         priority_filter: priority,
         category_filter: category,
@@ -57,7 +57,7 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       data: {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         user_id: userId,
         total_alerts: enrichedAlerts.length,
         alerts: enrichedAlerts,
@@ -94,7 +94,7 @@ export async function POST(request) {
     const body = await request.json();
     
     const { 
-      barbershop_id, 
+      barberbarbershop_id, 
       title, 
       message, 
       category, 
@@ -102,9 +102,9 @@ export async function POST(request) {
       metadata = {} 
     } = body;
     
-    if (!barbershop_id || !title || !message || !category || !source_data) {
+    if (!barberbarbershop_id || !title || !message || !category || !source_data) {
       return NextResponse.json(
-        { error: 'Missing required fields: barbershop_id, title, message, category, source_data' },
+        { error: 'Missing required fields: barberbarbershop_id, title, message, category, source_data' },
         { status: 400 }
       );
     }
@@ -128,7 +128,7 @@ export async function POST(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        barbershop_id,
+        barberbarbershop_id,
         title,
         message,
         category,
@@ -154,7 +154,7 @@ export async function POST(request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barbershop_id,
+          barberbarbershop_id,
           alert_data: newAlert,
           notification_type: 'new_alert'
         }),

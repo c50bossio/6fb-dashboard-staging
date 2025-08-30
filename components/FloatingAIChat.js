@@ -199,11 +199,11 @@ export default function FloatingAIChat() {
           const [shopInfo, analytics, predictions, alerts] = await Promise.allSettled([
             supabase.from('barbershops').select('*').eq('id', profileData.shop_id).single(),
             
-            fetch(`/api/analytics/live-data?barbershop_id=${profileData.shop_id}`).then(r => r.json()),
+            fetch(`/api/analytics/live-data?barberbarbershop_id=${profileData.shop_id}`).then(r => r.json()),
             
-            fetch(`/api/ai/predictive?type=comprehensive&shopId=${profileData.shop_id}`).then(r => r.json()),
+            fetch(`/api/ai/predictive?type=comprehensive&barbershopId=${profileData.shop_id}`).then(r => r.json()),
             
-            fetch(`/api/alerts/intelligent?barbershop_id=${profileData.shop_id}`).then(r => r.json())
+            fetch(`/api/alerts/intelligent?barberbarbershop_id=${profileData.shop_id}`).then(r => r.json())
           ])
 
           const shopData = shopInfo.status === 'fulfilled' ? shopInfo.value.data : null
@@ -214,12 +214,12 @@ export default function FloatingAIChat() {
           const { data: customers } = await supabase
             .from('customers')
             .select('total_spent, total_visits, created_at')
-            .eq('shop_id', profileData.shop_id)
+            .eq('barbershop_id', profileData.shop_id)
           
           const { data: bookings } = await supabase
             .from('bookings')
             .select('price, status, service_name, start_time, created_at')
-            .eq('shop_id', profileData.shop_id)
+            .eq('barbershop_id', profileData.shop_id)
             .gte('start_time', new Date().toISOString().split('T')[0])
           
           const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
@@ -230,7 +230,7 @@ export default function FloatingAIChat() {
           setShopData({
             ...shopData,
             shop_name: shopData?.name || profileData.shop_name,
-            shop_id: profileData.shop_id,
+            barbershop_id: profileData.shop_id,
             user_role: profileData.role,
             location: shopData?.location || shopData?.address || 'Main Location',
             staff_count: shopData?.staff_count || 1
@@ -677,7 +677,7 @@ export default function FloatingAIChat() {
         },
         emotion_history: userEmotionHistory.slice(-3),
         mood_trend: currentMood,
-        shopId: shopData?.shop_id || 'floating-chat',
+        barbershopId: shopData?.barbershop_id || 'floating-chat',
         sessionId: sessionId,
         userId: user?.id
       }

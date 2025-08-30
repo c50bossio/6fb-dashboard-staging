@@ -159,7 +159,7 @@ export async function POST(request) {
       const duplicateResults = await duplicateDetector.checkDuplicates(
         transformedData,
         importRecord.import_type,
-        importRecord.barbershop_id
+        importRecord.barberbarbershop_id
       )
 
       // Save to staging table
@@ -259,7 +259,7 @@ export async function POST(request) {
             // Insert new record
             const insertResult = await insertNewRecord(
               importRecord.import_type,
-              importRecord.barbershop_id,
+              importRecord.barberbarbershop_id,
               record.normalized_data
             )
             
@@ -379,7 +379,7 @@ async function updateImportStatus(importId, status, updates = {}) {
 }
 
 // Helper function to insert new record
-async function insertNewRecord(entityType, barbershopId, data) {
+async function insertNewRecord(entityType, barberbarbershopId, data) {
   try {
     let table, recordData
     
@@ -387,7 +387,7 @@ async function insertNewRecord(entityType, barbershopId, data) {
       case 'customers':
         table = 'customers'
         recordData = {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           name: data.name,
           email: data.email,
           phone: data.phone,
@@ -403,7 +403,7 @@ async function insertNewRecord(entityType, barbershopId, data) {
       case 'appointments':
         table = 'appointments'
         recordData = {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           customer_id: data.customer_id, // This needs to be resolved
           service_id: data.service_id, // This needs to be resolved
           barber_id: data.barber_id, // This needs to be resolved
@@ -420,7 +420,7 @@ async function insertNewRecord(entityType, barbershopId, data) {
       case 'services':
         table = 'services'
         recordData = {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           name: data.name,
           description: data.description,
           duration: data.duration,
@@ -434,7 +434,7 @@ async function insertNewRecord(entityType, barbershopId, data) {
       case 'barbers':
         table = 'barbershop_staff'
         recordData = {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           full_name: data.name,
           email: data.email,
           phone: data.phone,

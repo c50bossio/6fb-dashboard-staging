@@ -38,7 +38,7 @@ const customerSchema = z.object({
 const customerUpdateSchema = customerSchema.partial()
 
 const customerFilterSchema = z.object({
-  barbershop_id: z.string().uuid().optional(),
+  barberbarbershop_id: z.string().uuid().optional(),
   search: z.string().optional(),
   tags: z.array(z.string()).optional(),
   loyalty_tier: z.string().optional(),
@@ -82,26 +82,26 @@ async function getUserBarbershopContext(supabase) {
   // Get user's barbershop associations
   const { data: profile } = await supabase
     .from('profiles')
-    .select('shop_id, barbershop_id, role')
+    .select('barbershop_id, barberbarbershop_id, role')
     .eq('id', user.id)
     .single()
 
   // Determine barbershop ID
-  let barbershop_id = profile?.shop_id || profile?.barbershop_id
+  let barberbarbershop_id = profile?.shop_id || profile?.barbershop_id
 
   // If no direct association, check staff table
-  if (!barbershop_id && profile?.role !== 'SUPER_ADMIN') {
+  if (!barberbarbershop_id && profile?.role !== 'SUPER_ADMIN') {
     const { data: staffRecord } = await supabase
       .from('barbershop_staff')
-      .select('barbershop_id')
+      .select('barberbarbershop_id')
       .eq('user_id', user.id)
       .eq('is_active', true)
       .single()
     
-    barbershop_id = staffRecord?.barbershop_id
+    barberbarbershop_id = staffRecord?.barberbarbershop_id
   }
 
-  if (!barbershop_id && profile?.role !== 'SUPER_ADMIN') {
+  if (!barberbarbershop_id && profile?.role !== 'SUPER_ADMIN') {
     throw new Error('No barbershop association found')
   }
 
@@ -112,7 +112,7 @@ async function getUserBarbershopContext(supabase) {
 async function listCustomers(request) {
   try {
     const supabase = createSupabaseClient()
-    const { user, barbershop_id } = await getUserBarbershopContext(supabase)
+    const { user, barberbarbershop_id } = await getUserBarbershopContext(supabase)
 
     const url = new URL(request.url)
     const params = Object.fromEntries(url.searchParams)
@@ -123,7 +123,7 @@ async function listCustomers(request) {
       limit: params.limit ? parseInt(params.limit) : 20,
       offset: params.offset ? parseInt(params.offset) : 0,
       tags: params.tags ? params.tags.split(',') : undefined,
-      barbershop_id: params.barbershop_id || barbershop_id
+      barberbarbershop_id: params.barberbarbershop_id || barberbarbershop_id
     })
 
     let query = supabase
@@ -134,8 +134,8 @@ async function listCustomers(request) {
       `)
 
     // Apply barbershop filter
-    if (filters.barbershop_id) {
-      query = query.eq('barbershop_id', filters.barbershop_id)
+    if (filters.barberbarbershop_id) {
+      query = query.eq('barberbarbershop_id', filters.barberbarbershop_id)
     }
 
     // Apply search filter
@@ -170,7 +170,7 @@ async function listCustomers(request) {
     const { count } = await supabase
       .from('customers')
       .select('*', { count: 'exact', head: true })
-      .eq('barbershop_id', filters.barbershop_id || barbershop_id)
+      .eq('barberbarbershop_id', filters.barberbarbershop_id || barberbarbershop_id)
 
     return NextResponse.json({
       customers,
@@ -195,7 +195,7 @@ async function listCustomers(request) {
 async function createCustomer(request) {
   try {
     const supabase = createSupabaseClient()
-    const { user, barbershop_id } = await getUserBarbershopContext(supabase)
+    const { user, barberbarbershop_id } = await getUserBarbershopContext(supabase)
 
     const body = await request.json()
     const customerData = customerSchema.parse(body)
@@ -204,7 +204,7 @@ async function createCustomer(request) {
       .from('customers')
       .insert({
         ...customerData,
-        barbershop_id: barbershop_id
+        barberbarbershop_id: barberbarbershop_id
       })
       .select()
       .single()
@@ -236,7 +236,7 @@ async function createCustomer(request) {
 async function getCustomer(customerId) {
   try {
     const supabase = createSupabaseClient()
-    const { user, barbershop_id } = await getUserBarbershopContext(supabase)
+    const { user, barberbarbershop_id } = await getUserBarbershopContext(supabase)
 
     const { data: customer, error } = await supabase
       .from('customers')
@@ -248,7 +248,7 @@ async function getCustomer(customerId) {
         )
       `)
       .eq('id', customerId)
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .single()
 
     if (error) {
@@ -288,7 +288,7 @@ async function getCustomer(customerId) {
 async function updateCustomer(customerId, request) {
   try {
     const supabase = createSupabaseClient()
-    const { user, barbershop_id } = await getUserBarbershopContext(supabase)
+    const { user, barberbarbershop_id } = await getUserBarbershopContext(supabase)
 
     const body = await request.json()
     const updates = customerUpdateSchema.parse(body)
@@ -297,7 +297,7 @@ async function updateCustomer(customerId, request) {
       .from('customers')
       .update(updates)
       .eq('id', customerId)
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .select()
       .single()
 
@@ -328,7 +328,7 @@ async function updateCustomer(customerId, request) {
 async function deleteCustomer(customerId) {
   try {
     const supabase = createSupabaseClient()
-    const { user, barbershop_id } = await getUserBarbershopContext(supabase)
+    const { user, barberbarbershop_id } = await getUserBarbershopContext(supabase)
 
     // Soft delete - just mark as inactive or add deleted_at timestamp
     const { data: customer, error } = await supabase
@@ -338,7 +338,7 @@ async function deleteCustomer(customerId) {
         deleted_at: new Date().toISOString()
       })
       .eq('id', customerId)
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .select()
       .single()
 
@@ -362,7 +362,7 @@ async function deleteCustomer(customerId) {
 async function getCustomerAppointments(customerId) {
   try {
     const supabase = createSupabaseClient()
-    const { user, barbershop_id } = await getUserBarbershopContext(supabase)
+    const { user, barberbarbershop_id } = await getUserBarbershopContext(supabase)
 
     const { data: appointments, error } = await supabase
       .from('appointments')
@@ -372,7 +372,7 @@ async function getCustomerAppointments(customerId) {
         barber:profiles!appointments_barber_id_fkey(full_name)
       `)
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .order('scheduled_at', { ascending: false })
 
     if (error) {

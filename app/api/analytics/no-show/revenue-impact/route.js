@@ -16,12 +16,12 @@ import { createServerClient } from '@/lib/supabase-server'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id')
+    const barberbarbershopId = searchParams.get('barberbarbershop_id')
     const dateRange = searchParams.get('date_range') || '30_days'
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json(
-        { error: 'Missing barbershop_id parameter' },
+        { error: 'Missing barberbarbershop_id parameter' },
         { status: 400 }
       )
     }
@@ -65,7 +65,7 @@ export async function GET(request) {
           appointment_date,
           customer_id
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('created_at', startDate.toISOString()),
 
       // Payment data for recovery analysis
@@ -80,7 +80,7 @@ export async function GET(request) {
           appointment_id,
           description
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('created_at', startDate.toISOString()),
 
       // No-show fees collected
@@ -92,7 +92,7 @@ export async function GET(request) {
           status,
           created_at
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('payment_type', 'no_show_fee')
         .gte('created_at', startDate.toISOString()),
 
@@ -105,7 +105,7 @@ export async function GET(request) {
           service_price,
           created_at
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('created_at', previousStartDate.toISOString())
         .lt('created_at', startDate.toISOString()),
 
@@ -117,7 +117,7 @@ export async function GET(request) {
           no_show_fee_amount,
           policy_implemented_date
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .single()
     ])
 

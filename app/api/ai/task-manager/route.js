@@ -13,13 +13,13 @@ initializeTaskTemplates()
 
 export async function POST(request) {
   try {
-    const { action, barbershop_id, task_data } = await request.json()
+    const { action, barberbarbershop_id, task_data } = await request.json()
 
     switch (action) {
       case 'generate_tasks':
-        return await generateSmartTasks(barbershop_id)
+        return await generateSmartTasks(barberbarbershop_id)
       case 'get_tasks':
-        return await getTasks(barbershop_id, task_data)
+        return await getTasks(barberbarbershop_id, task_data)
       case 'complete_task':
         return await completeTask(task_data)
       case 'snooze_task':
@@ -41,11 +41,11 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id') || 'demo'
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id') || 'demo'
     const status = searchParams.get('status') // pending, completed, snoozed
     const priority = searchParams.get('priority') // high, medium, low
     
-    const tasks = await getTasks(barbershop_id, { status, priority })
+    const tasks = await getTasks(barberbarbershop_id, { status, priority })
     return tasks
   } catch (error) {
     console.error('Task retrieval error:', error)
@@ -59,12 +59,12 @@ export async function GET(request) {
 /**
  * Generate smart tasks based on business analytics and patterns
  */
-async function generateSmartTasks(barbershop_id) {
+async function generateSmartTasks(barberbarbershop_id) {
   try {
-    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershop_id}`)
+    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barberbarbershop_id=${barberbarbershop_id}`)
     const analyticsData = await analyticsResponse.json()
     
-    const monitorResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/business-monitor?barbershop_id=${barbershop_id}`)
+    const monitorResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/business-monitor?barberbarbershop_id=${barberbarbershop_id}`)
     const monitorData = await monitorResponse.json()
     
     const metrics = analyticsData.success ? analyticsData.data : {}
@@ -87,12 +87,12 @@ async function generateSmartTasks(barbershop_id) {
     const routineTasks = generateRoutineTasks()
     generatedTasks.push(...routineTasks)
     
-    const existingTasks = taskStorage.get(barbershop_id) || []
+    const existingTasks = taskStorage.get(barberbarbershop_id) || []
     const newTasks = generatedTasks.filter(newTask => 
       !existingTasks.some(existing => existing.template_id === newTask.template_id)
     )
     
-    taskStorage.set(barbershop_id, [...existingTasks, ...newTasks])
+    taskStorage.set(barberbarbershop_id, [...existingTasks, ...newTasks])
     
     return NextResponse.json({
       success: true,
@@ -359,8 +359,8 @@ function generateCompletionReward(priority) {
 /**
  * Get tasks for a business
  */
-async function getTasks(barbershop_id, filters = {}) {
-  const allTasks = taskStorage.get(barbershop_id) || []
+async function getTasks(barberbarbershop_id, filters = {}) {
+  const allTasks = taskStorage.get(barberbarbershop_id) || []
   
   let filteredTasks = allTasks
   
@@ -395,8 +395,8 @@ async function getTasks(barbershop_id, filters = {}) {
  * Mark a task as completed
  */
 async function completeTask(task_data) {
-  const { task_id, barbershop_id } = task_data
-  const tasks = taskStorage.get(barbershop_id) || []
+  const { task_id, barberbarbershop_id } = task_data
+  const tasks = taskStorage.get(barberbarbershop_id) || []
   
   const taskIndex = tasks.findIndex(task => task.id === task_id)
   if (taskIndex === -1) {
@@ -406,7 +406,7 @@ async function completeTask(task_data) {
   tasks[taskIndex].status = 'completed'
   tasks[taskIndex].completed_at = new Date().toISOString()
   
-  taskStorage.set(barbershop_id, tasks)
+  taskStorage.set(barberbarbershop_id, tasks)
   
   return NextResponse.json({
     success: true,
@@ -420,8 +420,8 @@ async function completeTask(task_data) {
  * Snooze a task for later
  */
 async function snoozeTask(task_data) {
-  const { task_id, barbershop_id, snooze_until } = task_data
-  const tasks = taskStorage.get(barbershop_id) || []
+  const { task_id, barberbarbershop_id, snooze_until } = task_data
+  const tasks = taskStorage.get(barberbarbershop_id) || []
   
   const taskIndex = tasks.findIndex(task => task.id === task_id)
   if (taskIndex === -1) {
@@ -431,7 +431,7 @@ async function snoozeTask(task_data) {
   tasks[taskIndex].status = 'snoozed'
   tasks[taskIndex].snoozed_until = snooze_until || new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString() // 4 hours
   
-  taskStorage.set(barbershop_id, tasks)
+  taskStorage.set(barberbarbershop_id, tasks)
   
   return NextResponse.json({
     success: true,
@@ -444,11 +444,11 @@ async function snoozeTask(task_data) {
  * Dismiss a task permanently
  */
 async function dismissTask(task_data) {
-  const { task_id, barbershop_id } = task_data
-  const tasks = taskStorage.get(barbershop_id) || []
+  const { task_id, barberbarbershop_id } = task_data
+  const tasks = taskStorage.get(barberbarbershop_id) || []
   
   const filteredTasks = tasks.filter(task => task.id !== task_id)
-  taskStorage.set(barbershop_id, filteredTasks)
+  taskStorage.set(barberbarbershop_id, filteredTasks)
   
   return NextResponse.json({
     success: true,

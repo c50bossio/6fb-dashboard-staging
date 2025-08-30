@@ -14,19 +14,19 @@ jest.mock('@/lib/feature-flags', () => ({
 
 jest.mock('../PublicBookingFlow', () => {
   return function PublicBookingFlow(props: any) {
-    return <div data-testid="public-booking-flow">PublicBookingFlow: {props.barbershopId}</div>
+    return <div data-testid="public-booking-flow">PublicBookingFlow: {props.barberbarbershopId}</div>
   }
 })
 
 jest.mock('../EnhancedBookingFlow', () => {
   return function EnhancedBookingFlow(props: any) {
-    return <div data-testid="enhanced-booking-flow">EnhancedBookingFlow: {props.barbershopId}</div>
+    return <div data-testid="enhanced-booking-flow">EnhancedBookingFlow: {props.barberbarbershopId}</div>
   }
 })
 
 jest.mock('../MobileBookingOptimizer', () => {
   return function MobileBookingOptimizer(props: any) {
-    return <div data-testid="mobile-booking-optimizer">MobileBookingOptimizer: {props.barbershopId}</div>
+    return <div data-testid="mobile-booking-optimizer">MobileBookingOptimizer: {props.barberbarbershopId}</div>
   }
 })
 
@@ -80,7 +80,7 @@ const mockFeatureFlags = {
 }
 
 const defaultProps = {
-  barbershopId: 'test-shop-123',
+  barberbarbershopId: 'test-shop-123',
   barbershopSlug: 'test-shop'
 }
 

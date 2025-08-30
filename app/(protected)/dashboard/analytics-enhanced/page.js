@@ -389,7 +389,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
   useEffect(() => {
     const fetchLocationData = async () => {
       try {
-        const response = await fetch(`/api/analytics/live-data?barbershop_id=${locationData.id}&format=json`)
+        const response = await fetch(`/api/analytics/live-data?barberbarbershop_id=${locationData.id}&format=json`)
         const result = await response.json()
         
         if (result.success && result.data) {

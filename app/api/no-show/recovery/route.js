@@ -21,7 +21,7 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -55,7 +55,7 @@ export async function GET(request) {
           client_responded
         )
       `)
-      .eq('barbershop_id', profile.barbershop_id)
+      .eq('barberbarbershop_id', profile.barbershop_id)
       .order('initiated_at', { ascending: false })
     
     // Apply filters
@@ -121,7 +121,7 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -129,13 +129,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barbershopId = profile.barbershop_id
+    const barberbarbershopId = profile.barbershop_id
 
     // Check if client is blocked
     const { data: blockedClient, error: blockedError } = await supabase
       .from('blocked_clients')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('client_id', client_id)
       .single()
     
@@ -161,7 +161,7 @@ export async function POST(request) {
     const { data: policy } = await supabase
       .from('no_show_policies')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
       .single()
     
@@ -176,7 +176,7 @@ export async function POST(request) {
       .from('blocked_client_recovery')
       .insert({
         blocked_client_id: blockedClient.id,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         client_id,
         recovery_type,
         recovery_status: 'pending',
@@ -210,7 +210,7 @@ export async function POST(request) {
         .from('no_show_recovery_attempts')
         .insert({
           recovery_id: recovery.id,
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           client_id,
           attempt_number: 1,
           communication_type: 'email',
@@ -242,7 +242,7 @@ export async function POST(request) {
         .from('no_show_recovery_attempts')
         .insert({
           recovery_id: recovery.id,
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           client_id,
           attempt_number: 1,
           communication_type: 'sms',
@@ -281,7 +281,7 @@ export async function POST(request) {
         user_id: user.id,
         action: 'initiate_recovery_workflow',
         details: {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           client_id,
           recovery_id: recovery.id,
           notifications_sent: notifications.length
@@ -327,7 +327,7 @@ export async function PUT(request) {
     // Get user's barbershop and check authorization
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -340,7 +340,7 @@ export async function PUT(request) {
       .from('blocked_client_recovery')
       .select('*')
       .eq('id', recovery_id)
-      .eq('barbershop_id', profile.barbershop_id)
+      .eq('barberbarbershop_id', profile.barbershop_id)
       .single()
     
     if (recoveryError || !recovery) {
@@ -382,7 +382,7 @@ export async function PUT(request) {
             outstanding_balance: 0,
             updated_at: new Date().toISOString()
           })
-          .eq('barbershop_id', profile.barbershop_id)
+          .eq('barberbarbershop_id', profile.barbershop_id)
           .eq('client_id', recovery.client_id)
         
         break
@@ -405,7 +405,7 @@ export async function PUT(request) {
             recovery_completed_at: new Date().toISOString(),
             unblocked_by: user.id
           })
-          .eq('barbershop_id', profile.barbershop_id)
+          .eq('barberbarbershop_id', profile.barbershop_id)
           .eq('client_id', recovery.client_id)
         
         // Reset strikes in history
@@ -420,7 +420,7 @@ export async function PUT(request) {
             risk_score: 0,
             updated_at: new Date().toISOString()
           })
-          .eq('barbershop_id', profile.barbershop_id)
+          .eq('barberbarbershop_id', profile.barbershop_id)
           .eq('client_id', recovery.client_id)
         
         break
@@ -453,7 +453,7 @@ export async function PUT(request) {
         user_id: user.id,
         action: `recovery_workflow_${action}`,
         details: {
-          barbershop_id: profile.barbershop_id,
+          barberbarbershop_id: profile.barbershop_id,
           recovery_id,
           client_id: recovery.client_id,
           notes

@@ -32,7 +32,7 @@ const AlertsDashboardPage = () => {
           // Fallback for development
           const fallbackUser = {
             id: 'user_001',
-            barbershop_id: null,
+            barberbarbershop_id: null,
             name: 'Development User',
             email: 'dev@barbershop.com'
           };
@@ -174,7 +174,7 @@ const AlertsDashboardPage = () => {
         {activeTab === 'alerts' && (
           <div className="space-y-6">
             <AlertManagementDashboard
-              barbershopId={user?.barbershop_id}
+              barberbarbershopId={user?.barberbarbershop_id}
               userId={user?.id}
               className="w-full"
             />
@@ -183,7 +183,7 @@ const AlertsDashboardPage = () => {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Create Test Alert</h3>
               <AlertCreationDemo 
-                barbershopId={user?.barbershop_id}
+                barberbarbershopId={user?.barberbarbershop_id}
                 userId={user?.id}
               />
             </div>
@@ -196,7 +196,7 @@ const AlertsDashboardPage = () => {
         
         {activeTab === 'configuration' && (
           <AlertConfigurationDashboard 
-            barbershopId={user?.barbershop_id}
+            barberbarbershopId={user?.barberbarbershop_id}
             userId={user?.id}
           />
         )}
@@ -254,7 +254,7 @@ const IntegrationStatusIndicator = ({ status }) => {
   );
 };
 
-const AlertCreationDemo = ({ barbershopId, userId }) => {
+const AlertCreationDemo = ({ barberbarbershopId, userId }) => {
   const [selectedType, setSelectedType] = useState('revenue_anomaly');
   const [customTitle, setCustomTitle] = useState('');
   const [customMessage, setCustomMessage] = useState('');
@@ -313,7 +313,7 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           title: customTitle || alertConfig.title,
           message: customMessage || alertConfig.message,
           category: selectedType,
@@ -486,7 +486,7 @@ const AlertAnalyticsDashboard = ({ integrationStatus }) => {
   );
 };
 
-const AlertConfigurationDashboard = ({ barbershopId, userId }) => {
+const AlertConfigurationDashboard = ({ barberbarbershopId, userId }) => {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow p-6">

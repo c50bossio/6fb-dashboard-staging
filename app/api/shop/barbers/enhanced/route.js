@@ -69,7 +69,7 @@ export async function GET(request) {
           is_available
         )
       `)
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('role', 'BARBER')
     
     // Add view-specific data
@@ -116,7 +116,7 @@ export async function GET(request) {
         .from('barber_performance')
         .select('total_revenue, total_appointments, average_rating')
         .eq('barber_id', barber.user_id)
-        .eq('barbershop_id', shop.id)
+        .eq('barberbarbershop_id', shop.id)
         .eq('period_type', 'monthly')
         .gte('period_start', startOfMonth.toISOString())
         .single()
@@ -126,7 +126,7 @@ export async function GET(request) {
         .from('appointments')
         .select('*', { count: 'exact', head: true })
         .eq('barber_id', barber.user_id)
-        .eq('barbershop_id', shop.id)
+        .eq('barberbarbershop_id', shop.id)
         .gte('appointment_date', now.toISOString())
         .eq('status', 'confirmed')
       
@@ -215,7 +215,7 @@ export async function POST(request) {
     const { error: staffError } = await supabase
       .from('barbershop_staff')
       .insert({
-        barbershop_id: shop.id,
+        barberbarbershop_id: shop.id,
         user_id: barberId,
         role: 'BARBER',
         is_active: true,
@@ -251,7 +251,7 @@ export async function POST(request) {
     const { error: financialError } = await supabase
       .from('financial_arrangements')
       .insert({
-        barbershop_id: shop.id,
+        barberbarbershop_id: shop.id,
         barber_id: barberId,
         type: data.financialModel,
         commission_percentage: data.financialModel === 'commission' ? data.commissionRate : null,
@@ -273,7 +273,7 @@ export async function POST(request) {
       .from('barber_customizations')
       .insert({
         user_id: barberId,
-        barbershop_id: shop.id,
+        barberbarbershop_id: shop.id,
         display_name: data.fullName,
         ...normalizeNameData({ fullName: data.fullName }),
         bio: data.bio,
@@ -302,7 +302,7 @@ export async function POST(request) {
             .from('barber_availability')
             .insert({
               user_id: barberId,
-              barbershop_id: shop.id,
+              barberbarbershop_id: shop.id,
               day_of_week: day,
               start_time: schedule.start,
               end_time: schedule.end,
@@ -318,7 +318,7 @@ export async function POST(request) {
       .from('barber_onboarding')
       .insert({
         barber_id: barberId,
-        barbershop_id: shop.id,
+        barberbarbershop_id: shop.id,
         profile_completed: true,
         profile_completed_at: new Date().toISOString(),
         chair_assigned: data.chairNumber ? true : false,
@@ -403,7 +403,7 @@ export async function PATCH(request) {
           .from('barbershop_staff')
           .update(updates.staff)
           .eq('user_id', barberId)
-          .eq('barbershop_id', shop.id)
+          .eq('barberbarbershop_id', shop.id)
       )
     }
     
@@ -414,7 +414,7 @@ export async function PATCH(request) {
           .from('financial_arrangements')
           .update(updates.financial)
           .eq('barber_id', barberId)
-          .eq('barbershop_id', shop.id)
+          .eq('barberbarbershop_id', shop.id)
           .eq('is_active', true)
       )
     }
@@ -426,7 +426,7 @@ export async function PATCH(request) {
           .from('barber_customizations')
           .update(updates.customization)
           .eq('user_id', barberId)
-          .eq('barbershop_id', shop.id)
+          .eq('barberbarbershop_id', shop.id)
       )
     }
     
@@ -437,11 +437,11 @@ export async function PATCH(request) {
         .from('barber_availability')
         .delete()
         .eq('user_id', barberId)
-        .eq('barbershop_id', shop.id)
+        .eq('barberbarbershop_id', shop.id)
       
       const availabilityInserts = updates.availability.map(schedule => ({
         user_id: barberId,
-        barbershop_id: shop.id,
+        barberbarbershop_id: shop.id,
         ...schedule
       }))
       
@@ -497,7 +497,7 @@ export async function DELETE(request) {
         termination_date: new Date().toISOString().split('T')[0]
       })
       .eq('user_id', barberId)
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
     
     if (error) {
       return NextResponse.json({ error: 'Failed to deactivate barber' }, { status: 500 })
@@ -511,7 +511,7 @@ export async function DELETE(request) {
         end_date: new Date().toISOString().split('T')[0]
       })
       .eq('barber_id', barberId)
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
     
     return NextResponse.json({ 
       success: true,

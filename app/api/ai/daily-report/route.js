@@ -8,17 +8,17 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request) {
   try {
-    const { report_type, barbershop_id, date_range } = await request.json()
+    const { report_type, barberbarbershop_id, date_range } = await request.json()
 
     switch (report_type) {
       case 'daily':
-        return await generateDailyReport(barbershop_id, date_range)
+        return await generateDailyReport(barberbarbershop_id, date_range)
       case 'weekly':
-        return await generateWeeklyReport(barbershop_id, date_range)
+        return await generateWeeklyReport(barberbarbershop_id, date_range)
       case 'monthly':
-        return await generateMonthlyReport(barbershop_id, date_range)
+        return await generateMonthlyReport(barberbarbershop_id, date_range)
       case 'business_pulse':
-        return await generateBusinessPulse(barbershop_id)
+        return await generateBusinessPulse(barberbarbershop_id)
       default:
         return NextResponse.json({ error: 'Unknown report type' }, { status: 400 })
     }
@@ -34,10 +34,10 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id') || 'demo'
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id') || 'demo'
     const report_type = searchParams.get('type') || 'business_pulse'
     
-    const report = await generateBusinessPulse(barbershop_id)
+    const report = await generateBusinessPulse(barberbarbershop_id)
     return report
   } catch (error) {
     console.error('Report generation error:', error)
@@ -51,9 +51,9 @@ export async function GET(request) {
 /**
  * Generate comprehensive daily business report
  */
-async function generateDailyReport(barbershop_id, date_range) {
+async function generateDailyReport(barberbarbershop_id, date_range) {
   try {
-    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershop_id}`)
+    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barberbarbershop_id=${barberbarbershop_id}`)
     const analyticsData = await analyticsResponse.json()
     
     const metrics = analyticsData.success ? analyticsData.data : {}
@@ -64,7 +64,7 @@ async function generateDailyReport(barbershop_id, date_range) {
     const report = {
       report_type: 'daily',
       generated_at: new Date().toISOString(),
-      barbershop_id,
+      barberbarbershop_id,
       date: today.toISOString().split('T')[0],
       
       performance_summary: generatePerformanceSummary(metrics),
@@ -148,11 +148,11 @@ async function generateDailyReport(barbershop_id, date_range) {
 /**
  * Generate weekly business summary
  */
-async function generateWeeklyReport(barbershop_id, date_range) {
+async function generateWeeklyReport(barberbarbershop_id, date_range) {
   const report = {
     report_type: 'weekly',
     generated_at: new Date().toISOString(),
-    barbershop_id,
+    barberbarbershop_id,
     week_ending: new Date().toISOString().split('T')[0],
     
     weekly_summary: {
@@ -211,11 +211,11 @@ async function generateWeeklyReport(barbershop_id, date_range) {
 /**
  * Generate monthly business analysis
  */
-async function generateMonthlyReport(barbershop_id, date_range) {
+async function generateMonthlyReport(barberbarbershop_id, date_range) {
   const report = {
     report_type: 'monthly',
     generated_at: new Date().toISOString(),
-    barbershop_id,
+    barberbarbershop_id,
     month: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     
     monthly_performance: {
@@ -273,19 +273,19 @@ async function generateMonthlyReport(barbershop_id, date_range) {
 /**
  * Generate quick business pulse report
  */
-async function generateBusinessPulse(barbershop_id) {
+async function generateBusinessPulse(barberbarbershop_id) {
   try {
     const currentTime = new Date()
     const greeting = getTimeBasedGreeting()
     
-    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershop_id}`)
+    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barberbarbershop_id=${barberbarbershop_id}`)
     const analyticsData = await analyticsResponse.json()
     const metrics = analyticsData.success ? analyticsData.data : {}
     
     const pulse = {
       greeting,
       timestamp: currentTime.toISOString(),
-      barbershop_id,
+      barberbarbershop_id,
       
       business_status: {
         overall_health: '🟢 Excellent',

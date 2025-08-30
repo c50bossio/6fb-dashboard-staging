@@ -6,32 +6,32 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT';
  * Hook for fetching and managing appointments
  * Uses React Query for caching and background updates
  */
-export const useAppointments = (shopId, dateRange = null) => {
+export const useAppointments = (barbershopId, dateRange = null) => {
   const queryClient = useQueryClient();
   
   // Main query for appointments
   const query = useQuery({
-    queryKey: ['appointments', shopId, dateRange],
-    queryFn: () => createClient().getAppointments(shopId, dateRange),
-    enabled: !!shopId,
+    queryKey: ['appointments', barbershopId, dateRange],
+    queryFn: () => createClient().getAppointments(barbershopId, dateRange),
+    enabled: !!barbershopId,
     staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 
   // Real-time subscription
   useEffect(() => {
-    if (!shopId) return;
+    if (!barbershopId) return;
 
-    const unsubscribe = createClient().subscribeToAppointments(shopId, (payload) => {
+    const unsubscribe = createClient().subscribeToAppointments(barbershopId, (payload) => {
       // Invalidate cache when appointments change
-      queryClient.invalidateQueries({ queryKey: ['appointments', shopId] });
+      queryClient.invalidateQueries({ queryKey: ['appointments', barbershopId] });
       
       // Also invalidate dashboard stats
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats', shopId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats', barbershopId] });
     });
 
     return unsubscribe;
-  }, [shopId, queryClient]);
+  }, [barbershopId, queryClient]);
 
   return query;
 };
@@ -49,9 +49,9 @@ export const useCreateAppointment = () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       
       // Optionally update cache optimistically
-      const shopId = data.barbershop_id;
+      const barbershopId = data.barberbarbershop_id;
       queryClient.setQueryData(
-        ['appointments', shopId],
+        ['appointments', barbershopId],
         (oldData) => oldData ? [...oldData, data] : [data]
       );
     },

@@ -273,7 +273,7 @@ async function executeTools(tools, context, agent) {
  * Real business integrations with fallback to mock data in test mode
  */
 async function executeTool(toolName, context, agent) {
-  const shopId = context.shopId || 'default-shop'
+  const barbershopId = context.barbershopId || 'default-shop'
   const testMode = context.testMode || false
   const startTime = Date.now()
 
@@ -327,26 +327,26 @@ async function getBusinessMetrics(context, testMode) {
   
   // Never use test mode - always check real data and provide honest responses
   const supabase = await createClient()
-  const shopId = context.shopId || 'default-shop'
+  const barbershopId = context.barbershopId || 'default-shop'
 
   try {
     // Get real appointments data
     const { data: appointments, error: aptError } = await supabase
       .from('appointments')
       .select('*')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
 
     // Get real bookings data  
     const { data: bookings, error: bookError } = await supabase
       .from('bookings')
       .select('*')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
 
     // Get real customers data
     const { data: customers, error: custError } = await supabase
       .from('customers')
       .select('*')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
 
     const appointmentCount = appointments?.length || 0
     const bookingCount = bookings?.length || 0
@@ -504,7 +504,7 @@ async function checkAppointmentAvailability(context, testMode) {
       available: true,
       slots: ['9:00 AM', '11:00 AM', '2:00 PM', '4:00 PM'],
       date: context.date || 'tomorrow',
-      shopId: context.shopId,
+      barbershopId: context.barbershopId,
       executionTime: Date.now() - startTime
     }
   }
@@ -517,7 +517,7 @@ async function checkAppointmentAvailability(context, testMode) {
     const { data: existingAppointments, error } = await supabase
       .from('appointments')
       .select('start_time, end_time')
-      .eq('shop_id', context.shopId)
+      .eq('barbershop_id', context.barbershopId)
       .eq('date', targetDate)
       .eq('status', 'confirmed')
 
@@ -532,7 +532,7 @@ async function checkAppointmentAvailability(context, testMode) {
       available: availableSlots.length > 0,
       slots: availableSlots,
       date: targetDate,
-      shopId: context.shopId,
+      barbershopId: context.barbershopId,
       totalSlots: businessHours.length,
       bookedSlots: bookedTimes.length,
       executionTime: Date.now() - startTime
@@ -543,7 +543,7 @@ async function checkAppointmentAvailability(context, testMode) {
       available: true,
       slots: ['9:00 AM', '11:00 AM', '2:00 PM', '4:00 PM'],
       date: context.date || 'tomorrow',
-      shopId: context.shopId,
+      barbershopId: context.barbershopId,
       error: 'Using fallback data',
       executionTime: Date.now() - startTime
     }
@@ -572,7 +572,7 @@ async function bookAppointment(context, testMode) {
     const supabase = await createClient()
     
     const appointmentData = {
-      shop_id: context.shopId,
+      barbershop_id: context.barbershopId,
       customer_name: context.customerName || 'Walk-in',
       date: context.date || 'tomorrow',
       start_time: context.time || '2:00 PM',
@@ -641,7 +641,7 @@ async function getCustomerInformation(context, testMode) {
     const { data: customers, error } = await supabase
       .from('customers')
       .select('*')
-      .eq('shop_id', context.shopId)
+      .eq('barbershop_id', context.barbershopId)
       .or(`name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%`)
       .limit(1)
 
@@ -857,7 +857,7 @@ function countKeywordMatches(text, keywords) {
 
 function extractToolParams(toolName, context) {
   const baseParams = {
-    shopId: context.shopId || 'default-shop',
+    barbershopId: context.barbershopId || 'default-shop',
     testMode: context.testMode || false
   }
 

@@ -75,7 +75,7 @@ export async function GET(request) {
           full_name
         )
       `)
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .order('created_at', { ascending: false })
     
     if (arrangementsError) {
@@ -108,7 +108,7 @@ export async function GET(request) {
     const { data: transactions } = await supabase
       .from('transactions')
       .select('*')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .gte('created_at', startOfMonth.toISOString())
       .lte('created_at', endOfMonth.toISOString())
       .eq('payment_status', 'completed')
@@ -138,7 +138,7 @@ export async function GET(request) {
     const { data: payouts } = await supabase
       .from('payouts')
       .select('*')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
     
     const pendingPayouts = payouts
       ? payouts.filter(p => p.status === 'pending').reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0)
@@ -230,7 +230,7 @@ export async function POST(request) {
     }
     
     const arrangementToInsert = {
-      barbershop_id: shop.id,
+      barberbarbershop_id: shop.id,
       barber_id: arrangementData.barber_id,
       type: arrangementData.type,
       commission_percentage: arrangementData.type !== 'booth_rent' ? arrangementData.commission_percentage : null,
@@ -246,7 +246,7 @@ export async function POST(request) {
     const { data: existing } = await supabase
       .from('financial_arrangements')
       .select('id')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('barber_id', arrangementData.barber_id)
       .eq('is_active', true)
       .single()

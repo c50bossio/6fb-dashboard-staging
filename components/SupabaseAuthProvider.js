@@ -65,8 +65,8 @@ function SupabaseAuthProvider({ children }) {
         // BookedBarber-specific debugging
         console.log('🏪 BookedBarber: Profile details:', {
           role: profileData.role,
-          shop_id: profileData.shop_id,
-          barbershop_id: profileData.barbershop_id,
+          barbershop_id: profileData.shop_id,
+          barberbarbershop_id: profileData.barbershop_id,
           subscription_tier: profileData.subscription_tier,
           subscription_status: profileData.subscription_status
         })
@@ -75,7 +75,7 @@ function SupabaseAuthProvider({ children }) {
         const hasShopId = profileData.shop_id || profileData.barbershop_id
         console.log('🏪 BookedBarber: Shop association check:', {
           hasDirectShop: !!profileData.shop_id,
-          hasBarbershopId: !!profileData.barbershop_id,
+          hasBarberbarbershopId: !!profileData.barbershop_id,
           needsStaffLookup: !hasShopId
         })
         
@@ -160,7 +160,7 @@ function SupabaseAuthProvider({ children }) {
             subscription_tier: 'pro',
             subscription_status: 'active',
             role: 'SHOP_OWNER',
-            barbershop_id: 'dev-shop-123',
+            barberbarbershop_id: 'dev-shop-123',
             onboarding_completed: true
           }
           
@@ -287,7 +287,7 @@ function SupabaseAuthProvider({ children }) {
                   console.log('🏪 BookedBarber: Profile details for dashboard:', {
                     role: profileData.role,
                     hasShopId: !!profileData.shop_id,
-                    hasBarbershopId: !!profileData.barbershop_id,
+                    hasBarberbarbershopId: !!profileData.barbershop_id,
                     subscriptionTier: profileData.subscription_tier,
                     subscriptionStatus: profileData.subscription_status,
                     onboardingCompleted: profileData.onboarding_completed,

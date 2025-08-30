@@ -29,7 +29,7 @@ export async function POST(request) {
       case 'update_notification_status':
         return await updateNotificationStatus(supabase, notification_id, booking_data)
       case 'get_customer_communication_history':
-        return await getCommunicationHistory(supabase, booking_data.customer_id, booking_data.barbershop_id)
+        return await getCommunicationHistory(supabase, booking_data.customer_id, booking_data.barberbarbershop_id)
       case 'reschedule_notifications':
         return await rescheduleNotifications(supabase, booking_data)
       default:
@@ -50,7 +50,7 @@ export async function GET(request) {
     const supabase = createClient(cookieStore)
     const { searchParams } = new URL(request.url)
     
-    const barbershop_id = searchParams.get('barbershop_id')
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id')
     const type = searchParams.get('type') || 'summary'
     const customer_id = searchParams.get('customer_id')
     
@@ -63,11 +63,11 @@ export async function GET(request) {
 
     switch (type) {
       case 'effectiveness_metrics':
-        return await getNotificationEffectiveness(supabase, barbershop_id)
+        return await getNotificationEffectiveness(supabase, barberbarbershop_id)
       case 'upcoming_notifications':
-        return await getUpcomingNotifications(supabase, barbershop_id)
+        return await getUpcomingNotifications(supabase, barberbarbershop_id)
       case 'communication_history':
-        return await getCommunicationHistory(supabase, customer_id, barbershop_id)
+        return await getCommunicationHistory(supabase, customer_id, barberbarbershop_id)
       default:
         return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
     }
@@ -87,7 +87,7 @@ export async function GET(request) {
 async function processNewBookingNotifications(bookingData) {
   try {
     // Validate required booking data
-    const requiredFields = ['customer_id', 'barbershop_id', 'appointment_time', 'booking_id']
+    const requiredFields = ['customer_id', 'barberbarbershop_id', 'appointment_time', 'booking_id']
     const missingFields = requiredFields.filter(field => !bookingData[field])
     
     if (missingFields.length > 0) {
@@ -118,7 +118,7 @@ async function processNewBookingNotifications(bookingData) {
     }
 
     // Log successful processing for analytics
-    await logNotificationMetrics(bookingData.barbershop_id, {
+    await logNotificationMetrics(bookingData.barberbarbershop_id, {
       risk_tier: result.risk_tier,
       scheduled_count: result.scheduled_count,
       communication_strategy: result.communication_strategy
@@ -167,7 +167,7 @@ async function updateNotificationStatus(supabase, notificationId, statusData) {
 
     // If customer responded, update their engagement score
     if (statusData.status === 'responded') {
-      await updateCustomerEngagementScore(supabase, statusData.customer_id, statusData.barbershop_id)
+      await updateCustomerEngagementScore(supabase, statusData.customer_id, statusData.barberbarbershop_id)
     }
 
     return NextResponse.json({
@@ -187,7 +187,7 @@ async function updateNotificationStatus(supabase, notificationId, statusData) {
 /**
  * Get communication history for a customer
  */
-async function getCommunicationHistory(supabase, customerId, barbershopId) {
+async function getCommunicationHistory(supabase, customerId, barberbarbershopId) {
   try {
     const { data, error } = await supabase
       .from('scheduled_notifications')
@@ -196,7 +196,7 @@ async function getCommunicationHistory(supabase, customerId, barbershopId) {
         booking_notification_plans(communication_strategy)
       `)
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .order('scheduled_time', { ascending: false })
       .limit(20)
 
@@ -237,7 +237,7 @@ async function getCommunicationHistory(supabase, customerId, barbershopId) {
  */
 async function rescheduleNotifications(supabase, rescheduleData) {
   try {
-    const { booking_id, new_appointment_time, customer_id, barbershop_id } = rescheduleData
+    const { booking_id, new_appointment_time, customer_id, barberbarbershop_id } = rescheduleData
 
     // Get existing notification plan
     const { data: existingPlan } = await supabase
@@ -291,13 +291,13 @@ async function rescheduleNotifications(supabase, rescheduleData) {
 /**
  * Get notification effectiveness metrics for barbershop dashboard
  */
-async function getNotificationEffectiveness(supabase, barbershopId) {
+async function getNotificationEffectiveness(supabase, barberbarbershopId) {
   try {
     // Query notification performance by tier
     const { data: performance, error } = await supabase
       .from('notification_effectiveness_view')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
 
     if (error) {
       console.error('Performance query error:', error)
@@ -310,7 +310,7 @@ async function getNotificationEffectiveness(supabase, barbershopId) {
         *,
         booking_notification_plans(customer_risk_tier)
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
 
     if (!notifications || notifications.length === 0) {
@@ -382,7 +382,7 @@ async function getNotificationEffectiveness(supabase, barbershopId) {
 /**
  * Get upcoming notifications for barbershop dashboard
  */
-async function getUpcomingNotifications(supabase, barbershopId) {
+async function getUpcomingNotifications(supabase, barberbarbershopId) {
   try {
     const { data, error } = await supabase
       .from('scheduled_notifications')
@@ -391,7 +391,7 @@ async function getUpcomingNotifications(supabase, barbershopId) {
         customers(name, phone),
         booking_notification_plans(customer_risk_tier, communication_strategy)
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('status', 'pending')
       .gte('scheduled_time', new Date().toISOString())
       .order('scheduled_time', { ascending: true })
@@ -420,17 +420,17 @@ async function getUpcomingNotifications(supabase, barbershopId) {
  * Helper functions
  */
 
-async function logNotificationMetrics(barbershopId, metrics) {
+async function logNotificationMetrics(barberbarbershopId, metrics) {
   // Implementation would log to analytics system
   
 }
 
-async function updateCustomerEngagementScore(supabase, customerId, barbershopId) {
+async function updateCustomerEngagementScore(supabase, customerId, barberbarbershopId) {
   // Update customer behavior score based on notification engagement
   try {
     const { error } = await supabase.rpc('update_customer_engagement_score', {
       p_customer_id: customerId,
-      p_barbershop_id: barbershopId,
+      p_barberbarbershop_id: barberbarbershopId,
       p_engagement_improvement: 5 // Points for responding to notifications
     })
 

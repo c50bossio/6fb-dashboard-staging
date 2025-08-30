@@ -23,7 +23,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      barbershop_id,
+      barberbarbershop_id,
       inventory_id,
       adjustment_type,
       quantity_change,
@@ -33,7 +33,7 @@ export async function POST(request) {
     } = body;
 
     // Validate required fields
-    if (!barbershop_id || !inventory_id || !adjustment_type || quantity_change === undefined) {
+    if (!barberbarbershop_id || !inventory_id || !adjustment_type || quantity_change === undefined) {
       return NextResponse.json({ 
         error: 'Missing required fields' 
       }, { status: 400 });
@@ -76,7 +76,7 @@ export async function POST(request) {
 
     // Record movement
     const movementData = {
-      barbershop_id,
+      barberbarbershop_id,
       barbershop_inventory_id: inventory_id,
       movement_type: adjustment_type,
       quantity_change,
@@ -108,7 +108,7 @@ export async function POST(request) {
       await supabase
         .from('inventory_alerts')
         .insert({
-          barbershop_id,
+          barberbarbershop_id,
           alert_type: alertType,
           severity,
           barbershop_inventory_id: inventory_id,
@@ -162,9 +162,9 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { barbershop_id, adjustments, adjustment_type = 'count' } = body;
+    const { barberbarbershop_id, adjustments, adjustment_type = 'count' } = body;
 
-    if (!barbershop_id || !adjustments || !Array.isArray(adjustments)) {
+    if (!barberbarbershop_id || !adjustments || !Array.isArray(adjustments)) {
       return NextResponse.json({ 
         error: 'Invalid request format' 
       }, { status: 400 });
@@ -207,7 +207,7 @@ export async function PUT(request) {
         await supabase
           .from('inventory_movements')
           .insert({
-            barbershop_id,
+            barberbarbershop_id,
             barbershop_inventory_id: adjustment.inventory_id,
             movement_type: adjustment_type,
             quantity_change: quantityChange,

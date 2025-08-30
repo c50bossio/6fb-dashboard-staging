@@ -129,7 +129,7 @@ export async function GET(request) {
     const { count: activeBarbers } = await supabase
       .from('barbershop_staff')
       .select('*', { count: 'exact', head: true })
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('role', 'BARBER')
       .eq('is_active', true)
     
@@ -144,7 +144,7 @@ export async function GET(request) {
     const { count: todayBookings } = await supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .gte('start_time', todayISO)
       .lt('start_time', tomorrowISO)
       .in('status', ['confirmed', 'completed'])
@@ -155,14 +155,14 @@ export async function GET(request) {
     const { count: monthlyBookings } = await supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .gte('start_time', firstDayOfMonthISO)
       .in('status', ['confirmed', 'completed'])
     
     const { data: revenueData } = await supabase
       .from('transactions')
       .select('amount')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .gte('created_at', firstDayOfMonthISO)
       .eq('status', 'completed')
     
@@ -171,7 +171,7 @@ export async function GET(request) {
     const { data: totalRevenueData } = await supabase
       .from('transactions')
       .select('amount')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('status', 'completed')
     
     const totalRevenue = totalRevenueData?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0
@@ -179,12 +179,12 @@ export async function GET(request) {
     const { count: totalClients } = await supabase
       .from('customers')
       .select('*', { count: 'exact', head: true })
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
     
     const { data: reviews } = await supabase
       .from('reviews')
       .select('rating')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
     
     const avgRating = reviews?.length > 0 
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
@@ -222,7 +222,7 @@ export async function GET(request) {
   }
 }
 
-async function calculateRevenueChange(supabase, shopId, currentMonthRevenue) {
+async function calculateRevenueChange(supabase, barbershopId, currentMonthRevenue) {
   try {
     const today = new Date()
     const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
@@ -231,7 +231,7 @@ async function calculateRevenueChange(supabase, shopId, currentMonthRevenue) {
     const { data: previousRevenueData } = await supabase
       .from('transactions')
       .select('amount')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .gte('created_at', previousMonth.toISOString())
       .lte('created_at', previousMonthEnd.toISOString())
       .eq('status', 'completed')
@@ -249,7 +249,7 @@ async function calculateRevenueChange(supabase, shopId, currentMonthRevenue) {
   }
 }
 
-async function calculateBookingsChange(supabase, shopId, currentMonthBookings) {
+async function calculateBookingsChange(supabase, barbershopId, currentMonthBookings) {
   try {
     const today = new Date()
     const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
@@ -258,7 +258,7 @@ async function calculateBookingsChange(supabase, shopId, currentMonthBookings) {
     const { count: previousBookings } = await supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .gte('start_time', previousMonth.toISOString())
       .lte('start_time', previousMonthEnd.toISOString())
       .in('status', ['confirmed', 'completed'])

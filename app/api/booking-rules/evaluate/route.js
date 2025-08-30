@@ -12,9 +12,9 @@ export async function POST(request) {
     const bookingRequest = await request.json()
     
     // Validate required fields
-    if (!bookingRequest.barbershop_id) {
+    if (!bookingRequest.barberbarbershop_id) {
       return NextResponse.json(
-        { error: 'barbershop_id is required' },
+        { error: 'barberbarbershop_id is required' },
         { status: 400 }
       )
     }
@@ -27,7 +27,7 @@ export async function POST(request) {
     }
     
     // Initialize rule engine
-    const ruleEngine = new RuleEngine(bookingRequest.barbershop_id)
+    const ruleEngine = new RuleEngine(bookingRequest.barberbarbershop_id)
     
     // Evaluate the booking request
     const startTime = Date.now()
@@ -39,7 +39,7 @@ export async function POST(request) {
     
     // Log if evaluation was slow
     if (evaluationTime > 100) {
-      console.warn(`Slow rule evaluation: ${evaluationTime}ms for barbershop ${bookingRequest.barbershop_id}`)
+      console.warn(`Slow rule evaluation: ${evaluationTime}ms for barbershop ${bookingRequest.barberbarbershop_id}`)
     }
     
     // Return evaluation result
@@ -67,11 +67,11 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id')
+    const barberbarbershopId = searchParams.get('barberbarbershop_id')
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json(
-        { error: 'barbershop_id is required' },
+        { error: 'barberbarbershop_id is required' },
         { status: 400 }
       )
     }
@@ -82,7 +82,7 @@ export async function GET(request) {
     const { data: rules, error } = await supabase
       .from('booking_rules_v2')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
       .single()
     
@@ -95,13 +95,13 @@ export async function GET(request) {
       const { data: barbershop } = await supabase
         .from('barbershops')
         .select('booking_settings, payment_settings, business_hours')
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
         .single()
       
       const { data: businessSettings } = await supabase
         .from('business_settings')
         .select('booking_rules')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .single()
       
       // Merge legacy settings

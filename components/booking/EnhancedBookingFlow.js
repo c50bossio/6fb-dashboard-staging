@@ -47,7 +47,7 @@ const getServiceImage = (category, serviceName) => {
 }
 
 export default function EnhancedBookingFlow({ 
-  barbershopId, 
+  barberbarbershopId, 
   barbershopSlug, 
   preselectedBarber = null,
   preselectedService = null 
@@ -104,7 +104,7 @@ export default function EnhancedBookingFlow({
     loadServices()
     loadBarbers()
     loadAddOns()
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   useEffect(() => {
     // Auto-load slots when service and barber are selected
@@ -115,7 +115,7 @@ export default function EnhancedBookingFlow({
 
   const loadBarbershopData = async () => {
     try {
-      const response = await fetch(`/api/public/barbershop?id=${barbershopId}`)
+      const response = await fetch(`/api/public/barbershop?id=${barberbarbershopId}`)
       const data = await response.json()
       if (data.success) {
         setBarbershopInfo(data.barbershop)
@@ -127,7 +127,7 @@ export default function EnhancedBookingFlow({
 
   const loadServices = async () => {
     try {
-      const response = await fetch(`/api/public/services?barbershop_id=${barbershopId}`)
+      const response = await fetch(`/api/public/services?barberbarbershop_id=${barberbarbershopId}`)
       const data = await response.json()
       if (data.success) {
         setServices(data.services.map(service => ({
@@ -174,7 +174,7 @@ export default function EnhancedBookingFlow({
 
   const loadBarbers = async () => {
     try {
-      const response = await fetch(`/api/public/barbers?barbershop_id=${barbershopId}`)
+      const response = await fetch(`/api/public/barbers?barberbarbershop_id=${barberbarbershopId}`)
       const data = await response.json()
       if (data.success) {
         setBarbers(data.barbers)
@@ -329,7 +329,7 @@ export default function EnhancedBookingFlow({
     try {
       const totals = calculateTotals()
       const bookingData = {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         barber_id: selectedBarber?.id || 'any',
         service_id: selectedService.id,
         service_name: selectedService.name,

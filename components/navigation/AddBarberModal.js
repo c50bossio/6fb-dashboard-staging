@@ -42,7 +42,7 @@ export default function AddBarberModal({ isOpen, onClose, onBarberAdded, locatio
           ...formData,
           locationId,
           inviteType: activeTab,
-          barbershopId: locationId // Add for compatibility with existing API
+          barberbarbershopId: locationId // Add for compatibility with existing API
         })
       })
 

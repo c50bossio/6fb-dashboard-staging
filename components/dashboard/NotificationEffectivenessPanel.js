@@ -56,7 +56,7 @@ const CHANNEL_ICONS = {
  * Displays analytics and management interface for risk-based notification system
  * Integrates with the new notification engine to show real-time effectiveness metrics
  */
-export default function NotificationEffectivenessPanel({ barbershopId }) {
+export default function NotificationEffectivenessPanel({ barberbarbershopId }) {
   const [effectivenessData, setEffectivenessData] = useState(null)
   const [upcomingNotifications, setUpcomingNotifications] = useState([])
   const [loading, setLoading] = useState(true)
@@ -66,13 +66,13 @@ export default function NotificationEffectivenessPanel({ barbershopId }) {
 
   // Load effectiveness data
   const loadEffectivenessData = useCallback(async () => {
-    if (!barbershopId) return
+    if (!barberbarbershopId) return
     
     setLoading(true)
     try {
       const [metricsResponse, upcomingResponse] = await Promise.all([
-        fetch(`/api/customer-behavior/notifications?barbershop_id=${barbershopId}&type=effectiveness_metrics`),
-        fetch(`/api/customer-behavior/notifications?barbershop_id=${barbershopId}&type=upcoming_notifications`)
+        fetch(`/api/customer-behavior/notifications?barberbarbershop_id=${barberbarbershopId}&type=effectiveness_metrics`),
+        fetch(`/api/customer-behavior/notifications?barberbarbershop_id=${barberbarbershopId}&type=upcoming_notifications`)
       ])
       
       if (!metricsResponse.ok || !upcomingResponse.ok) {
@@ -90,7 +90,7 @@ export default function NotificationEffectivenessPanel({ barbershopId }) {
     } finally {
       setLoading(false)
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   // Manual refresh with visual feedback
   const handleRefresh = async () => {

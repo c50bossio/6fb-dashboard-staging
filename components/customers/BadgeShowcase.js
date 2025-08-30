@@ -25,7 +25,7 @@ const viewModes = {
 
 export default function BadgeShowcase({ 
   customerId, 
-  barbershopId,
+  barberbarbershopId,
   badges = [],
   title = "Badge Collection",
   showCustomerName = false,

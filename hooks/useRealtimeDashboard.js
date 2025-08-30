@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-export function useRealtimeDashboard(barbershopId, enabled = true) {
+export function useRealtimeDashboard(barberbarbershopId, enabled = true) {
   const [data, setData] = useState(null);
   const [connected, setConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
@@ -15,7 +15,7 @@ export function useRealtimeDashboard(barbershopId, enabled = true) {
   useEffect(() => {
     if (!enabled) return;
 
-    const eventSource = new EventSource(`/api/realtime/dashboard?barbershop_id=${barbershopId}`);
+    const eventSource = new EventSource(`/api/realtime/dashboard?barberbarbershop_id=${barberbarbershopId}`);
     eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
@@ -75,7 +75,7 @@ export function useRealtimeDashboard(barbershopId, enabled = true) {
       eventSourceRef.current = null;
       setConnected(false);
     };
-  }, [barbershopId, enabled]);
+  }, [barberbarbershopId, enabled]);
 
   const disconnect = () => {
     if (eventSourceRef.current) {

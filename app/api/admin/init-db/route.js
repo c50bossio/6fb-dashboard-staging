@@ -39,7 +39,7 @@ export async function POST(request) {
     const createTableQueries = [
       `CREATE TABLE IF NOT EXISTS business_hours (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        barbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE,
+        barberbarbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE,
         day_of_week INTEGER CHECK (day_of_week >= 0 AND day_of_week <= 6),
         is_open BOOLEAN DEFAULT TRUE,
         open_time TIME,
@@ -47,12 +47,12 @@ export async function POST(request) {
         break_start_time TIME,
         break_end_time TIME,
         notes TEXT,
-        UNIQUE(barbershop_id, day_of_week)
+        UNIQUE(barberbarbershop_id, day_of_week)
       )`,
       
       `CREATE TABLE IF NOT EXISTS team_members (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        barbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE,
+        barberbarbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE,
         name VARCHAR(255) NOT NULL,
         title VARCHAR(255),
         bio TEXT,
@@ -65,7 +65,7 @@ export async function POST(request) {
       
       `CREATE TABLE IF NOT EXISTS customer_testimonials (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        barbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE,
+        barberbarbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE,
         customer_name VARCHAR(255) NOT NULL,
         rating INTEGER CHECK (rating >= 1 AND rating <= 5),
         testimonial_text TEXT NOT NULL,

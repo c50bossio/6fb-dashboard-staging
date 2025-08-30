@@ -124,11 +124,11 @@ export async function PUT(request, { params }) {
     
     const { data: existingProduct } = await supabase
       .from('products')
-      .select('barbershop_id')
+      .select('barberbarbershop_id')
       .eq('id', id)
       .single()
     
-    if (!existingProduct || existingProduct.barbershop_id !== shop.id) {
+    if (!existingProduct || existingProduct.barberbarbershop_id !== shop.id) {
       return NextResponse.json(
         { error: 'Product not found or unauthorized' },
         { status: 404 }
@@ -208,11 +208,11 @@ export async function DELETE(request, { params }) {
     
     const { data: existingProduct } = await supabase
       .from('products')
-      .select('barbershop_id')
+      .select('barberbarbershop_id')
       .eq('id', id)
       .single()
     
-    if (!existingProduct || existingProduct.barbershop_id !== shop.id) {
+    if (!existingProduct || existingProduct.barberbarbershop_id !== shop.id) {
       return NextResponse.json(
         { error: 'Product not found or unauthorized' },
         { status: 404 }

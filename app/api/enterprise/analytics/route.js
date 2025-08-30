@@ -77,12 +77,12 @@ export async function GET(request) {
           const { count: bookingCount } = await supabase
             .from('bookings')
             .select('*', { count: 'exact', head: true })
-            .eq('shop_id', shop.id)
+            .eq('barbershop_id', shop.id)
 
           const { count: appointmentCount } = await supabase
             .from('appointments')
             .select('*', { count: 'exact', head: true })
-            .eq('barbershop_id', shop.id)
+            .eq('barberbarbershop_id', shop.id)
 
           const shopBookings = (bookingCount || 0) + (appointmentCount || 0)
           totalBookings += shopBookings
@@ -114,7 +114,7 @@ export async function GET(request) {
             const { data: transactions } = await supabase
               .from('transactions')
               .select('amount')
-              .eq('barbershop_id', shop.id)
+              .eq('barberbarbershop_id', shop.id)
               .eq('status', 'completed')
             
             if (transactions) {
@@ -128,7 +128,7 @@ export async function GET(request) {
           const { count: customerCount } = await supabase
             .from('customers')
             .select('*', { count: 'exact', head: true })
-            .in('barbershop_id', barbershops.map(s => s.id))
+            .in('barberbarbershop_id', barbershops.map(s => s.id))
           
           analyticsData.summary.activeCustomers = customerCount || 0
         }

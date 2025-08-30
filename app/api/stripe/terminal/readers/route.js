@@ -13,10 +13,10 @@ export async function GET(request) {
   try {
     const supabase = createClient()
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershopId')
+    const barberbarbershopId = searchParams.get('barberbarbershopId')
     const discover = searchParams.get('discover') === 'true'
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json(
         { error: 'Barbershop ID is required' },
         { status: 400 }
@@ -36,17 +36,17 @@ export async function GET(request) {
     // Verify access
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', user.id)
       .single()
 
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, owner_id')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
-    const hasAccess = profile?.barbershop_id === barbershopId || 
+    const hasAccess = profile?.barbershop_id === barberbarbershopId || 
                      barbershop?.owner_id === user.id ||
                      profile?.role === 'admin'
 
@@ -86,7 +86,7 @@ export async function GET(request) {
           const { data: registeredReaders } = await supabase
             .from('terminal_readers')
             .select('stripe_reader_id')
-            .eq('barbershop_id', barbershopId)
+            .eq('barberbarbershop_id', barberbarbershopId)
 
           const registeredIds = new Set(registeredReaders?.map(r => r.stripe_reader_id) || [])
           
@@ -111,7 +111,7 @@ export async function GET(request) {
             stripe_location_id
           )
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .order('created_at', { ascending: true })
 
       if (dbError) {
@@ -161,9 +161,9 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { barbershopId, stripeReaderId, locationId, label } = body
+    const { barberbarbershopId, stripeReaderId, locationId, label } = body
 
-    if (!barbershopId || !stripeReaderId) {
+    if (!barberbarbershopId || !stripeReaderId) {
       return NextResponse.json(
         { error: 'Barbershop ID and Stripe Reader ID are required' },
         { status: 400 }
@@ -174,7 +174,7 @@ export async function POST(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, owner_id')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
     if (!barbershop || barbershop.owner_id !== user.id) {
@@ -201,7 +201,7 @@ export async function POST(request) {
         .from('terminal_locations')
         .select('*')
         .eq('id', locationId)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .single()
 
       if (!location) {
@@ -232,7 +232,7 @@ export async function POST(request) {
     const { data: dbReader, error: dbError } = await supabase
       .from('terminal_readers')
       .insert({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         stripe_reader_id: stripeReaderId,
         serial_number: stripeReader.serial_number,
         device_type: stripeReader.device_type,
@@ -361,7 +361,7 @@ export async function PUT(request) {
           .from('terminal_locations')
           .select('id, stripe_location_id')
           .eq('id', locationId)
-          .eq('barbershop_id', reader.barbershop_id)
+          .eq('barberbarbershop_id', reader.barberbarbershop_id)
           .single()
 
         if (!location) {

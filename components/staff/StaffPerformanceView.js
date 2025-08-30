@@ -33,7 +33,7 @@ export default function StaffPerformanceView({ staff }) {
       
       if (!staff.length) return
 
-      const barbershopId = staff[0].barbershop_id
+      const barberbarbershopId = staff[0].barberbarbershop_id
       
       // Calculate date range
       const endDate = new Date()
@@ -49,7 +49,7 @@ export default function StaffPerformanceView({ staff }) {
       const { data: appointments } = await supabase
         .from('appointments')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('appointment_date', startDate.toISOString())
         .lte('appointment_date', endDate.toISOString())
 
@@ -57,7 +57,7 @@ export default function StaffPerformanceView({ staff }) {
       const { data: reviews } = await supabase
         .from('reviews')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('created_at', startDate.toISOString())
 
       // Calculate metrics for each staff member

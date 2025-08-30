@@ -16,13 +16,13 @@ export const runtime = 'nodejs'
  *             type: object
  *             required:
  *               - customer_id
- *               - barbershop_id
+ *               - barberbarbershop_id
  *               - service_id
  *             properties:
  *               customer_id:
  *                 type: string
  *                 description: Customer identifier
- *               barbershop_id:
+ *               barberbarbershop_id:
  *                 type: string
  *                 description: Barbershop identifier
  *               service_id:
@@ -96,7 +96,7 @@ export async function POST(request) {
     try {
         const body = await request.json();
         
-        const requiredFields = ['customer_id', 'barbershop_id', 'service_id'];
+        const requiredFields = ['customer_id', 'barberbarbershop_id', 'service_id'];
         const missingFields = requiredFields.filter(field => !body[field]);
         
         if (missingFields.length > 0) {
@@ -125,7 +125,7 @@ export async function POST(request) {
                 .from('waitlist')
                 .select('id, position')
                 .eq('customer_id', body.customer_id)
-                .eq('barbershop_id', body.barbershop_id)
+                .eq('barberbarbershop_id', body.barberbarbershop_id)
                 .eq('service_id', body.service_id)
                 .eq('status', 'active')
                 .single();
@@ -141,7 +141,7 @@ export async function POST(request) {
             const { count: currentCount } = await supabase
                 .from('waitlist')
                 .select('id', { count: 'exact', head: true })
-                .eq('barbershop_id', body.barbershop_id)
+                .eq('barberbarbershop_id', body.barberbarbershop_id)
                 .eq('service_id', body.service_id)
                 .eq('status', 'active');
             
@@ -151,7 +151,7 @@ export async function POST(request) {
                 .from('waitlist')
                 .insert([{
                     customer_id: body.customer_id,
-                    barbershop_id: body.barbershop_id,
+                    barberbarbershop_id: body.barberbarbershop_id,
                     service_id: body.service_id,
                     barber_id: body.barber_id || null,
                     preferred_dates: preferred_dates ? JSON.stringify(preferred_dates) : null,

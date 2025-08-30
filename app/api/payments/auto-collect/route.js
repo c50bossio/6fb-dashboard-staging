@@ -31,7 +31,7 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role, full_name')
+      .select('barberbarbershop_id, role, full_name')
       .eq('id', session.user.id)
       .single()
     
@@ -45,21 +45,21 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    const barbershopId = profile.barbershop_id
+    const barberbarbershopId = profile.barbershop_id
 
     // Get barbershop's Stripe account and automation settings
     const [stripeAccountResult, automationSettingsResult] = await Promise.all([
       supabase
         .from('stripe_accounts')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('onboarding_completed', true)
         .single(),
       
       supabase
         .from('automation_settings')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .single()
     ])
 
@@ -71,7 +71,7 @@ export async function POST(request) {
       stripeAccount, 
       client_id, 
       supabase, 
-      barbershopId
+      barberbarbershopId
     )
 
     if (!paymentCapability.canProcess) {
@@ -82,7 +82,7 @@ export async function POST(request) {
         description,
         incident_id,
         fee_type,
-        barbershopId,
+        barberbarbershopId,
         reason: paymentCapability.reason,
         supabase,
         session,
@@ -107,7 +107,7 @@ export async function POST(request) {
       description,
       incident_id,
       fee_type,
-      barbershopId,
+      barberbarbershopId,
       stripeAccount,
       supabase,
       session,
@@ -117,7 +117,7 @@ export async function POST(request) {
 
     // Log the collection attempt
     await logPaymentAttempt({
-      barbershopId,
+      barberbarbershopId,
       client_id,
       amount,
       fee_type,
@@ -135,7 +135,7 @@ export async function POST(request) {
         description,
         incident_id,
         fee_type,
-        barbershopId,
+        barberbarbershopId,
         retry_attempts: retry_attempts - 1,
         retry_delay_hours,
         original_attempt_id: collectionResult.attempt_id,
@@ -151,7 +151,7 @@ export async function POST(request) {
         description,
         incident_id,
         fee_type,
-        barbershopId,
+        barberbarbershopId,
         reason: collectionResult.error_message,
         supabase,
         session,
@@ -192,7 +192,7 @@ export async function POST(request) {
 /**
  * Validate payment capability before attempting collection
  */
-async function validatePaymentCapability(stripeAccount, clientId, supabase, barbershopId) {
+async function validatePaymentCapability(stripeAccount, clientId, supabase, barberbarbershopId) {
   try {
     // Check if Stripe is configured
     if (!stripeAccount) {
@@ -262,7 +262,7 @@ async function validatePaymentCapability(stripeAccount, clientId, supabase, barb
  */
 async function attemptPaymentCollection({
   client_id, amount, description, incident_id, fee_type,
-  barbershopId, stripeAccount, supabase, session, retry_attempts, retry_delay_hours
+  barberbarbershopId, stripeAccount, supabase, session, retry_attempts, retry_delay_hours
 }) {
   try {
     // Get customer data
@@ -283,7 +283,7 @@ async function attemptPaymentCollection({
       metadata: {
         incident_id: incident_id || '',
         client_id,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         type: fee_type,
         collection_type: 'automatic'
       },
@@ -311,7 +311,7 @@ async function attemptPaymentCollection({
 
     // Update client strike history if successful
     if (success) {
-      await updateClientBalance(supabase, barbershopId, client_id, -amount)
+      await updateClientBalance(supabase, barberbarbershopId, client_id, -amount)
     }
 
     return {
@@ -342,7 +342,7 @@ async function attemptPaymentCollection({
  * Handle payment fallback mechanisms
  */
 async function handlePaymentFallback({
-  client_id, amount, description, incident_id, fee_type, barbershopId,
+  client_id, amount, description, incident_id, fee_type, barberbarbershopId,
   reason, supabase, session, enable_fallback, automationSettings
 }) {
   const fallbackActions = []
@@ -350,7 +350,7 @@ async function handlePaymentFallback({
   try {
     // Generate payment request link
     const paymentLink = await generatePaymentRequestLink({
-      client_id, amount, description, incident_id, fee_type, barbershopId, supabase
+      client_id, amount, description, incident_id, fee_type, barberbarbershopId, supabase
     })
     fallbackActions.push({
       type: 'payment_link',
@@ -359,7 +359,7 @@ async function handlePaymentFallback({
     })
 
     // Track unpaid balance
-    await updateClientBalance(supabase, barbershopId, client_id, amount)
+    await updateClientBalance(supabase, barberbarbershopId, client_id, amount)
     fallbackActions.push({
       type: 'balance_tracking',
       action: 'Added to unpaid balance',
@@ -369,7 +369,7 @@ async function handlePaymentFallback({
     // Send invoice email if automation settings allow
     if (automationSettings?.automatic_fee_collection?.fallback_to_email !== false) {
       const emailResult = await sendInvoiceEmail({
-        client_id, amount, description, paymentLink, barbershopId, supabase
+        client_id, amount, description, paymentLink, barberbarbershopId, supabase
       })
       fallbackActions.push({
         type: 'email_invoice',
@@ -380,7 +380,7 @@ async function handlePaymentFallback({
 
     // Queue for manual collection
     await queueForManualCollection({
-      client_id, amount, description, incident_id, fee_type, barbershopId, reason, supabase, session
+      client_id, amount, description, incident_id, fee_type, barberbarbershopId, reason, supabase, session
     })
     fallbackActions.push({
       type: 'manual_queue',
@@ -391,7 +391,7 @@ async function handlePaymentFallback({
     // Notify manager if enabled
     if (automationSettings?.manager_notifications?.payment_failures !== false) {
       await notifyManagerOfPaymentFailure({
-        client_id, amount, reason, barbershopId, supabase, session
+        client_id, amount, reason, barberbarbershopId, supabase, session
       })
       fallbackActions.push({
         type: 'manager_notification',
@@ -442,11 +442,11 @@ function generateAttemptId() {
   return `attempt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
-async function updateClientBalance(supabase, barbershopId, clientId, amountChange) {
+async function updateClientBalance(supabase, barberbarbershopId, clientId, amountChange) {
   const { data: strikeHistory } = await supabase
     .from('client_strike_history')
     .select('outstanding_balance')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .eq('client_id', clientId)
     .single()
 
@@ -456,14 +456,14 @@ async function updateClientBalance(supabase, barbershopId, clientId, amountChang
   await supabase
     .from('client_strike_history')
     .upsert({
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       client_id: clientId,
       outstanding_balance: newBalance,
       updated_at: new Date().toISOString()
     })
 }
 
-async function generatePaymentRequestLink({ client_id, amount, description, incident_id, fee_type, barbershopId, supabase }) {
+async function generatePaymentRequestLink({ client_id, amount, description, incident_id, fee_type, barberbarbershopId, supabase }) {
   // Create a secure payment request token
   const token = `pmt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   
@@ -472,7 +472,7 @@ async function generatePaymentRequestLink({ client_id, amount, description, inci
     .from('payment_requests')
     .insert({
       token,
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       client_id,
       amount,
       description,
@@ -486,18 +486,18 @@ async function generatePaymentRequestLink({ client_id, amount, description, inci
   return `${process.env.NEXT_PUBLIC_BASE_URL}/pay/${token}`
 }
 
-async function sendInvoiceEmail({ client_id, amount, description, paymentLink, barbershopId, supabase }) {
+async function sendInvoiceEmail({ client_id, amount, description, paymentLink, barberbarbershopId, supabase }) {
   // Implementation would use your email service (SendGrid, etc.)
   // For now, just log the action
   console.log(`Invoice email would be sent for client ${client_id}, amount $${amount}`)
   return { sent: true, email_id: `email_${Date.now()}` }
 }
 
-async function queueForManualCollection({ client_id, amount, description, incident_id, fee_type, barbershopId, reason, supabase, session }) {
+async function queueForManualCollection({ client_id, amount, description, incident_id, fee_type, barberbarbershopId, reason, supabase, session }) {
   await supabase
     .from('manual_collection_queue')
     .insert({
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       client_id,
       amount,
       description,
@@ -510,18 +510,18 @@ async function queueForManualCollection({ client_id, amount, description, incide
     })
 }
 
-async function notifyManagerOfPaymentFailure({ client_id, amount, reason, barbershopId, supabase, session }) {
+async function notifyManagerOfPaymentFailure({ client_id, amount, reason, barberbarbershopId, supabase, session }) {
   // Implementation would trigger manager notification
   console.log(`Manager notification for payment failure: client ${client_id}, amount $${amount}, reason: ${reason}`)
 }
 
-async function scheduleRetryAttempt({ client_id, amount, description, incident_id, fee_type, barbershopId, retry_attempts, retry_delay_hours, original_attempt_id, supabase }) {
+async function scheduleRetryAttempt({ client_id, amount, description, incident_id, fee_type, barberbarbershopId, retry_attempts, retry_delay_hours, original_attempt_id, supabase }) {
   const retryAt = new Date(Date.now() + retry_delay_hours * 60 * 60 * 1000)
   
   await supabase
     .from('payment_retry_queue')
     .insert({
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       client_id,
       amount,
       description,
@@ -535,11 +535,11 @@ async function scheduleRetryAttempt({ client_id, amount, description, incident_i
     })
 }
 
-async function logPaymentAttempt({ barbershopId, client_id, amount, fee_type, result, session, incident_id, supabase }) {
+async function logPaymentAttempt({ barberbarbershopId, client_id, amount, fee_type, result, session, incident_id, supabase }) {
   await supabase
     .from('payment_logs')
     .insert({
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       client_id,
       amount,
       type: fee_type,

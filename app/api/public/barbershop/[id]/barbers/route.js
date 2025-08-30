@@ -3,9 +3,9 @@ import { createServiceClient } from '@/lib/supabase/service'
 
 export async function GET(request, { params }) {
   try {
-    const barbershopId = params.id
+    const barberbarbershopId = params.id
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({
         success: false,
         error: 'Barbershop ID is required'
@@ -26,18 +26,18 @@ export async function GET(request, { params }) {
     
     // // Debug log removed for production
 // Use the barbershop ID directly - no mock handling
-    const actualBarbershopId = barbershopId
+    const actualBarberbarbershopId = barberbarbershopId
     
     // First check if barbershop exists and allows public booking
     const { data: barbershop, error: barbershopError } = await supabase
       .from('barbershops')
       .select('id, name, booking_settings')
-      .eq('id', actualBarbershopId)
+      .eq('id', actualBarberbarbershopId)
       .single()
 
     if (barbershopError || !barbershop) {
       console.error('❌ Public barbers API: Barbershop not found')
-      console.error('   Barbershop ID:', barbershopId)
+      console.error('   Barbershop ID:', barberbarbershopId)
       console.error('   Error:', barbershopError)
       
       return NextResponse.json({
@@ -64,13 +64,13 @@ const { data: staff, error: staffError } = await supabase
       .select(`
         id,
         user_id,
-        barbershop_id,
+        barberbarbershop_id,
         role,
         is_active,
         created_at,
         metadata
       `)
-      .eq('barbershop_id', actualBarbershopId)  // Use actualBarbershopId instead of barbershopId
+      .eq('barberbarbershop_id', actualBarberbarbershopId)  // Use actualBarberbarbershopId instead of barberbarbershopId
       .eq('is_active', true)
       .order('created_at', { ascending: true })
     
@@ -78,8 +78,8 @@ const { data: staff, error: staffError } = await supabase
 if (staffError) {
       console.error('❌ Public barbers API: Error fetching staff')
       console.error('   Error details:', staffError)
-      console.error('   Barbershop ID:', barbershopId)
-      console.error('   Actual ID used:', actualBarbershopId)
+      console.error('   Barbershop ID:', barberbarbershopId)
+      console.error('   Actual ID used:', actualBarberbarbershopId)
       return NextResponse.json({ 
         success: false, 
         error: 'Failed to fetch staff' 
@@ -93,7 +93,7 @@ return NextResponse.json({
         success: true,
         staff: [],
         count: 0,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         barbershop_name: barbershop?.name || 'Unknown',
         message: 'No active staff found for this barbershop'
       })
@@ -108,7 +108,7 @@ return NextResponse.json({
         success: true,
         staff: [],
         count: 0,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         barbershop_name: barbershop.name,
         message: 'No active staff found for this barbershop'
       })
@@ -161,7 +161,7 @@ return NextResponse.json({
         id: staffMember.user_id,
         user_id: staffMember.user_id,
         staff_id: staffMember.id, // barbershop_staff.id for reference
-        barbershop_id: staffMember.barbershop_id,
+        barberbarbershop_id: staffMember.barberbarbershop_id,
         role: staffMember.role,
         is_active: staffMember.is_active,
         created_at: staffMember.created_at,
@@ -186,7 +186,7 @@ return NextResponse.json({
       success: true,
       staff: staffWithProfiles,
       count: staffWithProfiles.length,
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       barbershop_name: barbershop.name
     })
 

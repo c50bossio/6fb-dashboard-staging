@@ -40,7 +40,7 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, shop_id, role')
+      .select('barberbarbershop_id, barbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -48,10 +48,10 @@ export async function GET(request) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barbershopId = profile.barbershop_id || profile.shop_id
+    const barberbarbershopId = profile.barbershop_id || profile.shop_id
 
     // Check cache first for improved performance
-    const cachedResults = await getCachedResults(barbershopId, priority, daysSinceVisit, includeNoShows)
+    const cachedResults = await getCachedResults(barberbarbershopId, priority, daysSinceVisit, includeNoShows)
     if (cachedResults) {
       // Update performance metrics with cache hit info
       const responseTime = Date.now() - startTime
@@ -61,7 +61,7 @@ export async function GET(request) {
         cache_hit: true
       }
       
-      console.log(`Using cached client-care results for barbershop ${barbershopId}`)
+      console.log(`Using cached client-care results for barbershop ${barberbarbershopId}`)
       return NextResponse.json(cachedResults)
     }
 
@@ -91,7 +91,7 @@ export async function GET(request) {
             created_at
           )
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('status', 'no_show')
         .gte('appointment_date', noShowThreshold.toISOString())
         .limit(limit)
@@ -115,7 +115,7 @@ export async function GET(request) {
     const { data: inactiveClients, error: inactiveError } = await supabase
       .from('customers')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .or(`last_visit_at.lt.${inactiveThreshold.toISOString()},last_visit_at.is.null`)
       .gt('total_visits', 0) // Only clients who have visited before
       .order('last_visit_at', { ascending: true, nullsFirst: false })
@@ -155,7 +155,7 @@ export async function GET(request) {
           created_at
         )
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('status', 'cancelled')
       .gte('appointment_date', cancelledThreshold.toISOString())
       .limit(Math.floor(limit / 3))
@@ -198,7 +198,7 @@ export async function GET(request) {
     // Log performance for monitoring
     if (responseTime > 2000) {
       console.warn(`Client care query took ${responseTime}ms - performance threshold exceeded`, {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         client_count: uniqueClients.length,
         priority,
         include_no_shows: includeNoShows
@@ -227,7 +227,7 @@ export async function GET(request) {
     }
     
     // Cache the results for future requests (fire and forget)
-    cacheResults(barbershopId, priority, daysSinceVisit, includeNoShows, responseData)
+    cacheResults(barberbarbershopId, priority, daysSinceVisit, includeNoShows, responseData)
       .catch(error => {
         console.warn('⚠️ Failed to cache client care results:', error.message)
       })
@@ -330,11 +330,11 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, shop_id')
+      .select('barberbarbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
     
-    const barbershopId = profile?.barbershop_id || profile?.shop_id
+    const barberbarbershopId = profile?.barbershop_id || profile?.shop_id
     
     // Log the client care action
     const { error: logError } = await supabase
@@ -343,7 +343,7 @@ export async function POST(request) {
         user_id: user.id,
         action: `client_care_${action}`,
         details: {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           client_id,
           notes,
           timestamp: new Date().toISOString()

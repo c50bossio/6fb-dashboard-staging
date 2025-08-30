@@ -50,7 +50,7 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat('en-US').format(num || 0)
 }
 
-export default function TierConfigurationInterface({ barbershopId, onSave }) {
+export default function TierConfigurationInterface({ barberbarbershopId, onSave }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [structure, setStructure] = useState({
@@ -91,10 +91,10 @@ export default function TierConfigurationInterface({ barbershopId, onSave }) {
 
   // Load existing tier structure
   const loadTierStructure = useCallback(async () => {
-    if (!barbershopId) return
+    if (!barberbarbershopId) return
     
     try {
-      const { data, error } = await financialService.getTierStructure(barbershopId)
+      const { data, error } = await financialService.getTierStructure(barberbarbershopId)
       
       if (error) {
         console.error('Error loading tier structure:', error)
@@ -121,7 +121,7 @@ export default function TierConfigurationInterface({ barbershopId, onSave }) {
     } finally {
       setLoading(false)
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   useEffect(() => {
     loadTierStructure()
@@ -287,7 +287,7 @@ export default function TierConfigurationInterface({ barbershopId, onSave }) {
     setSaving(true)
     
     try {
-      const { data, error } = await financialService.saveTierStructure(barbershopId, structure)
+      const { data, error } = await financialService.saveTierStructure(barberbarbershopId, structure)
       
       if (error) {
         throw new Error(error)

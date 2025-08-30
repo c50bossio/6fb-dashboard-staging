@@ -21,11 +21,11 @@ export async function POST(request) {
     }
     
     // Get request body
-    const { barbershop_id, rules, reason } = await request.json()
+    const { barberbarbershop_id, rules, reason } = await request.json()
     
-    if (!barbershop_id || !rules) {
+    if (!barberbarbershop_id || !rules) {
       return NextResponse.json(
-        { error: 'barbershop_id and rules are required' },
+        { error: 'barberbarbershop_id and rules are required' },
         { status: 400 }
       )
     }
@@ -34,7 +34,7 @@ export async function POST(request) {
     const { data: barbershop, error: shopError } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', barbershop_id)
+      .eq('id', barberbarbershop_id)
       .single()
     
     if (shopError || !barbershop) {
@@ -51,7 +51,7 @@ export async function POST(request) {
       const { data: staffRole } = await supabase
         .from('barbershop_staff')
         .select('role')
-        .eq('barbershop_id', barbershop_id)
+        .eq('barberbarbershop_id', barberbarbershop_id)
         .eq('user_id', user.id)
         .single()
       
@@ -81,7 +81,7 @@ export async function POST(request) {
     const { data: currentRules } = await supabase
       .from('booking_rules_v2')
       .select('*')
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .eq('is_active', true)
       .single()
     
@@ -107,7 +107,7 @@ export async function POST(request) {
       const { data: newRule, error: insertError } = await supabase
         .from('booking_rules_v2')
         .insert({
-          barbershop_id,
+          barberbarbershop_id,
           rules,
           version: newVersion,
           is_active: true,
@@ -125,7 +125,7 @@ export async function POST(request) {
       await supabase
         .from('booking_rule_changes')
         .insert({
-          barbershop_id,
+          barberbarbershop_id,
           changed_by: user.id,
           old_rules: currentRules?.rules || null,
           new_rules: rules,
@@ -134,11 +134,11 @@ export async function POST(request) {
         })
       
       // Invalidate cache
-      const cache = cacheManager.getCache(barbershop_id)
+      const cache = cacheManager.getCache(barberbarbershop_id)
       await cache.invalidate()
       
       // Log to auditor
-      const auditor = new RuleAuditor(barbershop_id)
+      const auditor = new RuleAuditor(barberbarbershop_id)
       await auditor.logRuleChange(
         currentRules?.rules || {},
         rules,
@@ -196,11 +196,11 @@ export async function PUT(request) {
     }
     
     // Get request body
-    const { barbershop_id, field, value } = await request.json()
+    const { barberbarbershop_id, field, value } = await request.json()
     
-    if (!barbershop_id || !field || value === undefined) {
+    if (!barberbarbershop_id || !field || value === undefined) {
       return NextResponse.json(
-        { error: 'barbershop_id, field, and value are required' },
+        { error: 'barberbarbershop_id, field, and value are required' },
         { status: 400 }
       )
     }
@@ -209,7 +209,7 @@ export async function PUT(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', barbershop_id)
+      .eq('id', barberbarbershop_id)
       .single()
     
     const isOwner = barbershop?.owner_id === user.id
@@ -218,7 +218,7 @@ export async function PUT(request) {
       const { data: staffRole } = await supabase
         .from('barbershop_staff')
         .select('role')
-        .eq('barbershop_id', barbershop_id)
+        .eq('barberbarbershop_id', barberbarbershop_id)
         .eq('user_id', user.id)
         .single()
       
@@ -234,7 +234,7 @@ export async function PUT(request) {
     const { data: currentRules, error: fetchError } = await supabase
       .from('booking_rules_v2')
       .select('*')
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .eq('is_active', true)
       .single()
     
@@ -289,7 +289,7 @@ export async function PUT(request) {
       if (updateError) throw updateError
       
       // Invalidate cache
-      const cache = cacheManager.getCache(barbershop_id)
+      const cache = cacheManager.getCache(barberbarbershop_id)
       await cache.invalidate()
       
       return NextResponse.json({
@@ -303,7 +303,7 @@ export async function PUT(request) {
       const { data: created, error: createError } = await supabase
         .from('booking_rules_v2')
         .insert({
-          barbershop_id,
+          barberbarbershop_id,
           rules: updatedRules,
           version: 1,
           is_active: true,

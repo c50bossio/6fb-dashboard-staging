@@ -21,7 +21,7 @@ export async function POST(request) {
       model, 
       stream = true, 
       includeBusinessContext = false,
-      barbershopId = 'default' 
+      barberbarberbarbershopId = 'default' 
     } = await request.json()
 
     if (!messages || messages.length === 0) {
@@ -34,9 +34,9 @@ export async function POST(request) {
     const lastMessage = messages[messages.length - 1]?.content || ''
     const isStaffQuery = /staff|barber|employee|team|worker/i.test(lastMessage)
     
-    if (isStaffQuery && barbershopId) {
+    if (isStaffQuery && barberbarberbarbershopId) {
       try {
-        const staffData = await unifiedStaffService.getStaff(barbershopId, {
+        const staffData = await unifiedStaffService.getStaff(barberbarberbarbershopId, {
           useCache: true,
           includeAvailability: false
         })
@@ -61,7 +61,7 @@ export async function POST(request) {
     
     if (includeBusinessContext) {
       try {
-        const businessPrompt = await aiBusinessContext.getAISystemPrompt(barbershopId)
+        const businessPrompt = await aiBusinessContext.getAISystemPrompt(barberbarberbarbershopId)
         const systemIndex = enhancedMessages.findIndex(m => m.role === 'system')
         if (systemIndex >= 0) {
           enhancedMessages[systemIndex].content += '\n\n' + businessPrompt

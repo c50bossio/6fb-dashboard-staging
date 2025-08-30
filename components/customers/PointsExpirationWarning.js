@@ -21,7 +21,7 @@ import { Badge } from '../ui/badge'
  */
 export default function PointsExpirationWarning({ 
   customerId, 
-  barbershopId, 
+  barberbarbershopId, 
   programId = null,
   threshold = 30, // Days before expiration to show warning
   className = ''
@@ -163,7 +163,7 @@ export default function PointsExpirationWarning({
 
   useEffect(() => {
     fetchExpiringPoints()
-  }, [customerId, barbershopId, programId, threshold])
+  }, [customerId, barberbarbershopId, programId, threshold])
 
   if (loading || error || dismissed || totalExpiringPoints === 0) {
     return null
@@ -290,7 +290,7 @@ export default function PointsExpirationWarning({
  */
 export function PointsExpirationBadge({ 
   customerId, 
-  barbershopId, 
+  barberbarbershopId, 
   programId = null,
   threshold = 30,
   onClick = null
@@ -344,7 +344,7 @@ export function PointsExpirationBadge({
     }
 
     fetchCount()
-  }, [customerId, barbershopId, programId, threshold])
+  }, [customerId, barberbarbershopId, programId, threshold])
 
   if (loading || expiringCount === 0) {
     return null

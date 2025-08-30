@@ -29,7 +29,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 export default function ServiceManager({ 
   userRole, 
   userId, 
-  barbershopId, 
+  barberbarbershopId, 
   permissions = null,
   onServiceUpdate = null 
 }) {
@@ -49,14 +49,14 @@ export default function ServiceManager({
     if (isBarber && !permissions) {
       loadBarberPermissions()
     }
-  }, [userId, barbershopId])
+  }, [userId, barberbarbershopId])
 
   const loadBarberPermissions = async () => {
-    if (!isBarber || !userId || !barbershopId) return
+    if (!isBarber || !userId || !barberbarbershopId) return
     
     try {
       const { getBarberPermissions } = await import('@/lib/permissions')
-      const perms = await getBarberPermissions(userId, barbershopId)
+      const perms = await getBarberPermissions(userId, barberbarbershopId)
       setUserPermissions(perms)
     } catch (error) {
       console.error('Error loading barber permissions:', error)
@@ -74,13 +74,13 @@ export default function ServiceManager({
           .from('barber_services')
           .select('*')
           .eq('barber_id', userId)
-          .eq('barbershop_id', barbershopId)
+          .eq('barberbarbershop_id', barberbarbershopId)
           .eq('is_active', true)
         
         const { data: shopServices } = await supabase
           .from('services')
           .select('*')
-          .eq('barbershop_id', barbershopId)
+          .eq('barberbarbershop_id', barberbarbershopId)
           .eq('is_active', true)
         
         const mergedServices = mergeServices(shopServices || [], barberServices || [])
@@ -89,7 +89,7 @@ export default function ServiceManager({
         const { data: shopServices } = await supabase
           .from('services')
           .select('*')
-          .eq('barbershop_id', barbershopId)
+          .eq('barberbarbershop_id', barberbarbershopId)
           .eq('is_active', true)
           .order('display_order', { ascending: true })
         

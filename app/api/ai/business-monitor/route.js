@@ -8,17 +8,17 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request) {
   try {
-    const { action, barbershop_id } = await request.json()
+    const { action, barberbarbershop_id } = await request.json()
 
     switch (action) {
       case 'analyze_metrics':
-        return await analyzeBusinessMetrics(barbershop_id)
+        return await analyzeBusinessMetrics(barberbarbershop_id)
       case 'get_alerts':
-        return await getActiveAlerts(barbershop_id)
+        return await getActiveAlerts(barberbarbershop_id)
       case 'dismiss_alert':
         return await dismissAlert(request)
       case 'get_recommendations':
-        return await getSmartRecommendations(barbershop_id)
+        return await getSmartRecommendations(barberbarbershop_id)
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
     }
@@ -34,9 +34,9 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id') || 'demo'
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id') || 'demo'
     
-    const healthStatus = await getBusinessHealthStatus(barbershop_id)
+    const healthStatus = await getBusinessHealthStatus(barberbarbershop_id)
     
     return NextResponse.json({
       success: true,
@@ -54,9 +54,9 @@ export async function GET(request) {
 /**
  * Analyze current business metrics and identify issues/opportunities
  */
-async function analyzeBusinessMetrics(barbershop_id) {
+async function analyzeBusinessMetrics(barberbarbershop_id) {
   try {
-    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershop_id}`)
+    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barberbarbershop_id=${barberbarbershop_id}`)
     const analyticsData = await analyticsResponse.json()
     
     if (!analyticsData.success) {
@@ -95,7 +95,7 @@ async function analyzeBusinessMetrics(barbershop_id) {
       success: true,
       analysis: {
         timestamp: new Date().toISOString(),
-        barbershop_id,
+        barberbarbershop_id,
         metrics_analyzed: Object.keys(metrics).length,
         alerts: alerts.length,
         recommendations: recommendations.length,
@@ -416,7 +416,7 @@ function getHealthDescription(status) {
 /**
  * Get current business health status
  */
-async function getBusinessHealthStatus(barbershop_id) {
+async function getBusinessHealthStatus(barberbarbershop_id) {
   const alerts = [
     {
       id: 'demo_alert_1',
@@ -437,7 +437,7 @@ async function getBusinessHealthStatus(barbershop_id) {
   const overallHealth = calculateOverallHealth(alerts)
   
   return {
-    barbershop_id,
+    barberbarbershop_id,
     timestamp: new Date().toISOString(),
     overall_health: overallHealth,
     active_alerts: alerts.length,
@@ -458,7 +458,7 @@ async function getBusinessHealthStatus(barbershop_id) {
 /**
  * Get active alerts for a business
  */
-async function getActiveAlerts(barbershop_id) {
+async function getActiveAlerts(barberbarbershop_id) {
   const alerts = [
     {
       id: 'revenue_opportunity_001',
@@ -489,7 +489,7 @@ async function getActiveAlerts(barbershop_id) {
 /**
  * Get smart recommendations based on business analysis
  */
-async function getSmartRecommendations(barbershop_id) {
+async function getSmartRecommendations(barberbarbershop_id) {
   const recommendations = [
     {
       id: 'social_media_automation',
@@ -535,7 +535,7 @@ async function getSmartRecommendations(barbershop_id) {
  * Dismiss an alert
  */
 async function dismissAlert(request) {
-  const { alert_id, barbershop_id } = await request.json()
+  const { alert_id, barberbarbershop_id } = await request.json()
   
   
   return NextResponse.json({

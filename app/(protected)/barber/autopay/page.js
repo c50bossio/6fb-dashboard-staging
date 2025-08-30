@@ -113,7 +113,7 @@ export default function AutopayPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           arrangement_id: arrangement.id,
-          barbershop_id: arrangement.barbershop_id,
+          barberbarbershop_id: arrangement.barberbarbershop_id,
           barber_id: user.id,
           is_active: autopayConfig.enabled,
           payment_day: autopayConfig.payment_day,

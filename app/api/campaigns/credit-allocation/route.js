@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
-    const { barbershop_id, payment_amount, payment_intent_id } = await request.json()
+    const { barberbarbershop_id, payment_amount, payment_intent_id } = await request.json()
     const supabase = await createClient()
 
     // Calculate credits earned from this payment
@@ -25,7 +25,7 @@ export async function POST(request) {
     const { data: currentBalance } = await supabase
       .from('campaign_credits')
       .select('*')
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .single()
 
     if (currentBalance) {
@@ -38,7 +38,7 @@ export async function POST(request) {
           last_earned_at: new Date().toISOString(),
           total_earned: currentBalance.total_earned + campaignFundAllocation
         })
-        .eq('barbershop_id', barbershop_id)
+        .eq('barberbarbershop_id', barberbarbershop_id)
 
       if (updateError) throw updateError
     } else {
@@ -46,7 +46,7 @@ export async function POST(request) {
       const { error: insertError } = await supabase
         .from('campaign_credits')
         .insert({
-          barbershop_id,
+          barberbarbershop_id,
           sms_credits: smsCreditsEarned,
           email_credits: emailCreditsEarned,
           last_earned_at: new Date().toISOString(),
@@ -61,7 +61,7 @@ export async function POST(request) {
     await supabase
       .from('credit_allocation_log')
       .insert({
-        barbershop_id,
+        barberbarbershop_id,
         payment_intent_id,
         payment_amount,
         platform_markup: platformMarkup,
@@ -74,7 +74,7 @@ export async function POST(request) {
     // Check for tier upgrades based on monthly volume
     const { data: monthlyVolume } = await supabase.rpc(
       'get_monthly_payment_volume',
-      { shop_id: barbershop_id }
+      { barbershop_id: barberbarbershop_id }
     )
 
     let newTier = 'starter'
@@ -99,7 +99,7 @@ export async function POST(request) {
           tier: newTier,
           sms_credits: currentBalance.sms_credits + smsCreditsEarned + bonusCredits
         })
-        .eq('barbershop_id', barbershop_id)
+        .eq('barberbarbershop_id', barberbarbershop_id)
     }
 
     return NextResponse.json({
@@ -126,11 +126,11 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id')
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id')
     
-    if (!barbershop_id) {
+    if (!barberbarbershop_id) {
       return NextResponse.json({
-        error: 'barbershop_id is required'
+        error: 'barberbarbershop_id is required'
       }, { status: 400 })
     }
 
@@ -140,7 +140,7 @@ export async function GET(request) {
     const { data: credits, error } = await supabase
       .from('campaign_credits')
       .select('*')
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .single()
 
     if (error) {
@@ -180,7 +180,7 @@ export async function GET(request) {
     try {
       const { data } = await supabase.rpc(
         'get_campaign_usage_stats',
-        { shop_id: barbershop_id }
+        { barbershop_id: barberbarbershop_id }
       )
       usageStats = data
     } catch (rpcError) {
@@ -193,7 +193,7 @@ export async function GET(request) {
     try {
       const { data } = await supabase.rpc(
         'get_monthly_payment_volume',
-        { shop_id: barbershop_id }
+        { barbershop_id: barberbarbershop_id }
       )
       monthlyVolume = data || 0
     } catch (rpcError) {

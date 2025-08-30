@@ -49,7 +49,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json()
-    const testBarbershopId = body.barbershopId || 'test-shop-123'
+    const testBarberbarberbarbershopId = body.barberbarberbarbershopId || 'test-shop-123'
     
     // Test import
     const { default: unifiedStripeManager } = await import('@/lib/stripe/UnifiedStripeManager')
@@ -58,7 +58,7 @@ export async function POST(request) {
     const methodTestResults = {}
     
     try {
-      const status = await unifiedStripeManager.getUnifiedStatus(testBarbershopId)
+      const status = await unifiedStripeManager.getUnifiedStatus(testBarberbarberbarbershopId)
       methodTestResults.getUnifiedStatus = { success: true, result: status }
     } catch (err) {
       methodTestResults.getUnifiedStatus = { success: false, error: err.message }
@@ -66,7 +66,7 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      test_barbershop_id: testBarbershopId,
+      test_barberbarberbarbershop_id: testBarberbarberbarbershopId,
       method_tests: methodTestResults,
       timestamp: new Date().toISOString()
     })

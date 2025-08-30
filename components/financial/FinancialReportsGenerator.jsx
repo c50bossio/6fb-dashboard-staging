@@ -19,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import financialService from '@/lib/financial-service'
 import { DatePicker } from '@/components/ui/date-picker'
 
-const FinancialReportsGenerator = ({ barbershopId }) => {
+const FinancialReportsGenerator = ({ barberbarbershopId }) => {
   const [reportType, setReportType] = useState('comprehensive')
   const [dateRange, setDateRange] = useState({
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -69,7 +69,7 @@ const FinancialReportsGenerator = ({ barbershopId }) => {
   ]
 
   const generateReport = async () => {
-    if (!barbershopId) return
+    if (!barberbarbershopId) return
 
     setIsGenerating(true)
     try {
@@ -78,18 +78,18 @@ const FinancialReportsGenerator = ({ barbershopId }) => {
 
       // Base financial summary
       reportPromises.push(
-        financialService.getComprehensiveCommissionSummary(barbershopId, dateRange)
+        financialService.getComprehensiveCommissionSummary(barberbarbershopId, dateRange)
       )
 
       // Real-time metrics
       reportPromises.push(
-        financialService.getRealtimeFinancialMetrics(barbershopId, dateRange)
+        financialService.getRealtimeFinancialMetrics(barberbarbershopId, dateRange)
       )
 
       // Tier analytics (if relevant)
       if (['comprehensive', 'tier_performance'].includes(reportType)) {
         reportPromises.push(
-          financialService.getTierProgressionAnalytics(barbershopId, dateRange)
+          financialService.getTierProgressionAnalytics(barberbarbershopId, dateRange)
         )
       }
 

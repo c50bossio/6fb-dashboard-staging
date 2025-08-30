@@ -11,22 +11,22 @@ export const dynamic = 'force-dynamic'
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { action_type, barbershop_id, parameters, workflow_type } = body
+    const { action_type, barberbarbershop_id, parameters, workflow_type } = body
     
     // Handle staff onboarding workflow specifically
     if (workflow_type === 'new_staff_onboarding') {
-      return await handleStaffOnboardingWorkflow(barbershop_id || body.barbershop_id)
+      return await handleStaffOnboardingWorkflow(barberbarbershop_id || body.barberbarbershop_id)
     }
 
     switch (action_type) {
       case 'create_automation':
-        return await createAutomation(barbershop_id, parameters)
+        return await createAutomation(barberbarbershop_id, parameters)
       case 'trigger_workflow':
-        return await triggerWorkflow(barbershop_id, parameters)
+        return await triggerWorkflow(barberbarbershop_id, parameters)
       case 'execute_action':
-        return await executeAutomatedAction(barbershop_id, parameters)
+        return await executeAutomatedAction(barberbarbershop_id, parameters)
       case 'check_conditions':
-        return await checkTriggerConditions(barbershop_id, parameters)
+        return await checkTriggerConditions(barberbarbershop_id, parameters)
       default:
         return NextResponse.json({ error: 'Unknown automation action' }, { status: 400 })
     }
@@ -42,15 +42,15 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id') || 'demo'
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id') || 'demo'
     const workflow_type = searchParams.get('type')
     
     if (workflow_type) {
-      const workflows = await getActiveWorkflows(barbershop_id, workflow_type)
+      const workflows = await getActiveWorkflows(barberbarbershop_id, workflow_type)
       return NextResponse.json({ success: true, workflows })
     }
     
-    const dashboard = await getAutomationDashboard(barbershop_id)
+    const dashboard = await getAutomationDashboard(barberbarbershop_id)
     return dashboard
   } catch (error) {
     console.error('Automation dashboard error:', error)
@@ -64,7 +64,7 @@ export async function GET(request) {
 /**
  * Get comprehensive automation dashboard
  */
-async function getAutomationDashboard(barbershop_id) {
+async function getAutomationDashboard(barberbarbershop_id) {
   const dashboard = {
     active_workflows: 12,
     total_automations: 25,
@@ -186,14 +186,14 @@ async function getAutomationDashboard(barbershop_id) {
 /**
  * Create new automation workflow
  */
-async function createAutomation(barbershop_id, parameters) {
+async function createAutomation(barberbarbershop_id, parameters) {
   const { trigger_type, conditions, actions, name, description } = parameters
   
   const workflow = {
     id: `workflow_${Date.now()}`,
     name: name || 'Custom Workflow',
     description: description || 'Automated workflow',
-    barbershop_id,
+    barberbarbershop_id,
     trigger_type,
     conditions,
     actions,
@@ -223,15 +223,15 @@ async function createAutomation(barbershop_id, parameters) {
 /**
  * Trigger workflow execution
  */
-async function triggerWorkflow(barbershop_id, parameters) {
+async function triggerWorkflow(barberbarbershop_id, parameters) {
   const { workflow_id, override_conditions } = parameters
   
-  const businessData = await getCurrentBusinessData(barbershop_id)
+  const businessData = await getCurrentBusinessData(barberbarbershop_id)
   
   const execution = {
     execution_id: `exec_${Date.now()}`,
     workflow_id,
-    barbershop_id,
+    barberbarbershop_id,
     triggered_at: new Date().toISOString(),
     conditions_met: override_conditions || true,
     actions_performed: [],
@@ -242,7 +242,7 @@ async function triggerWorkflow(barbershop_id, parameters) {
   const workflowActions = await getWorkflowActions(workflow_id)
   
   for (const action of workflowActions) {
-    const result = await executeWorkflowAction(action, businessData, barbershop_id)
+    const result = await executeWorkflowAction(action, businessData, barberbarbershop_id)
     execution.actions_performed.push(action)
     execution.results.push(result)
   }
@@ -257,7 +257,7 @@ async function triggerWorkflow(barbershop_id, parameters) {
 /**
  * Execute individual automated action
  */
-async function executeAutomatedAction(barbershop_id, parameters) {
+async function executeAutomatedAction(barberbarbershop_id, parameters) {
   const { action_type, target_data, context } = parameters
   
   let result = {
@@ -306,9 +306,9 @@ async function executeAutomatedAction(barbershop_id, parameters) {
 /**
  * Check if trigger conditions are met
  */
-async function checkTriggerConditions(barbershop_id, parameters) {
+async function checkTriggerConditions(barberbarbershop_id, parameters) {
   const { trigger_type, conditions } = parameters
-  const businessData = await getCurrentBusinessData(barbershop_id)
+  const businessData = await getCurrentBusinessData(barberbarbershop_id)
   
   let conditionsMet = false
   const evaluation = {
@@ -369,7 +369,7 @@ async function checkTriggerConditions(barbershop_id, parameters) {
  * Helper Functions
  */
 
-async function getCurrentBusinessData(barbershop_id) {
+async function getCurrentBusinessData(barberbarbershop_id) {
   return {
     daily_revenue: 380,
     monthly_revenue: 4850,
@@ -382,7 +382,7 @@ async function getCurrentBusinessData(barbershop_id) {
   }
 }
 
-async function getActiveWorkflows(barbershop_id, workflow_type) {
+async function getActiveWorkflows(barberbarbershop_id, workflow_type) {
   const workflows = [
     {
       id: 'wf_001',
@@ -429,7 +429,7 @@ async function getWorkflowActions(workflow_id) {
   ]
 }
 
-async function executeWorkflowAction(action, businessData, barbershop_id) {
+async function executeWorkflowAction(action, businessData, barberbarbershop_id) {
   return {
     action_id: action.id,
     success: true,
@@ -553,10 +553,10 @@ function generateExecutionSummary(execution) {
 /**
  * Handle new staff onboarding workflow
  */
-async function handleStaffOnboardingWorkflow(barbershopId) {
+async function handleStaffOnboardingWorkflow(barberbarbershopId) {
   try {
     // Fetch current staff to understand onboarding needs
-    const staffData = await unifiedStaffService.getStaff(barbershopId, {
+    const staffData = await unifiedStaffService.getStaff(barberbarbershopId, {
       useCache: false,
       includeAvailability: true
     })
@@ -567,7 +567,7 @@ async function handleStaffOnboardingWorkflow(barbershopId) {
     const workflow = {
       success: true,
       workflow_type: 'new_staff_onboarding',
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       status: hasStaff ? 'ready' : 'requires_staff',
       staff_context: {
         current_staff_count: staffCount,

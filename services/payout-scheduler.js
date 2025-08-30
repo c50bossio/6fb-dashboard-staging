@@ -129,7 +129,7 @@ class PayoutScheduler {
     }
 
     // Check if it's time for a payout based on frequency
-    const lastPayout = await this.getLastPayoutDate(arrangement.barber_id, arrangement.barbershop_id)
+    const lastPayout = await this.getLastPayoutDate(arrangement.barber_id, arrangement.barberbarbershop_id)
     const daysSinceLastPayout = lastPayout ? 
       Math.floor((Date.now() - new Date(lastPayout).getTime()) / (1000 * 60 * 60 * 24)) : 
       999 // If no previous payout, process it
@@ -170,12 +170,12 @@ class PayoutScheduler {
   /**
    * Get the date of the last payout for a barber
    */
-  async getLastPayoutDate(barberId, barbershopId) {
+  async getLastPayoutDate(barberId, barberbarbershopId) {
     const { data: lastPayout } = await this.supabase
       .from('payout_transactions')
       .select('completed_at')
       .eq('barber_id', barberId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('status', 'completed')
       .order('completed_at', { ascending: false })
       .limit(1)
@@ -203,7 +203,7 @@ class PayoutScheduler {
         .from('payout_transactions')
         .insert({
           barber_id: arrangement.barber_id,
-          barbershop_id: arrangement.barbershop_id,
+          barberbarbershop_id: arrangement.barberbarbershop_id,
           amount: amount,
           payout_method: payoutMethod,
           status: payoutMethod === 'stripe_transfer' ? 'processing' : 'pending',
@@ -238,7 +238,7 @@ class PayoutScheduler {
         // Update commission balances
         await this.updateCommissionBalances(
           arrangement.barber_id,
-          arrangement.barbershop_id,
+          arrangement.barberbarbershop_id,
           amount,
           payoutTransaction.id
         )
@@ -246,7 +246,7 @@ class PayoutScheduler {
         // Mark commission transactions as paid out
         await this.markCommissionsAsPaidOut(
           arrangement.barber_id,
-          arrangement.barbershop_id,
+          arrangement.barberbarbershop_id,
           payoutTransaction.id
         )
 
@@ -332,7 +332,7 @@ class PayoutScheduler {
   /**
    * Update barber commission balances after payout
    */
-  async updateCommissionBalances(barberId, barbershopId, amount, payoutTransactionId) {
+  async updateCommissionBalances(barberId, barberbarbershopId, amount, payoutTransactionId) {
     const { error } = await this.supabase
       .from('barber_commission_balances')
       .update({
@@ -341,7 +341,7 @@ class PayoutScheduler {
         updated_at: new Date().toISOString()
       })
       .eq('barber_id', barberId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
 
     if (error) {
       throw new Error(`Failed to update commission balances: ${error.message}`)
@@ -351,7 +351,7 @@ class PayoutScheduler {
   /**
    * Mark commission transactions as paid out
    */
-  async markCommissionsAsPaidOut(barberId, barbershopId, payoutTransactionId) {
+  async markCommissionsAsPaidOut(barberId, barberbarbershopId, payoutTransactionId) {
     const { error } = await this.supabase
       .from('commission_transactions')
       .update({
@@ -360,7 +360,7 @@ class PayoutScheduler {
         payout_transaction_id: payoutTransactionId
       })
       .eq('barber_id', barberId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('status', 'pending_payout')
 
     if (error) {
@@ -436,7 +436,7 @@ class PayoutScheduler {
           )
         `)
         .eq('barber_id', barberId)
-        .eq('barbershop_id', shop.id)
+        .eq('barberbarbershop_id', shop.id)
         .eq('is_active', true)
         .single()
 
@@ -500,7 +500,7 @@ class PayoutScheduler {
       }
 
       const arrangements = await this.getActiveArrangements()
-      const shopArrangements = arrangements.filter(arr => arr.barbershop_id === shop.id)
+      const shopArrangements = arrangements.filter(arr => arr.barberbarbershop_id === shop.id)
       
       const duePayouts = []
 

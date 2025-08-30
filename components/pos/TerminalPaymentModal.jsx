@@ -12,7 +12,7 @@ export function TerminalPaymentModal({
   isOpen,
   onClose,
   cartItems,
-  barbershopId,
+  barberbarbershopId,
   barberId,
   customerId,
   totalAmount,
@@ -52,7 +52,7 @@ export function TerminalPaymentModal({
       const tokenResponse = await fetch('/api/stripe/terminal/connection-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barbershopId })
+        body: JSON.stringify({ barberbarbershopId })
       })
 
       if (!tokenResponse.ok) {
@@ -181,7 +181,7 @@ export function TerminalPaymentModal({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barbershopId,
+          barberbarbershopId,
           barberId,
           customerId,
           readerId: selectedReader.id,

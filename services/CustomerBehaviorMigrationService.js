@@ -14,7 +14,7 @@ export class CustomerBehaviorMigrationService {
   /**
    * Migrate all customers for a barbershop to the new scoring system
    */
-  async migrateBarbershop(barbershopId) {
+  async migrateBarbershop(barberbarbershopId) {
 
     try {
       // Reset counters
@@ -28,7 +28,7 @@ export class CustomerBehaviorMigrationService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'bulk_calculate_scores',
-          barbershop_id: barbershopId
+          barberbarbershop_id: barberbarbershopId
         })
       })
       
@@ -42,11 +42,11 @@ export class CustomerBehaviorMigrationService {
       this.errorCount = result.errors
       
       // Update barbershop statistics after migration
-      await this.updateStatistics(barbershopId)
+      await this.updateStatistics(barberbarbershopId)
 
       return {
         success: true,
-        barbershopId,
+        barberbarbershopId,
         processed: this.migratedCount,
         errors: this.errorCount,
         total: result.total
@@ -56,7 +56,7 @@ export class CustomerBehaviorMigrationService {
       console.error('Migration failed:', error)
       return {
         success: false,
-        barbershopId,
+        barberbarbershopId,
         error: error.message
       }
     }
@@ -65,10 +65,10 @@ export class CustomerBehaviorMigrationService {
   /**
    * Migrate a single customer's behavior data
    */
-  async migrateCustomer(barbershopId, customerId) {
+  async migrateCustomer(barberbarbershopId, customerId) {
     try {
       // Get customer's historical data
-      const behaviorData = await this.extractCustomerBehaviorData(customerId, barbershopId)
+      const behaviorData = await this.extractCustomerBehaviorData(customerId, barberbarbershopId)
       
       // Calculate and store risk score
       const response = await fetch('/api/customer-behavior/manage', {
@@ -76,7 +76,7 @@ export class CustomerBehaviorMigrationService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'calculate_risk_score',
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           customer_id: customerId,
           data: behaviorData
         })
@@ -108,17 +108,17 @@ export class CustomerBehaviorMigrationService {
   /**
    * Extract behavior data from existing appointment/booking records
    */
-  async extractCustomerBehaviorData(customerId, barbershopId) {
+  async extractCustomerBehaviorData(customerId, barberbarbershopId) {
     try {
       // This would be replaced with actual database queries in production
       // For now, we'll simulate the data extraction
       
       // Get appointments from Supabase
-      const appointmentsResponse = await fetch(`/api/appointments?customer_id=${customerId}&barbershop_id=${barbershopId}`)
+      const appointmentsResponse = await fetch(`/api/appointments?customer_id=${customerId}&barberbarbershop_id=${barberbarbershopId}`)
       const appointments = appointmentsResponse.ok ? await appointmentsResponse.json() : []
       
       // Get bookings from Supabase
-      const bookingsResponse = await fetch(`/api/bookings?customer_id=${customerId}&barbershop_id=${barbershopId}`)
+      const bookingsResponse = await fetch(`/api/bookings?customer_id=${customerId}&barberbarbershop_id=${barberbarbershopId}`)
       const bookings = bookingsResponse.ok ? await bookingsResponse.json() : []
       
       const allBookings = [...(appointments.data || []), ...(bookings.data || [])]
@@ -248,14 +248,14 @@ export class CustomerBehaviorMigrationService {
   /**
    * Update barbershop statistics after migration
    */
-  async updateStatistics(barbershopId) {
+  async updateStatistics(barberbarbershopId) {
     try {
       const response = await fetch('/api/customer-behavior/manage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'update_statistics',
-          barbershop_id: barbershopId
+          barberbarbershop_id: barberbarbershopId
         })
       })
       
@@ -285,9 +285,9 @@ export class CustomerBehaviorMigrationService {
   /**
    * Validate migration results
    */
-  async validateMigration(barbershopId) {
+  async validateMigration(barberbarbershopId) {
     try {
-      const response = await fetch(`/api/customer-behavior/manage?barbershop_id=${barbershopId}&type=statistics`)
+      const response = await fetch(`/api/customer-behavior/manage?barberbarbershop_id=${barberbarbershopId}&type=statistics`)
       
       if (!response.ok) {
         throw new Error(`Failed to validate migration: ${response.statusText}`)

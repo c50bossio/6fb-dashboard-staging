@@ -64,7 +64,7 @@ export async function POST(request) {
             booking_id: paymentIntent.metadata.booking_id,
             customer_id: paymentIntent.metadata.customer_id || null,
             barber_id: paymentIntent.metadata.barber_id || null,
-            barbershop_id: paymentIntent.metadata.barbershop_id || null,
+            barberbarbershop_id: paymentIntent.metadata.barberbarbershop_id || null,
             amount: paymentIntent.amount / 100, // Convert from cents
             status: 'completed',
             payment_method: 'stripe',

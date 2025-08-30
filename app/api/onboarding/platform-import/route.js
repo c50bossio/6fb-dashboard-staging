@@ -29,7 +29,7 @@ export async function POST(request) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     // During onboarding, allow import without full authentication
-    // but still require barbershopId to ensure data is properly associated
+    // but still require barberbarbershopId to ensure data is properly associated
     const isOnboarding = request.headers.get('x-onboarding-flow') === 'true'
     
     if (!isOnboarding && !user) {
@@ -43,7 +43,7 @@ export async function POST(request) {
     // Parse form data
     const formData = await request.formData()
     const platform = formData.get('platform')
-    const barbershopId = formData.get('barbershopId')
+    const barberbarbershopId = formData.get('barberbarbershopId')
     
     // Debug logging
     const formDataEntries = Array.from(formData.entries()).map(([key, value]) => 
@@ -75,7 +75,7 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       console.error('❌ Barbershop ID is missing')
       return NextResponse.json({
         success: false,
@@ -138,12 +138,12 @@ export async function POST(request) {
     if (platformConfig.importType === 'unified') {
       // Single file contains all data (Square, Booksy, Schedulicity)
       const file = files[0]
-      const result = await processUnifiedFile(file, platformConfig, barbershopId)
+      const result = await processUnifiedFile(file, platformConfig, barberbarbershopId)
       mergeResults(importResults, result)
     } else if (platformConfig.importType === 'multiple') {
       // Multiple files with specific data types (Acuity, Trafft)
       for (const file of files) {
-        const result = await processSpecificFile(file, platformConfig, barbershopId)
+        const result = await processSpecificFile(file, platformConfig, barberbarbershopId)
         mergeResults(importResults, result)
       }
     }
@@ -189,7 +189,7 @@ export async function POST(request) {
  * Process a unified file that contains all data types
  * Used by: Square, Booksy, Schedulicity
  */
-async function processUnifiedFile(file, platformConfig, barbershopId) {
+async function processUnifiedFile(file, platformConfig, barberbarbershopId) {
   const fileContent = await file.text()
   const result = {
     imported: { customers: 0, appointments: 0, services: 0 },
@@ -243,7 +243,7 @@ async function processUnifiedFile(file, platformConfig, barbershopId) {
       if (records.length === 0) continue
 
       try {
-        const typeResult = await importDataType(dataType, records, platformConfig, barbershopId)
+        const typeResult = await importDataType(dataType, records, platformConfig, barberbarbershopId)
         result.imported[dataType] = typeResult.imported
         result.skipped.duplicates += typeResult.skipped
         result.skipped.errors += typeResult.errors
@@ -265,7 +265,7 @@ async function processUnifiedFile(file, platformConfig, barbershopId) {
  * Process a specific file type for multi-file platforms
  * Used by: Acuity, Trafft
  */
-async function processSpecificFile(file, platformConfig, barbershopId) {
+async function processSpecificFile(file, platformConfig, barberbarbershopId) {
   const fileContent = await file.text()
   const fileName = file.name.toLowerCase()
   
@@ -312,7 +312,7 @@ async function processSpecificFile(file, platformConfig, barbershopId) {
     }
 
     // Import the data
-    const typeResult = await importDataType(fileType, rawData, platformConfig, barbershopId)
+    const typeResult = await importDataType(fileType, rawData, platformConfig, barberbarbershopId)
     result.imported[fileType] = typeResult.imported
     result.skipped.duplicates += typeResult.skipped
     result.skipped.errors += typeResult.errors
@@ -329,7 +329,7 @@ async function processSpecificFile(file, platformConfig, barbershopId) {
 /**
  * Import data for a specific type (customers, appointments, services)
  */
-async function importDataType(dataType, rawData, platformConfig, barbershopId) {
+async function importDataType(dataType, rawData, platformConfig, barberbarbershopId) {
   const result = {
     imported: 0,
     skipped: 0,
@@ -343,10 +343,10 @@ async function importDataType(dataType, rawData, platformConfig, barbershopId) {
     const mappedData = mapPlatformData(platformConfig.name.toLowerCase(), rawData)
     
     // Transform and validate data
-    const transformedData = await transformDataForType(dataType, mappedData, barbershopId)
+    const transformedData = await transformDataForType(dataType, mappedData, barberbarbershopId)
     
     // Check for duplicates
-    const existingData = await getExistingData(dataType, barbershopId)
+    const existingData = await getExistingData(dataType, barberbarbershopId)
     const { toImport, duplicates } = filterDuplicates(transformedData, existingData, dataType)
     
     result.skipped = duplicates.length
@@ -402,9 +402,9 @@ async function importDataType(dataType, rawData, platformConfig, barbershopId) {
 /**
  * Transform raw data for specific data type
  */
-async function transformDataForType(dataType, data, barbershopId) {
+async function transformDataForType(dataType, data, barberbarbershopId) {
   const baseFields = {
-    barbershop_id: barbershopId,
+    barberbarbershop_id: barberbarbershopId,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   }
@@ -554,12 +554,12 @@ function normalizeAppointmentStatus(status) {
 /**
  * Get existing data to check for duplicates
  */
-async function getExistingData(dataType, barbershopId) {
+async function getExistingData(dataType, barberbarbershopId) {
   const tableName = getTableName(dataType)
   const { data, error } = await supabaseService
     .from(tableName)
     .select('*')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
 
   if (error) {
     console.warn(`Failed to fetch existing ${dataType}:`, error)

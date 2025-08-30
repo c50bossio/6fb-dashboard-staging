@@ -8,21 +8,21 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request) {
   try {
-    const { prediction_type, barbershop_id, parameters } = await request.json()
+    const { prediction_type, barberbarbershop_id, parameters } = await request.json()
 
     switch (prediction_type) {
       case 'revenue_forecast':
-        return await generateRevenueForecast(barbershop_id, parameters)
+        return await generateRevenueForecast(barberbarbershop_id, parameters)
       case 'customer_behavior':
-        return await predictCustomerBehavior(barbershop_id, parameters)
+        return await predictCustomerBehavior(barberbarbershop_id, parameters)
       case 'demand_prediction':
-        return await predictDemandPatterns(barbershop_id, parameters)
+        return await predictDemandPatterns(barberbarbershop_id, parameters)
       case 'churn_analysis':
-        return await analyzeCustomerChurn(barbershop_id, parameters)
+        return await analyzeCustomerChurn(barberbarbershop_id, parameters)
       case 'seasonal_trends':
-        return await analyzeSeasonalTrends(barbershop_id, parameters)
+        return await analyzeSeasonalTrends(barberbarbershop_id, parameters)
       case 'pricing_optimization':
-        return await optimizePricing(barbershop_id, parameters)
+        return await optimizePricing(barberbarbershop_id, parameters)
       default:
         return NextResponse.json({ error: 'Unknown prediction type' }, { status: 400 })
     }
@@ -38,9 +38,9 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id') || 'demo'
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id') || 'demo'
     
-    const dashboard = await generatePredictiveDashboard(barbershop_id)
+    const dashboard = await generatePredictiveDashboard(barberbarbershop_id)
     return dashboard
   } catch (error) {
     console.error('Predictive dashboard error:', error)
@@ -54,9 +54,9 @@ export async function GET(request) {
 /**
  * Generate revenue forecasting predictions
  */
-async function generateRevenueForecast(barbershop_id, parameters) {
+async function generateRevenueForecast(barberbarbershop_id, parameters) {
   try {
-    const historicalData = await getHistoricalRevenue(barbershop_id)
+    const historicalData = await getHistoricalRevenue(barberbarbershop_id)
     
     const timeframe = parameters?.timeframe || 30 // days
     const confidence_level = parameters?.confidence_level || 0.85
@@ -143,7 +143,7 @@ async function generateRevenueForecast(barbershop_id, parameters) {
 /**
  * Predict customer behavior patterns
  */
-async function predictCustomerBehavior(barbershop_id, parameters) {
+async function predictCustomerBehavior(barberbarbershop_id, parameters) {
   const behaviorAnalysis = {
     customer_segments: {
       high_value: {
@@ -208,7 +208,7 @@ async function predictCustomerBehavior(barbershop_id, parameters) {
 /**
  * Predict demand patterns and capacity optimization
  */
-async function predictDemandPatterns(barbershop_id, parameters) {
+async function predictDemandPatterns(barberbarbershop_id, parameters) {
   const demandPrediction = {
     daily_patterns: {
       monday: { demand_level: 'Medium', predicted_bookings: 6, capacity_utilization: '75%' },
@@ -259,7 +259,7 @@ async function predictDemandPatterns(barbershop_id, parameters) {
 /**
  * Analyze customer churn patterns and prevention
  */
-async function analyzeCustomerChurn(barbershop_id, parameters) {
+async function analyzeCustomerChurn(barberbarbershop_id, parameters) {
   const churnAnalysis = {
     overall_churn_rate: '22%',
     churn_prediction: {
@@ -312,7 +312,7 @@ async function analyzeCustomerChurn(barbershop_id, parameters) {
 /**
  * Analyze seasonal trends and patterns
  */
-async function analyzeSeasonalTrends(barbershop_id, parameters) {
+async function analyzeSeasonalTrends(barberbarbershop_id, parameters) {
   const seasonalAnalysis = {
     yearly_patterns: {
       q1: { trend: 'Growing', change: '+8%', key_drivers: ['New Year resolutions', 'Winter formal events'] },
@@ -341,7 +341,7 @@ async function analyzeSeasonalTrends(barbershop_id, parameters) {
 /**
  * Optimize pricing based on demand and competition
  */
-async function optimizePricing(barbershop_id, parameters) {
+async function optimizePricing(barberbarbershop_id, parameters) {
   const pricingOptimization = {
     current_analysis: {
       avg_transaction_value: 68.50,
@@ -392,12 +392,12 @@ async function optimizePricing(barbershop_id, parameters) {
 /**
  * Generate comprehensive predictive dashboard
  */
-async function generatePredictiveDashboard(barbershop_id) {
+async function generatePredictiveDashboard(barberbarbershop_id) {
   try {
-    const historicalData = await getHistoricalRevenue(barbershop_id)
+    const historicalData = await getHistoricalRevenue(barberbarbershop_id)
     
     const { getBusinessMetrics } = await import('../../../../lib/dashboard-data')
-    const currentMetrics = await getBusinessMetrics(barbershop_id)
+    const currentMetrics = await getBusinessMetrics(barberbarbershop_id)
     
     const forecasts = {
       linear_trend: generateLinearForecast(historicalData, 30),
@@ -568,11 +568,11 @@ async function generatePredictiveDashboard(barbershop_id) {
  * Helper Functions
  */
 
-async function getHistoricalRevenue(barbershop_id) {
+async function getHistoricalRevenue(barberbarbershop_id) {
   try {
     const { getBusinessMetrics, getPredictiveData } = await import('../../../../lib/dashboard-data')
     
-    const metrics = await getBusinessMetrics(barbershop_id, '90d')
+    const metrics = await getBusinessMetrics(barberbarbershop_id, '90d')
     
     const { createClient } = await import('../../../../lib/supabase/server')
     const supabase = await createClient()

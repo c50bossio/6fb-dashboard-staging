@@ -45,7 +45,7 @@ export async function GET(request) {
       // Try to find if user is a barber
       const { data: barbers, error: barberError } = await supabase
         .from('barbers')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .single();
 
@@ -53,10 +53,10 @@ export async function GET(request) {
         return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
       }
       
-      barbershops = { id: barbers.barbershop_id };
+      barbershops = { id: barbers.barberbarbershop_id };
     }
 
-    const barbershopId = barbershops.id;
+    const barberbarbershopId = barbershops.id;
     const url = new URL(request.url);
     const action = url.searchParams.get('action') || 'list';
     const customerId = url.searchParams.get('customer_id');
@@ -73,7 +73,7 @@ export async function GET(request) {
           referrer:customers!referrer_customer_id(first_name, last_name, email),
           referee:customers!referee_customer_id(first_name, last_name, email)
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .order('created_at', { ascending: false });
 
       if (customerId) {
@@ -104,7 +104,7 @@ export async function GET(request) {
 
     } else if (action === 'analytics') {
       // Get referral analytics
-      const analytics = await getReferralAnalytics(barbershopId, customerId);
+      const analytics = await getReferralAnalytics(barberbarbershopId, customerId);
       
       return NextResponse.json({ 
         success: true, 
@@ -117,7 +117,7 @@ export async function GET(request) {
         return NextResponse.json({ error: 'customer_id parameter required' }, { status: 400 });
       }
 
-      const referralCode = await getOrCreateReferralCode(customerId, barbershopId);
+      const referralCode = await getOrCreateReferralCode(customerId, barberbarbershopId);
       
       return NextResponse.json({ 
         success: true, 
@@ -165,7 +165,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
 
-    const barbershopId = barbershops.id;
+    const barberbarbershopId = barbershops.id;
     const body = await request.json();
     const action = body.action || 'create';
 
@@ -199,7 +199,7 @@ export async function POST(request) {
       }
 
       // Generate unique referral code
-      const referralCode = await generateUniqueReferralCode(barbershopId);
+      const referralCode = await generateUniqueReferralCode(barberbarbershopId);
 
       // Set expiration (30 days from now)
       const expiresAt = new Date();
@@ -207,7 +207,7 @@ export async function POST(request) {
 
       // Create referral record
       const referralData = {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         referrer_customer_id,
         referee_email,
         referee_phone,
@@ -242,7 +242,7 @@ export async function POST(request) {
       return NextResponse.json({ 
         success: true, 
         referral,
-        referral_link: generateReferralLink(referralCode, barbershopId),
+        referral_link: generateReferralLink(referralCode, barberbarbershopId),
         message: 'Referral created successfully'
       }, { status: 201 });
 
@@ -259,7 +259,7 @@ export async function POST(request) {
       const updateResult = await updateReferralStatus(
         referral_id, 
         new_status, 
-        barbershopId, 
+        barberbarbershopId, 
         referee_customer_id
       );
 
@@ -283,7 +283,7 @@ export async function POST(request) {
         }, { status: 400 });
       }
 
-      const claimResult = await claimReferralReward(referral_code, customer_id, barbershopId);
+      const claimResult = await claimReferralReward(referral_code, customer_id, barberbarbershopId);
 
       if (!claimResult.success) {
         return NextResponse.json({ error: claimResult.error }, { status: 400 });
@@ -334,7 +334,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
 
-    const barbershopId = barbershops.id;
+    const barberbarbershopId = barbershops.id;
     const body = await request.json();
     const action = body.action || 'update';
 
@@ -342,7 +342,7 @@ export async function PUT(request) {
       // Process pending referral rewards
       const { dry_run = true } = body;
 
-      const processResult = await processPendingReferralRewards(barbershopId, dry_run);
+      const processResult = await processPendingReferralRewards(barberbarbershopId, dry_run);
       
       return NextResponse.json({ 
         success: true, 
@@ -353,7 +353,7 @@ export async function PUT(request) {
       // Expire old referrals
       const { days_old = 30, dry_run = true } = body;
 
-      const expireResult = await expireOldReferrals(barbershopId, days_old, dry_run);
+      const expireResult = await expireOldReferrals(barberbarbershopId, days_old, dry_run);
       
       return NextResponse.json({ 
         success: true, 
@@ -372,12 +372,12 @@ export async function PUT(request) {
 /**
  * Helper function to get referral analytics
  */
-async function getReferralAnalytics(barbershopId, customerId = null) {
+async function getReferralAnalytics(barberbarbershopId, customerId = null) {
   try {
     let query = supabase
       .from('referral_tracking')
       .select('*')
-      .eq('barbershop_id', barbershopId);
+      .eq('barberbarbershop_id', barberbarbershopId);
 
     if (customerId) {
       query = query.eq('referrer_customer_id', customerId);
@@ -450,7 +450,7 @@ async function getReferralAnalytics(barbershopId, customerId = null) {
       total_rewards_given: totalRewardsGiven,
       status_breakdown: statusBreakdown,
       monthly_trends: monthlyTrends,
-      top_referrers: await getTopReferrers(barbershopId)
+      top_referrers: await getTopReferrers(barberbarbershopId)
     };
 
   } catch (error) {
@@ -470,14 +470,14 @@ async function getReferralAnalytics(barbershopId, customerId = null) {
 /**
  * Helper function to get or create referral code for customer
  */
-async function getOrCreateReferralCode(customerId, barbershopId) {
+async function getOrCreateReferralCode(customerId, barberbarbershopId) {
   try {
     // Check if customer already has an active referral code
     const { data: existingReferral, error: existingError } = await supabase
       .from('referral_tracking')
       .select('referral_code')
       .eq('referrer_customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
@@ -487,7 +487,7 @@ async function getOrCreateReferralCode(customerId, barbershopId) {
       referralCode = existingReferral.referral_code;
     } else {
       // Generate new code
-      referralCode = await generateUniqueReferralCode(barbershopId);
+      referralCode = await generateUniqueReferralCode(barberbarbershopId);
     }
 
     // Get referral stats
@@ -495,7 +495,7 @@ async function getOrCreateReferralCode(customerId, barbershopId) {
       .from('referral_tracking')
       .select('status')
       .eq('referrer_customer_id', customerId)
-      .eq('barbershop_id', barbershopId);
+      .eq('barberbarbershop_id', barberbarbershopId);
 
     const referralStats = {
       total_sent: stats?.length || 0,
@@ -505,7 +505,7 @@ async function getOrCreateReferralCode(customerId, barbershopId) {
 
     return {
       code: referralCode,
-      link: generateReferralLink(referralCode, barbershopId),
+      link: generateReferralLink(referralCode, barberbarbershopId),
       stats: referralStats
     };
 
@@ -518,14 +518,14 @@ async function getOrCreateReferralCode(customerId, barbershopId) {
 /**
  * Helper function to update referral status
  */
-async function updateReferralStatus(referralId, newStatus, barbershopId, refereeCustomerId = null) {
+async function updateReferralStatus(referralId, newStatus, barberbarbershopId, refereeCustomerId = null) {
   try {
     // Get current referral
     const { data: referral, error: referralError } = await supabase
       .from('referral_tracking')
       .select('*')
       .eq('id', referralId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single();
 
     if (referralError || !referral) {
@@ -559,7 +559,7 @@ async function updateReferralStatus(referralId, newStatus, barbershopId, referee
     // Check if referral qualifies for rewards
     const qualified = await checkReferralQualification(referral, newStatus);
     if (qualified && !referral.referrer_reward_given) {
-      await processReferralRewards(referral, barbershopId);
+      await processReferralRewards(referral, barberbarbershopId);
       updateData.referrer_reward_given = true;
       updateData.referee_reward_given = true;
       updateData.referrer_reward_given_at = new Date().toISOString();
@@ -595,14 +595,14 @@ async function updateReferralStatus(referralId, newStatus, barbershopId, referee
 /**
  * Helper function to claim referral reward
  */
-async function claimReferralReward(referralCode, customerId, barbershopId) {
+async function claimReferralReward(referralCode, customerId, barberbarbershopId) {
   try {
     // Find referral by code
     const { data: referral, error: referralError } = await supabase
       .from('referral_tracking')
       .select('*')
       .eq('referral_code', referralCode)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single();
 
     if (referralError || !referral) {
@@ -641,7 +641,7 @@ async function claimReferralReward(referralCode, customerId, barbershopId) {
         referral.referee_reward_value,
         'signup_bonus',
         referral.id,
-        barbershopId
+        barberbarbershopId
       );
     }
 
@@ -661,7 +661,7 @@ async function claimReferralReward(referralCode, customerId, barbershopId) {
 /**
  * Helper function to process referral rewards
  */
-async function processReferralRewards(referral, barbershopId) {
+async function processReferralRewards(referral, barberbarbershopId) {
   try {
     // Award points to referrer
     if (referral.referrer_reward_type === 'points' && referral.referrer_reward_value) {
@@ -670,7 +670,7 @@ async function processReferralRewards(referral, barbershopId) {
         referral.referrer_reward_value,
         'referral_reward',
         referral.id,
-        barbershopId
+        barberbarbershopId
       );
     }
 
@@ -681,7 +681,7 @@ async function processReferralRewards(referral, barbershopId) {
         referral.referee_reward_value,
         'referral_bonus',
         referral.id,
-        barbershopId
+        barberbarbershopId
       );
     }
 
@@ -694,14 +694,14 @@ async function processReferralRewards(referral, barbershopId) {
 /**
  * Helper function to award referral points
  */
-async function awardReferralPoints(customerId, points, type, referralId, barbershopId) {
+async function awardReferralPoints(customerId, points, type, referralId, barberbarbershopId) {
   try {
     // Get customer's active loyalty enrollment
     const { data: enrollment, error: enrollmentError } = await supabase
       .from('loyalty_program_enrollments')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
       .limit(1)
       .single();
@@ -716,7 +716,7 @@ async function awardReferralPoints(customerId, points, type, referralId, barbers
 
     // Create points transaction
     const transactionData = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       customer_id: customerId,
       loyalty_program_id: enrollment.loyalty_program_id,
       transaction_type: 'bonus',
@@ -764,7 +764,7 @@ async function awardReferralPoints(customerId, points, type, referralId, barbers
 /**
  * Helper function to generate unique referral code
  */
-async function generateUniqueReferralCode(barbershopId) {
+async function generateUniqueReferralCode(barberbarbershopId) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   
   for (let attempts = 0; attempts < 10; attempts++) {
@@ -777,7 +777,7 @@ async function generateUniqueReferralCode(barbershopId) {
     const { data: existing, error } = await supabase
       .from('referral_tracking')
       .select('id')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('referral_code', code)
       .single();
 
@@ -793,9 +793,9 @@ async function generateUniqueReferralCode(barbershopId) {
 /**
  * Helper function to generate referral link
  */
-function generateReferralLink(referralCode, barbershopId) {
+function generateReferralLink(referralCode, barberbarbershopId) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
-  return `${baseUrl}/book?ref=${referralCode}&shop=${barbershopId}`;
+  return `${baseUrl}/book?ref=${referralCode}&shop=${barberbarbershopId}`;
 }
 
 /**
@@ -826,7 +826,7 @@ async function checkReferralQualification(referral, newStatus) {
 /**
  * Helper function to get top referrers
  */
-async function getTopReferrers(barbershopId) {
+async function getTopReferrers(barberbarbershopId) {
   try {
     const { data: referrals, error } = await supabase
       .from('referral_tracking')
@@ -835,7 +835,7 @@ async function getTopReferrers(barbershopId) {
         status,
         customers!referrer_customer_id(first_name, last_name)
       `)
-      .eq('barbershop_id', barbershopId);
+      .eq('barberbarbershop_id', barberbarbershopId);
 
     if (error || !referrals) {
       return [];
@@ -899,13 +899,13 @@ async function getCustomerName(customerId) {
 /**
  * Helper function to process pending referral rewards
  */
-async function processPendingReferralRewards(barbershopId, dryRun) {
+async function processPendingReferralRewards(barberbarbershopId, dryRun) {
   try {
     // Find qualified referrals that haven't been rewarded
     const { data: pendingReferrals, error } = await supabase
       .from('referral_tracking')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('status', 'qualified')
       .eq('referrer_reward_given', false);
 
@@ -926,7 +926,7 @@ async function processPendingReferralRewards(barbershopId, dryRun) {
     let processedCount = 0;
     for (const referral of pendingReferrals) {
       try {
-        await processReferralRewards(referral, barbershopId);
+        await processReferralRewards(referral, barberbarbershopId);
         
         // Update referral as rewarded
         await supabase
@@ -962,7 +962,7 @@ async function processPendingReferralRewards(barbershopId, dryRun) {
 /**
  * Helper function to expire old referrals
  */
-async function expireOldReferrals(barbershopId, daysOld, dryRun) {
+async function expireOldReferrals(barberbarbershopId, daysOld, dryRun) {
   try {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
@@ -971,7 +971,7 @@ async function expireOldReferrals(barbershopId, daysOld, dryRun) {
     const { data: oldReferrals, error } = await supabase
       .from('referral_tracking')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .in('status', ['sent', 'opened', 'clicked'])
       .lt('created_at', cutoffDate.toISOString());
 
@@ -994,7 +994,7 @@ async function expireOldReferrals(barbershopId, daysOld, dryRun) {
         status: 'expired',
         updated_at: new Date().toISOString()
       })
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .in('status', ['sent', 'opened', 'clicked'])
       .lt('created_at', cutoffDate.toISOString());
 

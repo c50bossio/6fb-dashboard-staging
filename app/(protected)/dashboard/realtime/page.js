@@ -22,10 +22,10 @@ export default function RealtimePage() {
   const { user, profile } = useAuth()
   const [activeTab, setActiveTab] = useState('dashboard')
   
-  const barbershopId = profile?.barbershop_id || user?.barbershop_id
-  const { data: notifications = [], refresh } = useRealtimeNotifications(barbershopId)
+  const barberbarbershopId = profile?.barbershop_id || user?.barberbarbershop_id
+  const { data: notifications = [], refresh } = useRealtimeNotifications(barberbarbershopId)
   
-  if (!barbershopId) {
+  if (!barberbarbershopId) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -244,7 +244,7 @@ export default function RealtimePage() {
                   body: JSON.stringify({
                     type: 'booking_update',
                     data: {
-                      shopId: 'test-shop',
+                      barbershopId: 'test-shop',
                       bookingId: Date.now(),
                       serviceName: 'Test Service',
                       status: 'confirmed',

@@ -115,7 +115,7 @@ export default function ProgressiveAccountCreation({
           .from('customers')
           .insert({
             id: authData.user.id,
-            barbershop_id: bookingDetails.barbershop_id,
+            barberbarbershop_id: bookingDetails.barberbarbershop_id,
             name: customerInfo.name,
             email: customerInfo.email,
             phone: customerInfo.phone,

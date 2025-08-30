@@ -63,19 +63,19 @@ export async function POST(request) {
     // Get user's barbershop using same logic as sync endpoint
     let barbershop = null
     
-    // Method 1: Check profile for shop_id or barbershop_id first (most reliable)
+    // Method 1: Check profile for shop_id or barberbarbershop_id first (most reliable)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, shop_id, barbershop_id, email')
+      .select('id, barbershop_id, barberbarbershop_id, email')
       .or(`(id.eq.${user.id}),(email.eq.${user.email})`)
       .single()
     
     if (profile && (profile.shop_id || profile.barbershop_id)) {
-      const shopId = profile.shop_id || profile.barbershop_id
+      const barbershopId = profile.shop_id || profile.barbershop_id
       const { data: profileShop } = await supabase
         .from('barbershops')
         .select('id, name')
-        .eq('id', shopId)
+        .eq('id', barbershopId)
         .single()
       
       if (profileShop) {
@@ -102,15 +102,15 @@ export async function POST(request) {
     if (!barbershop) {
       const { data: staffRecord } = await supabase
         .from('barbershop_staff')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', profile?.id || user.id)
         .single()
       
-      if (staffRecord?.barbershop_id) {
+      if (staffRecord?.barberbarbershop_id) {
         const { data: staffShop } = await supabase
           .from('barbershops')
           .select('id, name')
-          .eq('id', staffRecord.barbershop_id)
+          .eq('id', staffRecord.barberbarbershop_id)
           .single()
         
         if (staffShop) {
@@ -126,7 +126,7 @@ export async function POST(request) {
         userEmail: user.email,
         profileId: profile?.id,
         profileShopId: profile?.shop_id,
-        profileBarbershopId: profile?.barbershop_id
+        profileBarberbarbershopId: profile?.barbershop_id
       })
       
       // Provide helpful error message based on what we found
@@ -157,8 +157,8 @@ export async function POST(request) {
           userId: user.id,
           userEmail: user.email,
           profileFound: !!profile,
-          shopId: profile?.shop_id,
-          barbershopId: profile?.barbershop_id,
+          barbershopId: profile?.shop_id,
+          barberbarbershopId: profile?.barbershop_id,
           devBypass: devBypass
         } : undefined
       }, { status: 404 })
@@ -178,7 +178,7 @@ export async function POST(request) {
       const { data: existingCreds } = await supabase
         .from('cin7_credentials')
         .select('id')
-        .eq('barbershop_id', barbershop.id)
+        .eq('barberbarbershop_id', barbershop.id)
         .single()
 
       if (existingCreds) {
@@ -204,7 +204,7 @@ export async function POST(request) {
         const { error: insertError } = await supabase
           .from('cin7_credentials')
           .insert({
-            barbershop_id: barbershop.id,
+            barberbarbershop_id: barbershop.id,
             encrypted_account_id: JSON.stringify(encryptedAccountId),
             encrypted_api_key: JSON.stringify(encryptedApiKey),
             account_name: accountName,
@@ -233,7 +233,7 @@ export async function POST(request) {
           account_name: testResult.accountName || accountName,
           last_tested: new Date().toISOString()
         })
-        .eq('barbershop_id', barbershop.id)
+        .eq('barberbarbershop_id', barbershop.id)
     }
 
     // Step 3: Register webhooks if enabled
@@ -253,7 +253,7 @@ export async function POST(request) {
             webhook_url: webhookUrl,
             webhook_status: 'active'
           })
-          .eq('barbershop_id', barbershop.id)
+          .eq('barberbarbershop_id', barbershop.id)
       } else {
         console.warn('⚠️ Webhook registration failed:', webhookResult.error)
         // Continue without webhooks - not critical
@@ -273,7 +273,7 @@ export async function POST(request) {
             await supabase
               .from('products')
               .upsert({
-              barbershop_id: barbershop.id,
+              barberbarbershop_id: barbershop.id,
               cin7_product_id: product.cin7_id,
               sku: product.sku,
               name: product.name,
@@ -289,7 +289,7 @@ export async function POST(request) {
               cin7_last_sync: new Date().toISOString(),
               cin7_sync_enabled: true
             }, {
-              onConflict: 'sku,barbershop_id'
+              onConflict: 'sku,barberbarbershop_id'
             })
           }
           
@@ -313,7 +313,7 @@ export async function POST(request) {
         last_sync: new Date().toISOString(),
         last_sync_status: 'success'
       })
-      .eq('barbershop_id', barbershop.id)
+      .eq('barberbarbershop_id', barbershop.id)
 
     // Return response based on what succeeded
     if (credentialsSaved && connectionTestPassed) {
@@ -402,7 +402,7 @@ export async function GET(request) {
     const { data: credentials } = await supabase
       .from('cin7_credentials')
       .select('account_name, is_active, last_sync, sync_settings')
-      .eq('barbershop_id', barbershop.id)
+      .eq('barberbarbershop_id', barbershop.id)
       .eq('is_active', true)
       .single()
 

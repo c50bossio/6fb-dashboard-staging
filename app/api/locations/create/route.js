@@ -16,7 +16,7 @@ export async function POST(request) {
     // Get user's profile to check permissions
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, role, shop_id, barbershop_id, organization_id')
+      .select('id, role, barbershop_id, barberbarbershop_id, organization_id')
       .eq('id', user.id)
       .single()
 

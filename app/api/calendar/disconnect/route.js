@@ -7,9 +7,9 @@ import { NextResponse } from 'next/server'
 export async function DELETE(request) {
   try {
     const body = await request.json()
-    const { shopId, accountId } = body
+    const { barbershopId, accountId } = body
     
-    if (!shopId || !accountId) {
+    if (!barbershopId || !accountId) {
       return NextResponse.json(
         { error: 'Shop ID and Account ID required' },
         { status: 400 }
@@ -25,7 +25,7 @@ export async function DELETE(request) {
     const disconnectResult = {
       success: true,
       accountId,
-      shopId,
+      barbershopId,
       disconnectedAt: new Date().toISOString(),
       message: 'Calendar account disconnected successfully'
     }

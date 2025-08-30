@@ -27,13 +27,13 @@ export class PayrollEmailService {
         recipients,
         reportData,
         scheduleName = 'Payroll Report',
-        barbershopId,
+        barberbarbershopId,
         customMessage = '',
         includeDownloadLink = true
       } = emailOptions
 
       // Get barbershop information for email branding
-      const barbershopInfo = await this.getBarbershopInfo(barbershopId)
+      const barbershopInfo = await this.getBarbershopInfo(barberbarbershopId)
 
       // Prepare email content
       const emailContent = this.generateEmailContent({
@@ -71,7 +71,7 @@ export class PayrollEmailService {
 
       // Log email activity
       await this.logEmailActivity({
-        barbershopId,
+        barberbarbershopId,
         reportFileName: reportData.fileName,
         recipients,
         successCount,
@@ -122,7 +122,7 @@ export class PayrollEmailService {
       attachments,
       categories: ['payroll-report', 'automated-report'],
       customArgs: {
-        barbershop_id: barbershopInfo.id,
+        barberbarbershop_id: barbershopInfo.id,
         report_type: 'payroll'
       }
     }
@@ -441,21 +441,21 @@ Please ensure it is shared only with authorized personnel.
 
   /**
    * Get barbershop information for email branding
-   * @param {string} barbershopId - Barbershop ID
+   * @param {string} barberbarbershopId - Barbershop ID
    * @returns {Object} Barbershop info
    */
-  async getBarbershopInfo(barbershopId) {
+  async getBarbershopInfo(barberbarbershopId) {
     try {
       const { data, error } = await this.supabase
         .from('barbershops')
         .select('*')
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
         .single()
 
       if (error) {
         console.warn('Could not fetch barbershop info:', error)
         return {
-          id: barbershopId,
+          id: barberbarbershopId,
           name: 'BookedBarber Business',
           email: null,
           phone: null
@@ -466,7 +466,7 @@ Please ensure it is shared only with authorized personnel.
     } catch (error) {
       console.warn('Error fetching barbershop info:', error)
       return {
-        id: barbershopId,
+        id: barberbarbershopId,
         name: 'BookedBarber Business',
         email: null,
         phone: null
@@ -481,7 +481,7 @@ Please ensure it is shared only with authorized personnel.
   async logEmailActivity(logData) {
     try {
       const {
-        barbershopId,
+        barberbarbershopId,
         reportFileName,
         recipients,
         successCount,
@@ -490,7 +490,7 @@ Please ensure it is shared only with authorized personnel.
       } = logData
 
       const logEntry = {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         activity_type: 'payroll_email_sent',
         details: {
           scheduleName,
@@ -521,11 +521,11 @@ Please ensure it is shared only with authorized personnel.
     try {
       const {
         recipient,
-        barbershopId,
+        barberbarbershopId,
         senderName = 'BookedBarber Test'
       } = testOptions
 
-      const barbershopInfo = await this.getBarbershopInfo(barbershopId)
+      const barbershopInfo = await this.getBarbershopInfo(barberbarbershopId)
 
       const testMessage = {
         to: recipient,
@@ -572,7 +572,7 @@ This is a test email from BookedBarber. Please do not reply to this message.
         `,
         categories: ['test-email'],
         customArgs: {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           test_type: 'email_configuration'
         }
       }
@@ -597,11 +597,11 @@ This is a test email from BookedBarber. Please do not reply to this message.
 
   /**
    * Get email delivery statistics
-   * @param {string} barbershopId - Barbershop ID
+   * @param {string} barberbarbershopId - Barbershop ID
    * @param {number} days - Number of days to look back
    * @returns {Object} Email statistics
    */
-  async getEmailStatistics(barbershopId, days = 30) {
+  async getEmailStatistics(barberbarbershopId, days = 30) {
     try {
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - days)
@@ -609,7 +609,7 @@ This is a test email from BookedBarber. Please do not reply to this message.
       const { data, error } = await this.supabase
         .from('email_activity_log')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('activity_type', 'payroll_email_sent')
         .gte('created_at', startDate.toISOString())
 
@@ -686,10 +686,10 @@ This is a test email from BookedBarber. Please do not reply to this message.
 
   /**
    * Validate email configuration
-   * @param {string} barbershopId - Barbershop ID
+   * @param {string} barberbarbershopId - Barbershop ID
    * @returns {Object} Validation result
    */
-  async validateEmailConfiguration(barbershopId) {
+  async validateEmailConfiguration(barberbarbershopId) {
     const validation = {
       isValid: true,
       errors: [],
@@ -710,7 +710,7 @@ This is a test email from BookedBarber. Please do not reply to this message.
 
     // Check barbershop configuration
     try {
-      const barbershopInfo = await this.getBarbershopInfo(barbershopId)
+      const barbershopInfo = await this.getBarbershopInfo(barberbarbershopId)
       
       if (!barbershopInfo.email) {
         validation.warnings.push('Barbershop email not set - using default reply-to address')
@@ -737,7 +737,7 @@ This is a test email from BookedBarber. Please do not reply to this message.
       recipients: exportData.recipients || [],
       reportData: exportData.exportData,
       scheduleName: exportData.scheduleName || 'Payroll Export',
-      barbershopId: exportData.shopInfo?.id,
+      barberbarbershopId: exportData.shopInfo?.id,
       customMessage: exportData.customMessage || '',
       includeDownloadLink: true
     }
@@ -755,7 +755,7 @@ This is a test email from BookedBarber. Please do not reply to this message.
       recipients: scheduleData.email_recipients || [],
       reportData: scheduleData.exportData,
       scheduleName: scheduleData.name || 'Scheduled Payroll Report',
-      barbershopId: scheduleData.shop_id,
+      barberbarbershopId: scheduleData.barbershop_id,
       customMessage: `This is your ${scheduleData.schedule_type} payroll report.`,
       includeDownloadLink: true
     }

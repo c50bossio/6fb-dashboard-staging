@@ -77,16 +77,16 @@ function BarberClientsPageContent({ onAction }) {
       setLoading(true)
       
       // Get barbershop ID from profile
-      const barbershopId = profile?.barbershop_id || profile?.shop_id
+      const barberbarbershopId = profile?.barbershop_id || profile?.shop_id
       
-      if (!barbershopId) {
+      if (!barberbarbershopId) {
         console.error('No barbershop ID found in profile')
         toast.error('Unable to load clients - no barbershop associated')
         return
       }
 
       // Fetch real customers from API
-      const response = await fetch(`/api/customers?barbershop_id=${barbershopId}&limit=100`)
+      const response = await fetch(`/api/customers?barberbarbershop_id=${barberbarbershopId}&limit=100`)
       const data = await response.json()
       
       if (data.error) {
@@ -272,14 +272,14 @@ function BarberClientsPageContent({ onAction }) {
   // Handle client creation
   const handleAddClient = async (clientData) => {
     try {
-      const barbershopId = profile?.barbershop_id || profile?.shop_id
+      const barberbarbershopId = profile?.barbershop_id || profile?.shop_id
       
       const response = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...clientData,
-          barbershop_id: barbershopId
+          barberbarbershop_id: barberbarbershopId
         })
       })
 

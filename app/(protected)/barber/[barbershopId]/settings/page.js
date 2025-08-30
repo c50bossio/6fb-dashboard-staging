@@ -24,7 +24,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 export default function BarberSettings() {
   const { user } = useAuth()
   const params = useParams()
-  const barbershopId = params.barbershopId
+  const barberbarbershopId = params.barberbarbershopId
 
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
@@ -98,10 +98,10 @@ export default function BarberSettings() {
 
   useEffect(() => {
     loadBarberSettings()
-  }, [user, barbershopId])
+  }, [user, barberbarbershopId])
 
   const loadBarberSettings = async () => {
-    if (!user || !barbershopId) return
+    if (!user || !barberbarbershopId) return
 
     try {
       setLoading(true)
@@ -111,7 +111,7 @@ export default function BarberSettings() {
         .from('barbershop_staff')
         .select('*')
         .eq('user_id', user.id)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .single()
 
       if (staffError && staffError.code !== 'PGRST116') {
@@ -151,7 +151,7 @@ export default function BarberSettings() {
   }
 
   const handleSave = async () => {
-    if (!user || !barbershopId) return
+    if (!user || !barberbarbershopId) return
 
     try {
       setSaving(true)
@@ -162,7 +162,7 @@ export default function BarberSettings() {
         .from('barbershop_staff')
         .upsert({
           user_id: user.id,
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           full_name: settings.full_name,
           bio: settings.bio,
           profile_image_url: settings.profile_image_url,
@@ -180,7 +180,7 @@ export default function BarberSettings() {
           show_specializations: settings.show_specializations,
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'user_id,barbershop_id'
+          onConflict: 'user_id,barberbarbershop_id'
         })
 
       if (error) {

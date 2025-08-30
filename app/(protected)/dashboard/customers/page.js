@@ -64,7 +64,7 @@ function CustomersPageContent() {
   const searchParams = useSearchParams()
   
   // React Query hooks for business context and permissions
-  const { businessContext, shopId, isLoading: contextLoading, error: contextError } = useBusinessContext()
+  const { businessContext, barbershopId, isLoading: contextLoading, error: contextError } = useBusinessContext()
   
   // Local state
   const [searchTerm, setSearchTerm] = useState('')
@@ -96,10 +96,10 @@ function CustomersPageContent() {
     refetch: refetchCustomers,
     isFetching: customersFetching,
     isPlaceholderData
-  } = useCustomersWithRealtime(shopId, {
+  } = useCustomersWithRealtime(barbershopId, {
     limit: pageSize,
     offset: currentPage * pageSize,
-    enabled: !!shopId && businessContext?.canManageAppointments()
+    enabled: !!barbershopId && businessContext?.canManageAppointments()
   })
   
   // Search hook with debouncing
@@ -107,23 +107,23 @@ function CustomersPageContent() {
     data: searchResults,
     isLoading: searchLoading,
     error: searchError
-  } = useCustomerSearch(shopId, searchTerm, 300)
+  } = useCustomerSearch(barbershopId, searchTerm, 300)
   
   // All customers for export and advanced operations
   const {
     data: allCustomers,
     refetch: refetchAllCustomers
-  } = useAllCustomers(shopId)
+  } = useAllCustomers(barbershopId)
   
   // Customer count for stats
   const {
     data: customerCount = 0
-  } = useCustomerCount(shopId)
+  } = useCustomerCount(barbershopId)
   
   // Loyalty stats
   const {
     data: loyaltyStats
-  } = useCustomerLoyaltyStats(shopId)
+  } = useCustomerLoyaltyStats(barbershopId)
   
   // Mutations with optimistic updates
   const createCustomerMutation = useCreateCustomer()
@@ -160,7 +160,7 @@ function CustomersPageContent() {
       notes: customer.notes || '',
       isVip: customer.vip_status || false,
       isActive: customer.is_active !== false,
-      barbershopId: customer.barbershop_id || shopId,
+      barberbarbershopId: customer.barberbarbershop_id || barbershopId,
       loyaltyPoints: customer.loyalty_points || 0
     }))
   }
@@ -168,7 +168,7 @@ function CustomersPageContent() {
   // Processed customer data with memoization for performance
   const customers = useMemo(() => {
     return formatCustomerData(customersData)
-  }, [customersData, shopId])
+  }, [customersData, barbershopId])
 
   // Determine loading and error states
   const isLoadingState = contextLoading || customersLoading || isMutating
@@ -177,12 +177,12 @@ function CustomersPageContent() {
   
   // Permission checks
   const canManageCustomers = businessContext?.canManageAppointments() || false
-  const hasCustomerAccess = canManageCustomers && !!shopId
+  const hasCustomerAccess = canManageCustomers && !!barbershopId
   
   // Error messages based on context
   const getContextError = () => {
     if (!businessContext) return null
-    if (!shopId) {
+    if (!barbershopId) {
       return '🏪 Barbershop setup incomplete. Your profile needs to be associated with a barbershop. Please contact support or try refreshing the page.'
     }
     if (!canManageCustomers) {
@@ -388,7 +388,7 @@ function CustomersPageContent() {
 
   // Customer CRUD operations using React Query mutations
   const addCustomer = async (customerData) => {
-    if (!shopId) {
+    if (!barbershopId) {
       toast.error('Please complete your barbershop setup first. Go to Settings > Barbershop Setup to get started.')
       return
     }
@@ -405,7 +405,7 @@ function CustomersPageContent() {
 
     try {
       await createCustomerMutation.mutateAsync({
-        barbershop_id: shopId,
+        barberbarbershop_id: barbershopId,
         name: customerData.name,
         email: customerData.email,
         phone: customerData.phone,
@@ -490,7 +490,7 @@ function CustomersPageContent() {
 
           <AchievementBadges
             customerId={selectedCustomerForBadges.id}
-            barbershopId="demo-barbershop"
+            barberbarbershopId="demo-barbershop"
             showProgress={true}
             autoRefresh={true}
             onBadgeUnlock={(badges) => {
@@ -500,7 +500,7 @@ function CustomersPageContent() {
 
           <BadgeProgress
             customerId={selectedCustomerForBadges.id}
-            barbershopId="demo-barbershop"
+            barberbarbershopId="demo-barbershop"
             showQuickActions={true}
             onProgressUpdate={(data) => {
               
@@ -684,7 +684,7 @@ function CustomersPageContent() {
 
         {badgeView === 'leaderboard' && (
           <BadgeLeaderboard
-            barbershopId="demo-barbershop"
+            barberbarbershopId="demo-barbershop"
             showFilters={true}
             showStatistics={true}
             allowSharing={true}
@@ -1069,7 +1069,7 @@ function CustomersPageContent() {
                       <div className="mb-2">
                         <LoyaltyPointsBadge 
                           customerId={customer.id}
-                          barbershopId={customer.barbershopId}
+                          barberbarbershopId={customer.barberbarbershopId}
                           size="default"
                           showProgress={true}
                         />
@@ -1109,7 +1109,7 @@ function CustomersPageContent() {
                       <span>Last visit: {customer.lastVisit || 'Never'}</span>
                       <QuickRedeemButton 
                         customerId={customer.id}
-                        barbershopId={customer.barbershopId}
+                        barberbarbershopId={customer.barberbarbershopId}
                       />
                     </div>
                     
@@ -1427,7 +1427,7 @@ function CustomersPageContent() {
                     setShowImportModal(false)
                   }}
                   profile={{
-                    barbershop_id: shopId
+                    barberbarbershop_id: barbershopId
                   }}
                   initialData={{}}
                   context="company-wide"

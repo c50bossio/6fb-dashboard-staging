@@ -11,15 +11,15 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 // Query keys for consistent caching
 export const customerKeys = {
   all: ['customers'],
-  byShop: (shopId) => ['customers', 'shop', shopId],
-  search: (shopId, searchTerm) => ['customers', 'shop', shopId, 'search', searchTerm],
-  paginated: (shopId, page, limit) => ['customers', 'shop', shopId, 'page', page, limit],
+  byShop: (barbershopId) => ['customers', 'shop', barbershopId],
+  search: (barbershopId, searchTerm) => ['customers', 'shop', barbershopId, 'search', searchTerm],
+  paginated: (barbershopId, page, limit) => ['customers', 'shop', barbershopId, 'page', page, limit],
 }
 
 /**
  * Get customers for a shop with pagination
  */
-export function useCustomers(shopId, options = {}) {
+export function useCustomers(barbershopId, options = {}) {
   const { 
     search, 
     limit = 50, 
@@ -28,17 +28,17 @@ export function useCustomers(shopId, options = {}) {
   } = options
 
   const queryKey = search 
-    ? customerKeys.search(shopId, search)
-    : customerKeys.paginated(shopId, Math.floor(offset / limit), limit)
+    ? customerKeys.search(barbershopId, search)
+    : customerKeys.paginated(barbershopId, Math.floor(offset / limit), limit)
 
   return useQuery({
     queryKey,
-    queryFn: () => createClient().getCustomers(shopId, {
+    queryFn: () => createClient().getCustomers(barbershopId, {
       search,
       limit,
       offset
     }),
-    enabled: enabled && !!shopId,
+    enabled: enabled && !!barbershopId,
     staleTime: 3 * 60 * 1000, // 3 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     keepPreviousData: true, // Important for pagination
@@ -48,7 +48,7 @@ export function useCustomers(shopId, options = {}) {
 /**
  * Search customers with debounced search term
  */
-export function useCustomerSearch(shopId, searchTerm, debounceMs = 300) {
+export function useCustomerSearch(barbershopId, searchTerm, debounceMs = 300) {
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm)
 
   useEffect(() => {
@@ -60,12 +60,12 @@ export function useCustomerSearch(shopId, searchTerm, debounceMs = 300) {
   }, [searchTerm, debounceMs])
 
   return useQuery({
-    queryKey: customerKeys.search(shopId, debouncedSearch),
-    queryFn: () => createClient().getCustomers(shopId, {
+    queryKey: customerKeys.search(barbershopId, debouncedSearch),
+    queryFn: () => createClient().getCustomers(barbershopId, {
       search: debouncedSearch,
       limit: 20
     }),
-    enabled: !!shopId && !!debouncedSearch && debouncedSearch.length >= 2,
+    enabled: !!barbershopId && !!debouncedSearch && debouncedSearch.length >= 2,
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -73,11 +73,11 @@ export function useCustomerSearch(shopId, searchTerm, debounceMs = 300) {
 /**
  * Get all customers (for exports, reports, etc.)
  */
-export function useAllCustomers(shopId) {
+export function useAllCustomers(barbershopId) {
   return useQuery({
-    queryKey: customerKeys.byShop(shopId),
-    queryFn: () => createClient().getCustomers(shopId, { limit: 10000 }), // Large limit
-    enabled: !!shopId,
+    queryKey: customerKeys.byShop(barbershopId),
+    queryFn: () => createClient().getCustomers(barbershopId, { limit: 10000 }), // Large limit
+    enabled: !!barbershopId,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   })
@@ -86,14 +86,14 @@ export function useAllCustomers(shopId) {
 /**
  * Get customer count
  */
-export function useCustomerCount(shopId) {
+export function useCustomerCount(barbershopId) {
   return useQuery({
-    queryKey: ['customers', 'count', shopId],
+    queryKey: ['customers', 'count', barbershopId],
     queryFn: async () => {
-      const customers = await createClient().getCustomers(shopId, { limit: 10000 })
+      const customers = await createClient().getCustomers(barbershopId, { limit: 10000 })
       return customers.length
     },
-    enabled: !!shopId,
+    enabled: !!barbershopId,
     staleTime: 15 * 60 * 1000, // 15 minutes
   })
 }
@@ -111,12 +111,12 @@ export function useCreateCustomer() {
       
       // Invalidate customer queries
       queryClient.invalidateQueries({ 
-        queryKey: customerKeys.byShop(newCustomer.barbershop_id) 
+        queryKey: customerKeys.byShop(newCustomer.barberbarbershop_id) 
       })
       
       // Update count
       queryClient.invalidateQueries({ 
-        queryKey: ['customers', 'count', newCustomer.barbershop_id] 
+        queryKey: ['customers', 'count', newCustomer.barberbarbershop_id] 
       })
     },
     onError: (error) => {
@@ -140,7 +140,7 @@ export function useUpdateCustomer() {
       
       // Invalidate customer queries
       queryClient.invalidateQueries({ 
-        queryKey: customerKeys.byShop(updatedCustomer.barbershop_id) 
+        queryKey: customerKeys.byShop(updatedCustomer.barberbarbershop_id) 
       })
     },
     onError: (error) => {
@@ -153,20 +153,20 @@ export function useUpdateCustomer() {
 /**
  * Optimized real-time customers hook with targeted cache updates
  */
-export function useRealtimeCustomers(shopId) {
+export function useRealtimeCustomers(barbershopId) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (!shopId) return
+    if (!barbershopId) return
 
     const unsubscribe = createClient().subscribeToChanges(
       'customers',
-      { barbershop_id: shopId },
+      { barberbarbershop_id: barbershopId },
       (payload) => {
         const { eventType, new: newRecord, old: oldRecord } = payload
         
         // Update paginated customer queries
-        queryClient.getQueryCache().findAll(customerKeys.byShop(shopId)).forEach(query => {
+        queryClient.getQueryCache().findAll(customerKeys.byShop(barbershopId)).forEach(query => {
           if (query.state.data) {
             queryClient.setQueryData(query.queryKey, (oldData) => {
               if (!oldData) return oldData
@@ -196,11 +196,11 @@ export function useRealtimeCustomers(shopId) {
 
         // Update customer count efficiently
         if (eventType === 'INSERT') {
-          queryClient.setQueryData(['customers', 'count', shopId], (oldCount) => 
+          queryClient.setQueryData(['customers', 'count', barbershopId], (oldCount) => 
             oldCount ? oldCount + 1 : undefined
           )
         } else if (eventType === 'DELETE') {
-          queryClient.setQueryData(['customers', 'count', shopId], (oldCount) => 
+          queryClient.setQueryData(['customers', 'count', barbershopId], (oldCount) => 
             oldCount && oldCount > 0 ? oldCount - 1 : undefined
           )
         }
@@ -210,7 +210,7 @@ export function useRealtimeCustomers(shopId) {
           .findAll({ predicate: (query) => 
             query.queryKey[0] === 'customers' && 
             query.queryKey[1] === 'shop' && 
-            query.queryKey[2] === shopId && 
+            query.queryKey[2] === barbershopId && 
             query.queryKey[3] === 'search'
           })
 
@@ -233,32 +233,32 @@ export function useRealtimeCustomers(shopId) {
         if (eventType === 'INSERT' || eventType === 'DELETE' || 
             (eventType === 'UPDATE' && newRecord.loyalty_points !== oldRecord.loyalty_points)) {
           queryClient.invalidateQueries({ 
-            queryKey: ['customers', 'loyalty-stats', shopId] 
+            queryKey: ['customers', 'loyalty-stats', barbershopId] 
           })
         }
       }
     )
 
     return unsubscribe
-  }, [shopId, queryClient])
+  }, [barbershopId, queryClient])
 }
 
 /**
  * Combined hook for customers with real-time updates
  */
-export function useCustomersWithRealtime(shopId, options = {}) {
+export function useCustomersWithRealtime(barbershopId, options = {}) {
   // Set up real-time subscription
-  useRealtimeCustomers(shopId)
+  useRealtimeCustomers(barbershopId)
   
   // Return the customers query
-  return useCustomers(shopId, options)
+  return useCustomers(barbershopId, options)
 }
 
 /**
  * Get customers formatted for select components
  */
-export function useCustomerOptions(shopId, searchTerm = '') {
-  const { data: customers, ...rest } = useCustomerSearch(shopId, searchTerm)
+export function useCustomerOptions(barbershopId, searchTerm = '') {
+  const { data: customers, ...rest } = useCustomerSearch(barbershopId, searchTerm)
 
   return {
     ...rest,
@@ -273,19 +273,19 @@ export function useCustomerOptions(shopId, searchTerm = '') {
 /**
  * Get frequent customers (most appointments)
  */
-export function useFrequentCustomers(shopId, limit = 10) {
+export function useFrequentCustomers(barbershopId, limit = 10) {
   return useQuery({
-    queryKey: ['customers', 'frequent', shopId, limit],
+    queryKey: ['customers', 'frequent', barbershopId, limit],
     queryFn: async () => {
       // This would need customer appointment counts
       // For now, return recent customers
-      const customers = await createClient().getCustomers(shopId, { 
+      const customers = await createClient().getCustomers(barbershopId, { 
         limit,
         // Would need to join with appointments for frequency
       })
       return customers
     },
-    enabled: !!shopId,
+    enabled: !!barbershopId,
     staleTime: 30 * 60 * 1000, // 30 minutes
   })
 }
@@ -293,11 +293,11 @@ export function useFrequentCustomers(shopId, limit = 10) {
 /**
  * Get customer loyalty points summary
  */
-export function useCustomerLoyaltyStats(shopId) {
+export function useCustomerLoyaltyStats(barbershopId) {
   return useQuery({
-    queryKey: ['customers', 'loyalty-stats', shopId],
+    queryKey: ['customers', 'loyalty-stats', barbershopId],
     queryFn: async () => {
-      const customers = await createClient().getCustomers(shopId, { limit: 10000 })
+      const customers = await createClient().getCustomers(barbershopId, { limit: 10000 })
       
       const totalPoints = customers.reduce((sum, customer) => 
         sum + (customer.loyalty_points || 0), 0
@@ -314,7 +314,7 @@ export function useCustomerLoyaltyStats(shopId) {
         averagePoints: customers.length > 0 ? totalPoints / customers.length : 0
       }
     },
-    enabled: !!shopId,
+    enabled: !!barbershopId,
     staleTime: 30 * 60 * 1000,
   })
 }

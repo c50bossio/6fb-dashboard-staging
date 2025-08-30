@@ -121,14 +121,14 @@ export default function UnifiedDashboard({ user, profile }) {
     hasProfile: !!profile,
     profileRole: profile?.role,
     profileShopId: profile?.shop_id,
-    profileBarbershopId: profile?.barbershop_id,
+    profileBarberbarbershopId: profile?.barbershop_id,
     modeParam
   })
   
   // React Query hooks replacing GlobalDashboardContext
   console.log('🏠 Dashboard: Loading business context...')
   const businessContextStart = performance.now()
-  const { businessContext, user: contextUser, profile: contextProfile, shopId, isLoading: contextLoading } = useBusinessContext()
+  const { businessContext, user: contextUser, profile: contextProfile, barbershopId, isLoading: contextLoading } = useBusinessContext()
   console.log('⏱️ Timing: useBusinessContext call took', (performance.now() - businessContextStart).toFixed(2), 'ms')
   
   const currentShopIdStart = performance.now()
@@ -143,7 +143,7 @@ export default function UnifiedDashboard({ user, profile }) {
     contextLoading,
     contextUser: contextUser?.email,
     contextProfile: !!contextProfile,
-    contextShopId: shopId,
+    contextShopId: barbershopId,
     currentShopId,
     effectiveUserEmail: effectiveUser?.email,
     effectiveProfileRole: effectiveProfile?.role
@@ -177,20 +177,20 @@ export default function UnifiedDashboard({ user, profile }) {
         try {
           console.log('🏪 BookedBarber: Calling getTenant for profile:', effectiveProfile.id)
           const tenantStart = performance.now()
-          const { barbershopId, source, metadata } = await getTenant(effectiveProfile.id, { supabase: businessContext?.supabase })
+          const { barberbarbershopId, source, metadata } = await getTenant(effectiveProfile.id, { supabase: businessContext?.supabase })
           const tenantTime = performance.now() - tenantStart
           
           console.log('🏪 BookedBarber: getTenant result:', {
-            barbershopId,
+            barberbarbershopId,
             source,
             metadata,
             timeTaken: tenantTime.toFixed(2) + 'ms'
           })
           
-          setEffectiveShopId(barbershopId)
+          setEffectiveShopId(barberbarbershopId)
           console.log('⏱️ Timing: Shop ID resolution (getTenant) took', (performance.now() - resolveStart).toFixed(2), 'ms')
           
-          if (!barbershopId) {
+          if (!barberbarbershopId) {
             console.warn('🏪 BookedBarber: WARNING - No shop association found for user')
             console.warn('🏪 BookedBarber: User role:', effectiveProfile.role)
             console.warn('🏪 BookedBarber: This may cause dashboard functionality issues')
@@ -211,7 +211,7 @@ export default function UnifiedDashboard({ user, profile }) {
   }, [currentShopId, effectiveProfile?.id, businessContext?.supabase])
   
   // Dashboard data hooks
-  console.log('🏠 Dashboard: Loading shop dashboard data for shopId:', effectiveShopId)
+  console.log('🏠 Dashboard: Loading shop dashboard data for barbershopId:', effectiveShopId)
   const shopDataStart = performance.now()
   const { 
     shop, 
@@ -307,7 +307,7 @@ export default function UnifiedDashboard({ user, profile }) {
 
   // Check for infinite loading loops
   if (isLoading && !contextLoading && shopDataLoading && effectiveShopId) {
-    console.warn('🏠 Dashboard: Potential infinite loading - shop data loading with valid shopId')
+    console.warn('🏠 Dashboard: Potential infinite loading - shop data loading with valid barbershopId')
     console.warn('🏪 BookedBarber: Shop data may be stuck loading, check useShopDashboard hook')
   }
 
@@ -703,7 +703,7 @@ export default function UnifiedDashboard({ user, profile }) {
       case DASHBOARD_MODES.OPERATIONS:
         return <ActionCenter data={{
           ...dashboardData,
-          barbershop_id: effectiveShopId
+          barberbarbershop_id: effectiveShopId
         }} />
         
       default:
@@ -875,12 +875,12 @@ return !isOwnerView && selectedPerspective && (
               {/* Campaign Credit Widget - Shows earned credits from payment processing */}
               {effectiveShopId && (
                 <CampaignCreditWidget 
-                  barbershopId={effectiveShopId}
+                  barberbarbershopId={effectiveShopId}
                 />
               )}
               
               {effectiveShopId && (
-                <SmartAlertsPanel barbershop_id={effectiveShopId} />
+                <SmartAlertsPanel barberbarbershop_id={effectiveShopId} />
               )}
             </>
           ) : null}

@@ -121,7 +121,7 @@ export async function POST(request) {
         // Update profile with shop_id
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({ shop_id: barbershop.id })
+          .update({ barbershop_id: barbershop.id })
           .eq('id', user.id)
           
         if (updateError) {

@@ -59,28 +59,28 @@ export default function DeleteLocationModal({ isOpen, onClose, onComplete, locat
       const { count: appointmentCount } = await supabase
         .from('appointments')
         .select('*', { count: 'exact', head: true })
-        .eq('barbershop_id', location.id)
+        .eq('barberbarbershop_id', location.id)
         .gte('appointment_date', new Date().toISOString())
       
       // Count staff
       const { count: staffCount } = await supabase
         .from('barbershop_staff')
         .select('*', { count: 'exact', head: true })
-        .eq('barbershop_id', location.id)
+        .eq('barberbarbershop_id', location.id)
         .eq('is_active', true)
       
       // Count services
       const { count: serviceCount } = await supabase
         .from('services')
         .select('*', { count: 'exact', head: true })
-        .or(`(barbershop_id.eq.${location.id}),(shop_id.eq.${location.id})`)
+        .or(`(barberbarbershop_id.eq.${location.id}),(barbershop_id.eq.${location.id})`)
         .eq('is_active', true)
       
       // Count customers
       const { count: customerCount } = await supabase
         .from('customers')
         .select('*', { count: 'exact', head: true })
-        .eq('barbershop_id', location.id)
+        .eq('barberbarbershop_id', location.id)
       
       setAffectedData({
         appointments: appointmentCount || 0,

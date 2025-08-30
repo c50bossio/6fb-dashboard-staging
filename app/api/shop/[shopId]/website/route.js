@@ -7,7 +7,7 @@ export const runtime = 'nodejs'
 export async function GET(request, { params }) {
   try {
     const supabase = await createClient()
-    const { shopId } = params
+    const { barbershopId } = params
 
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
     const { data: staffCheck, error: staffError } = await supabase
       .from('barbershop_staff')
       .select('role')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('user_id', user.id)
       .single()
 
@@ -31,7 +31,7 @@ export async function GET(request, { params }) {
     const { data: website, error: websiteError } = await supabase
       .from('barbershop_websites')
       .select('*')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .single()
 
     if (websiteError && websiteError.code !== 'PGRST116') { // Not found is ok
@@ -43,7 +43,7 @@ export async function GET(request, { params }) {
     const { data: barbershop, error: shopError } = await supabase
       .from('barbershops')
       .select('id, name, description, phone, email, address, city, state, zip_code')
-      .eq('id', shopId)
+      .eq('id', barbershopId)
       .single()
 
     if (shopError) {
@@ -54,7 +54,7 @@ export async function GET(request, { params }) {
     if (!website) {
       return NextResponse.json({
         data: {
-          barbershop_id: shopId,
+          barberbarbershop_id: barbershopId,
           name: barbershop.name,
           description: barbershop.description,
           phone: barbershop.phone,
@@ -96,7 +96,7 @@ export async function GET(request, { params }) {
     return NextResponse.json({ data: website })
 
   } catch (error) {
-    console.error('Error in GET /api/shop/[shopId]/website:', error)
+    console.error('Error in GET /api/shop/[barbershopId]/website:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -105,7 +105,7 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const supabase = await createClient()
-    const { shopId } = params
+    const { barbershopId } = params
     const body = await request.json()
 
     // Get current user
@@ -118,7 +118,7 @@ export async function POST(request, { params }) {
     const { data: staffCheck, error: staffError } = await supabase
       .from('barbershop_staff')
       .select('role')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('user_id', user.id)
       .single()
 
@@ -130,12 +130,12 @@ export async function POST(request, { params }) {
     const { data: existing, error: checkError } = await supabase
       .from('barbershop_websites')
       .select('id')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .single()
 
     // Prepare website data
     const websiteData = {
-      barbershop_id: shopId,
+      barberbarbershop_id: barbershopId,
       name: body.name,
       tagline: body.tagline,
       description: body.description,
@@ -200,7 +200,7 @@ export async function POST(request, { params }) {
       const { data, error } = await supabase
         .from('barbershop_websites')
         .update(websiteData)
-        .eq('barbershop_id', shopId)
+        .eq('barberbarbershop_id', barbershopId)
         .select()
         .single()
 
@@ -241,7 +241,7 @@ export async function POST(request, { params }) {
         zip_code: body.zip_code,
         updated_at: new Date().toISOString()
       })
-      .eq('id', shopId)
+      .eq('id', barbershopId)
 
     return NextResponse.json({ 
       data: result,
@@ -249,7 +249,7 @@ export async function POST(request, { params }) {
     })
 
   } catch (error) {
-    console.error('Error in POST /api/shop/[shopId]/website:', error)
+    console.error('Error in POST /api/shop/[barbershopId]/website:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

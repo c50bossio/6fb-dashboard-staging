@@ -9,9 +9,9 @@ const supabase = createClient(
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const barbershop_id = searchParams.get('barbershop_id')
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id')
 
-    if (!barbershop_id) {
+    if (!barberbarbershop_id) {
       return NextResponse.json({ error: 'Barbershop ID required' }, { status: 400 })
     }
 
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         enrolled_at,
         updated_at
       `)
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .eq('status', 'active')
       .single()
 
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {
-      barbershop_id,
+      barberbarbershop_id,
       tier_level,
       business_name,
       contact_email,
@@ -61,9 +61,9 @@ export async function POST(request: NextRequest) {
       business_address
     } = body
 
-    if (!barbershop_id || !tier_level || !business_name || !contact_email) {
+    if (!barberbarbershop_id || !tier_level || !business_name || !contact_email) {
       return NextResponse.json({ 
-        error: 'Missing required fields: barbershop_id, tier_level, business_name, contact_email' 
+        error: 'Missing required fields: barberbarbershop_id, tier_level, business_name, contact_email' 
       }, { status: 400 })
     }
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     const { data: existingEnrollment } = await supabase
       .from('marketplace_enrollment')
       .select('id')
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .eq('status', 'active')
       .single()
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     const { data: enrollment, error: enrollmentError } = await supabase
       .from('marketplace_enrollment')
       .insert({
-        barbershop_id,
+        barberbarbershop_id,
         tier_level,
         discount_percentage: benefits.discount,
         credit_limit: benefits.creditLimit,
@@ -131,11 +131,11 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
     const {
-      barbershop_id,
+      barberbarbershop_id,
       tier_level
     } = body
 
-    if (!barbershop_id || !tier_level) {
+    if (!barberbarbershop_id || !tier_level) {
       return NextResponse.json({ 
         error: 'Missing required fields' 
       }, { status: 400 })
@@ -160,7 +160,7 @@ export async function PUT(request: NextRequest) {
         credit_limit: benefits.creditLimit,
         updated_at: new Date().toISOString()
       })
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .select()
       .single()
 

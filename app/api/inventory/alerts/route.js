@@ -11,7 +11,7 @@ const supabase = createClient(
  * Get smart inventory alerts for a barbershop
  * 
  * Query Parameters:
- * - shopId: UUID of the barbershop
+ * - barbershopId: UUID of the barbershop
  * - alertType: Filter by type (low_stock, reorder_needed, overstock, etc.)
  * - severity: Filter by severity (low, medium, high, critical)
  * - status: Filter by status (active, acknowledged, resolved, dismissed)
@@ -20,15 +20,15 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shopId')
+    const barbershopId = searchParams.get('barbershopId')
     const alertType = searchParams.get('alertType')
     const severity = searchParams.get('severity')
     const status = searchParams.get('status') || 'active'
     const limit = parseInt(searchParams.get('limit')) || 50
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'shopId is required' },
+        { error: 'barbershopId is required' },
         { status: 400 }
       )
     }
@@ -63,7 +63,7 @@ export async function GET(request) {
           image_url
         )
       `)
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
 
     if (alertType) {
       query = query.eq('alert_type', alertType)
@@ -139,7 +139,7 @@ export async function GET(request) {
       alerts: processedAlerts,
       summary,
       filters: {
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         alert_type: alertType || 'all',
         severity: severity || 'all',
         status,
@@ -167,14 +167,14 @@ export async function GET(request) {
  * {
  *   action: 'create' | 'acknowledge' | 'resolve' | 'dismiss' | 'generate',
  *   alertIds?: string[], // For acknowledge/resolve/dismiss actions
- *   shopId: string, // For create/generate actions
+ *   barbershopId: string, // For create/generate actions
  *   alertData?: object // For create action
  * }
  */
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { action, alertIds, shopId, alertData } = body
+    const { action, alertIds, barbershopId, alertData } = body
 
     if (!action) {
       return NextResponse.json(
@@ -278,15 +278,15 @@ export async function POST(request) {
         })
 
       case 'create':
-        if (!shopId || !alertData) {
+        if (!barbershopId || !alertData) {
           return NextResponse.json(
-            { error: 'shopId and alertData are required for create action' },
+            { error: 'barbershopId and alertData are required for create action' },
             { status: 400 }
           )
         }
 
         const newAlert = {
-          shop_id: shopId,
+          barbershop_id: barbershopId,
           product_id: alertData.product_id,
           alert_type: alertData.alert_type,
           severity: alertData.severity || 'medium',
@@ -318,14 +318,14 @@ export async function POST(request) {
         })
 
       case 'generate':
-        if (!shopId) {
+        if (!barbershopId) {
           return NextResponse.json(
-            { error: 'shopId is required for generate action' },
+            { error: 'barbershopId is required for generate action' },
             { status: 400 }
           )
         }
 
-        const generatedAlerts = await generateInventoryAlerts(shopId)
+        const generatedAlerts = await generateInventoryAlerts(barbershopId)
 
         return NextResponse.json({
           success: true,
@@ -404,14 +404,14 @@ function checkAutoResolvable(alert) {
 /**
  * Helper function to generate alerts based on current inventory status
  */
-async function generateInventoryAlerts(shopId) {
+async function generateInventoryAlerts(barbershopId) {
   const alerts = []
 
   // Get current inventory levels
   const { data: products } = await supabase
     .from('products')
     .select('id, name, category, current_stock, min_stock_level, max_stock_level, cost_price, price')
-    .eq('shop_id', shopId)
+    .eq('barbershop_id', barbershopId)
     .eq('is_active', true)
 
   if (!products) return alerts
@@ -427,7 +427,7 @@ async function generateInventoryAlerts(shopId) {
                      product.current_stock <= minStock * 0.5 ? 'high' : 'medium'
 
       alerts.push({
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         product_id: product.id,
         alert_type: 'low_stock',
         severity,
@@ -448,7 +448,7 @@ async function generateInventoryAlerts(shopId) {
     // Overstock alert
     if (product.current_stock >= maxStock * 1.5) {
       alerts.push({
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         product_id: product.id,
         alert_type: 'overstock',
         severity: 'medium',

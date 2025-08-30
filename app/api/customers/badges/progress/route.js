@@ -42,7 +42,7 @@ export async function GET(request) {
         total_visits,
         total_spent,
         created_at,
-        barbershop_id
+        barberbarbershop_id
       `)
       .eq('id', customerId)
       .single()

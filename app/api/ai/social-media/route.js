@@ -8,21 +8,21 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request) {
   try {
-    const { action_type, barbershop_id, parameters } = await request.json()
+    const { action_type, barberbarbershop_id, parameters } = await request.json()
 
     switch (action_type) {
       case 'create_post':
-        return await createSocialMediaPost(barbershop_id, parameters)
+        return await createSocialMediaPost(barberbarbershop_id, parameters)
       case 'schedule_post':
-        return await scheduleSocialMediaPost(barbershop_id, parameters)
+        return await scheduleSocialMediaPost(barberbarbershop_id, parameters)
       case 'auto_generate_content':
-        return await generateSocialContent(barbershop_id, parameters)
+        return await generateSocialContent(barberbarbershop_id, parameters)
       case 'manage_reviews':
-        return await manageReviews(barbershop_id, parameters)
+        return await manageReviews(barberbarbershop_id, parameters)
       case 'track_engagement':
-        return await trackSocialEngagement(barbershop_id, parameters)
+        return await trackSocialEngagement(barberbarbershop_id, parameters)
       case 'competitor_analysis':
-        return await analyzeCompetitors(barbershop_id, parameters)
+        return await analyzeCompetitors(barberbarbershop_id, parameters)
       default:
         return NextResponse.json({ error: 'Unknown social media action' }, { status: 400 })
     }
@@ -38,15 +38,15 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id') || 'demo'
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id') || 'demo'
     const analytics_type = searchParams.get('type')
     
     if (analytics_type) {
-      const analytics = await getSocialMediaAnalytics(barbershop_id, analytics_type)
+      const analytics = await getSocialMediaAnalytics(barberbarbershop_id, analytics_type)
       return analytics
     }
     
-    const dashboard = await getSocialMediaDashboard(barbershop_id)
+    const dashboard = await getSocialMediaDashboard(barberbarbershop_id)
     return dashboard
   } catch (error) {
     console.error('Social media dashboard error:', error)
@@ -60,7 +60,7 @@ export async function GET(request) {
 /**
  * Get comprehensive social media dashboard
  */
-async function getSocialMediaDashboard(barbershop_id) {
+async function getSocialMediaDashboard(barberbarbershop_id) {
   const dashboard = {
     overview: {
       total_followers: 1247,
@@ -217,7 +217,7 @@ async function getSocialMediaDashboard(barbershop_id) {
 /**
  * Create immediate social media post
  */
-async function createSocialMediaPost(barbershop_id, parameters) {
+async function createSocialMediaPost(barberbarbershop_id, parameters) {
   const { platforms, content, media_type, hashtags } = parameters
   
   const post = {
@@ -232,7 +232,7 @@ async function createSocialMediaPost(barbershop_id, parameters) {
   
   const results = []
   for (const platform of post.platforms) {
-    const result = await simulatePostToPlatform(platform, post, barbershop_id)
+    const result = await simulatePostToPlatform(platform, post, barberbarbershop_id)
     results.push(result)
   }
   
@@ -252,12 +252,12 @@ async function createSocialMediaPost(barbershop_id, parameters) {
 /**
  * Schedule social media post for later
  */
-async function scheduleSocialMediaPost(barbershop_id, parameters) {
+async function scheduleSocialMediaPost(barberbarbershop_id, parameters) {
   const { platforms, content, scheduled_time, content_type } = parameters
   
   const scheduledPost = {
     id: `sched_${Date.now()}`,
-    barbershop_id,
+    barberbarbershop_id,
     content: content || generateDefaultContent(content_type || 'promotional'),
     platforms: platforms || ['instagram', 'facebook'],
     scheduled_for: scheduled_time || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
@@ -281,7 +281,7 @@ async function scheduleSocialMediaPost(barbershop_id, parameters) {
 /**
  * AI-generated social media content
  */
-async function generateSocialContent(barbershop_id, parameters) {
+async function generateSocialContent(barberbarbershop_id, parameters) {
   const { content_type, platform, tone, include_promotion } = parameters
   
   const contentTemplates = {
@@ -361,7 +361,7 @@ async function generateSocialContent(barbershop_id, parameters) {
 /**
  * Manage online reviews and responses
  */
-async function manageReviews(barbershop_id, parameters) {
+async function manageReviews(barberbarbershop_id, parameters) {
   const { action, review_id, response_content } = parameters
   
   const recentReviews = [
@@ -434,7 +434,7 @@ async function manageReviews(barbershop_id, parameters) {
 /**
  * Track social media engagement and analytics
  */
-async function trackSocialEngagement(barbershop_id, parameters) {
+async function trackSocialEngagement(barberbarbershop_id, parameters) {
   const { timeframe, platforms } = parameters
   
   const engagementData = {
@@ -502,7 +502,7 @@ async function trackSocialEngagement(barbershop_id, parameters) {
 /**
  * Analyze competitor social media presence
  */
-async function analyzeCompetitors(barbershop_id, parameters) {
+async function analyzeCompetitors(barberbarbershop_id, parameters) {
   const competitorAnalysis = {
     local_competitors: [
       {
@@ -561,7 +561,7 @@ async function analyzeCompetitors(barbershop_id, parameters) {
  * Helper Functions
  */
 
-async function simulatePostToPlatform(platform, post, barbershop_id) {
+async function simulatePostToPlatform(platform, post, barberbarbershop_id) {
   const success = true // Real implementation should check actual API status
   
   return {

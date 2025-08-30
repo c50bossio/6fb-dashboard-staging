@@ -22,7 +22,7 @@ export default function LocationSettingsPage() {
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [notification, setNotification] = useState(null)
-  const [barbershopId, setBarbershopId] = useState(null)
+  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
   
   const [formData, setFormData] = useState({
     // Physical Address
@@ -86,7 +86,7 @@ export default function LocationSettingsPage() {
       // Get user's barbershop
       const { data: profile } = await supabase
         .from('profiles')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('id', user.id)
         .single()
       
@@ -99,7 +99,7 @@ export default function LocationSettingsPage() {
         return
       }
       
-      setBarbershopId(profile.barbershop_id)
+      setBarberbarbershopId(profile.barbershop_id)
       
       // Load barbershop location data
       const { data: barbershop, error } = await supabase
@@ -201,7 +201,7 @@ export default function LocationSettingsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       setNotification({
         type: 'error',
         message: 'No barbershop ID found'
@@ -232,7 +232,7 @@ export default function LocationSettingsPage() {
           // landmark_description, location_name, location_type
           updated_at: new Date().toISOString()
         })
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
       
       if (error) throw error
       

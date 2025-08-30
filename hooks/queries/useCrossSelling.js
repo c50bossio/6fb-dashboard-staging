@@ -4,14 +4,14 @@ import { queryKeys } from '@/lib/query-client'
 /**
  * Hook for getting real-time cross-selling suggestions for POS checkout
  */
-export function useCrossSellingSuggestions(shopId, currentItems, options = {}) {
+export function useCrossSellingSuggestions(barbershopId, currentItems, options = {}) {
   const { serviceId, customerId, sessionId, enabled = true } = options
 
   return useQuery({
-    queryKey: queryKeys.crossSelling.suggestions(shopId, currentItems, serviceId, customerId),
+    queryKey: queryKeys.crossSelling.suggestions(barbershopId, currentItems, serviceId, customerId),
     queryFn: async () => {
       const params = new URLSearchParams({
-        shopId,
+        barbershopId,
         currentItems: JSON.stringify(currentItems || [])
       })
 
@@ -27,7 +27,7 @@ export function useCrossSellingSuggestions(shopId, currentItems, options = {}) {
 
       return response.json()
     },
-    enabled: enabled && !!shopId && Array.isArray(currentItems),
+    enabled: enabled && !!barbershopId && Array.isArray(currentItems),
     staleTime: 2 * 60 * 1000, // 2 minutes - suggestions can be cached briefly
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
@@ -37,7 +37,7 @@ export function useCrossSellingSuggestions(shopId, currentItems, options = {}) {
 /**
  * Hook for getting product affinity analysis data
  */
-export function useProductAffinityData(shopId, options = {}) {
+export function useProductAffinityData(barbershopId, options = {}) {
   const { 
     productId, 
     minScore = 0.3, 
@@ -48,12 +48,12 @@ export function useProductAffinityData(shopId, options = {}) {
   } = options
 
   return useQuery({
-    queryKey: queryKeys.crossSelling.productAffinity(shopId, {
+    queryKey: queryKeys.crossSelling.productAffinity(barbershopId, {
       productId, minScore, minConfidence, limit, category
     }),
     queryFn: async () => {
       const params = new URLSearchParams({
-        shopId,
+        barbershopId,
         minScore: minScore.toString(),
         minConfidence: minConfidence.toString(),
         limit: limit.toString()
@@ -70,7 +70,7 @@ export function useProductAffinityData(shopId, options = {}) {
 
       return response.json()
     },
-    enabled: enabled && !!shopId,
+    enabled: enabled && !!barbershopId,
     staleTime: 15 * 60 * 1000, // 15 minutes - affinity data changes slowly
     retry: 2,
   })
@@ -79,16 +79,16 @@ export function useProductAffinityData(shopId, options = {}) {
 /**
  * Hook for getting upsell opportunities in POS context
  */
-export function useUpsellOpportunities(shopId, options = {}) {
+export function useUpsellOpportunities(barbershopId, options = {}) {
   const { customerId, serviceId, currentTotal = 0, sessionId, enabled = true } = options
 
   return useQuery({
-    queryKey: queryKeys.crossSelling.upsellOpportunities(shopId, {
+    queryKey: queryKeys.crossSelling.upsellOpportunities(barbershopId, {
       customerId, serviceId, currentTotal
     }),
     queryFn: async () => {
       const params = new URLSearchParams({
-        shopId,
+        barbershopId,
         currentTotal: currentTotal.toString()
       })
 
@@ -104,7 +104,7 @@ export function useUpsellOpportunities(shopId, options = {}) {
 
       return response.json()
     },
-    enabled: enabled && !!shopId,
+    enabled: enabled && !!barbershopId,
     staleTime: 3 * 60 * 1000, // 3 minutes - opportunities can change frequently
     retry: 2,
   })
@@ -113,17 +113,17 @@ export function useUpsellOpportunities(shopId, options = {}) {
 /**
  * Hook for getting seasonal product recommendations
  */
-export function useSeasonalRecommendations(shopId, options = {}) {
+export function useSeasonalRecommendations(barbershopId, options = {}) {
   const { month, location, enabled = true } = options
   const currentMonth = month || new Date().getMonth() + 1
 
   return useQuery({
-    queryKey: queryKeys.crossSelling.seasonal(shopId, currentMonth, location),
+    queryKey: queryKeys.crossSelling.seasonal(barbershopId, currentMonth, location),
     queryFn: async () => {
       // This would be a separate endpoint in a full implementation
       // For now, it's included in the upsell opportunities
       const params = new URLSearchParams({
-        shopId,
+        barbershopId,
         currentTotal: '0' // Base case for seasonal suggestions
       })
 
@@ -147,7 +147,7 @@ export function useSeasonalRecommendations(shopId, options = {}) {
         location
       }
     },
-    enabled: enabled && !!shopId,
+    enabled: enabled && !!barbershopId,
     staleTime: 60 * 60 * 1000, // 1 hour - seasonal data changes infrequently
     retry: 1,
   })
@@ -178,13 +178,13 @@ export function useTrackCrossSellInteraction() {
     onSuccess: (data, variables) => {
       // Invalidate relevant queries to refresh analytics
       queryClient.invalidateQueries({
-        queryKey: queryKeys.crossSelling.analytics(variables.shopId)
+        queryKey: queryKeys.crossSelling.analytics(variables.barbershopId)
       })
 
       // If the interaction was successful, we might want to refresh suggestions
       if (variables.action === 'accepted') {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.crossSelling.suggestions(variables.shopId)
+          queryKey: queryKeys.crossSelling.suggestions(variables.barbershopId)
         })
       }
     },
@@ -220,7 +220,7 @@ export function useTrackUpsellInteraction() {
     onSuccess: (data, variables) => {
       // Invalidate analytics queries
       queryClient.invalidateQueries({
-        queryKey: queryKeys.crossSelling.analytics(variables.shopId)
+        queryKey: queryKeys.crossSelling.analytics(variables.barbershopId)
       })
     },
   })
@@ -233,14 +233,14 @@ export function useCalculateProductAffinities() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ shopId, analysisWindow, minTransactions, recalculateAll }) => {
+    mutationFn: async ({ barbershopId, analysisWindow, minTransactions, recalculateAll }) => {
       const response = await fetch('/api/analytics/product-affinity', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          shopId,
+          barbershopId,
           analysisWindow,
           minTransactions,
           recalculateAll,
@@ -256,12 +256,12 @@ export function useCalculateProductAffinities() {
     onSuccess: (data, variables) => {
       // Invalidate all affinity-related queries for this shop
       queryClient.invalidateQueries({
-        queryKey: queryKeys.crossSelling.productAffinity(variables.shopId)
+        queryKey: queryKeys.crossSelling.productAffinity(variables.barbershopId)
       })
       
       // Also invalidate suggestions since they depend on affinities
       queryClient.invalidateQueries({
-        queryKey: queryKeys.crossSelling.suggestions(variables.shopId)
+        queryKey: queryKeys.crossSelling.suggestions(variables.barbershopId)
       })
     },
   })
@@ -270,7 +270,7 @@ export function useCalculateProductAffinities() {
 /**
  * Hook for real-time cross-sell performance analytics
  */
-export function useCrossSellingAnalytics(shopId, options = {}) {
+export function useCrossSellingAnalytics(barbershopId, options = {}) {
   const { 
     dateRange = 'last_30_days', 
     productId, 
@@ -279,7 +279,7 @@ export function useCrossSellingAnalytics(shopId, options = {}) {
   } = options
 
   return useQuery({
-    queryKey: queryKeys.crossSelling.analytics(shopId, { dateRange, productId, customerId }),
+    queryKey: queryKeys.crossSelling.analytics(barbershopId, { dateRange, productId, customerId }),
     queryFn: async () => {
       // This would be a dedicated analytics endpoint
       // For now, returning mock structure
@@ -295,10 +295,10 @@ export function useCrossSellingAnalytics(shopId, options = {}) {
           daily_performance: []
         },
         date_range: dateRange,
-        shop_id: shopId
+        barbershop_id: barbershopId
       }
     },
-    enabled: enabled && !!shopId,
+    enabled: enabled && !!barbershopId,
     staleTime: 5 * 60 * 1000, // 5 minutes - analytics can be cached
     retry: 1,
   })
@@ -307,11 +307,11 @@ export function useCrossSellingAnalytics(shopId, options = {}) {
 /**
  * Hook for getting customer cross-sell receptivity data
  */
-export function useCustomerReceptivity(shopId, customerId, options = {}) {
+export function useCustomerReceptivity(barbershopId, customerId, options = {}) {
   const { enabled = true } = options
 
   return useQuery({
-    queryKey: queryKeys.crossSelling.customerReceptivity(shopId, customerId),
+    queryKey: queryKeys.crossSelling.customerReceptivity(barbershopId, customerId),
     queryFn: async () => {
       // This would query customer_purchase_patterns table
       // Mock implementation for now
@@ -324,17 +324,17 @@ export function useCustomerReceptivity(shopId, customerId, options = {}) {
         preferred_categories: []
       }
     },
-    enabled: enabled && !!shopId && !!customerId,
+    enabled: enabled && !!barbershopId && !!customerId,
     staleTime: 30 * 60 * 1000, // 30 minutes - customer data changes slowly
     retry: 1,
   })
 }
 
 // Helper hook for combining multiple cross-selling data sources
-export function useCrossSellingDashboard(shopId) {
-  const affinityData = useProductAffinityData(shopId, { limit: 10 })
-  const analytics = useCrossSellingAnalytics(shopId)
-  const seasonalRecommendations = useSeasonalRecommendations(shopId)
+export function useCrossSellingDashboard(barbershopId) {
+  const affinityData = useProductAffinityData(barbershopId, { limit: 10 })
+  const analytics = useCrossSellingAnalytics(barbershopId)
+  const seasonalRecommendations = useSeasonalRecommendations(barbershopId)
 
   return {
     affinityData: affinityData.data,

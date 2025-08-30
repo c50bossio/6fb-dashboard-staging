@@ -88,7 +88,7 @@ export async function GET(request) {
         barber_id,
         services(name, price)
       `)
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('status', 'completed')
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
@@ -184,7 +184,7 @@ export async function GET(request) {
     const { data: barbers } = await supabase
       .from('barbershop_staff')
       .select('user_id, first_name, last_name, commission_rate')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
     
     const barberBreakdown = []
     for (const barber of barbers || []) {
@@ -230,7 +230,7 @@ export async function GET(request) {
     const { data: previousTransactions } = await supabase
       .from('transactions')
       .select('amount')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('status', 'completed')
       .gte('created_at', previousStartDate.toISOString())
       .lte('created_at', previousEndDate.toISOString())

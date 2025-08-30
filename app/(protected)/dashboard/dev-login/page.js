@@ -24,7 +24,7 @@ export default function DevLoginPage() {
       
       const devSession = await response.json()
       
-      if (!devSession.user?.barbershop_id) {
+      if (!devSession.user?.barberbarbershop_id) {
         // Fallback for development - create minimal session
         const fallbackSession = {
           user: {
@@ -32,7 +32,7 @@ export default function DevLoginPage() {
             email: 'dev@6fb-ai.com',
             name: 'Development User',
             role: 'SHOP_OWNER',
-            barbershop_id: null
+            barberbarbershop_id: null
           },
           expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         }

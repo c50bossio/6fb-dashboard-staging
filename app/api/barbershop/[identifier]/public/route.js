@@ -43,13 +43,13 @@ export async function GET(request, { params }) {
     const { data: businessHours } = await supabase
       .from('business_hours')
       .select('*')
-      .eq('barbershop_id', barbershop.id)
+      .eq('barberbarbershop_id', barbershop.id)
       .order('day_of_week')
 
     const { data: services } = await supabase
       .from('services')
       .select('*')
-      .eq('barbershop_id', barbershop.id)
+      .eq('barberbarbershop_id', barbershop.id)
       .eq('is_active', true)
       .order('name')
 

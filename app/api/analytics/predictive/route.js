@@ -15,7 +15,7 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url)
     const forecastType = searchParams.get('type') || 'comprehensive'
-    const barbershopId = searchParams.get('barbershop_id') || user.id
+    const barberbarbershopId = searchParams.get('barberbarbershop_id') || user.id
     const useAdvancedForecasting = searchParams.get('advanced') !== 'false'
 
     try {
@@ -23,13 +23,13 @@ export async function GET(request) {
 
       if (useAdvancedForecasting) {
         try {
-          predictiveData = await generateAdvancedPredictiveAnalytics(barbershopId, forecastType)
+          predictiveData = await generateAdvancedPredictiveAnalytics(barberbarbershopId, forecastType)
         } catch (advancedError) {
           console.warn('Advanced forecasting failed, falling back to basic:', advancedError)
-          predictiveData = await generatePredictiveAnalytics(barbershopId, forecastType)
+          predictiveData = await generatePredictiveAnalytics(barberbarbershopId, forecastType)
         }
       } else {
-        predictiveData = await generatePredictiveAnalytics(barbershopId, forecastType)
+        predictiveData = await generatePredictiveAnalytics(barberbarbershopId, forecastType)
       }
       
       return NextResponse.json({
@@ -95,12 +95,12 @@ export async function POST(request) {
   }
 }
 
-async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
+async function generateAdvancedPredictiveAnalytics(barberbarbershopId, forecastType) {
   try {
     const [revenueResponse, bookingsResponse, trendsResponse] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/forecasting/revenue?barbershop_id=${barbershopId}&time_horizons=1_day,1_week,1_month,3_months`),
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/forecasting/bookings?barbershop_id=${barbershopId}&forecast_days=7`),
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/forecasting/trends?barbershop_id=${barbershopId}&analysis_type=comprehensive`)
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/forecasting/revenue?barberbarbershop_id=${barberbarbershopId}&time_horizons=1_day,1_week,1_month,3_months`),
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/forecasting/bookings?barberbarbershop_id=${barberbarbershopId}&forecast_days=7`),
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/forecasting/trends?barberbarbershop_id=${barberbarbershopId}&analysis_type=comprehensive`)
     ])
 
     const [revenueData, bookingsData, trendsData] = await Promise.all([
@@ -110,8 +110,8 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
     ])
 
     const enhancedAnalytics = {
-      forecast_id: `enhanced_${barbershopId}_${Date.now()}`,
-      barbershop_id: barbershopId,
+      forecast_id: `enhanced_${barberbarbershopId}_${Date.now()}`,
+      barberbarbershop_id: barberbarbershopId,
       forecast_type: forecastType,
       generated_at: new Date().toISOString(),
       confidence_level: revenueData.data?.overall_confidence || 0.85,
@@ -265,29 +265,29 @@ async function generateAdvancedPredictiveAnalytics(barbershopId, forecastType) {
   }
 }
 
-async function generatePredictiveAnalytics(barbershopId, forecastType) {
+async function generatePredictiveAnalytics(barberbarbershopId, forecastType) {
   const supabase = await createClient()
   
   try {
-    if (!barbershopId) {
-      throw new Error('barbershop_id is required')
+    if (!barberbarbershopId) {
+      throw new Error('barberbarbershop_id is required')
     }
-    const shopId = barbershopId
+    const barbershopId = barberbarbershopId
     
     const { data: customers } = await supabase
       .from('customers')
       .select('total_spent, total_visits, created_at, last_visit_at')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
     
     const { data: services } = await supabase
       .from('services')
       .select('price, duration_minutes')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
     
     const { data: bookings } = await supabase
       .from('bookings')
       .select('start_time, end_time, price, status')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .gte('start_time', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) // Last 30 days
     
     const totalCustomers = customers?.length || 0
@@ -317,8 +317,8 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
     }
   
     const predictiveAnalytics = {
-      forecast_id: `ai_forecast_${barbershopId}_${Date.now()}`,
-      barbershop_id: barbershopId,
+      forecast_id: `ai_forecast_${barberbarbershopId}_${Date.now()}`,
+      barberbarbershop_id: barberbarbershopId,
       forecast_type: forecastType,
       generated_at: currentTime.toISOString(),
       confidence_level: Math.min(0.95, Math.max(0.1, totalCustomers / 50)), // Real confidence based on data volume
@@ -463,8 +463,8 @@ async function generatePredictiveAnalytics(barbershopId, forecastType) {
   } catch (error) {
     console.error('Database error in predictive analytics:', error)
     return {
-      forecast_id: `error_${barbershopId}_${Date.now()}`,
-      barbershop_id: barbershopId,
+      forecast_id: `error_${barberbarbershopId}_${Date.now()}`,
+      barberbarbershop_id: barberbarbershopId,
       forecast_type: forecastType,
       generated_at: new Date().toISOString(),
       confidence_level: 0,

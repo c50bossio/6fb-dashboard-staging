@@ -227,7 +227,7 @@ export default function CalendarPage() {
   // Get business context and permissions
   const { 
     businessContext, 
-    shopId: barbershopId, 
+    barbershopId: barberbarbershopId, 
     permissions, 
     isLoading: businessContextLoading,
     role,
@@ -241,7 +241,7 @@ export default function CalendarPage() {
     staff: availableBarbers,
     isLoading: shopDataLoading,
     error: shopDataError 
-  } = useShopData(barbershopId, {
+  } = useShopData(barberbarbershopId, {
     includeStaff: true,
     includeServices: false,
     includeCustomers: false,
@@ -252,7 +252,7 @@ export default function CalendarPage() {
   const { 
     data: activeStaff, 
     isLoading: staffLoading 
-  } = useActiveStaff(barbershopId)
+  } = useActiveStaff(barberbarbershopId)
   
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
@@ -318,7 +318,7 @@ export default function CalendarPage() {
   const globalAvailableBarbers = availableBarbers || []
   const availableLocations = shop ? [shop] : []
   
-  // Use barbershopId from business context directly
+  // Use barberbarbershopId from business context directly
 
   // Helper functions to replace GlobalDashboardContext methods
   const getOptimalCalendarView = useCallback(() => {
@@ -331,14 +331,14 @@ export default function CalendarPage() {
   const getPageDefaults = useCallback(() => {
     return {
       view: getOptimalCalendarView(),
-      locations: barbershopId ? [barbershopId] : [],
+      locations: barberbarbershopId ? [barberbarbershopId] : [],
       barbers: [],
       filters: {
         status: 'all',
         dateRange: 'today'
       }
     }
-  }, [getOptimalCalendarView, barbershopId])
+  }, [getOptimalCalendarView, barberbarbershopId])
 
   // Create contextual data structure for compatibility
   const contextualData = useMemo(() => {
@@ -348,24 +348,24 @@ export default function CalendarPage() {
       availableBarbers: activeStaff.map(staff => ({
         id: staff.user_id,
         name: staff.profile?.full_name || 'Staff Member',
-        barbershop_id: staff.barbershop_id
+        barberbarbershop_id: staff.barberbarbershop_id
       })),
       calendarEvents: [], // Events come from useRealtimeAppointments
-      selectedLocation: barbershopId
+      selectedLocation: barberbarbershopId
     }
-  }, [activeStaff, availableBarbers, barbershopId])
+  }, [activeStaff, availableBarbers, barberbarbershopId])
 
   const activeContext = useMemo(() => {
     if (!shop) return null
     
     return {
       type: 'shop',
-      locationId: barbershopId,
+      locationId: barberbarbershopId,
       displayName: shop.name || 'Barbershop',
       data: shop
     }
-  }, [shop, barbershopId])
-  const [barbershopIdResolved, setBarbershopIdResolved] = useState(false) // Track if barbershop ID has been properly resolved
+  }, [shop, barberbarbershopId])
+  const [barberbarbershopIdResolved, setBarberbarbershopIdResolved] = useState(false) // Track if barbershop ID has been properly resolved
   
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBarber, setFilterBarber] = useState('all')
@@ -393,10 +393,10 @@ export default function CalendarPage() {
   const [realtimeError, setRealtimeError] = useState(null)
   const [calendarFilters, setCalendarFilters] = useState({})
 
-  // Use contextual barbershop ID from active context, fallback to legacy barbershopId
-  const contextualBarbershopId = activeContext?.locationId || barbershopId
+  // Use contextual barbershop ID from active context, fallback to legacy barberbarbershopId
+  const contextualBarberbarbershopId = activeContext?.locationId || barberbarbershopId
   
-  const realtimeResult = useRealtimeAppointments(contextualBarbershopId) || {}
+  const realtimeResult = useRealtimeAppointments(contextualBarberbarbershopId) || {}
   
   const { 
     appointments: realtimeAppointments = [], 
@@ -434,7 +434,7 @@ export default function CalendarPage() {
         // Main booking view - show all available appointments
         console.log('[Calendar] Applying book-appointment view')
         setSelectedBarbers([]) // Show all barbers
-        setSelectedLocations(barbershopId ? [barbershopId] : [])
+        setSelectedLocations(barberbarbershopId ? [barberbarbershopId] : [])
         setAdvancedFilters(prev => ({
           ...prev,
           customerType: 'all',
@@ -530,7 +530,7 @@ export default function CalendarPage() {
         // Shop overview
         console.log('[Calendar] Applying shop-calendar view')
         setSelectedBarbers([])
-        setSelectedLocations(barbershopId ? [barbershopId] : [])
+        setSelectedLocations(barberbarbershopId ? [barberbarbershopId] : [])
         setAdvancedFilters(prev => ({
           ...prev,
           customerType: 'all',
@@ -596,17 +596,17 @@ setSelectedLocations(locationIds)
   useEffect(() => {
     setMounted(true)
     
-    // Mark barbershop ID as resolved - allow calendar to work even without barbershopId
+    // Mark barbershop ID as resolved - allow calendar to work even without barberbarbershopId
     // The calendar can still function with user's profile data
-    if (barbershopId) {
-      console.log('[Calendar] Barbershop ID from business context:', barbershopId)
+    if (barberbarbershopId) {
+      console.log('[Calendar] Barbershop ID from business context:', barberbarbershopId)
     } else if (profile?.id) {
       console.log('[Calendar] No barbershop ID from business context, using profile:', profile.id)
     }
     
     // Always mark as resolved once we have a profile
     if (profile?.id) {
-      setBarbershopIdResolved(true)
+      setBarberbarbershopIdResolved(true)
     }
     
     const updateTime = () => {
@@ -620,23 +620,23 @@ setSelectedLocations(locationIds)
     setServices(DEFAULT_SERVICES)
     
     return () => clearInterval(timeInterval)
-  }, [barbershopId, profile?.id])
+  }, [barberbarbershopId, profile?.id])
   
   // Load calendar data when context or legacy selections change
   // Initialize calendar data when business context loads
   useEffect(() => {
-    if (barbershopId && !contextLoading) {
-      console.log('[Calendar] Shop context loaded:', barbershopId)
+    if (barberbarbershopId && !contextLoading) {
+      console.log('[Calendar] Shop context loaded:', barberbarbershopId)
       
       // Initialize selected locations with current shop
       if (selectedLocations.length === 0) {
-        setSelectedLocations([barbershopId])
+        setSelectedLocations([barberbarbershopId])
       }
       
       // Load calendar data
       loadCalendarData()
     }
-  }, [barbershopId, contextLoading, selectedLocations.length, loadCalendarData])
+  }, [barberbarbershopId, contextLoading, selectedLocations.length, loadCalendarData])
 
   // Legacy effect for compatibility - now simplified
   useEffect(() => {
@@ -648,11 +648,11 @@ setSelectedLocations(locationIds)
       // Use global context selections AND load staff resources
       console.log('[Calendar] Global locations selected:', globalSelectedLocations)
       loadCalendarData()
-    } else if (barbershopId) {
-      // Fallback to barbershopId if no global selections
+    } else if (barberbarbershopId) {
+      // Fallback to barberbarbershopId if no global selections
       loadCalendarData()
     }
-  }, [activeContext, barbershopId, globalSelectedLocations, globalSelectedBarbers, contextualData, loadCalendarData])
+  }, [activeContext, barberbarbershopId, globalSelectedLocations, globalSelectedBarbers, contextualData, loadCalendarData])
   
   const loadCalendarData = useCallback(async () => {
     // Prefer contextual data if available
@@ -680,7 +680,7 @@ setSelectedLocations(locationIds)
     }
     
     // Fallback to legacy data loading
-    if (!barbershopId && !contextualBarbershopId) {
+    if (!barberbarbershopId && !contextualBarberbarbershopId) {
       console.warn('No barbershop ID available for loading calendar data')
       return
     }
@@ -688,7 +688,7 @@ setSelectedLocations(locationIds)
     try {
       // Load barbers using unified staff service and regular services
       // Use the selected location from global context or fall back to the real Tomb45 ID
-      const locationId = globalSelectedLocations?.[0] || contextualBarbershopId || barbershopId || '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
+      const locationId = globalSelectedLocations?.[0] || contextualBarberbarbershopId || barberbarbershopId || '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
       console.log('📅 Loading legacy calendar data for location:', locationId)
       
 const [staffResponse, servicesData] = await Promise.all([
@@ -770,22 +770,22 @@ setResources(barbersData)
       console.error('Error loading calendar data:', error)
       setResources(EMPTY_BARBER_PLACEHOLDER)
     }
-  }, [contextualData, barbershopId, contextualBarbershopId, globalSelectedLocations, generateQuickLinks, fetchServices, profile, user])
+  }, [contextualData, barberbarbershopId, contextualBarberbarbershopId, globalSelectedLocations, generateQuickLinks, fetchServices, profile, user])
   
   // Create FullCalendar.io event sources following best practices
   const createEventSources = useMemo(() => {
     const eventSources = []
     
     // Don't create event sources until barbershop ID is resolved
-    if (!barbershopIdResolved) {
+    if (!barberbarbershopIdResolved) {
       console.log('[Calendar] Event sources not created - waiting for barbershop ID resolution')
       return eventSources
     }
     
     console.log('[Calendar] Creating event sources with:', {
       selectedView,
-      barbershopId,
-      barbershopIdResolved,
+      barberbarbershopId,
+      barberbarbershopIdResolved,
       globalSelectedLocations: globalSelectedLocations?.length || 0
     })
     
@@ -856,13 +856,13 @@ setResources(barbersData)
       }
     } else {
       // Single location view with proper FullCalendar event source pattern
-      if (barbershopId) {
+      if (barberbarbershopId) {
         eventSources.push({
           url: '/api/calendar/appointments', 
           method: 'GET',
           extraParams: function() {
             return {
-              shop_id: barbershopId,
+              barbershop_id: barberbarbershopId,
               // FullCalendar automatically adds start, end, timeZone parameters
             }
           },
@@ -926,12 +926,12 @@ setResources(barbersData)
       console.log('[Calendar] First event source config:', {
         url: eventSources[0].url,
         hasExtraParams: !!eventSources[0].extraParams,
-        barbershopId: barbershopId
+        barberbarbershopId: barberbarbershopId
       })
     }
     
     return eventSources
-  }, [selectedView, selectedLocations, barbershopId, showError, barbershopIdResolved])
+  }, [selectedView, selectedLocations, barberbarbershopId, showError, barberbarbershopIdResolved])
   
   // Create FullCalendar.io resources following best practices  
   const createResources = useMemo(() => {
@@ -940,7 +940,7 @@ setResources(barbersData)
       if (globalAvailableBarbers.length > 0) {
         // Filter barbers for selected locations
         let barbersToShow = globalAvailableBarbers.filter(b => 
-          selectedLocations.includes(b.barbershop_id)
+          selectedLocations.includes(b.barberbarbershop_id)
         )
         
         // Further filter by selected barbers if any
@@ -960,7 +960,7 @@ setResources(barbersData)
             endTime: '18:00'
           },
           extendedProps: {
-            locationId: barber.barbershop_id,
+            locationId: barber.barberbarbershop_id,
             email: barber.email,
             phone: barber.phone,
             specialties: barber.specialties || [],
@@ -1002,8 +1002,8 @@ setResources(barbersData)
   // Debug resource loading and realtime connection
   useEffect(() => {
     console.log('[Calendar Debug] Complete status:', {
-      barbershopId,
-      contextualBarbershopId,
+      barberbarbershopId,
+      contextualBarberbarbershopId,
       availableBarbers: availableBarbers?.length || 0,
       activeStaff: activeStaff?.length || 0,
       globalAvailableBarbers: globalAvailableBarbers.length,
@@ -1014,7 +1014,7 @@ setResources(barbersData)
       realtimeError: realtimeErrorMsg,
       appointmentsCount: realtimeAppointments?.length || 0
     })
-  }, [barbershopId, contextualBarbershopId, availableBarbers, activeStaff, globalAvailableBarbers, shopDataLoading, staffLoading, shopDataError, realtimeHookConnected, realtimeErrorMsg, realtimeAppointments])
+  }, [barberbarbershopId, contextualBarberbarbershopId, availableBarbers, activeStaff, globalAvailableBarbers, shopDataLoading, staffLoading, shopDataError, realtimeHookConnected, realtimeErrorMsg, realtimeAppointments])
   
   // Apply filters to calendar events
   const applyFiltersToEvents = (filters) => {
@@ -1129,12 +1129,12 @@ setResources(barbersData)
   useEffect(() => {
     // FullCalendar.io event sources handle data fetching automatically
     // No manual API calls needed - event sources will refresh when dependencies change
-    if (createEventSources.length === 0 && barbershopId) {
-      console.log('No event sources created yet, barbershopId:', barbershopId)
+    if (createEventSources.length === 0 && barberbarbershopId) {
+      console.log('No event sources created yet, barberbarbershopId:', barberbarbershopId)
     } else if (createEventSources.length > 0) {
       console.log(`Event sources created: ${createEventSources.length}`)
     }
-  }, [createEventSources, barbershopId])
+  }, [createEventSources, barberbarbershopId])
   
   useEffect(() => {
     if (resources.length > 0) {
@@ -1302,7 +1302,7 @@ setResources(barbersData)
     // Apply location filter (from multi-select)
     if (selectedLocations.length > 0) {
       currentEvents = currentEvents.filter(event => 
-        selectedLocations.includes(event.extendedProps?.barbershopId)
+        selectedLocations.includes(event.extendedProps?.barberbarbershopId)
       )
     }
     
@@ -1619,7 +1619,7 @@ setResources(barbersData)
       console.log('Appointment save completed:', {
         isBlocked,
         appointmentData,
-        barbershopId,
+        barberbarbershopId,
         timestamp: new Date().toISOString()
       })
       
@@ -1896,7 +1896,7 @@ setResources(barbersData)
   // The handleAddBarber function now directly triggers the onboarding flow
 
   // Show empty state if no barbers are configured
-  if (hasEmptyBarbers && barbershopId) {
+  if (hasEmptyBarbers && barberbarbershopId) {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
@@ -1919,7 +1919,7 @@ setResources(barbersData)
           <EmptyBarberState 
             onAddBarber={handleAddBarber}
             shopName={shopName}
-            onboardingIncomplete={!profile?.onboarding_completed || !barbershopId}
+            onboardingIncomplete={!profile?.onboarding_completed || !barberbarbershopId}
           />
         </div>
       </div>
@@ -2204,7 +2204,7 @@ setResources(barbersData)
       {/* Calendar Container */}
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
-          {!barbershopIdResolved ? (
+          {!barberbarbershopIdResolved ? (
             <div className="flex items-center justify-center h-[600px]">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
@@ -2379,7 +2379,7 @@ setResources(barbersData)
             setSelectedEvent(null)
           }}
           selectedSlot={selectedSlot}
-          barbershopId={barbershopId}
+          barberbarbershopId={barberbarbershopId}
           barbers={resources.map(r => ({ id: r.id, name: r.title }))}
           services={services}
           onBookingComplete={handleAppointmentSave}
@@ -2551,7 +2551,7 @@ setResources(barbersData)
         }}
         editingBlock={selectedEvent}
         onBlockComplete={handleBookingComplete}
-        barbershopId={barbershopId}
+        barberbarbershopId={barberbarbershopId}
       />
       
       <RescheduleConfirmationModal

@@ -14,11 +14,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id')
+    const barberbarberbarbershopId = searchParams.get('barberbarberbarbershop_id')
 
-    if (!barbershopId) {
+    if (!barberbarberbarbershopId) {
       return NextResponse.json(
-        { error: 'barbershop_id is required' },
+        { error: 'barberbarberbarbershop_id is required' },
         { status: 400 }
       )
     }
@@ -32,11 +32,11 @@ export async function GET(request) {
     }
 
     // Perform comprehensive health check
-    const healthCheck = await performComprehensiveHealthCheck(supabase, barbershopId)
+    const healthCheck = await performComprehensiveHealthCheck(supabase, barberbarberbarbershopId)
 
     return NextResponse.json({
       success: true,
-      barbershop_id: barbershopId,
+      barberbarberbarbershop_id: barberbarberbarbershopId,
       overall_health: healthCheck.overall_health,
       status: healthCheck.status,
       checks: healthCheck.checks,
@@ -59,7 +59,7 @@ export async function GET(request) {
 /**
  * Perform comprehensive health check across all Stripe systems
  */
-async function performComprehensiveHealthCheck(supabase, barbershopId) {
+async function performComprehensiveHealthCheck(supabase, barberbarberbarbershopId) {
   const checks = {
     database_connectivity: { status: 'unknown', details: null },
     connect_account: { status: 'unknown', details: null },
@@ -76,7 +76,7 @@ async function performComprehensiveHealthCheck(supabase, barbershopId) {
     const { data: barbershop, error: dbError } = await supabase
       .from('barbershops')
       .select('id, name')
-      .eq('id', barbershopId)
+      .eq('id', barberbarberbarbershopId)
       .single()
 
     if (dbError || !barbershop) {
@@ -92,7 +92,7 @@ async function performComprehensiveHealthCheck(supabase, barbershopId) {
     const { data: connectAccount, error: connectError } = await supabase
       .from('stripe_connected_accounts')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarberbarbershop_id', barberbarberbarbershopId)
       .single()
 
     if (connectError || !connectAccount) {
@@ -152,7 +152,7 @@ async function performComprehensiveHealthCheck(supabase, barbershopId) {
     const { data: terminalConfig } = await supabase
       .from('stripe_terminal_config')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarberbarbershop_id', barberbarberbarbershopId)
       .single()
 
     if (!terminalConfig) {
@@ -177,7 +177,7 @@ async function performComprehensiveHealthCheck(supabase, barbershopId) {
     const { data: financialArrangements } = await supabase
       .from('financial_arrangements')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarberbarbershop_id', barberbarberbarbershopId)
       .not('stripe_account_id', 'is', null)
 
     if (!financialArrangements || financialArrangements.length === 0) {

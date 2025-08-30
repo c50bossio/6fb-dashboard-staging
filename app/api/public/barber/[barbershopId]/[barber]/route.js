@@ -5,7 +5,7 @@ export const runtime = 'nodejs'
 
 export async function GET(request, { params }) {
   try {
-    const { barbershopId, barber } = params
+    const { barberbarbershopId, barber } = params
     
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
         phone,
         email
       `)
-      .or(`slug.eq.${barbershopId},custom_domain.eq.${barbershopId}`)
+      .or(`slug.eq.${barberbarbershopId},custom_domain.eq.${barberbarbershopId}`)
       .single()
     
     if (shopError || !shopData) {
@@ -43,7 +43,7 @@ export async function GET(request, { params }) {
           avatar_url
         )
       `)
-      .eq('barbershop_id', shopData.id)
+      .eq('barberbarbershop_id', shopData.id)
       .eq('custom_url', barber)
       .eq('is_active', true)
       .single()
@@ -61,7 +61,7 @@ export async function GET(request, { params }) {
           ),
           barber_customizations (*)
         `)
-        .eq('barbershop_id', shopData.id)
+        .eq('barberbarbershop_id', shopData.id)
         .eq('role', 'BARBER')
         .eq('is_active', true)
       

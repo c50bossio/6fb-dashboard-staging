@@ -35,7 +35,7 @@ const BookingFlowOrchestrator = React.lazy(() => import('./BookingFlowOrchestrat
  */
 export default function RealtimeBookingWrapper({
   // Core booking props (passed through to wrapped components)
-  barbershopId,
+  barberbarbershopId,
   barbershopSlug,
   preselectedBarber = null,
   preselectedService = null,
@@ -147,14 +147,14 @@ export default function RealtimeBookingWrapper({
   }, [onNetworkStatusChange])
 
   // Business hours validation function
-  const validateBusinessHours = useCallback(async (datetime, barbershopId) => {
+  const validateBusinessHours = useCallback(async (datetime, barberbarbershopId) => {
     if (!enableBusinessHoursValidation) return { valid: true }
     
     try {
       const { data: shopData } = await supabase
         .from('barbershops')
         .select('business_hours, timezone, booking_settings')
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
         .single()
 
       if (!shopData?.business_hours) {
@@ -194,7 +194,7 @@ export default function RealtimeBookingWrapper({
 
   // Real-time availability checker with conflict detection
   const checkAvailability = useCallback(async (selectedDate, serviceId, duration = 30) => {
-    if (!barbershopId || !selectedDate) return []
+    if (!barberbarbershopId || !selectedDate) return []
 
     try {
       setAvailabilityData(prev => ({ ...prev, loading: true, error: null }))
@@ -219,13 +219,13 @@ export default function RealtimeBookingWrapper({
               buffer_time
             )
           `)
-          .eq('id', barbershopId)
+          .eq('id', barberbarbershopId)
           .single(),
         
         supabase
           .from('bookings')
           .select('id, start_time, duration_minutes, status, customer_name')
-          .eq('barbershop_id', barbershopId)
+          .eq('barberbarbershop_id', barberbarbershopId)
           .eq('barber_id', preselectedBarber || 'any')
           .gte('start_time', new Date(selectedDate).toISOString().split('T')[0])
           .lt('start_time', new Date(selectedDate.getTime() + 24*60*60*1000).toISOString())
@@ -350,7 +350,7 @@ export default function RealtimeBookingWrapper({
       onRealtimeError?.(error)
       return []
     }
-  }, [barbershopId, preselectedBarber, supabase, onAvailabilityUpdate, onRealtimeError])
+  }, [barberbarbershopId, preselectedBarber, supabase, onAvailabilityUpdate, onRealtimeError])
 
   // Helper function for popular time detection
   const isPopularTime = useCallback((time) => {
@@ -379,7 +379,7 @@ export default function RealtimeBookingWrapper({
       const { data: conflicts } = await supabase
         .from('bookings')
         .select('id, start_time, duration_minutes, customer_name')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('barber_id', preselectedBarber || 'any')
         .gte('start_time', slotStart.toISOString())
         .lt('start_time', slotEnd.toISOString())
@@ -389,7 +389,7 @@ export default function RealtimeBookingWrapper({
       const { data: overlapping } = await supabase
         .from('bookings')
         .select('id, start_time, duration_minutes, customer_name')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('barber_id', preselectedBarber || 'any')
         .in('status', ['confirmed', 'checked_in'])
         .filter('start_time', 'lt', slotEnd.toISOString())
@@ -403,7 +403,7 @@ export default function RealtimeBookingWrapper({
       })
 
       // Business hours validation
-      const businessHoursCheck = await validateBusinessHours(timeSlot, barbershopId)
+      const businessHoursCheck = await validateBusinessHours(timeSlot, barberbarbershopId)
 
       const validationResult = {
         valid: !hasConflict && businessHoursCheck.valid,
@@ -430,11 +430,11 @@ export default function RealtimeBookingWrapper({
       }))
       return { valid: false, error: error.message }
     }
-  }, [barbershopId, preselectedBarber, supabase, enableConflictPrevention, validateBusinessHours])
+  }, [barberbarbershopId, preselectedBarber, supabase, enableConflictPrevention, validateBusinessHours])
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!enableRealtime || !barbershopId || !networkStatus.online) {
+    if (!enableRealtime || !barberbarbershopId || !networkStatus.online) {
       setRealtimeStatus(prev => ({ 
         ...prev, 
         connected: false, 
@@ -445,14 +445,14 @@ export default function RealtimeBookingWrapper({
     }
 
     const channel = supabase
-      .channel(`bookings-${barbershopId}`)
+      .channel(`bookings-${barberbarbershopId}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'bookings',
-          filter: `barbershop_id=eq.${barbershopId}`
+          filter: `barberbarbershop_id=eq.${barberbarbershopId}`
         },
         (payload) => {
           if (debugMode) {
@@ -512,7 +512,7 @@ export default function RealtimeBookingWrapper({
     }
   }, [
     enableRealtime, 
-    barbershopId, 
+    barberbarbershopId, 
     networkStatus.online, 
     bookingState.selectedDateTime, 
     preselectedService, 
@@ -560,7 +560,7 @@ export default function RealtimeBookingWrapper({
   // Enhanced component props with real-time features
   const enhancedProps = useMemo(() => ({
     ...componentProps,
-    barbershopId,
+    barberbarbershopId,
     barbershopSlug,
     preselectedBarber,
     preselectedService,
@@ -638,7 +638,7 @@ export default function RealtimeBookingWrapper({
     validateSlot: validateTimeSlot
   }), [
     componentProps,
-    barbershopId,
+    barberbarbershopId,
     barbershopSlug,
     preselectedBarber,
     preselectedService,
@@ -839,7 +839,7 @@ export default function RealtimeBookingWrapper({
 
 // Hook for using real-time booking features in other components
 export function useRealtimeBooking({
-  barbershopId,
+  barberbarbershopId,
   barberId = null,
   serviceId = null,
   enableRealtime = true,
@@ -899,7 +899,7 @@ export function useRealtimeBooking({
 // Export TypeScript-style prop types for documentation
 RealtimeBookingWrapper.propTypes = {
   // Core props
-  barbershopId: (props, propName, componentName) => {
+  barberbarbershopId: (props, propName, componentName) => {
     if (!props[propName]) {
       return new Error(`${propName} is required for ${componentName}`)
     }

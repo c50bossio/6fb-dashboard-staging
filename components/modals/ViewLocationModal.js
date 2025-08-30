@@ -38,14 +38,14 @@ export default function ViewLocationModal({ isOpen, onClose, location }) {
         supabase
           .from('barbershop_staff')
           .select('*', { count: 'exact', head: true })
-          .eq('barbershop_id', location.id)
+          .eq('barberbarbershop_id', location.id)
           .eq('is_active', true),
         
         // Get services
         supabase
           .from('services')
           .select('*')
-          .or(`(barbershop_id.eq.${location.id}),(shop_id.eq.${location.id})`)
+          .or(`(barberbarbershop_id.eq.${location.id}),(barbershop_id.eq.${location.id})`)
           .eq('is_active', true)
           .limit(5),
         
@@ -53,7 +53,7 @@ export default function ViewLocationModal({ isOpen, onClose, location }) {
         supabase
           .from('appointments')
           .select('*', { count: 'exact', head: true })
-          .eq('barbershop_id', location.id)
+          .eq('barberbarbershop_id', location.id)
           .gte('appointment_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
       ])
       

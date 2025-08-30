@@ -38,7 +38,7 @@ import StaffPerformanceView from './StaffPerformanceView'
 
 export default function StaffManagementDashboard() {
   // Get current shop ID and business context
-  const shopId = useCurrentShopId()
+  const barbershopId = useCurrentShopId()
   const { businessContext, isLoading: contextLoading, canManageStaff } = useBusinessContext()
   
   // Staff data with real-time updates
@@ -47,7 +47,7 @@ export default function StaffManagementDashboard() {
     isLoading, 
     error, 
     refetch: refetchStaff 
-  } = useStaffWithRealtime(shopId, {
+  } = useStaffWithRealtime(barbershopId, {
     includeAvailability: false, // Not needed in dashboard, prevents 400 errors
     includeServices: false,     // Not needed in dashboard, prevents 400 errors
   })

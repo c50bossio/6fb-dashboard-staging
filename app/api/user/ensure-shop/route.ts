@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     // Get user's profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('shop_id, barbershop_id, full_name, email')
+      .select('barbershop_id, barberbarbershop_id, full_name, email')
       .eq('id', user.id)
       .single()
 
@@ -23,25 +23,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Check existing shop associations - following CLAUDE.md shop ID resolution pattern
-    let shopId = profile.shop_id || profile.barbershop_id
+    let barbershopId = profile.shop_id || profile.barbershop_id
 
-    // If no direct shop_id, check barbershop_staff table (for employees)
-    if (!shopId) {
+    // If no direct barbershop_id, check barbershop_staff table (for employees)
+    if (!barbershopId) {
       const { data: staffRecord, error: staffError } = await supabase
         .from('barbershop_staff')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
       
       if (!staffError && staffRecord) {
-        shopId = staffRecord.barbershop_id
-        console.log('Found shop ID via staff association:', shopId)
+        barbershopId = staffRecord.barberbarbershop_id
+        console.log('Found shop ID via staff association:', barbershopId)
       }
     }
 
     // If still no shop, create a default barbershop for this user
-    if (!shopId) {
+    if (!barbershopId) {
       console.log('Creating default barbershop for user:', user.id)
       
       const { data: newBarbershop, error: createError } = await supabase
@@ -70,12 +70,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Unable to create shop' }, { status: 500 })
       }
 
-      shopId = newBarbershop.id
+      barbershopId = newBarbershop.id
       
-      // Update user's profile with the new barbershop_id
+      // Update user's profile with the new barberbarbershop_id
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ barbershop_id: shopId })
+        .update({ barberbarbershop_id: barbershopId })
         .eq('id', user.id)
 
       if (updateError) {
@@ -83,12 +83,12 @@ export async function POST(request: NextRequest) {
         // Don't fail the request, the shop was created successfully
       }
       
-      console.log('Created and assigned default barbershop:', shopId)
+      console.log('Created and assigned default barbershop:', barbershopId)
     }
 
     return NextResponse.json({
       success: true,
-      shop_id: shopId,
+      barbershop_id: barbershopId,
       created: !profile.shop_id && !profile.barbershop_id
     })
 

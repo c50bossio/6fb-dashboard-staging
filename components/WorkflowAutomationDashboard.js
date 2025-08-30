@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', compact = false }) {
+export default function WorkflowAutomationDashboard({ barberbarbershop_id = 'demo', compact = false }) {
   const [dashboard, setDashboard] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
@@ -23,12 +23,12 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
 
   useEffect(() => {
     loadDashboard()
-  }, [barbershop_id])
+  }, [barberbarbershop_id])
 
   const loadDashboard = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/ai/workflow-automation?barbershop_id=${barbershop_id}`)
+      const response = await fetch(`/api/ai/workflow-automation?barberbarbershop_id=${barberbarbershop_id}`)
       const data = await response.json()
       
       if (data.success) {
@@ -49,7 +49,7 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action_type: 'trigger_workflow',
-          barbershop_id,
+          barberbarbershop_id,
           parameters: {
             workflow_id: workflowId,
             override_conditions: true
@@ -80,7 +80,7 @@ export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', co
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action_type: 'create_automation',
-          barbershop_id,
+          barberbarbershop_id,
           parameters: {
             name: suggestion.title,
             description: suggestion.description,

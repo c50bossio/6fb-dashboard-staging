@@ -44,14 +44,14 @@ export default function BarberDashboard() {
       setError(null)
       
       // Get barbershop context from profile
-      const barbershopId = profile?.shop_id || profile?.barbershop_id
+      const barberbarbershopId = profile?.shop_id || profile?.barbershop_id
       const barberId = user?.id
       
       if (!barberId) {
         throw new Error('No user ID available')
       }
 
-      if (!barbershopId) {
+      if (!barberbarbershopId) {
         // For barbers without barbershop association, show helpful error
         if (profile?.role === 'BARBER') {
           setError('Your barber account is not associated with a barbershop. Please contact your shop owner to complete your profile setup.')
@@ -62,8 +62,8 @@ export default function BarberDashboard() {
         return
       }
       
-      // Build API URL with both barber_id and barbershop_id for proper authorization
-      const apiUrl = `/api/appointments?barber_id=${barberId}&barbershop_id=${barbershopId}`
+      // Build API URL with both barber_id and barberbarbershop_id for proper authorization
+      const apiUrl = `/api/appointments?barber_id=${barberId}&barberbarbershop_id=${barberbarbershopId}`
 
       const appointmentsRes = await fetch(apiUrl)
       

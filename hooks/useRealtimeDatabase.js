@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-export function useRealtime(channelName, barbershopId) {
+export function useRealtime(channelName, barberbarbershopId) {
   const [data, setData] = useState(null)
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState(null)
@@ -18,8 +18,8 @@ export function useRealtime(channelName, barbershopId) {
       
       if (channelName === 'metrics' || channelName === 'dashboard') {
         const [metricsResponse, businessResponse] = await Promise.all([
-          fetch(`/api/realtime/metrics?barbershop_id=${barbershopId}`).then(r => r.json()),
-          fetch(`/api/dashboard/metrics?barbershop_id=${barbershopId}`).then(r => r.json())
+          fetch(`/api/realtime/metrics?barberbarbershop_id=${barberbarbershopId}`).then(r => r.json()),
+          fetch(`/api/dashboard/metrics?barberbarbershop_id=${barberbarbershopId}`).then(r => r.json())
         ])
         
         const metrics = metricsResponse || {}
@@ -29,13 +29,13 @@ export function useRealtime(channelName, barbershopId) {
           ...metrics,
           ...businessMetrics,
           timestamp: new Date().toISOString(),
-          session_id: `db-session-${barbershopId}`
+          session_id: `db-session-${barberbarbershopId}`
         }
       } else if (channelName === 'appointments') {
         const { data: appointments } = await supabase
           .from('appointments')
           .select('id, start_time, end_time, status, customer_name, service_name')
-          .eq('barbershop_id', barbershopId)
+          .eq('barberbarbershop_id', barberbarbershopId)
           .gte('start_time', new Date().toISOString().split('T')[0])
           .order('start_time', { ascending: true })
         
@@ -48,7 +48,7 @@ export function useRealtime(channelName, barbershopId) {
         const { data: notifications } = await supabase
           .from('notifications')
           .select('*')
-          .eq('barbershop_id', barbershopId)
+          .eq('barberbarbershop_id', barberbarbershopId)
           .eq('is_read', false)
           .order('created_at', { ascending: false })
           .limit(10)
@@ -67,10 +67,10 @@ export function useRealtime(channelName, barbershopId) {
       console.error('Realtime fetch error:', err)
       setError(err.message)
     }
-  }, [channelName, barbershopId, supabase])
+  }, [channelName, barberbarbershopId, supabase])
 
   const setupRealtimeSubscription = useCallback(() => {
-    if (!barbershopId) return
+    if (!barberbarbershopId) return
 
     try {
       let tableName = 'appointments' // Default table
@@ -84,14 +84,14 @@ export function useRealtime(channelName, barbershopId) {
       }
       
       const channel = supabase
-        .channel(`${channelName}-${barbershopId}`)
+        .channel(`${channelName}-${barberbarbershopId}`)
         .on(
           'postgres_changes',
           {
             event: '*', // Listen to all changes
             schema: 'public',
             table: tableName,
-            filter: `barbershop_id=eq.${barbershopId}`
+            filter: `barberbarbershop_id=eq.${barberbarbershopId}`
           },
           (payload) => {
             
@@ -110,7 +110,7 @@ export function useRealtime(channelName, barbershopId) {
       setError(err.message)
       setIsConnected(false)
     }
-  }, [channelName, barbershopId, supabase, fetchRealtimeData])
+  }, [channelName, barberbarbershopId, supabase, fetchRealtimeData])
 
   useEffect(() => {
 
@@ -138,7 +138,7 @@ export function useRealtime(channelName, barbershopId) {
 
   const sendData = useCallback(async (payload) => {
     try {
-      const insertData = { ...payload, barbershop_id: barbershopId }
+      const insertData = { ...payload, barberbarbershop_id: barberbarbershopId }
       
       if (channelName === 'notifications') {
         const { error } = await supabase
@@ -155,7 +155,7 @@ export function useRealtime(channelName, barbershopId) {
       console.error('Failed to send data:', err)
       setError(err.message)
     }
-  }, [channelName, barbershopId, supabase])
+  }, [channelName, barberbarbershopId, supabase])
 
   return {
     data,
@@ -167,16 +167,16 @@ export function useRealtime(channelName, barbershopId) {
   }
 }
 
-export function useRealtimeMetrics(barbershopId) {
-  return useRealtime('metrics', barbershopId)
+export function useRealtimeMetrics(barberbarbershopId) {
+  return useRealtime('metrics', barberbarbershopId)
 }
 
-export function useRealtimeAppointments(barbershopId) {
-  return useRealtime('appointments', barbershopId)
+export function useRealtimeAppointments(barberbarbershopId) {
+  return useRealtime('appointments', barberbarbershopId)
 }
 
-export function useRealtimeNotifications(barbershopId) {
-  return useRealtime('notifications', barbershopId)
+export function useRealtimeNotifications(barberbarbershopId) {
+  return useRealtime('notifications', barberbarbershopId)
 }
 
 export async function checkRealtimeSupport() {

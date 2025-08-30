@@ -30,7 +30,7 @@ export default function DataImportWidget({ profile, onStartImport }) {
   
   // Only show widget if:
   // 1. User has completed onboarding 
-  // 2. User has a barbershop (barbershop_id exists)
+  // 2. User has a barbershop (barberbarbershop_id exists)
   // 3. No existing customer data in the database
   useEffect(() => {
     const checkShouldShowWidget = async () => {
@@ -42,9 +42,9 @@ export default function DataImportWidget({ profile, onStartImport }) {
       
       try {
         // Use getTenant() to get barbershop ID
-        const { barbershopId } = await getTenant(profile.id, { supabase })
+        const { barberbarbershopId } = await getTenant(profile.id, { supabase })
         
-        if (!barbershopId) {
+        if (!barberbarbershopId) {
           setShowWidget(false)
           return
         }
@@ -53,7 +53,7 @@ export default function DataImportWidget({ profile, onStartImport }) {
         const { data: existingCustomers, error } = await supabase
           .from('customers')
           .select('id')
-          .eq('barbershop_id', barbershopId)
+          .eq('barberbarbershop_id', barberbarbershopId)
           .limit(1)
         
         // If customers exist, don't show the import widget

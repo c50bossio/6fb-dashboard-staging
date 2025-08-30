@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
  * Simplified Cin7 Connection Endpoint
  * 
  * This replaces the complex credentials system with a simple approach:
- * 1. Get user profile (which has barbershop_id)
+ * 1. Get user profile (which has barberbarbershop_id)
  * 2. Test Cin7 credentials
  * 3. Store encrypted credentials
  * 4. Return success
@@ -73,7 +73,7 @@ export async function POST(request) {
     // Get user profile - use simple lookup
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, barbershop_id, shop_id, email')
+      .select('id, barberbarbershop_id, barbershop_id, email')
       .or(`(id.eq.${user.id}),(email.eq.${user.email})`)
       .single()
     
@@ -85,8 +85,8 @@ export async function POST(request) {
     }
     
     // Get barbershop ID from profile
-    const barbershopId = profile.barbershop_id || profile.shop_id
-    if (!barbershopId) {
+    const barberbarbershopId = profile.barbershop_id || profile.shop_id
+    if (!barberbarbershopId) {
       return NextResponse.json(
         { 
           error: 'No barbershop associated',
@@ -109,7 +109,7 @@ export async function POST(request) {
 
     // Save credentials to cin7_credentials table
     const encryptedCredentials = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       encrypted_api_key: JSON.stringify(encrypt(apiKey)),
       encrypted_account_id: JSON.stringify(encrypt(accountId)),
       account_name: connectionTest.accountName,
@@ -123,7 +123,7 @@ export async function POST(request) {
     const { error: upsertError } = await supabase
       .from('cin7_credentials')
       .upsert(encryptedCredentials, { 
-        onConflict: 'barbershop_id' 
+        onConflict: 'barberbarbershop_id' 
       })
     
     if (upsertError) {
@@ -139,7 +139,7 @@ export async function POST(request) {
       status: 'connected',
       message: 'Successfully connected to Cin7',
       accountName: connectionTest.accountName,
-      barbershopId: barbershopId
+      barberbarbershopId: barberbarbershopId
     })
 
   } catch (error) {
@@ -168,7 +168,7 @@ export async function GET(request) {
     // Get user profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, barbershop_id, shop_id, email')
+      .select('id, barberbarbershop_id, barbershop_id, email')
       .or(`(id.eq.${user.id}),(email.eq.${user.email})`)
       .single()
     
@@ -179,8 +179,8 @@ export async function GET(request) {
       })
     }
     
-    const barbershopId = profile.barbershop_id || profile.shop_id
-    if (!barbershopId) {
+    const barberbarbershopId = profile.barbershop_id || profile.shop_id
+    if (!barberbarbershopId) {
       return NextResponse.json({
         connected: false,
         message: 'No barbershop associated'
@@ -191,7 +191,7 @@ export async function GET(request) {
     const { data: credentials } = await supabase
       .from('cin7_credentials')
       .select('account_name, last_sync, last_sync_status, is_active')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
       .single()
     

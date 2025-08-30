@@ -31,7 +31,7 @@ export default function ShopWebsiteCustomization() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const [previewMode, setPreviewMode] = useState('desktop')
-  const [shopId, setShopId] = useState(null)
+  const [barbershopId, setShopId] = useState(null)
   const [barberPages, setBarberPages] = useState([])
   
   const [settings, setSettings] = useState({
@@ -142,7 +142,7 @@ export default function ShopWebsiteCustomization() {
         // Get user's barbershop
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('barbershop_id')
+          .select('barberbarbershop_id')
           .eq('id', user.id)
           .single()
         
@@ -168,7 +168,7 @@ export default function ShopWebsiteCustomization() {
             *,
             user:users(id, full_name)
           `)
-          .eq('barbershop_id', profile.barbershop_id)
+          .eq('barberbarbershop_id', profile.barbershop_id)
           .order('created_at', { ascending: false })
         
         if (barbers && !barbersError) {
@@ -194,7 +194,7 @@ export default function ShopWebsiteCustomization() {
   }, [user])
 
   const handleSave = async () => {
-    if (!shopId) {
+    if (!barbershopId) {
       setMessage({ type: 'error', text: 'Shop ID not found' })
       return
     }
@@ -203,7 +203,7 @@ export default function ShopWebsiteCustomization() {
     setMessage({ type: '', text: '' })
     
     try {
-      const response = await fetch(`/api/shop/${shopId}/website`, {
+      const response = await fetch(`/api/shop/${barbershopId}/website`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -236,12 +236,12 @@ export default function ShopWebsiteCustomization() {
   }
 
   const handlePublish = async () => {
-    if (!shopId) return
+    if (!barbershopId) return
     
     setSaving(true)
     try {
       const newPublishState = !settings.is_published
-      const response = await fetch(`/api/shop/${shopId}/website`, {
+      const response = await fetch(`/api/shop/${barbershopId}/website`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

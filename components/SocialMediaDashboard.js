@@ -17,7 +17,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function SocialMediaDashboard({ barbershop_id = 'demo', compact = false }) {
+export default function SocialMediaDashboard({ barberbarbershop_id = 'demo', compact = false }) {
   const [dashboard, setDashboard] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
@@ -26,12 +26,12 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
 
   useEffect(() => {
     loadDashboard()
-  }, [barbershop_id])
+  }, [barberbarbershop_id])
 
   const loadDashboard = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/ai/social-media?barbershop_id=${barbershop_id}`)
+      const response = await fetch(`/api/ai/social-media?barberbarbershop_id=${barberbarbershop_id}`)
       const data = await response.json()
       
       if (data.success) {
@@ -52,7 +52,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action_type: 'create_post',
-          barbershop_id,
+          barberbarbershop_id,
           parameters: {
             platforms: selectedPlatforms,
             content: suggestion.content,
@@ -84,7 +84,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action_type: 'schedule_post',
-          barbershop_id,
+          barberbarbershop_id,
           parameters: {
             platforms: selectedPlatforms,
             content: suggestion.content,
@@ -113,7 +113,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action_type: 'auto_generate_content',
-          barbershop_id,
+          barberbarbershop_id,
           parameters: {
             content_type: contentType,
             platform: 'instagram',

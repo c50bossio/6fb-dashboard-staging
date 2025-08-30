@@ -46,7 +46,7 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, shop_id, role')
+      .select('barberbarbershop_id, barbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -58,10 +58,10 @@ export async function GET(request) {
       }, { status: 500 })
     }
     
-    // Check both barbershop_id and shop_id fields
-    let barbershopId = profile?.barbershop_id || profile?.shop_id
+    // Check both barberbarbershop_id and barbershop_id fields
+    let barberbarbershopId = profile?.barbershop_id || profile?.shop_id
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       // Try to get barbershop from ownership
       const { data: ownedShops } = await supabase
         .from('barbershops')
@@ -76,14 +76,14 @@ export async function GET(request) {
         }, { status: 404 })
       }
       
-      barbershopId = ownedShops[0].id
+      barberbarbershopId = ownedShops[0].id
     }
 
     // 1. Get no-show incidents in date range
     let incidentsQuery = supabase
       .from('no_show_incidents')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('incident_date', startDate)
       .lte('incident_date', endDate)
     
@@ -138,7 +138,7 @@ export async function GET(request) {
     let appointmentsQuery = supabase
       .from('appointments')
       .select('*', { count: 'exact' })
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('date', startDate)
       .lte('date', endDate)
     
@@ -185,17 +185,17 @@ export async function GET(request) {
       supabase
         .from('client_strike_history')
         .select('active_strikes')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gt('active_strikes', 0),
       supabase
         .from('blocked_clients')
         .select('recovery_initiated_at, required_fee_amount')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .is('blocked_until', null), // Currently blocked
       supabase
         .from('no_show_policies')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('is_active', true)
         .single()
     ])

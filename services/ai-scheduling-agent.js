@@ -27,18 +27,18 @@ export class AISchedulingAgent {
   /**
    * Suggest optimal appointment slots based on historical patterns
    */
-  async suggestOptimalSlots(shopId, date, duration = 30) {
+  async suggestOptimalSlots(barbershopId, date, duration = 30) {
     await this.initialize()
     
     try {
       // Get historical booking patterns
-      const patterns = await this.analyzeBookingPatterns(shopId)
+      const patterns = await this.analyzeBookingPatterns(barbershopId)
       
       // Get current availability for the date
-      const availability = await this.getAvailability(shopId, date)
+      const availability = await this.getAvailability(barbershopId, date)
       
       // Get customer preferences
-      const preferences = await this.getCustomerPreferences(shopId)
+      const preferences = await this.getCustomerPreferences(barbershopId)
       
       // Generate AI-powered suggestions
       const suggestions = this.generateSuggestions({
@@ -59,13 +59,13 @@ export class AISchedulingAgent {
   /**
    * Analyze historical booking patterns for the shop
    */
-  async analyzeBookingPatterns(shopId) {
+  async analyzeBookingPatterns(barbershopId) {
     try {
       // Get last 90 days of appointments
       const ninetyDaysAgo = new Date()
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
       
-      const appointments = await createServiceRoleClient().getAppointments(shopId, {
+      const appointments = await createServiceRoleClient().getAppointments(barbershopId, {
         startDate: ninetyDaysAgo.toISOString(),
         endDate: new Date().toISOString()
       })
@@ -95,16 +95,16 @@ export class AISchedulingAgent {
   /**
    * Get available time slots for a specific date
    */
-  async getAvailability(shopId, date) {
+  async getAvailability(barbershopId, date) {
     try {
       // Get existing appointments for the date
-      const appointments = await createServiceRoleClient().getAppointments(shopId, {
+      const appointments = await createServiceRoleClient().getAppointments(barbershopId, {
         startDate: date,
         endDate: date
       })
       
       // Get shop business hours
-      const shopInfo = await createServiceRoleClient().getShopInfo(shopId)
+      const shopInfo = await createServiceRoleClient().getShopInfo(barbershopId)
       const businessHours = shopInfo?.business_hours || {
         monday: { open: '09:00', close: '18:00' },
         tuesday: { open: '09:00', close: '18:00' },
@@ -139,7 +139,7 @@ export class AISchedulingAgent {
   /**
    * Get customer preferences based on historical data
    */
-  async getCustomerPreferences(shopId) {
+  async getCustomerPreferences(barbershopId) {
     try {
       // This would typically analyze customer booking history
       // For now, return common preferences
@@ -283,11 +283,11 @@ export class AISchedulingAgent {
   /**
    * Optimize schedule by rearranging appointments
    */
-  async optimizeSchedule(shopId, date) {
+  async optimizeSchedule(barbershopId, date) {
     await this.initialize()
     
     try {
-      const appointments = await createServiceRoleClient().getAppointments(shopId, {
+      const appointments = await createServiceRoleClient().getAppointments(barbershopId, {
         startDate: date,
         endDate: date
       })

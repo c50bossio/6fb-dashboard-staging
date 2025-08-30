@@ -50,10 +50,10 @@ interface StockAdjustment {
 }
 
 interface InventoryManagerProps {
-  barbershopId: string
+  barberbarbershopId: string
 }
 
-export function InventoryManager({ barbershopId }: InventoryManagerProps) {
+export function InventoryManager({ barberbarbershopId }: InventoryManagerProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
@@ -74,7 +74,7 @@ export function InventoryManager({ barbershopId }: InventoryManagerProps) {
 
   useEffect(() => {
     loadProducts()
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   useEffect(() => {
     filterProducts()
@@ -84,7 +84,7 @@ export function InventoryManager({ barbershopId }: InventoryManagerProps) {
     setLoading(true)
     try {
       const params = new URLSearchParams({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         in_stock_only: 'false' // Show all products for inventory management
       })
 

@@ -46,21 +46,21 @@ export default function StaffScheduleView({ staff, onRefresh }) {
       const supabase = createClient()
       
       // Get barbershop ID from first staff member
-      const barbershopId = staff[0]?.barbershop_id
-      if (!barbershopId) return
+      const barberbarbershopId = staff[0]?.barberbarbershop_id
+      if (!barberbarbershopId) return
 
       // Load staff schedules
       const { data: schedules } = await supabase
         .from('staff_schedules')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('is_active', true)
 
       // Load time off requests
       const { data: timeOff } = await supabase
         .from('staff_time_off')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .in('status', ['approved', 'pending'])
 
       // Load appointments for the next 30 days
@@ -71,7 +71,7 @@ export default function StaffScheduleView({ staff, onRefresh }) {
       const { data: appointments } = await supabase
         .from('appointments')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('appointment_date', startDate.toISOString())
         .lte('appointment_date', endDate.toISOString())
 

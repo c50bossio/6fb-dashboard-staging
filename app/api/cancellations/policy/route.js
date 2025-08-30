@@ -123,7 +123,7 @@ export async function GET(request) {
         const { data: shopPolicy, error: policyError } = await supabase
             .from('cancellation_policies')
             .select('*')
-            .eq('barbershop_id', service.barbershop_id)
+            .eq('barberbarbershop_id', service.barberbarbershop_id)
             .single();
         
         let policy;

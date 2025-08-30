@@ -9,7 +9,7 @@ export const runtime = 'nodejs'
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { message, session_id, business_context, barbershop_id } = body;
+    const { message, session_id, business_context, barberbarbershop_id } = body;
 
     if (!message || !message.trim()) {
       return NextResponse.json({
@@ -55,7 +55,7 @@ export async function POST(request) {
           session_id: sessionId,
           business_context: {
             ...business_context,
-            barbershop_id: barbershop_id
+            barberbarbershop_id: barberbarbershop_id
           },
           conversation_context: conversationContext
         }),
@@ -71,7 +71,7 @@ export async function POST(request) {
     } catch (pythonError) {
       console.warn('Python AI service unavailable, using enhanced fallback:', pythonError.message);
       
-      aiResponse = await getEnhancedFallbackResponse(message, business_context, barbershop_id, conversationContext);
+      aiResponse = await getEnhancedFallbackResponse(message, business_context, barberbarbershop_id, conversationContext);
     }
 
     const responseData = {
@@ -132,7 +132,7 @@ export async function POST(request) {
 /**
  * Enhanced fallback response that attempts to include analytics data and conversation context
  */
-async function getEnhancedFallbackResponse(message, businessContext, barbershopId, conversationContext) {
+async function getEnhancedFallbackResponse(message, businessContext, barberbarbershopId, conversationContext) {
   const messageType = classifyMessage(message);
   let analyticsData = null;
   let analyticsEnhanced = false;
@@ -142,8 +142,8 @@ async function getEnhancedFallbackResponse(message, businessContext, barbershopI
   if (needsAnalyticsData(message) || contextAnalysis.needsAnalytics) {
     try {
       let analyticsUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?format=formatted`;
-      if (barbershopId) {
-        analyticsUrl += `&barbershop_id=${barbershopId}`;
+      if (barberbarbershopId) {
+        analyticsUrl += `&barberbarbershop_id=${barberbarbershopId}`;
       }
       
       const response = await fetch(analyticsUrl, {

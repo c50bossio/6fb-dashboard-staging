@@ -65,10 +65,10 @@ export async function POST(request) {
         await supabase
           .from('barbers')
           .delete()
-          .eq('shop_id', barbershop.id)
+          .eq('barbershop_id', barbershop.id)
         
         const staffData = stepData.staff.map(member => ({
-          shop_id: barbershop.id,
+          barbershop_id: barbershop.id,
           name: member.name || `${member.firstName} ${member.lastName}`,
           email: member.email,
           phone: member.phone,

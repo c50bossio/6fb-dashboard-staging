@@ -74,16 +74,16 @@ export default function GeneralSettingsPage() {
       if (!shop || error) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('shop_id, barbershop_id')
+          .select('barbershop_id, barberbarbershop_id')
           .eq('id', user.id)
           .single()
         
-        const shopId = profile?.shop_id || profile?.barbershop_id
-        if (shopId) {
+        const barbershopId = profile?.shop_id || profile?.barbershop_id
+        if (barbershopId) {
           const { data: shopByProfile } = await supabase
             .from('barbershops')
             .select('*')
-            .eq('id', shopId)
+            .eq('id', barbershopId)
             .single()
           
           shop = shopByProfile
@@ -188,8 +188,8 @@ export default function GeneralSettingsPage() {
           await supabase
             .from('profiles')
             .update({ 
-              shop_id: newShop.id,
-              barbershop_id: newShop.id 
+              barbershop_id: newShop.id,
+              barberbarbershop_id: newShop.id 
             })
             .eq('id', user?.id)
         }

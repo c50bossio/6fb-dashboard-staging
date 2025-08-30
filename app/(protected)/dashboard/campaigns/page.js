@@ -125,7 +125,7 @@ export default function CampaignsPage() {
         audience_type: formData.get('audience_type') || 'segment',
         audience_filters: {
           segment: formData.get('segment'),
-          shop_id: profile?.barbershop_id
+          barbershop_id: profile?.barbershop_id
         },
         subject: formData.get('subject'),
         message: formData.get('message'),

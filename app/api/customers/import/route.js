@@ -121,7 +121,7 @@ export async function POST(request) {
     const formData = await request.formData()
     const file = formData.get('file')
     const platform = formData.get('platform')
-    const barbershopId = formData.get('barbershop_id')
+    const barberbarbershopId = formData.get('barberbarbershop_id')
     
     if (!file) {
       return NextResponse.json(
@@ -130,9 +130,9 @@ export async function POST(request) {
       )
     }
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json(
-        { error: 'barbershop_id is required' },
+        { error: 'barberbarbershop_id is required' },
         { status: 400 }
       )
     }
@@ -165,7 +165,7 @@ export async function POST(request) {
     // Process customers data
     if (data.customers && data.customers.length > 0) {
       for (const row of data.customers) {
-        const customer = processCustomerRow(row, mapping, barbershopId)
+        const customer = processCustomerRow(row, mapping, barberbarbershopId)
         if (customer.name && (customer.phone || customer.email)) {
           customersToImport.push(customer)
         }
@@ -177,7 +177,7 @@ export async function POST(request) {
       const uniqueCustomers = new Map()
       
       for (const appt of data.appointments) {
-        const customer = processCustomerRow(appt, mapping, barbershopId)
+        const customer = processCustomerRow(appt, mapping, barberbarbershopId)
         if (customer.name && (customer.phone || customer.email)) {
           // Use phone or email as unique key
           const key = customer.phone || customer.email
@@ -193,7 +193,7 @@ export async function POST(request) {
     // If still no customers, try to process any unknown data
     if (customersToImport.length === 0 && data.unknown && data.unknown.length > 0) {
       for (const row of data.unknown) {
-        const customer = processCustomerRow(row, mapping, barbershopId)
+        const customer = processCustomerRow(row, mapping, barberbarbershopId)
         if (customer.name && (customer.phone || customer.email)) {
           customersToImport.push(customer)
         }
@@ -221,7 +221,7 @@ export async function POST(request) {
         let existingQuery = supabase
           .from('customers')
           .select('id, name')
-          .or(`shop_id.eq.${barbershopId},barbershop_id.eq.${barbershopId}`)
+          .or(`barbershop_id.eq.${barberbarbershopId},barberbarbershop_id.eq.${barberbarbershopId}`)
         
         if (customer.phone && customer.email) {
           existingQuery = existingQuery.or(`phone.eq.${customer.phone},email.eq.${customer.email}`)
@@ -278,7 +278,7 @@ export async function POST(request) {
             const { data: existing } = await supabase
               .from('services')
               .select('id')
-              .eq('barbershop_id', barbershopId)
+              .eq('barberbarbershop_id', barberbarbershopId)
               .eq('name', serviceName)
               .single()
             
@@ -286,7 +286,7 @@ export async function POST(request) {
               const { error } = await supabase
                 .from('services')
                 .insert([{
-                  barbershop_id: barbershopId,
+                  barberbarbershop_id: barberbarbershopId,
                   name: serviceName,
                   price: parseFloat(price) || 0,
                   duration: parseInt(duration) || 30,
@@ -329,7 +329,7 @@ export async function POST(request) {
 }
 
 // Process a single customer row
-function processCustomerRow(row, mapping, barbershopId) {
+function processCustomerRow(row, mapping, barberbarbershopId) {
   const name = extractField(row, mapping.name)
   const phone = cleanPhoneNumber(extractField(row, mapping.phone || []))
   const email = extractField(row, mapping.email || [])
@@ -339,8 +339,8 @@ function processCustomerRow(row, mapping, barbershopId) {
   
   // Build customer object
   const customer = {
-    shop_id: barbershopId,
-    barbershop_id: barbershopId,
+    barbershop_id: barberbarbershopId,
+    barberbarbershop_id: barberbarbershopId,
     name: name,
     phone: phone,
     email: isValidEmail(email) ? email : null,

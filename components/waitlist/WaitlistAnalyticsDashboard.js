@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Card } from "../ui/card"';
 
-const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
+const WaitlistAnalyticsDashboard = ({ barberbarbershopId }) => {
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -18,7 +18,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
             const endDate = new Date().toISOString().split('T')[0];
             const startDate = new Date(Date.now() - parseInt(dateRange) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
             
-            const response = await fetch(`/api/waitlist/analytics?barbershop_id=${barbershopId || 'demo_barbershop'}&start_date=${startDate}&end_date=${endDate}`);
+            const response = await fetch(`/api/waitlist/analytics?barberbarbershop_id=${barberbarbershopId || 'demo_barbershop'}&start_date=${startDate}&end_date=${endDate}`);
             const data = await response.json();
             
             if (data.success) {
@@ -38,7 +38,7 @@ const WaitlistAnalyticsDashboard = ({ barbershopId }) => {
     
     useEffect(() => {
         fetchAnalytics();
-    }, [barbershopId, dateRange]);
+    }, [barberbarbershopId, dateRange]);
     
     const MetricCard = ({ title, value, subtitle, trend, icon, color = 'text-olive-600' }) => (
         <Card>

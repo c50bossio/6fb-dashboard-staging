@@ -32,20 +32,20 @@ export default function PaymentSetupAlert() {
       }
       
       // Get barbershop ID using unified tenant resolver
-      let shopId
+      let barbershopId
       try {
-        const { barbershopId } = await getTenant(profile.id, { supabase })
-        shopId = barbershopId
+        const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+        barbershopId = barberbarbershopId
       } catch (error) {
         console.error('Error getting barbershop ID:', error)
         return
       }
       
-      if (!shopId) return
+      if (!barbershopId) return
       
       try {
         // Use UnifiedStripeManager to check setup status
-        const status = await unifiedStripeManager.getUnifiedStatus(shopId)
+        const status = await unifiedStripeManager.getUnifiedStatus(barbershopId)
         setSetupStatus(status)
         
         // Show alert if setup is not complete

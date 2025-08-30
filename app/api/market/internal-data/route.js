@@ -49,12 +49,12 @@ export async function POST(request) {
     }
     
     // Get actual service pricing from these barbershops
-    const shopIds = nearbyBarbershops.map(shop => shop.id)
+    const barbershopIds = nearbyBarbershops.map(shop => shop.id)
     
     const { data: services, error: servicesError } = await supabase
       .from('services')
-      .select('name, price, duration_minutes, shop_id')
-      .in('shop_id', shopIds)
+      .select('name, price, duration_minutes, barbershop_id')
+      .in('barbershop_id', barbershopIds)
       .in('name', ['Haircut', 'Fade Cut', 'Beard Trim', 'Kids Cut', 'Hot Towel Shave', 'VIP Package'])
     
     if (servicesError) throw servicesError
@@ -89,8 +89,8 @@ export async function POST(request) {
     // Get appointment volume data to understand demand
     const { data: appointments, error: appointmentsError } = await supabase
       .from('appointments')
-      .select('shop_id, service_name, price')
-      .in('shop_id', shopIds)
+      .select('barbershop_id, service_name, price')
+      .in('barbershop_id', barbershopIds)
       .gte('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()) // Last 90 days
     
     // Calculate demand metrics
@@ -99,8 +99,8 @@ export async function POST(request) {
     // Get customer feedback data for quality insights
     const { data: reviews, error: reviewsError } = await supabase
       .from('reviews')
-      .select('rating, shop_id')
-      .in('shop_id', shopIds)
+      .select('rating, barbershop_id')
+      .in('barbershop_id', barbershopIds)
     
     const avgRating = reviews && reviews.length > 0
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length

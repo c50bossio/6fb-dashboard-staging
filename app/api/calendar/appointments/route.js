@@ -15,7 +15,7 @@ export async function GET(request) {
     // Get user profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, full_name, role, shop_id, barbershop_id')
+      .select('id, full_name, role, barbershop_id, barberbarbershop_id')
       .eq('id', user.id)
       .single()
     
@@ -27,24 +27,24 @@ export async function GET(request) {
     }
 
     // Determine barbershop ID
-    let barbershopId = profile.shop_id || profile.barbershop_id
+    let barberbarbershopId = profile.shop_id || profile.barbershop_id
     
     // If no direct shop, check if user is staff
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       const { data: staffAssignment } = await supabase
         .from('barbershop_staff')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
       
       if (staffAssignment) {
-        barbershopId = staffAssignment.barbershop_id
+        barberbarbershopId = staffAssignment.barberbarbershop_id
       }
     }
 
     // If still no barbershop, return empty
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({ 
         appointments: [],
         message: 'No barbershop associated' 
@@ -56,7 +56,7 @@ export async function GET(request) {
     const start = searchParams.get('start') // FullCalendar sends these automatically
     const end = searchParams.get('end')
     const locationIds = searchParams.get('location_ids')
-    const shopId = searchParams.get('shop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     
     // Use FullCalendar date range if provided, otherwise default to today + 30 days for performance
     let startDate, endDate
@@ -74,16 +74,16 @@ export async function GET(request) {
     }
 
     // Handle multi-location requests
-    let targetBarbershopIds = []
+    let targetBarberbarbershopIds = []
     if (locationIds) {
-      targetBarbershopIds = locationIds.split(',')
-      console.log(`[Calendar API] Multi-location request for shops: ${targetBarbershopIds.join(', ')}`)
-    } else if (shopId) {
-      targetBarbershopIds = [shopId]
-      console.log(`[Calendar API] Single shop request: ${shopId}`)
+      targetBarberbarbershopIds = locationIds.split(',')
+      console.log(`[Calendar API] Multi-location request for shops: ${targetBarberbarbershopIds.join(', ')}`)
+    } else if (barbershopId) {
+      targetBarberbarbershopIds = [barbershopId]
+      console.log(`[Calendar API] Single shop request: ${barbershopId}`)
     } else {
-      targetBarbershopIds = [barbershopId]
-      console.log(`[Calendar API] Using user's barbershop: ${barbershopId}`)
+      targetBarberbarbershopIds = [barberbarbershopId]
+      console.log(`[Calendar API] Using user's barbershop: ${barberbarbershopId}`)
     }
 
     // Build optimized query with date range filtering
@@ -101,7 +101,7 @@ export async function GET(request) {
         duration_minutes,
         status,
         barber_id,
-        barbershop_id,
+        barberbarbershop_id,
         notes,
         created_at,
         updated_at
@@ -112,10 +112,10 @@ export async function GET(request) {
       .order('time', { ascending: true })
 
     // Apply barbershop filter
-    if (targetBarbershopIds.length === 1) {
-      query = query.eq('barbershop_id', targetBarbershopIds[0])
-    } else if (targetBarbershopIds.length > 1) {
-      query = query.in('barbershop_id', targetBarbershopIds)
+    if (targetBarberbarbershopIds.length === 1) {
+      query = query.eq('barberbarbershop_id', targetBarberbarbershopIds[0])
+    } else if (targetBarberbarbershopIds.length > 1) {
+      query = query.in('barberbarbershop_id', targetBarberbarbershopIds)
     }
 
     const { data: bookings, error: bookingsError } = await query
@@ -198,7 +198,7 @@ export async function GET(request) {
           notes: booking.notes,
           barberId: booking.barber_id,
           barberName: barberMap[booking.barber_id] || 'Unassigned',
-          barbershopId: booking.barbershop_id
+          barberbarbershopId: booking.barberbarbershop_id
         }
       }
     })
@@ -212,7 +212,7 @@ export async function GET(request) {
         end: endDate.toISOString(),
         daysSpan: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
       },
-      barbershops: targetBarbershopIds,
+      barbershops: targetBarberbarbershopIds,
       queryOptimization: start && end ? 'FullCalendar date range used' : 'Default 30-day range used'
     }
     
@@ -221,7 +221,7 @@ export async function GET(request) {
     return NextResponse.json({
       appointments,
       count: appointments.length,
-      barbershopId,
+      barberbarbershopId,
       meta: {
         dateRange: {
           start: startDate.toISOString(),
@@ -230,7 +230,7 @@ export async function GET(request) {
         optimization: {
           rangeOptimized: !!(start && end),
           recordsReturned: appointments.length,
-          barbershopsQueried: targetBarbershopIds.length
+          barbershopsQueried: targetBarberbarbershopIds.length
         }
       }
     })
@@ -277,7 +277,7 @@ export async function PATCH(request) {
       const { data: blockedTime, error: blockError } = await supabase
         .from('bookings')
         .insert({
-          barbershop_id: body.barbershop_id || body.shop_id,
+          barberbarbershop_id: body.barberbarbershop_id || body.barbershop_id,
           barber_id: barber_id || user.id,
           customer_name: 'BLOCKED',
           customer_email: 'blocked@system.local',
@@ -420,7 +420,7 @@ export async function POST(request) {
     const { data: newBooking, error: createError } = await supabase
       .from('bookings')
       .insert({
-        barbershop_id: body.barbershop_id || body.shop_id,
+        barberbarbershop_id: body.barberbarbershop_id || body.barbershop_id,
         barber_id: body.barber_id || user.id,
         customer_name: body.customer_name,
         customer_email: body.customer_email,

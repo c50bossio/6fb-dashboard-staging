@@ -13,17 +13,17 @@ import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 /**
  * Fetch all services for a barbershop
  */
-export function useServices(shopId, options = {}) {
+export function useServices(barbershopId, options = {}) {
   return useQuery({
-    queryKey: queryKeys.services.byShop(shopId),
+    queryKey: queryKeys.services.byShop(barbershopId),
     queryFn: async () => {
       // Ensure service is initialized
       if (!createServiceRoleClient().isReady()) {
         await createServiceRoleClient().initialize()
       }
-      return createServiceRoleClient().getServices(shopId, options)
+      return createServiceRoleClient().getServices(barbershopId, options)
     },
-    enabled: !!shopId,
+    enabled: !!barbershopId,
     staleTime: 10 * 60 * 1000, // Services don't change often - 10 minutes
     ...options.queryOptions,
   })
@@ -32,14 +32,14 @@ export function useServices(shopId, options = {}) {
 /**
  * Fetch a single service
  */
-export function useService(shopId, serviceId) {
+export function useService(barbershopId, serviceId) {
   return useQuery({
-    queryKey: queryKeys.services.detail(shopId, serviceId),
+    queryKey: queryKeys.services.detail(barbershopId, serviceId),
     queryFn: async () => {
-      const services = await createServiceRoleClient().getServices(shopId)
+      const services = await createServiceRoleClient().getServices(barbershopId)
       return services.find(s => s.id === serviceId)
     },
-    enabled: !!shopId && !!serviceId,
+    enabled: !!barbershopId && !!serviceId,
     staleTime: 10 * 60 * 1000,
   })
 }
@@ -57,27 +57,27 @@ export function useCreateService() {
     onMutate: async (newService) => {
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ 
-        queryKey: queryKeys.services.byShop(newService.barbershop_id) 
+        queryKey: queryKeys.services.byShop(newService.barberbarbershop_id) 
       })
       
       // Snapshot previous value
       const previousServices = queryClient.getQueryData(
-        queryKeys.services.byShop(newService.barbershop_id)
+        queryKeys.services.byShop(newService.barberbarbershop_id)
       )
       
       // Optimistically update cache
       queryClient.setQueryData(
-        queryKeys.services.byShop(newService.barbershop_id),
+        queryKeys.services.byShop(newService.barberbarbershop_id),
         (old) => [...(old || []), { ...newService, id: 'temp-' + Date.now() }]
       )
       
-      return { previousServices, barbershop_id: newService.barbershop_id }
+      return { previousServices, barberbarbershop_id: newService.barberbarbershop_id }
     },
     
     // If mutation fails, rollback
     onError: (err, newService, context) => {
       queryClient.setQueryData(
-        queryKeys.services.byShop(context.barbershop_id),
+        queryKeys.services.byShop(context.barberbarbershop_id),
         context.previousServices
       )
     },
@@ -85,7 +85,7 @@ export function useCreateService() {
     // After success or error, refetch
     onSettled: (data, error, variables) => {
       queryClient.invalidateQueries({ 
-        queryKey: queryKeys.services.byShop(variables.barbershop_id) 
+        queryKey: queryKeys.services.byShop(variables.barberbarbershop_id) 
       })
     },
     
@@ -107,18 +107,18 @@ export function useUpdateService() {
       createServiceRoleClient().updateService(serviceId, updates),
     
     // Optimistic update
-    onMutate: async ({ serviceId, updates, barbershop_id }) => {
+    onMutate: async ({ serviceId, updates, barberbarbershop_id }) => {
       await queryClient.cancelQueries({ 
-        queryKey: queryKeys.services.byShop(barbershop_id) 
+        queryKey: queryKeys.services.byShop(barberbarbershop_id) 
       })
       
       const previousServices = queryClient.getQueryData(
-        queryKeys.services.byShop(barbershop_id)
+        queryKeys.services.byShop(barberbarbershop_id)
       )
       
       // Update the service in cache
       queryClient.setQueryData(
-        queryKeys.services.byShop(barbershop_id),
+        queryKeys.services.byShop(barberbarbershop_id),
         (old) => old?.map(service => 
           service.id === serviceId 
             ? { ...service, ...updates }
@@ -126,19 +126,19 @@ export function useUpdateService() {
         )
       )
       
-      return { previousServices, barbershop_id }
+      return { previousServices, barberbarbershop_id }
     },
     
     onError: (err, variables, context) => {
       queryClient.setQueryData(
-        queryKeys.services.byShop(context.barbershop_id),
+        queryKeys.services.byShop(context.barberbarbershop_id),
         context.previousServices
       )
     },
     
     onSettled: (data, error, variables) => {
       queryClient.invalidateQueries({ 
-        queryKey: queryKeys.services.byShop(variables.barbershop_id) 
+        queryKey: queryKeys.services.byShop(variables.barberbarbershop_id) 
       })
     }
   })
@@ -168,10 +168,10 @@ export function useDeleteService() {
 export function usePrefetchServices() {
   const queryClient = useQueryClient()
   
-  return (shopId) => {
+  return (barbershopId) => {
     return queryClient.prefetchQuery({
-      queryKey: queryKeys.services.byShop(shopId),
-      queryFn: () => createServiceRoleClient().getServices(shopId),
+      queryKey: queryKeys.services.byShop(barbershopId),
+      queryFn: () => createServiceRoleClient().getServices(barbershopId),
       staleTime: 10 * 60 * 1000,
     })
   }

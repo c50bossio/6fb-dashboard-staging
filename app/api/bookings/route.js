@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 const bookingSchema = z.object({
-  barbershop_id: z.string().uuid(),
+  barberbarbershop_id: z.string().uuid(),
   client_id: z.string().uuid().optional(),
   barber_id: z.string().uuid(),
   service_id: z.string().uuid(),
@@ -33,7 +33,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const barbershop_id = searchParams.get('barbershop_id')
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id')
     const barber_id = searchParams.get('barber_id')
     const client_id = searchParams.get('client_id')
     const start_date = searchParams.get('start_date')
@@ -55,8 +55,8 @@ export async function GET(request) {
       .order('scheduled_at', { ascending: true })
       .range(offset, offset + limit - 1)
 
-    if (barbershop_id) {
-      query = query.eq('barbershop_id', barbershop_id)
+    if (barberbarbershop_id) {
+      query = query.eq('barberbarbershop_id', barberbarbershop_id)
     }
     if (barber_id) {
       query = query.eq('barber_id', barber_id)
@@ -88,7 +88,7 @@ export async function GET(request) {
       .from('bookings')
       .select('*', { count: 'exact', head: true })
 
-    if (barbershop_id) countQuery = countQuery.eq('barbershop_id', barbershop_id)
+    if (barberbarbershop_id) countQuery = countQuery.eq('barberbarbershop_id', barberbarbershop_id)
     if (barber_id) countQuery = countQuery.eq('barber_id', barber_id)
     if (client_id) countQuery = countQuery.eq('client_id', client_id)
     if (start_date) countQuery = countQuery.gte('scheduled_at', start_date)

@@ -29,15 +29,15 @@ export default function PredictiveAnalyticsPanel({ data }) {
       setError(null)
       
       // Don't use demo data - require real barbershop context
-      if (!data?.shopId && !data?.barbershop_id) {
+      if (!data?.barbershopId && !data?.barberbarbershop_id) {
         setError('Barbershop data required for predictions')
         setPredictions(null)
         setLoading(false)
         return
       }
       
-      const barbershopId = data?.shopId || data?.barbershop_id
-      const response = await fetch(`/api/analytics/predictive?barbershop_id=${barbershopId}`)
+      const barberbarbershopId = data?.barbershopId || data?.barberbarbershop_id
+      const response = await fetch(`/api/analytics/predictive?barberbarbershop_id=${barberbarbershopId}`)
       const result = await response.json()
 
       if (result.success && result.data?.historical_records > 0) {
@@ -63,14 +63,14 @@ export default function PredictiveAnalyticsPanel({ data }) {
     setGenerating(true)
     try {
       // Validate real barbershop data exists
-      if (!data?.shopId && !data?.barbershop_id) {
+      if (!data?.barbershopId && !data?.barberbarbershop_id) {
         throw new Error('Barbershop configuration required')
       }
 
-      const barbershopId = data?.shopId || data?.barbershop_id
+      const barberbarbershopId = data?.barbershopId || data?.barberbarbershop_id
       
       // Check if we have sufficient data before attempting generation
-      const response = await fetch(`/api/analytics/predictive?barbershop_id=${barbershopId}`)
+      const response = await fetch(`/api/analytics/predictive?barberbarbershop_id=${barberbarbershopId}`)
       const result = await response.json()
       
       if (!result.success || result.data?.insufficient_data || result.data?.historical_records < 5) {

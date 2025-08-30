@@ -14,14 +14,14 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id') || user.id
+    const barberbarbershopId = searchParams.get('barberbarbershop_id') || user.id
     const analysisType = searchParams.get('analysis_type') || 'comprehensive' // seasonal, trends, anomalies, comprehensive
     const timeframe = searchParams.get('timeframe') || '1_year' // 3_months, 6_months, 1_year, 2_years
     const includeProjections = searchParams.get('projections') === 'true'
 
     try {
       const trendAnalysis = await generateSeasonalTrendAnalysis(
-        barbershopId, 
+        barberbarbershopId, 
         analysisType, 
         timeframe,
         includeProjections
@@ -37,7 +37,7 @@ export async function GET(request) {
       console.error('Trend analysis error:', analysisError)
       
       const fallbackAnalysis = generateFallbackTrendAnalysis(
-        barbershopId, 
+        barberbarbershopId, 
         analysisType, 
         timeframe
       )
@@ -69,29 +69,29 @@ export async function POST(request) {
     }
 
     const { action, parameters } = await request.json()
-    const barbershopId = parameters?.barbershop_id || user.id
+    const barberbarbershopId = parameters?.barberbarbershop_id || user.id
     
     let response
     
     switch (action) {
       case 'detect_anomalies':
-        response = await detectBusinessAnomalies(barbershopId, parameters)
+        response = await detectBusinessAnomalies(barberbarbershopId, parameters)
         break
         
       case 'forecast_seasonal_impact':
-        response = await forecastSeasonalImpact(barbershopId, parameters)
+        response = await forecastSeasonalImpact(barberbarbershopId, parameters)
         break
         
       case 'analyze_growth_trends':
-        response = await analyzeGrowthTrends(barbershopId, parameters)
+        response = await analyzeGrowthTrends(barberbarbershopId, parameters)
         break
         
       case 'identify_market_opportunities':
-        response = await identifyMarketOpportunities(barbershopId, parameters)
+        response = await identifyMarketOpportunities(barberbarbershopId, parameters)
         break
         
       case 'benchmark_performance':
-        response = await benchmarkPerformance(barbershopId, parameters)
+        response = await benchmarkPerformance(barberbarbershopId, parameters)
         break
         
       default:
@@ -114,7 +114,7 @@ export async function POST(request) {
   }
 }
 
-async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timeframe, includeProjections) {
+async function generateSeasonalTrendAnalysis(barberbarbershopId, analysisType, timeframe, includeProjections) {
   const currentTime = new Date()
   
   const historicalData = generateHistoricalBusinessData(timeframe)
@@ -126,7 +126,7 @@ async function generateSeasonalTrendAnalysis(barbershopId, analysisType, timefra
   const projections = includeProjections ? generateTrendProjections(trendAnalysis, seasonalPatterns) : null
   
   return {
-    barbershop_id: barbershopId,
+    barberbarbershop_id: barberbarbershopId,
     analysis_type: analysisType,
     timeframe,
     generated_at: currentTime.toISOString(),
@@ -938,9 +938,9 @@ function generateRiskMitigationStrategies() {
   ]
 }
 
-function generateFallbackTrendAnalysis(barbershopId, analysisType, timeframe) {
+function generateFallbackTrendAnalysis(barberbarbershopId, analysisType, timeframe) {
   return {
-    barbershop_id: barbershopId,
+    barberbarbershop_id: barberbarbershopId,
     analysis_type: analysisType,
     timeframe,
     generated_at: new Date().toISOString(),
@@ -984,7 +984,7 @@ function generateFallbackTrendAnalysis(barbershopId, analysisType, timeframe) {
   }
 }
 
-async function detectBusinessAnomalies(barbershopId, parameters) {
+async function detectBusinessAnomalies(barberbarbershopId, parameters) {
   return {
     action: 'anomalies_detected',
     detection_period: parameters.period || '30_days',
@@ -1012,7 +1012,7 @@ async function detectBusinessAnomalies(barbershopId, parameters) {
   }
 }
 
-async function forecastSeasonalImpact(barbershopId, parameters) {
+async function forecastSeasonalImpact(barberbarbershopId, parameters) {
   return {
     action: 'seasonal_impact_forecasted',
     forecast_period: parameters.period || 'next_quarter',
@@ -1035,7 +1035,7 @@ async function forecastSeasonalImpact(barbershopId, parameters) {
   }
 }
 
-async function analyzeGrowthTrends(barbershopId, parameters) {
+async function analyzeGrowthTrends(barberbarbershopId, parameters) {
   return {
     action: 'growth_trends_analyzed',
     analysis_depth: parameters.depth || 'comprehensive',
@@ -1060,7 +1060,7 @@ async function analyzeGrowthTrends(barbershopId, parameters) {
   }
 }
 
-async function identifyMarketOpportunities(barbershopId, parameters) {
+async function identifyMarketOpportunities(barberbarbershopId, parameters) {
   return {
     action: 'market_opportunities_identified',
     opportunity_scope: parameters.scope || 'local_market',
@@ -1096,7 +1096,7 @@ async function identifyMarketOpportunities(barbershopId, parameters) {
   }
 }
 
-async function benchmarkPerformance(barbershopId, parameters) {
+async function benchmarkPerformance(barberbarbershopId, parameters) {
   return {
     action: 'performance_benchmarked',
     benchmark_type: parameters.type || 'industry_standard',

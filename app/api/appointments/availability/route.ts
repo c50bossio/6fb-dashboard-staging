@@ -97,13 +97,13 @@ export async function GET(request: NextRequest) {
     // Check if barber exists in profiles
     const { data: barberProfile, error: barberError } = await supabase
       .from('profiles')
-      .select('id, full_name, role, shop_id, barbershop_id')
+      .select('id, full_name, role, barbershop_id, barberbarbershop_id')
       .eq('id', validBarberId)
       .single()
 
     // For now, continue even if barber not found - could be a staff member
     const barberName = barberProfile?.full_name || 'Staff Member'
-    const shopId = barberProfile?.shop_id || barberProfile?.barbershop_id
+    const barbershopId = barberProfile?.barbershop_id || barberProfile?.barberbarbershop_id
 
     // Get business hours (default for now)
     const businessHours = {

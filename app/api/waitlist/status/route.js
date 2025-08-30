@@ -16,7 +16,7 @@ export const runtime = 'nodejs'
  *           type: string
  *         description: Customer identifier
  *       - in: query
- *         name: barbershop_id
+ *         name: barberbarbershop_id
  *         required: false
  *         schema:
  *           type: string
@@ -38,7 +38,7 @@ export const runtime = 'nodejs'
  *                     properties:
  *                       waitlist_id:
  *                         type: string
- *                       barbershop_id:
+ *                       barberbarbershop_id:
  *                         type: string
  *                       service_id:
  *                         type: string
@@ -72,7 +72,7 @@ export async function GET(request, { params }) {
     try {
         const { searchParams } = request.nextUrl;
         const customer_id = searchParams.get('customer_id');
-        const barbershop_id = searchParams.get('barbershop_id');
+        const barberbarbershop_id = searchParams.get('barberbarbershop_id');
         
         if (!customer_id) {
             return NextResponse.json(
@@ -92,7 +92,7 @@ export async function GET(request, { params }) {
                 .from('waitlist')
                 .select(`
                     id,
-                    barbershop_id,
+                    barberbarbershop_id,
                     service_id,
                     barber_id,
                     position,
@@ -109,8 +109,8 @@ export async function GET(request, { params }) {
                 .eq('status', 'active')
                 .order('created_at', { ascending: false });
             
-            if (barbershop_id) {
-                query = query.eq('barbershop_id', barbershop_id);
+            if (barberbarbershop_id) {
+                query = query.eq('barberbarbershop_id', barberbarbershop_id);
             }
             
             const { data: waitlistData, error } = await query;
@@ -132,7 +132,7 @@ export async function GET(request, { params }) {
                 
                 return {
                     waitlist_id: entry.id,
-                    barbershop_id: entry.barbershop_id,
+                    barberbarbershop_id: entry.barberbarbershop_id,
                     service_id: entry.service_id,
                     service_name: entry.services?.name || 'Unknown Service',
                     barber_name: entry.barbers?.name || (entry.barber_id ? 'Specific Barber' : 'Any Available Barber'),

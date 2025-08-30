@@ -180,8 +180,8 @@ class SmartSuggestionsAPI {
    * Get customer risk scoring recommendations
    * Integrates with existing suggestions infrastructure for AI-powered customer intelligence
    */
-  async getCustomerRiskRecommendations(barbershopId, customerData = {}) {
-    const cacheKey = `customer_risk_${barbershopId}_${JSON.stringify(customerData).length}`
+  async getCustomerRiskRecommendations(barberbarbershopId, customerData = {}) {
+    const cacheKey = `customer_risk_${barberbarbershopId}_${JSON.stringify(customerData).length}`
     
     if (this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey)
@@ -195,7 +195,7 @@ class SmartSuggestionsAPI {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           customer_data: customerData,
           timestamp: new Date().toISOString()
         })

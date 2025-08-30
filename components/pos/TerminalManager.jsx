@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 
-export function TerminalManager({ barbershopId }) {
+export function TerminalManager({ barberbarbershopId }) {
   const [locations, setLocations] = useState([])
   const [readers, setReaders] = useState([])
   const [loading, setLoading] = useState(false)
@@ -36,15 +36,15 @@ export function TerminalManager({ barbershopId }) {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (barbershopId) {
+    if (barberbarbershopId) {
       loadLocations()
       loadReaders()
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   const loadLocations = async () => {
     try {
-      const response = await fetch(`/api/stripe/terminal/locations?barbershopId=${barbershopId}`)
+      const response = await fetch(`/api/stripe/terminal/locations?barberbarbershopId=${barberbarbershopId}`)
       if (response.ok) {
         const data = await response.json()
         setLocations(data.locations || [])
@@ -61,7 +61,7 @@ export function TerminalManager({ barbershopId }) {
 
   const loadReaders = async () => {
     try {
-      const response = await fetch(`/api/stripe/terminal/readers?barbershopId=${barbershopId}`)
+      const response = await fetch(`/api/stripe/terminal/readers?barberbarbershopId=${barberbarbershopId}`)
       if (response.ok) {
         const data = await response.json()
         setReaders(data.readers || [])
@@ -79,7 +79,7 @@ export function TerminalManager({ barbershopId }) {
   const discoverReaders = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/stripe/terminal/readers?barbershopId=${barbershopId}&discover=true`)
+      const response = await fetch(`/api/stripe/terminal/readers?barberbarbershopId=${barberbarbershopId}&discover=true`)
       if (response.ok) {
         const data = await response.json()
         setDiscoveredReaders(data.readers || [])
@@ -126,7 +126,7 @@ export function TerminalManager({ barbershopId }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barbershopId,
+          barberbarbershopId,
           displayName: newLocationName.trim()
         })
       })
@@ -167,7 +167,7 @@ export function TerminalManager({ barbershopId }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barbershopId,
+          barberbarbershopId,
           stripeReaderId: reader.stripe_reader_id,
           locationId: selectedLocationForReader || null,
           label: readerLabel.trim() || reader.label

@@ -45,7 +45,7 @@ export async function GET(request) {
       // Try to find if user is a barber
       const { data: barbers, error: barberError } = await supabase
         .from('barbers')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .single();
 
@@ -53,10 +53,10 @@ export async function GET(request) {
         return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
       }
       
-      barbershops = { id: barbers.barbershop_id };
+      barbershops = { id: barbers.barberbarbershop_id };
     }
 
-    const barbershopId = barbershops.id;
+    const barberbarbershopId = barbershops.id;
     const url = new URL(request.url);
     const action = url.searchParams.get('action') || 'list';
     const programId = url.searchParams.get('program_id');
@@ -67,7 +67,7 @@ export async function GET(request) {
       let query = supabase
         .from('loyalty_tiers')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('is_active', true)
         .order('tier_level');
 
@@ -93,7 +93,7 @@ export async function GET(request) {
         return NextResponse.json({ error: 'customer_id parameter required for upgrade check' }, { status: 400 });
       }
 
-      const upgradeInfo = await checkTierUpgradeEligibility(customerId, barbershopId, programId);
+      const upgradeInfo = await checkTierUpgradeEligibility(customerId, barberbarbershopId, programId);
       
       return NextResponse.json({ 
         success: true, 
@@ -106,7 +106,7 @@ export async function GET(request) {
         return NextResponse.json({ error: 'customer_id parameter required for progress check' }, { status: 400 });
       }
 
-      const progress = await getCustomerTierProgress(customerId, barbershopId, programId);
+      const progress = await getCustomerTierProgress(customerId, barberbarbershopId, programId);
       
       return NextResponse.json({ 
         success: true, 
@@ -152,7 +152,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
 
-    const barbershopId = barbershops.id;
+    const barberbarbershopId = barbershops.id;
     const body = await request.json();
     const action = body.action || 'create';
 
@@ -180,7 +180,7 @@ export async function POST(request) {
       const { data: existingTier, error: checkError } = await supabase
         .from('loyalty_tiers')
         .select('id')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('loyalty_program_id', loyalty_program_id)
         .eq('tier_level', tier_level)
         .single();
@@ -193,7 +193,7 @@ export async function POST(request) {
 
       // Create tier
       const tierData = {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         loyalty_program_id,
         tier_name,
         tier_description,
@@ -237,7 +237,7 @@ export async function POST(request) {
         }, { status: 400 });
       }
 
-      const upgradeResult = await upgradeCustomerTier(customer_id, new_tier_id, barbershopId, user.id);
+      const upgradeResult = await upgradeCustomerTier(customer_id, new_tier_id, barberbarbershopId, user.id);
       
       if (!upgradeResult.success) {
         return NextResponse.json({ error: upgradeResult.error }, { status: 400 });
@@ -253,7 +253,7 @@ export async function POST(request) {
       // Bulk tier upgrade eligibility check and processing
       const { program_id, dry_run = true } = body;
 
-      const bulkResult = await processBulkTierUpgrades(barbershopId, program_id, dry_run, user.id);
+      const bulkResult = await processBulkTierUpgrades(barberbarbershopId, program_id, dry_run, user.id);
       
       return NextResponse.json({ 
         success: true, 
@@ -299,7 +299,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
 
-    const barbershopId = barbershops.id;
+    const barberbarbershopId = barbershops.id;
     const body = await request.json();
     const { tier_id, ...updateData } = body;
 
@@ -315,7 +315,7 @@ export async function PUT(request) {
       .from('loyalty_tiers')
       .update(updateData)
       .eq('id', tier_id)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .select()
       .single();
 
@@ -343,14 +343,14 @@ export async function PUT(request) {
 /**
  * Helper function to check tier upgrade eligibility
  */
-async function checkTierUpgradeEligibility(customerId, barbershopId, programId) {
+async function checkTierUpgradeEligibility(customerId, barberbarbershopId, programId) {
   try {
     // Get customer enrollment
     let query = supabase
       .from('loyalty_program_enrollments')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true);
 
     if (programId) {
@@ -366,13 +366,13 @@ async function checkTierUpgradeEligibility(customerId, barbershopId, programId) 
     const enrollment = enrollments[0]; // Use first enrollment if no specific program
 
     // Get customer analytics (simplified)
-    const analytics = await getCustomerAnalytics(customerId, barbershopId);
+    const analytics = await getCustomerAnalytics(customerId, barberbarbershopId);
 
     // Get available tiers
     const { data: tiers, error: tiersError } = await supabase
       .from('loyalty_tiers')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('loyalty_program_id', enrollment.loyalty_program_id)
       .eq('is_active', true)
       .order('tier_level');
@@ -443,14 +443,14 @@ async function checkTierUpgradeEligibility(customerId, barbershopId, programId) 
 /**
  * Helper function to get customer tier progress
  */
-async function getCustomerTierProgress(customerId, barbershopId, programId) {
+async function getCustomerTierProgress(customerId, barberbarbershopId, programId) {
   try {
     // Get customer enrollment
     let query = supabase
       .from('loyalty_program_enrollments')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true);
 
     if (programId) {
@@ -469,7 +469,7 @@ async function getCustomerTierProgress(customerId, barbershopId, programId) {
     const { data: tiers, error: tiersError } = await supabase
       .from('loyalty_tiers')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('loyalty_program_id', enrollment.loyalty_program_id)
       .eq('is_active', true)
       .order('tier_level');
@@ -538,14 +538,14 @@ async function getCustomerTierProgress(customerId, barbershopId, programId) {
 /**
  * Helper function to upgrade customer tier
  */
-async function upgradeCustomerTier(customerId, newTierId, barbershopId, userId) {
+async function upgradeCustomerTier(customerId, newTierId, barberbarbershopId, userId) {
   try {
     // Get tier information
     const { data: tier, error: tierError } = await supabase
       .from('loyalty_tiers')
       .select('*')
       .eq('id', newTierId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single();
 
     if (tierError || !tier) {
@@ -558,7 +558,7 @@ async function upgradeCustomerTier(customerId, newTierId, barbershopId, userId) 
       .select('*')
       .eq('customer_id', customerId)
       .eq('loyalty_program_id', tier.loyalty_program_id)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
       .single();
 
@@ -583,7 +583,7 @@ async function upgradeCustomerTier(customerId, newTierId, barbershopId, userId) 
     }
 
     // Create milestone record
-    await createTierUpgradeMilestone(customerId, barbershopId, tier.tier_name);
+    await createTierUpgradeMilestone(customerId, barberbarbershopId, tier.tier_name);
 
     return {
       success: true,
@@ -602,13 +602,13 @@ async function upgradeCustomerTier(customerId, newTierId, barbershopId, userId) 
 /**
  * Helper function to process bulk tier upgrades
  */
-async function processBulkTierUpgrades(barbershopId, programId, dryRun, userId) {
+async function processBulkTierUpgrades(barberbarbershopId, programId, dryRun, userId) {
   try {
     // Get all active enrollments
     let query = supabase
       .from('loyalty_program_enrollments')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true);
 
     if (programId) {
@@ -627,7 +627,7 @@ async function processBulkTierUpgrades(barbershopId, programId, dryRun, userId) 
     for (const enrollment of enrollments) {
       const upgradeInfo = await checkTierUpgradeEligibility(
         enrollment.customer_id,
-        barbershopId,
+        barberbarbershopId,
         enrollment.loyalty_program_id
       );
 
@@ -656,7 +656,7 @@ async function processBulkTierUpgrades(barbershopId, programId, dryRun, userId) 
         const result = await upgradeCustomerTier(
           upgrade.customer_id,
           upgrade.new_tier.id,
-          barbershopId,
+          barberbarbershopId,
           userId
         );
         
@@ -691,7 +691,7 @@ async function processBulkTierUpgrades(barbershopId, programId, dryRun, userId) 
 /**
  * Helper function to get customer analytics (simplified)
  */
-async function getCustomerAnalytics(customerId, barbershopId) {
+async function getCustomerAnalytics(customerId, barberbarbershopId) {
   // This would typically pull from customer_analytics_summary table
   // For now, return mock data based on actual customer data
   try {
@@ -820,10 +820,10 @@ async function calculateTierRequirementProgress(tier, analytics, enrollment) {
 /**
  * Helper function to create tier upgrade milestone
  */
-async function createTierUpgradeMilestone(customerId, barbershopId, tierName) {
+async function createTierUpgradeMilestone(customerId, barberbarbershopId, tierName) {
   try {
     const milestoneData = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       customer_id: customerId,
       milestone_type: 'tier_upgrade',
       milestone_name: `Achieved ${tierName} Tier`,

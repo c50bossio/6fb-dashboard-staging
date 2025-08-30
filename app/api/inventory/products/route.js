@@ -13,12 +13,12 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const barbershopId = searchParams.get('barbershop_id');
+    const barberbarbershopId = searchParams.get('barberbarbershop_id');
     const category = searchParams.get('category');
     const showInPos = searchParams.get('show_in_pos');
     const lowStock = searchParams.get('low_stock');
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'Barbershop ID required' }, { status: 400 });
     }
 
@@ -35,7 +35,7 @@ export async function GET(request) {
           image_url
         )
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .order('pos_display_order', { ascending: true });
 
     // Apply filters
@@ -96,7 +96,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      barbershop_id,
+      barberbarbershop_id,
       name,
       sku,
       barcode,
@@ -115,9 +115,9 @@ export async function POST(request) {
     } = body;
 
     // Validate required fields
-    if (!barbershop_id || !name || !sku || !retail_price) {
+    if (!barberbarbershop_id || !name || !sku || !retail_price) {
       return NextResponse.json({ 
-        error: 'Missing required fields: barbershop_id, name, sku, retail_price' 
+        error: 'Missing required fields: barberbarbershop_id, name, sku, retail_price' 
       }, { status: 400 });
     }
 
@@ -125,7 +125,7 @@ export async function POST(request) {
     const { data: existingProduct } = await supabase
       .from('barbershop_inventory')
       .select('id')
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .eq('sku', sku)
       .single();
 
@@ -139,7 +139,7 @@ export async function POST(request) {
     const { data, error } = await supabase
       .from('barbershop_inventory')
       .insert({
-        barbershop_id,
+        barberbarbershop_id,
         product_source: 'custom',
         name,
         sku,
@@ -171,7 +171,7 @@ export async function POST(request) {
       await supabase
         .from('inventory_movements')
         .insert({
-          barbershop_id,
+          barberbarbershop_id,
           barbershop_inventory_id: data.id,
           movement_type: 'received',
           quantity_change: quantity_on_hand,
@@ -260,7 +260,7 @@ export async function DELETE(request) {
     // Check if product exists and belongs to user's barbershop
     const { data: product, error: fetchError } = await supabase
       .from('barbershop_inventory')
-      .select('id, name, barbershop_id')
+      .select('id, name, barberbarbershop_id')
       .eq('id', productId)
       .single();
 

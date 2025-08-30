@@ -83,7 +83,7 @@ export default function TestRLSIsolatedPage() {
           // Set mock context
           await rlsManager.setContext({
             userId: 'bcea9cf9-e593-4dbf-a787-1ed74e04dbf5',
-            shopId: '1ca6138d-eae8-46ed-abff-5d6e52fbd21b',
+            barbershopId: '1ca6138d-eae8-46ed-abff-5d6e52fbd21b',
             role: 'shop_owner',
             permissions: []
           })

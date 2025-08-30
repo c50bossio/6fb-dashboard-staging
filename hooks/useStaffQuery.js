@@ -11,21 +11,21 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 // Query keys for consistent caching
 export const staffKeys = {
   all: ['staff'],
-  byShop: (shopId) => ['staff', 'shop', shopId],
-  active: (shopId) => ['staff', 'shop', shopId, 'active'],
-  inactive: (shopId) => ['staff', 'shop', shopId, 'inactive'],
+  byShop: (barbershopId) => ['staff', 'shop', barbershopId],
+  active: (barbershopId) => ['staff', 'shop', barbershopId, 'active'],
+  inactive: (barbershopId) => ['staff', 'shop', barbershopId, 'inactive'],
 }
 
 /**
  * Get all staff for a shop
  */
-export function useStaff(shopId, options = {}) {
+export function useStaff(barbershopId, options = {}) {
   const { enabled = true } = options
 
   return useQuery({
-    queryKey: staffKeys.byShop(shopId),
-    queryFn: () => createClient().getStaff(shopId, options),
-    enabled: enabled && !!shopId,
+    queryKey: staffKeys.byShop(barbershopId),
+    queryFn: () => createClient().getStaff(barbershopId, options),
+    enabled: enabled && !!barbershopId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   })
@@ -34,11 +34,11 @@ export function useStaff(shopId, options = {}) {
 /**
  * Get only active staff members
  */
-export function useActiveStaff(shopId) {
+export function useActiveStaff(barbershopId) {
   return useQuery({
-    queryKey: staffKeys.active(shopId),
-    queryFn: () => createClient().getStaff(shopId, { isActive: true }),
-    enabled: !!shopId,
+    queryKey: staffKeys.active(barbershopId),
+    queryFn: () => createClient().getStaff(barbershopId, { isActive: true }),
+    enabled: !!barbershopId,
     staleTime: 5 * 60 * 1000,
     select: (data) => data?.filter(staff => staff.is_active === true) || []
   })
@@ -81,7 +81,7 @@ export function useCreateStaffMember() {
       
       // Invalidate staff queries
       queryClient.invalidateQueries({ 
-        queryKey: staffKeys.byShop(newStaff.barbershop_id) 
+        queryKey: staffKeys.byShop(newStaff.barberbarbershop_id) 
       })
     },
     onError: (error) => {
@@ -105,7 +105,7 @@ export function useUpdateStaffMember() {
       
       // Invalidate staff queries
       queryClient.invalidateQueries({ 
-        queryKey: staffKeys.byShop(updatedStaff.barbershop_id) 
+        queryKey: staffKeys.byShop(updatedStaff.barberbarbershop_id) 
       })
       
       // Update specific staff member cache
@@ -134,7 +134,7 @@ export function useDeactivateStaffMember() {
       
       // Invalidate staff queries
       queryClient.invalidateQueries({ 
-        queryKey: staffKeys.byShop(deactivatedStaff.barbershop_id) 
+        queryKey: staffKeys.byShop(deactivatedStaff.barberbarbershop_id) 
       })
     },
     onError: (error) => {
@@ -147,20 +147,20 @@ export function useDeactivateStaffMember() {
 /**
  * Optimized real-time staff updates hook with targeted cache updates
  */
-export function useRealtimeStaff(shopId) {
+export function useRealtimeStaff(barbershopId) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (!shopId) return
+    if (!barbershopId) return
 
     const unsubscribe = createClient().subscribeToChanges(
       'barbershop_staff',
-      { barbershop_id: shopId },
+      { barberbarbershop_id: barbershopId },
       (payload) => {
         const { eventType, new: newRecord, old: oldRecord } = payload
         
         // Update main staff query cache
-        queryClient.setQueryData(staffKeys.byShop(shopId), (oldData) => {
+        queryClient.setQueryData(staffKeys.byShop(barbershopId), (oldData) => {
           if (!oldData) return oldData
 
           switch (eventType) {
@@ -177,7 +177,7 @@ export function useRealtimeStaff(shopId) {
               }
               
               // Trigger background refetch to get full profile data
-              queryClient.invalidateQueries({ queryKey: staffKeys.byShop(shopId) })
+              queryClient.invalidateQueries({ queryKey: staffKeys.byShop(barbershopId) })
               
               return [...oldData, staffWithProfile]
 
@@ -198,7 +198,7 @@ export function useRealtimeStaff(shopId) {
 
         // Update active staff cache if needed
         if (newRecord?.is_active !== undefined || oldRecord?.is_active !== undefined) {
-          queryClient.invalidateQueries({ queryKey: staffKeys.active(shopId) })
+          queryClient.invalidateQueries({ queryKey: staffKeys.active(barbershopId) })
         }
 
         // Update specific staff member cache if available
@@ -212,25 +212,25 @@ export function useRealtimeStaff(shopId) {
     )
 
     return unsubscribe
-  }, [shopId, queryClient])
+  }, [barbershopId, queryClient])
 }
 
 /**
  * Combined hook for staff with real-time updates
  */
-export function useStaffWithRealtime(shopId, options = {}) {
+export function useStaffWithRealtime(barbershopId, options = {}) {
   // Set up real-time subscription
-  useRealtimeStaff(shopId)
+  useRealtimeStaff(barbershopId)
   
   // Return the staff query
-  return useStaff(shopId, options)
+  return useStaff(barbershopId, options)
 }
 
 /**
  * Get staff members as options for select components
  */
-export function useStaffOptions(shopId) {
-  const { data: staff, ...rest } = useActiveStaff(shopId)
+export function useStaffOptions(barbershopId) {
+  const { data: staff, ...rest } = useActiveStaff(barbershopId)
 
   return {
     ...rest,

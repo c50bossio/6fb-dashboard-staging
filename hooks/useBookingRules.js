@@ -14,7 +14,7 @@ import { getRuleRealtimeSync } from '@/lib/booking-rules-engine/RuleRealtimeSync
  * - Supabase Realtime synchronization
  * - Automatic field name normalization
  */
-export function useBookingRules(barbershopId) {
+export function useBookingRules(barberbarbershopId) {
   const [rules, setRules] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -28,15 +28,15 @@ export function useBookingRules(barbershopId) {
 
   // Initialize cache and realtime sync on mount
   useEffect(() => {
-    if (barbershopId) {
-      cache.current = cacheManager.getCache(barbershopId)
+    if (barberbarbershopId) {
+      cache.current = cacheManager.getCache(barberbarbershopId)
       realtimeSync.current = getRuleRealtimeSync()
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   // Load rules
   const loadRules = useCallback(async (force = false) => {
-    if (!barbershopId) return
+    if (!barberbarbershopId) return
 
     try {
       setLoading(true)
@@ -53,7 +53,7 @@ export function useBookingRules(barbershopId) {
       }
 
       // Fetch from API
-      const response = await fetch(`/api/booking-rules?barbershop_id=${barbershopId}`)
+      const response = await fetch(`/api/booking-rules?barberbarbershop_id=${barberbarbershopId}`)
       
       if (!response.ok) {
         throw new Error(`Failed to load rules: ${response.statusText}`)
@@ -87,18 +87,18 @@ export function useBookingRules(barbershopId) {
     } finally {
       setLoading(false)
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
-  // Load rules on mount and when barbershopId changes
+  // Load rules on mount and when barberbarbershopId changes
   useEffect(() => {
     loadRules()
-  }, [barbershopId, loadRules])
+  }, [barberbarbershopId, loadRules])
 
   /**
    * Evaluate a booking request against the rules
    */
   const evaluateBooking = useCallback(async (bookingRequest) => {
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return {
         allowed: false,
         violations: [{ code: 'NO_BARBERSHOP', message: 'No barbershop selected' }],
@@ -116,7 +116,7 @@ export function useBookingRules(barbershopId) {
         },
         body: JSON.stringify({
           ...bookingRequest,
-          barbershop_id: barbershopId
+          barberbarbershop_id: barberbarbershopId
         })
       })
 
@@ -147,7 +147,7 @@ export function useBookingRules(barbershopId) {
     } finally {
       setEvaluating(false)
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   /**
    * Get available time slots for a specific date
@@ -213,7 +213,7 @@ export function useBookingRules(barbershopId) {
    * Update a specific rule field
    */
   const updateRule = useCallback(async (field, value) => {
-    if (!barbershopId) return false
+    if (!barberbarbershopId) return false
 
     try {
       const response = await fetch('/api/booking-rules/update', {
@@ -222,7 +222,7 @@ export function useBookingRules(barbershopId) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           field,
           value
         })
@@ -249,16 +249,16 @@ export function useBookingRules(barbershopId) {
       setError(err.message)
       return false
     }
-  }, [barbershopId, loadRules])
+  }, [barberbarbershopId, loadRules])
 
   /**
    * Subscribe to real-time rule updates via Supabase Realtime
    */
   useEffect(() => {
-    if (!barbershopId || !realtimeSync.current) return
+    if (!barberbarbershopId || !realtimeSync.current) return
 
     // Subscribe to real-time updates
-    const subscription = realtimeSync.current.subscribe(barbershopId, {
+    const subscription = realtimeSync.current.subscribe(barberbarbershopId, {
       onSubscribed: () => {
         setSyncStatus('connected')
         
@@ -301,20 +301,20 @@ export function useBookingRules(barbershopId) {
 
     return () => {
       if (realtimeSync.current) {
-        realtimeSync.current.unsubscribe(barbershopId)
+        realtimeSync.current.unsubscribe(barberbarbershopId)
       }
     }
-  }, [barbershopId, loadRules])
+  }, [barberbarbershopId, loadRules])
 
   /**
    * Get rule analytics
    */
   const getAnalytics = useCallback(async (metric = 'summary', startDate = null, endDate = null) => {
-    if (!barbershopId) return null
+    if (!barberbarbershopId) return null
 
     try {
       const params = new URLSearchParams({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         metric
       })
 
@@ -338,7 +338,7 @@ export function useBookingRules(barbershopId) {
       console.error('Error fetching analytics:', err)
       return null
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   /**
    * Convert field names between camelCase and snake_case
@@ -400,14 +400,14 @@ export function useBookingRules(barbershopId) {
     // Realtime sync management
     isConnected: () => syncStatus === 'connected',
     reconnect: () => {
-      if (realtimeSync.current && barbershopId) {
-        realtimeSync.current.unsubscribe(barbershopId)
-        realtimeSync.current.subscribe(barbershopId)
+      if (realtimeSync.current && barberbarbershopId) {
+        realtimeSync.current.unsubscribe(barberbarbershopId)
+        realtimeSync.current.subscribe(barberbarbershopId)
       }
     },
     getPresenceState: () => {
-      if (realtimeSync.current && barbershopId) {
-        return realtimeSync.current.getPresenceState(barbershopId)
+      if (realtimeSync.current && barberbarbershopId) {
+        return realtimeSync.current.getPresenceState(barberbarbershopId)
       }
       return {}
     }

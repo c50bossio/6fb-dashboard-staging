@@ -11,16 +11,16 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 // Query keys for consistent caching
 export const appointmentKeys = {
   all: ['appointments'],
-  byShop: (shopId) => ['appointments', 'shop', shopId],
-  byDateRange: (shopId, startDate, endDate) => ['appointments', 'shop', shopId, 'dateRange', startDate, endDate],
-  byBarber: (shopId, barberId) => ['appointments', 'shop', shopId, 'barber', barberId],
-  byStatus: (shopId, status) => ['appointments', 'shop', shopId, 'status', status]
+  byShop: (barbershopId) => ['appointments', 'shop', barbershopId],
+  byDateRange: (barbershopId, startDate, endDate) => ['appointments', 'shop', barbershopId, 'dateRange', startDate, endDate],
+  byBarber: (barbershopId, barberId) => ['appointments', 'shop', barbershopId, 'barber', barberId],
+  byStatus: (barbershopId, status) => ['appointments', 'shop', barbershopId, 'status', status]
 }
 
 /**
  * Get appointments for a shop with optional filters
  */
-export function useAppointments(shopId, options = {}) {
+export function useAppointments(barbershopId, options = {}) {
   const {
     startDate,
     endDate,
@@ -30,14 +30,14 @@ export function useAppointments(shopId, options = {}) {
   } = options
 
   return useQuery({
-    queryKey: appointmentKeys.byDateRange(shopId, startDate, endDate),
-    queryFn: () => createClient().getAppointments(shopId, {
+    queryKey: appointmentKeys.byDateRange(barbershopId, startDate, endDate),
+    queryFn: () => createClient().getAppointments(barbershopId, {
       startDate,
       endDate,
       barberId,
       status
     }),
-    enabled: enabled && !!shopId,
+    enabled: enabled && !!barbershopId,
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes
   })
@@ -46,12 +46,12 @@ export function useAppointments(shopId, options = {}) {
 /**
  * Get appointments for today
  */
-export function useTodayAppointments(shopId) {
+export function useTodayAppointments(barbershopId) {
   const today = new Date()
   const startDate = today.toISOString().split('T')[0]
   const endDate = startDate
 
-  return useAppointments(shopId, {
+  return useAppointments(barbershopId, {
     startDate,
     endDate
   })
@@ -60,7 +60,7 @@ export function useTodayAppointments(shopId) {
 /**
  * Get upcoming appointments (next 7 days)
  */
-export function useUpcomingAppointments(shopId) {
+export function useUpcomingAppointments(barbershopId) {
   const today = new Date()
   const nextWeek = new Date(today)
   nextWeek.setDate(today.getDate() + 7)
@@ -68,7 +68,7 @@ export function useUpcomingAppointments(shopId) {
   const startDate = today.toISOString().split('T')[0]
   const endDate = nextWeek.toISOString().split('T')[0]
 
-  return useAppointments(shopId, {
+  return useAppointments(barbershopId, {
     startDate,
     endDate
   })
@@ -77,14 +77,14 @@ export function useUpcomingAppointments(shopId) {
 /**
  * Get appointments by barber
  */
-export function useBarberAppointments(shopId, barberId, options = {}) {
+export function useBarberAppointments(barbershopId, barberId, options = {}) {
   return useQuery({
-    queryKey: appointmentKeys.byBarber(shopId, barberId),
-    queryFn: () => createClient().getAppointments(shopId, {
+    queryKey: appointmentKeys.byBarber(barbershopId, barberId),
+    queryFn: () => createClient().getAppointments(barbershopId, {
       barberId,
       ...options
     }),
-    enabled: !!shopId && !!barberId,
+    enabled: !!barbershopId && !!barberId,
     staleTime: 2 * 60 * 1000,
   })
 }
@@ -98,8 +98,8 @@ export function useCreateAppointment() {
   return useMutation({
     mutationFn: (appointmentData) => createClient().createAppointment(appointmentData),
     onMutate: async (appointmentData) => {
-      const shopId = appointmentData.barbershop_id
-      const queryKey = appointmentKeys.byDateRange(shopId, 
+      const barbershopId = appointmentData.barberbarbershop_id
+      const queryKey = appointmentKeys.byDateRange(barbershopId, 
         appointmentData.appointment_date?.split('T')[0],
         appointmentData.appointment_date?.split('T')[0]
       )
@@ -124,7 +124,7 @@ export function useCreateAppointment() {
       }
 
       // Return rollback context
-      return { previousAppointments, queryKey, shopId }
+      return { previousAppointments, queryKey, barbershopId }
     },
     onSuccess: (newAppointment, variables, context) => {
       toast.success('Appointment created successfully')
@@ -142,7 +142,7 @@ export function useCreateAppointment() {
 
       // Update dashboard metrics
       queryClient.invalidateQueries({ 
-        queryKey: ['dashboard-metrics', newAppointment.barbershop_id] 
+        queryKey: ['dashboard-metrics', newAppointment.barberbarbershop_id] 
       })
     },
     onError: (error, variables, context) => {
@@ -171,7 +171,7 @@ export function useUpdateAppointment() {
       
       // Invalidate and refetch appointments
       queryClient.invalidateQueries({ 
-        queryKey: appointmentKeys.byShop(updatedAppointment.barbershop_id) 
+        queryKey: appointmentKeys.byShop(updatedAppointment.barberbarbershop_id) 
       })
     },
     onError: (error) => {
@@ -194,7 +194,7 @@ export function useDeleteAppointment() {
       
       // Invalidate and refetch appointments
       queryClient.invalidateQueries({ 
-        queryKey: appointmentKeys.byShop(deletedAppointment.barbershop_id) 
+        queryKey: appointmentKeys.byShop(deletedAppointment.barberbarbershop_id) 
       })
     },
     onError: (error) => {
@@ -207,15 +207,15 @@ export function useDeleteAppointment() {
 /**
  * Optimized real-time appointments hook with targeted cache updates
  */
-export function useRealtimeAppointments(shopId) {
+export function useRealtimeAppointments(barbershopId) {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    if (!shopId) return
+    if (!barbershopId) return
 
     const unsubscribe = createClient().subscribeToChanges(
       'appointments',
-      { barbershop_id: shopId },
+      { barberbarbershop_id: barbershopId },
       (payload) => {
         const { eventType, new: newRecord, old: oldRecord } = payload
         
@@ -223,7 +223,7 @@ export function useRealtimeAppointments(shopId) {
         const appointmentDate = (newRecord || oldRecord)?.appointment_date?.split('T')[0]
         
         if (appointmentDate) {
-          const specificQueryKey = appointmentKeys.byDateRange(shopId, appointmentDate, appointmentDate)
+          const specificQueryKey = appointmentKeys.byDateRange(barbershopId, appointmentDate, appointmentDate)
           
           // Update specific date range cache
           queryClient.setQueryData(specificQueryKey, (oldData) => {
@@ -254,30 +254,30 @@ export function useRealtimeAppointments(shopId) {
         // Update broader shop queries only if specific update failed
         if (!appointmentDate) {
           queryClient.invalidateQueries({ 
-            queryKey: appointmentKeys.byShop(shopId) 
+            queryKey: appointmentKeys.byShop(barbershopId) 
           })
         }
 
         // Update dashboard metrics for significant changes
         if (eventType === 'INSERT' || eventType === 'DELETE') {
           queryClient.invalidateQueries({ 
-            queryKey: ['dashboard-metrics', shopId] 
+            queryKey: ['dashboard-metrics', barbershopId] 
           })
         }
       }
     )
 
     return unsubscribe
-  }, [shopId, queryClient])
+  }, [barbershopId, queryClient])
 }
 
 /**
  * Combined hook for appointments with real-time updates
  */
-export function useAppointmentsWithRealtime(shopId, options = {}) {
+export function useAppointmentsWithRealtime(barbershopId, options = {}) {
   // Set up real-time subscription
-  useRealtimeAppointments(shopId)
+  useRealtimeAppointments(barbershopId)
   
   // Return the appointments query
-  return useAppointments(shopId, options)
+  return useAppointments(barbershopId, options)
 }

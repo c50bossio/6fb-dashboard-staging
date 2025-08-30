@@ -18,12 +18,12 @@ export async function POST(request) {
       }, { status: 401 })
     }
     
-    const { action, barbershop_id, ...params } = await request.json()
+    const { action, barberbarbershop_id, ...params } = await request.json()
     
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, name, location, services')
-      .eq('id', barbershop_id)
+      .eq('id', barberbarbershop_id)
       .eq('owner_id', user.id)
       .single()
     
@@ -86,7 +86,7 @@ async function generateSEOPlan(supabase, barbershop, params) {
   const { data: existingPlan } = await supabase
     .from('seo_plans')
     .select('*')
-    .eq('barbershop_id', barbershop.id)
+    .eq('barberbarbershop_id', barbershop.id)
     .order('created_at', { ascending: false })
     .limit(1)
     .single()
@@ -96,7 +96,7 @@ async function generateSEOPlan(supabase, barbershop, params) {
   }
   
   const newPlan = {
-    barbershop_id: barbershop.id,
+    barberbarbershop_id: barbershop.id,
     generated_at: new Date().toISOString(),
     status: 'pending',
     message: 'SEO plan generation requires AI service integration',
@@ -132,13 +132,13 @@ async function performKeywordResearch(supabase, barbershop, params) {
   const { data: existingResearch } = await supabase
     .from('keyword_research')
     .select('*')
-    .eq('barbershop_id', barbershop.id)
+    .eq('barberbarbershop_id', barbershop.id)
     .order('created_at', { ascending: false })
     .limit(10)
   
   if (existingResearch && existingResearch.length > 0) {
     return {
-      barbershop_id: barbershop.id,
+      barberbarbershop_id: barbershop.id,
       location: location || barbershop.location,
       keywords: existingResearch,
       total_keywords: existingResearch.length,
@@ -147,7 +147,7 @@ async function performKeywordResearch(supabase, barbershop, params) {
   }
   
   return {
-    barbershop_id: barbershop.id,
+    barberbarbershop_id: barbershop.id,
     location: location || barbershop.location,
     keywords: [],
     total_keywords: 0,
@@ -168,14 +168,14 @@ async function generateContentCalendar(supabase, barbershop, params) {
   const { data: existingContent } = await supabase
     .from('content_calendar')
     .select('*')
-    .eq('barbershop_id', barbershop.id)
+    .eq('barberbarbershop_id', barbershop.id)
     .gte('publish_date', start_date || new Date().toISOString())
     .lte('publish_date', end_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
     .order('publish_date', { ascending: true })
   
   if (existingContent && existingContent.length > 0) {
     return {
-      barbershop_id: barbershop.id,
+      barberbarbershop_id: barbershop.id,
       content_items: existingContent,
       total_items: existingContent.length,
       start_date: start_date,
@@ -184,7 +184,7 @@ async function generateContentCalendar(supabase, barbershop, params) {
   }
   
   return {
-    barbershop_id: barbershop.id,
+    barberbarbershop_id: barbershop.id,
     content_items: [],
     total_items: 0,
     start_date: start_date,
@@ -207,13 +207,13 @@ async function performCompetitorAnalysis(supabase, barbershop, params) {
   const { data: competitors } = await supabase
     .from('competitor_analysis')
     .select('*')
-    .eq('barbershop_id', barbershop.id)
+    .eq('barberbarbershop_id', barbershop.id)
     .order('created_at', { ascending: false })
     .limit(limit || 10)
   
   if (competitors && competitors.length > 0) {
     return {
-      barbershop_id: barbershop.id,
+      barberbarbershop_id: barbershop.id,
       competitors: competitors,
       total_analyzed: competitors.length,
       analysis_date: new Date().toISOString()
@@ -221,7 +221,7 @@ async function performCompetitorAnalysis(supabase, barbershop, params) {
   }
   
   return {
-    barbershop_id: barbershop.id,
+    barberbarbershop_id: barbershop.id,
     competitors: [],
     total_analyzed: 0,
     analysis_date: new Date().toISOString(),
@@ -242,14 +242,14 @@ async function generateGMBContent(supabase, barbershop, params) {
   const { data: gmbContent } = await supabase
     .from('gmb_content')
     .select('*')
-    .eq('barbershop_id', barbershop.id)
+    .eq('barberbarbershop_id', barbershop.id)
     .eq('content_type', content_type || 'post')
     .order('created_at', { ascending: false })
     .limit(count || 5)
   
   if (gmbContent && gmbContent.length > 0) {
     return {
-      barbershop_id: barbershop.id,
+      barberbarbershop_id: barbershop.id,
       content_type: content_type,
       posts: gmbContent,
       total_generated: gmbContent.length
@@ -259,12 +259,12 @@ async function generateGMBContent(supabase, barbershop, params) {
   const { data: gmbAccount } = await supabase
     .from('gmb_accounts')
     .select('*')
-    .eq('barbershop_id', barbershop.id)
+    .eq('barberbarbershop_id', barbershop.id)
     .single()
   
   if (!gmbAccount) {
     return {
-      barbershop_id: barbershop.id,
+      barberbarbershop_id: barbershop.id,
       content_type: content_type,
       posts: [],
       total_generated: 0,
@@ -280,7 +280,7 @@ async function generateGMBContent(supabase, barbershop, params) {
   }
   
   return {
-    barbershop_id: barbershop.id,
+    barberbarbershop_id: barbershop.id,
     content_type: content_type,
     posts: [],
     total_generated: 0,

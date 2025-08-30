@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic'
  *     tags: [Waitlist]
  *     parameters:
  *       - in: query
- *         name: barbershop_id
+ *         name: barberbarbershop_id
  *         required: true
  *         schema:
  *           type: string
@@ -84,7 +84,7 @@ export const dynamic = 'force-dynamic'
  *                     customer_satisfaction_score:
  *                       type: number
  *       400:
- *         description: Missing barbershop_id parameter
+ *         description: Missing barberbarbershop_id parameter
  *       500:
  *         description: Internal server error
  */
@@ -94,13 +94,13 @@ export async function GET(request) {
         const supabase = createClient(cookieStore);
         
         const { searchParams } = new URL(request.url);
-        const barbershop_id = searchParams.get('barbershop_id');
+        const barberbarbershop_id = searchParams.get('barberbarbershop_id');
         const start_date = searchParams.get('start_date');
         const end_date = searchParams.get('end_date');
         
-        if (!barbershop_id) {
+        if (!barberbarbershop_id) {
             return NextResponse.json(
-                { success: false, error: 'barbershop_id parameter is required' },
+                { success: false, error: 'barberbarbershop_id parameter is required' },
                 { status: 400 }
             );
         }
@@ -115,7 +115,7 @@ export async function GET(request) {
                 services(name, price),
                 customers(name, email)
             `)
-            .eq('barbershop_id', barbershop_id)
+            .eq('barberbarbershop_id', barberbarbershop_id)
             .gte('created_at', startDate.toISOString())
             .lte('created_at', endDate.toISOString());
         
@@ -144,7 +144,7 @@ export async function GET(request) {
         const { data: waitlistBookings } = await supabase
             .from('bookings')
             .select('total_amount')
-            .eq('barbershop_id', barbershop_id)
+            .eq('barberbarbershop_id', barberbarbershop_id)
             .eq('source', 'waitlist')
             .eq('status', 'completed')
             .gte('created_at', startDate.toISOString())

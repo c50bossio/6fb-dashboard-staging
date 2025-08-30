@@ -31,7 +31,7 @@ export async function POST(request) {
           charges_enabled
         )
       `)
-      .eq('id', bookingData.shopId)
+      .eq('id', bookingData.barbershopId)
       .single()
 
     if (!shop) {
@@ -73,7 +73,7 @@ export async function POST(request) {
       payment_method_types: ['card'],
       metadata: {
         booking_id: bookingData.id || 'pending',
-        shop_id: bookingData.shopId,
+        barbershop_id: bookingData.barbershopId,
         service_id: bookingData.serviceId,
         customer_name: customerInfo.name,
         customer_email: customerInfo.email,

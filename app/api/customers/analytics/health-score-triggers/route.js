@@ -31,34 +31,34 @@ async function verifyAuth(request) {
       return { error: 'Invalid token', status: 401 }
     }
 
-    // Get barbershop_id for the user
+    // Get barberbarbershop_id for the user
     const { data: barbershopData } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
       .single()
 
-    let barbershopId = null
+    let barberbarbershopId = null
     if (barbershopData) {
-      barbershopId = barbershopData.id
+      barberbarbershopId = barbershopData.id
     } else {
       // Check if user is a barber
       const { data: barberData } = await supabase
         .from('barbers')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .single()
       
       if (barberData) {
-        barbershopId = barberData.barbershop_id
+        barberbarbershopId = barberData.barberbarbershop_id
       }
     }
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return { error: 'User not associated with any barbershop', status: 403 }
     }
 
-    return { user, barbershopId }
+    return { user, barberbarbershopId }
   } catch (error) {
     return { error: 'Authentication failed', status: 401 }
   }
@@ -66,8 +66,8 @@ async function verifyAuth(request) {
 
 // Health score calculation engine
 class HealthScoreCalculator {
-  constructor(barbershopId) {
-    this.barbershopId = barbershopId
+  constructor(barberbarbershopId) {
+    this.barberbarbershopId = barberbarbershopId
   }
 
   async calculateHealthScore(customerId) {
@@ -124,7 +124,7 @@ class HealthScoreCalculator {
       .from('customers')
       .select('*')
       .eq('id', customerId)
-      .eq('barbershop_id', this.barbershopId)
+      .eq('barberbarbershop_id', this.barberbarbershopId)
       .single()
     
     return data
@@ -138,7 +138,7 @@ class HealthScoreCalculator {
       .from('appointments')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', this.barbershopId)
+      .eq('barberbarbershop_id', this.barberbarbershopId)
       .gte('appointment_date', sixMonthsAgo.toISOString())
       .order('appointment_date', { ascending: false })
     
@@ -162,7 +162,7 @@ class HealthScoreCalculator {
       .from('customer_feedback')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', this.barbershopId)
+      .eq('barberbarbershop_id', this.barberbarbershopId)
       .gte('created_at', oneYearAgo.toISOString())
     
     return feedback || []
@@ -327,7 +327,7 @@ export async function POST(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barbershopId } = authResult
+    const { barberbarbershopId } = authResult
     const body = await request.json()
 
     const {
@@ -342,14 +342,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'customer_id is required' }, { status: 400 })
     }
 
-    const calculator = new HealthScoreCalculator(barbershopId)
+    const calculator = new HealthScoreCalculator(barberbarbershopId)
     
     // Get current customer intelligence
     const { data: currentIntel, error: intelError } = await supabase
       .from('customer_intelligence')
       .select('*')
       .eq('customer_id', customer_id)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single()
 
     if (intelError && intelError.code !== 'PGRST116') { // PGRST116 = no rows found
@@ -373,7 +373,7 @@ export async function POST(request) {
     // Update or create customer intelligence record
     const intelligenceData = {
       customer_id,
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       health_score: newHealthScore,
       health_score_components: healthScoreResult.components,
       health_score_calculated_at: healthScoreResult.calculated_at,
@@ -433,7 +433,7 @@ export async function POST(request) {
       const healthScoreLog = {
         id: crypto.randomUUID(),
         customer_id,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         old_score: oldHealthScore,
         new_score: newHealthScore,
         change_amount: changeAnalysis.change,
@@ -478,7 +478,7 @@ export async function GET(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barbershopId } = authResult
+    const { barberbarbershopId } = authResult
     const { searchParams } = new URL(request.url)
 
     const customerId = searchParams.get('customer_id')
@@ -494,7 +494,7 @@ export async function GET(request) {
       .from('health_score_history')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -508,7 +508,7 @@ export async function GET(request) {
         .from('customer_intelligence')
         .select('*')
         .eq('customer_id', customerId)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .single()
       
       currentIntelligence = intel

@@ -13,12 +13,12 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id') || user.barbershop_id
+    const barberbarbershopId = searchParams.get('barberbarbershop_id') || user.barberbarbershop_id
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({
         success: false,
-        error: 'barbershop_id is required'
+        error: 'barberbarbershop_id is required'
       }, { status: 400 })
     }
     const timeHorizons = searchParams.get('time_horizons')?.split(',') || ['1_week', '1_month', '3_months']
@@ -36,7 +36,7 @@ export async function GET(request) {
           service_id,
           services(name, price)
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('status', 'completed')
         .gte('scheduled_at', startDate.toISOString())
         .order('scheduled_at', { ascending: true })
@@ -46,7 +46,7 @@ export async function GET(request) {
         throw error
       }
 
-      const forecast = generateRealRevenueForecast(barbershopId, revenueData || [], timeHorizons)
+      const forecast = generateRealRevenueForecast(barberbarbershopId, revenueData || [], timeHorizons)
       
       return NextResponse.json({
         success: true,
@@ -62,7 +62,7 @@ export async function GET(request) {
       return NextResponse.json({
         success: true,
         data: {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           forecast_type: 'revenue',
           time_horizons: timeHorizons,
           forecasts: timeHorizons.map(horizon => ({
@@ -112,12 +112,12 @@ export async function POST(request) {
     }
 
     const { action, parameters } = await request.json()
-    const barbershopId = parameters?.barbershop_id || user.barbershop_id
+    const barberbarbershopId = parameters?.barberbarbershop_id || user.barberbarbershop_id
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({
         success: false,
-        error: 'barbershop_id is required'
+        error: 'barberbarbershop_id is required'
       }, { status: 400 })
     }
     
@@ -126,11 +126,11 @@ export async function POST(request) {
       
       switch (action) {
         case 'analyze_revenue_trends':
-          response = await analyzeRevenueTrendsFromDatabase(supabase, barbershopId, parameters)
+          response = await analyzeRevenueTrendsFromDatabase(supabase, barberbarbershopId, parameters)
           break
           
         case 'calculate_growth_rate':
-          response = await calculateRevenueGrowthRate(supabase, barbershopId, parameters)
+          response = await calculateRevenueGrowthRate(supabase, barberbarbershopId, parameters)
           break
           
         default:
@@ -168,10 +168,10 @@ export async function POST(request) {
 }
 
 
-function generateRealRevenueForecast(barbershopId, revenueData, timeHorizons) {
+function generateRealRevenueForecast(barberbarbershopId, revenueData, timeHorizons) {
   if (!revenueData || revenueData.length < 5) {
     return {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       forecast_type: 'revenue',
       time_horizons: timeHorizons,
       forecasts: timeHorizons.map(horizon => ({
@@ -202,7 +202,7 @@ function generateRealRevenueForecast(barbershopId, revenueData, timeHorizons) {
   const forecasts = generateRealRevenueForecasts(patterns, timeHorizons)
   
   return {
-    barbershop_id: barbershopId,
+    barberbarbershop_id: barberbarbershopId,
     forecast_type: 'revenue',
     time_horizons: timeHorizons,
     generated_at: new Date().toISOString(),
@@ -402,7 +402,7 @@ function generateRevenueInsights(patterns, revenueData) {
   return insights
 }
 
-async function analyzeRevenueTrendsFromDatabase(supabase, barbershopId, parameters) {
+async function analyzeRevenueTrendsFromDatabase(supabase, barberbarbershopId, parameters) {
   const period = parameters?.period || '90_days'
   const endDate = new Date()
   const startDate = new Date(endDate.getTime() - 90 * 24 * 60 * 60 * 1000)
@@ -410,7 +410,7 @@ async function analyzeRevenueTrendsFromDatabase(supabase, barbershopId, paramete
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select('scheduled_at, status, total_amount, services(name)')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .eq('status', 'completed')
     .gte('scheduled_at', startDate.toISOString())
     .order('scheduled_at', { ascending: true })
@@ -429,11 +429,11 @@ async function analyzeRevenueTrendsFromDatabase(supabase, barbershopId, paramete
   }
 }
 
-async function calculateRevenueGrowthRate(supabase, barbershopId, parameters) {
+async function calculateRevenueGrowthRate(supabase, barberbarbershopId, parameters) {
   const { data: bookings, error } = await supabase
     .from('bookings')
     .select('scheduled_at, total_amount')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .eq('status', 'completed')
     .gte('scheduled_at', new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString())
     .order('scheduled_at', { ascending: true })

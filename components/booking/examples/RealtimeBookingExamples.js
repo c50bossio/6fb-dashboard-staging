@@ -15,7 +15,7 @@ import RealtimeBookingWrapper, { useRealtimeBooking } from '../RealtimeBookingWr
 export function BasicPublicBookingPage({ params }) {
   return (
     <RealtimeBookingWrapper
-      barbershopId={params.shopId}
+      barberbarbershopId={params.barbershopId}
       barbershopSlug={params.slug}
       enableRealtime={true}
       enableConflictPrevention={true}
@@ -28,7 +28,7 @@ export function BasicPublicBookingPage({ params }) {
 // Example 2: Enhanced Booking with Pre-selected Services
 // =============================================================================
 
-export function PreselectedServiceBooking({ shopId, serviceId, barberId }) {
+export function PreselectedServiceBooking({ barbershopId, serviceId, barberId }) {
   const [analyticsData, setAnalyticsData] = useState({
     conversionEvents: [],
     conflictEvents: [],
@@ -75,7 +75,7 @@ export function PreselectedServiceBooking({ shopId, serviceId, barberId }) {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <RealtimeBookingWrapper
-        barbershopId={shopId}
+        barberbarbershopId={barbershopId}
         preselectedService={serviceId}
         preselectedBarber={barberId}
         flowComponent="enhanced"
@@ -115,7 +115,7 @@ export function PreselectedServiceBooking({ shopId, serviceId, barberId }) {
 // Example 3: Mobile-Optimized Booking with Network Handling
 // =============================================================================
 
-export function MobileOptimizedBooking({ shopId }) {
+export function MobileOptimizedBooking({ barbershopId }) {
   const [networkStatus, setNetworkStatus] = useState({ online: true, slow: false })
 
   const handleNetworkStatusChange = (status) => {
@@ -131,7 +131,7 @@ export function MobileOptimizedBooking({ shopId }) {
     if (window.gtag) {
       window.gtag('event', 'realtime_error', {
         error_message: error.message,
-        barbershop_id: shopId
+        barberbarbershop_id: barbershopId
       })
     }
   }
@@ -156,7 +156,7 @@ export function MobileOptimizedBooking({ shopId }) {
       )}
 
       <RealtimeBookingWrapper
-        barbershopId={shopId}
+        barberbarbershopId={barbershopId}
         flowComponent={networkStatus.slow ? "public" : "auto"}
         enableRealtime={networkStatus.online}
         enableConflictPrevention={networkStatus.online}
@@ -176,7 +176,7 @@ export function MobileOptimizedBooking({ shopId }) {
 // Example 4: Custom Booking Component using the Hook
 // =============================================================================
 
-export function CustomBookingComponent({ shopId, className = '' }) {
+export function CustomBookingComponent({ barbershopId, className = '' }) {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [selectedSlot, setSelectedSlot] = useState(null)
   
@@ -190,7 +190,7 @@ export function CustomBookingComponent({ shopId, className = '' }) {
     validateSlot,
     refreshAvailability
   } = useRealtimeBooking({
-    barbershopId: shopId,
+    barberbarbershopId: barbershopId,
     enableRealtime: true,
     enableConflictPrevention: true
   })
@@ -353,7 +353,7 @@ export function CustomBookingComponent({ shopId, className = '' }) {
 // Example 5: A/B Testing with Orchestrator
 // =============================================================================
 
-export function ABTestingBookingPage({ shopId, experimentId }) {
+export function ABTestingBookingPage({ barbershopId, experimentId }) {
   const [conversionData, setConversionData] = useState({
     component: null,
     startTime: new Date(),
@@ -392,7 +392,7 @@ export function ABTestingBookingPage({ shopId, experimentId }) {
   return (
     <div className="ab-testing-booking-page">
       <RealtimeBookingWrapper
-        barbershopId={shopId}
+        barberbarbershopId={barbershopId}
         flowComponent="orchestrator" // Let orchestrator choose optimal component
         experimentId={experimentId}
         enableRealtime={true}
@@ -424,7 +424,7 @@ export function ABTestingBookingPage({ shopId, experimentId }) {
 // Example 6: High-Traffic Shop with Advanced Optimization
 // =============================================================================
 
-export function HighTrafficBookingPage({ shopId }) {
+export function HighTrafficBookingPage({ barbershopId }) {
   const [performanceMetrics, setPerformanceMetrics] = useState({
     loadTime: null,
     realtimeLatency: null,
@@ -465,7 +465,7 @@ export function HighTrafficBookingPage({ shopId }) {
   return (
     <div className="high-traffic-booking">
       <RealtimeBookingWrapper
-        barbershopId={shopId}
+        barberbarbershopId={barbershopId}
         flowComponent="orchestrator"
         enableRealtime={true}
         enableConflictPrevention={true}
@@ -483,7 +483,7 @@ export function HighTrafficBookingPage({ shopId }) {
           const velocity = data.slots.length / (data.conflicts.length + 1)
           if (window.analytics) {
             window.analytics.track('booking_availability_update', {
-              shop_id: shopId,
+              barbershop_id: barbershopId,
               available_slots: data.slots.length,
               conflicts: data.conflicts.length,
               velocity_ratio: velocity
@@ -533,11 +533,11 @@ export function URLParameterBooking() {
   }, [])
 
   // Extract shop ID from URL path
-  const shopId = window.location.pathname.split('/').pop()
+  const barbershopId = window.location.pathname.split('/').pop()
 
   return (
     <RealtimeBookingWrapper
-      barbershopId={shopId}
+      barberbarbershopId={barbershopId}
       flowComponent="orchestrator" // Will auto-detect URL parameters
       enableRealtime={true}
       enableConflictPrevention={true}

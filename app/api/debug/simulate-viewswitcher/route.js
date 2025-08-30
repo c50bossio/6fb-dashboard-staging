@@ -13,7 +13,7 @@ export async function GET() {
     const { data: enterpriseShops } = await supabase
       .from('barbershops')
       .select('id, name, address, city, state, phone, email, created_at, location_status')
-      .eq('id', yourShopId) // Using shop_id since you don't have organization_id
+      .eq('id', yourShopId) // Using barbershop_id since you don't have organization_id
       
     const enterpriseData = (enterpriseShops || []).map(shop => ({
       id: shop.id,
@@ -31,7 +31,7 @@ export async function GET() {
       
     let barbersData = []
     if (ownedShops?.length > 0) {
-      const shopIds = ownedShops.map(shop => shop.id)
+      const barbershopIds = ownedShops.map(shop => shop.id)
       
       const { data: barberStaff } = await supabase
         .from('barbershop_staff')
@@ -41,7 +41,7 @@ export async function GET() {
           role,
           is_active
         `)
-        .in('barbershop_id', shopIds)
+        .in('barberbarbershop_id', barbershopIds)
         .eq('role', 'BARBER')
         .eq('is_active', true)
         
@@ -73,7 +73,7 @@ export async function GET() {
         id: yourUserId,
         email: null /* hardcoded ID removed for production */,
         role: 'ENTERPRISE_OWNER',
-        shop_id: yourShopId
+        barbershop_id: yourShopId
       },
       viewSwitcherResults: {
         // What you should see as ENTERPRISE_OWNER

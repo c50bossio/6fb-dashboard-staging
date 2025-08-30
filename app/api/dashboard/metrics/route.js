@@ -27,8 +27,8 @@ export async function GET(request) {
     }
 
     // Get barbershop ID using unified tenant resolver
-    const { barbershopId } = await getTenant(profile.id, { supabase })
-    if (!barbershopId) {
+    const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
     }
     
@@ -47,25 +47,25 @@ export async function GET(request) {
     const startDate = ranges[timeRange] || ranges['7d']
     
     if (type === 'trending_services') {
-      return getTrendingServices(supabase, startDate, now, barbershopId)
+      return getTrendingServices(supabase, startDate, now, barberbarbershopId)
     }
     
     const metrics = {
       timestamp: now.toISOString(),
       time_range: timeRange,
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       system_health: await getSystemHealthMetrics(),
-      ai_activity: await getAIActivityMetrics(startDate, now, barbershopId),
-      business_insights: await getBusinessInsightsMetrics(startDate, now, barbershopId),
-      user_engagement: await getUserEngagementMetrics(startDate, now, barbershopId),
+      ai_activity: await getAIActivityMetrics(startDate, now, barberbarbershopId),
+      business_insights: await getBusinessInsightsMetrics(startDate, now, barberbarbershopId),
+      user_engagement: await getUserEngagementMetrics(startDate, now, barberbarbershopId),
       performance: await getPerformanceMetrics(),
     }
     
     if (detailed) {
       metrics.detailed_breakdown = {
-        daily_stats: await getDailyStatsBreakdown(startDate, now, barbershopId),
-        ai_provider_usage: await getAIProviderUsageStats(startDate, now, barbershopId),
-        user_sessions: await getUserSessionStats(startDate, now, barbershopId)
+        daily_stats: await getDailyStatsBreakdown(startDate, now, barberbarbershopId),
+        ai_provider_usage: await getAIProviderUsageStats(startDate, now, barberbarbershopId),
+        user_sessions: await getUserSessionStats(startDate, now, barberbarbershopId)
       }
     }
     
@@ -131,14 +131,14 @@ async function getSystemHealthMetrics() {
   }
 }
 
-async function getAIActivityMetrics(startDate, endDate, barbershopId) {
+async function getAIActivityMetrics(startDate, endDate, barberbarbershopId) {
   try {
     const supabase = await createClient()
     
     const { data: chatHistory, error } = await supabase
       .from('chat_history')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
     
@@ -177,19 +177,19 @@ async function getAIActivityMetrics(startDate, endDate, barbershopId) {
   }
 }
 
-async function getBusinessInsightsMetrics(startDate, endDate, barbershopId) {
+async function getBusinessInsightsMetrics(startDate, endDate, barberbarbershopId) {
   try {
     const supabase = await createClient()
     
     const { data: customers } = await supabase
       .from('customers')
       .select('total_spent, total_visits')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
     
     const { data: services } = await supabase
       .from('services')
       .select('price')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
     
     const totalCustomers = customers?.length || 0
     const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
@@ -228,14 +228,14 @@ async function getBusinessInsightsMetrics(startDate, endDate, barbershopId) {
   }
 }
 
-async function getUserEngagementMetrics(startDate, endDate, barbershopId) {
+async function getUserEngagementMetrics(startDate, endDate, barberbarbershopId) {
   try {
     const supabase = await createClient()
     
     const { data: customers } = await supabase
       .from('customers')
-      .select('created_at, last_visit_at, barbershop_id')
-      .eq('barbershop_id', barbershopId)
+      .select('created_at, last_visit_at, barberbarbershop_id')
+      .eq('barberbarbershop_id', barberbarbershopId)
     
     if (customers && customers.length > 0) {
       const activeUsers = customers.filter(c => {
@@ -333,7 +333,7 @@ async function checkDatabaseHealth() {
   }
 }
 
-async function getDailyStatsBreakdown(startDate, endDate, barbershopId) {
+async function getDailyStatsBreakdown(startDate, endDate, barberbarbershopId) {
   try {
     const supabase = await createClient()
     const days = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000))
@@ -346,7 +346,7 @@ async function getDailyStatsBreakdown(startDate, endDate, barbershopId) {
       const { data: chatData } = await supabase
         .from('chat_history')
         .select('session_id, confidence')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('created_at', date.toISOString())
         .lt('created_at', nextDate.toISOString())
       
@@ -371,14 +371,14 @@ async function getDailyStatsBreakdown(startDate, endDate, barbershopId) {
   }
 }
 
-async function getAIProviderUsageStats(startDate, endDate, barbershopId) {
+async function getAIProviderUsageStats(startDate, endDate, barberbarbershopId) {
   try {
     const supabase = await createClient()
     
     const { data: chatHistory } = await supabase
       .from('chat_history')
       .select('provider, response_time_ms, success')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
     
@@ -417,14 +417,14 @@ async function getAIProviderUsageStats(startDate, endDate, barbershopId) {
   }
 }
 
-async function getUserSessionStats(startDate, endDate, barbershopId) {
+async function getUserSessionStats(startDate, endDate, barberbarbershopId) {
   try {
     const supabase = await createClient()
     
     const { data: sessions } = await supabase
       .from('user_sessions')
       .select('duration_minutes, page_views, is_returning')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
     
@@ -466,12 +466,12 @@ async function getUserSessionStats(startDate, endDate, barbershopId) {
 }
 
 
-async function getTrendingServices(supabase, startDate, endDate, barbershopId) {
+async function getTrendingServices(supabase, startDate, endDate, barberbarbershopId) {
   try {
     const { data: services, error } = await supabase
       .from('trending_services')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('date', startDate.toISOString().split('T')[0])
       .lte('date', endDate.toISOString().split('T')[0])
       .order('popularity_rank', { ascending: true })

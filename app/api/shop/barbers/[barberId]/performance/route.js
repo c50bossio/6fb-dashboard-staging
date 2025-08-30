@@ -36,7 +36,7 @@ export async function GET(request, { params }) {
       .from('barber_performance')
       .select('*')
       .eq('barber_id', barberId)
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('period_type', period)
       .order('period_start', { ascending: false })
     
@@ -76,7 +76,7 @@ export async function GET(request, { params }) {
     const { data: shopRankings } = await supabase
       .from('barber_performance')
       .select('barber_id, total_revenue')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('period_type', period)
       .order('total_revenue', { ascending: false })
     
@@ -98,7 +98,7 @@ export async function GET(request, { params }) {
 }
 
 // Helper function to generate performance metrics from raw data
-async function generatePerformanceMetrics(supabase, barberId, shopId, period) {
+async function generatePerformanceMetrics(supabase, barberId, barbershopId, period) {
   const now = new Date()
   const periods = []
   
@@ -126,7 +126,7 @@ async function generatePerformanceMetrics(supabase, barberId, shopId, period) {
       .from('appointments')
       .select('*')
       .eq('barber_id', barberId)
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .gte('appointment_date', startDate.toISOString())
       .lte('appointment_date', endDate.toISOString())
     

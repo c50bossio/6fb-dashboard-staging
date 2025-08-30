@@ -34,7 +34,7 @@ function StrategicPricingWidget({ onRefresh, loading }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prediction_type: 'pricing_optimization',
-          barbershop_id: 'demo_barbershop_001',
+          barberbarbershop_id: 'demo_barbershop_001',
           parameters: {
             current_pricing: {
               haircut: 25.0,

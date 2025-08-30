@@ -271,15 +271,15 @@ export default function AutomationSettings({
       // Clean up any existing subscription
       cleanupRealtimeSubscription()
       
-      const shopId = await getUserShopId()
-      if (!shopId) {
+      const barbershopId = await getUserShopId()
+      if (!barbershopId) {
         console.warn('No shop ID available for real-time subscription')
         return
       }
 
       // Create managed subscription with error handling
       const subscription = createManagedAnalyticsSubscription(
-        shopId,
+        barbershopId,
         (analyticsResult) => {
           if (analyticsResult.success && analyticsResult.data) {
             const analytics = {

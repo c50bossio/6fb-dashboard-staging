@@ -6,13 +6,13 @@ export async function POST() {
     const supabase = await createServiceRoleClient()
     
     // The remaining test barbershop IDs that couldn't be deleted
-    const problematicBarbershopIds = [
+    const problematicBarberbarbershopIds = [
       '9d235d60-4e34-4f85-9aa7-e50556f18eec', // Mike's Professional Barbershop
       '6ae0a322-c656-43aa-9ab2-dc9c93237fcf', // Dev Test Barbershop
       '892d24f0-3c33-4cdf-988b-e3766982b0ce'  // E2E Test Barbershop
     ]
     
-    const tombBarbershopId = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
+    const tombBarberbarbershopId = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
     
     const results = {
       usersFixed: [],
@@ -21,15 +21,15 @@ export async function POST() {
     }
 
     // Step 1: Find and fix any remaining users linked to problematic barbershops
-    for (const barbershopId of problematicBarbershopIds) {
-      // Find users with this shop_id
+    for (const barberbarbershopId of problematicBarberbarbershopIds) {
+      // Find users with this barbershop_id
       const { data: usersWithShop, error } = await supabase
         .from('profiles')
         .select('id, email, role')
-        .eq('shop_id', barbershopId)
+        .eq('barbershop_id', barberbarbershopId)
         
       if (error) {
-        results.errors.push(`Failed to query users for shop ${barbershopId}: ${error.message}`)
+        results.errors.push(`Failed to query users for shop ${barberbarbershopId}: ${error.message}`)
         continue
       }
       
@@ -38,8 +38,8 @@ export async function POST() {
         const { error: updateError } = await supabase
           .from('profiles')
           .update({ 
-            shop_id: tombBarbershopId,
-            barbershop_id: tombBarbershopId 
+            barbershop_id: tombBarberbarbershopId,
+            barberbarbershop_id: tombBarberbarbershopId 
           })
           .eq('id', user.id)
           
@@ -50,61 +50,61 @@ export async function POST() {
             id: user.id,
             email: user.email,
             role: user.role,
-            movedFrom: barbershopId
+            movedFrom: barberbarbershopId
           })
         }
       }
       
-      // Also check barbershop_id field
-      const { data: usersWithBarbershopId } = await supabase
+      // Also check barberbarbershop_id field
+      const { data: usersWithBarberbarbershopId } = await supabase
         .from('profiles')
         .select('id, email, role')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         
-      for (const user of usersWithBarbershopId || []) {
+      for (const user of usersWithBarberbarbershopId || []) {
         const { error: updateError } = await supabase
           .from('profiles')
           .update({ 
-            shop_id: tombBarbershopId,
-            barbershop_id: tombBarbershopId 
+            barbershop_id: tombBarberbarbershopId,
+            barberbarbershop_id: tombBarberbarbershopId 
           })
           .eq('id', user.id)
           
         if (updateError) {
-          results.errors.push(`Failed to update user ${user.email} barbershop_id: ${updateError.message}`)
+          results.errors.push(`Failed to update user ${user.email} barberbarbershop_id: ${updateError.message}`)
         } else {
           results.usersFixed.push({
             id: user.id,
             email: user.email,
             role: user.role,
-            movedFrom: barbershopId,
-            field: 'barbershop_id'
+            movedFrom: barberbarbershopId,
+            field: 'barberbarbershop_id'
           })
         }
       }
     }
     
     // Step 2: Now try to delete the problematic barbershops again
-    for (const barbershopId of problematicBarbershopIds) {
+    for (const barberbarbershopId of problematicBarberbarbershopIds) {
       try {
         // Clean up related data first
-        await supabase.from('appointments').delete().eq('barbershop_id', barbershopId)
-        await supabase.from('barbershop_staff').delete().eq('barbershop_id', barbershopId)
-        await supabase.from('services').delete().eq('barbershop_id', barbershopId)
+        await supabase.from('appointments').delete().eq('barberbarbershop_id', barberbarbershopId)
+        await supabase.from('barbershop_staff').delete().eq('barberbarbershop_id', barberbarbershopId)
+        await supabase.from('services').delete().eq('barberbarbershop_id', barberbarbershopId)
         
         // Try to delete the barbershop
         const { error } = await supabase
           .from('barbershops')
           .delete()
-          .eq('id', barbershopId)
+          .eq('id', barberbarbershopId)
           
         if (error) {
-          results.errors.push(`Still can't remove barbershop ${barbershopId}: ${error.message}`)
+          results.errors.push(`Still can't remove barbershop ${barberbarbershopId}: ${error.message}`)
         } else {
-          results.barbershopsRemoved.push(barbershopId)
+          results.barbershopsRemoved.push(barberbarbershopId)
         }
       } catch (error) {
-        results.errors.push(`Error removing barbershop ${barbershopId}: ${error.message}`)
+        results.errors.push(`Error removing barbershop ${barberbarbershopId}: ${error.message}`)
       }
     }
 

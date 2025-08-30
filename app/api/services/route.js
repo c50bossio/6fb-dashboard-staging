@@ -33,8 +33,8 @@ export async function GET(request) {
     }
 
     // Get barbershop ID using unified tenant resolver
-    const { barbershopId } = await getTenant(profile.id, { supabase })
-    if (!barbershopId) {
+    const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
     }
 
@@ -45,7 +45,7 @@ export async function GET(request) {
     let query = supabase
       .from('services')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .order('category', { ascending: true })
       .order('name', { ascending: true })
     
@@ -111,8 +111,8 @@ export async function POST(request) {
     }
 
     // Get barbershop ID using unified tenant resolver
-    const { barbershopId } = await getTenant(profile.id, { supabase })
-    if (!barbershopId) {
+    const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
     }
 
@@ -132,7 +132,7 @@ export async function POST(request) {
       .from('services')
       .insert({
         ...serviceData,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })

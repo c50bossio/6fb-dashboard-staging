@@ -41,7 +41,7 @@ import {
  * Provides deep insights into no-show patterns, policy effectiveness, and revenue impact
  */
 export default function NoShowAnalyticsDashboard({
-  barbershopId,
+  barberbarbershopId,
   dateRange = { start: subDays(new Date(), 30), end: new Date() },
   onExport,
   className = ''
@@ -61,7 +61,7 @@ export default function NoShowAnalyticsDashboard({
 
   useEffect(() => {
     loadAnalyticsData()
-  }, [barbershopId, dateRange.start, dateRange.end, filters])
+  }, [barberbarbershopId, dateRange.start, dateRange.end, filters])
 
   useEffect(() => {
     let interval
@@ -150,7 +150,7 @@ export default function NoShowAnalyticsDashboard({
     } finally {
       setLoading(false)
     }
-  }, [barbershopId, dateRange.start, dateRange.end, filters])
+  }, [barberbarbershopId, dateRange.start, dateRange.end, filters])
 
   const toggleSection = (sectionId) => {
     setCollapsedSections(prev => ({

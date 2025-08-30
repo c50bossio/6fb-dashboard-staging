@@ -32,7 +32,7 @@ export async function GET(request) {
     if (!accountId && barberId) {
       const { data: arrangement } = await supabase
         .from('financial_arrangements')
-        .select('barber_stripe_account_id, barbershop_id')
+        .select('barber_stripe_account_id, barberbarbershop_id')
         .eq('barber_id', barberId)
         .single();
 

@@ -21,7 +21,7 @@ export async function GET() {
         user_id,
         role,
         is_active,
-        barbershop_id
+        barberbarbershop_id
       `)
       .eq('role', 'BARBER')
       .eq('is_active', true)
@@ -29,7 +29,7 @@ export async function GET() {
     // 3. Check profiles for context
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, email, role, shop_id, barbershop_id')
+      .select('id, email, role, barbershop_id, barberbarbershop_id')
       .in('role', ['SHOP_OWNER', 'ENTERPRISE_OWNER', 'BARBER'])
 
     return NextResponse.json({
@@ -51,7 +51,7 @@ export async function GET() {
           user_id: s.user_id,
           type: 'barber',
           role: 'Barber',
-          barbershop_id: s.barbershop_id
+          barberbarbershop_id: s.barberbarbershop_id
         })),
         
         // User profile summary

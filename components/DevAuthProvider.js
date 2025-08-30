@@ -30,8 +30,8 @@ export function DevAuthProvider({ children }) {
     subscription_tier: 'pro',
     subscription_status: 'active',
     role: 'BARBER',
-    shop_id: 'dev-shop-123',
-    barbershop_id: 'dev-shop-123'
+    barbershop_id: 'dev-shop-123',
+    barberbarbershop_id: 'dev-shop-123'
   })
   
   const [loading, setLoading] = useState(true)

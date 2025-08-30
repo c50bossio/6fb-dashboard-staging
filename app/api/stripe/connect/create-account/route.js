@@ -19,13 +19,13 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { barberId, barbershopId, email, businessType = 'individual', capabilities } = body;
+    const { barberId, barberbarbershopId, email, businessType = 'individual', capabilities } = body;
 
     // Verify the requesting user has permission (shop owner or admin)
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single();
 
     if (!barbershop || barbershop.owner_id !== user.id) {
@@ -37,7 +37,7 @@ export async function POST(request) {
       .from('financial_arrangements')
       .select('barber_stripe_account_id')
       .eq('barber_id', barberId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single();
 
     if (existingArrangement?.barber_stripe_account_id) {
@@ -67,7 +67,7 @@ export async function POST(request) {
       },
       metadata: {
         barberId: barberId,
-        barbershopId: barbershopId,
+        barberbarbershopId: barberbarbershopId,
         platform: 'bookedbarber'
       }
     });
@@ -81,7 +81,7 @@ export async function POST(request) {
         updated_at: new Date().toISOString()
       })
       .eq('barber_id', barberId)
-      .eq('barbershop_id', barbershopId);
+      .eq('barberbarbershop_id', barberbarbershopId);
 
     if (updateError) {
       console.error('Failed to save Stripe account ID:', updateError);

@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/Input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 
-export function TerminalSettings({ barbershopId }) {
+export function TerminalSettings({ barberbarbershopId }) {
   const [settings, setSettings] = useState({
     terminal_enabled: false,
     auto_capture: true,
@@ -37,17 +37,17 @@ export function TerminalSettings({ barbershopId }) {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (barbershopId) {
+    if (barberbarbershopId) {
       loadSettings()
       loadStripeAccountStatus()
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   const loadSettings = async () => {
     try {
       // Load Terminal settings from your backend
       // This would be implemented based on your existing settings API
-      const response = await fetch(`/api/settings/terminal?barbershopId=${barbershopId}`)
+      const response = await fetch(`/api/settings/terminal?barberbarbershopId=${barberbarbershopId}`)
       if (response.ok) {
         const data = await response.json()
         setSettings(prev => ({ ...prev, ...data.settings }))
@@ -59,7 +59,7 @@ export function TerminalSettings({ barbershopId }) {
 
   const loadStripeAccountStatus = async () => {
     try {
-      const response = await fetch(`/api/stripe/connect/account-status?barbershopId=${barbershopId}`)
+      const response = await fetch(`/api/stripe/connect/account-status?barberbarbershopId=${barberbarbershopId}`)
       if (response.ok) {
         const data = await response.json()
         setStripeAccountStatus(data)
@@ -76,7 +76,7 @@ export function TerminalSettings({ barbershopId }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barbershopId,
+          barberbarbershopId,
           settings
         })
       })
@@ -110,7 +110,7 @@ export function TerminalSettings({ barbershopId }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barbershopId,
+          barberbarbershopId,
           amount: 100 // $1.00 test
         })
       })
@@ -317,7 +317,7 @@ export function TerminalSettings({ barbershopId }) {
             {/* Terminal Manager */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Hardware Management</h3>
-              <TerminalManager barbershopId={barbershopId} />
+              <TerminalManager barberbarbershopId={barberbarbershopId} />
             </div>
           </div>
 

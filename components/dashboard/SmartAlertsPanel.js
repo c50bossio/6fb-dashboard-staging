@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
+export default function SmartAlertsPanel({ barberbarbershop_id = 'demo' }) {
   const [alerts, setAlerts] = useState([])
   const [priorityActions, setPriorityActions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -23,11 +23,11 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
     loadAlerts()
     const interval = setInterval(loadAlerts, 60000) // Refresh every minute
     return () => clearInterval(interval)
-  }, [barbershop_id])
+  }, [barberbarbershop_id])
 
   const loadAlerts = async () => {
     try {
-      const response = await fetch(`/api/alerts/intelligent?barbershop_id=${barbershop_id}`)
+      const response = await fetch(`/api/alerts/intelligent?barberbarbershop_id=${barberbarbershop_id}`)
       const data = await response.json()
       
       if (data.success) {
@@ -35,7 +35,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
         setPriorityActions(data.priorityActions || [])
       } else {
         console.warn('Intelligent alerts API failed:', data.error)
-        const fallbackResponse = await fetch(`/api/ai/business-monitor?barbershop_id=${barbershop_id}`)
+        const fallbackResponse = await fetch(`/api/ai/business-monitor?barberbarbershop_id=${barberbarbershop_id}`)
         const fallbackData = await fallbackResponse.json()
         
         if (fallbackData.success) {
@@ -63,7 +63,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
         body: JSON.stringify({
           action: 'dismiss_alert',
           alertId: alertId,
-          barbershopId: barbershop_id
+          barberbarbershopId: barberbarbershop_id
         })
       })
       
@@ -81,7 +81,7 @@ export default function SmartAlertsPanel({ barbershop_id = 'demo' }) {
         body: JSON.stringify({
           action: 'snooze_alert',
           alertId: alertId,
-          barbershopId: barbershop_id
+          barberbarbershopId: barberbarbershop_id
         })
       })
       

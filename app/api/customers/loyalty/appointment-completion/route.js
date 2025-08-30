@@ -31,34 +31,34 @@ async function verifyAuth(request) {
       return { error: 'Invalid token', status: 401 }
     }
 
-    // Get barbershop_id for the user
+    // Get barberbarbershop_id for the user
     const { data: barbershopData } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
       .single()
 
-    let barbershopId = null
+    let barberbarbershopId = null
     if (barbershopData) {
-      barbershopId = barbershopData.id
+      barberbarbershopId = barbershopData.id
     } else {
       // Check if user is a barber
       const { data: barberData } = await supabase
         .from('barbers')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .single()
       
       if (barberData) {
-        barbershopId = barberData.barbershop_id
+        barberbarbershopId = barberData.barberbarbershop_id
       }
     }
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return { error: 'User not associated with any barbershop', status: 403 }
     }
 
-    return { user, barbershopId }
+    return { user, barberbarbershopId }
   } catch (error) {
     return { error: 'Authentication failed', status: 401 }
   }
@@ -100,14 +100,14 @@ async function calculateLoyaltyPoints(serviceAmount, loyaltyProgram) {
 }
 
 // Helper function to update customer intelligence
-async function updateCustomerIntelligence(customerId, barbershopId, serviceAmount, appointmentData) {
+async function updateCustomerIntelligence(customerId, barberbarbershopId, serviceAmount, appointmentData) {
   try {
     // Get current customer intelligence
     const { data: intelData, error: intelError } = await supabase
       .from('customer_intelligence')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single()
 
     if (intelData) {
@@ -175,14 +175,14 @@ async function updateCustomerIntelligence(customerId, barbershopId, serviceAmoun
 }
 
 // Helper function to schedule feedback request
-async function scheduleFeedbackRequest(customerId, appointmentId, barbershopId, delayHours = 2) {
+async function scheduleFeedbackRequest(customerId, appointmentId, barberbarbershopId, delayHours = 2) {
   try {
     // Create a scheduled feedback request
     const scheduledTime = new Date(Date.now() + (delayHours * 60 * 60 * 1000))
     
     const feedbackRequest = {
       id: crypto.randomUUID(),
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       customer_id: customerId,
       appointment_id: appointmentId,
       request_type: 'post_appointment',
@@ -222,7 +222,7 @@ export async function POST(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barbershopId } = authResult
+    const { barberbarbershopId } = authResult
     const body = await request.json()
 
     const {
@@ -264,7 +264,7 @@ export async function POST(request) {
         const { data: loyaltyProgram, error: loyaltyError } = await supabase
           .from('loyalty_programs')
           .select('*')
-          .eq('barbershop_id', barbershopId)
+          .eq('barberbarbershop_id', barberbarbershopId)
           .eq('is_active', true)
           .single()
 
@@ -373,7 +373,7 @@ export async function POST(request) {
     try {
       const intelligenceUpdate = await updateCustomerIntelligence(
         customer_id, 
-        barbershopId, 
+        barberbarbershopId, 
         service_amount, 
         { appointment_id, barber_id, services_provided }
       )
@@ -393,7 +393,7 @@ export async function POST(request) {
         const feedbackRequest = await scheduleFeedbackRequest(
           customer_id,
           appointment_id,
-          barbershopId,
+          barberbarbershopId,
           2 // 2 hours delay
         )
         
@@ -420,7 +420,7 @@ export async function POST(request) {
           updated_at: new Date().toISOString()
         })
         .eq('id', appointment_id)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
 
       if (appointmentError) {
         results.errors.push(`Failed to update appointment status: ${appointmentError.message}`)

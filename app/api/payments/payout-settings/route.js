@@ -141,7 +141,7 @@ export async function POST(request) {
     // Update database
     const payoutData = {
       user_id: user.id,
-      barbershop_id: barbershop?.id || null,
+      barberbarbershop_id: barbershop?.id || null,
       stripe_connected_account_id: account.id,
       payout_method: 'standard',
       payout_schedule: schedule,

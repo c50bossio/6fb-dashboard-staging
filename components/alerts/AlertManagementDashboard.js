@@ -15,7 +15,7 @@ import {
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 const AlertManagementDashboard = ({ 
-  barbershopId, 
+  barberbarbershopId, 
   userId, 
   className = '' 
 }) => {
@@ -40,7 +40,7 @@ const AlertManagementDashboard = ({
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         user_id: userId,
         limit: '50'
       });
@@ -64,12 +64,12 @@ const AlertManagementDashboard = ({
     } finally {
       setLoading(false);
     }
-  }, [barbershopId, userId, filters]);
+  }, [barberbarbershopId, userId, filters]);
   
   const fetchPreferences = useCallback(async () => {
     try {
       const params = new URLSearchParams({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         user_id: userId
       });
       
@@ -83,7 +83,7 @@ const AlertManagementDashboard = ({
     } catch (err) {
       console.error('Error fetching preferences:', err);
     }
-  }, [barbershopId, userId]);
+  }, [barberbarbershopId, userId]);
   
   const initializeRealTime = useCallback(() => {
     if (!realTimeEnabled || !window.Pusher) return;
@@ -96,7 +96,7 @@ const AlertManagementDashboard = ({
       const channel = pusher.subscribe(`dashboard-${userId}`);
       
       channel.bind('alert-created', (data) => {
-        if (data.alert && data.alert.barbershop_id === barbershopId) {
+        if (data.alert && data.alert.barberbarbershop_id === barberbarbershopId) {
           setAlerts(prev => [data.alert, ...prev]);
           showRealTimeNotification('New Alert', data.alert.title, 'info');
         }
@@ -124,7 +124,7 @@ const AlertManagementDashboard = ({
       console.error('Real-time connection failed:', err);
       retryTimeoutRef.current = setTimeout(initializeRealTime, 30000);
     }
-  }, [userId, barbershopId, realTimeEnabled]);
+  }, [userId, barberbarbershopId, realTimeEnabled]);
   
   const handleAlertAction = async (alertId, action, options = {}) => {
     try {

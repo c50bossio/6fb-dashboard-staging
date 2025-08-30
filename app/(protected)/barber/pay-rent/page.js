@@ -154,7 +154,7 @@ export default function PayRentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ledger_id: rentData.current_due.id,
-          barbershop_id: rentData.arrangement.barbershop_id,
+          barberbarbershop_id: rentData.arrangement.barberbarbershop_id,
           barber_id: user.id,
           force_method: selectedMethod
         })

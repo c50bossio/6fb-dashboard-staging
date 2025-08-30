@@ -28,7 +28,7 @@ const categoryOptions = [
 ]
 
 export default function BadgeLeaderboard({ 
-  barbershopId,
+  barberbarbershopId,
   defaultTimeframe = 'all',
   defaultCategory = 'all',
   defaultLimit = 20,
@@ -59,7 +59,7 @@ export default function BadgeLeaderboard({
         timeframe,
         category
       })
-      if (barbershopId) params.append('barbershop_id', barbershopId)
+      if (barberbarbershopId) params.append('barberbarbershop_id', barberbarbershopId)
 
       const response = await fetch(`/api/customers/badges/leaderboard?${params}`)
       const data = await response.json()
@@ -113,7 +113,7 @@ export default function BadgeLeaderboard({
 
   useEffect(() => {
     fetchLeaderboard()
-  }, [timeframe, category, limit, barbershopId])
+  }, [timeframe, category, limit, barberbarbershopId])
 
   // Render rank medal/icon
   const renderRankIcon = (rank) => {

@@ -10,13 +10,13 @@ import {
 import { useState, useEffect } from 'react'
 import ModelSelector from './ModelSelector'
 
-export default function AIAgentChat({ barbershopId }) {
+export default function AIAgentChat({ barberbarbershopId }) {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'assistant',
-      content: barbershopId 
+      content: barberbarbershopId 
         ? "Hello! I'm your AI business assistant. I'm connecting to your live business data to provide real insights about your bookings, revenue, and customers. What would you like to know?"
         : "Hello! I'm your AI business assistant. I need a valid barbershop ID to access your business data. Please make sure you're properly logged in to get personalized insights.",
       agent: 'Marcus',
@@ -51,7 +51,7 @@ export default function AIAgentChat({ barbershopId }) {
 
   const handleSendMessage = async () => {
     if (!message.trim()) return
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       const errorResponse = {
         id: Date.now() + 1,
         type: 'assistant',
@@ -84,7 +84,7 @@ export default function AIAgentChat({ barbershopId }) {
           message: message,
           agent: 'auto', // Let the system choose the best agent
           context: {
-            shopId: barbershopId || 'ai-agent-chat',
+            barbershopId: barberbarbershopId || 'ai-agent-chat',
             testMode: false,
             dryRun: false,
             userId: 'ai-chat-user',
@@ -262,28 +262,28 @@ export default function AIAgentChat({ barbershopId }) {
           <button
             onClick={() => setMessage("Show me today's bookings and revenue")}
             className="px-3 py-1 text-xs bg-olive-50 text-olive-700 rounded-full hover:bg-olive-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!apiConnected || !barbershopId}
+            disabled={!apiConnected || !barberbarbershopId}
           >
             Today's Performance
           </button>
           <button
             onClick={() => setMessage("Analyze my customer booking patterns this month")}
             className="px-3 py-1 text-xs bg-gold-50 text-gold-700 rounded-full hover:bg-gold-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!apiConnected || !barbershopId}
+            disabled={!apiConnected || !barberbarbershopId}
           >
             Customer Analytics
           </button>
           <button
             onClick={() => setMessage("What's my most popular service and best revenue opportunities?")}
             className="px-3 py-1 text-xs bg-green-50 text-green-700 rounded-full hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!apiConnected || !barbershopId}
+            disabled={!apiConnected || !barberbarbershopId}
           >
             Revenue Insights
           </button>
           <button
             onClick={() => setMessage("Show me my weekly schedule and suggest optimizations")}
             className="px-3 py-1 text-xs bg-orange-50 text-orange-700 rounded-full hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={!apiConnected || !barbershopId}
+            disabled={!apiConnected || !barberbarbershopId}
           >
             Schedule Analysis
           </button>

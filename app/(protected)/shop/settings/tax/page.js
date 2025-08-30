@@ -22,7 +22,7 @@ export default function TaxSettingsPage() {
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [notification, setNotification] = useState(null)
-  const [barbershopId, setBarbershopId] = useState(null)
+  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
   
   const [formData, setFormData] = useState({
     // Stripe Tax Integration
@@ -77,7 +77,7 @@ export default function TaxSettingsPage() {
       // Get user's barbershop
       const { data: profile } = await supabase
         .from('profiles')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('id', user.id)
         .single()
       
@@ -90,7 +90,7 @@ export default function TaxSettingsPage() {
         return
       }
       
-      setBarbershopId(profile.barbershop_id)
+      setBarberbarbershopId(profile.barbershop_id)
       
       // Load tax settings from business_settings
       const { data: settings, error } = await supabase

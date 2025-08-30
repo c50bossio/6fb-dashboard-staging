@@ -8,7 +8,7 @@ import { predictiveAnalytics } from '../../../../services/predictive-analytics-s
 export async function POST(request) {
   try {
     const { 
-      barbershopId = 'demo-shop',
+      barberbarbershopId = 'demo-shop',
       timeframe = 30,
       models = ['all'],
       userId
@@ -23,7 +23,7 @@ export async function POST(request) {
     }
 
     const predictions = await predictiveAnalytics.generatePredictions(
-      barbershopId,
+      barberbarbershopId,
       timeframe
     )
 
@@ -36,7 +36,7 @@ export async function POST(request) {
 
     const response = {
       success: true,
-      barbershopId,
+      barberbarbershopId,
       timeframe,
       timestamp: predictions.timestamp,
       confidence: predictions.confidence
@@ -75,7 +75,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action') || 'performance'
-    const barbershopId = searchParams.get('barbershopId') || 'demo-shop'
+    const barberbarbershopId = searchParams.get('barberbarbershopId') || 'demo-shop'
 
     let response
 
@@ -105,7 +105,7 @@ export async function GET(request) {
       case 'latest':
         const timeframe = parseInt(searchParams.get('timeframe') || '7')
         const latest = await predictiveAnalytics.generatePredictions(
-          barbershopId,
+          barberbarbershopId,
           timeframe
         )
         

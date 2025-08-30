@@ -65,7 +65,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Barbershop not found' }, { status: 404 })
     }
 
-    const shopId = barbershop.id
+    const barbershopId = barbershop.id
 
     // Check actual data completion - data-driven approach like competitors
     const status = {
@@ -97,7 +97,7 @@ export async function GET(request) {
     const { data: services } = await supabase
       .from('services')
       .select('id, name, price')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
     
     status.services.count = services?.length || 0
@@ -132,7 +132,7 @@ export async function GET(request) {
     const { data: staff } = await supabase
       .from('barbershop_staff')
       .select('id, user_id, role, is_active')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('is_active', true)
     
     status.staff.count = staff?.length || 0
@@ -145,7 +145,7 @@ export async function GET(request) {
     const { data: stripeAccount } = await supabase
       .from('stripe_accounts')
       .select('account_id, onboarding_completed')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .single()
     
     status.financial.stripe_connected = !!(stripeAccount?.account_id && stripeAccount?.onboarding_completed)
@@ -195,7 +195,7 @@ export async function GET(request) {
         is_complete: completedSteps === totalSteps
       },
       steps: status,
-      barbershop_id: shopId
+      barberbarbershop_id: barbershopId
     })
 
   } catch (error) {

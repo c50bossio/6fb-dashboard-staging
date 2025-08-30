@@ -79,7 +79,7 @@ async function fetchCin7StockLevels(accountId, apiKey) {
   return []
 }
 
-function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
+function mapCin7ProductToLocal(cin7Product, stockLevels, barberbarbershopId) {
   // Enhanced stock lookup with multiple matching strategies
   let stockInfo = null;
   
@@ -160,7 +160,7 @@ function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
   }
   
   return {
-    barbershop_id: barbershopId,
+    barberbarbershop_id: barberbarbershopId,
     name: cin7Product.Name || 'Unnamed Product',
     description: cin7Product.Description || '',
     category: mapCategoryForBarbershop(cin7Product.Category),
@@ -297,13 +297,13 @@ function detectProfessionalUse(product) {
 
 export async function POST(request) {
   try {
-    // Check if we have a barbershop_id in the request body (for manual override)
-    let overrideBarbershopId = null
+    // Check if we have a barberbarbershop_id in the request body (for manual override)
+    let overrideBarberbarbershopId = null
     try {
       const requestText = await request.clone().text()
       if (requestText.trim()) {
         const body = JSON.parse(requestText)
-        overrideBarbershopId = body.barbershop_id
+        overrideBarberbarbershopId = body.barberbarbershop_id
       }
     } catch (e) {
       // No body or invalid JSON - continue without override
@@ -384,19 +384,19 @@ user = {
     // Get user's barbershop - try multiple methods to find it
     let barbershop = null
     
-    // Method 1: Check profile for shop_id or barbershop_id first (most reliable)
+    // Method 1: Check profile for shop_id or barberbarbershop_id first (most reliable)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, shop_id, barbershop_id, email')
+      .select('id, barbershop_id, barberbarbershop_id, email')
       .or(`id.eq.${user.id},email.eq.${user.email}`)
       .single()
     
     if (profile && (profile.shop_id || profile.barbershop_id)) {
-      const shopId = profile.shop_id || profile.barbershop_id
+      const barbershopId = profile.shop_id || profile.barbershop_id
       const { data: profileShop } = await supabase
         .from('barbershops')
         .select('id, name')
-        .eq('id', shopId)
+        .eq('id', barbershopId)
         .single()
       
       if (profileShop) {
@@ -423,15 +423,15 @@ user = {
     if (!barbershop) {
       const { data: staffRecord } = await supabase
         .from('barbershop_staff')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', profile?.id || user.id)
         .single()
       
-      if (staffRecord?.barbershop_id) {
+      if (staffRecord?.barberbarbershop_id) {
         const { data: staffShop } = await supabase
           .from('barbershops')
           .select('id, name')
-          .eq('id', staffRecord.barbershop_id)
+          .eq('id', staffRecord.barberbarbershop_id)
           .single()
         
         if (staffShop) {
@@ -442,11 +442,11 @@ user = {
     }
     
     // Method 4: Use override barbershop ID if provided (for testing/manual sync)
-    if (!barbershop && overrideBarbershopId) {
+    if (!barbershop && overrideBarberbarbershopId) {
       const { data: overrideShop } = await supabase
         .from('barbershops')
         .select('id, name')
-        .eq('id', overrideBarbershopId)
+        .eq('id', overrideBarberbarbershopId)
         .single()
       
       if (overrideShop) {
@@ -462,8 +462,8 @@ user = {
         userEmail: user.email,
         profileId: profile?.id,
         profileShopId: profile?.shop_id,
-        profileBarbershopId: profile?.barbershop_id,
-        overrideAttempted: !!overrideBarbershopId
+        profileBarberbarbershopId: profile?.barbershop_id,
+        overrideAttempted: !!overrideBarberbarbershopId
       })
       
       return NextResponse.json(
@@ -473,9 +473,9 @@ user = {
             userId: user.id,
             userEmail: user.email,
             profileFound: !!profile,
-            shopId: profile?.shop_id,
-            barbershopId: profile?.barbershop_id,
-            overrideAttempted: !!overrideBarbershopId
+            barbershopId: profile?.shop_id,
+            barberbarbershopId: profile?.barbershop_id,
+            overrideAttempted: !!overrideBarberbarbershopId
           } : undefined
         },
         { status: 404 }
@@ -517,7 +517,7 @@ user = {
       let credentialsQuery = supabase
         .from('cin7_credentials')
         .select('encrypted_api_key, encrypted_account_id, account_name, api_version')
-        .eq('barbershop_id', barbershop.id)
+        .eq('barberbarbershop_id', barbershop.id)
         
       // In dev mode, allow inactive credentials for testing
       if (!isDev) {
@@ -589,7 +589,7 @@ user = {
             last_sync: new Date().toISOString(),
             last_sync_status: 'success'
           })
-          .eq('barbershop_id', barbershop.id)
+          .eq('barberbarbershop_id', barbershop.id)
         
         return NextResponse.json({
           success: true,
@@ -607,7 +607,7 @@ user = {
       const { error: deleteError } = await supabase
         .from('master_products')
         .delete()
-        .eq('barbershop_id', barbershop.id)
+        .eq('barberbarbershop_id', barbershop.id)
         .eq('sync_enabled', true)  // Only delete synced products
       
       if (deleteError) {
@@ -630,7 +630,7 @@ user = {
             last_sync: new Date().toISOString(),
             last_sync_status: 'failed'
           })
-          .eq('barbershop_id', barbershop.id)
+          .eq('barberbarbershop_id', barbershop.id)
         
         return NextResponse.json(
           { error: 'Failed to sync products: ' + syncError.message },
@@ -645,7 +645,7 @@ user = {
           last_sync: new Date().toISOString(),
           last_sync_status: 'success'
         })
-        .eq('barbershop_id', barbershop.id)
+        .eq('barberbarbershop_id', barbershop.id)
 
       // Count products with stock issues for alert
       const lowStockCount = syncedProducts.filter(p => p.current_stock <= p.min_stock_level).length
@@ -671,7 +671,7 @@ user = {
           last_sync: new Date().toISOString(),
           last_sync_status: 'failed'
         })
-        .eq('barbershop_id', barbershop.id)
+        .eq('barberbarbershop_id', barbershop.id)
       
       return NextResponse.json(
         { error: 'Cin7 API connection failed: ' + cin7Error.message },

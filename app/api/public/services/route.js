@@ -4,9 +4,9 @@ import { NextResponse } from 'next/server'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id')
+    const barberbarbershopId = searchParams.get('barberbarbershop_id')
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({
         success: false,
         error: 'Barbershop ID is required'
@@ -28,11 +28,11 @@ export async function GET(request) {
     
     // Get services for the barbershop (no auth required for public viewing)
     // Using select('*') to avoid column mismatch errors - we'll filter fields later
-    // Note: services table uses 'shop_id' not 'barbershop_id'
+    // Note: services table uses 'barbershop_id' not 'barberbarbershop_id'
     const { data: services, error } = await supabase
       .from('services')
       .select('*')
-      .eq('shop_id', barbershopId)
+      .eq('barbershop_id', barberbarbershopId)
       .eq('is_active', true)
 
     if (error) {
@@ -47,7 +47,7 @@ export async function GET(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('name, booking_settings, business_hours')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
     // Sort services with featured services first, then by display_order/name

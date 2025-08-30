@@ -39,7 +39,7 @@ export async function GET(request, { params }) {
         .from('barber_onboarding')
         .insert({
           barber_id: barberId,
-          barbershop_id: shop.id,
+          barberbarbershop_id: shop.id,
           onboarding_progress: 0
         })
         .select()
@@ -137,7 +137,7 @@ export async function PATCH(request, { params }) {
         updated_at: new Date().toISOString()
       })
       .eq('barber_id', barberId)
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .select()
       .single()
     
@@ -174,7 +174,7 @@ export async function PATCH(request, { params }) {
           onboarding_completed_at: new Date().toISOString()
         })
         .eq('user_id', barberId)
-        .eq('barbershop_id', shop.id)
+        .eq('barberbarbershop_id', shop.id)
     }
     
     return NextResponse.json({ 

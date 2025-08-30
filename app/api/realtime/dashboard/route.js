@@ -7,12 +7,12 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const barbershopId = searchParams.get('barbershop_id');
+  const barberbarbershopId = searchParams.get('barberbarbershop_id');
   
-  if (!barbershopId) {
+  if (!barberbarbershopId) {
     return new Response(JSON.stringify({
       success: false,
-      error: 'barbershop_id parameter is required'
+      error: 'barberbarbershop_id parameter is required'
     }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' }
@@ -40,7 +40,7 @@ export async function GET(request) {
 
       const interval = setInterval(async () => {
         try {
-          const analyticsResponse = await fetch(`http://localhost:9999/api/analytics/live-data?barbershop_id=${barbershopId}`);
+          const analyticsResponse = await fetch(`http://localhost:9999/api/analytics/live-data?barberbarbershop_id=${barberbarbershopId}`);
           const analyticsData = await analyticsResponse.json();
           
           const cacheResponse = await fetch('http://localhost:9999/api/cache/stats');

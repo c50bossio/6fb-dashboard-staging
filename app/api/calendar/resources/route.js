@@ -15,7 +15,7 @@ export async function GET(request) {
     // Get user profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, full_name, role, shop_id, barbershop_id')
+      .select('id, full_name, role, barbershop_id, barberbarbershop_id')
       .eq('id', user.id)
       .single()
     
@@ -31,26 +31,26 @@ export async function GET(request) {
     }
 
     // Determine barbershop ID
-    let barbershopId = profile.shop_id || profile.barbershop_id
+    let barberbarbershopId = profile.shop_id || profile.barbershop_id
     
     // If no direct shop, check if user is staff
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       const { data: staffAssignment } = await supabase
         .from('barbershop_staff')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
       
       if (staffAssignment) {
-        barbershopId = staffAssignment.barbershop_id
+        barberbarbershopId = staffAssignment.barberbarbershop_id
       }
     }
 
     let resources = []
 
     // If we have a barbershop, get all barbers/staff
-    if (barbershopId) {
+    if (barberbarbershopId) {
       // Get all staff members for this barbershop
       const { data: staffMembers } = await supabase
         .from('barbershop_staff')
@@ -64,7 +64,7 @@ export async function GET(request) {
             email
           )
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('is_active', true)
 
       if (staffMembers && staffMembers.length > 0) {
@@ -81,7 +81,7 @@ export async function GET(request) {
       const { data: barbershop } = await supabase
         .from('barbershops')
         .select('owner_id')
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
         .single()
 
       if (barbershop && barbershop.owner_id) {
@@ -117,7 +117,7 @@ export async function GET(request) {
 
     return NextResponse.json({
       resources,
-      barbershopId,
+      barberbarbershopId,
       profile: {
         id: profile.id,
         full_name: profile.full_name,

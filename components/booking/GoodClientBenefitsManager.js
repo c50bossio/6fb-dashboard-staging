@@ -105,7 +105,7 @@ const SEGMENT_QUALIFICATIONS = {
 }
 
 export default function GoodClientBenefitsManager({
-  barbershopId,
+  barberbarbershopId,
   currentRules = {},
   onUpdate,
   isManager = false

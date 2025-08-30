@@ -13,7 +13,7 @@ const supabase = createClient(
 export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}))
-    const { apiKey, accountId, barbershopId } = body
+    const { apiKey, accountId, barberbarbershopId } = body
     
     if (!apiKey || !accountId) {
       return NextResponse.json({
@@ -86,7 +86,7 @@ export async function POST(request) {
     
     const mappingStrategy = createOptimalMapping(fieldAnalysis)
     
-    await storeFieldMappingConfig(barbershopId, {
+    await storeFieldMappingConfig(barberbarbershopId, {
       endpoint: workingEndpoint,
       apiVersion: detectApiVersion(workingEndpoint),
       fieldAnalysis,
@@ -395,17 +395,17 @@ function detectApiVersion(endpoint) {
 /**
  * Store field mapping configuration in database
  */
-async function storeFieldMappingConfig(barbershopId, config) {
+async function storeFieldMappingConfig(barberbarbershopId, config) {
   try {
     await supabase
       .from('cin7_field_mappings')
       .upsert({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         mapping_config: config,
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }, { onConflict: 'barbershop_id' })
+      }, { onConflict: 'barberbarbershop_id' })
     
   } catch (error) {
     console.warn('⚠️ Could not store field mapping config:', error.message)

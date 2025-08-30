@@ -33,7 +33,7 @@ interface SetupStep {
   icon: React.ReactNode
 }
 
-export function StripeTerminalSetup({ barbershopId }: { barbershopId: string }) {
+export function StripeTerminalSetup({ barberbarbershopId }: { barberbarbershopId: string }) {
   const [activeTab, setActiveTab] = useState('requirements')
   const [copiedText, setCopiedText] = useState<string | null>(null)
   const [setupSteps, setSetupSteps] = useState<SetupStep[]>([

@@ -209,16 +209,16 @@ export default function AddStaffModal({ onClose, onSuccess }) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Authentication required. Please log in and try again.')
       
-      // Get barbershop ID from barbershop_staff table (users table doesn't have shop_id/barbershop_id)
+      // Get barbershop ID from barbershop_staff table (users table doesn't have barbershop_id/barberbarbershop_id)
       const { data: staffRecord } = await supabase
         .from('barbershop_staff')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
       
-      const barbershopId = staffRecord?.barbershop_id
-      if (!barbershopId) throw new Error('No barbershop found. Please contact support if this continues.')
+      const barberbarbershopId = staffRecord?.barberbarbershop_id
+      if (!barberbarbershopId) throw new Error('No barbershop found. Please contact support if this continues.')
       
       // Call the invitation API with timeout
       const response = await fetch('/api/staff/invite', {
@@ -231,7 +231,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
           email: formData.email,
           full_name: formData.full_name,
           role: formData.role.toUpperCase(),
-          barbershopId: barbershopId,
+          barberbarbershopId: barberbarbershopId,
           sendEmail: true,
           
           // Include all the enhanced data for storage

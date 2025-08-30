@@ -5,9 +5,9 @@ export const runtime = 'nodejs'
 export async function GET(request, { params }) {
   try {
     const supabase = await createClient()
-    const { shopId } = params
+    const { barbershopId } = params
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json({ error: 'Shop ID is required' }, { status: 400 })
     }
 
@@ -26,7 +26,7 @@ export async function GET(request, { params }) {
         team_members(*),
         customer_testimonials(*)
       `)
-      .eq('id', shopId)
+      .eq('id', barbershopId)
       .eq('owner_id', user.id)  // Ensure user owns this barbershop
       .single()
 
@@ -41,7 +41,7 @@ export async function GET(request, { params }) {
     const { data: businessHours } = await supabase
       .from('business_hours')
       .select('*')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .order('day_of_week')
 
     const customizationData = {
@@ -96,7 +96,7 @@ export async function GET(request, { params }) {
     return NextResponse.json({ data: customizationData })
 
   } catch (error) {
-    console.error('Error in GET /api/customization/[shopId]/settings:', error)
+    console.error('Error in GET /api/customization/[barbershopId]/settings:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -107,10 +107,10 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const supabase = await createClient()
-    const { shopId } = params
+    const { barbershopId } = params
     const updates = await request.json()
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json({ error: 'Shop ID is required' }, { status: 400 })
     }
 
@@ -124,7 +124,7 @@ export async function PUT(request, { params }) {
     const { data: barbershop, error: verifyError } = await supabase
       .from('barbershops')
       .select('id')
-      .eq('id', shopId)
+      .eq('id', barbershopId)
       .eq('owner_id', user.id)
       .single()
 
@@ -166,7 +166,7 @@ export async function PUT(request, { params }) {
       const { error: updateError } = await supabase
         .from('barbershops')
         .update(barbershopUpdates)
-        .eq('id', shopId)
+        .eq('id', barbershopId)
 
       if (updateError) {
         console.error('Error updating barbershop:', updateError)
@@ -178,10 +178,10 @@ export async function PUT(request, { params }) {
       await supabase
         .from('business_hours')
         .delete()
-        .eq('barbershop_id', shopId)
+        .eq('barberbarbershop_id', barbershopId)
 
       const hoursToInsert = updates.business_hours.map(hour => ({
-        barbershop_id: shopId,
+        barberbarbershop_id: barbershopId,
         day_of_week: hour.day_of_week,
         is_open: hour.is_open,
         open_time: hour.open_time,
@@ -216,7 +216,7 @@ export async function PUT(request, { params }) {
           await supabase
             .from('website_sections')
             .insert({
-              barbershop_id: shopId,
+              barberbarbershop_id: barbershopId,
               section_type: section.section_type,
               title: section.title,
               content: section.content,
@@ -229,11 +229,11 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({ 
       message: 'Settings updated successfully',
-      shopId 
+      barbershopId 
     })
 
   } catch (error) {
-    console.error('Error in PUT /api/customization/[shopId]/settings:', error)
+    console.error('Error in PUT /api/customization/[barbershopId]/settings:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -244,9 +244,9 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const supabase = await createClient()
-    const { shopId } = params
+    const { barbershopId } = params
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json({ error: 'Shop ID is required' }, { status: 400 })
     }
 
@@ -260,7 +260,7 @@ export async function DELETE(request, { params }) {
     const { data: barbershop, error: verifyError } = await supabase
       .from('barbershops')
       .select('id')
-      .eq('id', shopId)
+      .eq('id', barbershopId)
       .eq('owner_id', user.id)
       .single()
 
@@ -297,7 +297,7 @@ export async function DELETE(request, { params }) {
     const { error: resetError } = await supabase
       .from('barbershops')
       .update(defaultSettings)
-      .eq('id', shopId)
+      .eq('id', barbershopId)
 
     if (resetError) {
       console.error('Error resetting customization:', resetError)
@@ -307,20 +307,20 @@ export async function DELETE(request, { params }) {
     await supabase
       .from('website_sections')
       .delete()
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
 
     await supabase
       .from('barbershop_gallery')
       .delete()
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
 
     return NextResponse.json({ 
       message: 'Customization reset to defaults',
-      shopId 
+      barbershopId 
     })
 
   } catch (error) {
-    console.error('Error in DELETE /api/customization/[shopId]/settings:', error)
+    console.error('Error in DELETE /api/customization/[barbershopId]/settings:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

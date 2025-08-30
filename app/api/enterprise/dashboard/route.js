@@ -70,13 +70,13 @@ export async function GET(request) {
           const { count: bookingCount } = await supabase
             .from('bookings')
             .select('*', { count: 'exact', head: true })
-            .eq('shop_id', shop.id)
+            .eq('barbershop_id', shop.id)
 
           // Get appointments for each shop
           const { count: appointmentCount } = await supabase
             .from('appointments')
             .select('*', { count: 'exact', head: true })
-            .eq('barbershop_id', shop.id)
+            .eq('barberbarbershop_id', shop.id)
 
           const shopBookings = (bookingCount || 0) + (appointmentCount || 0)
           totalBookings += shopBookings
@@ -85,14 +85,14 @@ export async function GET(request) {
           const { count: staffCount } = await supabase
             .from('barbershop_staff')
             .select('*', { count: 'exact', head: true })
-            .eq('barbershop_id', shop.id)
+            .eq('barberbarbershop_id', shop.id)
             .eq('is_active', true)
           
           // Get reviews for rating
           const { data: reviews } = await supabase
             .from('reviews')
             .select('rating')
-            .eq('barbershop_id', shop.id)
+            .eq('barberbarbershop_id', shop.id)
           
           const avgRating = reviews && reviews.length > 0
             ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
@@ -102,13 +102,13 @@ export async function GET(request) {
           const { data: payments } = await supabase
             .from('payments')
             .select('amount')
-            .eq('barbershop_id', shop.id)
+            .eq('barberbarbershop_id', shop.id)
             .eq('status', 'completed')
           
           const { data: appointmentRevenue } = await supabase
             .from('appointments')
             .select('price')
-            .eq('barbershop_id', shop.id)
+            .eq('barberbarbershop_id', shop.id)
             .in('status', ['completed', 'paid'])
           
           const paymentRevenue = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0
@@ -140,7 +140,7 @@ export async function GET(request) {
         const { count: customerCount } = await supabase
           .from('customers')
           .select('*', { count: 'exact', head: true })
-          .in('barbershop_id', barbershops.map(s => s.id))
+          .in('barberbarbershop_id', barbershops.map(s => s.id))
         
         dashboardData.activeCustomers = customerCount || 0
         

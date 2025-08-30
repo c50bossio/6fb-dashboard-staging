@@ -10,17 +10,17 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { barbershop_id, conditions } = await request.json()
+    const { barberbarbershop_id, conditions } = await request.json()
 
-    if (!barbershop_id) {
-      return NextResponse.json({ error: 'barbershop_id is required' }, { status: 400 })
+    if (!barberbarbershop_id) {
+      return NextResponse.json({ error: 'barberbarbershop_id is required' }, { status: 400 })
     }
 
     // Build query based on conditions
     let query = supabase
       .from('customers')
       .select('id', { count: 'exact', head: true })
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
 
     // Apply conditions dynamically
     if (conditions && conditions.length > 0) {
@@ -82,7 +82,7 @@ export async function POST(request) {
     let sampleQuery = supabase
       .from('customers')
       .select('id, full_name, email, total_visits, total_spent, last_visit_date')
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .limit(5)
 
     // Apply same conditions for sample

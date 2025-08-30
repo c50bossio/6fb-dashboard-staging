@@ -31,34 +31,34 @@ async function verifyAuth(request) {
       return { error: 'Invalid token', status: 401 }
     }
 
-    // Get barbershop_id for the user
+    // Get barberbarbershop_id for the user
     const { data: barbershopData } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
       .single()
 
-    let barbershopId = null
+    let barberbarbershopId = null
     if (barbershopData) {
-      barbershopId = barbershopData.id
+      barberbarbershopId = barbershopData.id
     } else {
       // Check if user is a barber
       const { data: barberData } = await supabase
         .from('barbers')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .single()
       
       if (barberData) {
-        barbershopId = barberData.barbershop_id
+        barberbarbershopId = barberData.barberbarbershop_id
       }
     }
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return { error: 'User not associated with any barbershop', status: 403 }
     }
 
-    return { user, barbershopId }
+    return { user, barberbarbershopId }
   } catch (error) {
     return { error: 'Authentication failed', status: 401 }
   }
@@ -66,8 +66,8 @@ async function verifyAuth(request) {
 
 // Workflow engine class
 class WorkflowEngine {
-  constructor(barbershopId) {
-    this.barbershopId = barbershopId
+  constructor(barberbarbershopId) {
+    this.barberbarbershopId = barberbarbershopId
   }
 
   async processWelcomeSequence(customerId) {
@@ -77,7 +77,7 @@ class WorkflowEngine {
         .from('automation_workflows')
         .select('*')
         .eq('customer_id', customerId)
-        .eq('barbershop_id', this.barbershopId)
+        .eq('barberbarbershop_id', this.barberbarbershopId)
         .eq('workflow_type', 'welcome_sequence')
         .eq('status', 'active')
         .single()
@@ -91,7 +91,7 @@ class WorkflowEngine {
         .from('customers')
         .select('*')
         .eq('id', customerId)
-        .eq('barbershop_id', this.barbershopId)
+        .eq('barberbarbershop_id', this.barberbarbershopId)
         .single()
 
       if (!customer) {
@@ -102,13 +102,13 @@ class WorkflowEngine {
       const { data: barbershop } = await supabase
         .from('barbershops')
         .select('*')
-        .eq('id', this.barbershopId)
+        .eq('id', this.barberbarbershopId)
         .single()
 
       // Create welcome sequence workflow
       const welcomeWorkflow = {
         id: crypto.randomUUID(),
-        barbershop_id: this.barbershopId,
+        barberbarbershop_id: this.barberbarbershopId,
         customer_id: customerId,
         workflow_type: 'welcome_sequence',
         status: 'active',
@@ -163,7 +163,7 @@ class WorkflowEngine {
       const workflowSteps = steps.map(step => ({
         id: crypto.randomUUID(),
         workflow_id: workflow.id,
-        barbershop_id: this.barbershopId,
+        barberbarbershop_id: this.barberbarbershopId,
         customer_id: customerId,
         step_number: step.step_number,
         action_type: step.action_type,
@@ -200,7 +200,7 @@ class WorkflowEngine {
         .from('appointments')
         .select('*')
         .eq('customer_id', customerId)
-        .eq('barbershop_id', this.barbershopId)
+        .eq('barberbarbershop_id', this.barberbarbershopId)
         .order('appointment_date', { ascending: false })
         .limit(1)
         .single()
@@ -223,7 +223,7 @@ class WorkflowEngine {
         .from('automation_workflows')
         .select('*')
         .eq('customer_id', customerId)
-        .eq('barbershop_id', this.barbershopId)
+        .eq('barberbarbershop_id', this.barberbarbershopId)
         .eq('workflow_type', 'reengagement')
         .eq('status', 'active')
         .single()
@@ -237,7 +237,7 @@ class WorkflowEngine {
         .from('customer_intelligence')
         .select('*')
         .eq('customer_id', customerId)
-        .eq('barbershop_id', this.barbershopId)
+        .eq('barberbarbershop_id', this.barberbarbershopId)
         .single()
 
       // Get customer data
@@ -245,13 +245,13 @@ class WorkflowEngine {
         .from('customers')
         .select('*')
         .eq('id', customerId)
-        .eq('barbershop_id', this.barbershopId)
+        .eq('barberbarbershop_id', this.barberbarbershopId)
         .single()
 
       // Create re-engagement workflow
       const reengagementWorkflow = {
         id: crypto.randomUUID(),
-        barbershop_id: this.barbershopId,
+        barberbarbershop_id: this.barberbarbershopId,
         customer_id: customerId,
         workflow_type: 'reengagement',
         status: 'active',
@@ -285,7 +285,7 @@ class WorkflowEngine {
       const workflowSteps = steps.map((step, index) => ({
         id: crypto.randomUUID(),
         workflow_id: workflow.id,
-        barbershop_id: this.barbershopId,
+        barberbarbershop_id: this.barberbarbershopId,
         customer_id: customerId,
         step_number: index + 1,
         action_type: step.action_type,
@@ -324,7 +324,7 @@ class WorkflowEngine {
         .from('customers')
         .select('*')
         .eq('id', customerId)
-        .eq('barbershop_id', this.barbershopId)
+        .eq('barberbarbershop_id', this.barberbarbershopId)
         .single()
 
       if (!customer || !customer.date_of_birth) {
@@ -348,7 +348,7 @@ class WorkflowEngine {
         .from('automation_workflows')
         .select('*')
         .eq('customer_id', customerId)
-        .eq('barbershop_id', this.barbershopId)
+        .eq('barberbarbershop_id', this.barberbarbershopId)
         .eq('workflow_type', 'birthday_campaign')
         .gte('created_at', yearStart.toISOString())
         .single()
@@ -368,7 +368,7 @@ class WorkflowEngine {
       // Create birthday workflow
       const birthdayWorkflow = {
         id: crypto.randomUUID(),
-        barbershop_id: this.barbershopId,
+        barberbarbershop_id: this.barberbarbershopId,
         customer_id: customerId,
         workflow_type: 'birthday_campaign',
         status: 'active',
@@ -450,7 +450,7 @@ class WorkflowEngine {
       const workflowSteps = steps.map(step => ({
         id: crypto.randomUUID(),
         workflow_id: workflow.id,
-        barbershop_id: this.barbershopId,
+        barberbarbershop_id: this.barberbarbershopId,
         customer_id: customerId,
         step_number: step.step_number,
         action_type: step.action_type,
@@ -493,7 +493,7 @@ class WorkflowEngine {
         .from('customers')
         .select('*')
         .eq('id', customerId)
-        .eq('barbershop_id', this.barbershopId)
+        .eq('barberbarbershop_id', this.barberbarbershopId)
         .single()
 
       if (!customer) {
@@ -515,7 +515,7 @@ class WorkflowEngine {
       // Create tier upgrade workflow
       const tierUpgradeWorkflow = {
         id: crypto.randomUUID(),
-        barbershop_id: this.barbershopId,
+        barberbarbershop_id: this.barberbarbershopId,
         customer_id: customerId,
         workflow_type: 'tier_upgrade',
         status: 'active',
@@ -580,7 +580,7 @@ class WorkflowEngine {
       const workflowStep = {
         id: crypto.randomUUID(),
         workflow_id: workflow.id,
-        barbershop_id: this.barbershopId,
+        barberbarbershop_id: this.barberbarbershopId,
         customer_id: customerId,
         step_number: 1,
         action_type: 'email',
@@ -779,7 +779,7 @@ export async function POST(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barbershopId } = authResult
+    const { barberbarbershopId } = authResult
     const body = await request.json()
 
     const {
@@ -794,7 +794,7 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    const engine = new WorkflowEngine(barbershopId)
+    const engine = new WorkflowEngine(barberbarbershopId)
     let result
 
     switch (workflow_type) {
@@ -838,7 +838,7 @@ export async function GET(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barbershopId } = authResult
+    const { barberbarbershopId } = authResult
     const { searchParams } = new URL(request.url)
 
     const customerId = searchParams.get('customer_id')
@@ -853,7 +853,7 @@ export async function GET(request) {
         *,
         automation_workflow_steps(*)
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
 
     if (customerId) query = query.eq('customer_id', customerId)
     if (workflowType) query = query.eq('workflow_type', workflowType)

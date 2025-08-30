@@ -4,11 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'shop_id parameter is required' },
+        { error: 'barbershop_id parameter is required' },
         { status: 400 }
       )
     }
@@ -19,7 +19,7 @@ export async function GET(request) {
     const { data: shop, error: shopError } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', shopId)
+      .eq('id', barbershopId)
       .single()
 
     if (shopError || !shop) {

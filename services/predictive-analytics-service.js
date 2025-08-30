@@ -83,13 +83,13 @@ export class PredictiveAnalyticsService {
   /**
    * Generate comprehensive predictive analytics
    */
-  async generatePredictions(barbershopId, timeframe = 30) {
+  async generatePredictions(barberbarbershopId, timeframe = 30) {
 
-    const historicalData = await this.fetchHistoricalData(barbershopId)
+    const historicalData = await this.fetchHistoricalData(barberbarbershopId)
     
     const predictions = {
       timestamp: Date.now(),
-      barbershopId,
+      barberbarbershopId,
       timeframe,
       forecasts: {}
     }
@@ -132,7 +132,7 @@ export class PredictiveAnalyticsService {
     
     predictions.confidence = this.calculateOverallConfidence(predictions.forecasts)
 
-    this.forecasts.set(`${barbershopId}_${Date.now()}`, predictions)
+    this.forecasts.set(`${barberbarbershopId}_${Date.now()}`, predictions)
 
     return predictions
   }
@@ -1001,7 +1001,7 @@ export class PredictiveAnalyticsService {
   /**
    * Fetch historical data for analysis
    */
-  async fetchHistoricalData(barbershopId) {
+  async fetchHistoricalData(barberbarbershopId) {
     return {
       revenue: [380, 420, 395, 450, 480, 520, 490, 510, 530, 560],
       bookings: [10, 12, 11, 13, 14, 15, 14, 15, 16, 17],
@@ -1024,16 +1024,16 @@ export class PredictiveAnalyticsService {
   /**
    * Get no-show predictions only (convenience method)
    */
-  async getNoShowPredictions(barbershopId, days = 7) {
-    const historicalData = await this.fetchHistoricalData(barbershopId)
+  async getNoShowPredictions(barberbarbershopId, days = 7) {
+    const historicalData = await this.fetchHistoricalData(barberbarbershopId)
     return await this.predictNoShows(historicalData, days)
   }
 
   /**
    * Get high-risk appointments requiring immediate action
    */
-  async getHighRiskAppointments(barbershopId, days = 3) {
-    const noShowData = await this.getNoShowPredictions(barbershopId, days)
+  async getHighRiskAppointments(barberbarbershopId, days = 3) {
+    const noShowData = await this.getNoShowPredictions(barberbarbershopId, days)
     
     return {
       urgent: noShowData.predictions.filter(p => p.riskTier === 'red' && p.noShowProbability > 70),

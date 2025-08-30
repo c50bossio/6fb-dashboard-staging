@@ -88,7 +88,7 @@ export async function GET(request) {
         services(name),
         barbershop_staff(first_name, last_name)
       `)
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('status', 'confirmed')
       .gte('scheduled_at', today.toISOString())
       .lte('scheduled_at', nextHour.toISOString())
@@ -117,7 +117,7 @@ export async function GET(request) {
     const { data: lowInventory } = await supabase
       .from('inventory')
       .select('product_name, current_stock, reorder_level')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .lt('current_stock', 'reorder_level')
       .limit(3)
     
@@ -139,7 +139,7 @@ export async function GET(request) {
     const { data: todayBookings } = await supabase
       .from('bookings')
       .select('id', { count: 'exact', head: true })
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('status', 'completed')
       .gte('scheduled_at', new Date(today.setHours(0, 0, 0, 0)).toISOString())
       .lte('scheduled_at', new Date(today.setHours(23, 59, 59, 999)).toISOString())
@@ -147,7 +147,7 @@ export async function GET(request) {
     const { data: todayRevenue } = await supabase
       .from('transactions')
       .select('amount')
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .eq('status', 'completed')
       .gte('created_at', new Date(today.setHours(0, 0, 0, 0)).toISOString())
       .lte('created_at', new Date(today.setHours(23, 59, 59, 999)).toISOString())
@@ -172,7 +172,7 @@ export async function GET(request) {
     const { data: inactiveCustomers, count } = await supabase
       .from('customers')
       .select('*', { count: 'exact', head: true })
-      .eq('shop_id', shop.id)
+      .eq('barbershop_id', shop.id)
       .lt('last_visit_at', sixtyDaysAgo.toISOString())
     
     if (count && count > 0) {

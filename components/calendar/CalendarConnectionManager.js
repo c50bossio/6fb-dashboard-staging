@@ -13,27 +13,27 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useCalendarAccounts, useConnectCalendar, useDisconnectCalendar, useSyncCalendar } from '@/hooks/queries/useCalendar'
 
-export function CalendarConnectionManager({ shopId }) {
+export function CalendarConnectionManager({ barbershopId }) {
   const [syncingAccountId, setSyncingAccountId] = useState(null)
-  const { data: accounts, isLoading, error } = useCalendarAccounts(shopId)
+  const { data: accounts, isLoading, error } = useCalendarAccounts(barbershopId)
   const connectCalendar = useConnectCalendar()
   const disconnectCalendar = useDisconnectCalendar()
   const syncCalendar = useSyncCalendar()
   
   const handleConnect = () => {
-    connectCalendar.mutate(shopId)
+    connectCalendar.mutate(barbershopId)
   }
   
   const handleDisconnect = async (accountId) => {
     if (confirm('Are you sure you want to disconnect this calendar?')) {
-      disconnectCalendar.mutate({ shopId, accountId })
+      disconnectCalendar.mutate({ barbershopId, accountId })
     }
   }
   
   const handleSync = async (accountId) => {
     setSyncingAccountId(accountId)
     try {
-      await syncCalendar.mutateAsync({ shopId, accountId })
+      await syncCalendar.mutateAsync({ barbershopId, accountId })
     } finally {
       setSyncingAccountId(null)
     }

@@ -39,7 +39,7 @@ export * from './useNotifications'
  * New Hook Pattern:
  * ```javascript
  * import { useShopDashboard } from '@/hooks'
- * const { appointments, staff, isLoading } = useShopDashboard(shopId)
+ * const { appointments, staff, isLoading } = useShopDashboard(barbershopId)
  * ```
  * 
  * Benefits:

@@ -11,7 +11,7 @@ export async function GET() {
     // Get user profile (what auth would return)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('organization_id, role, shop_id, barbershop_id, email')
+      .select('organization_id, role, barbershop_id, barberbarbershop_id, email')
       .eq('id', testUserId)
       .single()
 
@@ -41,7 +41,7 @@ export async function GET() {
           location: shop.address || 'Location not set'
         }))
       } 
-      // Fallback to shop_id (single shop owner)
+      // Fallback to barbershop_id (single shop owner)
       else if (profile.shop_id) {
         const { data: singleShop } = await supabase
           .from('barbershops')
@@ -68,7 +68,7 @@ export async function GET() {
         .eq('owner_id', testUserId)
 
       if (ownedShops?.length > 0) {
-        const shopIds = ownedShops.map(shop => shop.id)
+        const barbershopIds = ownedShops.map(shop => shop.id)
         
         const { data: barberStaff } = await supabase
           .from('barbershop_staff')
@@ -84,7 +84,7 @@ export async function GET() {
               avatar_url
             )
           `)
-          .in('barbershop_id', shopIds)
+          .in('barberbarbershop_id', barbershopIds)
           .eq('role', 'BARBER')
           .eq('is_active', true)
 

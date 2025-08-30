@@ -35,8 +35,8 @@ export async function GET(request) {
         subscription_tier,
         subscription_status,
         role,
-        shop_id,
         barbershop_id,
+        barberbarbershop_id,
         created_at
       `)
       .eq('id', user.id)
@@ -52,8 +52,8 @@ export async function GET(request) {
         subscription_tier: 'pro',
         subscription_status: 'active',
         role: 'SHOP_OWNER',
-        shop_id: 'dev-shop-123',
         barbershop_id: 'dev-shop-123',
+        barberbarbershop_id: 'dev-shop-123',
         created_at: new Date().toISOString()
       }
       userError = null
@@ -107,8 +107,8 @@ export async function GET(request) {
       },
       profile: {
         role: userData.role,
-        shop_id: userData.shop_id,
-        barbershop_id: userData.barbershop_id
+        barbershop_id: userData.barbershop_id,
+        barberbarbershop_id: userData.barberbarbershop_id
       },
       features: getFeaturesByTier(normalizedTier)
     }

@@ -248,12 +248,12 @@ export async function GET(request) {
       console.log(`🏪 Staff API: Determining barbershop for user...`)
     }
     
-    const barbershopId = await retryDatabaseOperation(async () => {
-      const { barbershopId } = await getTenant(profile.id, { supabase })
-      return barbershopId
+    const barberbarbershopId = await retryDatabaseOperation(async () => {
+      const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+      return barberbarbershopId
     })
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       console.error('❌ Staff API: No barbershop found for user profile:', { 
         profileId: profile.id,
         message: 'Tenant resolver returned no barbershop association'
@@ -262,16 +262,16 @@ export async function GET(request) {
     }
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ Staff API: Barbershop ID determined: ${barbershopId}`)
+      console.log(`✅ Staff API: Barbershop ID determined: ${barberbarbershopId}`)
     }
     
     // Step 5: Get staff with profiles using retry logic
     if (process.env.NODE_ENV === 'development') {
-      console.log(`👥 Staff API: Fetching staff for barbershop ${barbershopId}...`)
+      console.log(`👥 Staff API: Fetching staff for barbershop ${barberbarbershopId}...`)
     }
     
     const staffWithProfiles = await retryDatabaseOperation(async () => {
-      return await fetchStaffWithProfiles(supabase, barbershopId)
+      return await fetchStaffWithProfiles(supabase, barberbarbershopId)
     })
     
     if (process.env.NODE_ENV === 'development') {
@@ -281,7 +281,7 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       staff: staffWithProfiles,
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       count: staffWithProfiles.length
     })
 
@@ -369,9 +369,9 @@ if (!supabase) {
       throw new Error('Profile is required')
     }
     
-    // FIXED: Single source of truth - only check barbershop_id field
+    // FIXED: Single source of truth - only check barberbarbershop_id field
     if (profile.barbershop_id) {
-      console.log('User barbershop_id from profile:', profile.barbershop_id)
+      console.log('User barberbarbershop_id from profile:', profile.barbershop_id)
       return profile.barbershop_id
     }
     
@@ -385,7 +385,7 @@ return profile.shop_id
 // Check if user is staff at a barbershop (employee via barbershop_staff)
     const { data: staffRecord, error } = await supabase
       .from('barbershop_staff')
-      .select('barbershop_id')
+      .select('barberbarbershop_id')
       .eq('user_id', profile.id)
       .eq('is_active', true)
       .single()
@@ -405,21 +405,21 @@ return profile.shop_id
       }
     }
     
-    const barbershopId = staffRecord?.barbershop_id || null
-    if (barbershopId) {
+    const barberbarbershopId = staffRecord?.barberbarbershop_id || null
+    if (barberbarbershopId) {
       // // Debug log removed for production
 } else {
       console.warn('⚠️ getUserBarbershop: No barbershop found for user')
     }
     
-    return barbershopId
+    return barberbarbershopId
   } catch (error) {
     console.error('💥 getUserBarbershop: Unexpected error:', error)
     throw error // Re-throw to be caught by main function
   }
 }
 
-async function fetchStaffWithProfiles(supabase, barbershopId) {
+async function fetchStaffWithProfiles(supabase, barberbarbershopId) {
   try {
     // // Debug log removed for production
 if (!supabase) {
@@ -427,7 +427,7 @@ if (!supabase) {
       throw new Error('Database client not available')
     }
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       console.error('❌ fetchStaffWithProfiles: Barbershop ID is required')
       throw new Error('Barbershop ID is required')
     }
@@ -437,7 +437,7 @@ if (!supabase) {
 const { data: staff, error: staffError } = await supabase
       .from('barbershop_staff')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
       .order('created_at', { ascending: true })
 
@@ -484,7 +484,7 @@ const staffWithProfiles = staff.map(staffMember => {
       const mergedRecord = {
         id: staffMember.id,
         user_id: staffMember.user_id,
-        barbershop_id: staffMember.barbershop_id,
+        barberbarbershop_id: staffMember.barberbarbershop_id,
         role: staffMember.role,
         is_active: staffMember.is_active,
         created_at: staffMember.created_at,

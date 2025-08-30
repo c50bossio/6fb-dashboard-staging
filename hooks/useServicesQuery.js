@@ -10,21 +10,21 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 // Query keys for consistent caching
 export const serviceKeys = {
   all: ['services'],
-  byShop: (shopId) => ['services', 'shop', shopId],
-  active: (shopId) => ['services', 'shop', shopId, 'active'],
-  byCategory: (shopId, category) => ['services', 'shop', shopId, 'category', category],
+  byShop: (barbershopId) => ['services', 'shop', barbershopId],
+  active: (barbershopId) => ['services', 'shop', barbershopId, 'active'],
+  byCategory: (barbershopId, category) => ['services', 'shop', barbershopId, 'category', category],
 }
 
 /**
  * Get all services for a shop
  */
-export function useServices(shopId, options = {}) {
+export function useServices(barbershopId, options = {}) {
   const { enabled = true } = options
 
   return useQuery({
-    queryKey: serviceKeys.byShop(shopId),
-    queryFn: () => createClient().getServices(shopId, options),
-    enabled: enabled && !!shopId,
+    queryKey: serviceKeys.byShop(barbershopId),
+    queryFn: () => createClient().getServices(barbershopId, options),
+    enabled: enabled && !!barbershopId,
     staleTime: 10 * 60 * 1000, // 10 minutes (services change less frequently)
     gcTime: 30 * 60 * 1000, // 30 minutes
   })
@@ -33,11 +33,11 @@ export function useServices(shopId, options = {}) {
 /**
  * Get only active services
  */
-export function useActiveServices(shopId) {
+export function useActiveServices(barbershopId) {
   return useQuery({
-    queryKey: serviceKeys.active(shopId),
-    queryFn: () => createClient().getServices(shopId, { isActive: true }),
-    enabled: !!shopId,
+    queryKey: serviceKeys.active(barbershopId),
+    queryFn: () => createClient().getServices(barbershopId, { isActive: true }),
+    enabled: !!barbershopId,
     staleTime: 10 * 60 * 1000,
   })
 }
@@ -45,11 +45,11 @@ export function useActiveServices(shopId) {
 /**
  * Get services by category
  */
-export function useServicesByCategory(shopId, category) {
+export function useServicesByCategory(barbershopId, category) {
   return useQuery({
-    queryKey: serviceKeys.byCategory(shopId, category),
-    queryFn: () => createClient().getServices(shopId, { category, isActive: true }),
-    enabled: !!shopId && !!category,
+    queryKey: serviceKeys.byCategory(barbershopId, category),
+    queryFn: () => createClient().getServices(barbershopId, { category, isActive: true }),
+    enabled: !!barbershopId && !!category,
     staleTime: 10 * 60 * 1000,
   })
 }
@@ -57,15 +57,15 @@ export function useServicesByCategory(shopId, category) {
 /**
  * Get service categories (derived from services)
  */
-export function useServiceCategories(shopId) {
+export function useServiceCategories(barbershopId) {
   return useQuery({
-    queryKey: ['services', 'categories', shopId],
+    queryKey: ['services', 'categories', barbershopId],
     queryFn: async () => {
-      const services = await createClient().getServices(shopId, { isActive: true })
+      const services = await createClient().getServices(barbershopId, { isActive: true })
       const categories = [...new Set(services.map(service => service.category).filter(Boolean))]
       return categories.sort()
     },
-    enabled: !!shopId,
+    enabled: !!barbershopId,
     staleTime: 15 * 60 * 1000, // Categories change even less frequently
   })
 }
@@ -83,12 +83,12 @@ export function useCreateService() {
       
       // Invalidate service queries
       queryClient.invalidateQueries({ 
-        queryKey: serviceKeys.byShop(newService.shop_id) 
+        queryKey: serviceKeys.byShop(newService.barbershop_id) 
       })
       
       // Also invalidate categories as we may have added a new one
       queryClient.invalidateQueries({ 
-        queryKey: ['services', 'categories', newService.shop_id] 
+        queryKey: ['services', 'categories', newService.barbershop_id] 
       })
     },
     onError: (error) => {
@@ -112,12 +112,12 @@ export function useUpdateService() {
       
       // Invalidate service queries
       queryClient.invalidateQueries({ 
-        queryKey: serviceKeys.byShop(updatedService.shop_id) 
+        queryKey: serviceKeys.byShop(updatedService.barbershop_id) 
       })
       
       // Invalidate categories in case category changed
       queryClient.invalidateQueries({ 
-        queryKey: ['services', 'categories', updatedService.shop_id] 
+        queryKey: ['services', 'categories', updatedService.barbershop_id] 
       })
     },
     onError: (error) => {
@@ -140,7 +140,7 @@ export function useDeleteService() {
       
       // Invalidate service queries
       queryClient.invalidateQueries({ 
-        queryKey: serviceKeys.byShop(deletedService.shop_id) 
+        queryKey: serviceKeys.byShop(deletedService.barbershop_id) 
       })
     },
     onError: (error) => {
@@ -169,7 +169,7 @@ export function useBulkUpdateServices() {
       // Invalidate service queries
       if (updatedServices.length > 0) {
         queryClient.invalidateQueries({ 
-          queryKey: serviceKeys.byShop(updatedServices[0].shop_id) 
+          queryKey: serviceKeys.byShop(updatedServices[0].barbershop_id) 
         })
       }
     },
@@ -183,17 +183,17 @@ export function useBulkUpdateServices() {
 /**
  * Get services formatted for select components
  */
-export function useServiceOptions(shopId, category = null) {
+export function useServiceOptions(barbershopId, category = null) {
   const queryKey = category 
-    ? serviceKeys.byCategory(shopId, category)
-    : serviceKeys.active(shopId)
+    ? serviceKeys.byCategory(barbershopId, category)
+    : serviceKeys.active(barbershopId)
 
   const { data: services, ...rest } = useQuery({
     queryKey,
     queryFn: () => category 
-      ? createClient().getServices(shopId, { category, isActive: true })
-      : createClient().getServices(shopId, { isActive: true }),
-    enabled: !!shopId,
+      ? createClient().getServices(barbershopId, { category, isActive: true })
+      : createClient().getServices(barbershopId, { isActive: true }),
+    enabled: !!barbershopId,
     staleTime: 10 * 60 * 1000,
   })
 
@@ -210,17 +210,17 @@ export function useServiceOptions(shopId, category = null) {
 /**
  * Calculate total revenue potential for services
  */
-export function useServiceRevenuePotential(shopId) {
+export function useServiceRevenuePotential(barbershopId) {
   return useQuery({
-    queryKey: ['services', 'revenue-potential', shopId],
+    queryKey: ['services', 'revenue-potential', barbershopId],
     queryFn: async () => {
-      const services = await createClient().getServices(shopId, { isActive: true })
+      const services = await createClient().getServices(barbershopId, { isActive: true })
       
       return services.reduce((total, service) => {
         return total + (service.price || 0)
       }, 0)
     },
-    enabled: !!shopId,
+    enabled: !!barbershopId,
     staleTime: 30 * 60 * 1000, // 30 minutes
   })
 }

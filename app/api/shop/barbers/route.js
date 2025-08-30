@@ -77,7 +77,7 @@ export async function GET(request) {
       })
     }
     
-    const shopIds = shops.map(shop => shop.id)
+    const barbershopIds = shops.map(shop => shop.id)
     
     const { data: barberStaff, error: staffError } = await supabase
       .from('barbershop_staff')
@@ -93,7 +93,7 @@ export async function GET(request) {
           avatar_url
         )
       `)
-      .in('barbershop_id', shopIds)
+      .in('barberbarbershop_id', barbershopIds)
       .eq('role', 'BARBER')
       .eq('is_active', true)
     

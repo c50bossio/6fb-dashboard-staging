@@ -65,9 +65,9 @@ export default function BookingPaymentModal({
       setError('')
 
       // First, check shop's accepted payment methods
-      const shopId = booking.shop_id || booking.barbershop_id
-      if (shopId) {
-        const paymentMethodsResponse = await fetch(`/api/shop/payment-methods?shop_id=${shopId}`)
+      const barbershopId = booking.barbershop_id || booking.barberbarbershop_id
+      if (barbershopId) {
+        const paymentMethodsResponse = await fetch(`/api/shop/payment-methods?barbershop_id=${barbershopId}`)
         if (paymentMethodsResponse.ok) {
           const { accepted_methods } = await paymentMethodsResponse.json()
           
@@ -91,7 +91,7 @@ export default function BookingPaymentModal({
           barber_id: booking.barber_id,
           service_id: booking.service_id,
           payment_type: paymentType,
-          barbershop_id: shopId,
+          barberbarbershop_id: barbershopId,
           amount: booking.price || booking.service_price,
           tip_amount: tipAmount
         })
@@ -222,7 +222,7 @@ export default function BookingPaymentModal({
             {/* Tip Selection Widget */}
             {!loading && booking && (
               <TipSelectionWidget
-                barbershopId={booking.shop_id || booking.barbershop_id}
+                barberbarbershopId={booking.barbershop_id || booking.barberbarbershop_id}
                 barberId={booking.barber_id}
                 serviceId={booking.service_id}
                 serviceAmount={serviceAmount / 100} // Convert from cents

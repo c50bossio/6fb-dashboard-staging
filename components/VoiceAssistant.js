@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/solid'
 import { useState, useEffect, useRef } from 'react'
 
-export default function VoiceAssistant({ barbershop_id = 'demo' }) {
+export default function VoiceAssistant({ barberbarbershop_id = 'demo' }) {
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -114,7 +114,7 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
           command: processedCommand,
           original_command: command,
           session_id: sessionId,
-          barbershop_id,
+          barberbarbershop_id,
           context: 'voice_interaction'
         })
       })

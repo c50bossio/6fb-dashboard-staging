@@ -40,7 +40,7 @@ export async function POST(request) {
     const formData = await request.formData()
     const files = formData.getAll('files') // Support multiple files
     const platformParam = formData.get('platform')
-    const barbershopId = formData.get('barbershopId')
+    const barberbarbershopId = formData.get('barberbarbershopId')
 
     // Validation
     if (!files || files.length === 0) {
@@ -51,7 +51,7 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({
         success: false,
         error: 'Barbershop ID is required',
@@ -78,7 +78,7 @@ export async function POST(request) {
     // Process each file
     for (const file of files) {
       try {
-        const fileResult = await processFile(file, platformParam, barbershopId)
+        const fileResult = await processFile(file, platformParam, barberbarbershopId)
         
         // Merge results
         importResults.summary.filesProcessed++
@@ -153,7 +153,7 @@ export async function POST(request) {
 /**
  * Process a single file with platform detection and data transformation
  */
-async function processFile(file, platformParam, barbershopId) {
+async function processFile(file, platformParam, barberbarbershopId) {
   const fileContent = await file.text()
   const fileName = file.name
   
@@ -210,7 +210,7 @@ async function processFile(file, platformParam, barbershopId) {
         const typeResult = await processDataType(
           dataType, 
           records, 
-          barbershopId, 
+          barberbarbershopId, 
           transformer,
           platformConfig
         )
@@ -341,7 +341,7 @@ function applyPlatformMappings(data, platformConfig) {
 /**
  * Process a specific data type with enhanced error handling
  */
-async function processDataType(dataType, records, barbershopId, transformer, platformConfig) {
+async function processDataType(dataType, records, barberbarbershopId, transformer, platformConfig) {
   const result = {
     imported: 0,
     skipped: 0,
@@ -381,7 +381,7 @@ async function processDataType(dataType, records, barbershopId, transformer, pla
     duplicateAnalysis = await duplicateDetector.checkDuplicates(
       transformedRecords,
       dataType,
-      barbershopId
+      barberbarbershopId
     )
   } catch (dupError) {
     console.warn('Duplicate detection failed, proceeding without:', dupError)
@@ -399,7 +399,7 @@ async function processDataType(dataType, records, barbershopId, transformer, pla
     const importResult = await importDataType(
       dataType,
       transformedRecords,
-      barbershopId,
+      barberbarbershopId,
       duplicateAnalysis,
       importOptions
     )
@@ -432,7 +432,7 @@ async function processDataType(dataType, records, barbershopId, transformer, pla
 /**
  * Import specific data type with batch processing
  */
-async function importDataType(dataType, records, barbershopId, duplicateAnalysis, options) {
+async function importDataType(dataType, records, barberbarbershopId, duplicateAnalysis, options) {
   const result = { imported: 0, skipped: 0, errors: 0 }
   const batchSize = 100
 
@@ -451,7 +451,7 @@ async function importDataType(dataType, records, barbershopId, duplicateAnalysis
     const batch = toImport.slice(i, i + batchSize)
     
     try {
-      const batchResult = await importBatch(dataType, batch, barbershopId)
+      const batchResult = await importBatch(dataType, batch, barberbarbershopId)
       result.imported += batchResult.imported
       result.errors += batchResult.errors
     } catch (batchError) {
@@ -466,11 +466,11 @@ async function importDataType(dataType, records, barbershopId, duplicateAnalysis
 /**
  * Import a batch of records for a specific data type
  */
-async function importBatch(dataType, records, barbershopId) {
+async function importBatch(dataType, records, barberbarbershopId) {
   const tableName = getTableName(dataType)
   const preparedRecords = records.map(record => ({
     ...record,
-    barbershop_id: barbershopId,
+    barberbarbershop_id: barberbarbershopId,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     id: undefined // Let database generate ID

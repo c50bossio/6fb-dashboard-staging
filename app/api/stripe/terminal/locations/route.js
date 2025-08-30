@@ -13,9 +13,9 @@ export async function GET(request) {
   try {
     const supabase = createClient()
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershopId')
+    const barberbarbershopId = searchParams.get('barberbarbershopId')
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json(
         { error: 'Barbershop ID is required' },
         { status: 400 }
@@ -35,17 +35,17 @@ export async function GET(request) {
     // Verify access
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', user.id)
       .single()
 
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, owner_id')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
-    const hasAccess = profile?.barbershop_id === barbershopId || 
+    const hasAccess = profile?.barbershop_id === barberbarbershopId || 
                      barbershop?.owner_id === user.id ||
                      profile?.role === 'admin'
 
@@ -71,7 +71,7 @@ export async function GET(request) {
           last_seen_at
         )
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .order('created_at', { ascending: true })
 
     if (dbError) {
@@ -117,9 +117,9 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { barbershopId, displayName, address } = body
+    const { barberbarbershopId, displayName, address } = body
 
-    if (!barbershopId || !displayName) {
+    if (!barberbarbershopId || !displayName) {
       return NextResponse.json(
         { error: 'Barbershop ID and display name are required' },
         { status: 400 }
@@ -130,7 +130,7 @@ export async function POST(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, owner_id, name, address')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
     if (!barbershop || barbershop.owner_id !== user.id) {
@@ -161,7 +161,7 @@ export async function POST(request) {
         country: locationAddress.country || 'US'
       },
       metadata: {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         barbershop_name: barbershop.name || 'Unknown',
         platform: 'bookedbarber'
       }
@@ -171,7 +171,7 @@ export async function POST(request) {
     const { data: dbLocation, error: dbError } = await supabase
       .from('terminal_locations')
       .insert({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         stripe_location_id: stripeLocation.id,
         display_name: displayName,
         address: locationAddress,

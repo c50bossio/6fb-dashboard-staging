@@ -6,7 +6,7 @@ export async function POST() {
     const supabase = await createServiceRoleClient()
     
     // IDs of test/dev barbershops to remove (from our previous query)
-    const testBarbershopIds = [
+    const testBarberbarbershopIds = [
       '9d235d60-4e34-4f85-9aa7-e50556f18eec', // Mike's Professional Barbershop
       '6ae0a322-c656-43aa-9ab2-dc9c93237fcf', // Dev Test Barbershop
       '944afb4f-c731-4914-bc5a-4b83edb6d0c1', // E2E Test Barbershop 1
@@ -15,7 +15,7 @@ export async function POST() {
     ]
     
     // Keep this one - Tomb45 Channelside
-    const keepBarbershopId = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
+    const keepBarberbarbershopId = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
     
     const cleanupResults = {
       barbershopsRemoved: [],
@@ -24,26 +24,26 @@ export async function POST() {
     }
 
     // Step 1: Remove test barbershops
-    for (const barbershopId of testBarbershopIds) {
+    for (const barberbarbershopId of testBarberbarbershopIds) {
       try {
         // First remove any related data (appointments, staff, etc.)
-        await supabase.from('appointments').delete().eq('barbershop_id', barbershopId)
-        await supabase.from('barbershop_staff').delete().eq('barbershop_id', barbershopId)
-        await supabase.from('services').delete().eq('barbershop_id', barbershopId)
+        await supabase.from('appointments').delete().eq('barberbarbershop_id', barberbarbershopId)
+        await supabase.from('barbershop_staff').delete().eq('barberbarbershop_id', barberbarbershopId)
+        await supabase.from('services').delete().eq('barberbarbershop_id', barberbarbershopId)
         
         // Then remove the barbershop itself
         const { error } = await supabase
           .from('barbershops')
           .delete()
-          .eq('id', barbershopId)
+          .eq('id', barberbarbershopId)
           
         if (error) {
-          cleanupResults.errors.push(`Failed to remove barbershop ${barbershopId}: ${error.message}`)
+          cleanupResults.errors.push(`Failed to remove barbershop ${barberbarbershopId}: ${error.message}`)
         } else {
-          cleanupResults.barbershopsRemoved.push(barbershopId)
+          cleanupResults.barbershopsRemoved.push(barberbarbershopId)
         }
       } catch (error) {
-        cleanupResults.errors.push(`Error processing barbershop ${barbershopId}: ${error.message}`)
+        cleanupResults.errors.push(`Error processing barbershop ${barberbarbershopId}: ${error.message}`)
       }
     }
 
@@ -51,7 +51,7 @@ export async function POST() {
     // First, let's find users who might need to be associated with the correct shop
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, full_name, role, shop_id, barbershop_id')
+      .select('id, email, full_name, role, barbershop_id, barberbarbershop_id')
       .neq('role', 'CLIENT') // Don't modify client profiles
       
     if (profilesError) {
@@ -60,15 +60,15 @@ export async function POST() {
       // Update any shop owners or barbers who don't have proper shop associations
       for (const profile of profiles || []) {
         if (['SHOP_OWNER', 'BARBER', 'ENTERPRISE_OWNER'].includes(profile.role)) {
-          // If they don't have a shop_id or have a test shop_id, update to Tomb45
-          const needsUpdate = !profile.shop_id || testBarbershopIds.includes(profile.shop_id)
+          // If they don't have a barbershop_id or have a test barbershop_id, update to Tomb45
+          const needsUpdate = !profile.shop_id || testBarberbarbershopIds.includes(profile.shop_id)
           
           if (needsUpdate) {
             const { error } = await supabase
               .from('profiles')
               .update({ 
-                shop_id: keepBarbershopId,
-                barbershop_id: keepBarbershopId 
+                barbershop_id: keepBarberbarbershopId,
+                barberbarbershop_id: keepBarberbarbershopId 
               })
               .eq('id', profile.id)
               
@@ -90,7 +90,7 @@ export async function POST() {
     const { data: tomb45, error: tomb45Error } = await supabase
       .from('barbershops')
       .select('id, name, owner_id')
-      .eq('id', keepBarbershopId)
+      .eq('id', keepBarberbarbershopId)
       .single()
       
     if (tomb45Error) {

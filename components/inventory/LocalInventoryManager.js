@@ -51,7 +51,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs.jsx';
 import Cin7SyncStatus from './Cin7SyncStatus';
 import ProductBridgeSelector from './ProductBridgeSelector';
 
-export function LocalInventoryManager({ barbershopId }) {
+export function LocalInventoryManager({ barberbarbershopId }) {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -144,28 +144,28 @@ export function LocalInventoryManager({ barbershopId }) {
     // Ensure all modals are closed on mount
     closeAllModals();
     loadInventory();
-  }, [barbershopId]);
+  }, [barberbarbershopId]);
 
   useEffect(() => {
     filterProducts();
   }, [products, searchTerm, selectedCategory, stockFilter]);
 
   useEffect(() => {
-    if (barbershopId) {
+    if (barberbarbershopId) {
       loadStockMovements();
     }
-  }, [barbershopId, movementFilter]);
+  }, [barberbarbershopId, movementFilter]);
 
   useEffect(() => {
-    if (barbershopId) {
+    if (barberbarbershopId) {
       loadAnalytics();
     }
-  }, [barbershopId]);
+  }, [barberbarbershopId]);
 
   // Callback for refreshing inventory after CIN7 sync or POS selection
   const refreshInventory = async () => {
     await loadInventory();
-    if (barbershopId) {
+    if (barberbarbershopId) {
       await loadStockMovements();
       await loadAnalytics();
     }
@@ -202,7 +202,7 @@ export function LocalInventoryManager({ barbershopId }) {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         show_in_pos: 'false' // Show all products, not just POS
       });
 
@@ -230,7 +230,7 @@ export function LocalInventoryManager({ barbershopId }) {
     setMovementsLoading(true);
     try {
       const params = new URLSearchParams({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         movement_type: movementFilter,
         limit: '50'
       });
@@ -259,7 +259,7 @@ export function LocalInventoryManager({ barbershopId }) {
     setAnalyticsLoading(true);
     try {
       const params = new URLSearchParams({
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         days: '30'
       });
 
@@ -319,7 +319,7 @@ export function LocalInventoryManager({ barbershopId }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           inventory_id: product.id,
           adjustment_type: type,
           quantity_change: adjustment,
@@ -354,7 +354,7 @@ export function LocalInventoryManager({ barbershopId }) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           adjustments: counts,
           adjustment_type: 'count'
         })
@@ -386,7 +386,7 @@ export function LocalInventoryManager({ barbershopId }) {
     try {
       const productData = {
         ...newProduct,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         cost_price: parseFloat(newProduct.cost_price) || 0,
         retail_price: parseFloat(newProduct.retail_price) || 0
       };
@@ -443,7 +443,7 @@ export function LocalInventoryManager({ barbershopId }) {
     try {
       const productData = {
         ...editingProduct,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         cost_price: parseFloat(editingProduct.cost_price) || 0,
         retail_price: parseFloat(editingProduct.retail_price) || 0
       };
@@ -1860,7 +1860,7 @@ export function LocalInventoryManager({ barbershopId }) {
       {/* Product Bridge Selector */}
       {showPOSSelector && (
         <ProductBridgeSelector
-          barbershopId={barbershopId}
+          barberbarbershopId={barberbarbershopId}
           onClose={() => setShowPOSSelector(false)}
           onProductsAdded={handleProductsAdded}
         />

@@ -76,13 +76,13 @@ export default function ShopServicesAndPricing() {
       const supabase = createClient()
       const { data: staffData } = await supabase
         .from('barbershop_staff')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', profile.id)
         .eq('is_active', true)
         .single()
       
-      if (staffData?.barbershop_id) {
-        return staffData.barbershop_id
+      if (staffData?.barberbarbershop_id) {
+        return staffData.barberbarbershop_id
       }
     }
     
@@ -111,9 +111,9 @@ export default function ShopServicesAndPricing() {
     try {
       const supabase = createClient()
       
-      const barbershopId = await getUserBarbershop()
+      const barberbarbershopId = await getUserBarbershop()
       
-      if (!barbershopId || barbershopId === 'demo-barbershop-id') {
+      if (!barberbarbershopId || barberbarbershopId === 'demo-barbershop-id') {
         
         setServices([])
         setCategories([])
@@ -122,12 +122,12 @@ export default function ShopServicesAndPricing() {
       }
 
       // Get the services for the barbershop
-      // Note: actual production database uses 'shop_id'
+      // Note: actual production database uses 'barbershop_id'
       // Using select('*') to only get existing columns - prevents errors if image_url doesn't exist yet
       const { data: servicesData, error: servicesError } = await supabase
         .from('services')
         .select('*')
-        .eq('shop_id', barbershopId)
+        .eq('barbershop_id', barberbarbershopId)
         .order('created_at', { ascending: true })
 
       if (servicesError) {
@@ -188,9 +188,9 @@ export default function ShopServicesAndPricing() {
     setSaving(true)
     try {
       const supabase = createClient()
-      const barbershopId = await getUserBarbershop()
+      const barberbarbershopId = await getUserBarbershop()
       
-      if (!barbershopId || barbershopId === 'demo-barbershop-id') {
+      if (!barberbarbershopId || barberbarbershopId === 'demo-barbershop-id') {
         toast.error('No barbershop found. Please complete your setup first.')
         setSaving(false)
         return
@@ -198,7 +198,7 @@ export default function ShopServicesAndPricing() {
 
       // Build service data - all features now fully implemented!
       const serviceData = {
-        shop_id: barbershopId,
+        barbershop_id: barberbarbershopId,
         name: formData.name,
         description: formData.description,
         category: formData.category,
@@ -260,9 +260,9 @@ export default function ShopServicesAndPricing() {
     setSaving(true)
     try {
       const supabase = createClient()
-      const barbershopId = await getUserBarbershop()
+      const barberbarbershopId = await getUserBarbershop()
       
-      if (!barbershopId || barbershopId === 'demo-barbershop-id') {
+      if (!barberbarbershopId || barberbarbershopId === 'demo-barbershop-id') {
         toast.error('No barbershop found. Please complete your setup first.')
         setSaving(false)
         return Promise.reject(new Error('No barbershop found'))
@@ -272,7 +272,7 @@ export default function ShopServicesAndPricing() {
       const { data: existingService } = await supabase
         .from('services')
         .select('id')
-        .eq('shop_id', barbershopId)  // Correct: actual database uses shop_id
+        .eq('barbershop_id', barberbarbershopId)  // Correct: actual database uses barbershop_id
         .ilike('name', templateData.name)
         .single()
 
@@ -284,7 +284,7 @@ export default function ShopServicesAndPricing() {
 
       // Include all fields that exist in the database schema
       const serviceData = {
-        shop_id: barbershopId,
+        barbershop_id: barberbarbershopId,
         name: templateData.name,
         description: templateData.description || '',
         category: templateData.category || 'general',

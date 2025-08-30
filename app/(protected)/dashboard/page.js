@@ -32,7 +32,7 @@ export default function BarbershopDashboard() {
     hasProfile: !!profile,
     profileRole: profile?.role,
     shopId: profile?.shop_id,
-    barbershopId: profile?.barbershop_id,
+    barberbarbershopId: profile?.barbershop_id,
     subscriptionTier: profile?.subscription_tier,
     subscriptionStatus: profile?.subscription_status,
     onboardingCompleted: profile?.onboarding_completed
@@ -46,7 +46,7 @@ export default function BarbershopDashboard() {
 
   if (profile && !profile.shop_id && !profile.barbershop_id && profile.role !== 'CLIENT') {
     console.warn('🏠 Dashboard: WARNING - Profile exists but no shop association')
-    console.warn('🏪 BookedBarber: Role is', profile.role, 'but no shop_id or barbershop_id')
+    console.warn('🏪 BookedBarber: Role is', profile.role, 'but no barbershop_id or barberbarbershop_id')
   }
   
   // Handle redirect in useEffect to avoid hooks order issues

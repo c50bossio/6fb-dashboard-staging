@@ -39,7 +39,7 @@ const formatPercentage = (value) => {
   return `${(value || 0).toFixed(1)}%`
 }
 
-export default function TierAnalyticsDashboard({ barbershopId }) {
+export default function TierAnalyticsDashboard({ barberbarbershopId }) {
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('3months') // '1month', '3months', '6months', '1year'
   const [tierStructure, setTierStructure] = useState(null)
@@ -50,14 +50,14 @@ export default function TierAnalyticsDashboard({ barbershopId }) {
 
   // Load all tier analytics data
   const loadAnalyticsData = async () => {
-    if (!barbershopId) return
+    if (!barberbarbershopId) return
     
     try {
       setLoading(true)
       setError(null)
       
       // Load tier structure
-      const { data: structure } = await financialService.getTierStructure(barbershopId)
+      const { data: structure } = await financialService.getTierStructure(barberbarbershopId)
       setTierStructure(structure)
       
       // Load real tier history data
@@ -66,7 +66,7 @@ export default function TierAnalyticsDashboard({ barbershopId }) {
         .select(`
           id,
           barber_id,
-          barbershop_id,
+          barberbarbershop_id,
           tier_id,
           period_start,
           period_end,
@@ -79,7 +79,7 @@ export default function TierAnalyticsDashboard({ barbershopId }) {
           period_product_sales,
           combined_period_revenue
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('achieved_at', getDateRangeStart(dateRange))
         .order('achieved_at', { ascending: false })
 
@@ -118,7 +118,7 @@ export default function TierAnalyticsDashboard({ barbershopId }) {
           profiles:barber_id(id, first_name, last_name, full_name),
           current_tier:commission_tiers(tier_level, name, commission_percentage)
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('is_active', true)
       
       if (staffError) throw staffError
@@ -166,7 +166,7 @@ export default function TierAnalyticsDashboard({ barbershopId }) {
   
   useEffect(() => {
     loadAnalyticsData()
-  }, [barbershopId, dateRange])
+  }, [barberbarbershopId, dateRange])
   
   // Calculate analytics from tier history
   const analytics = useMemo(() => {

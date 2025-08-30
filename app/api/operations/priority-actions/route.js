@@ -14,12 +14,12 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id')
+    const barberbarbershopId = searchParams.get('barberbarbershop_id')
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({
         success: false,
-        error: 'barbershop_id is required'
+        error: 'barberbarbershop_id is required'
       }, { status: 400 })
     }
 
@@ -49,7 +49,7 @@ export async function GET(request) {
       supabase
         .from('bookings')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('scheduled_at', todayStr)
         .lt('scheduled_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString()),
       
@@ -57,7 +57,7 @@ export async function GET(request) {
       supabase
         .from('bookings')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .gte('scheduled_at', oneWeekAgoStr)
         .order('scheduled_at', { ascending: false }),
       
@@ -65,7 +65,7 @@ export async function GET(request) {
       supabase
         .from('bookings')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('status', 'CONFIRMED')
         .gte('scheduled_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString())
         .lt('scheduled_at', new Date(today.getTime() + 48 * 60 * 60 * 1000).toISOString()),
@@ -74,7 +74,7 @@ export async function GET(request) {
       supabase
         .from('bookings')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('status', 'NO_SHOW')
         .gte('scheduled_at', oneWeekAgoStr),
       
@@ -83,9 +83,9 @@ export async function GET(request) {
         .from('gmb_reviews')
         .select(`
           *,
-          gmb_accounts!inner (barbershop_id)
+          gmb_accounts!inner (barberbarbershop_id)
         `)
-        .eq('gmb_accounts.barbershop_id', barbershopId)
+        .eq('gmb_accounts.barberbarbershop_id', barberbarbershopId)
         .gte('review_date', oneWeekAgoStr)
         .order('review_date', { ascending: false }),
       
@@ -94,10 +94,10 @@ export async function GET(request) {
         .from('gmb_reviews')
         .select(`
           *,
-          gmb_accounts!inner (barbershop_id),
+          gmb_accounts!inner (barberbarbershop_id),
           gmb_review_responses (id)
         `)
-        .eq('gmb_accounts.barbershop_id', barbershopId)
+        .eq('gmb_accounts.barberbarbershop_id', barberbarbershopId)
         .is('gmb_review_responses.id', null)
         .gte('review_date', oneWeekAgoStr)
         .order('review_date', { ascending: false }),
@@ -106,14 +106,14 @@ export async function GET(request) {
       supabase
         .from('barbershops')
         .select('*')
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
         .single(),
       
       // Staff info
       supabase
         .from('barbershop_staff')
         .select('*')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('is_active', true)
     ])
 
@@ -127,7 +127,7 @@ export async function GET(request) {
       unansweredReviews: unansweredReviews || [],
       barbershopData,
       staffData: staffData || [],
-      barbershopId
+      barberbarbershopId
     })
 
     return NextResponse.json({
@@ -142,7 +142,7 @@ export async function GET(request) {
             `${unansweredReviews?.length || 0} unanswered reviews`,
             `${noShowBookings?.length || 0} recent no-shows`
           ],
-          barbershop_id: barbershopId
+          barberbarbershop_id: barberbarbershopId
         }
       }
     })

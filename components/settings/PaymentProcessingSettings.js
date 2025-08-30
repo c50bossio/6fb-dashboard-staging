@@ -40,12 +40,12 @@ export default function PaymentProcessingSettings() {
   const { user, profile } = useAuth()
   
   // Get barbershop ID using unified tenant resolver
-  const getBarbershopId = async () => {
+  const getBarberbarbershopId = async () => {
     if (!profile) return null
     
     try {
-      const { barbershopId } = await getTenant(profile.id, { supabase })
-      return barbershopId
+      const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+      return barberbarbershopId
     } catch (error) {
       console.error('Error getting barbershop ID:', error)
       return null
@@ -105,15 +105,15 @@ export default function PaymentProcessingSettings() {
       setError('')
       
       try {
-        const barbershopId = await getBarbershopId()
-        if (!barbershopId) {
+        const barberbarbershopId = await getBarberbarbershopId()
+        if (!barberbarbershopId) {
           setError('Unable to determine barbershop. Please contact support.')
           return
         }
         
         await retryWithBackoff(async () => {
           // Use UnifiedStripeManager to get comprehensive status
-          const status = await unifiedStripeManager.getUnifiedStatus(barbershopId)
+          const status = await unifiedStripeManager.getUnifiedStatus(barberbarbershopId)
           setStripeStatus(status)
           
           // Load additional data if Stripe account exists
@@ -172,9 +172,9 @@ export default function PaymentProcessingSettings() {
     if (!stripeStatus?.stripe_account_id || stripeStatus?.overall_status === 'completed') return
     
     const interval = setInterval(async () => {
-      const barbershopId = await getBarbershopId()
-      if (barbershopId) {
-        const refreshedStatus = await unifiedStripeManager.getUnifiedStatus(barbershopId, true)
+      const barberbarbershopId = await getBarberbarbershopId()
+      if (barberbarbershopId) {
+        const refreshedStatus = await unifiedStripeManager.getUnifiedStatus(barberbarbershopId, true)
         setStripeStatus(refreshedStatus)
       }
     }, 5000)
@@ -187,13 +187,13 @@ export default function PaymentProcessingSettings() {
     setError('')
     
     try {
-      const barbershopId = await getBarbershopId()
-      if (!barbershopId) {
+      const barberbarbershopId = await getBarberbarbershopId()
+      if (!barberbarbershopId) {
         throw new Error('Unable to determine barbershop. Please contact support.')
       }
       
       // Use UnifiedStripeManager for account creation and setup orchestration
-      const result = await unifiedStripeManager.orchestrateSetup(barbershopId, {
+      const result = await unifiedStripeManager.orchestrateSetup(barberbarbershopId, {
         email: user.email,
         businessType: profile?.business_type || 'individual',
         businessName: profile?.business_name || profile?.full_name,
@@ -232,13 +232,13 @@ export default function PaymentProcessingSettings() {
     setError('')
     
     try {
-      const barbershopId = await getBarbershopId()
-      if (!barbershopId) {
+      const barberbarbershopId = await getBarberbarbershopId()
+      if (!barberbarbershopId) {
         throw new Error('Unable to determine barbershop. Please contact support.')
       }
       
       // Use UnifiedStripeManager for onboarding link
-      const result = await unifiedStripeManager.generateOnboardingLink(barbershopId, {
+      const result = await unifiedStripeManager.generateOnboardingLink(barberbarbershopId, {
         refresh_url: `${window.location.origin}/dashboard/settings#payments`,
         return_url: `${window.location.origin}/dashboard/settings?section=payments&success=true`
       })
@@ -265,13 +265,13 @@ export default function PaymentProcessingSettings() {
     setLoading(true)
     
     try {
-      const barbershopId = await getBarbershopId()
-      if (!barbershopId) {
+      const barberbarbershopId = await getBarberbarbershopId()
+      if (!barberbarbershopId) {
         throw new Error('Unable to determine barbershop. Please contact support.')
       }
       
       // Use UnifiedStripeManager for dashboard link
-      const result = await unifiedStripeManager.generateOnboardingLink(barbershopId, {
+      const result = await unifiedStripeManager.generateOnboardingLink(barberbarbershopId, {
         type: 'dashboard' // Generate dashboard link instead of onboarding
       })
       
@@ -294,8 +294,8 @@ export default function PaymentProcessingSettings() {
     setError('')
     
     try {
-      const barbershopId = await getBarbershopId()
-      if (!barbershopId) {
+      const barberbarbershopId = await getBarberbarbershopId()
+      if (!barberbarbershopId) {
         throw new Error('Unable to determine barbershop. Please contact support.')
       }
       
@@ -308,11 +308,11 @@ export default function PaymentProcessingSettings() {
       const settings = scheduleMap[schedule] || scheduleMap.daily
       
       // Use UnifiedStripeManager for payout settings
-      const result = await unifiedStripeManager.updatePayoutSettings(barbershopId, settings)
+      const result = await unifiedStripeManager.updatePayoutSettings(barberbarbershopId, settings)
       
       if (result.success) {
         // Refresh unified status to reflect changes
-        const refreshedStatus = await unifiedStripeManager.getUnifiedStatus(barbershopId, true)
+        const refreshedStatus = await unifiedStripeManager.getUnifiedStatus(barberbarbershopId, true)
         setStripeStatus(refreshedStatus)
         
         setSuccess('Payout schedule updated successfully')
@@ -876,7 +876,7 @@ export default function PaymentProcessingSettings() {
                 <p className="text-sm text-gray-600 mb-6">
                   Accept payments with physical card readers for in-person transactions
                 </p>
-                <TerminalSettings barbershopId={profile?.barbershop_id} />
+                <TerminalSettings barberbarbershopId={profile?.barbershop_id} />
               </div>
             </div>
           )}

@@ -13,7 +13,7 @@ export async function POST(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    const { action, barbershop_id, customer_id, data } = await request.json()
+    const { action, barberbarbershop_id, customer_id, data } = await request.json()
     
     // Get user authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -25,26 +25,26 @@ export async function POST(request) {
     // Verify user access to barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id, barbershop_id')
+      .select('barbershop_id, barberbarbershop_id')
       .eq('id', user.id)
       .single()
     
-    const userBarbershopId = profile?.shop_id || profile?.barbershop_id
-    if (userBarbershopId !== barbershop_id) {
+    const userBarberbarbershopId = profile?.shop_id || profile?.barbershop_id
+    if (userBarberbarbershopId !== barberbarbershop_id) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
     
     switch (action) {
       case 'calculate_risk_score':
-        return await calculateRiskScore(supabase, barbershop_id, customer_id, data)
+        return await calculateRiskScore(supabase, barberbarbershop_id, customer_id, data)
       case 'update_behavior_data':
-        return await updateBehaviorData(supabase, barbershop_id, customer_id, data)
+        return await updateBehaviorData(supabase, barberbarbershop_id, customer_id, data)
       case 'bulk_calculate_scores':
-        return await bulkCalculateScores(supabase, barbershop_id)
+        return await bulkCalculateScores(supabase, barberbarbershop_id)
       case 'get_customer_score':
-        return await getCustomerScore(supabase, barbershop_id, customer_id)
+        return await getCustomerScore(supabase, barberbarbershop_id, customer_id)
       case 'update_statistics':
-        return await updateStatistics(supabase, barbershop_id)
+        return await updateStatistics(supabase, barberbarbershop_id)
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
@@ -63,11 +63,11 @@ export async function GET(request) {
     const supabase = createClient(cookieStore)
     const { searchParams } = new URL(request.url)
     
-    const barbershop_id = searchParams.get('barbershop_id')
+    const barberbarbershop_id = searchParams.get('barberbarbershop_id')
     const customer_id = searchParams.get('customer_id')
     const type = searchParams.get('type') || 'summary'
     
-    if (!barbershop_id) {
+    if (!barberbarbershop_id) {
       return NextResponse.json({ error: 'Barbershop ID is required' }, { status: 400 })
     }
     
@@ -81,24 +81,24 @@ export async function GET(request) {
     // Verify user access to barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id, barbershop_id')
+      .select('barbershop_id, barberbarbershop_id')
       .eq('id', user.id)
       .single()
     
-    const userBarbershopId = profile?.shop_id || profile?.barbershop_id
-    if (userBarbershopId !== barbershop_id) {
+    const userBarberbarbershopId = profile?.shop_id || profile?.barbershop_id
+    if (userBarberbarbershopId !== barberbarbershop_id) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
     
     switch (type) {
       case 'summary':
-        return await getBarbershopSummary(supabase, barbershop_id)
+        return await getBarbershopSummary(supabase, barberbarbershop_id)
       case 'customer_scores':
-        return await getCustomerScores(supabase, barbershop_id, customer_id)
+        return await getCustomerScores(supabase, barberbarbershop_id, customer_id)
       case 'high_risk_customers':
-        return await getHighRiskCustomers(supabase, barbershop_id)
+        return await getHighRiskCustomers(supabase, barberbarbershop_id)
       case 'statistics':
-        return await getStatistics(supabase, barbershop_id)
+        return await getStatistics(supabase, barberbarbershop_id)
       default:
         return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
     }
@@ -113,7 +113,7 @@ export async function GET(request) {
 
 // Helper Functions
 
-async function calculateRiskScore(supabase, barbershopId, customerId, behaviorData) {
+async function calculateRiskScore(supabase, barberbarbershopId, customerId, behaviorData) {
   // Use the database function to calculate risk score
   const { data, error } = await supabase.rpc('calculate_customer_risk_score', {
     p_total_bookings: behaviorData.total_bookings || 0,
@@ -136,7 +136,7 @@ async function calculateRiskScore(supabase, barbershopId, customerId, behaviorDa
     .from('customer_behavior_scores')
     .upsert({
       customer_id: customerId,
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       ...behaviorData,
       risk_score: scoreData.risk_score,
       risk_tier: scoreData.risk_tier,
@@ -162,17 +162,17 @@ async function calculateRiskScore(supabase, barbershopId, customerId, behaviorDa
   })
 }
 
-async function updateBehaviorData(supabase, barbershopId, customerId, behaviorData) {
+async function updateBehaviorData(supabase, barberbarbershopId, customerId, behaviorData) {
   // Update the behavior data and recalculate risk score
-  return await calculateRiskScore(supabase, barbershopId, customerId, behaviorData)
+  return await calculateRiskScore(supabase, barberbarbershopId, customerId, behaviorData)
 }
 
-async function bulkCalculateScores(supabase, barbershopId) {
+async function bulkCalculateScores(supabase, barberbarbershopId) {
   // Get all customers for this barbershop
   const { data: customers, error } = await supabase
     .from('customers')
     .select('id')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
   
   if (error) {
     throw new Error(`Failed to get customers: ${error.message}`)
@@ -184,10 +184,10 @@ async function bulkCalculateScores(supabase, barbershopId) {
   for (const customer of customers) {
     try {
       // Get customer's booking history
-      const behaviorData = await getCustomerBehaviorMetrics(supabase, customer.id, barbershopId)
+      const behaviorData = await getCustomerBehaviorMetrics(supabase, customer.id, barberbarbershopId)
       
       // Calculate and store risk score
-      await calculateRiskScore(supabase, barbershopId, customer.id, behaviorData)
+      await calculateRiskScore(supabase, barberbarbershopId, customer.id, behaviorData)
       processed++
     } catch (error) {
       console.error(`Failed to process customer ${customer.id}:`, error)
@@ -203,20 +203,20 @@ async function bulkCalculateScores(supabase, barbershopId) {
   })
 }
 
-async function getCustomerBehaviorMetrics(supabase, customerId, barbershopId) {
+async function getCustomerBehaviorMetrics(supabase, customerId, barberbarbershopId) {
   // Get appointment history
   const { data: appointments } = await supabase
     .from('appointments')
     .select('*')
     .eq('customer_id', customerId)
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
   
   // Get booking history  
   const { data: bookings } = await supabase
     .from('bookings')
     .select('*')
     .eq('customer_id', customerId)
-    .eq('shop_id', barbershopId)
+    .eq('barbershop_id', barberbarbershopId)
   
   const allBookings = [...(appointments || []), ...(bookings || [])]
   
@@ -253,12 +253,12 @@ async function getCustomerBehaviorMetrics(supabase, customerId, barbershopId) {
   }
 }
 
-async function getCustomerScore(supabase, barbershopId, customerId) {
+async function getCustomerScore(supabase, barberbarbershopId, customerId) {
   const { data, error } = await supabase
     .from('customer_behavior_scores')
     .select('*')
     .eq('customer_id', customerId)
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .single()
   
   if (error && error.code !== 'PGRST116') { // Not found is OK
@@ -271,12 +271,12 @@ async function getCustomerScore(supabase, barbershopId, customerId) {
   })
 }
 
-async function getBarbershopSummary(supabase, barbershopId) {
+async function getBarbershopSummary(supabase, barberbarbershopId) {
   // Get summary statistics
   const { data: stats } = await supabase
     .from('barbershop_risk_statistics')
     .select('*')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .single()
   
   // Get recent high-risk customers
@@ -288,7 +288,7 @@ async function getBarbershopSummary(supabase, barbershopId) {
       risk_tier,
       customers(name, email)
     `)
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .eq('risk_tier', 'red')
     .order('risk_score', { ascending: false })
     .limit(10)
@@ -300,14 +300,14 @@ async function getBarbershopSummary(supabase, barbershopId) {
   })
 }
 
-async function getCustomerScores(supabase, barbershopId, customerId = null) {
+async function getCustomerScores(supabase, barberbarbershopId, customerId = null) {
   let query = supabase
     .from('customer_behavior_scores')
     .select(`
       *,
       customers(name, email, phone)
     `)
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
   
   if (customerId) {
     query = query.eq('customer_id', customerId)
@@ -327,14 +327,14 @@ async function getCustomerScores(supabase, barbershopId, customerId = null) {
   })
 }
 
-async function getHighRiskCustomers(supabase, barbershopId) {
+async function getHighRiskCustomers(supabase, barberbarbershopId) {
   const { data, error } = await supabase
     .from('customer_behavior_scores')
     .select(`
       *,
       customers(name, email, phone)
     `)
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .in('risk_tier', ['red', 'yellow'])
     .order('risk_score', { ascending: false })
     .limit(20)
@@ -349,11 +349,11 @@ async function getHighRiskCustomers(supabase, barbershopId) {
   })
 }
 
-async function getStatistics(supabase, barbershopId) {
+async function getStatistics(supabase, barberbarbershopId) {
   const { data, error } = await supabase
     .from('barbershop_risk_statistics')
     .select('*')
-    .eq('barbershop_id', barbershopId)
+    .eq('barberbarbershop_id', barberbarbershopId)
     .single()
   
   if (error && error.code !== 'PGRST116') {
@@ -366,10 +366,10 @@ async function getStatistics(supabase, barbershopId) {
   })
 }
 
-async function updateStatistics(supabase, barbershopId) {
+async function updateStatistics(supabase, barberbarbershopId) {
   // Call the database function to update statistics
   const { error } = await supabase.rpc('update_barbershop_risk_statistics', {
-    p_barbershop_id: barbershopId
+    p_barberbarbershop_id: barberbarbershopId
   })
   
   if (error) {

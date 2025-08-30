@@ -11,7 +11,7 @@ const supabase = createClient(
  * Get demand forecasts and inventory predictions for a barbershop
  * 
  * Query Parameters:
- * - shopId: UUID of the barbershop
+ * - barbershopId: UUID of the barbershop
  * - horizon: Number of days to forecast (default: 30)
  * - productId: Optional - get forecast for specific product
  * - includeRecommendations: Boolean - include reorder recommendations (default: true)
@@ -19,14 +19,14 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shopId')
+    const barbershopId = searchParams.get('barbershopId')
     const horizon = parseInt(searchParams.get('horizon')) || 30
     const productId = searchParams.get('productId')
     const includeRecommendations = searchParams.get('includeRecommendations') !== 'false'
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'shopId is required' },
+        { error: 'barbershopId is required' },
         { status: 400 }
       )
     }
@@ -56,7 +56,7 @@ export async function GET(request) {
           image_url
         )
       `)
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .eq('forecast_horizon_days', horizon)
       .gte('forecast_date', new Date().toISOString().split('T')[0])
 
@@ -109,7 +109,7 @@ export async function GET(request) {
             price
           )
         `)
-        .eq('shop_id', shopId)
+        .eq('barbershop_id', barbershopId)
         .in('status', ['pending', 'approved'])
 
       if (productId) {
@@ -145,7 +145,7 @@ export async function GET(request) {
           category
         )
       `)
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .eq('status', 'active')
       .order('priority_score', { ascending: false })
       .limit(10)
@@ -204,7 +204,7 @@ export async function GET(request) {
       alerts: alerts || [],
       summary,
       metadata: {
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         forecast_horizon_days: horizon,
         forecast_date: new Date().toISOString().split('T')[0],
         generated_at: new Date().toISOString(),
@@ -230,7 +230,7 @@ export async function GET(request) {
  * 
  * Body:
  * {
- *   shopId: string,
+ *   barbershopId: string,
  *   forecastDays?: number (default: 30),
  *   recalculateAll?: boolean (default: false),
  *   productIds?: string[] (optional - specific products only)
@@ -240,15 +240,15 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      shopId,
+      barbershopId,
       forecastDays = 30,
       recalculateAll = false,
       productIds
     } = body
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'shopId is required' },
+        { error: 'barbershopId is required' },
         { status: 400 }
       )
     }
@@ -257,7 +257,7 @@ export async function POST(request) {
     let productsQuery = supabase
       .from('products')
       .select('id, name, category, current_stock, cost_price')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
 
     if (productIds && Array.isArray(productIds)) {
@@ -282,7 +282,7 @@ export async function POST(request) {
       const { data: usagePatterns } = await supabase
         .from('inventory_usage_patterns')
         .select('*')
-        .eq('shop_id', shopId)
+        .eq('barbershop_id', barbershopId)
         .eq('product_id', product.id)
         .gte('pattern_date', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
         .order('pattern_date', { ascending: false })
@@ -318,7 +318,7 @@ export async function POST(request) {
 
       // Create forecast
       const forecast = {
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         product_id: product.id,
         forecast_date: new Date().toISOString().split('T')[0],
         forecast_horizon_days: forecastDays,
@@ -357,7 +357,7 @@ export async function POST(request) {
           : 0
 
         const recommendation = {
-          shop_id: shopId,
+          barbershop_id: barbershopId,
           product_id: product.id,
           current_stock_level: currentStock,
           reorder_point: reorderPoint,
@@ -389,7 +389,7 @@ export async function POST(request) {
         await supabase
           .from('inventory_demand_forecasts')
           .delete()
-          .eq('shop_id', shopId)
+          .eq('barbershop_id', barbershopId)
           .eq('forecast_date', new Date().toISOString().split('T')[0])
       }
 
@@ -400,7 +400,7 @@ export async function POST(request) {
         const { error: insertError } = await supabase
           .from('inventory_demand_forecasts')
           .upsert(batch, { 
-            onConflict: 'shop_id,product_id,forecast_date',
+            onConflict: 'barbershop_id,product_id,forecast_date',
             ignoreDuplicates: false 
           })
 
@@ -419,7 +419,7 @@ export async function POST(request) {
         const { error: insertError } = await supabase
           .from('inventory_reorder_recommendations')
           .upsert(recommendation, {
-            onConflict: 'shop_id,product_id',
+            onConflict: 'barbershop_id,product_id',
             ignoreDuplicates: false
           })
 
@@ -433,7 +433,7 @@ export async function POST(request) {
       success: true,
       message: 'Inventory forecasts generated successfully',
       results: {
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         products_analyzed: products.length,
         forecasts_created: forecastsCreated,
         recommendations_created: recommendationsCreated,

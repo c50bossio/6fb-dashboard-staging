@@ -13,16 +13,16 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const barbershopId = searchParams.get('barbershop_id');
+    const barberbarbershopId = searchParams.get('barberbarbershop_id');
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'Barbershop ID required' }, { status: 400 });
     }
 
     const { data: enrollment, error } = await supabase
       .from('marketplace_enrollment')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single();
 
     if (error && error.code !== 'PGRST116') { // Not found is ok
@@ -41,7 +41,7 @@ export async function GET(request) {
     const { data: orderStats } = await supabase
       .from('marketplace_orders')
       .select('total_amount, status')
-      .eq('barbershop_id', barbershopId);
+      .eq('barberbarbershop_id', barberbarbershopId);
 
     const stats = {
       total_orders: orderStats?.length || 0,
@@ -73,7 +73,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      barbershop_id,
+      barberbarbershop_id,
       company_name,
       tax_id,
       reseller_permit,
@@ -86,7 +86,7 @@ export async function POST(request) {
     } = body;
 
     // Validate required fields
-    if (!barbershop_id || !company_name || !shipping_address) {
+    if (!barberbarbershop_id || !company_name || !shipping_address) {
       return NextResponse.json({ 
         error: 'Missing required fields' 
       }, { status: 400 });
@@ -96,7 +96,7 @@ export async function POST(request) {
     const { data: existing } = await supabase
       .from('marketplace_enrollment')
       .select('id')
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .single();
 
     if (existing) {
@@ -112,7 +112,7 @@ export async function POST(request) {
     const { data: enrollment, error } = await supabase
       .from('marketplace_enrollment')
       .insert({
-        barbershop_id,
+        barberbarbershop_id,
         is_enrolled: true,
         enrolled_at: new Date().toISOString(),
         enrollment_status: 'pending', // Will be activated after review
@@ -151,7 +151,7 @@ export async function POST(request) {
     await supabase
       .from('inventory_alerts')
       .insert({
-        barbershop_id,
+        barberbarbershop_id,
         alert_type: 'enrollment_pending',
         severity: 'info',
         product_name: `New marketplace enrollment: ${company_name}`,
@@ -180,9 +180,9 @@ export async function PUT(request) {
     }
 
     const body = await request.json();
-    const { barbershop_id, ...updateData } = body;
+    const { barberbarbershop_id, ...updateData } = body;
 
-    if (!barbershop_id) {
+    if (!barberbarbershop_id) {
       return NextResponse.json({ error: 'Barbershop ID required' }, { status: 400 });
     }
 
@@ -199,7 +199,7 @@ export async function PUT(request) {
     const { data: enrollment, error } = await supabase
       .from('marketplace_enrollment')
       .update(updateData)
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .select()
       .single();
 
@@ -228,9 +228,9 @@ export async function DELETE(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const barbershopId = searchParams.get('barbershop_id');
+    const barberbarbershopId = searchParams.get('barberbarbershop_id');
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'Barbershop ID required' }, { status: 400 });
     }
 
@@ -238,7 +238,7 @@ export async function DELETE(request) {
     const { data: pendingOrders } = await supabase
       .from('marketplace_orders')
       .select('id')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .in('status', ['submitted', 'approved', 'processing'])
       .limit(1);
 
@@ -252,7 +252,7 @@ export async function DELETE(request) {
     const { data: enrollment } = await supabase
       .from('marketplace_enrollment')
       .select('current_balance')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single();
 
     if (enrollment?.current_balance > 0) {
@@ -268,7 +268,7 @@ export async function DELETE(request) {
         is_enrolled: false,
         enrollment_status: 'inactive'
       })
-      .eq('barbershop_id', barbershopId);
+      .eq('barberbarbershop_id', barberbarbershopId);
 
     if (error) {
       console.error('Error cancelling enrollment:', error);

@@ -8,7 +8,7 @@ const TimezoneService = require('../services/timezone.service');
 export const useCalendarEvents = (options = {}) => {
   const {
     barberId = null,
-    shopId = 'shop_001',
+    barbershopId = 'shop_001',
     timezone = TimezoneService.getCurrentTimezone(),
     useServerExpansion = true // Use server-side expansion for better performance
   } = options;
@@ -38,7 +38,7 @@ export const useCalendarEvents = (options = {}) => {
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           barber_id: barberId,
-          barbershop_id: shopId,
+          barberbarbershop_id: barbershopId,
           include_single: true,
           timezone: timezone
         })
@@ -60,7 +60,7 @@ export const useCalendarEvents = (options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [barberId, shopId, timezone]);
+  }, [barberId, barbershopId, timezone]);
 
   /**
    * Fetch events using client-side expansion (fallback)
@@ -73,7 +73,7 @@ export const useCalendarEvents = (options = {}) => {
       const params = new URLSearchParams({
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
-        barbershop_id: shopId
+        barberbarbershop_id: barbershopId
       });
 
       if (barberId) {
@@ -97,7 +97,7 @@ export const useCalendarEvents = (options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [barberId, shopId, timezone]);
+  }, [barberId, barbershopId, timezone]);
 
   /**
    * Main fetch function that chooses the appropriate method
@@ -131,7 +131,7 @@ export const useCalendarEvents = (options = {}) => {
         },
         body: JSON.stringify({
           ...appointmentData,
-          barbershop_id: shopId,
+          barberbarbershop_id: barbershopId,
           timezone: timezone
         })
       });
@@ -155,7 +155,7 @@ export const useCalendarEvents = (options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [shopId, timezone, dateRange, fetchEvents]);
+  }, [barbershopId, timezone, dateRange, fetchEvents]);
 
   /**
    * Update an existing appointment

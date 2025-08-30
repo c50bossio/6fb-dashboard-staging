@@ -60,7 +60,7 @@ export default function DebugRLSPage() {
       console.log('🎯 Testing RLS manager...')
       const mockContext = {
         userId: 'test-user',
-        shopId: 'test-shop',
+        barbershopId: 'test-shop',
         role: 'shop_owner',
         permissions: []
       }

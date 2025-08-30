@@ -43,7 +43,7 @@ export default function TestBookingFixesPage() {
           {showTracker && (
             <div className="mt-4 border-t pt-4">
               <ClientHistoryTracker 
-                barbershopId="test-barbershop-123"
+                barberbarbershopId="test-barbershop-123"
                 onClientSelect={(client) => {
                   
                   alert(`Selected client: ${client.name}`)

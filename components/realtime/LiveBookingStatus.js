@@ -253,7 +253,7 @@ const BookingFilters = ({ filters, onFiltersChange }) => {
   )
 }
 
-export function LiveBookingStatus({ className = '', shopId = null }) {
+export function LiveBookingStatus({ className = '', barbershopId = null }) {
   const [filters, setFilters] = useState({
     status: 'all',
     timeRange: 'today',
@@ -265,7 +265,7 @@ export function LiveBookingStatus({ className = '', shopId = null }) {
   
   // Build filters for the live data hook
   const dataFilters = {
-    ...(shopId && { shop_id: shopId }),
+    ...(barbershopId && { barbershop_id: barbershopId }),
     ...(filters.status !== 'all' && { status: filters.status })
   }
 

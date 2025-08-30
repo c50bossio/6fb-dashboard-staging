@@ -11,7 +11,7 @@ const supabase = createClient(
  * Real-time cross-selling suggestions for POS checkout
  * 
  * Query Parameters:
- * - shopId: UUID of the barbershop
+ * - barbershopId: UUID of the barbershop
  * - currentItems: JSON array of current cart items
  * - serviceId: UUID of the current service (optional)
  * - customerId: UUID of the customer (optional)
@@ -20,15 +20,15 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shopId')
+    const barbershopId = searchParams.get('barbershopId')
     const currentItemsParam = searchParams.get('currentItems')
     const serviceId = searchParams.get('serviceId')
     const customerId = searchParams.get('customerId')
     const sessionId = searchParams.get('sessionId')
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'shopId is required' },
+        { error: 'barbershopId is required' },
         { status: 400 }
       )
     }
@@ -69,7 +69,7 @@ export async function GET(request) {
               category
             )
           `)
-          .eq('shop_id', shopId)
+          .eq('barbershop_id', barbershopId)
           .in('product_a_id', productIds)
           .gte('affinity_score', 0.3)
           .gte('confidence_level', 70)
@@ -106,7 +106,7 @@ export async function GET(request) {
             category
           )
         `)
-        .eq('shop_id', shopId)
+        .eq('barbershop_id', barbershopId)
         .eq('service_id', serviceId)
         .gte('affinity_score', 0.25)
         .gte('purchase_frequency', 0.15) // At least 15% of customers buy this
@@ -145,7 +145,7 @@ export async function GET(request) {
           )
         `)
         .eq('customer_id', customerId)
-        .eq('shop_id', shopId)
+        .eq('barbershop_id', barbershopId)
         .gte('cross_sell_receptivity', 0.4)
         .order('purchase_frequency', { ascending: false })
         .limit(3)
@@ -176,7 +176,7 @@ export async function GET(request) {
       .map((suggestion, index) => ({
         ...suggestion,
         rank: index + 1,
-        suggestion_id: `${shopId}-${Date.now()}-${index}`
+        suggestion_id: `${barbershopId}-${Date.now()}-${index}`
       }))
 
     // Store suggestions in queue for analytics tracking
@@ -184,7 +184,7 @@ export async function GET(request) {
       await supabase
         .from('cross_sell_queue')
         .insert({
-          shop_id: shopId,
+          barbershop_id: barbershopId,
           session_id: sessionId,
           customer_id: customerId,
           current_cart_items: currentItems,
@@ -202,7 +202,7 @@ export async function GET(request) {
       suggestions: topSuggestions,
       metadata: {
         total_suggestions: topSuggestions.length,
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         session_id: sessionId,
         generated_at: new Date().toISOString(),
         suggestion_types: {
@@ -231,7 +231,7 @@ export async function GET(request) {
  * 
  * Body:
  * {
- *   shopId: string,
+ *   barbershopId: string,
  *   sessionId: string,
  *   suggestionId: string,
  *   action: 'accepted' | 'declined' | 'ignored' | 'viewed' | 'dismissed',
@@ -247,7 +247,7 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      shopId,
+      barbershopId,
       sessionId,
       suggestionId,
       action,
@@ -260,9 +260,9 @@ export async function POST(request) {
     } = body
 
     // Validate required fields
-    if (!shopId || !suggestionId || !action || !productId) {
+    if (!barbershopId || !suggestionId || !action || !productId) {
       return NextResponse.json(
-        { error: 'Missing required fields: shopId, suggestionId, action, productId' },
+        { error: 'Missing required fields: barbershopId, suggestionId, action, productId' },
         { status: 400 }
       )
     }
@@ -285,7 +285,7 @@ export async function POST(request) {
         .from('cross_sell_queue')
         .select('suggested_products')
         .eq('session_id', sessionId)
-        .eq('shop_id', shopId)
+        .eq('barbershop_id', barbershopId)
         .single()
 
       if (queueData?.suggested_products) {
@@ -301,7 +301,7 @@ export async function POST(request) {
     const { data, error } = await supabase
       .from('cross_sell_analytics')
       .insert({
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         suggested_product_id: productId,
         anchor_product_id: anchorProductId,
         customer_id: customerId,
@@ -331,7 +331,7 @@ export async function POST(request) {
     if (action === 'accepted') {
       // This is a simple implementation - in a real system you'd track which campaign generated the suggestion
       await supabase.rpc('increment_campaign_stats', {
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         revenue_to_add: revenueImpact
       })
     }

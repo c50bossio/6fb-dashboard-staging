@@ -152,7 +152,7 @@ export async function POST(request) {
     const { data: credentials } = await supabase
       .from('cin7_credentials')
       .select('encrypted_api_key, encrypted_account_id')
-      .eq('barbershop_id', barbershop.id)
+      .eq('barberbarbershop_id', barbershop.id)
       .eq('is_active', true)
       .single()
     
@@ -180,7 +180,7 @@ export async function POST(request) {
         
         // Log inventory check
         await supabase.from('inventory_checks').insert({
-          barbershop_id: barbershop.id,
+          barberbarbershop_id: barbershop.id,
           product_sku: data.sku,
           requested_quantity: data.quantity,
           available_stock: availability.currentStock,
@@ -196,7 +196,7 @@ export async function POST(request) {
         
         // Log sale sync
         await supabase.from('sale_syncs').insert({
-          barbershop_id: barbershop.id,
+          barberbarbershop_id: barbershop.id,
           bookbarber_sale_id: data.saleId,
           cin7_sale_id: saleResult.cin7SaleId,
           sync_status: saleResult.success ? 'success' : 'failed',
@@ -210,7 +210,7 @@ export async function POST(request) {
             await supabase.rpc('decrement_stock', {
               p_sku: item.sku,
               p_quantity: item.quantity,
-              p_barbershop_id: barbershop.id
+              p_barberbarbershop_id: barbershop.id
             })
           }
         }

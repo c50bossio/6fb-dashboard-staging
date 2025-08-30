@@ -15,7 +15,7 @@ export async function GET() {
     // Get user profile to determine their role and access
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, role, shop_id, barbershop_id, organization_id')
+      .select('id, full_name, role, barbershop_id, barberbarbershop_id, organization_id')
       .eq('id', user.id)
       .single()
     
@@ -30,12 +30,12 @@ export async function GET() {
 
     // If user has direct shop access
     if (profile.shop_id || profile.barbershop_id) {
-      const shopId = profile.shop_id || profile.barbershop_id
+      const barbershopId = profile.shop_id || profile.barbershop_id
       
       const { data: barbershop } = await supabase
         .from('barbershops')
         .select('id, name, address')
-        .eq('id', shopId)
+        .eq('id', barbershopId)
         .single()
       
       if (barbershop) {
@@ -53,18 +53,18 @@ export async function GET() {
     if (locations.length === 0) {
       const { data: staffAssignments } = await supabase
         .from('barbershop_staff')
-        .select('barbershop_id, role, is_active')
+        .select('barberbarbershop_id, role, is_active')
         .eq('user_id', user.id)
         .eq('is_active', true)
       
       if (staffAssignments && staffAssignments.length > 0) {
         // Get all barbershops where user is staff
-        const barbershopIds = staffAssignments.map(s => s.barbershop_id)
+        const barberbarbershopIds = staffAssignments.map(s => s.barberbarbershop_id)
         
         const { data: barbershops } = await supabase
           .from('barbershops')
           .select('id, name, address')
-          .in('id', barbershopIds)
+          .in('id', barberbarbershopIds)
         
         if (barbershops) {
           locations = barbershops.map(shop => ({

@@ -75,7 +75,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({
         data: {
           user_id: barberId,
-          barbershop_id: profile.barbershop_id,
+          barberbarbershop_id: profile.barbershop_id,
           display_name: profile.full_name,
           title: profile.role === 'BARBER' ? 'Professional Barber' : 'Master Barber',
           bio: profile.bio || '',
@@ -142,15 +142,15 @@ export async function POST(request, { params }) {
       // Check if user is shop owner/manager
       const { data: barberProfile } = await supabase
         .from('profiles')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('id', barberId)
         .single()
 
-      if (barberProfile?.barbershop_id) {
+      if (barberProfile?.barberbarbershop_id) {
         const { data: staffCheck } = await supabase
           .from('barbershop_staff')
           .select('role')
-          .eq('barbershop_id', barberProfile.barbershop_id)
+          .eq('barberbarbershop_id', barberProfile.barberbarbershop_id)
           .eq('user_id', user.id)
           .single()
 
@@ -168,11 +168,11 @@ export async function POST(request, { params }) {
     // Get barbershop info
     const { data: barberProfile } = await supabase
       .from('profiles')
-      .select('barbershop_id')
+      .select('barberbarbershop_id')
       .eq('id', barberId)
       .single()
 
-    if (!barberProfile?.barbershop_id) {
+    if (!barberProfile?.barberbarbershop_id) {
       return NextResponse.json({ error: 'Barber must be associated with a barbershop' }, { status: 400 })
     }
 
@@ -180,7 +180,7 @@ export async function POST(request, { params }) {
     const { data: shopWebsite } = await supabase
       .from('barbershop_websites')
       .select('id')
-      .eq('barbershop_id', barberProfile.barbershop_id)
+      .eq('barberbarbershop_id', barberProfile.barberbarbershop_id)
       .single()
 
     // Check if page record exists
@@ -188,13 +188,13 @@ export async function POST(request, { params }) {
       .from('barber_page_customization')
       .select('id')
       .eq('user_id', barberId)
-      .eq('barbershop_id', barberProfile.barbershop_id)
+      .eq('barberbarbershop_id', barberProfile.barberbarbershop_id)
       .single()
 
     // Prepare page data
     const pageData = {
       user_id: barberId,
-      barbershop_id: barberProfile.barbershop_id,
+      barberbarbershop_id: barberProfile.barberbarbershop_id,
       barbershop_website_id: shopWebsite?.id || null,
       slug: body.slug,
       page_title: body.page_title,
@@ -246,7 +246,7 @@ export async function POST(request, { params }) {
         .from('barber_page_customization')
         .update(pageData)
         .eq('user_id', barberId)
-        .eq('barbershop_id', barberProfile.barbershop_id)
+        .eq('barberbarbershop_id', barberProfile.barberbarbershop_id)
         .select()
         .single()
 
@@ -325,11 +325,11 @@ export async function PATCH(request, { params }) {
     // Get barber's barbershop
     const { data: barberProfile } = await supabase
       .from('profiles')
-      .select('barbershop_id')
+      .select('barberbarbershop_id')
       .eq('id', barberId)
       .single()
 
-    if (!barberProfile?.barbershop_id) {
+    if (!barberProfile?.barberbarbershop_id) {
       return NextResponse.json({ error: 'Barber not found' }, { status: 404 })
     }
 
@@ -337,7 +337,7 @@ export async function PATCH(request, { params }) {
     const { data: staffCheck } = await supabase
       .from('barbershop_staff')
       .select('role')
-      .eq('barbershop_id', barberProfile.barbershop_id)
+      .eq('barberbarbershop_id', barberProfile.barberbarbershop_id)
       .eq('user_id', user.id)
       .single()
 
@@ -359,7 +359,7 @@ export async function PATCH(request, { params }) {
       .from('barber_page_customization')
       .update(updateData)
       .eq('user_id', barberId)
-      .eq('barbershop_id', barberProfile.barbershop_id)
+      .eq('barberbarbershop_id', barberProfile.barberbarbershop_id)
       .select()
       .single()
 

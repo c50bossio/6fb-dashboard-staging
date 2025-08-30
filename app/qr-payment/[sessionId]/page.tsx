@@ -20,7 +20,7 @@ interface CartItem {
 
 interface PaymentSession {
   id: string
-  barbershop_id: string
+  barberbarbershop_id: string
   cart_items: CartItem[]
   total_amount: number
   subtotal: number
@@ -74,7 +74,7 @@ export default function QRPaymentPage() {
           cart_items: [],
           subtotal: 0,
           tax_amount: 0,
-          barbershop_id: '',
+          barberbarbershop_id: '',
           stripe_session_url: '',
           expires_at: ''
         })

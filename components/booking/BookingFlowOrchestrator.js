@@ -114,7 +114,7 @@ const BookingLoadingSkeleton = () => (
  */
 export default function BookingFlowOrchestrator({
   // Core props - compatible with existing booking components
-  barbershopId,
+  barberbarbershopId,
   barbershopSlug,
   preselectedBarber = null,
   preselectedService = null,
@@ -325,7 +325,7 @@ export default function BookingFlowOrchestrator({
         
         // Prepare component props
         const props = {
-          barbershopId,
+          barberbarbershopId,
           barbershopSlug,
           preselectedBarber: urlParams.barberId || preselectedBarber,
           preselectedService: urlParams.serviceId || preselectedService,
@@ -363,7 +363,7 @@ export default function BookingFlowOrchestrator({
           // Fallback to safe default
           setSelectedComponent('PublicBookingFlow')
           setComponentProps({
-            barbershopId,
+            barberbarbershopId,
             barbershopSlug,
             preselectedBarber,
             preselectedService,
@@ -382,7 +382,7 @@ export default function BookingFlowOrchestrator({
     return () => {
       mounted = false
     }
-  }, [barbershopId, barbershopSlug, retryCount])
+  }, [barberbarbershopId, barbershopSlug, retryCount])
 
   // Error retry handler
   const handleRetry = () => {
@@ -435,7 +435,7 @@ export default function BookingFlowOrchestrator({
     
     return (
       <RealtimeAvailabilityChecker
-        barbershopId={barbershopId}
+        barberbarbershopId={barberbarbershopId}
         barberId={componentProps.preselectedBarber}
         serviceId={componentProps.preselectedService}
         selectedDate={new Date()}
@@ -519,7 +519,7 @@ export default function BookingFlowOrchestrator({
 // TypeScript support (if needed)
 BookingFlowOrchestrator.propTypes = {
   // Core props
-  barbershopId: (props, propName, componentName) => {
+  barberbarbershopId: (props, propName, componentName) => {
     if (!props[propName]) {
       return new Error(`${propName} is required for ${componentName}`)
     }

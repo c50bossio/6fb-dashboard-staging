@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
-export function useTrafftIntegration(barbershopId = 'default') {
+export function useTrafftIntegration(barberbarbershopId = 'default') {
   const [integration, setIntegration] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -20,7 +20,7 @@ export function useTrafftIntegration(barbershopId = 'default') {
   const checkIntegrationStatus = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/integrations/trafft/auth?barbershopId=${barbershopId}`)
+      const response = await fetch(`/api/integrations/trafft/auth?barberbarbershopId=${barberbarbershopId}`)
       const data = await response.json()
       
       if (response.ok) {
@@ -36,7 +36,7 @@ export function useTrafftIntegration(barbershopId = 'default') {
     } finally {
       setLoading(false)
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   /**
    * Authenticate with Trafft
@@ -54,7 +54,7 @@ export function useTrafftIntegration(barbershopId = 'default') {
         body: JSON.stringify({
           apiKey,
           apiSecret,
-          barbershopId
+          barberbarbershopId
         })
       })
 
@@ -74,7 +74,7 @@ export function useTrafftIntegration(barbershopId = 'default') {
     } finally {
       setLoading(false)
     }
-  }, [barbershopId, checkIntegrationStatus])
+  }, [barberbarbershopId, checkIntegrationStatus])
 
   /**
    * Disconnect integration
@@ -87,7 +87,7 @@ export function useTrafftIntegration(barbershopId = 'default') {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ barbershopId })
+        body: JSON.stringify({ barberbarbershopId })
       })
 
       if (response.ok) {
@@ -107,7 +107,7 @@ export function useTrafftIntegration(barbershopId = 'default') {
     } finally {
       setLoading(false)
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   /**
    * Sync data from Trafft
@@ -123,7 +123,7 @@ export function useTrafftIntegration(barbershopId = 'default') {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          barbershopId,
+          barberbarbershopId,
           syncType,
           dateFrom,
           dateTo
@@ -147,14 +147,14 @@ export function useTrafftIntegration(barbershopId = 'default') {
     } finally {
       setLoading(false)
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   /**
    * Get sync history
    */
   const getSyncHistory = useCallback(async (limit = 10) => {
     try {
-      const response = await fetch(`/api/integrations/trafft/sync?barbershopId=${barbershopId}&limit=${limit}`)
+      const response = await fetch(`/api/integrations/trafft/sync?barberbarbershopId=${barberbarbershopId}&limit=${limit}`)
       const data = await response.json()
       
       if (response.ok) {
@@ -168,7 +168,7 @@ export function useTrafftIntegration(barbershopId = 'default') {
       setError('Failed to get sync history')
       return []
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   /**
    * Get business analytics
@@ -225,7 +225,7 @@ export function useTrafftIntegration(barbershopId = 'default') {
 /**
  * Hook for real-time Trafft data updates
  */
-export function useTrafftRealtimeData(barbershopId = 'default') {
+export function useTrafftRealtimeData(barberbarbershopId = 'default') {
   const [realtimeData, setRealtimeData] = useState({
     appointments: [],
     customers: [],
@@ -237,7 +237,7 @@ export function useTrafftRealtimeData(barbershopId = 'default') {
   })
   const [lastUpdate, setLastUpdate] = useState(null)
 
-  const { integration, sync } = useTrafftIntegration(barbershopId)
+  const { integration, sync } = useTrafftIntegration(barberbarbershopId)
 
   /**
    * Simulate real-time updates (in production, use WebSocket or polling)
@@ -285,12 +285,12 @@ export function useTrafftRealtimeData(barbershopId = 'default') {
 /**
  * Hook for Trafft business insights and AI context
  */
-export function useTrafftBusinessInsights(barbershopId = 'default') {
+export function useTrafftBusinessInsights(barberbarbershopId = 'default') {
   const [insights, setInsights] = useState(null)
   const [loading, setLoading] = useState(false)
   const [alerts, setAlerts] = useState([])
 
-  const { businessAnalytics, getAnalytics } = useTrafftIntegration(barbershopId)
+  const { businessAnalytics, getAnalytics } = useTrafftIntegration(barberbarbershopId)
 
   /**
    * Generate business insights from analytics data

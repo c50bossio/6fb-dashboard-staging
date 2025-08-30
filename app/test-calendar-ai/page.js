@@ -35,7 +35,7 @@ export default function CalendarAITestPage() {
   
   const handleOptimizeSchedule = () => {
     optimizeSchedule.mutate({
-      shopId: TEST_BARBERSHOP_ID,
+      barbershopId: TEST_BARBERSHOP_ID,
       date: selectedDate
     })
   }
@@ -85,7 +85,7 @@ export default function CalendarAITestPage() {
           {/* Main Content - 2 columns */}
           <div className="lg:col-span-2 space-y-6">
             {/* Calendar Connection */}
-            <CalendarConnectionManager shopId={TEST_BARBERSHOP_ID} />
+            <CalendarConnectionManager barbershopId={TEST_BARBERSHOP_ID} />
             
             {/* Sync Status */}
             {syncStatus && (
@@ -243,7 +243,7 @@ export default function CalendarAITestPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <AISchedulingSidebar
-                shopId={TEST_BARBERSHOP_ID}
+                barbershopId={TEST_BARBERSHOP_ID}
                 service={{ duration_minutes: 30, name: 'Haircut' }}
                 date={selectedDate}
                 onSelectTimeSlot={handleSlotSelection}

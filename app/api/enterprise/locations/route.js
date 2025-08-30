@@ -128,13 +128,13 @@ export async function GET(request) {
           const { data: staff } = await supabase
             .from('barbershop_staff')
             .select('*')
-            .eq('barbershop_id', shop.id)
+            .eq('barberbarbershop_id', shop.id)
 
           // Get services for each location
           const { data: services } = await supabase
             .from('services')
             .select('*')
-            .eq('barbershop_id', shop.id)
+            .eq('barberbarbershop_id', shop.id)
 
           return {
             id: shop.id,

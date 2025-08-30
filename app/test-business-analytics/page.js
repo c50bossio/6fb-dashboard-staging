@@ -15,8 +15,8 @@ export default function TestBusinessAnalyticsPage() {
     
     try {
       // Test with a sample shop ID
-      const shopId = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
-      const result = await getShopAnalytics(shopId, 3)
+      const barbershopId = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
+      const result = await getShopAnalytics(barbershopId, 3)
       setAnalytics(result)
       console.log('✅ Business Analytics Test Successful:', result)
     } catch (err) {

@@ -12,7 +12,7 @@ export default function TestRLSPage() {
         // Mock context for testing
         const mockContext = {
           userId: 'test-user',
-          shopId: 'test-shop',
+          barbershopId: 'test-shop',
           role: 'shop_owner',
           permissions: []
         }

@@ -11,40 +11,40 @@ import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
  * Fetch all dashboard data in parallel
  * Replaces the complex GlobalDashboardContext
  */
-export function useDashboardData(shopId) {
+export function useDashboardData(barbershopId) {
   const queries = useQueries({
     queries: [
       {
-        queryKey: queryKeys.metrics.dashboard(shopId),
-        queryFn: () => createServiceRoleClient().getDashboardMetrics(shopId),
-        enabled: !!shopId,
+        queryKey: queryKeys.metrics.dashboard(barbershopId),
+        queryFn: () => createServiceRoleClient().getDashboardMetrics(barbershopId),
+        enabled: !!barbershopId,
         staleTime: 5 * 60 * 1000, // 5 minutes
       },
       {
-        queryKey: queryKeys.appointments.byShop(shopId),
-        queryFn: () => createServiceRoleClient().getAppointments(shopId, {
+        queryKey: queryKeys.appointments.byShop(barbershopId),
+        queryFn: () => createServiceRoleClient().getAppointments(barbershopId, {
           startDate: new Date().toISOString().split('T')[0],
           endDate: new Date().toISOString().split('T')[0],
         }),
-        enabled: !!shopId,
+        enabled: !!barbershopId,
         staleTime: 2 * 60 * 1000, // 2 minutes
       },
       {
-        queryKey: queryKeys.services.byShop(shopId),
-        queryFn: () => createServiceRoleClient().getServices(shopId),
-        enabled: !!shopId,
+        queryKey: queryKeys.services.byShop(barbershopId),
+        queryFn: () => createServiceRoleClient().getServices(barbershopId),
+        enabled: !!barbershopId,
         staleTime: 10 * 60 * 1000, // 10 minutes
       },
       {
-        queryKey: queryKeys.staff.byShop(shopId),
-        queryFn: () => createServiceRoleClient().getStaff(shopId),
-        enabled: !!shopId,
+        queryKey: queryKeys.staff.byShop(barbershopId),
+        queryFn: () => createServiceRoleClient().getStaff(barbershopId),
+        enabled: !!barbershopId,
         staleTime: 10 * 60 * 1000, // 10 minutes
       },
       {
-        queryKey: queryKeys.customers.byShop(shopId),
-        queryFn: () => createServiceRoleClient().getCustomers(shopId, { limit: 10 }),
-        enabled: !!shopId,
+        queryKey: queryKeys.customers.byShop(barbershopId),
+        queryFn: () => createServiceRoleClient().getCustomers(barbershopId, { limit: 10 }),
+        enabled: !!barbershopId,
         staleTime: 5 * 60 * 1000, // 5 minutes
       },
     ]
@@ -82,11 +82,11 @@ export function useDashboardData(shopId) {
 /**
  * Fetch dashboard metrics only
  */
-export function useDashboardMetrics(shopId, options = {}) {
+export function useDashboardMetrics(barbershopId, options = {}) {
   return useQuery({
-    queryKey: queryKeys.metrics.dashboard(shopId),
-    queryFn: () => createServiceRoleClient().getDashboardMetrics(shopId, options),
-    enabled: !!shopId,
+    queryKey: queryKeys.metrics.dashboard(barbershopId),
+    queryFn: () => createServiceRoleClient().getDashboardMetrics(barbershopId, options),
+    enabled: !!barbershopId,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 10 * 60 * 1000, // Auto-refresh every 10 minutes
   })
@@ -95,9 +95,9 @@ export function useDashboardMetrics(shopId, options = {}) {
 /**
  * Fetch revenue metrics for a specific period
  */
-export function useRevenueMetrics(shopId, period = 'month') {
+export function useRevenueMetrics(barbershopId, period = 'month') {
   return useQuery({
-    queryKey: queryKeys.metrics.revenue(shopId, period),
+    queryKey: queryKeys.metrics.revenue(barbershopId, period),
     queryFn: async () => {
       const now = new Date()
       let startDate, endDate
@@ -127,12 +127,12 @@ export function useRevenueMetrics(shopId, period = 'month') {
           endDate = new Date()
       }
       
-      return createServiceRoleClient().getDashboardMetrics(shopId, {
+      return createServiceRoleClient().getDashboardMetrics(barbershopId, {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
       })
     },
-    enabled: !!shopId,
+    enabled: !!barbershopId,
     staleTime: 10 * 60 * 1000, // 10 minutes
   })
 }
@@ -140,16 +140,16 @@ export function useRevenueMetrics(shopId, period = 'month') {
 /**
  * Fetch today's appointments with auto-refresh
  */
-export function useTodayAppointments(shopId) {
+export function useTodayAppointments(barbershopId) {
   const today = new Date().toISOString().split('T')[0]
   
   return useQuery({
-    queryKey: queryKeys.appointments.byDate(shopId, today),
-    queryFn: () => createServiceRoleClient().getAppointments(shopId, {
+    queryKey: queryKeys.appointments.byDate(barbershopId, today),
+    queryFn: () => createServiceRoleClient().getAppointments(barbershopId, {
       startDate: today,
       endDate: today,
     }),
-    enabled: !!shopId,
+    enabled: !!barbershopId,
     staleTime: 1 * 60 * 1000, // 1 minute for today's appointments
     refetchInterval: 2 * 60 * 1000, // Auto-refresh every 2 minutes
   })
@@ -158,18 +158,18 @@ export function useTodayAppointments(shopId) {
 /**
  * Fetch upcoming appointments
  */
-export function useUpcomingAppointments(shopId, days = 7) {
+export function useUpcomingAppointments(barbershopId, days = 7) {
   const startDate = new Date()
   const endDate = new Date()
   endDate.setDate(endDate.getDate() + days)
   
   return useQuery({
-    queryKey: ['appointments', 'upcoming', shopId, days],
-    queryFn: () => createServiceRoleClient().getAppointments(shopId, {
+    queryKey: ['appointments', 'upcoming', barbershopId, days],
+    queryFn: () => createServiceRoleClient().getAppointments(barbershopId, {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
     }),
-    enabled: !!shopId,
+    enabled: !!barbershopId,
     staleTime: 5 * 60 * 1000,
   })
 }
@@ -178,8 +178,8 @@ export function useUpcomingAppointments(shopId, days = 7) {
  * Legacy compatibility wrapper for components still using context
  * This allows gradual migration from GlobalDashboardContext
  */
-export function useLegacyDashboardCompat(shopId) {
-  const dashboardData = useDashboardData(shopId)
+export function useLegacyDashboardCompat(barbershopId) {
+  const dashboardData = useDashboardData(barbershopId)
   
   // Map to old context shape for backward compatibility
   return {

@@ -55,15 +55,15 @@ export class ProactiveMonitoringService {
   /**
    * Start proactive monitoring
    */
-  async startMonitoring(userId, barbershopId) {
+  async startMonitoring(userId, barberbarbershopId) {
     
-    await this.checkMetrics(userId, barbershopId)
+    await this.checkMetrics(userId, barberbarbershopId)
     
     this.monitoringInterval = setInterval(async () => {
-      await this.checkMetrics(userId, barbershopId)
+      await this.checkMetrics(userId, barberbarbershopId)
     }, this.checkInterval)
     
-    this.setupRealtimeMonitoring(userId, barbershopId)
+    this.setupRealtimeMonitoring(userId, barberbarbershopId)
     
     return {
       status: 'active',
@@ -90,15 +90,15 @@ export class ProactiveMonitoringService {
   /**
    * Check current metrics and generate alerts
    */
-  async checkMetrics(userId, barbershopId) {
+  async checkMetrics(userId, barberbarbershopId) {
     try {
-      const metrics = await this.fetchBusinessMetrics(barbershopId)
+      const metrics = await this.fetchBusinessMetrics(barberbarbershopId)
       
       const analysis = await this.analyzeMetricsWithAI(metrics, userId)
       
       const alerts = this.generateAlerts(metrics, analysis)
       
-      await this.processAlerts(alerts, userId, barbershopId)
+      await this.processAlerts(alerts, userId, barberbarbershopId)
       
       this.lastMetrics = metrics
       
@@ -118,14 +118,14 @@ export class ProactiveMonitoringService {
   /**
    * Fetch current business metrics
    */
-  async fetchBusinessMetrics(barbershopId) {
+  async fetchBusinessMetrics(barberbarbershopId) {
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:9999'
     
     try {
-      const analyticsRes = await fetch(`${baseUrl}/api/analytics/live-data?barbershop_id=${barbershopId}`)
+      const analyticsRes = await fetch(`${baseUrl}/api/analytics/live-data?barberbarbershop_id=${barberbarbershopId}`)
       const analyticsData = await analyticsRes.json()
       
-      const appointmentsRes = await fetch(`${baseUrl}/api/appointments?barbershop_id=${barbershopId}`)
+      const appointmentsRes = await fetch(`${baseUrl}/api/appointments?barberbarbershop_id=${barberbarbershopId}`)
       const appointmentsData = await appointmentsRes.json()
       
       return {
@@ -314,7 +314,7 @@ export class ProactiveMonitoringService {
   /**
    * Process and dispatch alerts
    */
-  async processAlerts(alerts, userId, barbershopId) {
+  async processAlerts(alerts, userId, barberbarbershopId) {
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:9999'
     
     for (const alert of alerts) {
@@ -340,7 +340,7 @@ export class ProactiveMonitoringService {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: userId,
-            barbershop_id: barbershopId,
+            barberbarbershop_id: barberbarbershopId,
             type: alert.type,
             title: alert.title,
             message: alert.message,
@@ -379,11 +379,11 @@ export class ProactiveMonitoringService {
   /**
    * Setup real-time monitoring for critical events
    */
-  setupRealtimeMonitoring(userId, barbershopId) {
+  setupRealtimeMonitoring(userId, barberbarbershopId) {
     
     
     setInterval(async () => {
-      const metrics = await this.fetchBusinessMetrics(barbershopId)
+      const metrics = await this.fetchBusinessMetrics(barberbarbershopId)
       
       if (metrics) {
         if (this.lastMetrics) {
@@ -400,7 +400,7 @@ export class ProactiveMonitoringService {
               actions: ['Investigate cause', 'Check system status']
             }
             
-            await this.processAlerts([alert], userId, barbershopId)
+            await this.processAlerts([alert], userId, barberbarbershopId)
           }
         }
       }

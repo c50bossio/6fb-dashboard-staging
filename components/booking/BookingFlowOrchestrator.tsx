@@ -57,7 +57,7 @@ interface FeatureFlags {
 
 interface BookingFlowOrchestratorProps {
   // Core props - compatible with existing booking components
-  barbershopId: string
+  barberbarbershopId: string
   barbershopSlug?: string
   preselectedBarber?: string | null
   preselectedService?: string | null
@@ -214,7 +214,7 @@ const BookingLoadingSkeleton: React.FC = () => (
  */
 const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
   // Core props
-  barbershopId,
+  barberbarbershopId,
   barbershopSlug,
   preselectedBarber = null,
   preselectedService = null,
@@ -471,7 +471,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
         
         // Prepare component props with intelligent defaults
         const props = {
-          barbershopId,
+          barberbarbershopId,
           barbershopSlug,
           preselectedBarber: urlParams.barberId || preselectedBarber,
           preselectedService: urlParams.serviceId || preselectedService,
@@ -520,7 +520,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
           // Fallback to safe default with minimal props
           setSelectedComponent('PublicBookingFlow')
           setComponentProps({
-            barbershopId,
+            barberbarbershopId,
             barbershopSlug,
             preselectedBarber,
             preselectedService,
@@ -542,7 +542,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
       mounted = false
       clearTimeout(timeoutId)
     }
-  }, [barbershopId, barbershopSlug, retryCount])
+  }, [barberbarbershopId, barbershopSlug, retryCount])
 
   // Error retry handler with exponential backoff
   const handleRetry = () => {
@@ -605,7 +605,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
     
     return (
       <RealtimeAvailabilityChecker
-        barbershopId={barbershopId}
+        barberbarbershopId={barberbarbershopId}
         barberId={componentProps.preselectedBarber}
         serviceId={componentProps.preselectedService}
         selectedDate={new Date()}

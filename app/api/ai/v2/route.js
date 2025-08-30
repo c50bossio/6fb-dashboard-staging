@@ -405,7 +405,7 @@ async function detectAndExecuteAction(userMessage, userId, context, selectedAgen
     task: userMessage,
     priority: detectedAction.priority,
     context: {
-      shopId: context?.shopId || 'ai-chat-shop',
+      barbershopId: context?.barbershopId || 'ai-chat-shop',
       business_name: context?.businessName || 'Barbershop',
       agent: selectedAgent,
       user_id: userId

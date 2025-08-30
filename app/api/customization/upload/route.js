@@ -11,11 +11,11 @@ export async function POST(request) {
     const formData = await request.formData()
     const file = formData.get('file')
     const uploadType = formData.get('type') // 'logo', 'cover', 'gallery', 'team'
-    const shopId = formData.get('shopId')
+    const barbershopId = formData.get('barbershopId')
 
-    if (!file || !uploadType || !shopId) {
+    if (!file || !uploadType || !barbershopId) {
       return NextResponse.json(
-        { error: 'File, type, and shopId are required' },
+        { error: 'File, type, and barbershopId are required' },
         { status: 400 }
       )
     }
@@ -35,7 +35,7 @@ export async function POST(request) {
     }
 
     const fileExtension = file.name.split('.').pop().toLowerCase()
-    const uniqueFilename = `${uploadType}-${shopId}-${uuidv4()}.${fileExtension}`
+    const uniqueFilename = `${uploadType}-${barbershopId}-${uuidv4()}.${fileExtension}`
     
     const uploadDir = getUploadDirectory(uploadType)
     const uploadPath = join(process.cwd(), 'public', uploadDir)
@@ -93,18 +93,18 @@ export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url)
     const fileUrl = searchParams.get('url')
-    const shopId = searchParams.get('shopId')
+    const barbershopId = searchParams.get('barbershopId')
 
-    if (!fileUrl || !shopId) {
+    if (!fileUrl || !barbershopId) {
       return NextResponse.json(
-        { error: 'File URL and shopId are required' },
+        { error: 'File URL and barbershopId are required' },
         { status: 400 }
       )
     }
 
     const filename = fileUrl.split('/').pop()
     
-    if (!filename.includes(shopId)) {
+    if (!filename.includes(barbershopId)) {
       return NextResponse.json(
         { error: 'Unauthorized to delete this file' },
         { status: 403 }

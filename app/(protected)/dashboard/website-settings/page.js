@@ -64,11 +64,11 @@ export default function WebsiteSettingsPage() {
     seo_keywords: ''
   })
 
-  const [shopId, setShopId] = useState(null)
+  const [barbershopId, setShopId] = useState(null)
   
   useEffect(() => {
     if (user?.id) {
-      // Get shop_id from user profile
+      // Get barbershop_id from user profile
       const fetchUserShopId = async () => {
         try {
           const response = await fetch('/api/profile')
@@ -77,7 +77,7 @@ export default function WebsiteSettingsPage() {
             if (profile?.shop_id) {
               setShopId(profile.shop_id)
             } else {
-              // If no shop_id in profile, check if user owns any barbershops
+              // If no barbershop_id in profile, check if user owns any barbershops
               const shopResponse = await fetch('/api/barbershops/user-shops')
               if (shopResponse.ok) {
                 const { shops } = await shopResponse.json()
@@ -129,17 +129,17 @@ export default function WebsiteSettingsPage() {
   ]
 
   useEffect(() => {
-    if (shopId) {
+    if (barbershopId) {
       loadSettings()
     }
-  }, [shopId])
+  }, [barbershopId])
 
   const loadSettings = async () => {
-    if (!shopId) return
+    if (!barbershopId) return
     
     setLoading(true)
     try {
-      const response = await fetch(`/api/customization/${shopId}/settings`)
+      const response = await fetch(`/api/customization/${barbershopId}/settings`)
       if (response.ok) {
         const { data } = await response.json()
         setSettings({
@@ -164,14 +164,14 @@ export default function WebsiteSettingsPage() {
   }
 
   const saveSettings = async () => {
-    if (!shopId) {
+    if (!barbershopId) {
       setMessage({ type: 'error', text: 'No barbershop found. Please contact support.' })
       return
     }
     
     setSaving(true)
     try {
-      const response = await fetch(`/api/customization/${shopId}/settings`, {
+      const response = await fetch(`/api/customization/${barbershopId}/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -231,7 +231,7 @@ export default function WebsiteSettingsPage() {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('type', uploadType)
-    formData.append('shopId', shopId)
+    formData.append('barbershopId', barbershopId)
 
     try {
       const response = await fetch('/api/customization/upload', {
@@ -261,13 +261,13 @@ export default function WebsiteSettingsPage() {
     handleInputChange('shop_slug', slug)
   }
 
-  if (loading || !shopId) {
+  if (loading || !barbershopId) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
           <p className="text-gray-600">
-            {!shopId ? 'Loading your barbershop...' : 'Loading website settings...'}
+            {!barbershopId ? 'Loading your barbershop...' : 'Loading website settings...'}
           </p>
         </div>
       </div>

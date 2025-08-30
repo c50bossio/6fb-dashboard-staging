@@ -45,7 +45,7 @@ export async function GET(request) {
       // Try to find if user is a barber
       const { data: barbers, error: barberError } = await supabase
         .from('barbers')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('user_id', user.id)
         .single();
 
@@ -53,10 +53,10 @@ export async function GET(request) {
         return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
       }
       
-      barbershops = { id: barbers.barbershop_id };
+      barbershops = { id: barbers.barberbarbershop_id };
     }
 
-    const barbershopId = barbershops.id;
+    const barberbarbershopId = barbershops.id;
     const url = new URL(request.url);
     const activeOnly = url.searchParams.get('active_only') !== 'false';
 
@@ -64,7 +64,7 @@ export async function GET(request) {
     let query = supabase
       .from('loyalty_programs')
       .select('*')
-      .eq('barbershop_id', barbershopId);
+      .eq('barberbarbershop_id', barberbarbershopId);
 
     if (activeOnly) {
       query = query.eq('is_active', true);
@@ -80,7 +80,7 @@ export async function GET(request) {
     return NextResponse.json({ 
       success: true, 
       programs: programs || [],
-      barbershop_id: barbershopId
+      barberbarbershop_id: barberbarbershopId
     });
 
   } catch (error) {
@@ -119,7 +119,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
 
-    const barbershopId = barbershops.id;
+    const barberbarbershopId = barbershops.id;
     const body = await request.json();
 
     // Validate required fields
@@ -153,7 +153,7 @@ export async function POST(request) {
 
     // Create loyalty program
     const programData = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       program_name,
       program_description,
       program_type,
@@ -187,7 +187,7 @@ export async function POST(request) {
 
     // Create default tiers if it's a tier-based program
     if (program_type === 'tier' || program_type === 'hybrid') {
-      await createDefaultTiers(program.id, barbershopId);
+      await createDefaultTiers(program.id, barberbarbershopId);
     }
 
     return NextResponse.json({ 
@@ -205,10 +205,10 @@ export async function POST(request) {
 /**
  * Helper function to create default tiers for tier-based programs
  */
-async function createDefaultTiers(programId, barbershopId) {
+async function createDefaultTiers(programId, barberbarbershopId) {
   const defaultTiers = [
     {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       loyalty_program_id: programId,
       tier_name: 'Bronze',
       tier_description: 'Starting tier for new members',
@@ -222,7 +222,7 @@ async function createDefaultTiers(programId, barbershopId) {
       updated_at: new Date().toISOString()
     },
     {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       loyalty_program_id: programId,
       tier_name: 'Silver',
       tier_description: 'Intermediate tier for regular customers',
@@ -236,7 +236,7 @@ async function createDefaultTiers(programId, barbershopId) {
       updated_at: new Date().toISOString()
     },
     {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       loyalty_program_id: programId,
       tier_name: 'Gold',
       tier_description: 'Premium tier for valued customers',
@@ -254,7 +254,7 @@ async function createDefaultTiers(programId, barbershopId) {
       updated_at: new Date().toISOString()
     },
     {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       loyalty_program_id: programId,
       tier_name: 'Platinum',
       tier_description: 'Elite tier for VIP customers',

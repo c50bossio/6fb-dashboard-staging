@@ -34,7 +34,7 @@ export async function POST(request) {
 
     const body = await request.json()
     const { 
-      barbershopId, 
+      barberbarbershopId, 
       barberId, 
       customerId,
       readerId,
@@ -45,9 +45,9 @@ export async function POST(request) {
     } = body
 
     // Validate required fields
-    if (!barbershopId || !readerId || !cartItems || cartItems.length === 0) {
+    if (!barberbarbershopId || !readerId || !cartItems || cartItems.length === 0) {
       return NextResponse.json(
-        { error: 'Missing required fields: barbershopId, readerId, cartItems' },
+        { error: 'Missing required fields: barberbarbershopId, readerId, cartItems' },
         { status: 400 }
       )
     }
@@ -55,17 +55,17 @@ export async function POST(request) {
     // Verify access to barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', user.id)
       .single()
 
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, owner_id, name')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
-    const hasAccess = profile?.barbershop_id === barbershopId || 
+    const hasAccess = profile?.barbershop_id === barberbarbershopId || 
                      barbershop?.owner_id === user.id ||
                      profile?.role === 'admin'
 
@@ -81,7 +81,7 @@ export async function POST(request) {
       .from('terminal_readers')
       .select('*')
       .eq('id', readerId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single()
 
     if (readerError || !reader) {
@@ -128,7 +128,7 @@ export async function POST(request) {
       capture_method: 'automatic',
       description: `POS Sale - ${barbershop.name}`,
       metadata: {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         barbershop_name: barbershop.name,
         barber_id: barberId || '',
         customer_id: customerId || '',
@@ -162,7 +162,7 @@ export async function POST(request) {
       .from('terminal_payment_intents')
       .insert({
         stripe_payment_intent_id: paymentIntent.id,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         barber_id: barberId,
         customer_id: customerId,
         reader_id: readerId,
@@ -206,7 +206,7 @@ export async function POST(request) {
         stripe_reader_id: reader.stripe_reader_id,
         status: 'busy'
       },
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       barber_id: barberId,
       customer_id: customerId,
       metadata: {
@@ -223,7 +223,7 @@ export async function POST(request) {
   } catch (error) {
     const errorResponse = handlePOSError(error, {
       operation: 'terminal_payment_processing',
-      barbershopId: barbershopId,
+      barberbarbershopId: barberbarbershopId,
       readerId: readerId
     })
     return NextResponse.json(errorResponse, { status: errorResponse.statusCode })
@@ -303,7 +303,7 @@ export async function PUT(request) {
       amount: updatedPaymentIntent.amount_cents,
       currency: updatedPaymentIntent.currency,
       status: updatedPaymentIntent.status,
-      barbershop_id: updatedPaymentIntent.barbershop_id,
+      barberbarbershop_id: updatedPaymentIntent.barberbarbershop_id,
       barber_id: updatedPaymentIntent.barber_id,
       customer_id: updatedPaymentIntent.customer_id,
       reader_id: updatedPaymentIntent.reader_id,
@@ -344,7 +344,7 @@ async function processInventoryUpdates(supabase, paymentIntent) {
     await supabase
       .from('pos_sales')
       .insert({
-        barbershop_id: paymentIntent.barbershop_id,
+        barberbarbershop_id: paymentIntent.barberbarbershop_id,
         product_id: item.id,
         quantity: item.quantity,
         unit_price: item.price,
@@ -361,7 +361,7 @@ async function processInventoryUpdates(supabase, paymentIntent) {
     await supabase
       .from('inventory_movements')
       .insert({
-        barbershop_id: paymentIntent.barbershop_id,
+        barberbarbershop_id: paymentIntent.barberbarbershop_id,
         product_id: item.id,
         movement_type: 'sale',
         quantity: -item.quantity, // Negative for sale

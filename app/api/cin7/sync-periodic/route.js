@@ -27,14 +27,14 @@ export async function POST(request) {
       try {
         const result = await syncSingleBarbershop(cred)
         syncResults.push({
-          barbershop_id: cred.barbershop_id,
+          barberbarbershop_id: cred.barberbarbershop_id,
           status: 'success',
           ...result
         })
       } catch (error) {
-        console.error(`❌ Sync failed for barbershop ${cred.barbershop_id}:`, error)
+        console.error(`❌ Sync failed for barbershop ${cred.barberbarbershop_id}:`, error)
         syncResults.push({
-          barbershop_id: cred.barbershop_id,
+          barberbarbershop_id: cred.barberbarbershop_id,
           status: 'error',
           error: error.message
         })
@@ -107,7 +107,7 @@ async function syncSingleBarbershop(credentials) {
   const { data: existingProducts } = await supabase
     .from('products')
     .select('sku, retail_price, current_stock, updated_at')
-    .eq('barbershop_id', credentials.barbershop_id)
+    .eq('barberbarbershop_id', credentials.barberbarbershop_id)
   
   const existingProductMap = new Map(existingProducts?.map(p => [p.sku, p]) || [])
   
@@ -116,7 +116,7 @@ async function syncSingleBarbershop(credentials) {
   let unchangedCount = 0
   
   for (const cin7Product of productsData) {
-    const mappedProduct = mapCin7ProductData(cin7Product, credentials.barbershop_id)
+    const mappedProduct = mapCin7ProductData(cin7Product, credentials.barberbarbershop_id)
     const existing = existingProductMap.get(mappedProduct.sku)
     
     if (existing) {
@@ -133,7 +133,7 @@ async function syncSingleBarbershop(credentials) {
             updated_at: new Date().toISOString()
           })
           .eq('sku', mappedProduct.sku)
-          .eq('barbershop_id', credentials.barbershop_id)
+          .eq('barberbarbershop_id', credentials.barberbarbershop_id)
         
         updatedCount++
         
@@ -164,7 +164,7 @@ async function syncSingleBarbershop(credentials) {
         unchanged: unchangedCount
       })
     })
-    .eq('barbershop_id', credentials.barbershop_id)
+    .eq('barberbarbershop_id', credentials.barberbarbershop_id)
   
   return {
     total_products: productsData.length,
@@ -174,7 +174,7 @@ async function syncSingleBarbershop(credentials) {
   }
 }
 
-function mapCin7ProductData(product, barbershopId) {
+function mapCin7ProductData(product, barberbarbershopId) {
   const getCostPrice = () => {
     return parseFloat(product.CostPrice) || 
            parseFloat(product.DefaultCostPrice) || 
@@ -201,7 +201,7 @@ function mapCin7ProductData(product, barbershopId) {
   }
   
   return {
-    barbershop_id: barbershopId,
+    barberbarbershop_id: barberbarbershopId,
     name: product.Name || 'Unnamed Product',
     description: product.Description || '',
     category: mapCategory(product.Category),

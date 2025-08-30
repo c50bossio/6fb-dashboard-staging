@@ -96,26 +96,26 @@ export default function OnboardingProgress({ user, profile }) {
 
   // Determine user context for role-aware routing
   const userRole = profile?.role || 'SHOP_OWNER'
-  const [barbershopId, setBarbershopId] = useState('default')
+  const [barberbarbershopId, setBarberbarbershopId] = useState('default')
   
   // Get dynamic steps based on user role and context
   const ONBOARDING_STEPS = getOnboardingSteps(userRole)
 
   // Get barbershop ID using getTenant
   useEffect(() => {
-    const resolveBarbershopId = async () => {
+    const resolveBarberbarbershopId = async () => {
       if (profile?.id) {
         try {
-          const { barbershopId } = await getTenant(profile.id, { supabase })
-          setBarbershopId(barbershopId || 'default')
+          const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+          setBarberbarbershopId(barberbarbershopId || 'default')
         } catch (error) {
           console.error('Error getting barbershop ID:', error)
-          setBarbershopId('default')
+          setBarberbarbershopId('default')
         }
       }
     }
     
-    resolveBarbershopId()
+    resolveBarberbarbershopId()
   }, [profile?.id, supabase])
 
   // Load status from simplified API
@@ -276,7 +276,7 @@ export default function OnboardingProgress({ user, profile }) {
         from: 'dashboard',
         stepTitle: step.title,
         userRole,
-        barbershopId
+        barberbarbershopId
       }
       
       try {

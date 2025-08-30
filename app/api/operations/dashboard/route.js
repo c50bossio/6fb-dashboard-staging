@@ -13,7 +13,7 @@ export async function GET(request) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('user_id', user.id)
       .single()
 
@@ -21,7 +21,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'No barbershop associated with user' }, { status: 403 })
     }
 
-    const barbershopId = profile.barbershop_id
+    const barberbarbershopId = profile.barbershop_id
     const today = new Date()
     const todayStr = today.toISOString().split('T')[0]
     const yesterday = new Date(today)
@@ -31,33 +31,33 @@ export async function GET(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('name, open_time, close_time, status, phone')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
     const { data: todayBookings } = await supabase
       .from('bookings')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('scheduled_at', todayStr)
       .lt('scheduled_at', new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString())
 
     const { data: yesterdayBookings } = await supabase
       .from('bookings')
       .select('service_price')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('scheduled_at', yesterdayStr)
       .lt('scheduled_at', todayStr)
 
     const { data: staff } = await supabase
       .from('barbershop_staff')
       .select('id, status')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
 
     const { data: recentMetrics } = await supabase
       .from('business_metrics')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('metric_period', 'daily')
       .gte('metric_date', new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
       .order('metric_date', { ascending: false })
@@ -195,22 +195,22 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { barbershop_id, metric_date, metric_period, ...metrics } = body
+    const { barberbarbershop_id, metric_date, metric_period, ...metrics } = body
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('user_id', user.id)
       .single()
 
-    if (profile?.barbershop_id !== barbershop_id && !['SUPER_ADMIN', 'ENTERPRISE_OWNER'].includes(profile?.role)) {
+    if (profile?.barbershop_id !== barberbarbershop_id && !['SUPER_ADMIN', 'ENTERPRISE_OWNER'].includes(profile?.role)) {
       return NextResponse.json({ error: 'Unauthorized to update metrics for this barbershop' }, { status: 403 })
     }
 
     const { data, error } = await supabase
       .from('business_metrics')
       .upsert({
-        barbershop_id,
+        barberbarbershop_id,
         metric_date,
         metric_period,
         ...metrics,

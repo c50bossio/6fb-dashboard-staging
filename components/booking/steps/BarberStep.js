@@ -26,11 +26,11 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
         // User not authenticated, try public endpoint
         // Need to get barbershop ID from booking data or URL
         const urlParams = new URLSearchParams(window.location.search)
-        const barbershopId = bookingData.location?.id || urlParams.get('shop_id') || urlParams.get('barbershop_id')
+        const barberbarbershopId = bookingData.location?.id || urlParams.get('barbershop_id') || urlParams.get('barberbarbershop_id')
         
-        if (barbershopId) {
+        if (barberbarbershopId) {
           
-          response = await fetch(`/api/public/barbershop/${barbershopId}/barbers`)
+          response = await fetch(`/api/public/barbershop/${barberbarbershopId}/barbers`)
           if (response.ok) {
             data = await response.json()
           }

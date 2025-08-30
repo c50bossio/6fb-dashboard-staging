@@ -7,9 +7,9 @@ import { NextResponse } from 'next/server'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shopId')
+    const barbershopId = searchParams.get('barbershopId')
     
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json({ error: 'Shop ID required' }, { status: 400 })
     }
     

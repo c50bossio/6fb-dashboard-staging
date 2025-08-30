@@ -42,7 +42,7 @@ export async function GET(request) {
           commission_percentage
         )
       `)
-      .eq('barbershop_id', shop.id)
+      .eq('barberbarbershop_id', shop.id)
       .order('created_at', { ascending: false })
       .limit(20)
 

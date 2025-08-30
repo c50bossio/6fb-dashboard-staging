@@ -40,7 +40,7 @@ export async function GET(request) {
       // Check profiles table
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, email, shop_id, barbershop_id, role')
+        .select('id, email, barbershop_id, barberbarbershop_id, role')
         .limit(5)
       
       results.profiles = {

@@ -38,7 +38,7 @@ const calculateDaysRemaining = (endDate) => {
 }
 
 export default function TierAssignmentManager({ 
-  barbershopId, 
+  barberbarbershopId, 
   staff = [], 
   onAssignmentChange 
 }) {
@@ -50,13 +50,13 @@ export default function TierAssignmentManager({
   
   // Load tier structures and current assignments
   const loadData = useCallback(async () => {
-    if (!barbershopId) return
+    if (!barberbarbershopId) return
     
     try {
       setLoading(true)
       
       // Load tier structures
-      const { data: structures, error: structuresError } = await financialService.getTierStructure(barbershopId)
+      const { data: structures, error: structuresError } = await financialService.getTierStructure(barberbarbershopId)
       if (structuresError) {
         console.error('Error loading tier structures:', structuresError)
         setTierStructures([])
@@ -67,7 +67,7 @@ export default function TierAssignmentManager({
       // Load current assignments for each staff member
       const assignmentPromises = staff.map(async (member) => {
         try {
-          const { data: status } = await financialService.getBarberTierStatus(member.id, barbershopId)
+          const { data: status } = await financialService.getBarberTierStatus(member.id, barberbarbershopId)
           return { barberId: member.id, status }
         } catch (error) {
           console.error(`Error loading tier status for ${member.id}:`, error)
@@ -90,7 +90,7 @@ export default function TierAssignmentManager({
     } finally {
       setLoading(false)
     }
-  }, [barbershopId, staff])
+  }, [barberbarbershopId, staff])
   
   useEffect(() => {
     loadData()
@@ -108,7 +108,7 @@ export default function TierAssignmentManager({
       
       const { data, error } = await financialService.assignBarberToTierStructure(
         barberId, 
-        barbershopId, 
+        barberbarbershopId, 
         structureId
       )
       

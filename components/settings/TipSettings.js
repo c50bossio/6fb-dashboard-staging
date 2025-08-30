@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
  * - Tax automatically excluded from tips
  * - No commission on tips (illegal under federal law)
  */
-export default function TipSettings({ barbershopId }) {
+export default function TipSettings({ barberbarbershopId }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [stripeConfigId, setStripeConfigId] = useState(null)
@@ -53,10 +53,10 @@ export default function TipSettings({ barbershopId }) {
   const supabase = createClient()
 
   useEffect(() => {
-    if (barbershopId) {
+    if (barberbarbershopId) {
       loadSettings()
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   const loadSettings = async () => {
     try {
@@ -66,7 +66,7 @@ export default function TipSettings({ barbershopId }) {
       const { data: barbershop, error } = await supabase
         .from('barbershops')
         .select('tip_settings, stripe_terminal_config_id')
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
         .single()
 
       if (error) throw error
@@ -99,7 +99,7 @@ export default function TipSettings({ barbershopId }) {
           tip_settings: settings,
           updated_at: new Date().toISOString()
         })
-        .eq('id', barbershopId)
+        .eq('id', barberbarbershopId)
 
       if (error) throw error
 
@@ -110,7 +110,7 @@ export default function TipSettings({ barbershopId }) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              barbershop_id: barbershopId,
+              barberbarbershop_id: barberbarbershopId,
               service_tip_percentages: settings.service_tip_percentages,
               service_tip_fixed_amounts: settings.service_tip_fixed_amounts,
               smart_tip_threshold: settings.smart_tip_threshold,

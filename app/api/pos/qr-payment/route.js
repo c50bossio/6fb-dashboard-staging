@@ -19,7 +19,7 @@ export async function POST(request) {
   try {
     const { 
       cartItems, 
-      barbershopId, 
+      barberbarbershopId, 
       barberId, 
       customerId, 
       expiresInMinutes = 30 
@@ -33,7 +33,7 @@ export async function POST(request) {
       )
     }
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json(
         { error: 'Barbershop ID is required' },
         { status: 400 }
@@ -44,7 +44,7 @@ export async function POST(request) {
     const { data: barbershop, error: barbershopError } = await supabase
       .from('barbershops')
       .select('stripe_account_id, name, address, phone')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
     if (barbershopError || !barbershop) {
@@ -114,7 +114,7 @@ export async function POST(request) {
           destination: barbershop.stripe_account_id,
         },
         metadata: {
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           barber_id: barberId || '',
           customer_id: customerId || '',
           payment_type: 'qr_code_pos',
@@ -127,7 +127,7 @@ export async function POST(request) {
         }
       },
       metadata: {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         barber_id: barberId || '',
         customer_id: customerId || '',
         payment_type: 'qr_code_pos'
@@ -157,7 +157,7 @@ export async function POST(request) {
       .from('qr_payment_sessions')
       .insert({
         session_id: session.id,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         barber_id: barberId,
         customer_id: customerId,
         cart_items: cartItems,
@@ -187,7 +187,7 @@ export async function POST(request) {
       expiresAt: expiresAt.toISOString(),
       totalAmount: total,
       qrSessionId: qrSession.id,
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       barber_id: barberId,
       customer_id: customerId,
       created_at: qrSession.created_at,
@@ -199,7 +199,7 @@ export async function POST(request) {
   } catch (error) {
     const errorResponse = handlePOSError(error, {
       operation: 'qr_payment_creation',
-      barbershopId: barbershopId
+      barberbarbershopId: barberbarbershopId
     })
     return NextResponse.json(errorResponse, { status: errorResponse.statusCode })
   }
@@ -261,7 +261,7 @@ export async function GET(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('stripe_account_id')
-      .eq('id', qrSession.barbershop_id)
+      .eq('id', qrSession.barberbarbershop_id)
       .single()
 
     if (!barbershop?.stripe_account_id) {
@@ -304,7 +304,7 @@ export async function GET(request) {
       status: newStatus,
       session_id: sessionId,
       total_amount: qrSession.total_amount,
-      barbershop_id: qrSession.barbershop_id,
+      barberbarbershop_id: qrSession.barberbarbershop_id,
       barber_id: qrSession.barber_id,
       customer_id: qrSession.customer_id,
       processed_at: newStatus !== 'pending' ? new Date().toISOString() : null,
@@ -330,7 +330,7 @@ async function createSalesRecords(qrSession) {
     const receiptNumber = `QR-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`
     
     const salesRecords = qrSession.cart_items.map(item => ({
-      barbershop_id: qrSession.barbershop_id,
+      barberbarbershop_id: qrSession.barberbarbershop_id,
       product_id: item.id,
       quantity: item.quantity,
       unit_price: item.price,

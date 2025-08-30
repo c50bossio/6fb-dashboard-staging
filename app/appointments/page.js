@@ -65,7 +65,7 @@ export default function AppointmentsPage() {
       
       // Map the appointment data to match the API schema
       const apiData = {
-        barbershop_id: profile?.barbershop_id, // Get from user profile - required
+        barberbarbershop_id: profile?.barbershop_id, // Get from user profile - required
         barber_id: appointmentData.barberId,
         service_id: appointmentData.serviceId,
         scheduled_at: new Date(appointmentData.start).toISOString(),

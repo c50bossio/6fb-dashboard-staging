@@ -76,7 +76,7 @@ export default function GlobalContextSelector() {
   
   // Calculate barber count for locations
   const getBarberCountForLocation = (locationId) => {
-    return availableBarbers.filter(b => b.barbershop_id === locationId).length
+    return availableBarbers.filter(b => b.barberbarbershop_id === locationId).length
   }
   
   return (

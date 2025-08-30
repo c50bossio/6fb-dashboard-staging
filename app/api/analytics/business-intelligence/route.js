@@ -15,13 +15,13 @@ export async function GET(request) {
     // Get user's shop/barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id, barbershop_id')
+      .select('barbershop_id, barberbarbershop_id')
       .eq('id', user.id)
       .single()
 
-    const shopId = profile?.shop_id || profile?.barbershop_id
+    const barbershopId = profile?.shop_id || profile?.barbershop_id
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json({ 
         error: 'No shop associated with user',
         metrics: getDefaultMetrics()
@@ -38,14 +38,14 @@ export async function GET(request) {
     const { data: currentRevenue } = await supabase
       .from('payments')
       .select('amount')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('status', 'completed')
       .gte('created_at', startOfMonth.toISOString())
 
     const { data: lastRevenue } = await supabase
       .from('payments')
       .select('amount')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('status', 'completed')
       .gte('created_at', startOfLastMonth.toISOString())
       .lte('created_at', endOfLastMonth.toISOString())
@@ -58,13 +58,13 @@ export async function GET(request) {
     const { data: activeClients } = await supabase
       .from('customers')
       .select('id')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .gte('last_visit', startOfMonth.toISOString())
 
     const { data: lastMonthClients } = await supabase
       .from('customers')
       .select('id')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .gte('last_visit', startOfLastMonth.toISOString())
       .lte('last_visit', endOfLastMonth.toISOString())
 
@@ -76,14 +76,14 @@ export async function GET(request) {
     const { data: currentServices } = await supabase
       .from('appointments')
       .select('id')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .in('status', ['completed', 'confirmed'])
       .gte('date', startOfMonth.toISOString())
 
     const { data: lastServices } = await supabase
       .from('appointments')
       .select('id')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .in('status', ['completed', 'confirmed'])
       .gte('date', startOfLastMonth.toISOString())
       .lte('date', endOfLastMonth.toISOString())
@@ -101,7 +101,7 @@ export async function GET(request) {
     const { data: aiUsage } = await supabase
       .from('ai_usage_logs')
       .select('tokens_used, cost, provider')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .gte('created_at', startOfMonth.toISOString())
 
     const totalTokens = aiUsage?.reduce((sum, log) => sum + (log.tokens_used || 0), 0) || 0

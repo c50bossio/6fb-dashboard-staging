@@ -889,7 +889,7 @@ export default function FinancialManagement() {
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ 
                                   ledger_id: entry.id,
-                                  barbershop_id: entry.barbershop_id,
+                                  barberbarbershop_id: entry.barberbarbershop_id,
                                   barber_id: entry.barber_id
                                 })
                               })

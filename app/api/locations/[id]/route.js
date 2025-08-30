@@ -42,7 +42,7 @@ export async function GET(request, { params }) {
         .from('barbershop_staff')
         .select('role')
         .eq('user_id', user.id)
-        .eq('barbershop_id', id)
+        .eq('barberbarbershop_id', id)
         .eq('is_active', true)
         .single()
       
@@ -56,19 +56,19 @@ export async function GET(request, { params }) {
       supabase
         .from('barbershop_staff')
         .select('*', { count: 'exact' })
-        .eq('barbershop_id', id)
+        .eq('barberbarbershop_id', id)
         .eq('is_active', true),
       
       supabase
         .from('services')
         .select('*')
-        .eq('shop_id', id)
+        .eq('barbershop_id', id)
         .eq('is_active', true),
       
       supabase
         .from('customers')
         .select('*', { count: 'exact', head: true })
-        .eq('barbershop_id', id)
+        .eq('barberbarbershop_id', id)
     ])
     
     return NextResponse.json({
@@ -231,7 +231,7 @@ export async function DELETE(request, { params }) {
     const { count: activeAppointments } = await supabase
       .from('appointments')
       .select('*', { count: 'exact', head: true })
-      .eq('barbershop_id', id)
+      .eq('barberbarbershop_id', id)
       .gte('appointment_date', new Date().toISOString())
     
     if (activeAppointments > 0 && hardDelete) {
@@ -248,10 +248,10 @@ export async function DELETE(request, { params }) {
       // Hard delete - only for admins
       // First, clean up related data
       await Promise.all([
-        supabase.from('barbershop_staff').delete().eq('barbershop_id', id),
-        supabase.from('services').delete().eq('shop_id', id),
-        supabase.from('appointments').delete().eq('barbershop_id', id),
-        supabase.from('customers').delete().eq('barbershop_id', id)
+        supabase.from('barbershop_staff').delete().eq('barberbarbershop_id', id),
+        supabase.from('services').delete().eq('barbershop_id', id),
+        supabase.from('appointments').delete().eq('barberbarbershop_id', id),
+        supabase.from('customers').delete().eq('barberbarbershop_id', id)
       ])
       
       // Then delete the location
@@ -295,12 +295,12 @@ export async function DELETE(request, { params }) {
         supabase
           .from('barbershop_staff')
           .update({ is_active: false })
-          .eq('barbershop_id', id),
+          .eq('barberbarbershop_id', id),
         
         supabase
           .from('services')
           .update({ is_active: false })
-          .eq('shop_id', id)
+          .eq('barbershop_id', id)
       ])
       
       return NextResponse.json({ 

@@ -175,21 +175,21 @@ export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
 
       if (!profile) return
 
-      let shopId
+      let barbershopId
       try {
-        const { barbershopId } = await getTenant(profile.id, { supabase })
-        shopId = barbershopId
+        const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+        barbershopId = barberbarbershopId
       } catch (error) {
         console.error('Error getting barbershop ID:', error)
         return
       }
       
-      if (!shopId) return
+      if (!barbershopId) return
       
       const { data: barbershop } = await supabase
         .from('barbershops')
         .select('*')
-        .eq('id', shopId)
+        .eq('id', barbershopId)
         .single()
 
       if (barbershop) {
@@ -253,16 +253,16 @@ export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
       throw new Error('Profile not found')
     }
 
-    let shopId
+    let barbershopId
     try {
-      const { barbershopId } = await getTenant(profile.id, { supabase })
-      shopId = barbershopId
+      const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+      barbershopId = barberbarbershopId
     } catch (error) {
       console.error('Error getting barbershop ID:', error)
       throw new Error('No barbershop associated with your account')
     }
     
-    if (!shopId) {
+    if (!barbershopId) {
       throw new Error('No barbershop associated with your account')
     }
 
@@ -303,7 +303,7 @@ export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
         team_members: settings.team_members,
         updated_at: new Date().toISOString()
       })
-      .eq('id', shopId)
+      .eq('id', barbershopId)
 
     if (error) throw error
     

@@ -48,13 +48,13 @@ export default function DevDashboard() {
         },
         profile: profile,
         barbershop: barbershop,
-        barbershop_id: barbershop?.id || null
+        barberbarbershop_id: barbershop?.id || null
       }
       
       // Load dashboard data
-      if (user.barbershop_id) {
+      if (user.barberbarbershop_id) {
         try {
-          const response = await fetch(`/api/analytics/live-data?barbershop_id=${user.barbershop_id}&format=json&force_refresh=true`)
+          const response = await fetch(`/api/analytics/live-data?barberbarbershop_id=${user.barberbarbershop_id}&format=json&force_refresh=true`)
           const result = await response.json()
           
           if (response.ok && result.success) {
@@ -72,7 +72,7 @@ export default function DevDashboard() {
           console.error('Failed to load dashboard data:', error)
         }
       } else {
-        console.warn('No barbershop_id available, skipping dashboard data load')
+        console.warn('No barberbarbershop_id available, skipping dashboard data load')
       }
 
       setUserData(user)
@@ -131,7 +131,7 @@ export default function DevDashboard() {
             <div>
               <h3 className="font-medium text-gray-900">Barbershop Details</h3>
               <p className="text-sm text-gray-600">Shop: {userData.user_metadata.shop_name}</p>
-              <p className="text-sm text-gray-600">Barbershop ID: {userData.barbershop_id}</p>
+              <p className="text-sm text-gray-600">Barbershop ID: {userData.barberbarbershop_id}</p>
               <p className="text-sm text-gray-600">Barbershop Found: {userData.barbershop ? '✅ Yes' : '❌ No'}</p>
             </div>
           </div>

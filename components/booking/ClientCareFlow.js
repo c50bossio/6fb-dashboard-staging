@@ -159,9 +159,9 @@ export default function ClientCareFlow({
 
     try {
       // Use getTenant() to get barbershop ID
-      const { barbershopId } = await getTenant(profile.id, { supabase: useAuth().supabase })
+      const { barberbarbershopId } = await getTenant(profile.id, { supabase: useAuth().supabase })
       
-      if (!barbershopId) {
+      if (!barberbarbershopId) {
         setError('No barbershop associated with your account')
         return
       }
@@ -169,7 +169,7 @@ export default function ClientCareFlow({
       setLoadingSearch(true)
       setError(null)
 
-      const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}&barbershop_id=${barbershopId}`, {
+      const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}&barberbarbershop_id=${barberbarbershopId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       })

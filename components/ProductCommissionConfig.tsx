@@ -38,12 +38,12 @@ interface BarberProductCommissionConfig {
 }
 
 interface ProductCommissionConfigProps {
-  barbershopId: string
+  barberbarbershopId: string
   onConfigChange?: (config: any) => void
 }
 
 const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
-  barbershopId,
+  barberbarbershopId,
   onConfigChange
 }) => {
   const [loading, setLoading] = useState(true)
@@ -73,20 +73,20 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
 
   useEffect(() => {
     loadProductCommissionConfig()
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   const loadProductCommissionConfig = async () => {
     setLoading(true)
     try {
       // Load categories
-      const categoriesResult = await financialService.getProductCommissionCategories(barbershopId)
+      const categoriesResult = await financialService.getProductCommissionCategories(barberbarbershopId)
       if (categoriesResult.error) {
         throw new Error(categoriesResult.error)
       }
       setCategories(categoriesResult.data || [])
 
       // Load barber configurations
-      const barbersResult = await financialService.getShopArrangements(barbershopId)
+      const barbersResult = await financialService.getShopArrangements(barberbarbershopId)
       if (barbersResult.error) {
         throw new Error(barbersResult.error)
       }
@@ -120,7 +120,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
 
     setSaving(true)
     try {
-      const result = await financialService.saveProductCommissionCategory(barbershopId, {
+      const result = await financialService.saveProductCommissionCategory(barberbarbershopId, {
         ...categoryForm,
         default_commission_rate: parseFloat(categoryForm.default_commission_rate?.toString() || '0'),
         min_commission_rate: parseFloat(categoryForm.min_commission_rate?.toString() || '0'),
@@ -174,7 +174,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
   const handleInitializeDefaults = async () => {
     setSaving(true)
     try {
-      const result = await financialService.initializeDefaultProductCategories(barbershopId)
+      const result = await financialService.initializeDefaultProductCategories(barberbarbershopId)
       
       if (result.error) {
         throw new Error(result.error)

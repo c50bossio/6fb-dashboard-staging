@@ -107,7 +107,7 @@ const mockSupabaseClient = {
 }
 
 const defaultProps = {
-  barbershopId: 'test-shop-123',
+  barberbarbershopId: 'test-shop-123',
   barbershopSlug: 'test-barbershop',
   preselectedBarber: null,
   preselectedService: null
@@ -592,7 +592,7 @@ describe('RealtimeBookingWrapper Integration Tests', () => {
       })
 
       expect(mockSupabaseClient.channel).toHaveBeenCalledWith(
-        `bookings-${defaultProps.barbershopId}`
+        `bookings-${defaultProps.barberbarbershopId}`
       )
     })
 
@@ -740,7 +740,7 @@ describe('RealtimeBookingWrapper Integration Tests', () => {
         const props = JSON.parse(component.getAttribute('data-props'))
         
         expect(props).toMatchObject({
-          barbershopId: defaultProps.barbershopId,
+          barberbarbershopId: defaultProps.barberbarbershopId,
           barbershopSlug: defaultProps.barbershopSlug,
           availableSlots: expect.any(Array),
           conflictedSlots: expect.any(Array)

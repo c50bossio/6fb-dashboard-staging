@@ -31,7 +31,7 @@ export default function BarberAvailabilityManager({
   onClose,
   barberId,
   barberName,
-  barbershopId
+  barberbarbershopId
 }) {
   
   const { user } = useAuth()
@@ -53,8 +53,8 @@ export default function BarberAvailabilityManager({
   })
 
   const fetchAvailability = useCallback(async () => {
-    if (!barberId || !barbershopId) {
-      console.warn('⚠️ BarberAvailabilityManager: Missing barberId or barbershopId')
+    if (!barberId || !barberbarbershopId) {
+      console.warn('⚠️ BarberAvailabilityManager: Missing barberId or barberbarbershopId')
       return
     }
     
@@ -62,9 +62,9 @@ export default function BarberAvailabilityManager({
       setLoading(true)
 
       // First, verify the barber exists using unified staff service
-      const barberData = await unifiedStaffService.getBarberById(barberId, barbershopId)
+      const barberData = await unifiedStaffService.getBarberById(barberId, barberbarbershopId)
       if (!barberData) {
-        console.error(`❌ Barber ${barberId} not found in barbershop ${barbershopId}`)
+        console.error(`❌ Barber ${barberId} not found in barbershop ${barberbarbershopId}`)
         setAvailability([])
         setLoading(false)
         return
@@ -75,7 +75,7 @@ export default function BarberAvailabilityManager({
         .from('barber_availability')
         .select('*')
         .eq('barber_id', barberId)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .order('day_of_week')
         .order('start_time')
 
@@ -87,7 +87,7 @@ export default function BarberAvailabilityManager({
     } finally {
       setLoading(false)
     }
-  }, [barberId, barbershopId, supabase])
+  }, [barberId, barberbarbershopId, supabase])
 
   useEffect(() => {
     if (isOpen) {
@@ -102,7 +102,7 @@ export default function BarberAvailabilityManager({
     try {
       const availabilityData = {
         barber_id: barberId,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         ...formData,
         specific_date: formData.specific_date || null,
         break_times: JSON.stringify(formData.break_times)

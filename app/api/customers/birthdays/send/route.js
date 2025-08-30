@@ -14,7 +14,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const { 
-      barbershop_id, 
+      barberbarbershop_id, 
       customer_ids, 
       campaign_type, 
       message_content,
@@ -24,9 +24,9 @@ export async function POST(request) {
       booking_link
     } = body;
 
-    if (!barbershop_id || !customer_ids || !campaign_type) {
+    if (!barberbarbershop_id || !customer_ids || !campaign_type) {
       return NextResponse.json({
-        error: 'barbershop_id, customer_ids, and campaign_type are required'
+        error: 'barberbarbershop_id, customer_ids, and campaign_type are required'
       }, { status: 400 });
     }
 
@@ -49,7 +49,7 @@ export async function POST(request) {
         total_visits,
         created_at
       `)
-      .eq('barbershop_id', barbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .in('id', customer_ids)
       .eq('is_active', true);
 
@@ -104,7 +104,7 @@ export async function POST(request) {
       const campaignRecords = enrichedCustomers.map(customer => {
         const customerResult = smsResults.results.find(r => r.customer_id === customer.id);
         return {
-          barbershop_id,
+          barberbarbershop_id,
           customer_id: customer.id,
           campaign_type,
           message_type: 'sms',
@@ -179,14 +179,14 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const barbershopId = searchParams.get('barbershop_id');
+    const barberbarbershopId = searchParams.get('barberbarbershop_id');
     const campaignType = searchParams.get('campaign_type') || 'birthday';
     const limit = parseInt(searchParams.get('limit')) || 50;
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({
         campaigns: [],
-        error: 'barbershop_id parameter is required'
+        error: 'barberbarbershop_id parameter is required'
       }, { status: 400 });
     }
 
@@ -211,7 +211,7 @@ export async function GET(request) {
           booking_made,
           created_at
         `)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('campaign_type', campaignType)
         .order('created_at', { ascending: false })
         .limit(limit);

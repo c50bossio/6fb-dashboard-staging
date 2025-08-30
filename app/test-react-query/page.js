@@ -36,7 +36,7 @@ export default function ReactQueryTestPage() {
     if (!newServiceName || !newServicePrice) return
     
     createService.mutate({
-      barbershop_id: TEST_BARBERSHOP_ID,
+      barberbarbershop_id: TEST_BARBERSHOP_ID,
       name: newServiceName,
       price: parseFloat(newServicePrice),
       duration_minutes: 30,
@@ -52,7 +52,7 @@ export default function ReactQueryTestPage() {
   const handleToggleService = (service) => {
     updateService.mutate({
       serviceId: service.id,
-      barbershop_id: TEST_BARBERSHOP_ID,
+      barberbarbershop_id: TEST_BARBERSHOP_ID,
       updates: {
         active: !service.active
       }
@@ -65,7 +65,7 @@ export default function ReactQueryTestPage() {
     tomorrow.setHours(14, 0, 0, 0)
     
     createAppointment.mutate({
-      barbershop_id: TEST_BARBERSHOP_ID,
+      barberbarbershop_id: TEST_BARBERSHOP_ID,
       customer_name: 'Test Customer',
       customer_phone: '555-0123',
       customer_email: 'test@example.com',

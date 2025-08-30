@@ -18,7 +18,7 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', session.user.id)
       .single()
     
@@ -30,7 +30,7 @@ export async function GET(request) {
     const { data: policy, error: policyError } = await supabase
       .from('no_show_policies')
       .select('*')
-      .eq('barbershop_id', profile.barbershop_id)
+      .eq('barberbarbershop_id', profile.barbershop_id)
       .eq('is_active', true)
       .single()
     
@@ -41,7 +41,7 @@ export async function GET(request) {
     // If no policy exists, return default values
     if (!policy) {
       return NextResponse.json({
-        barbershop_id: profile.barbershop_id,
+        barberbarbershop_id: profile.barbershop_id,
         strikes_before_block: 3,
         strike_expiry_days: 90,
         no_show_fee_enabled: true,
@@ -92,7 +92,7 @@ export async function POST(request) {
     // Get user's barbershop and check authorization
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', session.user.id)
       .single()
     
@@ -110,7 +110,7 @@ export async function POST(request) {
     const { data: existingPolicy } = await supabase
       .from('no_show_policies')
       .select('id')
-      .eq('barbershop_id', profile.barbershop_id)
+      .eq('barberbarbershop_id', profile.barbershop_id)
       .single()
 
     let result
@@ -121,7 +121,7 @@ export async function POST(request) {
         .from('no_show_policies')
         .update({
           ...policyData,
-          barbershop_id: profile.barbershop_id,
+          barberbarbershop_id: profile.barbershop_id,
           updated_at: new Date().toISOString(),
           created_by: session.user.id
         })
@@ -137,7 +137,7 @@ export async function POST(request) {
         .from('no_show_policies')
         .insert({
           ...policyData,
-          barbershop_id: profile.barbershop_id,
+          barberbarbershop_id: profile.barbershop_id,
           created_by: session.user.id,
           is_active: true
         })
@@ -155,7 +155,7 @@ export async function POST(request) {
         user_id: session.user.id,
         action: existingPolicy ? 'update_no_show_policy' : 'create_no_show_policy',
         details: {
-          barbershop_id: profile.barbershop_id,
+          barberbarbershop_id: profile.barbershop_id,
           policy_changes: policyData
         },
         created_at: new Date().toISOString()
@@ -192,7 +192,7 @@ export async function DELETE(request) {
     // Get user's barbershop and check authorization
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', session.user.id)
       .single()
     
@@ -213,7 +213,7 @@ export async function DELETE(request) {
         is_active: false,
         updated_at: new Date().toISOString()
       })
-      .eq('barbershop_id', profile.barbershop_id)
+      .eq('barberbarbershop_id', profile.barbershop_id)
       .eq('is_active', true)
     
     if (error) throw error
@@ -225,7 +225,7 @@ export async function DELETE(request) {
         user_id: session.user.id,
         action: 'deactivate_no_show_policy',
         details: {
-          barbershop_id: profile.barbershop_id
+          barberbarbershop_id: profile.barbershop_id
         },
         created_at: new Date().toISOString()
       })

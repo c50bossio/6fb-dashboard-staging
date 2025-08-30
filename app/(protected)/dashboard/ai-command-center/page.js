@@ -720,7 +720,7 @@ Try the quick actions below or just start chatting! 💬`,
           message: messageText,
           agent: 'auto', // Let the system choose the best agent
           context: {
-            shopId: user?.id || 'command-center-user',
+            barbershopId: user?.id || 'command-center-user',
             testMode: false,
             dryRun: false,
             userId: user?.id,

@@ -13,10 +13,10 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const barbershopId = searchParams.get('barbershop_id');
+    const barberbarbershopId = searchParams.get('barberbarbershop_id');
     const days = parseInt(searchParams.get('days')) || 30;
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'Barbershop ID required' }, { status: 400 });
     }
 
@@ -29,7 +29,7 @@ export async function GET(request) {
     const { data: inventory, error: inventoryError } = await supabase
       .from('barbershop_inventory')
       .select('*')
-      .eq('barbershop_id', barbershopId);
+      .eq('barberbarbershop_id', barberbarbershopId);
 
     if (inventoryError) {
       console.error('Error fetching inventory:', inventoryError);
@@ -48,7 +48,7 @@ export async function GET(request) {
           retail_price
         )
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString())
       .order('created_at', { ascending: false });

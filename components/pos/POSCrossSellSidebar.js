@@ -4,7 +4,7 @@ import Button from '@/components/ui/Button'
 import { useCrossSellingSuggestions, useTrackCrossSellInteraction } from '@/hooks/queries/useCrossSelling'
 
 const POSCrossSellSidebar = ({ 
-  shopId,
+  barbershopId,
   currentItems = [],
   serviceType,
   customerHistory = {},
@@ -23,11 +23,11 @@ const POSCrossSellSidebar = ({
     isLoading, 
     error, 
     refetch 
-  } = useCrossSellingSuggestions(shopId, currentItems, {
+  } = useCrossSellingSuggestions(barbershopId, currentItems, {
     serviceId: serviceType?.id,
     customerId,
     sessionId,
-    enabled: !!shopId
+    enabled: !!barbershopId
   })
 
   // Track interactions
@@ -46,7 +46,7 @@ const POSCrossSellSidebar = ({
           // Track viewing after a brief delay
           setTimeout(() => {
             trackInteraction.mutate({
-              shopId,
+              barbershopId,
               sessionId,
               suggestionId: suggestion.suggestion_id,
               action: 'viewed',
@@ -59,7 +59,7 @@ const POSCrossSellSidebar = ({
         }
       })
     }
-  }, [suggestions, viewedSuggestions, shopId, sessionId, customerId, trackInteraction])
+  }, [suggestions, viewedSuggestions, barbershopId, sessionId, customerId, trackInteraction])
 
   const handleAddToCart = (suggestion) => {
     // Add item to cart
@@ -76,7 +76,7 @@ const POSCrossSellSidebar = ({
 
     // Track acceptance
     trackInteraction.mutate({
-      shopId,
+      barbershopId,
       sessionId,
       suggestionId: suggestion.suggestion_id,
       action: 'accepted',
@@ -91,7 +91,7 @@ const POSCrossSellSidebar = ({
   const handleDismiss = (suggestion) => {
     // Track dismissal
     trackInteraction.mutate({
-      shopId,
+      barbershopId,
       sessionId,
       suggestionId: suggestion.suggestion_id,
       action: 'dismissed',
@@ -123,7 +123,7 @@ const POSCrossSellSidebar = ({
     return 'text-red-600 bg-red-100'
   }
 
-  if (!shopId) {
+  if (!barbershopId) {
     return null
   }
 

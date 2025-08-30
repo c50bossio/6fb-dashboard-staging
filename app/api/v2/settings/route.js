@@ -65,7 +65,7 @@ export async function GET(request) {
       // Get user's primary organization
       const { data: profile } = await supabase
         .from('profiles')
-        .select('shop_id, barbershop_id')
+        .select('barbershop_id, barberbarbershop_id')
         .eq('id', user.id)
         .single()
       
@@ -201,7 +201,7 @@ export async function PUT(request) {
       // These categories typically apply at organization level
       const { data: profile } = await supabase
         .from('profiles')
-        .select('shop_id, barbershop_id')
+        .select('barbershop_id, barberbarbershop_id')
         .eq('id', user.id)
         .single()
       

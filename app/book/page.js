@@ -78,26 +78,26 @@ export default function CustomerBookingPage() {
         
         // Get barbershop ID from URL parameters or find the first available shop
         const urlParams = new URLSearchParams(window.location.search)
-        let barbershopId = urlParams.get('shop_id') || urlParams.get('barbershop_id')
+        let barberbarbershopId = urlParams.get('barbershop_id') || urlParams.get('barberbarbershop_id')
         
         // If no barbershop ID in URL, we need to get it from somewhere
-        if (!barbershopId) {
+        if (!barberbarbershopId) {
           // Try to fetch from authenticated user or find first available barbershop
           const barbershopsResponse = await fetch('/api/barbershops')
           if (barbershopsResponse.ok) {
             const barbershopsResult = await barbershopsResponse.json()
             if (barbershopsResult.success && barbershopsResult.data.length > 0) {
-              barbershopId = barbershopsResult.data[0].id
+              barberbarbershopId = barbershopsResult.data[0].id
             }
           }
         }
         
-        if (!barbershopId) {
+        if (!barberbarbershopId) {
           throw new Error('No barbershop found. Please contact support.')
         }
         
         // Fetch services
-        const servicesResponse = await fetch(`/api/services?barbershop_id=${barbershopId}&active_only=true`)
+        const servicesResponse = await fetch(`/api/services?barberbarbershop_id=${barberbarbershopId}&active_only=true`)
         if (servicesResponse.ok) {
           const servicesResult = await servicesResponse.json()
           if (servicesResult.success) {
@@ -116,7 +116,7 @@ export default function CustomerBookingPage() {
         }
 
         // Fetch barbers
-        const barbersResponse = await fetch(`/api/barbers?barbershop_id=${barbershopId}&active_only=true`)
+        const barbersResponse = await fetch(`/api/barbers?barberbarbershop_id=${barberbarbershopId}&active_only=true`)
         if (barbersResponse.ok) {
           const barbersResult = await barbersResponse.json()
           if (barbersResult.success) {
@@ -137,7 +137,7 @@ export default function CustomerBookingPage() {
         }
 
         // Fetch barbershop information
-        const barbershopResponse = await fetch(`/api/barbershops/${barbershopId}`)
+        const barbershopResponse = await fetch(`/api/barbershops/${barberbarbershopId}`)
         if (barbershopResponse.ok) {
           const barbershopResult = await barbershopResponse.json()
           if (barbershopResult.success) {
@@ -306,7 +306,7 @@ export default function CustomerBookingPage() {
     try {
       // Prepare booking data for API
       const bookingData = {
-        barbershop_id: shopInfo?.id,
+        barberbarbershop_id: shopInfo?.id,
         barber_id: selectedBarber.id,
         service_id: selectedService.id,
         scheduled_at: selectedTime.time.toISOString(),

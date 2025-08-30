@@ -11,7 +11,7 @@ const supabase = createClient(
  * Get smart reorder recommendations for a barbershop
  * 
  * Query Parameters:
- * - shopId: UUID of the barbershop
+ * - barbershopId: UUID of the barbershop
  * - status: Filter by status (pending, approved, ordered, etc.)
  * - urgency: Filter by urgency (high, medium, low)
  * - limit: Number of recommendations to return (default: 20)
@@ -19,14 +19,14 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shopId')
+    const barbershopId = searchParams.get('barbershopId')
     const status = searchParams.get('status')
     const urgency = searchParams.get('urgency')
     const limit = parseInt(searchParams.get('limit')) || 20
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'shopId is required' },
+        { error: 'barbershopId is required' },
         { status: 400 }
       )
     }
@@ -67,7 +67,7 @@ export async function GET(request) {
           supplier_info
         )
       `)
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
 
     if (status) {
       query = query.eq('status', status)
@@ -175,7 +175,7 @@ export async function GET(request) {
       recommendations: processedRecommendations,
       summary,
       filters: {
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         status: status || 'all',
         urgency: urgency || 'all',
         limit
@@ -202,14 +202,14 @@ export async function GET(request) {
  * {
  *   action: 'approve' | 'order' | 'cancel' | 'generate',
  *   recommendationIds?: string[], // For approve/order/cancel actions
- *   shopId: string, // For generate action
+ *   barbershopId: string, // For generate action
  *   productIds?: string[] // For generate action
  * }
  */
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { action, recommendationIds, shopId, productIds } = body
+    const { action, recommendationIds, barbershopId, productIds } = body
 
     if (!action) {
       return NextResponse.json(
@@ -263,7 +263,7 @@ export async function POST(request) {
           .from('inventory_reorder_recommendations')
           .select(`
             id,
-            shop_id,
+            barbershop_id,
             product_id,
             recommended_order_quantity,
             products:product_id (
@@ -306,7 +306,7 @@ export async function POST(request) {
           const { data: poData, error: poError } = await supabase
             .from('automated_purchase_orders')
             .insert({
-              shop_id: orderRecs[0].shop_id,
+              barbershop_id: orderRecs[0].barbershop_id,
               supplier_name: supplierName,
               order_date: new Date().toISOString().split('T')[0],
               expected_delivery_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -373,9 +373,9 @@ export async function POST(request) {
         })
 
       case 'generate':
-        if (!shopId) {
+        if (!barbershopId) {
           return NextResponse.json(
-            { error: 'shopId is required for generate action' },
+            { error: 'barbershopId is required for generate action' },
             { status: 400 }
           )
         }
@@ -387,7 +387,7 @@ export async function POST(request) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            shopId,
+            barbershopId,
             forecastDays: 30,
             recalculateAll: true,
             productIds

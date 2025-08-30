@@ -242,15 +242,15 @@ export default function PlatformTailoredImport({ onComplete, initialData = {}, p
     setImportStatus('importing')
     
     try {
-      // Get barbershopId with fallback for onboarding
-      const barbershopId = profile?.shop_id || 
+      // Get barberbarbershopId with fallback for onboarding
+      const barberbarbershopId = profile?.shop_id || 
                           profile?.barbershop_id || 
-                          initialData?.barbershopId || 
+                          initialData?.barberbarbershopId || 
                           'onboarding-temp-' + Date.now()
       
       const formData = new FormData()
       formData.append('platform', selectedPlatform)
-      formData.append('barbershopId', barbershopId)
+      formData.append('barberbarbershopId', barberbarbershopId)
       
       // Add all files to FormData with numbered keys for the API
       let fileIndex = 1

@@ -442,8 +442,8 @@ async function getRealMarketData(location, businessType) {
     // Get actual service prices from these shops
     const { data: services, error: servicesError } = await supabase
       .from('services')
-      .select('name, price, shop_id')
-      .in('shop_id', nearbyShopIds)
+      .select('name, price, barbershop_id')
+      .in('barbershop_id', nearbyShopIds)
     
     if (servicesError) throw servicesError
     

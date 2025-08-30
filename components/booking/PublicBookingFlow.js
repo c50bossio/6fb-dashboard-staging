@@ -31,7 +31,7 @@ const getDefaultServiceImage = (category) => {
   return imageMap[category] || imageMap.haircut
 }
 
-export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
+export default function PublicBookingFlow({ barberbarbershopId, barbershopSlug }) {
   // Simplified state - just 3 steps
   const [currentStep, setCurrentStep] = useState(1) // 1: Service, 2: Time, 3: Confirm
   const [selectedService, setSelectedService] = useState(null)
@@ -73,11 +73,11 @@ export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
     
     // Load services
     loadServices()
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   const loadServices = async () => {
     try {
-      const response = await fetch(`/api/public/services?barbershop_id=${barbershopId}`)
+      const response = await fetch(`/api/public/services?barberbarbershop_id=${barberbarbershopId}`)
       const data = await response.json()
       if (data.success) {
         setServices(data.services)
@@ -167,7 +167,7 @@ export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
     try {
       // Create booking without authentication
       const bookingData = {
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         service_id: selectedService.id,
         service_name: selectedService.name,
         scheduled_at: selectedDateTime.time,
@@ -550,7 +550,7 @@ export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
         <ProgressiveAccountCreation
           bookingDetails={{
             id: bookingId,
-            barbershop_id: barbershopId,
+            barberbarbershop_id: barberbarbershopId,
             scheduled_at: selectedDateTime?.time,
             service: selectedService?.name
           }}

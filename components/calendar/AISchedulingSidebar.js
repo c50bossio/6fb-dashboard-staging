@@ -23,7 +23,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useAISchedulingSuggestions, useNoShowPrediction } from '@/hooks/queries/useAI'
 
 export function AISchedulingSidebar({ 
-  shopId, 
+  barbershopId, 
   service, 
   date, 
   onSelectTimeSlot,
@@ -35,7 +35,7 @@ export function AISchedulingSidebar({
     data: suggestions, 
     isLoading: suggestionsLoading,
     refetch: refetchSuggestions 
-  } = useAISchedulingSuggestions(shopId, service?.duration_minutes || 30, date)
+  } = useAISchedulingSuggestions(barbershopId, service?.duration_minutes || 30, date)
   
   const { 
     data: noShowRisk 

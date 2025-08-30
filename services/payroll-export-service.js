@@ -138,10 +138,10 @@ export class PayrollExportService {
   async getPayrollData(dateRange, staffFilter = 'all') {
     try {
       // Get barbershop context
-      const { shopId } = await staffService.getUserBarbershopId()
+      const { barbershopId } = await staffService.getUserBarberbarbershopId()
 
       // Load staff data
-      const staffData = await staffService.loadStaffData(shopId)
+      const staffData = await staffService.loadStaffData(barbershopId)
 
       // Filter staff if specified
       let filteredStaff = staffData.staff
@@ -151,15 +151,15 @@ export class PayrollExportService {
       }
 
       // Get service commission data
-      const serviceCommissionData = await financialService.getFinancialSummary(shopId, dateRange)
+      const serviceCommissionData = await financialService.getFinancialSummary(barbershopId, dateRange)
 
       // Get product commission data
-      const productCommissionData = await this.getProductCommissionData(shopId, dateRange)
+      const productCommissionData = await this.getProductCommissionData(barbershopId, dateRange)
 
       // Get tier information for each staff member
       const staffWithTiers = await Promise.all(
         filteredStaff.map(async (staff) => {
-          const tierStatus = await financialService.getBarberTierStatus(staff.user_id, shopId)
+          const tierStatus = await financialService.getBarberTierStatus(staff.user_id, barbershopId)
           return {
             ...staff,
             tierStatus: tierStatus.data
@@ -168,13 +168,13 @@ export class PayrollExportService {
       )
 
       // Calculate comprehensive payroll records
-      const payrollRecords = await this.calculatePayrollRecords(staffWithTiers, dateRange, shopId)
+      const payrollRecords = await this.calculatePayrollRecords(staffWithTiers, dateRange, barbershopId)
 
       // Get booth rent information
-      const boothRentData = await this.getBoothRentData(shopId, dateRange)
+      const boothRentData = await this.getBoothRentData(barbershopId, dateRange)
 
       return {
-        barbershopInfo: await this.getBarbershopInfo(shopId),
+        barbershopInfo: await this.getBarbershopInfo(barbershopId),
         dateRange,
         staff: staffWithTiers,
         payrollRecords,
@@ -199,21 +199,21 @@ export class PayrollExportService {
    * Calculate individual payroll records
    * @param {Array} staff - Staff data
    * @param {Object} dateRange - Date range
-   * @param {string} shopId - Barbershop ID
+   * @param {string} barbershopId - Barbershop ID
    * @returns {Array} Payroll records
    */
-  async calculatePayrollRecords(staff, dateRange, shopId) {
+  async calculatePayrollRecords(staff, dateRange, barbershopId) {
     const records = []
 
     for (const staffMember of staff) {
       try {
         // Get detailed commission transactions
         const serviceTransactions = await this.getStaffServiceTransactions(
-          staffMember.user_id, shopId, dateRange
+          staffMember.user_id, barbershopId, dateRange
         )
         
         const productTransactions = await this.getStaffProductTransactions(
-          staffMember.user_id, shopId, dateRange
+          staffMember.user_id, barbershopId, dateRange
         )
 
         // Calculate service commissions
@@ -290,7 +290,7 @@ export class PayrollExportService {
           netEarnings,
           
           // YTD totals
-          ytdTotals: await this.calculateYTDTotals(staffMember.user_id, shopId),
+          ytdTotals: await this.calculateYTDTotals(staffMember.user_id, barbershopId),
           
           // Tax information
           taxInfo: {
@@ -319,15 +319,15 @@ export class PayrollExportService {
   /**
    * Get staff service commission transactions
    * @param {string} staffId - Staff ID
-   * @param {string} shopId - Shop ID
+   * @param {string} barbershopId - Shop ID
    * @param {Object} dateRange - Date range
    * @returns {Array} Service transactions
    */
-  async getStaffServiceTransactions(staffId, shopId, dateRange) {
+  async getStaffServiceTransactions(staffId, barbershopId, dateRange) {
     const { data, error } = await this.supabase
       .from('commission_transactions')
       .select('*')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('barber_id', staffId)
       .gte('created_at', dateRange.start)
       .lte('created_at', dateRange.end)
@@ -340,15 +340,15 @@ export class PayrollExportService {
   /**
    * Get staff product commission transactions
    * @param {string} staffId - Staff ID
-   * @param {string} shopId - Shop ID
+   * @param {string} barbershopId - Shop ID
    * @param {Object} dateRange - Date range
    * @returns {Array} Product transactions
    */
-  async getStaffProductTransactions(staffId, shopId, dateRange) {
+  async getStaffProductTransactions(staffId, barbershopId, dateRange) {
     const { data, error } = await this.supabase
       .from('product_commission_transactions')
       .select('*')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('barber_id', staffId)
       .gte('created_at', dateRange.start)
       .lte('created_at', dateRange.end)
@@ -390,10 +390,10 @@ export class PayrollExportService {
   /**
    * Calculate Year-to-Date totals
    * @param {string} staffId - Staff ID
-   * @param {string} shopId - Shop ID
+   * @param {string} barbershopId - Shop ID
    * @returns {Object} YTD totals
    */
-  async calculateYTDTotals(staffId, shopId) {
+  async calculateYTDTotals(staffId, barbershopId) {
     const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
     const now = new Date().toISOString()
 
@@ -401,7 +401,7 @@ export class PayrollExportService {
     const { data: ytdServiceCommissions } = await this.supabase
       .from('commission_transactions')
       .select('commission_amount, tier_bonus_amount')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('barber_id', staffId)
       .gte('created_at', yearStart)
       .lte('created_at', now)
@@ -410,7 +410,7 @@ export class PayrollExportService {
     const { data: ytdProductCommissions } = await this.supabase
       .from('product_commission_transactions')
       .select('total_commission_amount, tier_bonus_amount')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('barber_id', staffId)
       .gte('created_at', yearStart)
       .lte('created_at', now)
@@ -455,14 +455,14 @@ export class PayrollExportService {
 
   /**
    * Get barbershop information for branding
-   * @param {string} shopId - Shop ID
+   * @param {string} barbershopId - Shop ID
    * @returns {Object} Barbershop info
    */
-  async getBarbershopInfo(shopId) {
+  async getBarbershopInfo(barbershopId) {
     const { data, error } = await this.supabase
       .from('barbershops')
       .select('*')
-      .eq('id', shopId)
+      .eq('id', barbershopId)
       .single()
 
     if (error) {
@@ -480,15 +480,15 @@ export class PayrollExportService {
 
   /**
    * Get product commission data summary
-   * @param {string} shopId - Shop ID
+   * @param {string} barbershopId - Shop ID
    * @param {Object} dateRange - Date range
    * @returns {Object} Product commission summary
    */
-  async getProductCommissionData(shopId, dateRange) {
+  async getProductCommissionData(barbershopId, dateRange) {
     const { data, error } = await this.supabase
       .from('product_commission_transactions')
       .select('*')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .gte('created_at', dateRange.start)
       .lte('created_at', dateRange.end)
 
@@ -516,15 +516,15 @@ export class PayrollExportService {
 
   /**
    * Get booth rent data
-   * @param {string} shopId - Shop ID
+   * @param {string} barbershopId - Shop ID
    * @param {Object} dateRange - Date range
    * @returns {Object} Booth rent data
    */
-  async getBoothRentData(shopId, dateRange) {
+  async getBoothRentData(barbershopId, dateRange) {
     const { data, error } = await this.supabase
       .from('financial_arrangements')
       .select('*')
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('arrangement_type', 'booth_rent')
       .eq('is_active', true)
 
@@ -1775,10 +1775,10 @@ export class PayrollExportService {
    */
   async saveExportRecord(exportResult, exportOptions) {
     try {
-      const { shopId, userId } = await staffService.getUserBarbershopId()
+      const { barbershopId, userId } = await staffService.getUserBarberbarbershopId()
 
       const exportRecord = {
-        barbershop_id: shopId,
+        barberbarbershop_id: barbershopId,
         generated_by: userId,
         export_format: exportResult.format,
         file_name: exportResult.fileName,
@@ -1817,12 +1817,12 @@ export class PayrollExportService {
    */
   async getExportHistory(limit = 50) {
     try {
-      const { shopId } = await staffService.getUserBarbershopId()
+      const { barbershopId } = await staffService.getUserBarberbarbershopId()
 
       const { data, error } = await this.supabase
         .from('payroll_export_history')
         .select('*')
-        .eq('barbershop_id', shopId)
+        .eq('barberbarbershop_id', barbershopId)
         .order('created_at', { ascending: false })
         .limit(limit)
 
@@ -1842,14 +1842,14 @@ export class PayrollExportService {
    */
   async cleanupOldExports(daysOld = 30) {
     try {
-      const { shopId } = await staffService.getUserBarbershopId()
+      const { barbershopId } = await staffService.getUserBarberbarbershopId()
       const cutoffDate = new Date()
       cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
       const { data, error } = await this.supabase
         .from('payroll_export_history')
         .delete()
-        .eq('barbershop_id', shopId)
+        .eq('barberbarbershop_id', barbershopId)
         .lt('created_at', cutoffDate.toISOString())
         .select()
 

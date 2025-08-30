@@ -8,7 +8,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const code = searchParams.get('code')
-    const state = searchParams.get('state') // This contains our shopId
+    const state = searchParams.get('state') // This contains our barbershopId
     const error = searchParams.get('error')
     
     if (error) {
@@ -34,7 +34,7 @@ export async function GET(request) {
     // For development, simulate successful integration
     const mockIntegration = {
       id: `gcal-${Date.now()}`,
-      shopId: state,
+      barbershopId: state,
       email: `shop-${state.slice(-4)}@gmail.com`,
       provider: 'google',
       connected: true,

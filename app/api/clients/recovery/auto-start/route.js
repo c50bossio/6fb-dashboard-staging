@@ -26,7 +26,7 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role, full_name')
+      .select('barberbarbershop_id, role, full_name')
       .eq('id', user.id)
       .single()
     
@@ -40,10 +40,10 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    const barbershopId = profile.barbershop_id
+    const barberbarbershopId = profile.barbershop_id
 
     // Get client information and current status
-    const clientData = await getClientRecoveryInfo(supabase, client_id, barbershopId)
+    const clientData = await getClientRecoveryInfo(supabase, client_id, barberbarbershopId)
     
     if (!clientData.success) {
       return NextResponse.json({ 
@@ -72,7 +72,7 @@ export async function POST(request) {
       recovery_type,
       recoverySettings,
       supabase,
-      barbershopId
+      barberbarbershopId
     })
 
     if (!eligibilityCheck.eligible) {
@@ -87,7 +87,7 @@ export async function POST(request) {
     // Create recovery flow record
     const recoveryFlow = await createRecoveryFlow({
       client_id,
-      barbershopId,
+      barberbarbershopId,
       recovery_trigger,
       recovery_type,
       incident_id,
@@ -115,7 +115,7 @@ export async function POST(request) {
         recoverySettings,
         skip_initial_delay,
         supabase,
-        barbershopId
+        barberbarbershopId
       })
     }
 
@@ -123,7 +123,7 @@ export async function POST(request) {
     await logRecoveryInitiation({
       recovery_id: recoveryFlow.data.id,
       client_id,
-      barbershopId,
+      barberbarbershopId,
       trigger: recovery_trigger,
       initiated_by: user.id,
       auto_executed: auto_execute,
@@ -175,7 +175,7 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -183,7 +183,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barbershopId = profile.barbershop_id
+    const barberbarbershopId = profile.barbershop_id
 
     let query = supabase
       .from('client_recovery_flows')
@@ -192,7 +192,7 @@ export async function GET(request) {
         customers(name, email),
         profiles:initiated_by(full_name)
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -218,7 +218,7 @@ export async function GET(request) {
     const { data: stats } = await supabase
       .from('client_recovery_flows')
       .select('status, recovery_type, recovery_trigger')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
 
     const statistics = calculateRecoveryStatistics(stats || [])
@@ -242,7 +242,7 @@ export async function GET(request) {
 /**
  * Get client information needed for recovery
  */
-async function getClientRecoveryInfo(supabase, clientId, barbershopId) {
+async function getClientRecoveryInfo(supabase, clientId, barberbarbershopId) {
   try {
     // Get client data
     const { data: client, error: clientError } = await supabase
@@ -259,7 +259,7 @@ async function getClientRecoveryInfo(supabase, clientId, barbershopId) {
     const { data: strikeHistory } = await supabase
       .from('client_strike_history')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('client_id', clientId)
       .single()
 
@@ -267,7 +267,7 @@ async function getClientRecoveryInfo(supabase, clientId, barbershopId) {
     const { data: automationSettings } = await supabase
       .from('automation_settings')
       .select('recovery_flow_automation')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single()
 
     return {
@@ -289,7 +289,7 @@ async function getClientRecoveryInfo(supabase, clientId, barbershopId) {
  * Check if client is eligible for automated recovery
  */
 async function checkRecoveryEligibility({
-  client, strikeHistory, recovery_trigger, recovery_type, recoverySettings, supabase, barbershopId
+  client, strikeHistory, recovery_trigger, recovery_type, recoverySettings, supabase, barberbarbershopId
 }) {
   try {
     // Check if client is already in recovery
@@ -297,7 +297,7 @@ async function checkRecoveryEligibility({
       .from('client_recovery_flows')
       .select('id, status')
       .eq('client_id', client.id)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .in('status', ['active', 'in_progress', 'pending'])
       .single()
 
@@ -338,7 +338,7 @@ async function checkRecoveryEligibility({
       .from('client_recovery_flows')
       .select('id, status, completed_at')
       .eq('client_id', client.id)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
 
     const recentFailures = recentRecoveries?.filter(r => r.status === 'failed').length || 0
@@ -376,12 +376,12 @@ async function checkRecoveryEligibility({
  * Create recovery flow record
  */
 async function createRecoveryFlow({
-  client_id, barbershopId, recovery_trigger, recovery_type, incident_id, 
+  client_id, barberbarbershopId, recovery_trigger, recovery_type, incident_id, 
   initiated_by, custom_parameters, recoverySettings, supabase
 }) {
   try {
     const flowData = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       client_id,
       recovery_trigger,
       recovery_type,
@@ -419,7 +419,7 @@ async function createRecoveryFlow({
  * Execute recovery flow steps
  */
 async function executeRecoveryFlow({
-  recovery_id, client, strikeHistory, recoverySettings, skip_initial_delay, supabase, barbershopId
+  recovery_id, client, strikeHistory, recoverySettings, skip_initial_delay, supabase, barberbarbershopId
 }) {
   try {
     const executionSteps = []
@@ -440,7 +440,7 @@ async function executeRecoveryFlow({
       client,
       recovery_id,
       recoverySettings,
-      barbershopId,
+      barberbarbershopId,
       supabase
     })
     executionSteps.push(communicationResult)
@@ -503,7 +503,7 @@ async function executeRecoveryFlow({
 /**
  * Send recovery communication to client
  */
-async function sendRecoveryCommunication({ client, recovery_id, recoverySettings, barbershopId, supabase }) {
+async function sendRecoveryCommunication({ client, recovery_id, recoverySettings, barberbarbershopId, supabase }) {
   try {
     const channels = recoverySettings.communication_channels || ['email', 'sms']
     const results = []
@@ -513,10 +513,10 @@ async function sendRecoveryCommunication({ client, recovery_id, recoverySettings
 
       switch (channel) {
         case 'email':
-          result = await sendRecoveryEmail(client, recovery_id, barbershopId)
+          result = await sendRecoveryEmail(client, recovery_id, barberbarbershopId)
           break
         case 'sms':
-          result = await sendRecoverySMS(client, recovery_id, barbershopId)
+          result = await sendRecoverySMS(client, recovery_id, barberbarbershopId)
           break
         default:
           result = { status: 'unsupported', channel }
@@ -638,13 +638,13 @@ async function scheduleFollowUpSteps({ recovery_id, client, recoverySettings, su
   return steps
 }
 
-async function sendRecoveryEmail(client, recoveryId, barbershopId) {
+async function sendRecoveryEmail(client, recoveryId, barberbarbershopId) {
   // Implementation would use email service
   console.log(`Recovery email would be sent to ${client.email}`)
   return { status: 'sent', email_id: `recovery_${recoveryId}_${Date.now()}` }
 }
 
-async function sendRecoverySMS(client, recoveryId, barbershopId) {
+async function sendRecoverySMS(client, recoveryId, barberbarbershopId) {
   // Implementation would use SMS service
   if (!client.phone) {
     return { status: 'skipped', reason: 'no_phone' }
@@ -653,13 +653,13 @@ async function sendRecoverySMS(client, recoveryId, barbershopId) {
   return { status: 'sent', sms_id: `recovery_${recoveryId}_${Date.now()}` }
 }
 
-async function logRecoveryInitiation({ recovery_id, client_id, barbershopId, trigger, initiated_by, auto_executed, execution_result, supabase }) {
+async function logRecoveryInitiation({ recovery_id, client_id, barberbarbershopId, trigger, initiated_by, auto_executed, execution_result, supabase }) {
   await supabase
     .from('recovery_logs')
     .insert({
       recovery_id,
       client_id,
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       action: 'initiated',
       trigger,
       initiated_by,

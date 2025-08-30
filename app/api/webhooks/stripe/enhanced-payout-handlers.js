@@ -158,7 +158,7 @@ export async function handleEnhancedPayoutCreated(payout) {
     // Find connected account
     const { data: account } = await supabase
       .from('stripe_connected_accounts')
-      .select('id, user_id, barbershop_id')
+      .select('id, user_id, barberbarbershop_id')
       .eq('stripe_account_id', payout.account)
       .single()
     
@@ -173,7 +173,7 @@ export async function handleEnhancedPayoutCreated(payout) {
       .insert({
         stripe_payout_id: payout.id,
         connected_account_id: account.id,
-        barbershop_id: account.barbershop_id,
+        barberbarbershop_id: account.barberbarbershop_id,
         amount: payout.amount / 100,
         currency: payout.currency,
         payout_type: payout.type,
@@ -201,7 +201,7 @@ export async function handleEnhancedPayoutCreated(payout) {
     }
     
     // Update performance metrics
-    await updateBarberPayoutMetrics(account.barbershop_id, {
+    await updateBarberPayoutMetrics(account.barberbarbershop_id, {
       payout_initiated: true,
       amount: payout.amount / 100,
       expected_arrival: new Date(payout.arrival_date * 1000)
@@ -247,12 +247,12 @@ export async function handleEnhancedPayoutPaid(payout) {
     // Update barbershop payout statistics
     const { data: account } = await supabase
       .from('stripe_connected_accounts')
-      .select('barbershop_id')
+      .select('barberbarbershop_id')
       .eq('stripe_account_id', payout.account)
       .single()
     
     if (account) {
-      await updateBarberPayoutMetrics(account.barbershop_id, {
+      await updateBarberPayoutMetrics(account.barberbarbershop_id, {
         payout_completed: true,
         amount: payout.amount / 100,
         completion_time: new Date()
@@ -319,7 +319,7 @@ async function triggerPerformanceUpdate(payoutRecordId) {
     // Get barbershop ID from payout record
     const { data: payout } = await supabase
       .from('commission_payout_records')
-      .select('barbershop_id')
+      .select('barberbarbershop_id')
       .eq('id', payoutRecordId)
       .single()
     
@@ -328,7 +328,7 @@ async function triggerPerformanceUpdate(payoutRecordId) {
       const today = new Date().toISOString().split('T')[0]
       
       await supabase.rpc('calculate_payout_performance_metrics', {
-        p_barbershop_id: payout.barbershop_id,
+        p_barberbarbershop_id: payout.barberbarbershop_id,
         p_metric_date: today,
         p_metric_period: 'daily'
       })
@@ -432,7 +432,7 @@ function generateAlertMessage(alertType, data) {
   return messages[alertType] || `Alert: ${alertType}`
 }
 
-async function updateBarberPayoutMetrics(barbershopId, metrics) {
+async function updateBarberPayoutMetrics(barberbarbershopId, metrics) {
   try {
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
@@ -462,13 +462,13 @@ async function updateBarberPayoutMetrics(barbershopId, metrics) {
       await supabase
         .from('payout_performance_metrics')
         .upsert({
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           metric_date: today,
           metric_period: 'daily',
           ...updateData,
           calculated_at: new Date().toISOString()
         }, {
-          onConflict: 'barbershop_id,metric_date,metric_period'
+          onConflict: 'barberbarbershop_id,metric_date,metric_period'
         })
     }
     

@@ -35,7 +35,7 @@ export default function BookingRulesPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [notification, setNotification] = useState(null)
-  const [barbershopId, setBarbershopId] = useState(null)
+  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
   const [bookingRules, setBookingRules] = useState({})
   const [originalRules, setOriginalRules] = useState({})
   
@@ -239,7 +239,7 @@ export default function BookingRulesPage() {
     
     if (isDev || isLocalhost) {
       setLoading(false)
-      setBarbershopId('mock-barbershop-id')
+      setBarberbarbershopId('mock-barbershop-id')
       setBookingRules({})
       setOriginalRules({})
       return
@@ -260,7 +260,7 @@ export default function BookingRulesPage() {
       // Get user's barbershop
       const { data: profile } = await supabase
         .from('profiles')
-        .select('barbershop_id')
+        .select('barberbarbershop_id')
         .eq('id', user.id)
         .single()
       
@@ -273,7 +273,7 @@ export default function BookingRulesPage() {
         return
       }
       
-      setBarbershopId(profile.barbershop_id)
+      setBarberbarbershopId(profile.barbershop_id)
       
       // Load booking rules from business_settings table
       const { data: settings, error } = await supabase
@@ -557,7 +557,7 @@ export default function BookingRulesPage() {
               <div className="border border-gray-200 rounded-lg p-6">
                 <h4 className="font-medium text-gray-900 mb-4">Client Strike History</h4>
                 <ClientHistoryTracker 
-                  barbershopId={barbershopId}
+                  barberbarbershopId={barberbarbershopId}
                   onClientSelect={(client) => {
                     setSelectedClient(client)
                     if (client?.isBlocked) {
@@ -607,7 +607,7 @@ export default function BookingRulesPage() {
               {useSimplifiedBenefits ? (
                 <div className="space-y-4">
                   <SimplifiedClientBenefits 
-                    barbershopId={barbershopId}
+                    barberbarbershopId={barberbarbershopId}
                     currentRules={bookingRules}
                     onUpdate={(benefitSettings) => {
                       setBookingRules(prev => ({ ...prev, goodClientBenefits: benefitSettings }))
@@ -650,7 +650,7 @@ export default function BookingRulesPage() {
                   </div>
                   
                   <GoodClientBenefitsManager 
-                    barbershopId={barbershopId}
+                    barberbarbershopId={barberbarbershopId}
                     currentRules={bookingRules}
                     onUpdate={(benefitSettings) => {
                       setBookingRules(prev => ({ ...prev, goodClientBenefits: benefitSettings }))
@@ -672,7 +672,7 @@ export default function BookingRulesPage() {
                 </p>
               </div>
               <NoShowAnalyticsDashboard 
-                barbershopId={barbershopId}
+                barberbarbershopId={barberbarbershopId}
                 dateRange={{ start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), end: new Date() }}
                 onExport={(data) => {
                   // Handle export functionality
@@ -800,7 +800,7 @@ export default function BookingRulesPage() {
         isOpen={showAutomationSettings}
         onClose={() => setShowAutomationSettings(false)}
         isManager={authorizedRoles.includes(profile?.role)}
-        shopSettings={{ barbershopId }}
+        shopSettings={{ barberbarbershopId }}
       />
 
       {/* Client Care Flow Modal */}

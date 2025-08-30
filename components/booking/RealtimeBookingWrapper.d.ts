@@ -88,7 +88,7 @@ export interface BookingSettings {
 // Component Props
 export interface RealtimeBookingWrapperProps {
   // Core booking props
-  barbershopId: string
+  barberbarbershopId: string
   barbershopSlug?: string
   preselectedBarber?: string | null
   preselectedService?: string | null
@@ -125,7 +125,7 @@ export interface RealtimeBookingWrapperProps {
 // Enhanced props passed to wrapped components
 export interface EnhancedBookingProps {
   // Original props
-  barbershopId: string
+  barberbarbershopId: string
   barbershopSlug?: string
   preselectedBarber?: string | null
   preselectedService?: string | null
@@ -158,7 +158,7 @@ export interface EnhancedBookingProps {
 
 // Hook types
 export interface UseRealtimeBookingOptions {
-  barbershopId: string
+  barberbarbershopId: string
   barberId?: string | null
   serviceId?: string | null
   enableRealtime?: boolean
@@ -201,7 +201,7 @@ export interface ExistingBooking {
 }
 
 export interface BookingData {
-  barbershop_id: string
+  barberbarbershop_id: string
   barber_id?: string
   service_id: string
   service_name: string

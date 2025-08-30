@@ -32,10 +32,10 @@ class MarketingAgent {
     Always maintain brand consistency and optimize for conversion.`
   }
 
-  async generateCampaign(objectives, budget, barbershopId) {
+  async generateCampaign(objectives, budget, barberbarbershopId) {
     try {
       // Get business context
-      const context = await this.getBusinessContext(barbershopId)
+      const context = await this.getBusinessContext(barberbarbershopId)
       
       const prompt = `Create a marketing campaign with these objectives: ${JSON.stringify(objectives)}
       Budget: $${budget}
@@ -129,7 +129,7 @@ class MarketingAgent {
     return variations
   }
 
-  async segmentAudience(barbershopId) {
+  async segmentAudience(barberbarbershopId) {
     // Get customer data for segmentation
     const { data: customers } = await supabase
       .from('customers')
@@ -138,7 +138,7 @@ class MarketingAgent {
         appointments(count),
         payments(sum(amount))
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
 
     if (!customers) return []
 
@@ -447,17 +447,17 @@ class MarketingAgent {
     }
   }
 
-  async getBusinessContext(barbershopId) {
+  async getBusinessContext(barberbarbershopId) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('*')
-      .eq('id', barbershopId)
+      .eq('id', barberbarbershopId)
       .single()
 
     const { data: services } = await supabase
       .from('services')
       .select('*')
-      .eq('shop_id', barbershopId)
+      .eq('barbershop_id', barberbarbershopId)
       .limit(5)
 
     return {
@@ -630,18 +630,18 @@ export async function GET(request) {
  * Body:
  * {
  *   action: 'create_campaign' | 'generate_content' | 'segment_audience' | 'optimize_campaign' | 'track_performance',
- *   barbershop_id: string,
+ *   barberbarbershop_id: string,
  *   parameters: object
  * }
  */
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { action, barbershop_id, parameters } = body
+    const { action, barberbarbershop_id, parameters } = body
 
-    if (!action || !barbershop_id) {
+    if (!action || !barberbarbershop_id) {
       return NextResponse.json(
-        { error: 'Action and barbershop_id are required' },
+        { error: 'Action and barberbarbershop_id are required' },
         { status: 400 }
       )
     }
@@ -652,13 +652,13 @@ export async function POST(request) {
     switch (action) {
       case 'create_campaign': {
         const { objectives, budget } = parameters
-        const campaign = await agent.generateCampaign(objectives, budget, barbershop_id)
+        const campaign = await agent.generateCampaign(objectives, budget, barberbarbershop_id)
         
         // Save campaign to database
         const { data: savedCampaign, error } = await supabase
           .from('marketing_campaigns')
           .insert({
-            barbershop_id,
+            barberbarbershop_id,
             name: campaign.campaign_name,
             objectives: campaign.objectives,
             budget: campaign.budget,
@@ -688,7 +688,7 @@ export async function POST(request) {
         const { data: brand } = await supabase
           .from('barbershops')
           .select('name, brand_voice')
-          .eq('id', barbershop_id)
+          .eq('id', barberbarbershop_id)
           .single()
 
         const content = await agent.generateContent(content_type, context, brand || {})
@@ -697,7 +697,7 @@ export async function POST(request) {
         const { data: savedContent } = await supabase
           .from('marketing_content')
           .insert({
-            barbershop_id,
+            barberbarbershop_id,
             content_type,
             content: content.content,
             variations: content.variations,
@@ -717,14 +717,14 @@ export async function POST(request) {
       }
 
       case 'segment_audience': {
-        const segments = await agent.segmentAudience(barbershop_id)
+        const segments = await agent.segmentAudience(barberbarbershop_id)
         
         // Save segments
         for (const segment of segments) {
           await supabase
             .from('customer_segments')
             .upsert({
-              barbershop_id,
+              barberbarbershop_id,
               segment_name: segment.segment_name,
               customer_count: segment.customer_count,
               customer_ids: segment.customer_ids,

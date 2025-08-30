@@ -36,20 +36,20 @@ export async function GET(request, { params }) {
     const { data: businessHours } = await supabase
       .from('business_hours')
       .select('*')
-      .eq('barbershop_id', barbershop.id)
+      .eq('barberbarbershop_id', barbershop.id)
       .order('day_of_week')
 
     const { data: teamMembers } = await supabase
       .from('team_members')
       .select('*')
-      .eq('barbershop_id', barbershop.id)
+      .eq('barberbarbershop_id', barbershop.id)
       .eq('is_active', true)
       .order('display_order')
 
     const { data: testimonials } = await supabase
       .from('customer_testimonials')
       .select('*')
-      .eq('barbershop_id', barbershop.id)
+      .eq('barberbarbershop_id', barbershop.id)
       .eq('is_approved', true)
       .order('display_order')
       .limit(6)

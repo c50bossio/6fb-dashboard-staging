@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', compact = false }) {
+export default function PredictiveAnalyticsDashboard({ barberbarbershop_id = 'demo', compact = false }) {
   const [predictions, setPredictions] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeView, setActiveView] = useState('overview')
@@ -22,13 +22,13 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
 
   useEffect(() => {
     loadPredictions()
-  }, [barbershop_id, selectedTimeframe])
+  }, [barberbarbershop_id, selectedTimeframe])
 
   const loadPredictions = async () => {
     try {
       setLoading(true)
       
-      const dashboardResponse = await fetch(`/api/ai/predictive?barbershop_id=${barbershop_id}`)
+      const dashboardResponse = await fetch(`/api/ai/predictive?barberbarbershop_id=${barberbarbershop_id}`)
       const dashboardData = await dashboardResponse.json()
       
       const forecastResponse = await fetch('/api/ai/predictive', {
@@ -36,7 +36,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prediction_type: 'revenue_forecast',
-          barbershop_id,
+          barberbarbershop_id,
           parameters: { timeframe: selectedTimeframe, confidence_level: 0.85 }
         })
       })
@@ -47,7 +47,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prediction_type: 'demand_prediction',
-          barbershop_id
+          barberbarbershop_id
         })
       })
       const demandData = await demandResponse.json()

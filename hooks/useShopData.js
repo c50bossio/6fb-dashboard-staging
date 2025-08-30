@@ -15,7 +15,7 @@ import { useStaffWithRealtime } from './useStaffQuery'
 /**
  * Get comprehensive shop data for dashboard
  */
-export function useShopData(shopId, options = {}) {
+export function useShopData(barbershopId, options = {}) {
   const {
     includeAppointments = true,
     includeStaff = true,
@@ -26,44 +26,44 @@ export function useShopData(shopId, options = {}) {
 
   // Core shop information
   const shopQuery = useQuery({
-    queryKey: ['barbershop', shopId],
-    queryFn: () => createClient().getBarbershop(shopId),
-    enabled: !!shopId,
+    queryKey: ['barbershop', barbershopId],
+    queryFn: () => createClient().getBarbershop(barbershopId),
+    enabled: !!barbershopId,
     staleTime: 10 * 60 * 1000, // 10 minutes
   })
 
   // Business hours
   const businessHoursQuery = useQuery({
-    queryKey: ['business-hours', shopId],
-    queryFn: () => createClient().getBusinessHours(shopId),
-    enabled: !!shopId,
+    queryKey: ['business-hours', barbershopId],
+    queryFn: () => createClient().getBusinessHours(barbershopId),
+    enabled: !!barbershopId,
     staleTime: 30 * 60 * 1000, // 30 minutes
   })
 
   // Dashboard metrics
   const metricsQuery = useQuery({
-    queryKey: ['dashboard-metrics', shopId],
-    queryFn: () => createClient().getDashboardMetrics(shopId, appointmentDateRange),
-    enabled: !!shopId,
+    queryKey: ['dashboard-metrics', barbershopId],
+    queryFn: () => createClient().getDashboardMetrics(barbershopId, appointmentDateRange),
+    enabled: !!barbershopId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
   // Optional data queries with real-time updates
-  const appointmentsQuery = useAppointmentsWithRealtime(shopId, {
-    enabled: includeAppointments && !!shopId,
+  const appointmentsQuery = useAppointmentsWithRealtime(barbershopId, {
+    enabled: includeAppointments && !!barbershopId,
     ...appointmentDateRange
   })
 
-  const staffQuery = useStaffWithRealtime(shopId, {
-    enabled: includeStaff && !!shopId
+  const staffQuery = useStaffWithRealtime(barbershopId, {
+    enabled: includeStaff && !!barbershopId
   })
 
-  const servicesQuery = useServices(shopId, {
-    enabled: includeServices && !!shopId
+  const servicesQuery = useServices(barbershopId, {
+    enabled: includeServices && !!barbershopId
   })
 
-  const customersQuery = useCustomersWithRealtime(shopId, {
-    enabled: includeCustomers && !!shopId,
+  const customersQuery = useCustomersWithRealtime(barbershopId, {
+    enabled: includeCustomers && !!barbershopId,
     limit: 100 // Reasonable limit for dashboard
   })
 
@@ -194,8 +194,8 @@ export function useShopData(shopId, options = {}) {
 /**
  * Lightweight shop data for header/navigation
  */
-export function useShopHeader(shopId) {
-  return useShopData(shopId, {
+export function useShopHeader(barbershopId) {
+  return useShopData(barbershopId, {
     includeAppointments: false,
     includeStaff: false,
     includeServices: false,
@@ -206,12 +206,12 @@ export function useShopHeader(shopId) {
 /**
  * Dashboard-focused shop data with today's appointments
  */
-export function useShopDashboard(shopId) {
+export function useShopDashboard(barbershopId) {
   const today = new Date()
   const startDate = today.toISOString().split('T')[0]
   const endDate = startDate
 
-  return useShopData(shopId, {
+  return useShopData(barbershopId, {
     includeAppointments: true,
     includeStaff: true,
     includeServices: true,

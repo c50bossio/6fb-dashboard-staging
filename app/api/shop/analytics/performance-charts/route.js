@@ -26,7 +26,7 @@ export async function GET(request) {
     // Get user's shop ID
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id')
+      .select('barbershop_id')
       .eq('id', user.id)
       .single()
     
@@ -34,7 +34,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Shop not found' }, { status: 404 })
     }
 
-    const shopId = profile.shop_id
+    const barbershopId = profile.shop_id
     const { searchParams } = new URL(request.url)
     const periodDays = parseInt(searchParams.get('period_days') || '30')
     const granularity = searchParams.get('granularity') || 'daily' // daily, weekly, monthly
@@ -60,7 +60,7 @@ export async function GET(request) {
           retail_price
         )
       `)
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .gte('sale_date', startDate.toISOString())
       .lte('sale_date', endDate.toISOString())
       .order('sale_date', { ascending: true })
@@ -82,7 +82,7 @@ export async function GET(request) {
         retail_price,
         created_at
       `)
-      .eq('barbershop_id', shopId)
+      .eq('barberbarbershop_id', barbershopId)
       .eq('is_active', true)
 
     if (inventoryError) {

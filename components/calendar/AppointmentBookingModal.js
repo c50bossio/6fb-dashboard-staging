@@ -16,7 +16,7 @@ export default function AppointmentBookingModal({
   barbers,
   services,
   onBookingComplete,
-  barbershopId,
+  barberbarbershopId,
   editingAppointment = null
 }) {
   const { user } = useAuth()
@@ -493,7 +493,7 @@ export default function AppointmentBookingModal({
         body: JSON.stringify({
           phone,
           email,
-          barbershop_id: barbershopId
+          barberbarbershop_id: barberbarbershopId
         })
       })
 
@@ -586,7 +586,7 @@ export default function AppointmentBookingModal({
       
       const appointmentData = {
         ...formData,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         client_id: user?.id || null,
         total_amount: formData.service_price + (formData.tip_amount || 0),
         scheduled_at: startDate.toISOString(),
@@ -777,7 +777,7 @@ export default function AppointmentBookingModal({
   }
 
   const handleQuickBlock = async () => {
-    console.log('handleQuickBlock called with barbershopId:', barbershopId)
+    console.log('handleQuickBlock called with barberbarbershopId:', barberbarbershopId)
     setLoading(true)
     setError('')
     
@@ -791,8 +791,8 @@ export default function AppointmentBookingModal({
         start_time: startDate.toTimeString().slice(0, 5), // Extract time part (HH:MM)
         end_time: endDate.toTimeString().slice(0, 5), // Extract time part (HH:MM)
         reason: blockReason || 'Time blocked',
-        shop_id: barbershopId,
-        barbershop_id: barbershopId
+        barbershop_id: barberbarbershopId,
+        barberbarbershop_id: barberbarbershopId
       }
       
       console.log('Sending block data to API:', {
@@ -801,8 +801,8 @@ export default function AppointmentBookingModal({
         end_time: blockData.end_time,
         barber_id: blockData.barber_id,
         reason: blockData.reason,
-        shop_id: blockData.shop_id,
-        barbershop_id: blockData.barbershop_id
+        barbershop_id: blockData.barbershop_id,
+        barberbarbershop_id: blockData.barberbarbershop_id
       })
 
       const response = await fetch(`/api/calendar/appointments?action=block`, {
@@ -2325,7 +2325,7 @@ export default function AppointmentBookingModal({
       onClose={() => setShowCustomerSearch(false)}
       onSelectCustomer={handleSelectCustomer}
       onCreateNewCustomer={handleCreateNewCustomer}
-      barbershopId={barbershopId}
+      barberbarbershopId={barberbarbershopId}
     />
     </>
   )

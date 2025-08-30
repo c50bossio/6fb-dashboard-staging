@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function ShareableBookingLink() {
   const { user, loading: authLoading } = useAuth()
-  const [barbershopId, setBarbershopId] = useState(null)
+  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
   const [barbershopName, setBarbershopName] = useState('')
   const [bookingUrl, setBookingUrl] = useState('')
   const [copied, setCopied] = useState(false)
@@ -41,7 +41,7 @@ export default function ShareableBookingLink() {
       // First get the user's profile to find their barbershop
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('barbershop_id, shop_id')
+        .select('barberbarbershop_id, barbershop_id')
         .eq('id', user.id)
         .single()
 
@@ -58,7 +58,7 @@ export default function ShareableBookingLink() {
           
           if (!shopError && barbershops && barbershops.length > 0) {
             const barbershop = barbershops[0]
-            setBarbershopId(barbershop.id)
+            setBarberbarbershopId(barbershop.id)
             setBarbershopName(barbershop.name)
             
             const baseUrl = window.location.origin
@@ -79,9 +79,9 @@ export default function ShareableBookingLink() {
         return
       }
 
-      const shopId = profile?.barbershop_id || profile?.shop_id
+      const barbershopId = profile?.barbershop_id || profile?.shop_id
       
-      if (!shopId) {
+      if (!barbershopId) {
         setError('No barbershop associated with your account')
         setLoading(false)
         return
@@ -91,7 +91,7 @@ export default function ShareableBookingLink() {
       const { data: barbershop, error: shopError } = await supabase
         .from('barbershops')
         .select('id, name, slug')
-        .eq('id', shopId)
+        .eq('id', barbershopId)
         .single()
 
       if (shopError) {
@@ -101,7 +101,7 @@ export default function ShareableBookingLink() {
         return
       }
 
-      setBarbershopId(barbershop.id)
+      setBarberbarbershopId(barbershop.id)
       setBarbershopName(barbershop.name)
       
       // Generate the booking URL

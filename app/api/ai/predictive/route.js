@@ -17,23 +17,23 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const forecastType = searchParams.get('type') || 'comprehensive'
     const timeHorizon = searchParams.get('horizon') || 'weekly'
-    const barbershopId = searchParams.get('shopId') || 'default'
+    const barberbarbershopId = searchParams.get('barbershopId') || 'default'
 
     const cacheType = 'predictive-analytics';
-    const cacheParams = { forecastType, timeHorizon, barbershopId };
+    const cacheParams = { forecastType, timeHorizon, barberbarbershopId };
 
     try {
       const predictions = await cacheQuery(cacheType, cacheParams, async () => {
         try {
           // Check if we have a real user and barbershop context
-          if (barbershopId === 'default' || barbershopId === 'demo') {
+          if (barberbarbershopId === 'default' || barberbarbershopId === 'demo') {
             throw new Error('Real barbershop ID required - no demo data')
           }
           
-          return await getPredictiveAnalytics(barbershopId, { 
+          return await getPredictiveAnalytics(barberbarbershopId, { 
             forecastType, 
             timeHorizon, 
-            barbershopId 
+            barberbarbershopId 
           });
         } catch (aiError) {
           throw new Error('Insufficient barbershop data for predictions');
@@ -50,7 +50,7 @@ export async function GET(request) {
         metadata: {
           forecastType,
           timeHorizon,
-          barbershopId,
+          barberbarbershopId,
           confidence: predictions.overallConfidence || 0.75
         },
         _cache: predictions._cache || { hit: false },
@@ -90,21 +90,21 @@ export async function GET(request) {
 export async function POST(request) {
   try {
 
-    const { forecastType, businessContext, timeHorizon, options, analysis_type, current_pricing, barbershop_id } = await request.json()
+    const { forecastType, businessContext, timeHorizon, options, analysis_type, current_pricing, barberbarbershop_id } = await request.json()
 
     if (analysis_type === 'strategic_pricing') {
       
       try {
-        if (!barbershop_id || barbershop_id === 'demo' || barbershop_id === 'demo-barbershop') {
+        if (!barberbarbershop_id || barberbarbershop_id === 'demo' || barberbarbershop_id === 'demo-barbershop') {
           throw new Error('Real barbershop ID required for strategic pricing')
         }
         
-        const strategicPricing = await generateStrategicPricingRecommendations(barbershop_id, current_pricing || {})
+        const strategicPricing = await generateStrategicPricingRecommendations(barberbarbershop_id, current_pricing || {})
         
         return NextResponse.json({
           success: true,
           analysis_type: 'strategic_pricing',
-          barbershop_id: barbershop_id,
+          barberbarbershop_id: barberbarbershop_id,
           strategic_pricing_recommendations: strategicPricing,
           metadata: {
             approach: '60/90-day strategic analysis',
@@ -146,11 +146,11 @@ export async function POST(request) {
     }
 
     try {
-      if (!barbershop_id || barbershop_id === 'demo' || barbershop_id === 'demo-barbershop') {
+      if (!barberbarbershop_id || barberbarbershop_id === 'demo' || barberbarbershop_id === 'demo-barbershop') {
         throw new Error('Real barbershop ID required for forecast generation')
       }
       
-      const forecast = await generatePredictiveForecast(barbershop_id, {
+      const forecast = await generatePredictiveForecast(barberbarbershop_id, {
         forecastType: forecastType || 'comprehensive',
         businessContext: businessContext || {},
         timeHorizon: timeHorizon || 'weekly',
@@ -197,7 +197,7 @@ async function getPredictiveAnalytics(userId, options = {}) {
       user_id: userId,
       forecast_type: options.forecastType || 'comprehensive',
       time_horizon: options.timeHorizon || 'weekly',
-      barbershop_id: options.barbershopId || 'default'
+      barberbarbershop_id: options.barberbarbershopId || 'default'
     })
     
     const response = await fetch(`${fastAPIUrl}/api/v1/ai/predictive?${queryParams}`, {
@@ -659,7 +659,7 @@ async function getFallbackPredictions(forecastType = 'comprehensive', timeHorizo
   return baseForecast
 }
 
-async function generateStrategicPricingRecommendations(barbershopId, currentPricing = {}) {
+async function generateStrategicPricingRecommendations(barberbarbershopId, currentPricing = {}) {
   
   const pricing = {
     haircut: 25.0,

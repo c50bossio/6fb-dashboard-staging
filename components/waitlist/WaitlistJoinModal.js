@@ -57,7 +57,7 @@ const WaitlistJoinModal = ({
                 },
                 body: JSON.stringify({
                     customer_id: 'customer_demo', // In real app, get from auth context
-                    barbershop_id: barbershop?.id || 'demo_barbershop',
+                    barberbarbershop_id: barbershop?.id || 'demo_barbershop',
                     service_id: service?.id || service?.service_id,
                     ...formData,
                     preferred_dates: formData.preferred_dates.length > 0 ? 

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function useReviews({ 
-  barbershopId = null,
+  barberbarbershopId = null,
   barberId = null,
   locationId = null,
   enterpriseView = false,
@@ -45,10 +45,10 @@ export default function useReviews({
         params.append('barber_id', barberId)
       } else if (locationId) {
         params.append('location_id', locationId)
-      } else if (barbershopId) {
-        params.append('barbershop_id', barbershopId)
+      } else if (barberbarbershopId) {
+        params.append('barberbarbershop_id', barberbarbershopId)
       } else if (profile?.barbershop_id) {
-        params.append('barbershop_id', profile.barbershop_id)
+        params.append('barberbarbershop_id', profile.barbershop_id)
       }
 
       if (options.sentiment) {
@@ -103,14 +103,14 @@ export default function useReviews({
     } finally {
       setLoading(false)
     }
-  }, [barbershopId, barberId, locationId, profile, limit])
+  }, [barberbarbershopId, barberId, locationId, profile, limit])
 
   const loadBarbers = useCallback(async () => {
     try {
-      const shopId = barbershopId || profile?.barbershop_id
-      if (!shopId) return
+      const barbershopId = barberbarbershopId || profile?.barbershop_id
+      if (!barbershopId) return
 
-      const response = await fetch(`/api/barbers?barbershop_id=${shopId}&active_only=true`)
+      const response = await fetch(`/api/barbers?barberbarbershop_id=${barbershopId}&active_only=true`)
       if (response.ok) {
         const result = await response.json()
         if (result.barbers) {
@@ -120,7 +120,7 @@ export default function useReviews({
     } catch (err) {
       console.error('Error loading barbers:', err)
     }
-  }, [barbershopId, profile])
+  }, [barberbarbershopId, profile])
 
   const calculateStats = (reviewsData) => {
     const total = reviewsData.length
@@ -162,12 +162,12 @@ export default function useReviews({
   const syncReviews = useCallback(async () => {
     try {
       setLoading(true)
-      const shopId = barbershopId || profile?.barbershop_id
+      const barbershopId = barberbarbershopId || profile?.barbershop_id
       
       const response = await fetch('/api/gmb/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barbershop_id: shopId })
+        body: JSON.stringify({ barberbarbershop_id: barbershopId })
       })
 
       if (response.ok) {
@@ -183,7 +183,7 @@ export default function useReviews({
     } finally {
       setLoading(false)
     }
-  }, [barbershopId, profile, loadReviews])
+  }, [barberbarbershopId, profile, loadReviews])
 
   // Auto-load reviews on mount
   useEffect(() => {

@@ -10,11 +10,11 @@ import aiSchedulingAgent from '@/services/ai-scheduling-agent'
 /**
  * Get AI scheduling suggestions for optimal time slots
  */
-export function useAISchedulingSuggestions(shopId, duration, date) {
+export function useAISchedulingSuggestions(barbershopId, duration, date) {
   return useQuery({
-    queryKey: queryKeys.ai.schedulingSuggestions(shopId, duration, date),
-    queryFn: () => aiSchedulingAgent.suggestOptimalSlots(shopId, date, duration),
-    enabled: !!shopId && !!date,
+    queryKey: queryKeys.ai.schedulingSuggestions(barbershopId, duration, date),
+    queryFn: () => aiSchedulingAgent.suggestOptimalSlots(barbershopId, date, duration),
+    enabled: !!barbershopId && !!date,
     staleTime: 5 * 60 * 1000, // 5 minutes - suggestions can change based on new bookings
   })
 }
@@ -38,12 +38,12 @@ export function useScheduleOptimization() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ shopId, date }) => 
-      aiSchedulingAgent.optimizeSchedule(shopId, date),
-    onSuccess: (data, { shopId }) => {
+    mutationFn: ({ barbershopId, date }) => 
+      aiSchedulingAgent.optimizeSchedule(barbershopId, date),
+    onSuccess: (data, { barbershopId }) => {
       // Invalidate appointments after optimization
       queryClient.invalidateQueries({
-        queryKey: queryKeys.appointments.byShop(shopId)
+        queryKey: queryKeys.appointments.byShop(barbershopId)
       })
     }
   })
@@ -52,11 +52,11 @@ export function useScheduleOptimization() {
 /**
  * Get booking pattern analysis
  */
-export function useBookingPatterns(shopId) {
+export function useBookingPatterns(barbershopId) {
   return useQuery({
-    queryKey: [...queryKeys.ai.all(), 'patterns', shopId],
-    queryFn: () => aiSchedulingAgent.analyzeBookingPatterns(shopId),
-    enabled: !!shopId,
+    queryKey: [...queryKeys.ai.all(), 'patterns', barbershopId],
+    queryFn: () => aiSchedulingAgent.analyzeBookingPatterns(barbershopId),
+    enabled: !!barbershopId,
     staleTime: 60 * 60 * 1000, // 1 hour - patterns don't change frequently
   })
 }
@@ -64,11 +64,11 @@ export function useBookingPatterns(shopId) {
 /**
  * Get customer preferences analysis
  */
-export function useCustomerPreferences(shopId) {
+export function useCustomerPreferences(barbershopId) {
   return useQuery({
-    queryKey: [...queryKeys.ai.all(), 'preferences', shopId],
-    queryFn: () => aiSchedulingAgent.getCustomerPreferences(shopId),
-    enabled: !!shopId,
+    queryKey: [...queryKeys.ai.all(), 'preferences', barbershopId],
+    queryFn: () => aiSchedulingAgent.getCustomerPreferences(barbershopId),
+    enabled: !!barbershopId,
     staleTime: 60 * 60 * 1000, // 1 hour
   })
 }
@@ -111,9 +111,9 @@ export function useSmartReminders() {
 /**
  * Get AI-powered availability analysis
  */
-export function useAvailabilityAnalysis(shopId, dateRange) {
+export function useAvailabilityAnalysis(barbershopId, dateRange) {
   return useQuery({
-    queryKey: [...queryKeys.ai.all(), 'availability', shopId, dateRange],
+    queryKey: [...queryKeys.ai.all(), 'availability', barbershopId, dateRange],
     queryFn: async () => {
       const dates = []
       const current = new Date(dateRange.start)
@@ -125,7 +125,7 @@ export function useAvailabilityAnalysis(shopId, dateRange) {
       }
       
       const availabilityPromises = dates.map(date => 
-        aiSchedulingAgent.getAvailability(shopId, date)
+        aiSchedulingAgent.getAvailability(barbershopId, date)
       )
       
       const results = await Promise.all(availabilityPromises)
@@ -136,7 +136,7 @@ export function useAvailabilityAnalysis(shopId, dateRange) {
         utilization: calculateUtilization(results[index])
       }))
     },
-    enabled: !!shopId && !!dateRange?.start && !!dateRange?.end,
+    enabled: !!barbershopId && !!dateRange?.start && !!dateRange?.end,
     staleTime: 10 * 60 * 1000, // 10 minutes
   })
 }
@@ -147,10 +147,10 @@ export function useAvailabilityAnalysis(shopId, dateRange) {
 export function usePrefetchAISuggestions() {
   const queryClient = useQueryClient()
   
-  return (shopId, duration, date) => {
+  return (barbershopId, duration, date) => {
     return queryClient.prefetchQuery({
-      queryKey: queryKeys.ai.schedulingSuggestions(shopId, duration, date),
-      queryFn: () => aiSchedulingAgent.suggestOptimalSlots(shopId, date, duration),
+      queryKey: queryKeys.ai.schedulingSuggestions(barbershopId, duration, date),
+      queryFn: () => aiSchedulingAgent.suggestOptimalSlots(barbershopId, date, duration),
       staleTime: 5 * 60 * 1000,
     })
   }

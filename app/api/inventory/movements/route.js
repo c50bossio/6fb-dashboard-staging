@@ -13,13 +13,13 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const barbershopId = searchParams.get('barbershop_id');
+    const barberbarbershopId = searchParams.get('barberbarbershop_id');
     const productId = searchParams.get('product_id');
     const movementType = searchParams.get('movement_type');
     const limit = searchParams.get('limit') || 50;
     const offset = searchParams.get('offset') || 0;
 
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'Barbershop ID required' }, { status: 400 });
     }
 
@@ -27,7 +27,7 @@ export async function GET(request) {
     let query = supabase
       .from('inventory_movements')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

@@ -11,7 +11,7 @@ const supabase = createClient(
  * Revenue optimization suggestions for POS transactions
  * 
  * Query Parameters:
- * - shopId: UUID of the barbershop
+ * - barbershopId: UUID of the barbershop
  * - customerId: UUID of the customer
  * - serviceId: UUID of the current service
  * - currentTotal: Current transaction total
@@ -20,15 +20,15 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shopId')
+    const barbershopId = searchParams.get('barbershopId')
     const customerId = searchParams.get('customerId')
     const serviceId = searchParams.get('serviceId')
     const currentTotal = parseFloat(searchParams.get('currentTotal')) || 0
     const sessionId = searchParams.get('sessionId')
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'shopId is required' },
+        { error: 'barbershopId is required' },
         { status: 400 }
       )
     }
@@ -49,7 +49,7 @@ export async function GET(request) {
         const { data: upgradeServices } = await supabase
           .from('services')
           .select('*')
-          .eq('shop_id', shopId)
+          .eq('barbershop_id', barbershopId)
           .eq('category', currentService.category)
           .gt('price', currentService.price)
           .eq('is_active', true)
@@ -92,7 +92,7 @@ export async function GET(request) {
             category
           )
         `)
-        .eq('shop_id', shopId)
+        .eq('barbershop_id', barbershopId)
         .eq('service_id', serviceId)
         .gte('purchase_frequency', 0.2) // At least 20% adoption rate
         .eq('products.is_active', true)
@@ -143,7 +143,7 @@ export async function GET(request) {
           )
         `)
         .eq('customer_id', customerId)
-        .eq('shop_id', shopId)
+        .eq('barbershop_id', barbershopId)
         .gte('cross_sell_receptivity', 0.5)
         .order('purchase_frequency', { ascending: false })
         .limit(3)
@@ -172,7 +172,7 @@ export async function GET(request) {
 
     // 4. Seasonal and Promotional Opportunities
     const currentMonth = new Date().getMonth() + 1
-    const seasonalProducts = await getSeasonalProducts(shopId, currentMonth)
+    const seasonalProducts = await getSeasonalProducts(barbershopId, currentMonth)
     
     seasonalProducts.forEach(product => {
       opportunities.push({
@@ -192,7 +192,7 @@ export async function GET(request) {
     const { data: highMarginProducts } = await supabase
       .from('products')
       .select('*')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .gte('price', currentTotal * 0.3) // At least 30% of current total
       .lte('price', currentTotal * 1.5) // Not more than 150% of current total
@@ -226,7 +226,7 @@ export async function GET(request) {
       .map((opp, index) => ({
         ...opp,
         rank: index + 1,
-        opportunity_id: `${shopId}-${Date.now()}-${index}`,
+        opportunity_id: `${barbershopId}-${Date.now()}-${index}`,
         roi_score: (opp.additional_revenue * opp.confidence_score).toFixed(2)
       }))
 
@@ -250,7 +250,7 @@ export async function GET(request) {
       opportunities: rankedOpportunities,
       summary,
       context: {
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         customer_id: customerId,
         service_id: serviceId,
         current_total: currentTotal,
@@ -274,7 +274,7 @@ export async function GET(request) {
 /**
  * Helper function to get seasonal products
  */
-async function getSeasonalProducts(shopId, month) {
+async function getSeasonalProducts(barbershopId, month) {
   // Mock seasonal logic - in production this would be more sophisticated
   const seasonalCategories = {
     12: ['Holiday Specials', 'Winter Care'], // December
@@ -314,7 +314,7 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      shopId,
+      barbershopId,
       opportunityId,
       opportunityType,
       action,
@@ -326,7 +326,7 @@ export async function POST(request) {
     } = body
 
     // Validate required fields
-    if (!shopId || !opportunityId || !action) {
+    if (!barbershopId || !opportunityId || !action) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -337,7 +337,7 @@ export async function POST(request) {
     const { data, error } = await supabase
       .from('cross_sell_analytics')
       .insert({
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         suggested_product_id: itemId,
         customer_id: customerId,
         customer_action: action,

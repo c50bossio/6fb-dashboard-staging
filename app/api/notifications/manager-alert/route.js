@@ -26,7 +26,7 @@ export async function POST(request) {
     // Get user's barbershop and role
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, role, full_name')
+      .select('barberbarbershop_id, role, full_name')
       .eq('id', user.id)
       .single()
     
@@ -34,13 +34,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barbershopId = profile.barbershop_id
+    const barberbarbershopId = profile.barbershop_id
 
     // Get manager notification settings
     const { data: notificationSettings } = await supabase
       .from('automation_settings')
       .select('manager_notifications')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single()
 
     const managerSettings = notificationSettings?.manager_notifications || {
@@ -85,7 +85,7 @@ export async function POST(request) {
     const { data: managers } = await supabase
       .from('profiles')
       .select('id, full_name, email, role, notification_preferences')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .in('role', ['SHOP_OWNER', 'ENTERPRISE_OWNER', 'manager', 'owner'])
 
     if (!managers || managers.length === 0) {
@@ -104,7 +104,7 @@ export async function POST(request) {
 
     // Create the alert record
     const alertData = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       alert_type,
       client_id,
       incident_id,
@@ -143,7 +143,7 @@ export async function POST(request) {
         managers,
         clientInfo,
         managerSettings,
-        barbershopId,
+        barberbarbershopId,
         supabase
       })
     }
@@ -210,7 +210,7 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, role')
+      .select('barberbarbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -224,7 +224,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    const barbershopId = profile.barbershop_id
+    const barberbarbershopId = profile.barbershop_id
 
     // Build query
     let query = supabase
@@ -234,7 +234,7 @@ export async function GET(request) {
         customers(name, email),
         profiles:triggered_by(full_name)
       `)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -257,7 +257,7 @@ export async function GET(request) {
     const { data: stats } = await supabase
       .from('manager_alerts')
       .select('alert_type, priority, status')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
 
     const statistics = {
@@ -296,7 +296,7 @@ export async function GET(request) {
 /**
  * Send manager notifications across multiple channels
  */
-async function sendManagerNotifications({ alert, managers, clientInfo, managerSettings, barbershopId, supabase }) {
+async function sendManagerNotifications({ alert, managers, clientInfo, managerSettings, barberbarbershopId, supabase }) {
   const results = []
   const channels = managerSettings.channels || ['email', 'dashboard']
 
@@ -326,7 +326,7 @@ async function sendManagerNotifications({ alert, managers, clientInfo, managerSe
               manager,
               alert,
               clientInfo,
-              barbershopId
+              barberbarbershopId
             })
             break
 
@@ -335,7 +335,7 @@ async function sendManagerNotifications({ alert, managers, clientInfo, managerSe
               manager,
               alert,
               clientInfo,
-              barbershopId,
+              barberbarbershopId,
               supabase
             })
             break
@@ -345,7 +345,7 @@ async function sendManagerNotifications({ alert, managers, clientInfo, managerSe
               manager,
               alert,
               clientInfo,
-              barbershopId
+              barberbarbershopId
             })
             break
 
@@ -378,7 +378,7 @@ async function sendManagerNotifications({ alert, managers, clientInfo, managerSe
 /**
  * Send email notification to manager
  */
-async function sendEmailNotification({ manager, alert, clientInfo, barbershopId }) {
+async function sendEmailNotification({ manager, alert, clientInfo, barberbarbershopId }) {
   // This would integrate with your email service (SendGrid, etc.)
   const emailData = {
     to: manager.email,
@@ -388,7 +388,7 @@ async function sendEmailNotification({ manager, alert, clientInfo, barbershopId 
       manager_name: manager.full_name,
       alert,
       client: clientInfo,
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       dashboard_link: `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/alerts/${alert.id}`
     }
   }
@@ -406,7 +406,7 @@ async function sendEmailNotification({ manager, alert, clientInfo, barbershopId 
 /**
  * Create dashboard notification
  */
-async function createDashboardNotification({ manager, alert, clientInfo, barbershopId, supabase }) {
+async function createDashboardNotification({ manager, alert, clientInfo, barberbarbershopId, supabase }) {
   const notification = {
     user_id: manager.id,
     type: 'manager_alert',
@@ -442,7 +442,7 @@ async function createDashboardNotification({ manager, alert, clientInfo, barbers
 /**
  * Send SMS notification to manager
  */
-async function sendSMSNotification({ manager, alert, clientInfo, barbershopId }) {
+async function sendSMSNotification({ manager, alert, clientInfo, barberbarbershopId }) {
   // This would integrate with your SMS service (Twilio, etc.)
   if (!manager.phone) {
     return { status: 'skipped', reason: 'no_phone' }
@@ -513,7 +513,7 @@ function generateSMSMessage(alert, clientInfo) {
 async function logManagerAlert({ alert, managers, notification_results, supabase }) {
   const logData = {
     alert_id: alert.id,
-    barbershop_id: alert.barbershop_id,
+    barberbarbershop_id: alert.barberbarbershop_id,
     alert_type: alert.alert_type,
     priority: alert.priority,
     managers_notified: managers,

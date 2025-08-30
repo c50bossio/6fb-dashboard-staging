@@ -27,8 +27,8 @@ export async function GET(request) {
     }
 
     // Get barbershop ID using unified tenant resolver
-    const { barbershopId } = await getTenant(profile.id, { supabase })
-    if (!barbershopId) {
+    const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
     }
     
@@ -42,7 +42,7 @@ export async function GET(request) {
     let query = supabase
       .from('customers')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
       .range(offset, offset + limit - 1)
 
@@ -64,7 +64,7 @@ export async function GET(request) {
     let countQuery = supabase
       .from('customers')
       .select('id', { count: 'exact', head: true })
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
 
     if (search) {
@@ -115,8 +115,8 @@ export async function POST(request) {
     }
 
     // Get barbershop ID using unified tenant resolver
-    const { barbershopId } = await getTenant(profile.id, { supabase })
-    if (!barbershopId) {
+    const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
     }
     
@@ -145,7 +145,7 @@ export async function POST(request) {
     let existingQuery = supabase
       .from('customers')
       .select('id, name, phone, email')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
 
     if (phone && email) {
@@ -171,7 +171,7 @@ export async function POST(request) {
     const { data: customer, error } = await supabase
       .from('customers')
       .insert([{
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         name,
         phone,
         email,
@@ -228,8 +228,8 @@ export async function PATCH(request) {
     }
 
     // Get barbershop ID using unified tenant resolver
-    const { barbershopId } = await getTenant(profile.id, { supabase })
-    if (!barbershopId) {
+    const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
     }
     
@@ -252,7 +252,7 @@ export async function PATCH(request) {
       .from('customers')
       .update(updateData)
       .eq('id', id)
-      .eq('barbershop_id', barbershopId) // Ensure user can only update customers from their barbershop
+      .eq('barberbarbershop_id', barberbarbershopId) // Ensure user can only update customers from their barbershop
       .select()
       .single()
 

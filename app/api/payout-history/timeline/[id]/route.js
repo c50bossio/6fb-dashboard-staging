@@ -35,7 +35,7 @@ export async function GET(request, { params }) {
     // Get user's barbershop ID and verify access to this payout
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('shop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
 
@@ -49,9 +49,9 @@ export async function GET(request, { params }) {
     // Verify the payout belongs to this barbershop
     const { data: payout, error: payoutError } = await supabase
       .from('commission_payout_records')
-      .select('id, barbershop_id, barber_id')
+      .select('id, barberbarbershop_id, barber_id')
       .eq('id', payoutId)
-      .eq('barbershop_id', profile.shop_id)
+      .eq('barberbarbershop_id', profile.shop_id)
       .single()
 
     if (payoutError || !payout) {
@@ -91,7 +91,7 @@ export async function GET(request, { params }) {
       .from('commission_payout_records')
       .select('id, status, created_at, completed_at')
       .eq('barber_id', payout.barber_id)
-      .eq('barbershop_id', payout.barbershop_id)
+      .eq('barberbarbershop_id', payout.barberbarbershop_id)
       .order('created_at', { ascending: false })
       .limit(5)
 
@@ -114,7 +114,7 @@ export async function GET(request, { params }) {
       },
       metadata: {
         processing_time_ms: processingTime,
-        barbershop_id: profile.shop_id,
+        barberbarbershop_id: profile.shop_id,
         generated_at: new Date().toISOString(),
         user_role: profile.role
       }

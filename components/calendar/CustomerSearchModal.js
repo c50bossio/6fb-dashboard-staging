@@ -10,7 +10,7 @@ export default function CustomerSearchModal({
   onClose,
   onSelectCustomer,
   onCreateNewCustomer,
-  barbershopId
+  barberbarbershopId
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [customers, setCustomers] = useState([])
@@ -28,7 +28,7 @@ export default function CustomerSearchModal({
     setError('')
 
     try {
-      const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}&barbershop_id=${barbershopId}&limit=10`)
+      const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}&barberbarbershop_id=${barberbarbershopId}&limit=10`)
       
       if (!response.ok) {
         throw new Error('Failed to search customers')
@@ -43,7 +43,7 @@ export default function CustomerSearchModal({
     } finally {
       setLoading(false)
     }
-  }, [barbershopId])
+  }, [barberbarbershopId])
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

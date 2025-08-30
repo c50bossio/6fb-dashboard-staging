@@ -72,25 +72,25 @@ export async function GET(request) {
     }
 
     // Get barbershop ID based on user profile
-    let barbershopId = null;
+    let barberbarbershopId = null;
     
-    // Check both shop_id and barbershop_id fields (naming inconsistency in database)
+    // Check both barbershop_id and barberbarbershop_id fields (naming inconsistency in database)
     if (profile.shop_id) {
-      barbershopId = profile.shop_id;
+      barberbarbershopId = profile.shop_id;
     } else if (profile.barbershop_id) {
-      barbershopId = profile.barbershop_id;
+      barberbarbershopId = profile.barbershop_id;
     } else {
       // For employee barbers, fetch from barbershop_staff
       if (profile.role === 'BARBER') {
         const { data: staffData } = await supabase
           .from('barbershop_staff')
-          .select('barbershop_id')
+          .select('barberbarbershop_id')
           .eq('user_id', user.id)
           .eq('is_active', true)
           .maybeSingle();
         
-        if (staffData?.barbershop_id) {
-          barbershopId = staffData.barbershop_id;
+        if (staffData?.barberbarbershop_id) {
+          barberbarbershopId = staffData.barberbarbershop_id;
         }
       } 
       // For shop owners, check if they have a barbershop created
@@ -103,12 +103,12 @@ export async function GET(request) {
           .maybeSingle();
         
         if (ownedShops?.id) {
-          barbershopId = ownedShops.id;
+          barberbarbershopId = ownedShops.id;
         }
       }
     }
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
     const url = new URL(request.url);
@@ -132,7 +132,7 @@ export async function GET(request) {
           loyalty_programs!inner(program_name, program_type)
         `)
         .eq('customer_id', customerId)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('is_active', true);
 
       if (programId) {
@@ -155,7 +155,7 @@ export async function GET(request) {
       // Calculate tier progress for each enrollment
       const enrichedEnrollments = await Promise.all(
         enrollments.map(async (enrollment) => {
-          const tierProgress = await calculateTierProgress(enrollment, barbershopId);
+          const tierProgress = await calculateTierProgress(enrollment, barberbarbershopId);
           return {
             ...enrollment,
             ...tierProgress
@@ -174,7 +174,7 @@ export async function GET(request) {
         .from('loyalty_points')
         .select('*')
         .eq('customer_id', customerId)
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .order('created_at', { ascending: false });
 
       if (programId) {
@@ -198,7 +198,7 @@ export async function GET(request) {
       }
 
       // Calculate summary
-      const summary = await calculatePointsSummary(customerId, barbershopId, programId);
+      const summary = await calculatePointsSummary(customerId, barberbarbershopId, programId);
 
       return NextResponse.json({ 
         success: true, 
@@ -279,25 +279,25 @@ export async function POST(request) {
     }
 
     // Get barbershop ID based on user profile
-    let barbershopId = null;
+    let barberbarbershopId = null;
     
-    // Check both shop_id and barbershop_id fields (naming inconsistency in database)
+    // Check both barbershop_id and barberbarbershop_id fields (naming inconsistency in database)
     if (profile.shop_id) {
-      barbershopId = profile.shop_id;
+      barberbarbershopId = profile.shop_id;
     } else if (profile.barbershop_id) {
-      barbershopId = profile.barbershop_id;
+      barberbarbershopId = profile.barbershop_id;
     } else {
       // For employee barbers, fetch from barbershop_staff
       if (profile.role === 'BARBER') {
         const { data: staffData } = await supabase
           .from('barbershop_staff')
-          .select('barbershop_id')
+          .select('barberbarbershop_id')
           .eq('user_id', user.id)
           .eq('is_active', true)
           .maybeSingle();
         
-        if (staffData?.barbershop_id) {
-          barbershopId = staffData.barbershop_id;
+        if (staffData?.barberbarbershop_id) {
+          barberbarbershopId = staffData.barberbarbershop_id;
         }
       } 
       // For shop owners, check if they have a barbershop created
@@ -310,12 +310,12 @@ export async function POST(request) {
           .maybeSingle();
         
         if (ownedShops?.id) {
-          barbershopId = ownedShops.id;
+          barberbarbershopId = ownedShops.id;
         }
       }
     }
     
-    if (!barbershopId) {
+    if (!barberbarbershopId) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
     const body = await request.json();
@@ -357,7 +357,7 @@ export async function POST(request) {
       .select('*')
       .eq('customer_id', customer_id)
       .eq('loyalty_program_id', loyalty_program_id)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('is_active', true)
       .single();
 
@@ -399,7 +399,7 @@ export async function POST(request) {
 
     // Create points transaction
     const transactionData = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       customer_id,
       loyalty_program_id,
       transaction_type,
@@ -458,7 +458,7 @@ export async function POST(request) {
     }
 
     // Check for tier upgrade
-    const tierUpgrade = await checkTierUpgrade(customer_id, loyalty_program_id, barbershopId, newBalance);
+    const tierUpgrade = await checkTierUpgrade(customer_id, loyalty_program_id, barberbarbershopId, newBalance);
 
     return NextResponse.json({ 
       success: true, 
@@ -478,7 +478,7 @@ export async function POST(request) {
 /**
  * Helper function to calculate tier progress
  */
-async function calculateTierProgress(enrollment, barbershopId) {
+async function calculateTierProgress(enrollment, barberbarbershopId) {
   try {
     // Create Supabase client for helper function
     const cookieStore = cookies();
@@ -512,7 +512,7 @@ async function calculateTierProgress(enrollment, barbershopId) {
     const { data: tiers, error } = await supabase
       .from('loyalty_tiers')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('loyalty_program_id', enrollment.loyalty_program_id)
       .eq('is_active', true)
       .order('tier_level');
@@ -575,7 +575,7 @@ async function calculateTierProgress(enrollment, barbershopId) {
 /**
  * Helper function to calculate points summary
  */
-async function calculatePointsSummary(customerId, barbershopId, programId) {
+async function calculatePointsSummary(customerId, barberbarbershopId, programId) {
   try {
     // Create Supabase client for helper function
     const cookieStore = cookies();
@@ -610,7 +610,7 @@ async function calculatePointsSummary(customerId, barbershopId, programId) {
       .from('loyalty_points')
       .select('points_amount, transaction_type')
       .eq('customer_id', customerId)
-      .eq('barbershop_id', barbershopId);
+      .eq('barberbarbershop_id', barberbarbershopId);
 
     if (programId) {
       query = query.eq('loyalty_program_id', programId);
@@ -656,7 +656,7 @@ async function calculatePointsSummary(customerId, barbershopId, programId) {
 /**
  * Helper function to check and process tier upgrades
  */
-async function checkTierUpgrade(customerId, programId, barbershopId, newBalance) {
+async function checkTierUpgrade(customerId, programId, barberbarbershopId, newBalance) {
   try {
     // Create Supabase client for helper function
     const cookieStore = cookies();
@@ -693,7 +693,7 @@ async function checkTierUpgrade(customerId, programId, barbershopId, newBalance)
       .select('current_tier')
       .eq('customer_id', customerId)
       .eq('loyalty_program_id', programId)
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .single();
 
     if (enrollmentError || !enrollment) {
@@ -704,7 +704,7 @@ async function checkTierUpgrade(customerId, programId, barbershopId, newBalance)
     const { data: tiers, error: tiersError } = await supabase
       .from('loyalty_tiers')
       .select('*')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('loyalty_program_id', programId)
       .eq('is_active', true)
       .order('tier_level');
@@ -744,7 +744,7 @@ async function checkTierUpgrade(customerId, programId, barbershopId, newBalance)
         })
         .eq('customer_id', customerId)
         .eq('loyalty_program_id', programId)
-        .eq('barbershop_id', barbershopId);
+        .eq('barberbarbershop_id', barberbarbershopId);
 
       if (upgradeError) {
         console.error('Error upgrading tier:', upgradeError);
@@ -752,7 +752,7 @@ async function checkTierUpgrade(customerId, programId, barbershopId, newBalance)
       }
 
       // Create milestone for tier upgrade
-      await createTierUpgradeMilestone(customerId, barbershopId, highestEligibleTier.tier_name);
+      await createTierUpgradeMilestone(customerId, barberbarbershopId, highestEligibleTier.tier_name);
 
       return {
         upgraded: true,
@@ -772,7 +772,7 @@ async function checkTierUpgrade(customerId, programId, barbershopId, newBalance)
 /**
  * Helper function to create tier upgrade milestone
  */
-async function createTierUpgradeMilestone(customerId, barbershopId, tierName) {
+async function createTierUpgradeMilestone(customerId, barberbarbershopId, tierName) {
   try {
     // Create Supabase client for helper function
     const cookieStore = cookies();
@@ -804,7 +804,7 @@ async function createTierUpgradeMilestone(customerId, barbershopId, tierName) {
     );
 
     const milestoneData = {
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       customer_id: customerId,
       milestone_type: 'tier_upgrade',
       milestone_name: `Achieved ${tierName} Tier`,

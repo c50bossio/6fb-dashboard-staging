@@ -11,7 +11,7 @@ const supabase = createClient(
  * Analyze and return product pairing insights for a barbershop
  * 
  * Query Parameters:
- * - shopId: UUID of the barbershop
+ * - barbershopId: UUID of the barbershop
  * - productId: Optional - get affinities for specific product
  * - minScore: Optional - minimum affinity score (default: 0.3)
  * - minConfidence: Optional - minimum confidence level (default: 70)
@@ -21,16 +21,16 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shopId')
+    const barbershopId = searchParams.get('barbershopId')
     const productId = searchParams.get('productId')
     const minScore = parseFloat(searchParams.get('minScore')) || 0.3
     const minConfidence = parseInt(searchParams.get('minConfidence')) || 70
     const limit = parseInt(searchParams.get('limit')) || 20
     const category = searchParams.get('category')
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'shopId is required' },
+        { error: 'barbershopId is required' },
         { status: 400 }
       )
     }
@@ -62,7 +62,7 @@ export async function GET(request) {
           image_url
         )
       `)
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .gte('affinity_score', minScore)
       .gte('confidence_level', minConfidence)
 
@@ -154,7 +154,7 @@ export async function GET(request) {
       insights,
       category_insights: categoryInsights,
       filters: {
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         product_id: productId,
         min_score: minScore,
         min_confidence: minConfidence,
@@ -181,7 +181,7 @@ export async function GET(request) {
  * 
  * Body:
  * {
- *   shopId: string,
+ *   barbershopId: string,
  *   analysisWindow?: number, // Days to analyze (default: 90)
  *   minTransactions?: number, // Minimum transactions required (default: 5)
  *   recalculateAll?: boolean // Whether to recalculate all or just update
@@ -191,15 +191,15 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      shopId,
+      barbershopId,
       analysisWindow = 90,
       minTransactions = 5,
       recalculateAll = false
     } = body
 
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'shopId is required' },
+        { error: 'barbershopId is required' },
         { status: 400 }
       )
     }
@@ -220,7 +220,7 @@ export async function POST(request) {
         date,
         status
       `)
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .gte('date', cutoffDate.toISOString())
       .eq('status', 'completed')
 
@@ -237,7 +237,7 @@ export async function POST(request) {
     const { data: products } = await supabase
       .from('products')
       .select('id, name, category, price')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
 
     if (!products || products.length < 2) {
@@ -258,7 +258,7 @@ export async function POST(request) {
       const { data: existing } = await supabase
         .from('product_affinities')
         .select('product_a_id, product_b_id')
-        .eq('shop_id', shopId)
+        .eq('barbershop_id', barbershopId)
 
       existing?.forEach(affinity => {
         existingAffinities.add(`${affinity.product_a_id}-${affinity.product_b_id}`)
@@ -286,7 +286,7 @@ export async function POST(request) {
         // Only create affinity if it meets minimum thresholds
         if (mockAffinityScore >= 0.3 && mockConfidence >= 70 && mockSampleSize >= minTransactions) {
           newAffinities.push({
-            shop_id: shopId,
+            barbershop_id: barbershopId,
             product_a_id: productA.id,
             product_b_id: productB.id,
             affinity_score: parseFloat(mockAffinityScore.toFixed(4)),
@@ -305,7 +305,7 @@ export async function POST(request) {
         await supabase
           .from('product_affinities')
           .delete()
-          .eq('shop_id', shopId)
+          .eq('barbershop_id', barbershopId)
       }
 
       // Insert new affinities in batches
@@ -328,7 +328,7 @@ export async function POST(request) {
       success: true,
       message: 'Product affinities calculated successfully',
       analysis_summary: {
-        shop_id: shopId,
+        barbershop_id: barbershopId,
         analysis_window_days: analysisWindow,
         appointments_analyzed: recentAppointments?.length || 0,
         products_analyzed: products.length,

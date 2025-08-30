@@ -162,11 +162,11 @@ export function useConnectionStatus() {
 /**
  * Hook to track subscription count for a specific shop
  */
-export function useShopSubscriptionCount(shopId) {
+export function useShopSubscriptionCount(barbershopId) {
   const [subscriptionCount, setSubscriptionCount] = useState(0)
 
   useEffect(() => {
-    if (!shopId) {
+    if (!barbershopId) {
       setSubscriptionCount(0)
       return
     }
@@ -177,14 +177,14 @@ export function useShopSubscriptionCount(shopId) {
       
       // Count subscriptions for this shop
       const shopSubscriptions = metrics.activeSubscriptionKeys?.filter(key => 
-        key.endsWith(`_${shopId}`)
+        key.endsWith(`_${barbershopId}`)
       ).length || 0
       
       setSubscriptionCount(shopSubscriptions)
     }, 3000)
 
     return () => clearInterval(interval)
-  }, [shopId])
+  }, [barbershopId])
 
   return subscriptionCount
 }

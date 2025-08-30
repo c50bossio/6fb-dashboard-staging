@@ -12,7 +12,7 @@ const integrationConfigService = { checkIntegrationStatus: async () => ({ enable
 export const runtime = 'nodejs'
 
 const bookingSchema = z.object({
-  barbershop_id: z.string().min(1),
+  barberbarbershop_id: z.string().min(1),
   barber_id: z.string().min(1),
   service_id: z.string().min(1),
   scheduled_at: z.string().datetime(),
@@ -103,7 +103,7 @@ async function sendNotificationsAndSync(booking, barbershopData, barberData) {
         // Check if Google Calendar is configured for this user
         const calendarStatus = await integrationConfigService.checkIntegrationStatus(
           'google_calendar',
-          booking.barbershop_id,
+          booking.barberbarbershop_id,
           barberUser.id
         )
 
@@ -254,7 +254,7 @@ export async function POST(request) {
     }
 
     const bookingInsert = {
-      barbershop_id: bookingData.barbershop_id,
+      barberbarbershop_id: bookingData.barberbarbershop_id,
       barber_id: bookingData.barber_id,
       service_id: bookingData.service_id,
       scheduled_at: bookingData.scheduled_at,

@@ -32,10 +32,10 @@ export async function POST(request) {
     const formData = await request.formData()
     const file = formData.get('file')
     const platform = formData.get('platform')
-    const barbershopId = formData.get('barbershopId')
+    const barberbarbershopId = formData.get('barberbarbershopId')
     const importOptions = JSON.parse(formData.get('options') || '{}')
 
-    if (!file || !platform || !barbershopId) {
+    if (!file || !platform || !barberbarbershopId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -84,13 +84,13 @@ export async function POST(request) {
     const duplicateAnalysis = await duplicateDetector.checkDuplicates(
       transformedData.data || transformedData,
       'customers',
-      barbershopId
+      barberbarbershopId
     )
 
     // Prepare import batch
     const importBatch = {
       id: crypto.randomUUID(),
-      barbershop_id: barbershopId,
+      barberbarbershop_id: barberbarbershopId,
       platform,
       status: 'processing',
       total_records: {
@@ -123,7 +123,7 @@ export async function POST(request) {
     // Process import based on options
     const processResult = await processImport({
       batchId: importRecord.id,
-      barbershopId,
+      barberbarbershopId,
       data: transformedData,
       duplicates: duplicateAnalysis,
       options: importOptions,
@@ -168,7 +168,7 @@ export async function POST(request) {
 // Process the actual import
 async function processImport({ 
   batchId, 
-  barbershopId, 
+  barberbarbershopId, 
   data, 
   duplicates, 
   options, 
@@ -188,7 +188,7 @@ async function processImport({
     if (data.customers && data.customers.length > 0) {
       const customerResult = await importCustomers(
         data.customers,
-        barbershopId,
+        barberbarbershopId,
         batchId,
         duplicates.customers || {},
         options,
@@ -204,7 +204,7 @@ async function processImport({
     if (data.services && data.services.length > 0) {
       const serviceResult = await importServices(
         data.services,
-        barbershopId,
+        barberbarbershopId,
         batchId,
         duplicates.services || {},
         options,
@@ -220,7 +220,7 @@ async function processImport({
     if (data.appointments && data.appointments.length > 0) {
       const appointmentResult = await importAppointments(
         data.appointments,
-        barbershopId,
+        barberbarbershopId,
         batchId,
         options,
         supabase
@@ -235,7 +235,7 @@ async function processImport({
     if (data.products && data.products.length > 0) {
       const productResult = await importProducts(
         data.products,
-        barbershopId,
+        barberbarbershopId,
         batchId,
         options,
         supabase
@@ -250,7 +250,7 @@ async function processImport({
     if (data.staff && data.staff.length > 0) {
       const staffResult = await importStaff(
         data.staff,
-        barbershopId,
+        barberbarbershopId,
         batchId,
         options,
         supabase
@@ -274,7 +274,7 @@ async function processImport({
 }
 
 // Import customers with duplicate handling
-async function importCustomers(customers, barbershopId, batchId, duplicates, options, supabase) {
+async function importCustomers(customers, barberbarbershopId, batchId, duplicates, options, supabase) {
   const result = { imported: 0, skipped: 0, errors: 0 }
   const batchSize = 100 // Process in batches to avoid timeouts
 
@@ -311,7 +311,7 @@ async function importCustomers(customers, barbershopId, batchId, duplicates, opt
       // Prepare for insert
       toInsert.push({
         ...customer,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         import_batch_id: batchId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -337,7 +337,7 @@ async function importCustomers(customers, barbershopId, batchId, duplicates, opt
 }
 
 // Import services
-async function importServices(services, barbershopId, batchId, duplicates, options, supabase) {
+async function importServices(services, barberbarbershopId, batchId, duplicates, options, supabase) {
   const result = { imported: 0, skipped: 0, errors: 0 }
   
   for (const service of services) {
@@ -345,7 +345,7 @@ async function importServices(services, barbershopId, batchId, duplicates, optio
     const { data: existing } = await supabase
       .from('services')
       .select('id')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('name', service.name)
       .single()
 
@@ -373,7 +373,7 @@ async function importServices(services, barbershopId, batchId, duplicates, optio
         .from('services')
         .insert({
           ...service,
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           import_batch_id: batchId,
           created_at: new Date().toISOString()
         })
@@ -390,7 +390,7 @@ async function importServices(services, barbershopId, batchId, duplicates, optio
 }
 
 // Import appointments
-async function importAppointments(appointments, barbershopId, batchId, options, supabase) {
+async function importAppointments(appointments, barberbarbershopId, batchId, options, supabase) {
   const result = { imported: 0, skipped: 0, errors: 0 }
   const batchSize = 50
 
@@ -402,7 +402,7 @@ async function importAppointments(appointments, barbershopId, batchId, options, 
       // Map customer and service IDs
       const mappedAppointment = await mapAppointmentReferences(
         appointment,
-        barbershopId,
+        barberbarbershopId,
         supabase
       )
 
@@ -413,7 +413,7 @@ async function importAppointments(appointments, barbershopId, batchId, options, 
 
       toInsert.push({
         ...mappedAppointment,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         import_batch_id: batchId,
         created_at: new Date().toISOString()
       })
@@ -438,7 +438,7 @@ async function importAppointments(appointments, barbershopId, batchId, options, 
 }
 
 // Import products
-async function importProducts(products, barbershopId, batchId, options, supabase) {
+async function importProducts(products, barberbarbershopId, batchId, options, supabase) {
   const result = { imported: 0, skipped: 0, errors: 0 }
   
   const { error } = await supabase
@@ -446,7 +446,7 @@ async function importProducts(products, barbershopId, batchId, options, supabase
     .insert(
       products.map(product => ({
         ...product,
-        barbershop_id: barbershopId,
+        barberbarbershop_id: barberbarbershopId,
         import_batch_id: batchId,
         created_at: new Date().toISOString()
       }))
@@ -462,7 +462,7 @@ async function importProducts(products, barbershopId, batchId, options, supabase
 }
 
 // Import staff
-async function importStaff(staff, barbershopId, batchId, options, supabase) {
+async function importStaff(staff, barberbarbershopId, batchId, options, supabase) {
   const result = { imported: 0, skipped: 0, errors: 0 }
   
   for (const member of staff) {
@@ -470,7 +470,7 @@ async function importStaff(staff, barbershopId, batchId, options, supabase) {
     const { data: existing } = await supabase
       .from('barbershop_staff')
       .select('id')
-      .eq('barbershop_id', barbershopId)
+      .eq('barberbarbershop_id', barberbarbershopId)
       .eq('email', member.email)
       .single()
 
@@ -481,7 +481,7 @@ async function importStaff(staff, barbershopId, batchId, options, supabase) {
         .from('barbershop_staff')
         .insert({
           ...member,
-          barbershop_id: barbershopId,
+          barberbarbershop_id: barberbarbershopId,
           import_batch_id: batchId,
           created_at: new Date().toISOString()
         })
@@ -498,14 +498,14 @@ async function importStaff(staff, barbershopId, batchId, options, supabase) {
 }
 
 // Map appointment references to actual IDs
-async function mapAppointmentReferences(appointment, barbershopId, supabase) {
+async function mapAppointmentReferences(appointment, barberbarbershopId, supabase) {
   try {
     // Map customer
     if (appointment.customer_email) {
       const { data: customer } = await supabase
         .from('customers')
         .select('id')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('email', appointment.customer_email)
         .single()
 
@@ -519,7 +519,7 @@ async function mapAppointmentReferences(appointment, barbershopId, supabase) {
       const { data: service } = await supabase
         .from('services')
         .select('id')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('name', appointment.service_name)
         .single()
 
@@ -533,7 +533,7 @@ async function mapAppointmentReferences(appointment, barbershopId, supabase) {
       const { data: staff } = await supabase
         .from('barbershop_staff')
         .select('id')
-        .eq('barbershop_id', barbershopId)
+        .eq('barberbarbershop_id', barberbarbershopId)
         .eq('email', appointment.staff_email)
         .single()
 

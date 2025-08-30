@@ -7,25 +7,25 @@ import { NextResponse } from 'next/server'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shopId')
+    const barbershopId = searchParams.get('barbershopId')
     
-    if (!shopId) {
+    if (!barbershopId) {
       return NextResponse.json({ error: 'Shop ID required' }, { status: 400 })
     }
     
     // Mock OAuth flow for development - in production this would:
-    // 1. Generate OAuth state with shopId
+    // 1. Generate OAuth state with barbershopId
     // 2. Create Google OAuth URL with proper scopes
     // 3. Redirect to Google's authorization server
     
     const mockAuthData = {
       success: true,
       message: 'Google Calendar integration initiated',
-      authUrl: `https://accounts.google.com/oauth/authorize?client_id=mock&redirect_uri=${encodeURIComponent(`${request.nextUrl.origin}/api/calendar/google/callback`)}&scope=https://www.googleapis.com/auth/calendar&response_type=code&state=${shopId}`,
+      authUrl: `https://accounts.google.com/oauth/authorize?client_id=mock&redirect_uri=${encodeURIComponent(`${request.nextUrl.origin}/api/calendar/google/callback`)}&scope=https://www.googleapis.com/auth/calendar&response_type=code&state=${barbershopId}`,
       // For development, we'll simulate successful connection
       mockConnection: {
         id: `gauth-${Date.now()}`,
-        email: `shop-${shopId.slice(-4)}@gmail.com`,
+        email: `shop-${barbershopId.slice(-4)}@gmail.com`,
         provider: 'google',
         connected_at: new Date().toISOString(),
         scope: 'calendar.readonly calendar.events'
@@ -65,7 +65,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { code, state: shopId, error: authError } = body
+    const { code, state: barbershopId, error: authError } = body
     
     if (authError) {
       return NextResponse.json(
@@ -74,7 +74,7 @@ export async function POST(request) {
       )
     }
     
-    if (!code || !shopId) {
+    if (!code || !barbershopId) {
       return NextResponse.json(
         { error: 'Authorization code and shop ID required' },
         { status: 400 }
@@ -97,8 +97,8 @@ export async function POST(request) {
     
     const mockCalendarAccount = {
       id: `gcal-${Date.now()}`,
-      shop_id: shopId,
-      email: `user-${shopId.slice(-4)}@gmail.com`,
+      barbershop_id: barbershopId,
+      email: `user-${barbershopId.slice(-4)}@gmail.com`,
       provider: 'google',
       access_token: mockTokenResponse.access_token, // Would be encrypted in production
       refresh_token: mockTokenResponse.refresh_token, // Would be encrypted in production

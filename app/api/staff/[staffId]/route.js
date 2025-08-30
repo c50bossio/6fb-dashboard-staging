@@ -38,7 +38,7 @@ export async function GET(request, { params }) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, name')
-      .eq('id', staffMember.barbershop_id)
+      .eq('id', staffMember.barberbarbershop_id)
       .single()
 
     // Merge the data in JavaScript
@@ -97,7 +97,7 @@ export async function PUT(request, { params }) {
     // Verify ownership - user must be barbershop owner
     const { data: staffCheck } = await supabase
       .from('barbershop_staff')
-      .select('barbershop_id')
+      .select('barberbarbershop_id')
       .eq('id', staffId)
       .single()
 
@@ -109,7 +109,7 @@ export async function PUT(request, { params }) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', staffCheck.barbershop_id)
+      .eq('id', staffCheck.barberbarbershop_id)
       .single()
 
     if (!barbershop || barbershop.owner_id !== user.id) {
@@ -300,7 +300,7 @@ export async function PATCH(request, { params }) {
     // First try to find by user_id
     let { data: staffCheck, error: staffCheckError } = await supabase
       .from('barbershop_staff')
-      .select('id, barbershop_id, metadata, user_id')
+      .select('id, barberbarbershop_id, metadata, user_id')
       .eq('user_id', userId)
       .single()
 
@@ -309,7 +309,7 @@ export async function PATCH(request, { params }) {
       // 
       const result = await supabase
         .from('barbershop_staff')
-        .select('id, barbershop_id, metadata, user_id')
+        .select('id, barberbarbershop_id, metadata, user_id')
         .eq('id', userId)  // userId might actually be the barbershop_staff.id
         .single()
       
@@ -331,11 +331,11 @@ export async function PATCH(request, { params }) {
     const { data: barbershop, error: barbershopError } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', staffCheck.barbershop_id)
+      .eq('id', staffCheck.barberbarbershop_id)
       .single()
 
     if (barbershopError || !barbershop) {
-      // console.error('❌ [API ROUTE] Barbershop not found:', staffCheck.barbershop_id, barbershopError)
+      // console.error('❌ [API ROUTE] Barbershop not found:', staffCheck.barberbarbershop_id, barbershopError)
       return NextResponse.json({ error: 'Barbershop not found' }, { status: 404 })
     }
 
@@ -588,7 +588,7 @@ export async function DELETE(request, { params }) {
     // Verify ownership
     const { data: staffCheck } = await supabase
       .from('barbershop_staff')
-      .select('barbershop_id, user_id')
+      .select('barberbarbershop_id, user_id')
       .eq('id', staffId)
       .single()
 
@@ -600,7 +600,7 @@ export async function DELETE(request, { params }) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', staffCheck.barbershop_id)
+      .eq('id', staffCheck.barberbarbershop_id)
       .single()
 
     if (!barbershop || barbershop.owner_id !== user.id) {

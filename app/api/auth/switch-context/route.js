@@ -119,14 +119,14 @@ async function validateContextAccess(userId, contextType, contextId, userRole, s
           return false
         }
         
-        const shopIds = ownedShops.map(shop => shop.id)
+        const barbershopIds = ownedShops.map(shop => shop.id)
         
         // Verify the barber works in one of the owned shops
         const { data: barberAccess } = await supabase
           .from('barbershop_staff')
-          .select('barbershop_id, role')
+          .select('barberbarbershop_id, role')
           .eq('user_id', contextId)
-          .in('barbershop_id', shopIds)
+          .in('barberbarbershop_id', barbershopIds)
           .eq('is_active', true)
           .single()
         
