@@ -40,6 +40,7 @@ import QuickActionsCard from './QuickActionsCard'
 import ShareableBookingLink from './ShareableBookingLink'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
+import BusinessIntelligenceDashboard from './BusinessIntelligenceDashboard'
 // DataImportWidget removed - replaced with QuickActionsCard for better UX
 
 const DASHBOARD_MODES = {
@@ -47,7 +48,8 @@ const DASHBOARD_MODES = {
   AI_INSIGHTS: 'ai_insights', 
   ANALYTICS: 'analytics',
   PREDICTIVE: 'predictive',
-  OPERATIONS: 'operations'
+  OPERATIONS: 'operations',
+  BUSINESS_INTELLIGENCE: 'business_intelligence'
 }
 
 // Color mapping for Tailwind CSS classes (must be complete class names)
@@ -55,7 +57,8 @@ const colorClasses = {
   indigo: 'bg-indigo-500',
   purple: 'bg-purple-500',
   blue: 'bg-blue-500',
-  green: 'bg-green-500'
+  green: 'bg-green-500',
+  cyan: 'bg-cyan-500'
 }
 
 const modeConfigs = {
@@ -65,6 +68,13 @@ const modeConfigs = {
     solidIcon: Squares2X2Icon,
     color: 'indigo',
     description: 'High-level business performance'
+  },
+  [DASHBOARD_MODES.BUSINESS_INTELLIGENCE]: {
+    label: 'Business Intelligence',
+    icon: ChartBarIcon,
+    solidIcon: ChartBarSolid,
+    color: 'cyan',
+    description: 'Advanced analytics & AI optimization'
   },
   [DASHBOARD_MODES.AI_INSIGHTS]: {
     label: 'AI Insights',
@@ -642,6 +652,11 @@ export default function UnifiedDashboard({ user, profile }) {
               <SmartAlertsPanel data={dashboardData} />
             )}
           </div>
+        )
+        
+      case DASHBOARD_MODES.BUSINESS_INTELLIGENCE:
+        return (
+          <BusinessIntelligenceDashboard user={effectiveUser} profile={effectiveProfile} />
         )
         
       case DASHBOARD_MODES.AI_INSIGHTS:

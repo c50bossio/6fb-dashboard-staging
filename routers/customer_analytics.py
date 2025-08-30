@@ -51,7 +51,7 @@ class CustomerHealthScore(BaseModel):
     frequency_score: int = Field(..., ge=0, le=100)
     monetary_score: int = Field(..., ge=0, le=100)
     score_factors: Dict[str, Any] = {}
-    churn_risk: str = Field(..., regex="^(low|medium|high|critical)$")
+    churn_risk: str = Field(..., pattern="^(low|medium|high|critical)$")
     risk_factors: List[str] = []
     trend_percentage: Optional[float] = None
     calculated_at: datetime
@@ -71,7 +71,7 @@ class CustomerCLV(BaseModel):
 class ChurnPrediction(BaseModel):
     customer_id: str
     churn_probability: float = Field(..., ge=0, le=100)
-    churn_risk_level: str = Field(..., regex="^(very_low|low|medium|high|very_high)$")
+    churn_risk_level: str = Field(..., pattern="^(very_low|low|medium|high|very_high)$")
     predicted_churn_date: Optional[date] = None
     primary_risk_factors: List[str]
     risk_factor_scores: Dict[str, float]
@@ -114,14 +114,14 @@ class CustomerJourney(BaseModel):
     milestones: List[Dict[str, Any]]
 
 class AnalyticsRefreshRequest(BaseModel):
-    refresh_type: str = Field(..., regex="^(health_scores|clv|churn_predictions|segments|cohorts|all)$")
+    refresh_type: str = Field(..., pattern="^(health_scores|clv|churn_predictions|segments|cohorts|all)$")
     customer_ids: Optional[List[str]] = None
     force_refresh: bool = False
 
 class SegmentCalculationRequest(BaseModel):
     segment_name: str
     segment_description: Optional[str] = None
-    segment_type: str = Field(..., regex="^(demographic|behavioral|value|lifecycle|custom)$")
+    segment_type: str = Field(..., pattern="^(demographic|behavioral|value|lifecycle|custom)$")
     segmentation_rules: Dict[str, Any]
     auto_update: bool = True
 

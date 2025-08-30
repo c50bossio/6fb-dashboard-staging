@@ -46,7 +46,7 @@ security = HTTPBearer()
 class LoyaltyProgramCreate(BaseModel):
     program_name: str = Field(..., max_length=255)
     program_description: Optional[str] = None
-    program_type: str = Field(..., regex="^(points|visits|spending|tier|hybrid)$")
+    program_type: str = Field(..., pattern="^(points|visits|spending|tier|hybrid)$")
     earning_rules: Dict[str, Any]
     redemption_rules: Dict[str, Any]
     auto_enroll_new_customers: bool = True
@@ -76,7 +76,7 @@ class LoyaltyProgramUpdate(BaseModel):
 class PointsTransactionCreate(BaseModel):
     customer_id: str
     loyalty_program_id: str
-    transaction_type: str = Field(..., regex="^(earned|redeemed|expired|adjusted|bonus)$")
+    transaction_type: str = Field(..., pattern="^(earned|redeemed|expired|adjusted|bonus)$")
     points_amount: int
     source_type: Optional[str] = None
     source_id: Optional[str] = None
@@ -108,7 +108,7 @@ class TierCreate(BaseModel):
     tier_level: int = Field(..., gt=0)
     qualification_criteria: Dict[str, Any]
     benefits: Dict[str, Any]
-    color_code: str = Field(default="#6B7280", regex="^#[0-9A-Fa-f]{6}$")
+    color_code: str = Field(default="#6B7280", pattern="^#[0-9A-Fa-f]{6}$")
     icon: Optional[str] = None
 
 class ReferralCreate(BaseModel):
@@ -465,8 +465,8 @@ async def check_tier_upgrade(
 @router.post("/tiers/upgrade/{customer_id}")
 async def upgrade_customer_tier(
     customer_id: str,
-    new_tier_id: str = Query(...),
     background_tasks: BackgroundTasks,
+    new_tier_id: str = Query(...),
     user_context = Depends(get_current_user_barbershop)
 ):
     """Manually upgrade customer to new tier"""
@@ -592,8 +592,8 @@ async def get_referrals(
 @router.put("/referrals/{referral_id}/status")
 async def update_referral_status(
     referral_id: str,
-    new_status: str = Query(...),
     background_tasks: BackgroundTasks,
+    new_status: str = Query(...),
     user_context = Depends(get_current_user_barbershop)
 ):
     """Update referral status and process rewards if qualified"""
@@ -625,7 +625,7 @@ async def update_referral_status(
 async def get_leaderboard(
     user_context = Depends(get_current_user_barbershop),
     program_id: Optional[str] = Query(default=None),
-    period: str = Query(default="all_time", regex="^(all_time|yearly|monthly|weekly)$"),
+    period: str = Query(default="all_time", pattern="^(all_time|yearly|monthly|weekly)$"),
     limit: int = Query(default=10, le=50)
 ):
     """Get customer leaderboard"""

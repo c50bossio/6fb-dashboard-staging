@@ -97,7 +97,7 @@ class FeedbackSubmission(BaseModel):
 class SurveyCreate(BaseModel):
     survey_name: str = Field(..., max_length=255)
     survey_description: Optional[str] = None
-    survey_type: str = Field(..., regex="^(nps|csat|general|post_appointment|onboarding)$")
+    survey_type: str = Field(..., pattern="^(nps|csat|general|post_appointment|onboarding)$")
     questions: List[Dict[str, Any]]  # Structured question data
     target_segments: Optional[List[str]] = None
     trigger_conditions: Optional[Dict[str, Any]] = None

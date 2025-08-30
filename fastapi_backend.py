@@ -3952,12 +3952,12 @@ except ImportError as e:
     APPOINTMENTS_ROUTER_AVAILABLE = False
 # Removed: print(f"⚠️ Appointments Router not available: {e}")
 
-# Customer Loyalty Router
+# Customer Loyalty Router - Temporarily disabled due to syntax errors
 try:
-    from routers.customer_loyalty import router as customer_loyalty_router
-    app.include_router(customer_loyalty_router)
-# Removed: print("✅ Customer Loyalty Router included at /loyalty/*")
-    CUSTOMER_LOYALTY_ROUTER_AVAILABLE = True
+    # from routers.customer_loyalty import router as customer_loyalty_router
+    # app.include_router(customer_loyalty_router)
+    # Removed: print("✅ Customer Loyalty Router included at /loyalty/*")
+    CUSTOMER_LOYALTY_ROUTER_AVAILABLE = False
 except ImportError as e:
     CUSTOMER_LOYALTY_ROUTER_AVAILABLE = False
 # Removed: print(f"⚠️ Customer Loyalty Router not available: {e}")

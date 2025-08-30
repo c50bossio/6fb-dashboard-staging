@@ -85,8 +85,10 @@ security = HTTPBearer()
 # Import the real authentication function
 from routers.auth import get_current_user
 
-def create_booking_data(request: BookingNotificationRequest) -> BookingNotificationData:
+def create_booking_data(request: BookingNotificationRequest):
     """Convert request to BookingNotificationData"""
+    if not BOOKING_NOTIFICATIONS_AVAILABLE:
+        return None
     return BookingNotificationData(
         booking_id=request.booking_id,
         user_id=request.user_id,

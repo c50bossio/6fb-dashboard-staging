@@ -4,6 +4,28 @@
 
 /* Semantic color classes moved inline to fix Tailwind layer issues */
 
+/* Glassmorphism Effects for Business Intelligence Dashboard */
+@layer utilities {
+  .glass-morphism {
+    @apply backdrop-blur-lg bg-white/5 border border-gray-200/10;
+  }
+  
+  .glass-morphism-dark {
+    @apply backdrop-blur-lg bg-gray-800/30 border border-gray-700/30;
+  }
+  
+  .glass-card {
+    @apply glass-morphism-dark rounded-xl p-6 transition-all duration-200 hover:bg-gray-800/40;
+  }
+  
+  .gradient-mesh {
+    background-image: 
+      radial-gradient(at 40% 20%, rgb(59, 130, 246, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgb(99, 102, 241, 0.1) 0px, transparent 50%),
+      radial-gradient(at 10% 50%, rgb(139, 92, 246, 0.1) 0px, transparent 50%);
+  }
+}
+
 @layer base {
   :root {
     /* BOOKEDBARBER BRAND-MATCHED DESIGN TOKENS */
