@@ -77,7 +77,7 @@ export function useRealtimeAppointments(barbershopId) {
           event: '*', // Listen to all events
           schema: 'public',
           table: 'bookings',
-          filter: `shop_id=eq.${barbershopId}`
+          filter: `barbershop_id=eq.${barbershopId}`
         },
         (payload) => {
           if (payload.eventType === 'UPDATE') {
