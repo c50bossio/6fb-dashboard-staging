@@ -470,6 +470,23 @@ function SupabaseAuthProvider({ children }) {
     }
   }
 
+  // Tier access helper function
+  const hasTierAccess = (requiredTier) => {
+    if (!profile) return false
+    
+    const tierHierarchy = {
+      'individual': 1,
+      'pro': 2,
+      'enterprise': 3
+    }
+    
+    const userTier = profile.subscription_tier || 'individual'
+    const userLevel = tierHierarchy[userTier] || 0
+    const requiredLevel = tierHierarchy[requiredTier] || 0
+    
+    return userLevel >= requiredLevel
+  }
+
   const finalLoading = loading || !hydrated
   console.log('🔍 AUTH PROVIDER: Final loading calculation:', { loading, hydrated, finalLoading })
   
@@ -483,7 +500,8 @@ function SupabaseAuthProvider({ children }) {
     signIn,
     signUp,
     signOut,
-    updateProfile
+    updateProfile,
+    hasTierAccess
   }
   
   console.log('🔍 AUTH PROVIDER: Context value being provided:', {
