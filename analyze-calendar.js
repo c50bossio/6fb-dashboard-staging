@@ -78,8 +78,6 @@ const { chromium } = require('playwright');
     
     return results;
   });
-
-  );
   
   await page.screenshot({ path: 'calendar-full-page.png', fullPage: true });
   

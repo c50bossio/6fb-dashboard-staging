@@ -11,6 +11,8 @@ export function useRealtimeAppointments(barbershopId) {
   const [lastUpdate, setLastUpdate] = useState(null)
   const [stats, setStats] = useState({})
   const [log, setLog] = useState([])
+  const [connectionAttempts, setConnectionAttempts] = useState(0)
+  const [retryTimer, setRetryTimer] = useState(null)
   
   if (typeof window !== 'undefined') {
     window.realtimeHookDebug = {
@@ -120,16 +122,45 @@ export function useRealtimeAppointments(barbershopId) {
         }
       )
       .subscribe((status) => {
+        console.log('🔄 Subscription status:', status)
+        
         if (status === 'SUBSCRIBED') {
           setIsConnected(true)
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Real-time connection failed')
+          setConnectionAttempts(0)
+          setError(null)
+          console.log('✅ Real-time connected successfully')
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('❌ Real-time connection failed:', status)
           setIsConnected(false)
-          setError('Real-time connection failed')
+          
+          // Implement retry with exponential backoff
+          const attempts = connectionAttempts + 1
+          setConnectionAttempts(attempts)
+          
+          if (attempts < 5) {
+            const delay = Math.min(1000 * Math.pow(2, attempts - 1), 10000)
+            console.log(`⏳ Retrying connection in ${delay}ms (attempt ${attempts})`)
+            
+            const timer = setTimeout(() => {
+              supabase.removeChannel(channel)
+              // Re-subscribe will happen on next useEffect cycle
+              setConnectionAttempts(attempts)
+            }, delay)
+            
+            setRetryTimer(timer)
+          } else {
+            setError('Unable to establish real-time connection after 5 attempts')
+          }
+        } else if (status === 'CLOSED') {
+          setIsConnected(false)
+          console.log('📡 Real-time connection closed')
         }
       })
 
     return () => {
+      if (retryTimer) {
+        clearTimeout(retryTimer)
+      }
       supabase.removeChannel(channel)
     }
   }, [barbershopId])
@@ -143,9 +174,9 @@ export function useRealtimeAppointments(barbershopId) {
     stats,
     refresh,
     log,
-    connectionAttempts: 1,
+    connectionAttempts,
     diagnostics: {
-      subscriptionStatus: isConnected ? 'connected' : 'attempting'
+      subscriptionStatus: isConnected ? 'connected' : connectionAttempts > 0 ? 'retrying' : 'attempting'
     }
   }
 }
