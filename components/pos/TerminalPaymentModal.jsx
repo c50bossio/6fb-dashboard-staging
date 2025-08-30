@@ -3,7 +3,7 @@
 import { Loader2, Zap, CheckCircle2, XCircle, AlertCircle, Wifi, WifiOff, CreditCard, Smartphone } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'

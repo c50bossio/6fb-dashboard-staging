@@ -39,7 +39,7 @@ import {
   FormSection,
   FormActions,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/Input'
 import { StatsCard } from '@/components/ui/StatsCard'
 
 // Form validation schema

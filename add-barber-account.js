@@ -109,10 +109,7 @@ async function createBarberAccount() {
       if (profileError) {
         console.error(`   ❌ Failed to create/update profile:`, profileError.message)
       } else {
-        
-        `)
-        
-        `)
+        console.log(`   ✅ Profile created/updated successfully`)
       }
     }
 
@@ -120,19 +117,13 @@ async function createBarberAccount() {
     console.error(`   ❌ Unexpected error:`, error.message)
   }
 
-  )
-  
-  )
-
-  `)
-  
-  `)
-  )
-
-  !')
-
-  ')
-
+  console.log(`\n🎉 Barber account setup complete!`)
+  console.log(`📧 Email: ${testEmail}`)
+  console.log(`🔑 Password: ${testPassword}`)
+  console.log(`\n🚀 Next steps:`)
+  console.log(`   1. Visit: http://localhost:9999/auth/login`)
+  console.log(`   2. Login with the credentials above`)
+  console.log(`   3. Complete the onboarding flow`)
 }
 
 // Run the script
