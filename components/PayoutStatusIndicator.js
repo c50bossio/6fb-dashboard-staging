@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import {
   Tooltip,
   TooltipContent,

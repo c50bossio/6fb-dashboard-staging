@@ -6,7 +6,18 @@ export async function GET(request) {
   try {
     const supabase = await createClient()
     
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    let { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    // Development mode fallback when NEXT_PUBLIC_ENABLE_DEV_AUTH is true
+    if ((authError || !user) && process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true') {
+      console.log('🔐 API: Using development auth fallback for subscription status')
+      user = {
+        id: 'dev-user-123',
+        email: 'dev@6fb.local',
+        user_metadata: { full_name: 'Development User' }
+      }
+      authError = null
+    }
     
     if (authError || !user) {
       return NextResponse.json(
@@ -15,7 +26,7 @@ export async function GET(request) {
       )
     }
     
-    const { data: userData, error: userError } = await supabase
+    let { data: userData, error: userError } = await supabase
       .from('profiles')
       .select(`
         id,
@@ -30,6 +41,23 @@ export async function GET(request) {
       `)
       .eq('id', user.id)
       .single()
+    
+    // Development mode fallback for profile data
+    if (userError && process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true' && user.id === 'dev-user-123') {
+      console.log('🔐 API: Using development profile fallback for subscription status')
+      userData = {
+        id: 'dev-user-123',
+        email: 'dev@6fb.local',
+        full_name: 'Development User',
+        subscription_tier: 'pro',
+        subscription_status: 'active',
+        role: 'SHOP_OWNER',
+        shop_id: 'dev-shop-123',
+        barbershop_id: 'dev-shop-123',
+        created_at: new Date().toISOString()
+      }
+      userError = null
+    }
     
     if (userError) {
       console.error('Error fetching profile data:', userError)

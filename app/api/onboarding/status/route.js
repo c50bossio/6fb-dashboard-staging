@@ -1,23 +1,65 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server-client'
 
 export async function GET(request) {
   try {
     const supabase = await createClient()
     
     // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    let { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    // Development mode fallback when NEXT_PUBLIC_ENABLE_DEV_AUTH is true
+    if ((authError || !user) && process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true') {
+      console.log('🔐 API: Using development auth fallback for onboarding status')
+      user = {
+        id: 'dev-user-123',
+        email: 'dev@6fb.local',
+        user_metadata: { full_name: 'Development User' }
+      }
+      authError = null
+    }
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
     // Get user's barbershop
-    const { data: barbershop, error: shopError } = await supabase
+    let { data: barbershop, error: shopError } = await supabase
       .from('barbershops')
       .select('*')
       .eq('owner_id', user.id)
       .single()
+
+    // Development mode fallback for barbershop data
+    if ((shopError || !barbershop) && process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true' && user.id === 'dev-user-123') {
+      console.log('🔐 API: Using development barbershop fallback for onboarding status')
+      barbershop = {
+        id: 'dev-shop-123',
+        owner_id: 'dev-user-123',
+        name: 'Dev Barbershop',
+        address: '123 Dev Street, Dev City, DC 12345',
+        phone: '(555) 123-4567',
+        email: 'dev@6fb.local',
+        business_hours: {
+          monday: { open: '09:00', close: '18:00', closed: false },
+          tuesday: { open: '09:00', close: '18:00', closed: false },
+          wednesday: { open: '09:00', close: '18:00', closed: false },
+          thursday: { open: '09:00', close: '18:00', closed: false },
+          friday: { open: '09:00', close: '18:00', closed: false },
+          saturday: { open: '10:00', close: '16:00', closed: false },
+          sunday: { closed: true }
+        },
+        cancellation_policy: '24 hour cancellation policy required',
+        booking_buffer_time: 15,
+        max_advance_booking_days: 30,
+        min_advance_booking_hours: 2,
+        logo_url: null,
+        brand_color: '#8B5A3C',
+        description: 'A modern development barbershop',
+        created_at: new Date().toISOString()
+      }
+      shopError = null
+    }
 
     if (shopError || !barbershop) {
       return NextResponse.json({ error: 'Barbershop not found' }, { status: 404 })
