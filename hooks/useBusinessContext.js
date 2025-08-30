@@ -34,7 +34,6 @@ const getCurrentUser = async (authUser = null) => {
   
   // If no user from Supabase and we're in development, return mock dev user
   if (!user && process.env.NODE_ENV === 'development') {
-    console.log('🏪 BusinessContext: Using development fallback user')
     return {
       id: 'dev-user-123',
       email: 'dev@6fb.local',
@@ -58,13 +57,11 @@ export const businessContextKeys = {
  * Get current user and their business context
  */
 export function useBusinessContext() {
-  console.log('🏪 BusinessContext: Hook called')
   const businessContextStart = performance.now()
   
   const queryClient = useQueryClient()
 
   // Get current authenticated user
-  console.log('🏪 BusinessContext: Fetching current user...')
   const userQuery = useQuery({
     queryKey: businessContextKeys.currentUser,
     queryFn: getCurrentUser,
@@ -73,23 +70,12 @@ export function useBusinessContext() {
   })
 
   const userId = userQuery.data?.id
-  console.log('🏪 BusinessContext: User query state:', {
-    isLoading: userQuery.isLoading,
-    hasUser: !!userQuery.data,
-    userId,
-    userEmail: userQuery.data?.email,
-    error: userQuery.error?.message
-  })
 
   // Get user profile and business association
-  console.log('🏪 BusinessContext: Setting up profile query for userId:', userId)
   const profileQuery = useQuery({
     queryKey: businessContextKeys.userProfile(userId),
     queryFn: async () => {
       if (!userId) return null
-      
-      console.log('🏪 BusinessContext: Executing profile query for:', userId)
-      const profileStart = performance.now()
       
       const client = getSupabaseClient()
       if (!client) throw new Error('Supabase client not available')
@@ -100,23 +86,9 @@ export function useBusinessContext() {
         .eq('id', userId)
         .single()
       
-      const profileTime = performance.now() - profileStart
-      console.log('🏪 BusinessContext: Profile query result:', {
-        hasData: !!data,
-        role: data?.role,
-        shopId: data?.shop_id,
-        barbershopId: data?.barbershop_id,
-        subscriptionTier: data?.subscription_tier,
-        hasError: !!error,
-        errorCode: error?.code,
-        errorMessage: error?.message,
-        queryTime: profileTime.toFixed(2) + 'ms'
-      })
-      
       if (error) {
         // In development, if the profile doesn't exist, return mock profile
         if (process.env.NODE_ENV === 'development' && userId === 'dev-user-123') {
-          console.log('🏪 BusinessContext: Using development fallback profile')
           return {
             id: 'dev-user-123',
             email: 'dev@6fb.local',
@@ -136,74 +108,37 @@ export function useBusinessContext() {
     staleTime: 10 * 60 * 1000,
   })
 
-  console.log('🏪 BusinessContext: Profile query state:', {
-    isLoading: profileQuery.isLoading,
-    hasProfile: !!profileQuery.data,
-    profileRole: profileQuery.data?.role,
-    error: profileQuery.error?.message
-  })
-
   // Get user's shop ID and role
-  console.log('🏪 BusinessContext: Setting up shop context query, enabled:', !!userId && !!profileQuery.data)
   const shopContextQuery = useQuery({
     queryKey: businessContextKeys.userShop(userId),
     queryFn: async () => {
       if (!userId) {
-        console.log('🏪 BusinessContext: No userId for shop query')
         return null
       }
       
-      console.log('🏪 BusinessContext: Executing shop context query for:', userId)
-      const shopStart = performance.now()
-      
       // Get shop ID using service
-      console.log('🏪 BusinessContext: Getting user shop ID...')
-      const shopIdStart = performance.now()
       const shopId = await supabaseService.getUserShopId(userId)
-      console.log('🏪 BusinessContext: getUserShopId result:', {
-        shopId,
-        timeToGetShopId: (performance.now() - shopIdStart).toFixed(2) + 'ms'
-      })
       
       if (!shopId) {
-        console.warn('🏪 BusinessContext: No shop ID found for user')
-        console.warn('🏪 BookedBarber: User may not be associated with any barbershop')
         return null
       }
       
       // Get the barbershop details
-      console.log('🏪 BusinessContext: Getting barbershop details for shopId:', shopId)
-      const barbershopStart = performance.now()
       const shop = await supabaseService.getBarbershop(shopId)
-      console.log('🏪 BusinessContext: getBarbershop result:', {
-        hasShop: !!shop,
-        shopName: shop?.name,
-        ownerId: shop?.owner_id,
-        timeToGetBarbershop: (performance.now() - barbershopStart).toFixed(2) + 'ms'
-      })
       
       // Determine user role
       let role = 'CLIENT'
       let permissions = []
       
       const profile = profileQuery.data
-      console.log('🏪 BusinessContext: Determining user role with profile:', {
-        hasProfile: !!profile,
-        profileRole: profile?.role,
-        shopOwnerId: shop?.owner_id,
-        isOwner: shop?.owner_id === userId
-      })
       
       if (profile) {
         // Check if user is shop owner
         if (shop.owner_id === userId) {
           role = 'SHOP_OWNER'
           permissions = ['manage_shop', 'manage_staff', 'view_analytics', 'manage_appointments']
-          console.log('🏪 BusinessContext: User identified as shop owner')
         } else {
           // Check if user is staff
-          console.log('🏪 BusinessContext: Checking staff association...')
-          const staffStart = performance.now()
           const client = supabaseService.client || getSupabaseClient()
           if (!client) throw new Error('Supabase client not available')
           
@@ -215,19 +150,9 @@ export function useBusinessContext() {
             .eq('is_active', true)
             .single()
           
-          console.log('🏪 BusinessContext: Staff query result:', {
-            hasStaffRecord: !!staffRecord,
-            staffRole: staffRecord?.role,
-            staffPermissions: staffRecord?.permissions,
-            staffQueryTime: (performance.now() - staffStart).toFixed(2) + 'ms'
-          })
-          
           if (staffRecord) {
             role = staffRecord.role || 'BARBER'
             permissions = staffRecord.permissions || ['manage_appointments']
-            console.log('🏪 BusinessContext: User identified as staff member:', role)
-          } else {
-            console.log('🏪 BusinessContext: User has no staff association, keeping CLIENT role')
           }
         }
       }
@@ -241,27 +166,10 @@ export function useBusinessContext() {
         isStaff: role !== 'CLIENT'
       }
       
-      console.log('🏪 BusinessContext: Shop context query complete:', {
-        shopId: result.shopId,
-        role: result.role,
-        isOwner: result.isOwner,
-        isStaff: result.isStaff,
-        permissionsCount: result.permissions?.length || 0,
-        totalTime: (performance.now() - shopStart).toFixed(2) + 'ms'
-      })
-      
       return result
     },
     enabled: !!userId && !!profileQuery.data,
     staleTime: 10 * 60 * 1000,
-  })
-
-  console.log('🏪 BusinessContext: Shop context query state:', {
-    isLoading: shopContextQuery.isLoading,
-    hasShopContext: !!shopContextQuery.data,
-    shopId: shopContextQuery.data?.shopId,
-    role: shopContextQuery.data?.role,
-    error: shopContextQuery.error?.message
   })
 
   // Update service context when user changes
@@ -279,35 +187,12 @@ export function useBusinessContext() {
   const isLoading = userQuery.isLoading || profileQuery.isLoading || shopContextQuery.isLoading
   const error = userQuery.error || profileQuery.error || shopContextQuery.error
 
-  console.log('🏪 BusinessContext: Overall loading state:', {
-    userLoading: userQuery.isLoading,
-    profileLoading: profileQuery.isLoading,
-    shopContextLoading: shopContextQuery.isLoading,
-    isLoading,
-    hasError: !!error,
-    errorMessage: error?.message
-  })
-
   const businessContext = useMemo(() => {
-    console.log('🏪 BusinessContext: Computing business context...')
-    const computeStart = performance.now()
-    
     const user = userQuery.data
     const profile = profileQuery.data
     const shopContext = shopContextQuery.data
 
-    console.log('🏪 BusinessContext: Memo inputs:', {
-      hasUser: !!user,
-      hasProfile: !!profile,
-      hasShopContext: !!shopContext,
-      userEmail: user?.email,
-      profileRole: profile?.role,
-      shopId: shopContext?.shopId
-    })
-
     if (!user || !profile) {
-      console.log('🏪 BusinessContext: Missing user or profile, returning null')
-      console.log('🏪 BookedBarber: BusinessContext not ready yet')
       return null
     }
 
@@ -344,17 +229,6 @@ export function useBusinessContext() {
         shopContext?.permissions?.includes('manage_appointments') || false,
     }
 
-    console.log('🏪 BusinessContext: Computed context:', {
-      shopId: context.shopId,
-      role: context.role,
-      isOwner: context.isOwner,
-      isStaff: context.isStaff,
-      isClient: context.isClient,
-      permissionsCount: context.permissions.length,
-      computeTime: (performance.now() - computeStart).toFixed(2) + 'ms'
-    })
-    
-    console.log('🏪 BookedBarber: BusinessContext ready for dashboard')
     return context
   }, [userQuery.data, profileQuery.data, shopContextQuery.data])
 
@@ -393,17 +267,6 @@ export function useBusinessContext() {
       shopContext: shopContextQuery
     }
   }
-
-  console.log('🏪 BusinessContext: Hook returning:', {
-    hasBusinessContext: !!result.businessContext,
-    isLoading: result.isLoading,
-    hasError: !!result.error,
-    shopId: result.shopId,
-    role: result.role,
-    isOwner: result.isOwner,
-    isStaff: result.isStaff,
-    totalHookTime: (performance.now() - businessContextStart).toFixed(2) + 'ms'
-  })
 
   return result
 }

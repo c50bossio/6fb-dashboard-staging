@@ -454,10 +454,17 @@ setSelectedLocations(locationIds)
   useEffect(() => {
     setMounted(true)
     
-    // Mark shop ID as resolved when business context loads
+    // Mark shop ID as resolved - allow calendar to work even without shopId
+    // The calendar can still function with user's profile data
     if (shopId) {
-      setShopIdResolved(true)
       console.log('[Calendar] Shop ID from business context:', shopId)
+    } else if (profile?.id) {
+      console.log('[Calendar] No shop ID from business context, using profile:', profile.id)
+    }
+    
+    // Always mark as resolved once we have a profile
+    if (profile?.id) {
+      setShopIdResolved(true)
     }
     
     const updateTime = () => {
@@ -471,7 +478,7 @@ setSelectedLocations(locationIds)
     setServices(DEFAULT_SERVICES)
     
     return () => clearInterval(timeInterval)
-  }, [shopId])
+  }, [shopId, profile?.id])
   
   // Load calendar data when context or legacy selections change
   // Initialize calendar data when business context loads
