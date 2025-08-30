@@ -8,7 +8,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-client'
-import supabaseService from '@/lib/supabase-service'
+import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 /**
  * Fetch all services for a barbershop
@@ -18,10 +18,10 @@ export function useServices(shopId, options = {}) {
     queryKey: queryKeys.services.byShop(shopId),
     queryFn: async () => {
       // Ensure service is initialized
-      if (!supabaseService.isReady()) {
-        await supabaseService.initialize()
+      if (!createServiceRoleClient().isReady()) {
+        await createServiceRoleClient().initialize()
       }
-      return supabaseService.getServices(shopId, options)
+      return createServiceRoleClient().getServices(shopId, options)
     },
     enabled: !!shopId,
     staleTime: 10 * 60 * 1000, // Services don't change often - 10 minutes
@@ -36,7 +36,7 @@ export function useService(shopId, serviceId) {
   return useQuery({
     queryKey: queryKeys.services.detail(shopId, serviceId),
     queryFn: async () => {
-      const services = await supabaseService.getServices(shopId)
+      const services = await createServiceRoleClient().getServices(shopId)
       return services.find(s => s.id === serviceId)
     },
     enabled: !!shopId && !!serviceId,
@@ -51,7 +51,7 @@ export function useCreateService() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: (serviceData) => supabaseService.createService(serviceData),
+    mutationFn: (serviceData) => createServiceRoleClient().createService(serviceData),
     
     // Optimistic update
     onMutate: async (newService) => {
@@ -104,7 +104,7 @@ export function useUpdateService() {
   
   return useMutation({
     mutationFn: ({ serviceId, updates }) => 
-      supabaseService.updateService(serviceId, updates),
+      createServiceRoleClient().updateService(serviceId, updates),
     
     // Optimistic update
     onMutate: async ({ serviceId, updates, barbershop_id }) => {
@@ -151,7 +151,7 @@ export function useDeleteService() {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: (serviceId) => supabaseService.deleteService(serviceId),
+    mutationFn: (serviceId) => createServiceRoleClient().deleteService(serviceId),
     
     onSuccess: (data, serviceId, context) => {
       // Invalidate services list
@@ -171,7 +171,7 @@ export function usePrefetchServices() {
   return (shopId) => {
     return queryClient.prefetchQuery({
       queryKey: queryKeys.services.byShop(shopId),
-      queryFn: () => supabaseService.getServices(shopId),
+      queryFn: () => createServiceRoleClient().getServices(shopId),
       staleTime: 10 * 60 * 1000,
     })
   }

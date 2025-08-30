@@ -210,7 +210,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
     Object.entries(groupedStats).forEach(([name, durations]) => {
       const avg = durations.reduce((a, b) => a + b, 0) / durations.length
       const p95 = percentile(durations, 0.95)
-      }ms | P95 ${p95.toFixed(2)}ms | Count ${durations.length}`)
+      console.log(`${name}: Avg ${avg.toFixed(2)}ms | P95 ${p95.toFixed(2)}ms | Count ${durations.length}`)
     })
   }, 60000)
 
@@ -572,7 +572,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
         expect(data).toBeTruthy()
         expect(measurement.duration).toBeLessThan(PERFORMANCE_TARGETS.database.simpleQuery)
 
-        }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
       }
     })
 
@@ -894,7 +894,7 @@ describe('⚡ PAYROLL SYSTEM PERFORMANCE BENCHMARKS', () => {
 
       .toFixed(1)}%`)
       .toFixed(2)}s`)
-      }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
       ).toFixed(1)} webhooks/second`)
     }, 60000) // 1 minute timeout for stress test
   })

@@ -6,7 +6,6 @@ import {
   CurrencyDollarIcon,
   SparklesIcon,
   CalendarDaysIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   TrophyIcon,
   ClockIcon
@@ -150,7 +149,7 @@ export default function TenantAnalyticsDashboard() {
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
-            <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+            <ChartBarIcon className="h-4 w-4 text-green-500 mr-1" />
             <span className="text-green-600">+12% from last period</span>
           </div>
         </div>
@@ -169,7 +168,7 @@ export default function TenantAnalyticsDashboard() {
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
-            <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+            <ChartBarIcon className="h-4 w-4 text-green-500 mr-1" />
             <span className="text-green-600">{analytics.growth_trends.user_growth}</span>
           </div>
         </div>
@@ -188,7 +187,7 @@ export default function TenantAnalyticsDashboard() {
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
-            <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+            <ChartBarIcon className="h-4 w-4 text-green-500 mr-1" />
             <span className="text-green-600">{analytics.growth_trends.revenue_growth}</span>
           </div>
         </div>

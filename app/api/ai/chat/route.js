@@ -29,16 +29,23 @@ export async function POST(request) {
     const { data: { session } } = await supabase.auth.getSession()
     const userId = session?.user?.id
 
-    const { messages, agentId } = await request.json()
+    const body = await request.json()
+    const { messages, message, agentId } = body
     
-    if (!messages || !Array.isArray(messages)) {
+    // Accept either 'messages' array or single 'message' string for flexibility
+    let messageArray = messages
+    if (!messageArray && message) {
+      messageArray = [{ role: 'user', content: message }]
+    }
+    
+    if (!messageArray || !Array.isArray(messageArray)) {
       return NextResponse.json(
-        { error: 'Messages array is required' },
+        { error: 'Either messages array or single message is required' },
         { status: 400 }
       )
     }
 
-    const lastMessage = messages[messages.length - 1]?.content || ''
+    const lastMessage = messageArray[messageArray.length - 1]?.content || ''
     
     let apiEndpoint = '/api/ai/analytics-enhanced-chat'
     
@@ -55,7 +62,7 @@ export async function POST(request) {
         message: lastMessage,
         context: 'streaming_chat',
         agentId: agentId,
-        messages: messages.slice(-5) // Include recent conversation context
+        messages: messageArray.slice(-5) // Include recent conversation context
       })
     })
 

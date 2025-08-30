@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { SUBSCRIPTION_TIERS, normalizeTierName, getTierLimits } from '@/lib/subscription-tiers'
-import { createClient } from '@/lib/supabase/server-client'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export async function POST(request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabaseClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     

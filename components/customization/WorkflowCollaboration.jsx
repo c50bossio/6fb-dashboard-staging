@@ -33,7 +33,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 const ApprovalWorkflowCard = ({ workflow, onAction }) => {
   const getStatusColor = (status) => {

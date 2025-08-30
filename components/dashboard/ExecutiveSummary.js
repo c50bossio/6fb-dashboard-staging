@@ -1,12 +1,11 @@
 'use client'
 
 import { 
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   ArrowTrendingDownIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   LightBulbIcon,
-  ChartBarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
   StarIcon,
@@ -145,7 +144,7 @@ const MetricCard = ({ icon: Icon, title, value, change, trend, subtitle }) => (
         trend === 'up' ? 'text-green-600' : 'text-red-600'
       }`}>
         {trend === 'up' ? (
-          <ArrowTrendingUpIcon className="h-4 w-4" />
+          <ChartBarIcon className="h-4 w-4" />
         ) : (
           <ArrowTrendingDownIcon className="h-4 w-4" />
         )}

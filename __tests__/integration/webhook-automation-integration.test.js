@@ -173,7 +173,7 @@ describe('Webhook Automation Integration Tests', () => {
       const processingTime = performance.now() - startTime
       expect(processingTime).toBeLessThan(5000) // Should complete within 5 seconds
 
-      }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
     })
 
     it('should handle multiple concurrent payments correctly', async () => {
@@ -543,7 +543,7 @@ describe('Webhook Automation Integration Tests', () => {
       // Should complete within reasonable time
       expect(processingTime).toBeLessThan(30000) // 30 seconds for 50 webhooks
 
-      }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
       .toFixed(2)}ms per webhook`)
     })
 
@@ -570,7 +570,7 @@ describe('Webhook Automation Integration Tests', () => {
         .reduce((sum, r) => sum + r.value, 0) / dbResults.length
 
       expect(avgDbTime).toBeLessThan(100) // Average DB operation should be under 100ms
-      }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
     })
   })
 

@@ -27,7 +27,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { templateEngine, PREMIUM_TEMPLATES } from '@/lib/templates/template-engine'
 
 const LocationCard = ({ location, onSelect, isSelected, template, lastUpdate }) => {

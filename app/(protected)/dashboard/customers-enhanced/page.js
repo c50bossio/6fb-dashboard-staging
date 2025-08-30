@@ -21,7 +21,7 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { useState, useEffect } from 'react'
 
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
-import { createClient } from '../../../../lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 const SEGMENTS = {
   vip: { name: 'VIP', color: 'purple', minVisits: 10 },

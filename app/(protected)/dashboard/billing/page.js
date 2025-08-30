@@ -1,11 +1,10 @@
 'use client'
 
-import { 
+import {
   CreditCardIcon,
   ChartBarIcon,
   CalendarDaysIcon,
   ArrowDownTrayIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -710,7 +709,7 @@ Thank you for your business!
             <div className="flex items-center mt-2">
               {billingData.currentMonth.comparedToLastMonth > 0 ? (
                 <>
-                  <ArrowTrendingUpIcon className="h-4 w-4 text-red-500 mr-1" />
+                  <ChartBarIcon className="h-4 w-4 text-red-500 mr-1" />
                   <span className="text-sm text-red-600">+{billingData.currentMonth.comparedToLastMonth}%</span>
                 </>
               ) : (

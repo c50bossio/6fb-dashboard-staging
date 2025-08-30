@@ -179,7 +179,7 @@ jest.mock('@/lib/feature-flags', () => ({
   getFeatureFlag: jest.fn()
 }))
 
-jest.mock('@/lib/supabase/client', () => ({
+jest.mock('@/lib/supabase/UNIFIED_CLIENT', () => ({
   createClient: jest.fn(() => ({
     from: jest.fn(),
     channel: jest.fn()

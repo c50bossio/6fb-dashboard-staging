@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 import BarberStep from './steps/BarberStep'
 import ConfirmationStep from './steps/ConfirmationStep'

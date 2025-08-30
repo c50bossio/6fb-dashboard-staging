@@ -1,13 +1,12 @@
 'use client'
 
-import { 
-  BoltIcon, 
-  UserGroupIcon, 
+import {
+  BoltIcon,
+  UserGroupIcon,
   ChartBarIcon,
   BellAlertIcon,
   SignalIcon,
   ClockIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon
@@ -131,7 +130,7 @@ export default function RealtimeDashboard({ barbershopId }) {
             trend.direction === 'up' ? 'text-green-600' : 'text-red-600'
           }`}>
             {trend.direction === 'up' ? (
-              <ArrowTrendingUpIcon className="h-3 w-3" />
+              <ChartBarIcon className="h-3 w-3" />
             ) : (
               <ArrowTrendingDownIcon className="h-3 w-3" />
             )}

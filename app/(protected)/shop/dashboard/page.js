@@ -1,13 +1,12 @@
 'use client'
 
-import { 
+import {
   UserGroupIcon,
   CurrencyDollarIcon,
   CalendarDaysIcon,
   ChartBarIcon,
   ClockIcon,
   StarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   UserPlusIcon,
   ScissorsIcon,
@@ -140,7 +139,7 @@ export default function ShopDashboard() {
               dashboardMetrics.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {dashboardMetrics.revenueChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
@@ -163,7 +162,7 @@ export default function ShopDashboard() {
               dashboardMetrics.bookingsChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {dashboardMetrics.bookingsChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}

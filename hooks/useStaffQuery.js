@@ -6,8 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { toast } from 'react-hot-toast'
-import { createClient } from '@/lib/supabase/browser-client'
-import supabaseService from '@/lib/supabase-service'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Query keys for consistent caching
 export const staffKeys = {
@@ -25,7 +24,7 @@ export function useStaff(shopId, options = {}) {
 
   return useQuery({
     queryKey: staffKeys.byShop(shopId),
-    queryFn: () => supabaseService.getStaff(shopId, options),
+    queryFn: () => createClient().getStaff(shopId, options),
     enabled: enabled && !!shopId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -38,7 +37,7 @@ export function useStaff(shopId, options = {}) {
 export function useActiveStaff(shopId) {
   return useQuery({
     queryKey: staffKeys.active(shopId),
-    queryFn: () => supabaseService.getStaff(shopId, { isActive: true }),
+    queryFn: () => createClient().getStaff(shopId, { isActive: true }),
     enabled: !!shopId,
     staleTime: 5 * 60 * 1000,
     select: (data) => data?.filter(staff => staff.is_active === true) || []
@@ -52,7 +51,7 @@ export function useStaffMember(staffId) {
   return useQuery({
     queryKey: ['staff', 'member', staffId],
     queryFn: async () => {
-      const client = supabaseService.client || createClient()
+      const client = createClient().client || createClient()
       if (!client) throw new Error('Supabase client not available')
       
       const { data, error } = await client
@@ -76,7 +75,7 @@ export function useCreateStaffMember() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (staffData) => supabaseService.createStaffMember(staffData),
+    mutationFn: (staffData) => createClient().createStaffMember(staffData),
     onSuccess: (newStaff) => {
       toast.success('Staff member added successfully')
       
@@ -100,7 +99,7 @@ export function useUpdateStaffMember() {
 
   return useMutation({
     mutationFn: ({ staffId, updates }) => 
-      supabaseService.updateStaffMember(staffId, updates),
+      createClient().updateStaffMember(staffId, updates),
     onSuccess: (updatedStaff) => {
       toast.success('Staff member updated successfully')
       
@@ -129,7 +128,7 @@ export function useDeactivateStaffMember() {
 
   return useMutation({
     mutationFn: (staffId) => 
-      supabaseService.updateStaffMember(staffId, { is_active: false }),
+      createClient().updateStaffMember(staffId, { is_active: false }),
     onSuccess: (deactivatedStaff) => {
       toast.success('Staff member deactivated')
       
@@ -154,7 +153,7 @@ export function useRealtimeStaff(shopId) {
   useEffect(() => {
     if (!shopId) return
 
-    const unsubscribe = supabaseService.subscribeToChanges(
+    const unsubscribe = createClient().subscribeToChanges(
       'barbershop_staff',
       { barbershop_id: shopId },
       (payload) => {

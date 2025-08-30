@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getTierLimits, normalizeTierName, SUBSCRIPTION_TIERS } from '@/lib/subscription-tiers'
-import { createClient } from '@/lib/supabase/server-client'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export async function GET(request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabaseClient()
     
     let { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -204,7 +204,7 @@ function getFeaturesByTier(tier) {
 
 export async function POST(request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabaseClient()
     const { type, amount } = await request.json()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()

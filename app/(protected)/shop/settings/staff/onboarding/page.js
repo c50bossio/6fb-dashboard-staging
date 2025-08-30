@@ -4,7 +4,7 @@ import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/react/24
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import Button from '@/components/ui/Button'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 function OnboardingContent() {
   const searchParams = useSearchParams()

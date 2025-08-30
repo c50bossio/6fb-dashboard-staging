@@ -12,7 +12,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import BarberSuccessStories from '../components/landing/BarberSuccessStories'
 import PlatformPreview from '../components/landing/PlatformPreview'
 import PricingSection from '../components/landing/PricingSection'

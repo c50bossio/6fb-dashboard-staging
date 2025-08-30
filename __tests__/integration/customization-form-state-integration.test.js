@@ -8,12 +8,12 @@ import userEvent from '@testing-library/user-event'
 import UnifiedCustomizePage from '@/app/(protected)/customize/page'
 import { useCustomizationForm } from '@/hooks/useCustomizationForm'
 import { useImageUpload } from '@/hooks/useImageUpload'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { SupabaseAuthProvider } from '@/components/SupabaseAuthProvider'
 import { createTestUser, createTestProfile } from '@/test-utils/test-utils'
 
 // Mock dependencies
-jest.mock('@/lib/supabase/client')
+jest.mock('@/lib/supabase/UNIFIED_CLIENT')
 jest.mock('@/hooks/useCustomizationForm')
 jest.mock('@/hooks/useImageUpload')
 jest.mock('@/components/customization/BarberProfileCustomization')

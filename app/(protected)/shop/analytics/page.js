@@ -1,12 +1,11 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
   TrophyIcon,
   CalendarDaysIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   StarIcon,
   ClockIcon,
@@ -409,7 +408,7 @@ export default function ShopAnalytics() {
               overview.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {overview.revenueChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
@@ -429,7 +428,7 @@ export default function ShopAnalytics() {
               overview.bookingsChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {overview.bookingsChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
@@ -449,7 +448,7 @@ export default function ShopAnalytics() {
               overview.clientsChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {overview.clientsChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
@@ -469,7 +468,7 @@ export default function ShopAnalytics() {
               overview.ratingChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {overview.ratingChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}

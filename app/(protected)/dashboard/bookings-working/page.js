@@ -44,8 +44,8 @@ export default function BookingsPage() {
       const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
       
       const [appointmentsResponse, barbersResponse] = await Promise.all([
-        fetch(`/api/calendar/appointments?shop_id=${barbershopId}&start_date=${today.toISOString()}&end_date=${nextWeek.toISOString()}`).then(r => r.json()),
-        fetch(`/api/barbers?shop_id=${barbershopId}`).then(r => r.json())
+        fetch(`/api/calendar/appointments?barbershop_id=${barbershopId}&start_date=${today.toISOString()}&end_date=${nextWeek.toISOString()}`).then(r => r.json()),
+        fetch(`/api/barbers?barbershop_id=${barbershopId}`).then(r => r.json())
       ])
       
       const resources = (barbersResponse.barbers || []).map((barber, index) => ({

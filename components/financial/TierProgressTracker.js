@@ -4,7 +4,6 @@ import {
   ChartBarIcon,
   TrophyIcon,
   CalendarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
@@ -286,7 +285,7 @@ export default function TierProgressTracker({ barberId, barbershopId }) {
               </p>
               {progressMetrics?.isAheadOfPace && (
                 <p className="text-xs text-green-600 flex items-center">
-                  <ArrowTrendingUpIcon className="h-3 w-3 mr-1" />
+                  <ChartBarIcon className="h-3 w-3 mr-1" />
                   Ahead of pace
                 </p>
               )}

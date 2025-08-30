@@ -20,7 +20,7 @@ import { createTestUser, createTestProfile } from '@/test-utils/test-utils'
 // Mock dependencies
 jest.mock('@/hooks/useCustomizationForm')
 jest.mock('@/hooks/useImageUpload')
-jest.mock('@/lib/supabase/client')
+jest.mock('@/lib/supabase/UNIFIED_CLIENT')
 
 // Performance measurement utilities
 class PerformanceTracker {

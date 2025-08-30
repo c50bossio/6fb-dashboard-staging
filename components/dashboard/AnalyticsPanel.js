@@ -4,7 +4,6 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CalendarDaysIcon,
   ClockIcon
@@ -238,7 +237,7 @@ export default function AnalyticsPanel({ data }) {
             </p>
             <div className="flex items-center mt-2">
               {isPositive ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+                <ChartBarIcon className="h-4 w-4 text-green-500 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
               )}

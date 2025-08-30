@@ -7,7 +7,6 @@ import {
   RocketLaunchIcon,
   ClockIcon,
   ChatBubbleBottomCenterTextIcon,
-  ArrowTrendingUpIcon,
   CheckCircleIcon,
   EyeIcon,
   SparklesIcon
@@ -340,7 +339,7 @@ export default function PlatformPreview() {
           
           <div className="text-center p-6">
             <div className="inline-flex items-center justify-center h-14 w-14 bg-gradient-to-br from-green-600 to-green-500 text-white rounded-xl mb-4">
-              <ArrowTrendingUpIcon className="h-7 w-7" />
+              <ChartBarIcon className="h-7 w-7" />
             </div>
             <h4 className="text-xl font-bold text-gray-900 mb-2">Real-Time Insights</h4>
             <p className="text-gray-600">

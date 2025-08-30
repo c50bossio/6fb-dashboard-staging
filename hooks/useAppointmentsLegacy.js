@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { supabaseService } from '@/services/supabase-service';
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT';
 
 /**
  * Hook for fetching and managing appointments
@@ -12,7 +12,7 @@ export const useAppointments = (shopId, dateRange = null) => {
   // Main query for appointments
   const query = useQuery({
     queryKey: ['appointments', shopId, dateRange],
-    queryFn: () => supabaseService.getAppointments(shopId, dateRange),
+    queryFn: () => createClient().getAppointments(shopId, dateRange),
     enabled: !!shopId,
     staleTime: 2 * 60 * 1000, // Consider data stale after 2 minutes
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
@@ -22,7 +22,7 @@ export const useAppointments = (shopId, dateRange = null) => {
   useEffect(() => {
     if (!shopId) return;
 
-    const unsubscribe = supabaseService.subscribeToAppointments(shopId, (payload) => {
+    const unsubscribe = createClient().subscribeToAppointments(shopId, (payload) => {
       // Invalidate cache when appointments change
       queryClient.invalidateQueries({ queryKey: ['appointments', shopId] });
       
@@ -43,7 +43,7 @@ export const useCreateAppointment = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (appointmentData) => supabaseService.createAppointment(appointmentData),
+    mutationFn: (appointmentData) => createClient().createAppointment(appointmentData),
     onSuccess: (data) => {
       // Invalidate appointments list
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
@@ -68,7 +68,7 @@ export const useUpdateAppointment = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, updates }) => supabaseService.updateAppointment(id, updates),
+    mutationFn: ({ id, updates }) => createClient().updateAppointment(id, updates),
     onSuccess: (data) => {
       // Invalidate appointments list
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
@@ -86,7 +86,7 @@ export const useDeleteAppointment = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (appointmentId) => supabaseService.deleteAppointment(appointmentId),
+    mutationFn: (appointmentId) => createClient().deleteAppointment(appointmentId),
     onSuccess: () => {
       // Invalidate appointments list
       queryClient.invalidateQueries({ queryKey: ['appointments'] });

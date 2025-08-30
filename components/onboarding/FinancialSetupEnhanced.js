@@ -17,7 +17,7 @@ import {
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getTenant } from '@/lib/tenant-resolver-client'
 
 export default function FinancialSetupEnhanced({ onComplete, initialData = {}, subscriptionTier = 'shop' }) {

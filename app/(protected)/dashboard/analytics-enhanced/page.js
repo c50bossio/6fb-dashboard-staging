@@ -1,8 +1,7 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   MapPinIcon,
   UserGroupIcon,
@@ -245,7 +244,7 @@ function EnterpriseAnalytics({ onDrillDown }) {
                 ${enterpriseData.totalRevenue.toLocaleString()}
               </p>
               <p className="text-xs text-green-500 flex items-center mt-1">
-                <ArrowTrendingUpIcon className="h-3 w-3 mr-1" />
+                <ChartBarIcon className="h-3 w-3 mr-1" />
                 +12.5% vs last month
               </p>
             </div>
@@ -259,7 +258,7 @@ function EnterpriseAnalytics({ onDrillDown }) {
               <p className="text-sm text-gray-600">Total Customers</p>
               <p className="text-2xl font-bold text-olive-600">{enterpriseData.totalCustomers}</p>
               <p className="text-xs text-olive-500 flex items-center mt-1">
-                <ArrowTrendingUpIcon className="h-3 w-3 mr-1" />
+                <ChartBarIcon className="h-3 w-3 mr-1" />
                 +8.3% vs last month
               </p>
             </div>
@@ -432,7 +431,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
                 ${locationData.revenue.toLocaleString()}
               </p>
               <p className="text-xs text-green-500 flex items-center mt-1">
-                <ArrowTrendingUpIcon className="h-3 w-3 mr-1" />
+                <ChartBarIcon className="h-3 w-3 mr-1" />
                 +{((locationData.revenue - 42000) / 42000 * 100).toFixed(1)}% vs last month
               </p>
             </div>
@@ -517,7 +516,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
             onClick={onNavigateUp}
             className="text-olive-600 text-sm hover:text-olive-800 flex items-center"
           >
-            <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+            <ChartBarIcon className="h-4 w-4 mr-1" />
             Back to Enterprise View
           </button>
         </div>
@@ -697,7 +696,7 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
             onClick={onNavigateUp}
             className="text-olive-600 text-sm hover:text-olive-800 flex items-center"
           >
-            <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+            <ChartBarIcon className="h-4 w-4 mr-1" />
             Back to Location View
           </button>
         </div>

@@ -8,7 +8,7 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   ArrowTrendingDownIcon,
   ServerIcon
 } from '@heroicons/react/24/outline'
@@ -276,7 +276,7 @@ export default function SystemHealthMonitor({
 
   const getTrendIcon = (trend) => {
     return trend === 'up' 
-      ? <ArrowTrendingUpIcon className="h-4 w-4 text-red-500" />
+      ? <ChartBarIcon className="h-4 w-4 text-red-500" />
       : <ArrowTrendingDownIcon className="h-4 w-4 text-green-500" />
   }
 

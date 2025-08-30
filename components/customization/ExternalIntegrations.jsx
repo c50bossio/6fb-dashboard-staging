@@ -29,7 +29,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 const IntegrationCard = ({ integration, onConnect, onDisconnect, onConfigure, isConnected, isConnecting }) => {
   const getStatusColor = () => {

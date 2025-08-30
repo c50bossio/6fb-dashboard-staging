@@ -20,7 +20,7 @@ export default function TestRLSPage() {
         console.log('🧪 Testing RLS Context Manager...')
         
         // First, test if we can create a Supabase client directly
-        const { createClient } = await import('@/lib/supabase/browser-client')
+        const { createClient } = await import('@/lib/supabase/UNIFIED_CLIENT')
         const supabase = createClient()
         
         console.log('📊 Supabase client details:', {

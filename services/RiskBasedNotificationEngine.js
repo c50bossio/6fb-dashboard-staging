@@ -8,7 +8,7 @@
  * - Risk-based segmentation optimizes intervention timing and intensity
  */
 
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export class RiskBasedNotificationEngine {
   constructor() {

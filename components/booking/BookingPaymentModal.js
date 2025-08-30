@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getTenant } from '@/lib/tenant-resolver-client'
 import TipSelectionWidget from '../checkout/TipSelectionWidget'
 import PaymentForm from '../payment/PaymentForm'

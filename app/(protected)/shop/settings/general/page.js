@@ -11,7 +11,7 @@ import {
 import { useState, useEffect, useRef } from 'react'
 import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function GeneralSettingsPage() {
   const { user } = useAuth()

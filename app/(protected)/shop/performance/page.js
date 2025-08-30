@@ -2,7 +2,6 @@
 
 import { 
   BarChart3Icon, 
-  ArrowTrendingUpIcon, 
   ClockIcon, 
   StarIcon,
   UsersIcon,
@@ -252,7 +251,7 @@ export default function PerformancePage() {
                             <div>
                               <div className="text-gray-600">Trend</div>
                               <div className="font-medium flex items-center gap-1">
-                                <ArrowTrendingUpIcon className="h-3 w-3" />
+                                <ChartBarIcon className="h-3 w-3" />
                                 {staff.growthTrend >= 0 ? '+' : ''}{staff.growthTrend}%
                               </div>
                             </div>

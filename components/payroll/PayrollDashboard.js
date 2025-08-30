@@ -5,8 +5,7 @@ import {
   ClockIcon, 
   UserGroupIcon,
   ChartBarIcon,
-  TrophyIcon,
-  ArrowTrendingUpIcon
+  TrophyIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -390,7 +389,7 @@ export default function PayrollDashboard({ staff = [], metrics = {}, barbershopI
                               </span>
                               {memberTierData.isOnTrackForNextTier ? (
                                 <span className="inline-flex items-center text-xs">
-                                  <ArrowTrendingUpIcon className="h-3 w-3 text-green-500 mr-1" />
+                                  <ChartBarIcon className="h-3 w-3 text-green-500 mr-1" />
                                   <span className="text-green-600 font-medium">On Track</span>
                                 </span>
                               ) : (

@@ -1,13 +1,12 @@
 'use client'
 
-import { 
-  ChartBarIcon, 
-  HeartIcon, 
+import {
+  ChartBarIcon,
+  HeartIcon,
   FaceSmileIcon,
   ExclamationTriangleIcon,
   ClockIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon 
+  ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
@@ -76,7 +75,7 @@ export default function SentimentDashboard({ userId }) {
   }
 
   const getTrendIcon = (trend) => {
-    return trend === 'improving' ? ArrowTrendingUpIcon : 
+    return trend === 'improving' ? ChartBarIcon : 
            trend === 'declining' ? ArrowTrendingDownIcon : 
            ChartBarIcon
   }

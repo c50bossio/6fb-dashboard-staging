@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useCallback } from 'react'
 import { FeatureFlagAdmin, FEATURE_FLAGS } from '../../hooks/useFeatureFlag'
-import { createClient } from '../../lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 const supabase = createClient()
 

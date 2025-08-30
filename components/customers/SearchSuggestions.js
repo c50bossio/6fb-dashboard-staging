@@ -10,7 +10,7 @@ import {
   PhoneIcon,
   BuildingOfficeIcon,
   SparklesIcon,
-  ArrowTrendingUpIcon
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { generateSearchSuggestions, fuzzyMatch } from '../../utils/fuzzySearch'
@@ -73,7 +73,7 @@ const SUGGESTION_CATEGORIES = {
   },
   popular: {
     name: 'Popular Searches',
-    icon: ArrowTrendingUpIcon,
+    icon: ChartBarIcon,
     color: 'text-indigo-600',
     bgColor: 'bg-indigo-50',
     limit: 2

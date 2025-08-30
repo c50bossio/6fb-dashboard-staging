@@ -8,7 +8,6 @@ import {
   ClockIcon,
   AdjustmentsHorizontalIcon,
   ChartBarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   EyeIcon,
   EyeSlashIcon
@@ -285,7 +284,7 @@ const AlertManagementDashboard = ({
               onClick={fetchAlerts}
               className="p-2 text-gray-400 hover:text-gray-600"
             >
-              <ArrowTrendingUpIcon className="h-5 w-5" />
+              <ChartBarIcon className="h-5 w-5" />
             </button>
           </div>
         </div>

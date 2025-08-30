@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase-simple'
+import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // GET - Fetch individual staff member details
 export async function GET(request, { params }) {
@@ -186,7 +186,7 @@ export async function PUT(request, { params }) {
 
       // Use service client for profile updates to bypass RLS restrictions
       // Shop owners are authorized to update their staff's profile information
-      const serviceClient = createServiceClient()
+      const serviceClient = await createServiceRoleClient()
       if (!serviceClient) {
         // console.error('🚨 [STAFF PROFILE PUT] Service client not available - check SUPABASE_SERVICE_ROLE_KEY')
         return NextResponse.json({
@@ -443,7 +443,7 @@ export async function PATCH(request, { params }) {
 
       // Use service client for profile updates to bypass RLS restrictions
       // Shop owners are authorized to update their staff's profile information
-      const serviceClient = createServiceClient()
+      const serviceClient = await createServiceRoleClient()
       
       // 
       

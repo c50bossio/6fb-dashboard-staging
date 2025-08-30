@@ -4,7 +4,6 @@ import {
   ChartBarIcon,
   TrophyIcon,
   CalendarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   UsersIcon,
   CurrencyDollarIcon,
@@ -15,7 +14,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/card'
 import financialService from '@/lib/financial-service'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 const supabase = createClient()
 
@@ -373,7 +372,7 @@ export default function TierAnalyticsDashboard({ barbershopId }) {
               </p>
             </div>
             {analytics.avgRevenueGrowth >= 0 ? (
-              <ArrowTrendingUpIcon className="h-8 w-8 text-green-500" />
+              <ChartBarIcon className="h-8 w-8 text-green-500" />
             ) : (
               <ArrowTrendingDownIcon className="h-8 w-8 text-red-500" />
             )}

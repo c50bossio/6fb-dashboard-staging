@@ -761,11 +761,11 @@ async def process_birthday_bonuses(
 
 @router.post("/integration/appointment-completed")
 async def handle_appointment_completed(
+    background_tasks: BackgroundTasks,
+    user_context = Depends(get_current_user_barbershop),
     appointment_id: str = Query(...),
     customer_id: str = Query(...),
-    service_amount: Decimal = Query(...),
-    background_tasks: BackgroundTasks,
-    user_context = Depends(get_current_user_barbershop)
+    service_amount: Decimal = Query(...)
 ):
     """Handle appointment completion and award loyalty points"""
     try:
@@ -792,11 +792,11 @@ async def handle_appointment_completed(
 
 @router.post("/integration/review-submitted")
 async def handle_review_submitted(
+    background_tasks: BackgroundTasks,
+    user_context = Depends(get_current_user_barbershop),
     customer_id: str = Query(...),
     appointment_id: str = Query(...),
-    rating: int = Query(..., ge=1, le=5),
-    background_tasks: BackgroundTasks,
-    user_context = Depends(get_current_user_barbershop)
+    rating: int = Query(..., ge=1, le=5)
 ):
     """Handle review submission and award bonus points"""
     try:
@@ -827,10 +827,10 @@ async def handle_review_submitted(
 
 @router.post("/bulk/enroll-customers")
 async def bulk_enroll_customers(
-    program_id: str = Query(...),
-    customer_ids: List[str] = Query(...),
     background_tasks: BackgroundTasks,
-    user_context = Depends(get_current_user_barbershop)
+    user_context = Depends(get_current_user_barbershop),
+    program_id: str = Query(...),
+    customer_ids: List[str] = Query(...)
 ):
     """Bulk enroll customers into loyalty program"""
     try:
@@ -856,12 +856,12 @@ async def bulk_enroll_customers(
 
 @router.post("/bulk/award-points")
 async def bulk_award_points(
+    background_tasks: BackgroundTasks,
+    user_context = Depends(get_current_user_barbershop),
     customer_ids: List[str] = Query(...),
     points_amount: int = Query(...),
     reason: str = Query(...),
-    program_id: Optional[str] = Query(default=None),
-    background_tasks: BackgroundTasks,
-    user_context = Depends(get_current_user_barbershop)
+    program_id: Optional[str] = Query(default=None)
 ):
     """Bulk award points to multiple customers"""
     try:

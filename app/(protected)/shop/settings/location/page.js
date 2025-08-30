@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function LocationSettingsPage() {
   const { user } = useAuth()

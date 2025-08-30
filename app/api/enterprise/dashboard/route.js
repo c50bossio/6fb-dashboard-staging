@@ -62,7 +62,7 @@ export async function GET(request) {
 
       if (barbershops && barbershops.length > 0) {
         // Calculate real metrics
-        const totalRevenue = 0
+        let totalRevenue = 0
         let totalBookings = 0
         
         const locationData = await Promise.all(barbershops.map(async (shop) => {
@@ -98,11 +98,31 @@ export async function GET(request) {
             ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
             : 0
           
+          // Calculate revenue from payments and appointments
+          const { data: payments } = await supabase
+            .from('payments')
+            .select('amount')
+            .eq('barbershop_id', shop.id)
+            .eq('status', 'completed')
+          
+          const { data: appointmentRevenue } = await supabase
+            .from('appointments')
+            .select('price')
+            .eq('barbershop_id', shop.id)
+            .in('status', ['completed', 'paid'])
+          
+          const paymentRevenue = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0
+          const appointmentTotal = appointmentRevenue?.reduce((sum, a) => sum + (a.price || 0), 0) || 0
+          const shopRevenue = paymentRevenue + appointmentTotal
+          
+          // Add to total revenue
+          totalRevenue += shopRevenue
+          
           return {
             id: shop.id,
             name: shop.name,
             city: shop.city || 'Unknown',
-            revenue: 0, // TODO: Calculate from transactions table
+            revenue: shopRevenue,
             bookings: shopBookings,
             rating: avgRating,
             staff: staffCount || 0,
@@ -111,6 +131,7 @@ export async function GET(request) {
         }))
 
         // Update dashboard data with real values
+        dashboardData.totalRevenue = totalRevenue
         dashboardData.totalBookings = totalBookings
         dashboardData.locations = locationData
         dashboardData.dataAvailable = totalBookings > 0 || locationData.length > 0

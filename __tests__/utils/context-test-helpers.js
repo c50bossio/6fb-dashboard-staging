@@ -151,7 +151,7 @@ export const renderWithContext = (component, options = {}) => {
   const mockSupabase = createMockSupabase(mockSupabaseResponses)
   
   // Mock the Supabase client module
-  jest.doMock('@/lib/supabase/client', () => ({
+  jest.doMock('@/lib/supabase/UNIFIED_CLIENT', () => ({
     createClient: () => mockSupabase
   }))
 

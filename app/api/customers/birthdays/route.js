@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { isDefined, validateRequired, buildUpdateObject } from '@/lib/validation'
+
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -138,7 +141,7 @@ export async function GET(request) {
       .map(customer => formatCustomerData(customer, eventType))
       .filter(customer => {
         if (includeAll) return true;
-        return customer.days_until_event !== null && customer.days_until_event <= daysAhead;
+        return isDefined(customer.days_until_event) && customer.days_until_event <= daysAhead;
       })
       .sort((a, b) => (a.days_until_event || 999) - (b.days_until_event || 999));
 
@@ -312,12 +315,14 @@ export async function PUT(request) {
       }, { status: 400 });
     }
 
-    // Prepare update data
-    const updateData = {};
-    if (birthday !== undefined) updateData.birthday = birthday;
-    if (anniversary_date !== undefined) updateData.anniversary_date = anniversary_date;
-    if (birthday_reminders_enabled !== undefined) updateData.birthday_reminders_enabled = birthday_reminders_enabled;
-    if (anniversary_reminders_enabled !== undefined) updateData.anniversary_reminders_enabled = anniversary_reminders_enabled;
+    // Prepare update data using validation utility
+    const allowedFields = ['birthday', 'anniversary_date', 'birthday_reminders_enabled', 'anniversary_reminders_enabled'];
+    const updateData = buildUpdateObject(allowedFields, {
+      birthday,
+      anniversary_date,
+      birthday_reminders_enabled,
+      anniversary_reminders_enabled
+    });
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({

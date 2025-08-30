@@ -1,9 +1,8 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
   ChartPieIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CalendarIcon,
   BuildingStorefrontIcon,
@@ -258,7 +257,7 @@ export default function EnterpriseAnalytics() {
               </p>
             </div>
             <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <ArrowTrendingUpIcon className="h-6 w-6 text-yellow-600" />
+              <ChartBarIcon className="h-6 w-6 text-yellow-600" />
             </div>
           </div>
           <div className="mt-4 flex items-center">

@@ -1,8 +1,8 @@
 'use client'
 
 import { 
-  ArrowTrendingUpIcon, ArrowTrendingDownIcon, CalendarIcon, 
-  ChartBarIcon, CurrencyDollarIcon, UsersIcon,
+  ChartBarIcon, ArrowTrendingDownIcon, CalendarIcon, 
+   CurrencyDollarIcon, UsersIcon,
   ExclamationTriangleIcon, InformationCircleIcon,
   ArrowUpIcon, ArrowDownIcon, ClockIcon, StarIcon
 } from '@heroicons/react/24/outline'
@@ -173,7 +173,7 @@ export default function ForecastingDashboard({ barbershopId }) {
           title="Growth Trend"
           value={`${(forecastData.trends.trend_analysis?.overall_trend?.growthRate * 100 || 0).toFixed(1)}%`}
           change={forecastData.trends.trend_analysis?.overall_trend?.direction || 'stable'}
-          icon={ArrowTrendingUpIcon}
+          icon={ChartBarIcon}
           color="text-gold-600"
           bgColor="bg-gold-50"
         />
@@ -195,7 +195,7 @@ export default function ForecastingDashboard({ barbershopId }) {
               { id: 'overview', name: 'Overview', icon: ChartBarIcon },
               { id: 'revenue', name: 'Revenue Forecasting', icon: CurrencyDollarIcon },
               { id: 'bookings', name: 'Booking Demand', icon: CalendarIcon },
-              { id: 'trends', name: 'Seasonal Trends', icon: ArrowTrendingUpIcon },
+              { id: 'trends', name: 'Seasonal Trends', icon: ChartBarIcon },
               { id: 'insights', name: 'AI Insights', icon: InformationCircleIcon }
             ].map((tab) => (
               <button

@@ -8,7 +8,6 @@ import {
   SparklesIcon,
   TrophyIcon,
   LightBulbIcon,
-  ArrowTrendingUpIcon,
   BuildingStorefrontIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
@@ -48,7 +47,7 @@ const businessModels = [
     id: 'mobile',
     title: 'Mobile/On-Demand',
     description: 'Travel to clients or partner with businesses',
-    icon: ArrowTrendingUpIcon,
+    icon: ChartBarIcon,
     pros: ['Low overhead', 'Premium pricing', 'Unique service'],
     cons: ['Travel time', 'Equipment transport'],
     bestFor: 'Busy professionals and special events'
@@ -90,7 +89,7 @@ const growthGoals = [
   { id: 'clients', title: 'Build Client Base', target: '100 regular clients in 6 months', icon: UsersIcon },
   { id: 'revenue', title: 'Revenue Target', target: '$10K monthly revenue by month 3', icon: CurrencyDollarIcon },
   { id: 'reputation', title: 'Online Reputation', target: '50+ 5-star reviews in 3 months', icon: TrophyIcon },
-  { id: 'expansion', title: 'Team Growth', target: 'Add 2 barbers by end of year', icon: ArrowTrendingUpIcon }
+  { id: 'expansion', title: 'Team Growth', target: 'Add 2 barbers by end of year', icon: ChartBarIcon }
 ]
 
 const milestones = [

@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createClient } from '../lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export function useRealtime(channelName, barbershopId) {
   const [data, setData] = useState(null)

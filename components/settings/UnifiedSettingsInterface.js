@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getTenant } from '@/lib/tenant-resolver-client'
 import { Card } from '../ui/card'
 import CompensationConfiguration from './CompensationConfiguration'

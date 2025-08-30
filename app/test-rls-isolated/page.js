@@ -58,7 +58,7 @@ export default function TestRLSIsolatedPage() {
       // Step 4: Test our browser client wrapper
       console.log('🔍 Step 4: Browser Client Wrapper Test')
       try {
-        const { createClient } = await import('@/lib/supabase/browser-client')
+        const { createClient } = await import('@/lib/supabase/UNIFIED_CLIENT')
         console.log('Browser client module imported')
         
         const wrappedClient = createClient()

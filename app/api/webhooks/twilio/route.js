@@ -1,5 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { headers } from 'next/headers'
+import webhookSecurity from '@/lib/webhook-security'
 // const { twilioSMSService } = require('@/services/twilio-service')
 const twilioSMSService = { processWebhook: async () => ({ error: 'Twilio service temporarily disabled for deployment' }) }
 
@@ -15,13 +17,81 @@ const supabase = createClient(
  * Handle Twilio webhooks for SMS status updates and incoming messages
  */
 export async function POST(request) {
+  const headersList = headers()
+  const clientIp = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown'
+  
   try {
+    // Rate limiting check
+    const rateLimitResult = webhookSecurity.checkRateLimit(clientIp)
+    if (!rateLimitResult.allowed) {
+      await webhookSecurity.logSecurityEvent('rate_limit_exceeded', {
+        client_ip: clientIp,
+        requests: rateLimitResult.requestCount,
+        limit: rateLimitResult.limit
+      }, 'warning')
+      
+      return NextResponse.json(
+        { error: 'Rate limit exceeded' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
+            ...webhookSecurity.getSecurityHeaders()
+          }
+        }
+      )
+    }
+
+    // Get form data and signature
     const formData = await request.formData()
     const webhookData = Object.fromEntries(formData.entries())
+    const twilioSignature = headersList.get('x-twilio-signature')
+    
+    // Verify Twilio signature if auth token is configured
+    if (process.env.TWILIO_AUTH_TOKEN) {
+      const url = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/webhooks/twilio`
+      const signatureResult = webhookSecurity.verifyTwilioSignature(
+        process.env.TWILIO_AUTH_TOKEN,
+        twilioSignature,
+        url,
+        webhookData
+      )
+      
+      if (!signatureResult.valid) {
+        await webhookSecurity.logSecurityEvent('twilio_signature_verification_failed', {
+          error: signatureResult.error,
+          client_ip: clientIp
+        }, 'error')
+        
+        return NextResponse.json(
+          { error: 'Invalid webhook signature' },
+          { 
+            status: 401,
+            headers: webhookSecurity.getSecurityHeaders()
+          }
+        )
+      }
+    }
+    
+    // Check for replay attack using MessageSid
+    if (webhookData.MessageSid) {
+      const replayCheck = webhookSecurity.checkReplayAttack(webhookData.MessageSid)
+      if (replayCheck.isReplay) {
+        await webhookSecurity.logSecurityEvent('replay_attack_detected', {
+          message_sid: webhookData.MessageSid,
+          original_timestamp: replayCheck.originalTimestamp,
+          client_ip: clientIp
+        }, 'warning')
+        
+        // Return success to prevent Twilio retries, but don't process
+        return NextResponse.json({ success: true, warning: 'Duplicate webhook' })
+      }
+    }
     
     // Log webhook for debugging
     console.log('Twilio webhook received:', {
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      message_sid: webhookData.MessageSid
     })
 
     // Handle SMS status updates
@@ -34,13 +104,24 @@ export async function POST(request) {
       await handleIncomingSMS(webhookData)
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json(
+      { success: true },
+      { headers: webhookSecurity.getSecurityHeaders() }
+    )
 
   } catch (error) {
     console.error('❌ Twilio webhook error:', error)
+    await webhookSecurity.logSecurityEvent('webhook_processing_error', {
+      error: error.message,
+      client_ip: clientIp
+    }, 'error')
+    
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: webhookSecurity.getSecurityHeaders()
+      }
     )
   }
 }

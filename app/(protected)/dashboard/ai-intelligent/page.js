@@ -1,12 +1,11 @@
 'use client'
 
-import { 
+import {
   SparklesIcon,
   ChartBarIcon,
   BanknotesIcon,
   MegaphoneIcon,
   CogIcon,
-  ArrowTrendingUpIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   LightBulbIcon,
@@ -66,7 +65,7 @@ function StrategicPricingWidget({ onRefresh, loading }) {
     <Card className="h-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center">
-          <ArrowTrendingUpIcon className="h-5 w-5 mr-2 text-orange-600" />
+          <ChartBarIcon className="h-5 w-5 mr-2 text-orange-600" />
           Strategic Pricing Intelligence
         </h3>
         <button
@@ -142,7 +141,7 @@ function StrategicPricingWidget({ onRefresh, loading }) {
         </div>
       ) : (
         <div className="text-center py-8 text-gray-500">
-          <ArrowTrendingUpIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <ChartBarIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">No strategic pricing opportunities at this time</p>
           <p className="text-xs text-gray-400 mt-1">Services need 60+ days of strong performance</p>
         </div>
@@ -206,7 +205,7 @@ function FinancialInsightsWidget({ onRefresh, loading }) {
           disabled={widgetLoading}
           className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
         >
-          <ArrowTrendingUpIcon className={`h-4 w-4 ${widgetLoading ? 'animate-spin' : ''}`} />
+          <ChartBarIcon className={`h-4 w-4 ${widgetLoading ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
@@ -871,7 +870,7 @@ function IntelligentDashboardContent() {
             disabled={globalLoading}
             className="flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors disabled:opacity-50"
           >
-            <ArrowTrendingUpIcon className={`h-4 w-4 mr-2 ${globalLoading ? 'animate-spin' : ''}`} />
+            <ChartBarIcon className={`h-4 w-4 mr-2 ${globalLoading ? 'animate-spin' : ''}`} />
             Refresh All Insights
           </button>
         </div>
@@ -932,7 +931,7 @@ function IntelligentDashboardContent() {
             <span className="text-sm text-green-800">Financial Analysis</span>
           </button>
           <button className="flex flex-col items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors">
-            <ArrowTrendingUpIcon className="h-6 w-6 text-orange-600 mb-2" />
+            <ChartBarIcon className="h-6 w-6 text-orange-600 mb-2" />
             <span className="text-sm text-orange-800">Strategic Pricing</span>
           </button>
           <button className="flex flex-col items-center p-4 bg-olive-50 rounded-lg hover:bg-olive-100 transition-colors">
@@ -978,7 +977,7 @@ function IntelligentDashboardContent() {
           {/* Revenue Optimization Agent CTA */}
           <div className="bg-white rounded-lg border border-green-200 p-4">
             <div className="flex items-center mb-3">
-              <ArrowTrendingUpIcon className="h-6 w-6 text-green-600 mr-2" />
+              <ChartBarIcon className="h-6 w-6 text-green-600 mr-2" />
               <h4 className="font-semibold text-gray-900">Revenue Agent</h4>
             </div>
             <p className="text-sm text-gray-600 mb-3">

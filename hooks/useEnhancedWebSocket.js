@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { getWebSocketClient } from '@/lib/enhanced-websocket-client'
-import { createClient } from '@/lib/supabase/browser-client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Adapter function
 const getSession = async () => {

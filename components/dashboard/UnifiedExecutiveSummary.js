@@ -8,7 +8,6 @@ import {
   ClockIcon,
   ChartBarIcon,
   SparklesIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'

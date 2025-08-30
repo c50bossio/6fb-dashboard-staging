@@ -15,8 +15,7 @@ import {
   PlayIcon,
   PauseIcon,
   CurrencyDollarIcon,
-  ArrowTrendingDownIcon,
-  ArrowTrendingUpIcon
+  ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../SupabaseAuthProvider'

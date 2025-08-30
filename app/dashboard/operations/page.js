@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
   UserGroupIcon,
   ScissorsIcon,
@@ -9,7 +9,6 @@ import {
   CalendarIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   BellIcon,
   CogIcon,
@@ -271,7 +270,7 @@ export default function OperationsPage() {
                         : 'text-red-600'
                     }`}>
                       {getRevenueChange(operationalData?.todayRevenue || 0, operationalData?.yesterdayRevenue || 0) > 0 ? (
-                        <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                        <ChartBarIcon className="h-4 w-4 mr-1" />
                       ) : (
                         <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
                       )}

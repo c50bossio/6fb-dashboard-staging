@@ -6,8 +6,8 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useContext } from 'react'
-import { createClient } from '@/lib/supabase/browser-client'
-import supabaseService from '@/lib/supabase-service'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Try to import auth context - will work in dev mode
 let AuthContext
@@ -96,7 +96,6 @@ export function useBusinessContext() {
             subscription_tier: 'pro',
             subscription_status: 'active',
             role: 'SHOP_OWNER',
-            shop_id: 'dev-shop-123',
             barbershop_id: 'dev-shop-123'
           }
         }
@@ -117,14 +116,14 @@ export function useBusinessContext() {
       }
       
       // Get shop ID using service
-      const shopId = await supabaseService.getUserShopId(userId)
+      const shopId = await createClient().getUserShopId(userId)
       
       if (!shopId) {
         return null
       }
       
       // Get the barbershop details
-      const shop = await supabaseService.getBarbershop(shopId)
+      const shop = await createClient().getBarbershop(shopId)
       
       // Determine user role
       let role = 'CLIENT'
@@ -139,7 +138,7 @@ export function useBusinessContext() {
           permissions = ['manage_shop', 'manage_staff', 'view_analytics', 'manage_appointments']
         } else {
           // Check if user is staff
-          const client = supabaseService.client || getSupabaseClient()
+          const client = createClient().client || getSupabaseClient()
           if (!client) throw new Error('Supabase client not available')
           
           const { data: staffRecord } = await client
@@ -176,7 +175,7 @@ export function useBusinessContext() {
   useEffect(() => {
     const updateServiceContext = async () => {
       if (userQuery.data && shopContextQuery.data) {
-        await supabaseService.refreshCurrentUser()
+        await createClient().refreshCurrentUser()
       }
     }
     

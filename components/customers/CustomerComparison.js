@@ -18,7 +18,6 @@ import {
   EnvelopeIcon,
   MapPinIcon,
   StarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   MinusIcon,
   PlusIcon,
@@ -330,7 +329,7 @@ function ComparisonInsights({ customers, className = '' }) {
             </div>
             <div className="flex-shrink-0">
               {insight.trend === 'up' && (
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
+                <ChartBarIcon className="h-4 w-4 text-green-500" />
               )}
             </div>
           </div>

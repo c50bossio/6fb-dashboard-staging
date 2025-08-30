@@ -3,7 +3,7 @@
 import { CheckCircleIcon, XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { FaPercent, FaDollarSign, FaToggleOn, FaToggleOff } from 'react-icons/fa'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function BarberTipSettings({ barberId, barbershopId }) {
   const supabase = createClient()

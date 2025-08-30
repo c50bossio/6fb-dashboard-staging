@@ -4,7 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useEffect } from 'react'
 import { queryClient } from '@/lib/query-client'
-import supabaseService from '@/lib/supabase-service'
+import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 /**
  * React Query Provider with Supabase Service Integration
@@ -15,7 +15,7 @@ export function QueryProvider({ children }) {
     // Initialize Supabase service on app startup
     const initializeService = async () => {
       try {
-        await supabaseService.initialize()
+        await createServiceRoleClient().initialize()
       } catch (error) {
         console.error('Failed to initialize Supabase service:', error)
       }

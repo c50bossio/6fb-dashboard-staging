@@ -4,11 +4,11 @@ import { ChatBubbleBottomCenterTextIcon as QuoteIcon } from '@heroicons/react/24
 import { CheckBadgeIcon } from '@heroicons/react/24/outline'
 import { 
   StarIcon,
-  ArrowTrendingUpIcon,
   ClockIcon,
   UserGroupIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/solid'
+import { ChartBarIcon } from '@heroicons/react/24/outline'
 
 export default function BarberSuccessStories() {
   const stories = [
@@ -61,7 +61,7 @@ export default function BarberSuccessStories() {
       title: "From Invisible to Influential",
       before: "Lost in marketplace listings",
       after: "Top Google search result for 'barber near me'",
-      icon: ArrowTrendingUpIcon
+      icon: ChartBarIcon
     },
     {
       title: "From Chaos to Control",

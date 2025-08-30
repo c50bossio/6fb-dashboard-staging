@@ -6,7 +6,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useState, useEffect, useCallback } from 'react'
 import { logger } from '@/lib/logger'
-import supabaseService from '@/lib/supabase-service'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 const performanceLogger = logger.child('realtime-performance')
 
@@ -21,7 +21,7 @@ export function useRealtimePerformance(refreshInterval = 5000) {
   const metricsQuery = useQuery({
     queryKey: ['realtime-metrics'],
     queryFn: () => {
-      const subscriptionManager = supabaseService.getSubscriptionManager()
+      const subscriptionManager = createClient().getSubscriptionManager()
       return subscriptionManager.getMetrics()
     },
     refetchInterval: refreshInterval,
@@ -32,7 +32,7 @@ export function useRealtimePerformance(refreshInterval = 5000) {
   // Monitor connection status
   useEffect(() => {
     const interval = setInterval(() => {
-      const subscriptionManager = supabaseService.getSubscriptionManager()
+      const subscriptionManager = createClient().getSubscriptionManager()
       const isOnline = subscriptionManager.isOnline()
       const newStatus = isOnline ? 'connected' : 'disconnected'
       
@@ -132,7 +132,7 @@ export function useConnectionStatus() {
 
   useEffect(() => {
     const checkStatus = () => {
-      const subscriptionManager = supabaseService.getSubscriptionManager()
+      const subscriptionManager = createClient().getSubscriptionManager()
       const online = subscriptionManager.isOnline()
       
       if (online !== isOnline) {
@@ -172,7 +172,7 @@ export function useShopSubscriptionCount(shopId) {
     }
 
     const interval = setInterval(() => {
-      const subscriptionManager = supabaseService.getSubscriptionManager()
+      const subscriptionManager = createClient().getSubscriptionManager()
       const metrics = subscriptionManager.getMetrics()
       
       // Count subscriptions for this shop

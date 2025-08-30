@@ -22,12 +22,13 @@ import {
 import dynamic from 'next/dynamic'
 import QRCode from 'qrcode'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import AutoRefreshComponent from '../../../../components/calendar/AutoRefreshComponent'
 import CalendarFilters from '../../../../components/calendar/CalendarFilters'
 import CalendarViewSelector from '../../../../components/calendar/CalendarViewSelector'
 import RealtimeIndicator from '../../../../components/calendar/RealtimeIndicator'
 import RealtimeStatusIndicator from '../../../../components/calendar/RealtimeStatusIndicator'
 import EmptyBarberState from '../../../../components/customers/EmptyBarberState'
+import ErrorBoundary from '../../../../components/error-boundary/ErrorBoundary'
+import { Skeleton } from '../../../../components/ui/skeleton'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { useToast } from '../../../../components/ToastContainer'
 import { useBusinessContext } from '../../../../hooks/useBusinessContext'
@@ -52,12 +53,7 @@ const ProfessionalCalendar = dynamic(
   () => import('../../../../components/calendar/EnhancedProfessionalCalendar'), // Enhanced version with multiple views
   { 
     ssr: false,
-    loading: () => (
-      <div className="flex items-center justify-center h-[600px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
-        <p className="mt-4 text-gray-600">Loading Calendar...</p>
-      </div>
-    )
+    loading: () => <CalendarSkeleton />
   }
 )
 
@@ -89,6 +85,133 @@ const CancelConfirmationModal = dynamic(
   { ssr: false }
 )
 
+// Calendar Loading Skeleton Components
+const CalendarSkeleton = () => (
+  <div className="flex flex-col h-[700px]">
+    {/* Calendar Header Skeleton */}
+    <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center space-x-4">
+        <Skeleton className="h-10 w-32" /> {/* Title */}
+        <Skeleton className="h-8 w-8 rounded-full" /> {/* Previous button */}
+        <Skeleton className="h-8 w-8 rounded-full" /> {/* Next button */}
+      </div>
+      <div className="flex items-center space-x-2">
+        <Skeleton className="h-9 w-20" /> {/* View selector */}
+        <Skeleton className="h-9 w-24" /> {/* Today button */}
+      </div>
+    </div>
+    
+    {/* Calendar Grid Skeleton */}
+    <div className="flex-1 p-4">
+      <div className="grid grid-cols-7 gap-2 mb-4">
+        {/* Days of week headers */}
+        {Array.from({ length: 7 }).map((_, i) => (
+          <Skeleton key={i} className="h-8 w-full" />
+        ))}
+      </div>
+      
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7 gap-2">
+        {Array.from({ length: 35 }).map((_, i) => (
+          <div key={i} className="space-y-1">
+            <Skeleton className="h-6 w-8" /> {/* Day number */}
+            {Math.random() > 0.7 && <Skeleton className="h-16 w-full" />} {/* Some events */}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)
+
+const FiltersSkeleton = () => (
+  <div className="flex flex-wrap gap-2 p-4 bg-gray-50 border-b">
+    <Skeleton className="h-9 w-32" /> {/* Location filter */}
+    <Skeleton className="h-9 w-28" /> {/* Barber filter */}
+    <Skeleton className="h-9 w-24" /> {/* Status filter */}
+    <Skeleton className="h-9 w-20" /> {/* Clear button */}
+  </div>
+)
+
+const AppointmentModalSkeleton = () => (
+  <div className="space-y-4 p-4">
+    <div className="flex items-center justify-between">
+      <Skeleton className="h-6 w-40" /> {/* Title */}
+      <Skeleton className="h-8 w-8 rounded" /> {/* Close button */}
+    </div>
+    
+    <div className="space-y-3">
+      <div>
+        <Skeleton className="h-4 w-20 mb-1" /> {/* Field label */}
+        <Skeleton className="h-10 w-full" /> {/* Input field */}
+      </div>
+      <div>
+        <Skeleton className="h-4 w-24 mb-1" /> {/* Field label */}
+        <Skeleton className="h-10 w-full" /> {/* Input field */}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Skeleton className="h-4 w-16 mb-1" /> {/* Date label */}
+          <Skeleton className="h-10 w-full" /> {/* Date picker */}
+        </div>
+        <div>
+          <Skeleton className="h-4 w-16 mb-1" /> {/* Time label */}
+          <Skeleton className="h-10 w-full" /> {/* Time picker */}
+        </div>
+      </div>
+      <div>
+        <Skeleton className="h-4 w-20 mb-1" /> {/* Service label */}
+        <Skeleton className="h-24 w-full" /> {/* Service selector */}
+      </div>
+    </div>
+    
+    <div className="flex justify-end space-x-2 pt-4 border-t">
+      <Skeleton className="h-10 w-20" /> {/* Cancel button */}
+      <Skeleton className="h-10 w-32" /> {/* Save button */}
+    </div>
+  </div>
+)
+
+// Calendar Error Fallback with Retry
+const CalendarErrorFallback = (error, retry) => (
+  <div className="min-h-[600px] flex items-center justify-center bg-red-50 border border-red-200 rounded-lg p-8">
+    <div className="max-w-md text-center">
+      <div className="text-red-600 mb-4">
+        <svg className="mx-auto h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+      </div>
+      <h3 className="text-xl font-semibold text-gray-900 mb-2">Calendar Error</h3>
+      <p className="text-gray-600 mb-6">
+        The calendar encountered an error and needs to be reloaded. This could be due to a network issue or a temporary problem.
+      </p>
+      
+      <div className="space-y-3">
+        <button
+          onClick={retry}
+          className="w-full px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700 transition-colors font-medium"
+        >
+          Try Again
+        </button>
+        <button
+          onClick={() => window.location.reload()}
+          className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+        >
+          Reload Page
+        </button>
+      </div>
+      
+      <div className="mt-6 text-sm text-gray-500">
+        <p>If the problem persists:</p>
+        <ul className="mt-2 space-y-1">
+          <li>• Check your internet connection</li>
+          <li>• Clear your browser cache</li>
+          <li>• Contact support if the issue continues</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+)
+
 export default function CalendarPage() {
   // Get auth context
   const { user, profile, loading } = useAuth()
@@ -104,7 +227,7 @@ export default function CalendarPage() {
   // Get business context and permissions
   const { 
     businessContext, 
-    shopId, 
+    shopId: barbershopId, 
     permissions, 
     isLoading: businessContextLoading,
     role,
@@ -118,7 +241,7 @@ export default function CalendarPage() {
     staff: availableBarbers,
     isLoading: shopDataLoading,
     error: shopDataError 
-  } = useShopData(shopId, {
+  } = useShopData(barbershopId, {
     includeStaff: true,
     includeServices: false,
     includeCustomers: false,
@@ -129,7 +252,7 @@ export default function CalendarPage() {
   const { 
     data: activeStaff, 
     isLoading: staffLoading 
-  } = useActiveStaff(shopId)
+  } = useActiveStaff(barbershopId)
   
   const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState([])
@@ -163,6 +286,27 @@ export default function CalendarPage() {
   const [selectedLocations, setSelectedLocations] = useState([])
   const [selectedBarbers, setSelectedBarbers] = useState([])
   
+  // Ref to track timeout IDs for proper cleanup
+  const timeoutsRef = useRef(new Set())
+  
+  // Helper function to create managed timeouts that auto-cleanup
+  const createManagedTimeout = useCallback((callback, delay) => {
+    const timeoutId = setTimeout(() => {
+      timeoutsRef.current.delete(timeoutId)
+      callback()
+    }, delay)
+    timeoutsRef.current.add(timeoutId)
+    return timeoutId
+  }, [])
+  
+  // Cleanup all timeouts on component unmount
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId))
+      timeoutsRef.current.clear()
+    }
+  }, [])
+  
   // Computed values to replace GlobalDashboardContext
   const isMultiLocation = false // This shop system is single-location focused
   const viewMode = role === 'CLIENT' ? 'customer' : 'staff'
@@ -174,8 +318,7 @@ export default function CalendarPage() {
   const globalAvailableBarbers = availableBarbers || []
   const availableLocations = shop ? [shop] : []
   
-  // Use shopId from business context instead of separate state
-  const barbershopId = shopId
+  // Use barbershopId from business context directly
 
   // Helper functions to replace GlobalDashboardContext methods
   const getOptimalCalendarView = useCallback(() => {
@@ -188,14 +331,14 @@ export default function CalendarPage() {
   const getPageDefaults = useCallback(() => {
     return {
       view: getOptimalCalendarView(),
-      locations: shopId ? [shopId] : [],
+      locations: barbershopId ? [barbershopId] : [],
       barbers: [],
       filters: {
         status: 'all',
         dateRange: 'today'
       }
     }
-  }, [getOptimalCalendarView, shopId])
+  }, [getOptimalCalendarView, barbershopId])
 
   // Create contextual data structure for compatibility
   const contextualData = useMemo(() => {
@@ -208,21 +351,21 @@ export default function CalendarPage() {
         barbershop_id: staff.barbershop_id
       })),
       calendarEvents: [], // Events come from useRealtimeAppointments
-      selectedLocation: shopId
+      selectedLocation: barbershopId
     }
-  }, [activeStaff, availableBarbers, shopId])
+  }, [activeStaff, availableBarbers, barbershopId])
 
   const activeContext = useMemo(() => {
     if (!shop) return null
     
     return {
       type: 'shop',
-      locationId: shopId,
+      locationId: barbershopId,
       displayName: shop.name || 'Barbershop',
       data: shop
     }
-  }, [shop, shopId])
-  const [shopIdResolved, setShopIdResolved] = useState(false) // Track if shop ID has been properly resolved
+  }, [shop, barbershopId])
+  const [barbershopIdResolved, setBarbershopIdResolved] = useState(false) // Track if barbershop ID has been properly resolved
   
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBarber, setFilterBarber] = useState('all')
@@ -263,7 +406,8 @@ export default function CalendarPage() {
     lastUpdate = null,
     stats: realtimeStats = {},
     refresh: refreshAppointments = () => {},
-    log: websocketLog = []
+    log: websocketLog = [],
+    connectionAttempts = 0
   } = realtimeResult
   
   const diagnostics = useMemo(() => ({
@@ -275,8 +419,6 @@ export default function CalendarPage() {
     subscriptionStatusHistory: [],
     connected: realtimeStats?.connected || false
   }), [realtimeHookConnected, realtimeStats, realtimeErrorMsg])
-  
-  const connectionAttempts = 1 // V2 always connects on first attempt
 
   const handleViewChange = useCallback(async (newView) => {
     console.log('[Calendar] View changing from', selectedView, 'to', newView)
@@ -414,7 +556,7 @@ export default function CalendarPage() {
     console.log('[Calendar] Saved view preferences to Supabase:', { fullCalendarView, selectedView: newView })
     
     // Force calendar refresh to apply new filters
-    setTimeout(() => {
+    createManagedTimeout(() => {
       if (window.fullCalendarApi) {
         console.log('[Calendar] Refreshing calendar with new view filters')
         window.fullCalendarApi.refetchEvents()
@@ -422,7 +564,7 @@ export default function CalendarPage() {
       handleAutoRefresh()
     }, 100)
     
-}, [selectedView, user?.id, profile?.id, barbershopId, globalSelectedLocations, globalSelectedBarbers, updatePreference, handleAutoRefresh])
+}, [selectedView, user?.id, profile?.id, barbershopId, globalSelectedLocations, globalSelectedBarbers, updatePreference, handleAutoRefresh, createManagedTimeout])
   
   const handleLocationChange = useCallback((locationIds) => {
     // // Debug log removed for production
@@ -454,17 +596,17 @@ setSelectedLocations(locationIds)
   useEffect(() => {
     setMounted(true)
     
-    // Mark shop ID as resolved - allow calendar to work even without shopId
+    // Mark barbershop ID as resolved - allow calendar to work even without barbershopId
     // The calendar can still function with user's profile data
-    if (shopId) {
-      console.log('[Calendar] Shop ID from business context:', shopId)
+    if (barbershopId) {
+      console.log('[Calendar] Barbershop ID from business context:', barbershopId)
     } else if (profile?.id) {
-      console.log('[Calendar] No shop ID from business context, using profile:', profile.id)
+      console.log('[Calendar] No barbershop ID from business context, using profile:', profile.id)
     }
     
     // Always mark as resolved once we have a profile
     if (profile?.id) {
-      setShopIdResolved(true)
+      setBarbershopIdResolved(true)
     }
     
     const updateTime = () => {
@@ -478,23 +620,23 @@ setSelectedLocations(locationIds)
     setServices(DEFAULT_SERVICES)
     
     return () => clearInterval(timeInterval)
-  }, [shopId, profile?.id])
+  }, [barbershopId, profile?.id])
   
   // Load calendar data when context or legacy selections change
   // Initialize calendar data when business context loads
   useEffect(() => {
-    if (shopId && !contextLoading) {
-      console.log('[Calendar] Shop context loaded:', shopId)
+    if (barbershopId && !contextLoading) {
+      console.log('[Calendar] Shop context loaded:', barbershopId)
       
       // Initialize selected locations with current shop
       if (selectedLocations.length === 0) {
-        setSelectedLocations([shopId])
+        setSelectedLocations([barbershopId])
       }
       
       // Load calendar data
       loadCalendarData()
     }
-  }, [shopId, contextLoading, selectedLocations.length])
+  }, [barbershopId, contextLoading, selectedLocations.length, loadCalendarData])
 
   // Legacy effect for compatibility - now simplified
   useEffect(() => {
@@ -510,9 +652,9 @@ setSelectedLocations(locationIds)
       // Fallback to barbershopId if no global selections
       loadCalendarData()
     }
-  }, [activeContext, barbershopId, globalSelectedLocations, globalSelectedBarbers, contextualData])
+  }, [activeContext, barbershopId, globalSelectedLocations, globalSelectedBarbers, contextualData, loadCalendarData])
   
-  const loadCalendarData = async () => {
+  const loadCalendarData = useCallback(async () => {
     // Prefer contextual data if available
     if (contextualData?.availableBarbers?.length > 0) {
       console.log('📅 Using contextual barber data:', contextualData.availableBarbers.length)
@@ -628,22 +770,22 @@ setResources(barbersData)
       console.error('Error loading calendar data:', error)
       setResources(EMPTY_BARBER_PLACEHOLDER)
     }
-  }
+  }, [contextualData, barbershopId, contextualBarbershopId, globalSelectedLocations, generateQuickLinks, fetchServices, profile, user])
   
   // Create FullCalendar.io event sources following best practices
   const createEventSources = useMemo(() => {
     const eventSources = []
     
-    // Don't create event sources until shop ID is resolved
-    if (!shopIdResolved) {
-      console.log('[Calendar] Event sources not created - waiting for shop ID resolution')
+    // Don't create event sources until barbershop ID is resolved
+    if (!barbershopIdResolved) {
+      console.log('[Calendar] Event sources not created - waiting for barbershop ID resolution')
       return eventSources
     }
     
     console.log('[Calendar] Creating event sources with:', {
       selectedView,
       barbershopId,
-      shopIdResolved,
+      barbershopIdResolved,
       globalSelectedLocations: globalSelectedLocations?.length || 0
     })
     
@@ -659,8 +801,19 @@ setResources(barbersData)
               // FullCalendar automatically adds start, end, timeZone parameters
             }
           },
-          success: function(events) {
-            console.log('[Calendar Page] Event source success, received events:', events?.length || 0)
+          success: function(events, xhr) {
+            console.log('[Calendar Page] Multi-location event source success, received events:', events?.length || 0)
+            
+            // Log API optimization metadata if available
+            try {
+              const response = JSON.parse(xhr.responseText)
+              if (response?.meta?.optimization) {
+                console.log('[Calendar Page] API optimization info:', response.meta.optimization)
+              }
+            } catch (e) {
+              // Events might be returned directly, that's fine
+            }
+            
             if (events && events.length > 0) {
               console.log('[Calendar Page] First event:', events[0])
               const blockedEvents = events.filter(e => e.extendedProps?.is_blocked_time || e.title?.includes('🚫'))
@@ -713,8 +866,19 @@ setResources(barbersData)
               // FullCalendar automatically adds start, end, timeZone parameters
             }
           },
-          success: function(events) {
-            console.log('[Calendar Page] Event source success, received events:', events?.length || 0)
+          success: function(events, xhr) {
+            console.log('[Calendar Page] Single-location event source success, received events:', events?.length || 0)
+            
+            // Log API optimization metadata if available
+            try {
+              const response = JSON.parse(xhr.responseText)
+              if (response?.meta?.optimization) {
+                console.log('[Calendar Page] API optimization info:', response.meta.optimization)
+              }
+            } catch (e) {
+              // Events might be returned directly, that's fine
+            }
+            
             if (events && events.length > 0) {
               console.log('[Calendar Page] First event:', events[0])
               const blockedEvents = events.filter(e => e.extendedProps?.is_blocked_time || e.title?.includes('🚫'))
@@ -767,7 +931,7 @@ setResources(barbersData)
     }
     
     return eventSources
-  }, [selectedView, selectedLocations, barbershopId, showError, shopIdResolved])
+  }, [selectedView, selectedLocations, barbershopId, showError, barbershopIdResolved])
   
   // Create FullCalendar.io resources following best practices  
   const createResources = useMemo(() => {
@@ -817,7 +981,6 @@ setResources(barbersData)
       
       // Ensure we have at least one resource for blocked times to display
       if (mappedResources.length === 0 && (profile?.id || user?.id)) {
-        console.log('[Calendar Resources] No resources found, adding current user as default resource')
         const currentUserId = profile?.id || user?.id
         mappedResources.push({
           id: currentUserId,
@@ -835,6 +998,23 @@ setResources(barbersData)
     
     return []
   }, [selectedView, selectedLocations, globalAvailableBarbers, globalSelectedBarbers, resources, profile, user])
+  
+  // Debug resource loading and realtime connection
+  useEffect(() => {
+    console.log('[Calendar Debug] Complete status:', {
+      barbershopId,
+      contextualBarbershopId,
+      availableBarbers: availableBarbers?.length || 0,
+      activeStaff: activeStaff?.length || 0,
+      globalAvailableBarbers: globalAvailableBarbers.length,
+      shopDataLoading,
+      staffLoading,
+      shopDataError: shopDataError?.message,
+      realtimeConnected: realtimeHookConnected,
+      realtimeError: realtimeErrorMsg,
+      appointmentsCount: realtimeAppointments?.length || 0
+    })
+  }, [barbershopId, contextualBarbershopId, availableBarbers, activeStaff, globalAvailableBarbers, shopDataLoading, staffLoading, shopDataError, realtimeHookConnected, realtimeErrorMsg, realtimeAppointments])
   
   // Apply filters to calendar events
   const applyFiltersToEvents = (filters) => {
@@ -968,17 +1148,15 @@ setResources(barbersData)
     // Use the refresh function from useRealtimeAppointments hook
     if (refreshAppointments) {
       refreshAppointments()
-      console.log('Calendar refresh triggered:', new Date().toLocaleTimeString())
     }
     
     // Force FullCalendar to refetch events
     if (window.fullCalendarApi) {
-      console.log('Forcing FullCalendar refetch...')
       window.fullCalendarApi.refetchEvents()
     }
   }, [refreshAppointments])
 
-  const fetchServices = async () => {
+  const fetchServices = useCallback(async () => {
     try {
       const response = await fetch('/api/calendar/services')
       
@@ -988,7 +1166,7 @@ setResources(barbersData)
         
         if (response.status === 404) {
           // // Debug log removed for production
-} else if (response.status === 500) {
+        } else if (response.status === 500) {
           console.error('Services API server error - check backend logs')
         }
         
@@ -1000,10 +1178,10 @@ setResources(barbersData)
 
       if (result.services?.length) {
         // // Debug log removed for production
-setServices(result.services)
+        setServices(result.services)
       } else {
         // // Debug log removed for production
-setServices(DEFAULT_SERVICES)
+        setServices(DEFAULT_SERVICES)
       }
     } catch (error) {
       console.error('Error fetching services:', error)
@@ -1012,11 +1190,11 @@ setServices(DEFAULT_SERVICES)
       }
       setServices(DEFAULT_SERVICES)
     }
-  }
+  }, [])
 
   // Legacy fetchRealBarbers function removed - now handled by loadCalendarData()
 
-  const generateQuickLinks = (barberResources) => {
+  const generateQuickLinks = useCallback((barberResources) => {
     const baseUrl = typeof window !== 'undefined' && window.location ? window.location.origin : 'https://6fb-ai.com'
     const QuickLinks = [
       {
@@ -1049,7 +1227,7 @@ setServices(DEFAULT_SERVICES)
     ]
     
     setQuickLinks(QuickLinks)
-  }
+  }, [resources])
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -1411,11 +1589,8 @@ setServices(DEFAULT_SERVICES)
         window.fullCalendarApi.addEvent(calendarEvent)
       }
       
-      // Schedule background refresh to ensure consistency with database
-      setTimeout(() => {
-        console.log('Refreshing calendar after block creation delay...')
-        handleAutoRefresh()
-        
+      // Refresh calendar after database commit
+      createManagedTimeout(() => {
         if (window.fullCalendarApi) {
           window.fullCalendarApi.refetchEvents()
         }
@@ -1491,16 +1666,9 @@ setServices(DEFAULT_SERVICES)
       // Close modal
       setShowAppointmentModal(false)
 
-      // Schedule background refresh to ensure consistency with database
-      setTimeout(() => {
-        console.log('Triggering calendar refresh after appointment save delay...')
-        
-        // Refetch events from server (FullCalendar.io best practice)
-        handleAutoRefresh()
-        
-        // Also try direct FullCalendar refresh
+      // Refresh calendar after database commit
+      createManagedTimeout(() => {
         if (window.fullCalendarApi) {
-          console.log('Forcing FullCalendar to refetch all event sources')
           window.fullCalendarApi.refetchEvents()
         }
       }, 1500) // Wait 1.5 seconds to ensure backend has committed
@@ -1598,7 +1766,7 @@ setServices(DEFAULT_SERVICES)
       }
       
       // Then refetch all events to ensure consistency
-      setTimeout(() => {
+      createManagedTimeout(() => {
         window.fullCalendarApi.refetchEvents()
       }, 500)
     }
@@ -1669,17 +1837,17 @@ setServices(DEFAULT_SERVICES)
     }
   }, [])
 
-  const copyToClipboard = async (text, key) => {
+  const copyToClipboard = useCallback(async (text, key) => {
     if (typeof window === 'undefined' || !navigator.clipboard) return
     
     try {
       await navigator.clipboard.writeText(text)
-      setCopied({ ...copied, [key]: true })
-      setTimeout(() => setCopied({ ...copied, [key]: false }), 2000)
+      setCopied(prev => ({ ...prev, [key]: true }))
+      createManagedTimeout(() => setCopied(prev => ({ ...prev, [key]: false })), 2000)
     } catch (err) {
       console.error('Failed to copy:', err)
     }
-  }
+  }, [createManagedTimeout])
 
   const downloadQRCode = () => {
     if (qrCodeUrl && selectedResource) {
@@ -1692,10 +1860,10 @@ setServices(DEFAULT_SERVICES)
 
   if (!mounted) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading calendar...</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="p-6">
+          <FiltersSkeleton />
+          <CalendarSkeleton />
         </div>
       </div>
     )
@@ -2036,7 +2204,7 @@ setServices(DEFAULT_SERVICES)
       {/* Calendar Container */}
       <div className="px-6 pb-6">
         <div className="bg-white rounded-lg shadow-lg p-4" style={{ minHeight: '700px' }}>
-          {!shopIdResolved ? (
+          {!barbershopIdResolved ? (
             <div className="flex items-center justify-center h-[600px]">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
@@ -2044,14 +2212,15 @@ setServices(DEFAULT_SERVICES)
               </div>
             </div>
           ) : (
-          <ProfessionalCalendar
-            // Resources removed - premium feature not available
-            eventSources={createEventSources} // Use FullCalendar.io native event sources with error handling
-            currentView={currentCalendarView}
-            onViewChange={(view) => setCurrentCalendarView(view)}
-            onEventClick={handleEventClick}
-            onSlotClick={handleDateSelect}
-            onEventDrop={(dropInfo) => {
+            <ErrorBoundary fallback={CalendarErrorFallback}>
+              <ProfessionalCalendar
+                // Resources removed - premium feature not available
+                eventSources={createEventSources} // Use FullCalendar.io native event sources with error handling
+                currentView={currentCalendarView}
+                onViewChange={(view) => setCurrentCalendarView(view)}
+                onEventClick={handleEventClick}
+                onSlotClick={handleDateSelect}
+                onEventDrop={(dropInfo) => {
 
               const appointment = {
                 id: dropInfo.event.id,
@@ -2080,6 +2249,7 @@ setServices(DEFAULT_SERVICES)
             }}
             height="650px"
           />
+            </ErrorBoundary>
           )}
         </div>
 
@@ -2277,7 +2447,7 @@ setServices(DEFAULT_SERVICES)
                 {diagnostics.subscriptionStatus || 'unknown'}
               </div>
               <div className="text-gray-400 mt-1">
-                Attempts: {connectionAttempts}
+                Attempts: {connectionAttempts || 1}
               </div>
               <div className="text-gray-400">
                 Channel: {diagnostics.channelStatus || 'unknown'}
@@ -2371,13 +2541,6 @@ setServices(DEFAULT_SERVICES)
         </div>
       </div>
 
-      {/* Auto-refresh component - Only when WebSocket V2 is not connected */}
-      {!realtimeHookConnected && (
-        <AutoRefreshComponent 
-          onRefresh={handleAutoRefresh}
-          intervalMs={10000} // Check every 10 seconds as fallback
-        />
-      )}
       
       {/* Block Time Modal - Only for editing existing blocks */}
       <BlockTimeModal

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@/lib/supabase/server-client'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Check if Stripe is properly configured
 const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -24,7 +24,7 @@ if (isStripeConfigured) {
 
 export async function GET(request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabaseClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -87,7 +87,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabaseClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -161,7 +161,7 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabaseClient()
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     

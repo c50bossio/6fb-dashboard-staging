@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server-client'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export async function POST(request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabaseClient()
     
     // Attempt to sign out on the server side
     const { error } = await supabase.auth.signOut()

@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { AcuityAdapter } from '@/lib/integrations/adapters/acuity-adapter'
 import { BooksyAdapter } from '@/lib/integrations/adapters/booksy-adapter'
+import { isDefined, isEmpty } from '@/lib/validation'
 import { SchedulicityAdapter } from '@/lib/integrations/adapters/schedulicity-adapter'
 import { SquareAdapter } from '@/lib/integrations/adapters/square-adapter'
 import { TrafftAdapter } from '@/lib/integrations/adapters/trafft-adapter'
@@ -515,7 +516,7 @@ async function mergeRecords(entityType, existingId, incomingData) {
   // Merge data (preserve existing non-null values)
   const merged = { ...existing }
   for (const [key, value] of Object.entries(incomingData)) {
-    if (value !== null && value !== undefined && value !== '') {
+    if (isDefined(value) && !isEmpty(value)) {
       if (!merged[key] || merged[key] === '') {
         merged[key] = value
       }

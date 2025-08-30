@@ -262,35 +262,26 @@ export async function POST(request) {
       price: totalAmount,
       status: 'confirmed',
       
-      // Customer information
+      // Customer information (matching actual table columns)
       customer_name: bookingData.customer_name.trim(),
       customer_phone: bookingData.customer_phone?.trim() || null,
       customer_email: bookingData.customer_email?.trim() || null,
       notes: bookingData.customer_notes || null,
       
-      // Add-ons as JSON if present
-      add_ons: bookingData.addOns.length > 0 ? JSON.stringify(bookingData.addOns) : null,
-      
-      // Preferences
-      sms_opt_in: bookingData.sms_opt_in,
-      email_opt_in: bookingData.email_opt_in,
-      
-      // Public booking metadata
+      // Public booking metadata (matching actual table columns)
       customer_id: null,
       barber_id: bookingData.barber_id || null,
       barber_name: null,
-      source: bookingData.source,
       is_test: false,
-      is_recurring: false
+      is_recurring: false,
+      recurring_pattern: null
     }
 
+    // Insert booking (separate query as per CLAUDE.md guidance)
     const { data: booking, error: bookingError } = await supabase
       .from('bookings')
       .insert([bookingInsert])
-      .select(`
-        *,
-        barbershop:barbershops(name, address, phone, brand_colors)
-      `)
+      .select('*')
       .single()
 
     if (bookingError) {
@@ -303,6 +294,16 @@ export async function POST(request) {
         details: bookingError.message
       }, { status: 500 })
     }
+
+    // Get barbershop data separately and merge (as per CLAUDE.md guidance)
+    const { data: barbershopDetails } = await supabase
+      .from('barbershops')
+      .select('name, address, phone, brand_colors')
+      .eq('id', bookingData.barbershop_id)
+      .single()
+
+    // Merge data in JavaScript
+    booking.barbershop = barbershopDetails
 
     // Send enhanced notifications (async, don't wait)
     sendEnhancedNotifications(booking, barbershop).catch(console.error)

@@ -3,7 +3,6 @@
 import { 
   ChartBarIcon, 
   ExclamationTriangleIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   UserGroupIcon,
   BoltIcon,
@@ -133,7 +132,7 @@ const CLVTrend = React.memo(({ current, predicted, trend }) => {
           {trend && (
             <div className="flex items-center">
               {trend > 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
+                <ChartBarIcon className="h-4 w-4 text-green-500" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 text-red-500" />
               )}
@@ -148,7 +147,7 @@ const CLVTrend = React.memo(({ current, predicted, trend }) => {
   )
 })
 
-export default function CustomerIntelligenceDashboardOptimized() {
+export default function CustomerIntelligenceDashboard() {
   const { user, profile } = useAuth()
   
   // State management with reduced initial loads

@@ -25,7 +25,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/UnifiedInput'
-import { createClient } from '@/lib/supabase/browser-client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 /**
  * CIN7 Integration Manager Component

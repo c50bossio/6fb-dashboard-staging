@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarIcon, DollarSignIcon, UsersIcon, ArrowTrendingUpIcon } from 'lucide-react'
+import { CalendarIcon, DollarSignIcon, UsersIcon, BarChart3Icon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/Button'
@@ -158,7 +158,7 @@ export default function PayrollPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">YTD Earned</CardTitle>
-              <ArrowTrendingUpIcon className="h-4 w-4 text-muted-foreground" />
+              <ChartBarIcon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">

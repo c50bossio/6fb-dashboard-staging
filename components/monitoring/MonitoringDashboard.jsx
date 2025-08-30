@@ -1,13 +1,12 @@
 'use client'
 
-import { 
-  ChartBarIcon, 
+import {
+  ChartBarIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
   ServerIcon,
   CpuChipIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
 import {
@@ -277,7 +276,7 @@ export default function MonitoringDashboard() {
           <div className="mt-4 flex items-center justify-between text-sm">
             <span className="text-gray-500">Total: 45.2k</span>
             <span className="flex items-center text-green-500">
-              <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+              <ChartBarIcon className="h-4 w-4 mr-1" />
               +18%
             </span>
           </div>

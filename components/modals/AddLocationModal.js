@@ -3,7 +3,7 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
 import { Fragment, useState } from 'react'
-import { createClient } from '@/lib/supabase/browser-client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import { useAuth } from '../SupabaseAuthProvider'
 

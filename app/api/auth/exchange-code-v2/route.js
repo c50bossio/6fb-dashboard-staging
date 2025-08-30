@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server-client'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export async function POST(request) {
   try {
@@ -13,7 +13,7 @@ export async function POST(request) {
     
     // Try using the server-side Supabase client
     try {
-      const supabase = await createClient()
+      const supabase = await createServerSupabaseClient()
       
       // Use the server client to exchange the code
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)

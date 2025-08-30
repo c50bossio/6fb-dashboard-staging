@@ -12,7 +12,6 @@ import {
   CogIcon,
   SparklesIcon,
   MapPinIcon,
-  ArrowTrendingUpIcon,
   PresentationChartLineIcon,
   DevicePhoneMobileIcon,
   MegaphoneIcon,
@@ -136,7 +135,7 @@ export const BARBERSHOP_NAVIGATION = [
       {
         name: 'Performance',
         href: '/dashboard/performance',
-        icon: ArrowTrendingUpIcon
+        icon: ChartBarIcon
       }
     ]
   },
@@ -170,7 +169,7 @@ export const BARBERSHOP_NAVIGATION = [
       {
         name: 'Forecasting',
         href: '/dashboard/forecasting',
-        icon: ArrowTrendingUpIcon,
+        icon: ChartBarIcon,
         badge: 'Predict'
       },
       {

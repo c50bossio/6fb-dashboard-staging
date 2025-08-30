@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase-simple'
+import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export async function GET() {
   try {
-    const supabase = createServiceClient()
+    const supabase = await createServiceRoleClient()
     
     // Test what the ViewSwitcher would see
     

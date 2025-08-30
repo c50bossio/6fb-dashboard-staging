@@ -787,19 +787,22 @@ export default function AppointmentBookingModal({
       
       const blockData = {
         barber_id: formData.barber_id || selectedSlot?.barberId || barbers?.[0]?.id,
-        start_time: startDate.toISOString(),
-        end_time: endDate.toISOString(),
+        date: startDate.toISOString().split('T')[0], // Extract date part (YYYY-MM-DD)
+        start_time: startDate.toTimeString().slice(0, 5), // Extract time part (HH:MM)
+        end_time: endDate.toTimeString().slice(0, 5), // Extract time part (HH:MM)
         reason: blockReason || 'Time blocked',
         shop_id: barbershopId,
         barbershop_id: barbershopId
       }
       
       console.log('Sending block data to API:', {
-        shop_id: blockData.shop_id,
-        barber_id: blockData.barber_id,
+        date: blockData.date,
         start_time: blockData.start_time,
-        status: blockData.status,
-        barbershopId_prop: barbershopId
+        end_time: blockData.end_time,
+        barber_id: blockData.barber_id,
+        reason: blockData.reason,
+        shop_id: blockData.shop_id,
+        barbershop_id: blockData.barbershop_id
       })
 
       const response = await fetch(`/api/calendar/appointments?action=block`, {

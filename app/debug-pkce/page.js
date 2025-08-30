@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/browser-client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function DebugPKCEPage() {
   const [logs, setLogs] = useState([])

@@ -1,11 +1,10 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
   UserGroupIcon,
   CursorArrowRaysIcon,
   ClockIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   EyeIcon,
   HeartIcon,
@@ -38,7 +37,7 @@ import {
 import { useState, useEffect, useMemo } from 'react'
 import { Line, Bar, Doughnut, Radar, Scatter } from 'react-chartjs-2'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 ChartJS.register(
   CategoryScale,
@@ -69,7 +68,7 @@ const MetricCard = ({ title, value, change, changeType, icon: Icon, format = 'nu
     return 'text-gray-600'
   }
 
-  const TrendIcon = changeType === 'positive' ? ArrowTrendingUpIcon : 
+  const TrendIcon = changeType === 'positive' ? ChartBarIcon : 
                    changeType === 'negative' ? ArrowTrendingDownIcon : ClockIcon
 
   return (
@@ -790,7 +789,7 @@ export default function AdvancedAnalyticsDashboard() {
               </div>
               
               <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
-                <ArrowTrendingUpIcon className="w-5 h-5 text-blue-600 mt-0.5" />
+                <ChartBarIcon className="w-5 h-5 text-blue-600 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-blue-900">Conversion Rate Improvement</p>
                   <p className="text-sm text-blue-700">24.5% conversion rate exceeds industry average by 8.2%</p>

@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import supabaseService from '@/lib/supabase-service'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Query keys for consistent caching
 export const customerKeys = {
@@ -33,7 +33,7 @@ export function useCustomers(shopId, options = {}) {
 
   return useQuery({
     queryKey,
-    queryFn: () => supabaseService.getCustomers(shopId, {
+    queryFn: () => createClient().getCustomers(shopId, {
       search,
       limit,
       offset
@@ -61,7 +61,7 @@ export function useCustomerSearch(shopId, searchTerm, debounceMs = 300) {
 
   return useQuery({
     queryKey: customerKeys.search(shopId, debouncedSearch),
-    queryFn: () => supabaseService.getCustomers(shopId, {
+    queryFn: () => createClient().getCustomers(shopId, {
       search: debouncedSearch,
       limit: 20
     }),
@@ -76,7 +76,7 @@ export function useCustomerSearch(shopId, searchTerm, debounceMs = 300) {
 export function useAllCustomers(shopId) {
   return useQuery({
     queryKey: customerKeys.byShop(shopId),
-    queryFn: () => supabaseService.getCustomers(shopId, { limit: 10000 }), // Large limit
+    queryFn: () => createClient().getCustomers(shopId, { limit: 10000 }), // Large limit
     enabled: !!shopId,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -90,7 +90,7 @@ export function useCustomerCount(shopId) {
   return useQuery({
     queryKey: ['customers', 'count', shopId],
     queryFn: async () => {
-      const customers = await supabaseService.getCustomers(shopId, { limit: 10000 })
+      const customers = await createClient().getCustomers(shopId, { limit: 10000 })
       return customers.length
     },
     enabled: !!shopId,
@@ -105,7 +105,7 @@ export function useCreateCustomer() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (customerData) => supabaseService.createCustomer(customerData),
+    mutationFn: (customerData) => createClient().createCustomer(customerData),
     onSuccess: (newCustomer) => {
       toast.success('Customer created successfully')
       
@@ -134,7 +134,7 @@ export function useUpdateCustomer() {
 
   return useMutation({
     mutationFn: ({ customerId, updates }) => 
-      supabaseService.updateCustomer(customerId, updates),
+      createClient().updateCustomer(customerId, updates),
     onSuccess: (updatedCustomer) => {
       toast.success('Customer updated successfully')
       
@@ -159,7 +159,7 @@ export function useRealtimeCustomers(shopId) {
   useEffect(() => {
     if (!shopId) return
 
-    const unsubscribe = supabaseService.subscribeToChanges(
+    const unsubscribe = createClient().subscribeToChanges(
       'customers',
       { barbershop_id: shopId },
       (payload) => {
@@ -279,7 +279,7 @@ export function useFrequentCustomers(shopId, limit = 10) {
     queryFn: async () => {
       // This would need customer appointment counts
       // For now, return recent customers
-      const customers = await supabaseService.getCustomers(shopId, { 
+      const customers = await createClient().getCustomers(shopId, { 
         limit,
         // Would need to join with appointments for frequency
       })
@@ -297,7 +297,7 @@ export function useCustomerLoyaltyStats(shopId) {
   return useQuery({
     queryKey: ['customers', 'loyalty-stats', shopId],
     queryFn: async () => {
-      const customers = await supabaseService.getCustomers(shopId, { limit: 10000 })
+      const customers = await createClient().getCustomers(shopId, { limit: 10000 })
       
       const totalPoints = customers.reduce((sum, customer) => 
         sum + (customer.loyalty_points || 0), 0

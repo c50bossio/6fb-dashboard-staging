@@ -13,7 +13,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Fragment } from 'react'
 
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import unifiedStaffService from '@/lib/unified-staff-service'
 
 const daysOfWeek = [

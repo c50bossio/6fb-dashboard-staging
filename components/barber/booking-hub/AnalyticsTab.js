@@ -2,7 +2,6 @@
 
 import { 
   ChartBarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   EyeIcon,
   CursorArrowRaysIcon,
@@ -126,7 +125,7 @@ export default function AnalyticsTab() {
             </div>
             <div className="flex items-center gap-1 text-sm">
               {analyticsData.trends.views.direction === 'up' ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
+                <ChartBarIcon className="h-4 w-4 text-green-600" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
               )}
@@ -148,7 +147,7 @@ export default function AnalyticsTab() {
             </div>
             <div className="flex items-center gap-1 text-sm">
               {analyticsData.trends.clicks.direction === 'up' ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
+                <ChartBarIcon className="h-4 w-4 text-green-600" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
               )}
@@ -170,7 +169,7 @@ export default function AnalyticsTab() {
             </div>
             <div className="flex items-center gap-1 text-sm">
               {analyticsData.trends.bookings.direction === 'up' ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
+                <ChartBarIcon className="h-4 w-4 text-green-600" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
               )}
@@ -192,7 +191,7 @@ export default function AnalyticsTab() {
             </div>
             <div className="flex items-center gap-1 text-sm">
               {analyticsData.trends.revenue.direction === 'up' ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-600" />
+                <ChartBarIcon className="h-4 w-4 text-green-600" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 text-red-600" />
               )}

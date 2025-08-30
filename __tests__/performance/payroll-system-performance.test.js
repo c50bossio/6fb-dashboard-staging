@@ -76,7 +76,7 @@ describe('Payroll System Performance Tests', () => {
       const processingTime = performance.getEntriesByName('webhook_single_process')[0].duration
       expect(processingTime).toBeLessThan(200) // Under 200ms
 
-      }ms`)
+      console.log(`Single webhook processing time: ${processingTime.toFixed(2)}ms`)
     })
 
     it('should maintain performance under concurrent webhook load', async () => {
@@ -114,8 +114,8 @@ describe('Payroll System Performance Tests', () => {
       expect(averageTime).toBeLessThan(500) // Average under 500ms
       expect(totalTime).toBeLessThan(10000) // Total under 10 seconds
 
-      }ms`)
-      }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
+      console.log(`Processing time: ${processingTime}ms`)
     })
 
     it('should handle webhook bursts without degradation', async () => {
@@ -289,7 +289,7 @@ describe('Payroll System Performance Tests', () => {
         expect(queryTime).toBeLessThan(200) // Under 200ms for large datasets
         expect(result.data).toBeDefined()
 
-        }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
       }
     })
 
@@ -461,8 +461,8 @@ describe('Payroll System Performance Tests', () => {
       expect(avgPerCalculation).toBeLessThan(5) // Under 5ms per calculation in bulk
       expect(bulkTime).toBeLessThan(30000) // Under 30 seconds total
 
-      }ms`)
-      }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
+      console.log(`Processing time: ${processingTime}ms`)
     })
   })
 
@@ -569,7 +569,7 @@ describe('Payroll System Performance Tests', () => {
       expect(successfulExports).toBeGreaterThanOrEqual(4) // At least 4/5 should succeed
       expect(avgExportTime).toBeLessThan(10000) // Under 10s average
 
-      }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
     })
   })
 
@@ -722,7 +722,7 @@ describe('Payroll System Performance Tests', () => {
       expect(successfulNotifications).toBeGreaterThanOrEqual(90) // 90% delivery success
       expect(avgNotificationTime).toBeLessThan(20) // Under 20ms per notification
 
-      }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
     })
   })
 

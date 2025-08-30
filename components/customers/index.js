@@ -1,9 +1,8 @@
 // Customer Management Components
 // Comprehensive customer intelligence and management tools for barbershop platform
 
-// Core Customer Components
-export { default as CustomerIntelligenceDashboard } from './CustomerIntelligenceDashboard'
-export { default as CustomerIntelligenceDashboardOptimized } from './CustomerIntelligenceDashboardOptimized'
+// Core Customer Components  
+export { default as CustomerIntelligenceDashboard } from './CustomerIntelligenceDashboardOptimized'
 export { default as IntelligenceDashboardEmptyState } from './IntelligenceDashboardEmptyState'
 export { default as CustomerJourneyVisualizer } from './CustomerJourneyVisualizer'
 export { default as SegmentBuilder } from './SegmentBuilder'

@@ -25,7 +25,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import ConfirmationDialog, { SaveChangesDialog, DiscardChangesDialog } from '@/components/ui/ConfirmationDialog'
 import ImageUpload, { uploadImageToService } from '@/components/ui/ImageUpload'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getTenant } from '@/lib/tenant-resolver-client'
 
 export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {

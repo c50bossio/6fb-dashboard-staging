@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { queryKeys } from '@/lib/query-client'
-import supabaseService from '@/lib/supabase-service'
+import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 /**
  * Fetch appointments for a barbershop
@@ -16,10 +16,10 @@ export function useAppointments(shopId, options = {}) {
     queryKey: queryKeys.appointments.byShop(shopId),
     queryFn: async () => {
       // Ensure service is initialized
-      if (!supabaseService.isReady()) {
-        await supabaseService.initialize()
+      if (!createServiceRoleClient().isReady()) {
+        await createServiceRoleClient().initialize()
       }
-      return supabaseService.getAppointments(shopId, options)
+      return createServiceRoleClient().getAppointments(shopId, options)
     },
     enabled: !!shopId,
     staleTime: 2 * 60 * 1000, // Appointments change frequently - 2 minutes
@@ -40,8 +40,8 @@ export function useRealtimeAppointments(shopId, options = {}) {
     
     // Ensure service is initialized before subscribing
     const setupSubscription = async () => {
-      if (!supabaseService.isReady()) {
-        await supabaseService.initialize()
+      if (!createServiceRoleClient().isReady()) {
+        await createServiceRoleClient().initialize()
       }
     }
     
@@ -53,7 +53,7 @@ export function useRealtimeAppointments(shopId, options = {}) {
     const unsubscribe = () => {} // Temporarily disabled
     
     /* Will re-enable when auth context is available:
-    const unsubscribe = supabaseService.subscribeToChanges(
+    const unsubscribe = createServiceRoleClient().subscribeToChanges(
       'appointments',
       { barbershop_id: shopId },
       (payload) => {
@@ -105,10 +105,10 @@ export function useAppointmentsByDate(shopId, date) {
     queryKey: queryKeys.appointments.byDate(shopId, date),
     queryFn: async () => {
       // Ensure service is initialized
-      if (!supabaseService.isReady()) {
-        await supabaseService.initialize()
+      if (!createServiceRoleClient().isReady()) {
+        await createServiceRoleClient().initialize()
       }
-      return supabaseService.getAppointments(shopId, {
+      return createServiceRoleClient().getAppointments(shopId, {
         startDate: date,
         endDate: date,
       })
@@ -126,7 +126,7 @@ export function useCreateAppointment() {
   
   return useMutation({
     mutationFn: (appointmentData) => 
-      supabaseService.createAppointment(appointmentData),
+      createServiceRoleClient().createAppointment(appointmentData),
     
     // Optimistic update
     onMutate: async (newAppointment) => {
@@ -185,7 +185,7 @@ export function useUpdateAppointment() {
   
   return useMutation({
     mutationFn: ({ appointmentId, updates }) => 
-      supabaseService.updateAppointment(appointmentId, updates),
+      createServiceRoleClient().updateAppointment(appointmentId, updates),
     
     onMutate: async ({ appointmentId, updates, barbershop_id }) => {
       await queryClient.cancelQueries({ 
@@ -252,7 +252,7 @@ export function useDeleteAppointment() {
   
   return useMutation({
     mutationFn: (appointmentId) => 
-      supabaseService.deleteAppointment(appointmentId),
+      createServiceRoleClient().deleteAppointment(appointmentId),
     
     onSuccess: (data, appointmentId) => {
       // Invalidate all appointment queries
@@ -274,7 +274,7 @@ export function usePrefetchAppointments() {
       queryKey: date 
         ? queryKeys.appointments.byDate(shopId, date)
         : queryKeys.appointments.byShop(shopId),
-      queryFn: () => supabaseService.getAppointments(shopId, {
+      queryFn: () => createServiceRoleClient().getAppointments(shopId, {
         startDate: date,
         endDate: date,
       }),

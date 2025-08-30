@@ -38,7 +38,6 @@ import {
 import { isTier } from '@/lib/subscription-tiers'
 import { 
   CustomerIntelligenceDashboard,
-  CustomerIntelligenceDashboardOptimized,
   CustomerJourneyVisualizer, 
   SegmentBuilder, 
   CustomerProfileEnhanced, 
@@ -308,7 +307,7 @@ function CustomersPageContent() {
       id: 'intelligence',
       label: 'Intelligence Dashboard',
       icon: ChartBarIcon,
-      component: () => <CustomerIntelligenceDashboardOptimized />
+      component: () => <CustomerIntelligenceDashboard />
     },
     {
       id: 'customers',

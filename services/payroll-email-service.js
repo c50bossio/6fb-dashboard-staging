@@ -5,7 +5,7 @@
  */
 
 import sgMail from '@sendgrid/mail'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export class PayrollEmailService {
   constructor() {

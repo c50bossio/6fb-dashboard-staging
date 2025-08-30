@@ -6,7 +6,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import supabaseService from '@/lib/supabase-service'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useAppointmentsWithRealtime } from './useAppointments'
 import { useCustomersWithRealtime } from './useCustomersQuery'
 import { useServices } from './useServicesQuery'
@@ -27,7 +27,7 @@ export function useShopData(shopId, options = {}) {
   // Core shop information
   const shopQuery = useQuery({
     queryKey: ['barbershop', shopId],
-    queryFn: () => supabaseService.getBarbershop(shopId),
+    queryFn: () => createClient().getBarbershop(shopId),
     enabled: !!shopId,
     staleTime: 10 * 60 * 1000, // 10 minutes
   })
@@ -35,7 +35,7 @@ export function useShopData(shopId, options = {}) {
   // Business hours
   const businessHoursQuery = useQuery({
     queryKey: ['business-hours', shopId],
-    queryFn: () => supabaseService.getBusinessHours(shopId),
+    queryFn: () => createClient().getBusinessHours(shopId),
     enabled: !!shopId,
     staleTime: 30 * 60 * 1000, // 30 minutes
   })
@@ -43,7 +43,7 @@ export function useShopData(shopId, options = {}) {
   // Dashboard metrics
   const metricsQuery = useQuery({
     queryKey: ['dashboard-metrics', shopId],
-    queryFn: () => supabaseService.getDashboardMetrics(shopId, appointmentDateRange),
+    queryFn: () => createClient().getDashboardMetrics(shopId, appointmentDateRange),
     enabled: !!shopId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
@@ -228,7 +228,7 @@ export function useShopDashboard(shopId) {
  * Automatically gets the shop ID from the service
  */
 export function useCurrentShop() {
-  const currentShopId = supabaseService.getCurrentShopId()
+  const currentShopId = createClient().getCurrentShopId()
   
   return useShopData(currentShopId, {
     includeAppointments: true,

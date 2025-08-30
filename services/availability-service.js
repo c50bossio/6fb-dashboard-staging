@@ -4,7 +4,7 @@
  * Production-ready for real barbershop operations
  */
 
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 class AvailabilityService {
   constructor() {

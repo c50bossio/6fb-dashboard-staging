@@ -259,13 +259,8 @@ export default function SegmentBuilder() {
 
     const fetchSegments = async () => {
       try {
-        const baseUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://your-api-domain.com'
-          : 'http://localhost:8001'
-
-        const token = await user.getIdToken()
-        const response = await fetch(`${baseUrl}/customer-segments`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const response = await fetch(`/api/customer-segments?barbershop_id=${profile.barbershop_id || profile.shop_id}`, {
+          credentials: 'include'
         })
 
         if (response.ok) {
@@ -308,27 +303,17 @@ export default function SegmentBuilder() {
 
     try {
       setPreviewLoading(true)
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://your-api-domain.com'
-        : 'http://localhost:8001'
-
-      const token = await user.getIdToken()
-      
       const segmentData = {
-        segment_name: segmentName || 'Preview Segment',
-        segment_type: segmentType,
-        segmentation_rules: {
-          conditions: validConditions,
-          logic: 'AND' // Can be made configurable
-        }
+        barbershop_id: profile.barbershop_id || profile.shop_id,
+        conditions: validConditions
       }
 
-      const response = await fetch(`${baseUrl}/customer-segments/preview`, {
+      const response = await fetch('/api/customer-segments/preview', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(segmentData)
       })
 
@@ -352,29 +337,22 @@ export default function SegmentBuilder() {
 
     try {
       setLoading(true)
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://your-api-domain.com'
-        : 'http://localhost:8001'
-
-      const token = await user.getIdToken()
-      
       const segmentData = {
-        segment_name: segmentName,
-        segment_description: segmentDescription,
-        segment_type: segmentType,
-        segmentation_rules: {
-          conditions: validConditions,
-          logic: 'AND'
-        },
+        name: segmentName,
+        description: segmentDescription,
+        type: segmentType,
+        barbershop_id: profile.barbershop_id || profile.shop_id,
+        conditions: validConditions,
+        created_by: user.id,
         auto_update: true
       }
 
-      const response = await fetch(`${baseUrl}/customer-segments/calculate`, {
+      const response = await fetch('/api/customer-segments', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(segmentData)
       })
 
@@ -414,15 +392,9 @@ export default function SegmentBuilder() {
     if (!user || !confirm('Are you sure you want to delete this segment?')) return
 
     try {
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://your-api-domain.com'
-        : 'http://localhost:8001'
-
-      const token = await user.getIdToken()
-      
-      const response = await fetch(`${baseUrl}/customer-segments/${segmentId}`, {
+      const response = await fetch(`/api/customer-segments/${segmentId}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        credentials: 'include'
       })
 
       if (response.ok) {

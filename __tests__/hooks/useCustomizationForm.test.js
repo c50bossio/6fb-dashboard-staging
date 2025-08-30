@@ -5,12 +5,12 @@
 import React from 'react'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useCustomizationForm } from '@/hooks/useCustomizationForm'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { SupabaseAuthProvider } from '@/components/SupabaseAuthProvider'
 import { createTestUser } from '@/test-utils/test-utils'
 
 // Mock Supabase client
-jest.mock('@/lib/supabase/client')
+jest.mock('@/lib/supabase/UNIFIED_CLIENT')
 
 // Mock SupabaseAuthProvider
 const MockAuthProvider = ({ children, user = createTestUser() }) => {

@@ -18,7 +18,7 @@ import {
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getTenant } from '@/lib/tenant-resolver-client'
 import { TerminalSettings } from './TerminalSettings'
 

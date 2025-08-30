@@ -8,7 +8,7 @@ import ExcelJS from 'exceljs'
 import jsPDF from 'jspdf'
 import financialService from '@/lib/financial-service.js'
 import staffService from '@/lib/staff-service.js'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import 'jspdf-autotable'
 
 export class PayrollExportService {

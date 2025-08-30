@@ -435,7 +435,7 @@ describe('Payroll System Production Readiness', () => {
         expect(avgResponseTime).toBeLessThan(1000) // Under 1 second average
         expect(successfulResponses / concurrency).toBeGreaterThan(0.8) // 80% success rate
 
-        }ms avg (${successfulResponses}/${concurrency} success)`)
+        console.log(`Concurrent requests: ${avgResponseTime.toFixed(2)}ms avg (${successfulResponses}/${concurrency} success)`)
       }
     })
 

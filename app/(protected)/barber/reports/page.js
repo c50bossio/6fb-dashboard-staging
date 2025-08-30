@@ -4,7 +4,7 @@ import {
   CurrencyDollarIcon,
   UserGroupIcon,
   CalendarDaysIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   ScissorsIcon,
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline'
@@ -23,7 +23,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from 'recharts'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberReports() {
@@ -398,7 +398,7 @@ export default function BarberReports() {
                 <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
               </div>
               <span className="text-sm font-medium text-green-600 flex items-center">
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
                 12%
               </span>
             </div>

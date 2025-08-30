@@ -7,7 +7,7 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Test data setup and cleanup utilities
 class BookingTestData {

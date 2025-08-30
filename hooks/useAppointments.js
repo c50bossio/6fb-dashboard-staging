@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { toast } from 'react-hot-toast'
-import supabaseService from '@/lib/supabase-service'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Query keys for consistent caching
 export const appointmentKeys = {
@@ -31,7 +31,7 @@ export function useAppointments(shopId, options = {}) {
 
   return useQuery({
     queryKey: appointmentKeys.byDateRange(shopId, startDate, endDate),
-    queryFn: () => supabaseService.getAppointments(shopId, {
+    queryFn: () => createClient().getAppointments(shopId, {
       startDate,
       endDate,
       barberId,
@@ -80,7 +80,7 @@ export function useUpcomingAppointments(shopId) {
 export function useBarberAppointments(shopId, barberId, options = {}) {
   return useQuery({
     queryKey: appointmentKeys.byBarber(shopId, barberId),
-    queryFn: () => supabaseService.getAppointments(shopId, {
+    queryFn: () => createClient().getAppointments(shopId, {
       barberId,
       ...options
     }),
@@ -96,7 +96,7 @@ export function useCreateAppointment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (appointmentData) => supabaseService.createAppointment(appointmentData),
+    mutationFn: (appointmentData) => createClient().createAppointment(appointmentData),
     onMutate: async (appointmentData) => {
       const shopId = appointmentData.barbershop_id
       const queryKey = appointmentKeys.byDateRange(shopId, 
@@ -165,7 +165,7 @@ export function useUpdateAppointment() {
 
   return useMutation({
     mutationFn: ({ appointmentId, updates }) => 
-      supabaseService.updateAppointment(appointmentId, updates),
+      createClient().updateAppointment(appointmentId, updates),
     onSuccess: (updatedAppointment) => {
       toast.success('Appointment updated successfully')
       
@@ -188,7 +188,7 @@ export function useDeleteAppointment() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (appointmentId) => supabaseService.deleteAppointment(appointmentId),
+    mutationFn: (appointmentId) => createClient().deleteAppointment(appointmentId),
     onSuccess: (deletedAppointment) => {
       toast.success('Appointment deleted successfully')
       
@@ -213,7 +213,7 @@ export function useRealtimeAppointments(shopId) {
   useEffect(() => {
     if (!shopId) return
 
-    const unsubscribe = supabaseService.subscribeToChanges(
+    const unsubscribe = createClient().subscribeToChanges(
       'appointments',
       { barbershop_id: shopId },
       (payload) => {

@@ -5,7 +5,7 @@ import {
   ExclamationTriangleIcon,
   XCircleIcon,
   ArrowTrendingDownIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   CubeIcon
 } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
@@ -141,7 +141,7 @@ export default function StockBadge({
             className="flex items-center"
           >
             {trend === 'up' ? (
-              <ArrowTrendingUpIcon className={`${sizeStyles.icon} text-green-500`} />
+              <ChartBarIcon className={`${sizeStyles.icon} text-green-500`} />
             ) : (
               <ArrowTrendingDownIcon className={`${sizeStyles.icon} text-red-500`} />
             )}
@@ -173,7 +173,7 @@ export default function StockBadge({
           >
             {trend === 'up' ? (
               <>
-                <ArrowTrendingUpIcon className="w-4 h-4 text-green-500" />
+                <ChartBarIcon className="w-4 h-4 text-green-500" />
                 <span className="text-xs text-green-600">
                   +{stock - previousStock}
                 </span>

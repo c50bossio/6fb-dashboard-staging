@@ -2,7 +2,6 @@
 
 import { 
   ChartBarIcon,
-  ArrowTrendingUpIcon,
   TrendingDownIcon,
   StarIcon,
   CurrencyDollarIcon,
@@ -14,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useMemo } from 'react'
 import { Card } from "@/components/ui/card.jsx"
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { formatCurrency } from '@/lib/utils'
 
 export default function StaffPerformanceView({ staff }) {

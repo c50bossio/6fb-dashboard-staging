@@ -21,7 +21,7 @@ export default function DebugRLSPage() {
       
       // Step 2: Test browser client import
       console.log('📦 Importing browser client...')
-      const { createClient } = await import('@/lib/supabase/browser-client')
+      const { createClient } = await import('@/lib/supabase/UNIFIED_CLIENT')
       console.log('✅ Browser client imported:', typeof createClient)
       
       // Step 3: Create client

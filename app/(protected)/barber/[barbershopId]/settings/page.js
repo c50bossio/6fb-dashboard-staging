@@ -19,7 +19,7 @@ import { useParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function BarberSettings() {
   const { user } = useAuth()

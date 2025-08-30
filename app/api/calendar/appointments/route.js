@@ -51,13 +51,43 @@ export async function GET(request) {
       })
     }
 
-    // Get today's date range
-    const today = new Date()
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0))
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999))
+    // Get URL parameters for date range optimization
+    const { searchParams } = new URL(request.url)
+    const start = searchParams.get('start') // FullCalendar sends these automatically
+    const end = searchParams.get('end')
+    const locationIds = searchParams.get('location_ids')
+    const shopId = searchParams.get('shop_id')
+    
+    // Use FullCalendar date range if provided, otherwise default to today + 30 days for performance
+    let startDate, endDate
+    if (start && end) {
+      startDate = new Date(start)
+      endDate = new Date(end)
+      console.log(`[Calendar API] Using FullCalendar date range: ${start} to ${end}`)
+    } else {
+      // Fallback: today + 30 days ahead for reasonable data fetch
+      startDate = new Date()
+      startDate.setHours(0, 0, 0, 0)
+      endDate = new Date(startDate)
+      endDate.setDate(endDate.getDate() + 30)
+      console.log(`[Calendar API] Using default date range: ${startDate.toISOString()} to ${endDate.toISOString()}`)
+    }
 
-    // Fetch appointments for the barbershop
-    const { data: bookings, error: bookingsError } = await supabase
+    // Handle multi-location requests
+    let targetBarbershopIds = []
+    if (locationIds) {
+      targetBarbershopIds = locationIds.split(',')
+      console.log(`[Calendar API] Multi-location request for shops: ${targetBarbershopIds.join(', ')}`)
+    } else if (shopId) {
+      targetBarbershopIds = [shopId]
+      console.log(`[Calendar API] Single shop request: ${shopId}`)
+    } else {
+      targetBarbershopIds = [barbershopId]
+      console.log(`[Calendar API] Using user's barbershop: ${barbershopId}`)
+    }
+
+    // Build optimized query with date range filtering
+    let query = supabase
       .from('bookings')
       .select(`
         id,
@@ -68,7 +98,7 @@ export async function GET(request) {
         time,
         service_name,
         service_price,
-        service_duration,
+        duration_minutes,
         status,
         barber_id,
         barbershop_id,
@@ -76,10 +106,19 @@ export async function GET(request) {
         created_at,
         updated_at
       `)
-      .eq('barbershop_id', barbershopId)
-      .gte('date', startOfDay.toISOString())
+      .gte('date', startDate.toISOString())
+      .lt('date', endDate.toISOString())
       .order('date', { ascending: true })
       .order('time', { ascending: true })
+
+    // Apply barbershop filter
+    if (targetBarbershopIds.length === 1) {
+      query = query.eq('barbershop_id', targetBarbershopIds[0])
+    } else if (targetBarbershopIds.length > 1) {
+      query = query.in('barbershop_id', targetBarbershopIds)
+    }
+
+    const { data: bookings, error: bookingsError } = await query
 
     if (bookingsError) {
       console.error('Error fetching bookings:', bookingsError)
@@ -116,7 +155,7 @@ export async function GET(request) {
       
       // Calculate end time based on duration
       const endDateTime = new Date(startDateTime)
-      const duration = booking.service_duration || 30
+      const duration = booking.duration_minutes || 30
       endDateTime.setMinutes(endDateTime.getMinutes() + duration)
       
       // Determine color based on status
@@ -164,10 +203,36 @@ export async function GET(request) {
       }
     })
 
+    // Performance and debugging metrics
+    const performanceEnd = Date.now()
+    const performanceMetrics = {
+      totalRecords: appointments.length,
+      dateRange: {
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+        daysSpan: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
+      },
+      barbershops: targetBarbershopIds,
+      queryOptimization: start && end ? 'FullCalendar date range used' : 'Default 30-day range used'
+    }
+    
+    console.log(`[Calendar API] Performance metrics:`, performanceMetrics)
+
     return NextResponse.json({
       appointments,
       count: appointments.length,
-      barbershopId
+      barbershopId,
+      meta: {
+        dateRange: {
+          start: startDate.toISOString(),
+          end: endDate.toISOString()
+        },
+        optimization: {
+          rangeOptimized: !!(start && end),
+          recordsReturned: appointments.length,
+          barbershopsQueried: targetBarbershopIds.length
+        }
+      }
     })
 
   } catch (error) {
@@ -220,7 +285,7 @@ export async function PATCH(request) {
           date: date,
           time: start_time,
           service_name: reason || 'Time Blocked',
-          service_duration: calculateDuration(start_time, end_time),
+          duration_minutes: calculateDuration(start_time, end_time),
           service_price: 0,
           status: 'blocked',
           notes: body.notes || 'Time blocked by staff',
@@ -363,7 +428,7 @@ export async function POST(request) {
         date: body.date,
         time: body.time || body.start_time,
         service_name: body.service_name || body.service,
-        service_duration: body.service_duration || body.duration || 30,
+        duration_minutes: body.service_duration || body.duration || body.duration_minutes || 30,
         service_price: body.service_price || body.price || 0,
         status: body.status || 'confirmed',
         notes: body.notes,

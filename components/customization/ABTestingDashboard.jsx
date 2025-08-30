@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
   BeakerIcon,
   TrophyIcon,
@@ -11,7 +11,6 @@ import {
   PauseIcon,
   EyeIcon,
   PlusIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   MinusIcon,
   ClockIcon,
@@ -71,7 +70,7 @@ const StatCard = ({ title, value, change, icon: Icon, trend, format = 'number' }
           <div className={`flex items-center space-x-1 ${
             trend === 'up' ? 'text-green-600' : trend === 'down' ? 'text-red-600' : 'text-gray-600'
           }`}>
-            {trend === 'up' && <ArrowTrendingUpIcon className="w-4 h-4" />}
+            {trend === 'up' && <ChartBarIcon className="w-4 h-4" />}
             {trend === 'down' && <ArrowTrendingDownIcon className="w-4 h-4" />}
             {trend === 'neutral' && <MinusIcon className="w-4 h-4" />}
             <span className="text-sm font-medium">{formatValue(Math.abs(change))}</span>
@@ -786,7 +785,7 @@ export default function ABTestingDashboard() {
           title="Avg Improvement"
           value={0.15}
           format="percentage"
-          icon={ArrowTrendingUpIcon}
+          icon={ChartBarIcon}
           trend="up"
           change={0.05}
         />

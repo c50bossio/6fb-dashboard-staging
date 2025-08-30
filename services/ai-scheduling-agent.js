@@ -3,7 +3,7 @@
  * Phase 5-6: Intelligent appointment scheduling with pattern analysis
  */
 
-import supabaseService from '@/lib/supabase-service'
+import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export class AISchedulingAgent {
   constructor() {
@@ -17,8 +17,8 @@ export class AISchedulingAgent {
     if (this.initialized) return
     
     // Ensure supabase service is ready
-    if (!supabaseService.isReady()) {
-      await supabaseService.initialize()
+    if (!createServiceRoleClient().isReady()) {
+      await createServiceRoleClient().initialize()
     }
     
     this.initialized = true
@@ -65,7 +65,7 @@ export class AISchedulingAgent {
       const ninetyDaysAgo = new Date()
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
       
-      const appointments = await supabaseService.getAppointments(shopId, {
+      const appointments = await createServiceRoleClient().getAppointments(shopId, {
         startDate: ninetyDaysAgo.toISOString(),
         endDate: new Date().toISOString()
       })
@@ -98,13 +98,13 @@ export class AISchedulingAgent {
   async getAvailability(shopId, date) {
     try {
       // Get existing appointments for the date
-      const appointments = await supabaseService.getAppointments(shopId, {
+      const appointments = await createServiceRoleClient().getAppointments(shopId, {
         startDate: date,
         endDate: date
       })
       
       // Get shop business hours
-      const shopInfo = await supabaseService.getShopInfo(shopId)
+      const shopInfo = await createServiceRoleClient().getShopInfo(shopId)
       const businessHours = shopInfo?.business_hours || {
         monday: { open: '09:00', close: '18:00' },
         tuesday: { open: '09:00', close: '18:00' },
@@ -287,7 +287,7 @@ export class AISchedulingAgent {
     await this.initialize()
     
     try {
-      const appointments = await supabaseService.getAppointments(shopId, {
+      const appointments = await createServiceRoleClient().getAppointments(shopId, {
         startDate: date,
         endDate: date
       })

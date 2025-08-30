@@ -4,12 +4,11 @@ import {
   ClockIcon,
   UserGroupIcon,
   CalendarDaysIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   LightBulbIcon,
   ArrowRightIcon,
-  ChartBarIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
@@ -459,7 +458,7 @@ export default function CapacityPlanningPanel({ barbershop_id }) {
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold">Seasonal Impact</h3>
-              <ArrowTrendingUpIcon className="h-5 w-5 text-amber-700" />
+              <ChartBarIcon className="h-5 w-5 text-amber-700" />
             </div>
             <div className={`text-2xl font-bold ${capacityData.current.seasonal_impact > 1 ? 'text-amber-700' : 'text-olive-600'}`}>
               {capacityData.current.seasonal_impact > 1 ? '+' : ''}{Math.round((capacityData.current.seasonal_impact - 1) * 100)}%

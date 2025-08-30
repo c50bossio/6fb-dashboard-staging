@@ -3,7 +3,6 @@
 import {
   ChartBarIcon,
   CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CalendarIcon,
   AdjustmentsHorizontalIcon
@@ -219,7 +218,7 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
         {/* Sales Trends Chart */}
         <div className="bg-gray-50 p-4 rounded-lg">
           <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
-            <ArrowTrendingUpIcon className="h-4 w-4 mr-2" />
+            <ChartBarIcon className="h-4 w-4 mr-2" />
             Sales Trends ({selectedMetric})
           </h4>
           <div className="h-64">

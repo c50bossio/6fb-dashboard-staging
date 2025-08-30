@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Lazy load booking components for better performance
 const PublicBookingFlow = React.lazy(() => import('./PublicBookingFlow'))

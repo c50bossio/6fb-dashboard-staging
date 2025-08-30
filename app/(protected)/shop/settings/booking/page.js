@@ -25,7 +25,7 @@ import BookingRulesSetup from '@/components/onboarding/BookingRulesSetup'
 import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { OnboardingProvider } from '@/contexts/OnboardingContext'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { cn } from '@/lib/utils'
 
 export default function BookingRulesPage() {

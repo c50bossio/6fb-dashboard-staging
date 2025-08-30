@@ -39,7 +39,7 @@ jest.mock('../components/booking/EnhancedBookingFlow', () => {
   }
 })
 
-jest.mock('@/lib/supabase/client', () => ({
+jest.mock('@/lib/supabase/UNIFIED_CLIENT', () => ({
   createClient: jest.fn(() => ({
     from: jest.fn(() => ({
       select: jest.fn().mockReturnThis(),

@@ -24,7 +24,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { hasPermission, validateServicePricing, validateServiceDuration, getPermissionLevel } from '@/lib/permissions'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function ServiceManager({ 
   userRole, 

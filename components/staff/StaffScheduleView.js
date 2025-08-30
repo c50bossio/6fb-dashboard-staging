@@ -12,7 +12,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import EnhancedProfessionalCalendar from '@/components/calendar/EnhancedProfessionalCalendar'
 import Button from '@/components/ui/Button'
 import { Card } from "@/components/ui/card.jsx"
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { formatTime } from '@/lib/utils'
 
 export default function StaffScheduleView({ staff, onRefresh }) {

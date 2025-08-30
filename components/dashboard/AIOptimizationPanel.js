@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircleIcon, XCircleIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline'
+import { CheckCircleIcon, XCircleIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 
 export default function AIOptimizationPanel({ providers = [] }) {
   const [costSaved, setCostSaved] = useState(0)
@@ -66,7 +66,7 @@ export default function AIOptimizationPanel({ providers = [] }) {
     <div className="bg-white/5 dark:bg-gray-800/30 backdrop-blur-lg rounded-xl p-6 border border-gray-200/10 dark:border-gray-700/30 h-full">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
-          <ArrowTrendingUpIcon className="h-5 w-5 text-green-500" />
+          <ChartBarIcon className="h-5 w-5 text-green-500" />
           <h3 className="text-lg font-semibold text-white">AI Cost Optimization</h3>
         </div>
         <span className="text-xs text-green-500 font-medium bg-green-500/20 px-2 py-1 rounded-full">

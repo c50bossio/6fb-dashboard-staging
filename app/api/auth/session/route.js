@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '../../../../lib/supabase/server-client'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export async function GET(request) {
@@ -9,7 +9,7 @@ export async function GET(request) {
   const includeTokens = searchParams.get('tokens') === 'true'
   
   // Use the enhanced server client with proper cookie handling
-  const supabase = await createClient()
+  const supabase = await createServerSupabaseClient()
   
   try {
     
@@ -137,7 +137,7 @@ export async function POST(request) {
     const { action } = body
     
     // Use the enhanced server client with proper cookie handling
-    const supabase = await createClient()
+    const supabase = await createServerSupabaseClient()
     
     switch (action) {
       case 'refresh':

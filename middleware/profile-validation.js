@@ -195,7 +195,7 @@ CREATE TRIGGER profile_consistency_trigger
  */
 export async function generateConsistencyReport() {
   try {
-    const { createClient } = await import('../lib/supabase-client')
+    const { createClient } = await import('../lib/supabase/UNIFIED_CLIENT')
     const supabase = createClient()
     
     const { data: profiles, error } = await supabase

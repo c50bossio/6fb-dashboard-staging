@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
-import { createClient } from '@/lib/supabase/browser-client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useAuth } from '../components/SupabaseAuthProvider'
 import contextAwareCache from '../lib/context-aware-cache'
 import { getDisplayName, normalizeNameData } from '../lib/name-utils'

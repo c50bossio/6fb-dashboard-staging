@@ -5,7 +5,6 @@ import {
   SparklesIcon,
   ChartBarIcon,
   PhoneIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   MinusIcon,
   CalendarDaysIcon,
@@ -23,7 +22,7 @@ import LoadingSpinner from '../LoadingSpinner'
 import { StatCard, Card, Badge, Alert, StatusBadge } from '../ui'
 
 
-const SafeArrowTrendingUpIcon = ArrowTrendingUpIcon || (() => <span>↗</span>)
+const SafeChartBarIcon = ChartBarIcon || (() => <span>↗</span>)
 
 const MetricsOverview = React.memo(function MetricsOverview({ 
   dashboardStats, 
@@ -138,7 +137,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
   const getTrendIcon = (changeType) => {
     switch (changeType) {
       case 'positive':
-        return <SafeArrowTrendingUpIcon className="h-3 w-3" />
+        return <SafeChartBarIcon className="h-3 w-3" />
       case 'negative':
         return <ArrowTrendingDownIcon className="h-3 w-3" />
       default:

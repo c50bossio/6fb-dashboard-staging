@@ -17,7 +17,7 @@ import {
   validateFinancialArrangement,
   standardizeFinancialFields
 } from '@/lib/financial-display-utils'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Extract FormSection component outside of render to prevent recreation
 const FormSection = memo(({ id, title, isOpen, onToggle, children }) => (

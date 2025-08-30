@@ -20,7 +20,7 @@ import '@testing-library/jest-dom'
 import userEvent from '@testing-library/user-event'
 
 // Mock modules before imports
-jest.mock('@/lib/supabase/client', () => ({
+jest.mock('@/lib/supabase/UNIFIED_CLIENT', () => ({
   createClient: jest.fn(() => ({
     from: jest.fn(),
     channel: jest.fn(),
@@ -75,7 +75,7 @@ jest.mock('../MobileBookingOptimizer', () => {
 // Import components after mocks
 import BookingFlowOrchestrator from '../BookingFlowOrchestrator'
 import RealtimeBookingWrapper from '../RealtimeBookingWrapper'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getFeatureFlag, getCachedFeatureFlags } from '@/lib/feature-flags'
 
 // Test utilities

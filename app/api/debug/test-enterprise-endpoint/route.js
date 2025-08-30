@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase-simple'
+import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export async function GET() {
   try {
-    const supabase = createServiceClient()
+    const supabase = await createServiceRoleClient()
     
     // Simulate exactly what the fixed enterprise/shops endpoint should do
     const yourUserId = null /* hardcoded ID removed for production */

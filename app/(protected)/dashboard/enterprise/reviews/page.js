@@ -1,9 +1,8 @@
 'use client'
 
-import { 
+import {
   BuildingOffice2Icon,
   ChartBarIcon,
-  ArrowTrendingUpIcon,
   MapPinIcon,
   UsersIcon,
   StarIcon,
@@ -278,7 +277,7 @@ export default function EnterpriseReviewsPage() {
                       <p className="text-3xl font-bold text-gray-900">78%</p>
                       <p className="text-xs text-green-600 mt-1">+5% from last month</p>
                     </div>
-                    <ArrowTrendingUpIcon className="h-8 w-8 text-green-500" />
+                    <ChartBarIcon className="h-8 w-8 text-green-500" />
                   </div>
                 </div>
               </div>

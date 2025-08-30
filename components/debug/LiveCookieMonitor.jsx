@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from '../../lib/supabase/browser-client'
+import { createClient } from '../../lib/supabase/UNIFIED_CLIENT'
 
 /**
  * Live cookie monitoring component for real-time debugging

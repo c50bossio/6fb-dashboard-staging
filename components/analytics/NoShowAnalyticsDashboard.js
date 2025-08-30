@@ -5,7 +5,6 @@ import {
   UserGroupIcon,
   CurrencyDollarIcon,
   ExclamationTriangleIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CalendarDaysIcon,
   ClockIcon,
@@ -215,7 +214,7 @@ export default function NoShowAnalyticsDashboard({
 
   const renderKPICard = (title, value, change, Icon, color = 'blue') => {
     const isPositive = change > 0
-    const TrendIcon = isPositive ? ArrowTrendingUpIcon : ArrowTrendingDownIcon
+    const TrendIcon = isPositive ? ChartBarIcon : ArrowTrendingDownIcon
     const trendColor = title.includes('Rate') || title.includes('Lost') 
       ? (isPositive ? 'text-red-600' : 'text-green-600')  // Lower is better for rates
       : (isPositive ? 'text-green-600' : 'text-red-600')   // Higher is better for revenue
@@ -744,7 +743,7 @@ export default function NoShowAnalyticsDashboard({
             'Revenue Recovered',
             `$${kpis.revenueImpact.recovered.toLocaleString()}`,
             undefined,
-            ArrowTrendingUpIcon,
+            ChartBarIcon,
             'green'
           )}
           {renderKPICard(

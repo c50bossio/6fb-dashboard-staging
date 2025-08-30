@@ -51,7 +51,7 @@ const mockSupabase = {
 }
 
 // Mock the createClient function
-vi.mock('@/lib/supabase/client', () => ({
+vi.mock('@/lib/supabase/UNIFIED_CLIENT', () => ({
   createClient: () => mockSupabase
 }))
 

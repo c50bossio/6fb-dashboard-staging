@@ -1,7 +1,7 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import MonitoringDashboard from '@/components/monitoring/MonitoringDashboard'
+import MonitoringDashboard from '@/components/monitoring/MonitoringDashboard.jsx'
 
 export default async function AdminMonitoringPage() {
   const supabase = createServerComponentClient({ cookies })

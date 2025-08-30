@@ -477,7 +477,7 @@ describe('🚀 PAYROLL PRODUCTION DEPLOYMENT READINESS', () => {
           expect(isHealthy).toBe(true)
           expect(responseTime).toBeLessThan(1000) // Health checks should be fast
 
-          }ms`)
+      console.log(`Processing time: ${processingTime}ms`)
         } catch (error) {
           healthResults[service] = {
             healthy: false,

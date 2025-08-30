@@ -5,7 +5,7 @@
 
 import { useQuery, useQueries } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-client'
-import supabaseService from '@/lib/supabase-service'
+import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 /**
  * Fetch all dashboard data in parallel
@@ -16,13 +16,13 @@ export function useDashboardData(shopId) {
     queries: [
       {
         queryKey: queryKeys.metrics.dashboard(shopId),
-        queryFn: () => supabaseService.getDashboardMetrics(shopId),
+        queryFn: () => createServiceRoleClient().getDashboardMetrics(shopId),
         enabled: !!shopId,
         staleTime: 5 * 60 * 1000, // 5 minutes
       },
       {
         queryKey: queryKeys.appointments.byShop(shopId),
-        queryFn: () => supabaseService.getAppointments(shopId, {
+        queryFn: () => createServiceRoleClient().getAppointments(shopId, {
           startDate: new Date().toISOString().split('T')[0],
           endDate: new Date().toISOString().split('T')[0],
         }),
@@ -31,19 +31,19 @@ export function useDashboardData(shopId) {
       },
       {
         queryKey: queryKeys.services.byShop(shopId),
-        queryFn: () => supabaseService.getServices(shopId),
+        queryFn: () => createServiceRoleClient().getServices(shopId),
         enabled: !!shopId,
         staleTime: 10 * 60 * 1000, // 10 minutes
       },
       {
         queryKey: queryKeys.staff.byShop(shopId),
-        queryFn: () => supabaseService.getStaff(shopId),
+        queryFn: () => createServiceRoleClient().getStaff(shopId),
         enabled: !!shopId,
         staleTime: 10 * 60 * 1000, // 10 minutes
       },
       {
         queryKey: queryKeys.customers.byShop(shopId),
-        queryFn: () => supabaseService.getCustomers(shopId, { limit: 10 }),
+        queryFn: () => createServiceRoleClient().getCustomers(shopId, { limit: 10 }),
         enabled: !!shopId,
         staleTime: 5 * 60 * 1000, // 5 minutes
       },
@@ -85,7 +85,7 @@ export function useDashboardData(shopId) {
 export function useDashboardMetrics(shopId, options = {}) {
   return useQuery({
     queryKey: queryKeys.metrics.dashboard(shopId),
-    queryFn: () => supabaseService.getDashboardMetrics(shopId, options),
+    queryFn: () => createServiceRoleClient().getDashboardMetrics(shopId, options),
     enabled: !!shopId,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 10 * 60 * 1000, // Auto-refresh every 10 minutes
@@ -127,7 +127,7 @@ export function useRevenueMetrics(shopId, period = 'month') {
           endDate = new Date()
       }
       
-      return supabaseService.getDashboardMetrics(shopId, {
+      return createServiceRoleClient().getDashboardMetrics(shopId, {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
       })
@@ -145,7 +145,7 @@ export function useTodayAppointments(shopId) {
   
   return useQuery({
     queryKey: queryKeys.appointments.byDate(shopId, today),
-    queryFn: () => supabaseService.getAppointments(shopId, {
+    queryFn: () => createServiceRoleClient().getAppointments(shopId, {
       startDate: today,
       endDate: today,
     }),
@@ -165,7 +165,7 @@ export function useUpcomingAppointments(shopId, days = 7) {
   
   return useQuery({
     queryKey: ['appointments', 'upcoming', shopId, days],
-    queryFn: () => supabaseService.getAppointments(shopId, {
+    queryFn: () => createServiceRoleClient().getAppointments(shopId, {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
     }),

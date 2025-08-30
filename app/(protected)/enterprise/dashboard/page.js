@@ -1,13 +1,12 @@
 'use client'
 
-import { 
+import {
   ChartPieIcon,
   BuildingStorefrontIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
-  ClockIcon,
   ChartBarIcon,
+  ClockIcon,
   DocumentChartBarIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
@@ -111,7 +110,7 @@ export default function EnterpriseDashboard() {
     {
       name: 'Average Rating',
       value: enterpriseData?.averageRating || '0.0',
-      icon: ArrowTrendingUpIcon,
+      icon: ChartBarIcon,
       change: '+0.2',
       changeType: 'positive'
     }

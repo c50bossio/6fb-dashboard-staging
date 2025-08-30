@@ -18,7 +18,7 @@ import EditLocationModal from '@/components/modals/EditLocationModal'
 import ViewLocationModal from '@/components/modals/ViewLocationModal'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function EnterpriseWebsiteCustomization() {
   const { user } = useAuth()

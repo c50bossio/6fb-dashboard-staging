@@ -1,16 +1,15 @@
 'use client'
 
-import { 
+import {
   TrophyIcon,
   FireIcon,
   StarIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   BanknotesIcon,
   UserGroupIcon,
   ClockIcon,
   LightBulbIcon,
   RocketLaunchIcon,
-  ChartBarIcon,
   AcademicCapIcon,
   HandThumbUpIcon,
   SparklesIcon,
@@ -442,7 +441,7 @@ function GamifiedLeaderboard() {
     { id: 'revenue', name: 'Revenue Leaders', icon: BanknotesIcon },
     { id: 'customers', name: 'Customer Champions', icon: UserGroupIcon },
     { id: 'rating', name: 'Five Star Masters', icon: StarIcon },
-    { id: 'growth', name: 'Growth Rockstars', icon: ArrowTrendingUpIcon }
+    { id: 'growth', name: 'Growth Rockstars', icon: ChartBarIcon }
   ]
 
   const getSortedBarbers = useCallback((category) => {

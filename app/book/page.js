@@ -21,7 +21,7 @@ import {
 import { CheckIcon, StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { useState, useEffect } from 'react'
 
-import { createClient } from '../../lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 const SHOP_INFO = {
   name: '6FB Barbershop',

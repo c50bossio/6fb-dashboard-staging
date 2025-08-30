@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   CurrencyDollarIcon,
   UserGroupIcon,
   CalculatorIcon,
@@ -12,7 +12,6 @@ import {
   ClockIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  ArrowTrendingUpIcon,
   ArrowPathIcon,
   CreditCardIcon,
   BellIcon
@@ -634,7 +633,7 @@ export default function FinancialManagement() {
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-                <ArrowTrendingUpIcon className="h-5 w-5 mr-2 text-green-600" />
+                <ChartBarIcon className="h-5 w-5 mr-2 text-green-600" />
                 Live Commission Balances
               </h2>
               <div className="flex items-center space-x-3">

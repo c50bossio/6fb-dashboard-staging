@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function AddBarber() {
   const { user } = useAuth()

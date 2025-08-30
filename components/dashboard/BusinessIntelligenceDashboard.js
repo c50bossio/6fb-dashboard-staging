@@ -2,18 +2,17 @@
 
 import { useState, useEffect } from 'react'
 import { 
-  ArrowTrendingUpIcon, 
+  ChartBarIcon, 
   ArrowTrendingDownIcon,
   UsersIcon,
   CalendarDaysIcon,
   CurrencyDollarIcon,
-  ChartBarIcon,
   CpuChipIcon,
   BoltIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import AIOptimizationPanel from './AIOptimizationPanel'
 import VisitorAnalyticsChart from './VisitorAnalyticsChart'
 import PerformanceMetricsPanel from './PerformanceMetricsPanel'
@@ -21,7 +20,7 @@ import PerformanceMetricsPanel from './PerformanceMetricsPanel'
 // Metric card component with glassmorphism effect
 function MetricCard({ title, value, change, trend, subtitle, icon: Icon }) {
   const isPositive = trend === 'up'
-  const TrendIcon = isPositive ? ArrowTrendingUpIcon : ArrowTrendingDownIcon
+  const TrendIcon = isPositive ? ChartBarIcon : ArrowTrendingDownIcon
   
   return (
     <div className="relative bg-white/5 dark:bg-gray-800/30 backdrop-blur-lg rounded-xl p-6 border border-gray-200/10 dark:border-gray-700/30 hover:bg-white/10 dark:hover:bg-gray-800/40 transition-all duration-200">

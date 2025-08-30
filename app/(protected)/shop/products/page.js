@@ -9,7 +9,7 @@ import {
   CurrencyDollarIcon,
   ArchiveBoxIcon,
   ExclamationTriangleIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   ArrowTrendingDownIcon,
   LinkIcon,
   Cog6ToothIcon

@@ -13,7 +13,7 @@ import {
   StarIcon
 } from '@heroicons/react/24/outline'
 import { Fragment, useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/browser-client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import EditLocationModal from './EditLocationModal'
 
 export default function ViewLocationModal({ isOpen, onClose, location }) {

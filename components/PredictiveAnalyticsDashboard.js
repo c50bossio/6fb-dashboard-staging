@@ -2,7 +2,6 @@
 
 import {
   ChartBarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   CalendarDaysIcon,
   CurrencyDollarIcon,
@@ -165,7 +164,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
                     </div>
                     <div className="text-xs text-olive-600">Next {selectedTimeframe} days</div>
                   </div>
-                  <ArrowTrendingUpIcon className="h-8 w-8 text-indigo-400" />
+                  <ChartBarIcon className="h-8 w-8 text-indigo-400" />
                 </div>
               </div>
               

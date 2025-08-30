@@ -3,7 +3,7 @@
 import {
   CubeIcon,
   ExclamationTriangleIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   ArrowTrendingDownIcon,
   ClockIcon,
   ShieldCheckIcon,
@@ -523,7 +523,7 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                     <div>Value: {formatCurrency(category.value)}</div>
                   </div>
                   <div className="mt-2 flex items-center space-x-1">
-                    {category.trend === 'up' && <ArrowTrendingUpIcon className="h-3 w-3 text-green-500" />}
+                    {category.trend === 'up' && <ChartBarIcon className="h-3 w-3 text-green-500" />}
                     {category.trend === 'down' && <ArrowTrendingDownIcon className="h-3 w-3 text-red-500" />}
                     <span className={`text-xs font-medium ${
                       category.trend === 'up' ? 'text-green-600' :

@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useRef, useEffect } from 'react'
 import { useAIChat } from '../hooks/useAISDK'
-import { createClient } from '../lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useAuth } from './SupabaseAuthProvider'
 
 export default function FloatingAIChat() {

@@ -17,7 +17,7 @@ import {
   CogIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function CustomerPortal({ customerId }) {
   const [activeTab, setActiveTab] = useState('appointments')

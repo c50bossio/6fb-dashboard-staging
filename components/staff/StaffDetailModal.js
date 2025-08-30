@@ -37,7 +37,7 @@ import {
   standardizeFinancialFields
 } from '@/lib/financial-display-utils'
 // Name utilities removed - using direct field access for simplicity
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { formatCurrency } from '@/lib/utils'
 
 export default function StaffDetailModal({ staff, onClose, onUpdate }) {

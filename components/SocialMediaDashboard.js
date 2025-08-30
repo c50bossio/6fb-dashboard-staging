@@ -6,7 +6,7 @@ import {
   ChatBubbleLeftIcon,
   CalendarDaysIcon,
   StarIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   EyeIcon,
   PlusIcon,
   ArrowPathIcon,
@@ -198,7 +198,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
             {[
               { id: 'overview', name: 'Overview', icon: EyeIcon },
               { id: 'content', name: 'Content', icon: MegaphoneIcon },
-              { id: 'analytics', name: 'Analytics', icon: ArrowTrendingUpIcon }
+              { id: 'analytics', name: 'Analytics', icon: ChartBarIcon }
             ].map((tab) => (
               <button
                 key={tab.id}

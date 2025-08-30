@@ -5,7 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'react-hot-toast'
-import supabaseService from '@/lib/supabase-service'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Query keys for consistent caching
 export const serviceKeys = {
@@ -23,7 +23,7 @@ export function useServices(shopId, options = {}) {
 
   return useQuery({
     queryKey: serviceKeys.byShop(shopId),
-    queryFn: () => supabaseService.getServices(shopId, options),
+    queryFn: () => createClient().getServices(shopId, options),
     enabled: enabled && !!shopId,
     staleTime: 10 * 60 * 1000, // 10 minutes (services change less frequently)
     gcTime: 30 * 60 * 1000, // 30 minutes
@@ -36,7 +36,7 @@ export function useServices(shopId, options = {}) {
 export function useActiveServices(shopId) {
   return useQuery({
     queryKey: serviceKeys.active(shopId),
-    queryFn: () => supabaseService.getServices(shopId, { isActive: true }),
+    queryFn: () => createClient().getServices(shopId, { isActive: true }),
     enabled: !!shopId,
     staleTime: 10 * 60 * 1000,
   })
@@ -48,7 +48,7 @@ export function useActiveServices(shopId) {
 export function useServicesByCategory(shopId, category) {
   return useQuery({
     queryKey: serviceKeys.byCategory(shopId, category),
-    queryFn: () => supabaseService.getServices(shopId, { category, isActive: true }),
+    queryFn: () => createClient().getServices(shopId, { category, isActive: true }),
     enabled: !!shopId && !!category,
     staleTime: 10 * 60 * 1000,
   })
@@ -61,7 +61,7 @@ export function useServiceCategories(shopId) {
   return useQuery({
     queryKey: ['services', 'categories', shopId],
     queryFn: async () => {
-      const services = await supabaseService.getServices(shopId, { isActive: true })
+      const services = await createClient().getServices(shopId, { isActive: true })
       const categories = [...new Set(services.map(service => service.category).filter(Boolean))]
       return categories.sort()
     },
@@ -77,7 +77,7 @@ export function useCreateService() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (serviceData) => supabaseService.createService(serviceData),
+    mutationFn: (serviceData) => createClient().createService(serviceData),
     onSuccess: (newService) => {
       toast.success('Service created successfully')
       
@@ -106,7 +106,7 @@ export function useUpdateService() {
 
   return useMutation({
     mutationFn: ({ serviceId, updates }) => 
-      supabaseService.updateService(serviceId, updates),
+      createClient().updateService(serviceId, updates),
     onSuccess: (updatedService) => {
       toast.success('Service updated successfully')
       
@@ -134,7 +134,7 @@ export function useDeleteService() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (serviceId) => supabaseService.deleteService(serviceId),
+    mutationFn: (serviceId) => createClient().deleteService(serviceId),
     onSuccess: (deletedService) => {
       toast.success('Service deleted successfully')
       
@@ -159,7 +159,7 @@ export function useBulkUpdateServices() {
   return useMutation({
     mutationFn: async (servicesWithOrder) => {
       const promises = servicesWithOrder.map(service => 
-        supabaseService.updateService(service.id, { display_order: service.display_order })
+        createClient().updateService(service.id, { display_order: service.display_order })
       )
       return Promise.all(promises)
     },
@@ -191,8 +191,8 @@ export function useServiceOptions(shopId, category = null) {
   const { data: services, ...rest } = useQuery({
     queryKey,
     queryFn: () => category 
-      ? supabaseService.getServices(shopId, { category, isActive: true })
-      : supabaseService.getServices(shopId, { isActive: true }),
+      ? createClient().getServices(shopId, { category, isActive: true })
+      : createClient().getServices(shopId, { isActive: true }),
     enabled: !!shopId,
     staleTime: 10 * 60 * 1000,
   })
@@ -214,7 +214,7 @@ export function useServiceRevenuePotential(shopId) {
   return useQuery({
     queryKey: ['services', 'revenue-potential', shopId],
     queryFn: async () => {
-      const services = await supabaseService.getServices(shopId, { isActive: true })
+      const services = await createClient().getServices(shopId, { isActive: true })
       
       return services.reduce((total, service) => {
         return total + (service.price || 0)

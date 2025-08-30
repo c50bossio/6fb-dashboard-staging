@@ -118,7 +118,7 @@ export class CustomerBehaviorMigrationService {
       const appointments = appointmentsResponse.ok ? await appointmentsResponse.json() : []
       
       // Get bookings from Supabase
-      const bookingsResponse = await fetch(`/api/bookings?customer_id=${customerId}&shop_id=${barbershopId}`)
+      const bookingsResponse = await fetch(`/api/bookings?customer_id=${customerId}&barbershop_id=${barbershopId}`)
       const bookings = bookingsResponse.ok ? await bookingsResponse.json() : []
       
       const allBookings = [...(appointments.data || []), ...(bookings.data || [])]

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect, Suspense } from 'react'
 import { Button } from '@/components/ui/Button'
 import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 function AcceptInvitationContent() {
   const router = useRouter()

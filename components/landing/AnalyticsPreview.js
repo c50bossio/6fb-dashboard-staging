@@ -1,8 +1,7 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
-  ArrowTrendingUpIcon,
   CalendarIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
@@ -230,7 +229,7 @@ export default function AnalyticsPreview() {
     { id: 'revenue', label: 'Revenue', icon: CurrencyDollarIcon },
     { id: 'clients', label: 'Clients', icon: UserGroupIcon },
     { id: 'services', label: 'Services', icon: CalendarIcon },
-    { id: 'growth', label: 'Growth', icon: ArrowTrendingUpIcon }
+    { id: 'growth', label: 'Growth', icon: ChartBarIcon }
   ]
 
   return (
@@ -335,7 +334,7 @@ export default function AnalyticsPreview() {
           </div>
           <div className="text-center">
             <div className="inline-flex items-center justify-center h-12 w-12 bg-green-900/50 text-green-400 rounded-full mb-3">
-              <ArrowTrendingUpIcon className="h-6 w-6" />
+              <ChartBarIcon className="h-6 w-6" />
             </div>
             <h4 className="text-lg font-semibold text-white mb-2">Actionable Insights</h4>
             <p className="text-gray-400 text-sm">

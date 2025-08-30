@@ -9,7 +9,7 @@ import {
 import { useState, useEffect } from 'react'
 import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function BusinessHoursPage() {
   const { user } = useAuth()

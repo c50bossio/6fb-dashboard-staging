@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createServiceClient } from '@/lib/supabase-simple'
+import { createServiceRoleClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Test endpoint to verify profile updates work
 export async function POST(request) {
   try {
     const supabase = await createClient()
-    const serviceClient = createServiceClient()
+    const serviceClient = await createServiceRoleClient()
     const body = await request.json()
 
     // Verify authentication

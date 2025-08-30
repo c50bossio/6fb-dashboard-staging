@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server-client'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 const DOMAIN_PROVIDERS = {
   namecheap: {
@@ -16,7 +16,7 @@ const DOMAIN_PROVIDERS = {
 
 export async function POST(request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -175,7 +175,7 @@ async function createDomainCheckout({ userId, domain, pricing, registrationYears
 }
 
 export async function handleDomainPurchaseSuccess(sessionId) {
-  const supabase = await createClient()
+  const supabase = await createServerSupabaseClient()
   
   const { data: purchase } = await supabase
     .from('domain_purchases')

@@ -1,13 +1,12 @@
 'use client'
 
-import { 
-  BellIcon, 
+import {
+  BellIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   LightBulbIcon,
   XMarkIcon,
   ChartBarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'

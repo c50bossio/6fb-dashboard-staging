@@ -7,7 +7,7 @@ import { useCompletion } from '@ai-sdk/react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { safeAIRequest } from '@/lib/fallback-systems'
 import { trackAIUsage, trackError } from '@/lib/production-monitor'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 /**
  * Hook for AI chat functionality with modern streaming and cost optimization

@@ -4,7 +4,7 @@ console.log('🔐 AUTH PROVIDER: Module loading...')
 
 import { useRouter } from 'next/navigation'
 import { createContext, useContext, useEffect, useState, useMemo } from 'react'
-import { createClient } from '../lib/supabase/browser-client'
+import { createClient } from '../lib/supabase/UNIFIED_CLIENT'
 
 console.log('🔐 AUTH PROVIDER: All imports successful')
 
@@ -160,7 +160,7 @@ function SupabaseAuthProvider({ children }) {
             subscription_tier: 'pro',
             subscription_status: 'active',
             role: 'SHOP_OWNER',
-            shop_id: 'dev-shop-123',
+            barbershop_id: 'dev-shop-123',
             onboarding_completed: true
           }
           

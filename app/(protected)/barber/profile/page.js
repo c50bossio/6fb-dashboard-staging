@@ -18,7 +18,7 @@ import ReviewsList from '@/components/reviews/ReviewsList'
 import ReviewStats from '@/components/reviews/ReviewStats'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import useReviews from '@/hooks/useReviews'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Component to handle search params
 function BarberProfileContent({ onTabChange }) {

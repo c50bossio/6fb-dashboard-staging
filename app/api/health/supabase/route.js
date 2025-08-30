@@ -7,8 +7,10 @@ export async function GET() {
     const hasAnonKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY
     
-    // Import our simple client
-    const { supabase, supabaseService } = await import('@/lib/supabase-simple')
+    // Import our unified client
+    const { createClient, createServiceRoleClient } = await import('@/lib/supabase/UNIFIED_CLIENT')
+    const supabase = createClient()
+    const supabaseService = createServiceRoleClient()
     
     // Test client creation
     const clientStatus = {

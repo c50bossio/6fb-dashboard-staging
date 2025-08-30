@@ -13,7 +13,7 @@ import {
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function ProgressiveAccountCreation({ 
   bookingDetails,

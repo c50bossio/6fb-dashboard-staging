@@ -4,7 +4,7 @@ import { CheckCircleIcon, ArrowRightIcon, XMarkIcon, SparklesIcon } from '@heroi
 import confetti from 'canvas-confetti'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { extractUserData, formatForForm, getOnboardingStatus } from '@/lib/user-data-extractor'
 
 const ONBOARDING_STEPS = [

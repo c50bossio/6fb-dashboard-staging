@@ -6,7 +6,7 @@ import {
   ClockIcon, 
   ServerIcon, 
   ShieldCheckIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
 
@@ -18,7 +18,7 @@ function MetricItem({ icon: Icon, label, value, unit, status, trend }) {
     critical: 'text-red-500'
   }
 
-  const TrendIcon = trend === 'up' ? ArrowTrendingUpIcon : ArrowTrendingDownIcon
+  const TrendIcon = trend === 'up' ? ChartBarIcon : ArrowTrendingDownIcon
   const trendColor = trend === 'up' ? 'text-green-400' : 'text-red-400'
 
   return (

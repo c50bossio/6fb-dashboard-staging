@@ -3,7 +3,6 @@
 import {
   ChartBarIcon,
   CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   LightBulbIcon,
@@ -322,7 +321,7 @@ export default function ProductAnalyticsPanel({ products = [], metrics = {} }) {
               {/* Revenue Trend */}
               <div className="bg-gray-50 p-4 rounded-lg lg:col-span-2">
                 <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
-                  <ArrowTrendingUpIcon className="h-4 w-4 mr-2" />
+                  <ChartBarIcon className="h-4 w-4 mr-2" />
                   Revenue Trend
                 </h4>
                 <div className="h-64">
@@ -407,7 +406,7 @@ export default function ProductAnalyticsPanel({ products = [], metrics = {} }) {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
                         {rec.type === 'reorder' && <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />}
-                        {rec.type === 'optimization' && <ArrowTrendingUpIcon className="h-4 w-4 text-yellow-500" />}
+                        {rec.type === 'optimization' && <ChartBarIcon className="h-4 w-4 text-yellow-500" />}
                         {rec.type === 'promotion' && <LightBulbIcon className="h-4 w-4 text-blue-500" />}
                         <span className="text-sm font-medium text-gray-900">{rec.title}</span>
                         <span className={`px-2 py-1 text-xs rounded-full ${

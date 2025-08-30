@@ -1,15 +1,14 @@
 'use client'
 
-import { 
+import {
   LightBulbIcon,
   ArrowPathIcon,
   ClockIcon,
   CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   RocketLaunchIcon,
-  ChartBarIcon,
   UserGroupIcon,
   CogIcon,
   MegaphoneIcon,
@@ -35,7 +34,7 @@ function RecommendationCard({ recommendation, onImplement }) {
     customer_acquisition: UserGroupIcon,
     operational_efficiency: CogIcon,
     marketing_strategy: MegaphoneIcon,
-    cost_management: ArrowTrendingUpIcon,
+    cost_management: ChartBarIcon,
     customer_retention: StarIcon
   }
 
@@ -139,7 +138,7 @@ function RecommendationCard({ recommendation, onImplement }) {
           <span className="text-gray-600">Timeline: {recommendation.implementation_time}</span>
         </div>
         <div className="flex items-center">
-          <ArrowTrendingUpIcon className="h-4 w-4 text-gray-500 mr-2" />
+          <ChartBarIcon className="h-4 w-4 text-gray-500 mr-2" />
           <span className="text-gray-600">Confidence: {Math.round((recommendation.confidence_score || 0) * 100)}%</span>
         </div>
       </div>
