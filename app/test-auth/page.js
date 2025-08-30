@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { useState, useEffect, useMemo } from 'react'
 
 export default function TestAuth() {
   const [user, setUser] = useState(null)

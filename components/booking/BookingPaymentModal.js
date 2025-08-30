@@ -13,11 +13,11 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
+import { createClient } from '@/lib/supabase/client'
+import { getTenant } from '@/lib/tenant-resolver-client'
 import TipSelectionWidget from '../checkout/TipSelectionWidget'
 import PaymentForm from '../payment/PaymentForm'
-import { getTenant } from '@/lib/tenant-resolver-client'
 import { useAuth } from '../SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
 
 export default function BookingPaymentModal({
   isOpen,

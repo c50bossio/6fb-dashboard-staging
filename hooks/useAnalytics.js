@@ -1,8 +1,8 @@
 'use client'
 
 import { useCallback } from 'react'
-import { trackEvent, EVENTS, isFeatureEnabled, setUserProperties } from '@/lib/posthog/client'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { trackEvent, EVENTS, isFeatureEnabled, setUserProperties } from '@/lib/posthog/client'
 
 export function useAnalytics() {
   const { user } = useAuth()

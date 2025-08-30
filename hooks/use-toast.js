@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-let listeners = []
+const listeners = []
 let memoryState = { toasts: [] }
 
 function dispatch(action) {

@@ -3,8 +3,8 @@
  * Handles appointment sync, calendar management, and iCal export
  */
 
-import { google } from 'googleapis'
 import { createClient } from '@supabase/supabase-js'
+import { google } from 'googleapis'
 import ical from 'ical-generator'
 import { encryptionService } from './encryption-service.js'
 

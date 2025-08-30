@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { getTenant } from '@/lib/tenant-resolver'
 import { createClient } from '@/lib/supabase/server'
+import { getTenant } from '@/lib/tenant-resolver'
 
 const serviceSchema = z.object({
   name: z.string().min(1).max(255),

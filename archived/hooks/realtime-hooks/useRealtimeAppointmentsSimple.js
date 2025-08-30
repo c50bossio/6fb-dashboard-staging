@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { useEffect, useState, useCallback } from 'react'
 
 export function useRealtimeAppointmentsSimple(shopId) {
   const [appointments, setAppointments] = useState([])

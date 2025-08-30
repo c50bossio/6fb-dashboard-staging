@@ -175,7 +175,7 @@ class AvailabilityService {
    * Get next available slot for a barber
    */
   async getNextAvailableSlot(barberId, serviceDuration = 30) {
-    let checkDate = new Date()
+    const checkDate = new Date()
     const maxDays = 30 // Look up to 30 days ahead
     
     for (let i = 0; i < maxDays; i++) {

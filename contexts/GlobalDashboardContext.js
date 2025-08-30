@@ -1,11 +1,11 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
-import { useAuth } from '../components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/browser-client'
+import { useAuth } from '../components/SupabaseAuthProvider'
+import contextAwareCache from '../lib/context-aware-cache'
 import { getDisplayName, normalizeNameData } from '../lib/name-utils'
 import unifiedStaffService from '../lib/unified-staff-service'
-import contextAwareCache from '../lib/context-aware-cache'
 
 // Development mode mock data
 const DEV_MOCK_USER = {

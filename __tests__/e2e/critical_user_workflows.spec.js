@@ -3,8 +3,8 @@
  * Tests complete user journeys across the 6FB AI Agent System
  */
 
-import { test, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
+import { test, expect } from '@playwright/test';
 
 const generateTestUser = (role = 'CLIENT') => ({
   email: faker.internet.email(),

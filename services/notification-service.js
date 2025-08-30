@@ -4,8 +4,8 @@
  */
 
 const { createClient } = require('@supabase/supabase-js')
-const { twilioSMSService } = require('./twilio-service')
 const { enhancedSendGridService } = require('./sendgrid-service-fixed')
+const { twilioSMSService } = require('./twilio-service')
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

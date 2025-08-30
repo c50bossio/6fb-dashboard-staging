@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { FieldNormalizer } from '@/lib/booking-rules-engine/FieldNormalizer'
 import { cacheManager } from '@/lib/booking-rules-engine/RuleCache'
 import { getRuleRealtimeSync } from '@/lib/booking-rules-engine/RuleRealtimeSync'
-import { FieldNormalizer } from '@/lib/booking-rules-engine/FieldNormalizer'
 
 /**
  * Hook for integrating booking rules engine with React components

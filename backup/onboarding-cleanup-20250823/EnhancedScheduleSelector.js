@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { ClockIcon, DocumentDuplicateIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 /**
  * Enhanced Schedule Selector with Copy to Weekdays functionality

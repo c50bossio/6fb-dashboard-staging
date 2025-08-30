@@ -5,8 +5,8 @@
  * including cross-browser compatibility, real user interactions, and business workflows.
  */
 
-const { test, expect } = require('@playwright/test')
 const path = require('path')
+const { test, expect } = require('@playwright/test')
 
 // Test data and utilities
 const testData = {

@@ -4,8 +4,8 @@
  */
 
 import { createServerClient } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
 
 /**
  * Create authenticated Supabase client

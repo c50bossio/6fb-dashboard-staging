@@ -3,9 +3,9 @@
  * Full-featured email service with batching, webhooks, and compliance
  */
 
+const crypto = require('crypto');
 const sgMail = require('@sendgrid/mail');
 const { createClient } = require('@supabase/supabase-js');
-const crypto = require('crypto');
 const RateLimiter = require('limiter').RateLimiter;
 
 let supabase;

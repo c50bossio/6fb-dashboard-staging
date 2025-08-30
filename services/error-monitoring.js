@@ -245,7 +245,7 @@ class ErrorMonitor {
     const metrics = this.getMetrics('1h');
     
     let status = 'healthy';
-    let issues = [];
+    const issues = [];
 
     if (metrics.criticalCount > 0) {
       status = 'critical';

@@ -13,17 +13,17 @@
  */
 
 import Queue from 'bull'
-import { createClient } from '@/lib/supabase/server'
 import { getQueueManager } from '@/lib/automation/queue-manager.js'
 
 // Service imports for different automation types
-import { AutomationFeeCollectionService } from '@/lib/automation/services/fee-collection-service.js'
-import { AutomationReminderService } from '@/lib/automation/services/reminder-service.js'
-import { AutomationPredictionService } from '@/lib/automation/services/prediction-service.js'
-import { AutomationRecoveryService } from '@/lib/automation/services/recovery-service.js'
-import { AutomationNotificationService } from '@/lib/automation/services/notification-service.js'
-import { AutomationPricingService } from '@/lib/automation/services/pricing-service.js'
 import { AutomationDepositService } from '@/lib/automation/services/deposit-service.js'
+import { AutomationFeeCollectionService } from '@/lib/automation/services/fee-collection-service.js'
+import { AutomationNotificationService } from '@/lib/automation/services/notification-service.js'
+import { AutomationPredictionService } from '@/lib/automation/services/prediction-service.js'
+import { AutomationPricingService } from '@/lib/automation/services/pricing-service.js'
+import { AutomationRecoveryService } from '@/lib/automation/services/recovery-service.js'
+import { AutomationReminderService } from '@/lib/automation/services/reminder-service.js'
+import { createClient } from '@/lib/supabase/server'
 
 class AutomationWorker {
   constructor() {

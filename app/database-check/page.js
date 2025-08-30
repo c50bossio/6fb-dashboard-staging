@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { useState, useEffect } from 'react'
 
 export default function DatabaseCheck() {
   const [tables, setTables] = useState({})

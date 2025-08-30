@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { useState, useCallback, useEffect } from 'react'
 import { businessCoach } from '../lib/langchain/ai-agent'
 import { supabase } from '../lib/supabase'
 

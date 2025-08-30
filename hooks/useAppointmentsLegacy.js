@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabaseService } from '@/services/supabase-service';
 import { useEffect } from 'react';
+import { supabaseService } from '@/services/supabase-service';
 
 /**
  * Hook for fetching and managing appointments

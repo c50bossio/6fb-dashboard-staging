@@ -244,10 +244,10 @@ testDevices.forEach(device => {
       await page.click('button:has-text("Edit")')
 
       await page.keyboard.press('Tab')
-      let focused = await page.locator(':focus').getAttribute('placeholder')
+      const focused = await page.locator(':focus').getAttribute('placeholder')
       
       await page.keyboard.press('Tab')
-      let nextFocused = await page.locator(':focus').getAttribute('placeholder')
+      const nextFocused = await page.locator(':focus').getAttribute('placeholder')
       
       expect(focused).not.toBe(nextFocused)
 

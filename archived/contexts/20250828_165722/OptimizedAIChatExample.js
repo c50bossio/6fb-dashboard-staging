@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { useAIConversation, useAIActions, useAISystem } from '@/contexts/OptimizedAIContext'
 import { useSelectiveContext } from '@/hooks/useSelectiveContext'
 import { useConversationHistory } from '@/lib/ConversationHistoryManager'
+import { useAIConversation, useAIActions, useAISystem } from '@/contexts/OptimizedAIContext'
 
 /**
  * Example: Optimized AI Chat Component

@@ -14,9 +14,9 @@
  * @author 6FB AI Agent System
  */
 
+const crypto = require('crypto');
 const sgMail = require('@sendgrid/mail');
 const axios = require('axios');
-const crypto = require('crypto');
 
 class EnhancedSendGridService {
     constructor() {

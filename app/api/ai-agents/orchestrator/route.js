@@ -4,8 +4,8 @@
  * Features: Agent selection, task decomposition, inter-agent communication, result aggregation
  */
 
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
 // Initialize services

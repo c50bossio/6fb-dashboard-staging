@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { useState } from 'react'
 
 export default function AuthDiagnostic() {
   const [email, setEmail] = useState('test' + Date.now() + '@example.com')

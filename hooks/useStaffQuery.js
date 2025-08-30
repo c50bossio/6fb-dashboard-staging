@@ -5,9 +5,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
-import supabaseService from '@/lib/supabase-service'
-import { createClient } from '@/lib/supabase/browser-client'
 import { toast } from 'react-hot-toast'
+import { createClient } from '@/lib/supabase/browser-client'
+import supabaseService from '@/lib/supabase-service'
 
 // Query keys for consistent caching
 export const staffKeys = {

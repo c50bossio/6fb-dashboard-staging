@@ -4,8 +4,8 @@
  * Features: Process optimization, resource allocation, workflow automation, predictive maintenance
  */
 
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
 // Initialize services

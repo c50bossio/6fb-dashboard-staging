@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { useEffect, useState, useRef, useCallback } from 'react'
 
-let supabaseClient = null
+const supabaseClient = null
 
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

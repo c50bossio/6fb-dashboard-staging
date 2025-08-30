@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import { 
   SparklesIcon,
   BuildingOfficeIcon,
@@ -15,11 +14,12 @@ import {
   ScissorsIcon,
   CalendarDaysIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '../SupabaseAuthProvider'
-import SimplifiedLaunchStep from './SimplifiedLaunchStep'
-import SimplifiedDataImport from './SimplifiedDataImport'
-import EnhancedScheduleSelector from './EnhancedScheduleSelector'
+import { useState, useEffect, useRef } from 'react'
 import { platformImportConfigs } from '@/lib/platform-import-configs'
+import { useAuth } from '../SupabaseAuthProvider'
+import EnhancedScheduleSelector from './EnhancedScheduleSelector'
+import SimplifiedDataImport from './SimplifiedDataImport'
+import SimplifiedLaunchStep from './SimplifiedLaunchStep'
 
 /**
  * QuickOnboardingFlow - Streamlined 3-4 step onboarding

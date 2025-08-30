@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { useEffect, useState } from 'react'
 
 // Dynamically import both providers to avoid SSR issues
 const SupabaseAuthProvider = dynamic(() => import('./SupabaseAuthProvider'), {

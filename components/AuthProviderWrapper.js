@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import SupabaseAuthProvider from './SupabaseAuthProvider'
 import DevAuthProvider from './DevAuthProvider'
+import SupabaseAuthProvider from './SupabaseAuthProvider'
 
 /**
  * Auth Provider Wrapper

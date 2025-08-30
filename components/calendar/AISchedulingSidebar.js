@@ -5,12 +5,6 @@
  * Phase 5-6: Smart appointment time suggestions powered by AI
  */
 
-import { useState } from 'react'
-import { useAISchedulingSuggestions, useNoShowPrediction } from '@/hooks/queries/useAI'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Sparkles, 
   Clock, 
@@ -21,6 +15,12 @@ import {
   RefreshCw,
   ChevronRight
 } from 'lucide-react'
+import { useState } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { useAISchedulingSuggestions, useNoShowPrediction } from '@/hooks/queries/useAI'
 
 export function AISchedulingSidebar({ 
   shopId, 

@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
-import { getTenant } from '@/lib/tenant-resolver-client'
 import { createClient } from '@/lib/supabase/client'
+import { getTenant } from '@/lib/tenant-resolver-client'
 
 export default function PaymentSetupAlert() {
   const [showAlert, setShowAlert] = useState(false)

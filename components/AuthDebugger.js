@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useAuth } from './SupabaseAuthProvider'
 import { createClient } from '../lib/supabase/browser-client'
+import { useAuth } from './SupabaseAuthProvider'
 
 export default function AuthDebugger() {
   const [debugInfo, setDebugInfo] = useState([])

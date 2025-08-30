@@ -5,13 +5,13 @@
  * Phase 5-6: Visual interface for Google Calendar OAuth and account management
  */
 
-import { useState } from 'react'
-import { useCalendarAccounts, useConnectCalendar, useDisconnectCalendar, useSyncCalendar } from '@/hooks/queries/useCalendar'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Calendar, RefreshCw, Trash2, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import { useState } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { useCalendarAccounts, useConnectCalendar, useDisconnectCalendar, useSyncCalendar } from '@/hooks/queries/useCalendar'
 
 export function CalendarConnectionManager({ shopId }) {
   const [syncingAccountId, setSyncingAccountId] = useState(null)

@@ -7,11 +7,11 @@
  * are working correctly after the migration from shop_id to barbershop_id.
  */
 
-import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
-import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
+import { createClient } from '@supabase/supabase-js'
 import chalk from 'chalk'
+import dotenv from 'dotenv'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)

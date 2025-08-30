@@ -226,10 +226,10 @@ test.describe('Settings Form - Nuclear Input E2E Tests', () => {
       await page.click('button:has-text("Edit")')
       
       await page.keyboard.press('Tab') // Should focus first input
-      let focused = await page.locator(':focus').getAttribute('placeholder')
+      const focused = await page.locator(':focus').getAttribute('placeholder')
       
       await page.keyboard.press('Tab') // Move to next input
-      let nextFocused = await page.locator(':focus').getAttribute('placeholder')
+      const nextFocused = await page.locator(':focus').getAttribute('placeholder')
       
       expect(focused).not.toBe(nextFocused)
     })

@@ -4,11 +4,11 @@
  * Supports PDF, Excel, CSV formats with professional branding and security
  */
 
-import { createClient } from '@/lib/supabase/client'
-import financialService from '@/lib/financial-service.js'
-import staffService from '@/lib/staff-service.js'
 import ExcelJS from 'exceljs'
 import jsPDF from 'jspdf'
+import financialService from '@/lib/financial-service.js'
+import staffService from '@/lib/staff-service.js'
+import { createClient } from '@/lib/supabase/client'
 import 'jspdf-autotable'
 
 export class PayrollExportService {

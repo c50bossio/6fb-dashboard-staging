@@ -12,21 +12,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Get user preferences from profiles table
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('preferences')
-      .eq('id', user.id)
+    // Get user preferences from settings table
+    // This allows storing preferences without modifying the profiles table
+    const { data: settings, error: settingsError } = await supabase
+      .from('settings_hierarchy')
+      .select('settings')
+      .eq('context_type', 'user')
+      .eq('context_id', user.id)
+      .eq('category', 'preferences')
       .single()
     
-    if (profileError) {
-      console.error('Error fetching preferences:', profileError)
-      // Return empty preferences if profile doesn't exist yet
-      return NextResponse.json({ preferences: {} })
+    if (settingsError && settingsError.code !== 'PGRST116') { // PGRST116 = not found
+      console.error('Error fetching preferences from settings:', settingsError)
     }
     
+    // Return preferences from settings or empty object
     return NextResponse.json({ 
-      preferences: profile?.preferences || {},
+      preferences: settings?.settings || {},
       userId: user.id 
     })
     
@@ -62,13 +64,15 @@ export async function POST(request: NextRequest) {
     }
     
     // Get current preferences first (to merge with new ones)
-    const { data: currentProfile } = await supabase
-      .from('profiles')
-      .select('preferences')
-      .eq('id', user.id)
+    const { data: currentSettings } = await supabase
+      .from('settings_hierarchy')
+      .select('settings')
+      .eq('context_type', 'user')
+      .eq('context_id', user.id)
+      .eq('category', 'preferences')
       .single()
     
-    const currentPreferences = currentProfile?.preferences || {}
+    const currentPreferences = currentSettings?.settings || {}
     
     // Merge new preferences with existing ones
     const mergedPreferences = {
@@ -77,45 +81,27 @@ export async function POST(request: NextRequest) {
       updated_at: new Date().toISOString()
     }
     
-    // Update preferences in profiles table
-    const { data: updatedProfile, error: updateError } = await supabase
-      .from('profiles')
-      .update({ preferences: mergedPreferences })
-      .eq('id', user.id)
-      .select('preferences')
+    // Upsert preferences in settings_hierarchy table
+    const { data: updatedSettings, error: updateError } = await supabase
+      .from('settings_hierarchy')
+      .upsert({
+        context_type: 'user',
+        context_id: user.id,
+        category: 'preferences',
+        settings: mergedPreferences,
+        updated_at: new Date().toISOString()
+      })
+      .select('settings')
       .single()
     
     if (updateError) {
       console.error('Error updating preferences:', updateError)
-      
-      // If profile doesn't exist, try to create it
-      if (updateError.code === 'PGRST116') {
-        const { data: newProfile, error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            email: user.email || '',
-            preferences: mergedPreferences
-          })
-          .select('preferences')
-          .single()
-        
-        if (insertError) {
-          throw insertError
-        }
-        
-        return NextResponse.json({
-          success: true,
-          preferences: newProfile.preferences
-        })
-      }
-      
       throw updateError
     }
     
     return NextResponse.json({
       success: true,
-      preferences: updatedProfile.preferences
+      preferences: updatedSettings?.settings || mergedPreferences
     })
     
   } catch (error) {

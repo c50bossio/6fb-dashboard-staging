@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
-import { posthog } from '@/lib/posthog'
 import { edgeConfig } from '@/lib/edgeConfig'
+import { posthog } from '@/lib/posthog'
 
 export function useFeatureFlag(flagName, options = {}) {
   const [isEnabled, setIsEnabled] = useState(options.defaultValue || false)

@@ -1,8 +1,8 @@
 'use client'
 
+import { createBrowserClient } from '@supabase/ssr'
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import { useAuth } from '../components/SupabaseAuthProvider'
-import { createBrowserClient } from '@supabase/ssr'
 import { getDisplayName, normalizeNameData } from '../lib/name-utils'
 
 /**

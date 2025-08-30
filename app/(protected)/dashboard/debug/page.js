@@ -89,7 +89,7 @@ export default function DebugDashboard() {
           <div className="bg-white dark:bg-gray-800 rounded p-4 font-mono text-sm">
             <div className="text-green-600 dark:text-green-400">✅ OAuth Callback: Setting session cookie: sb-dfhqjdoydihajmjxniee-auth-token</div>
             <div className="text-green-600 dark:text-green-400">✅ OAuth Callback: Session verification successful on first attempt</div>
-            <div className="text-gray-600 dark:text-gray-400">// ... redirect to dashboard ...</div>
+            <div className="text-gray-600 dark:text-gray-400">{/* ... redirect to dashboard ... */}</div>
             <div className="text-red-600 dark:text-red-400">❌ GoTrueClient: #getSession() session from storage null</div>
             <div className="text-red-600 dark:text-red-400">❌ INITIAL_SESSION callback session null</div>
           </div>

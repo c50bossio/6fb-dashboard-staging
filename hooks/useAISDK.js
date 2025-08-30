@@ -3,11 +3,11 @@
  * Uses Vercel AI SDK with intelligent model routing and cost optimization
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react'
 import { useCompletion } from '@ai-sdk/react'
-import { createClient } from '@/lib/supabase/client'
-import { trackAIUsage, trackError } from '@/lib/production-monitor'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { safeAIRequest } from '@/lib/fallback-systems'
+import { trackAIUsage, trackError } from '@/lib/production-monitor'
+import { createClient } from '@/lib/supabase/client'
 
 /**
  * Hook for AI chat functionality with modern streaming and cost optimization
@@ -224,7 +224,7 @@ export function useAIChat(initialAgent = 'business_coach', options = {}) {
       // Handle streaming response
       const reader = response.body?.getReader()
       if (reader) {
-        let assistantMessage = {
+        const assistantMessage = {
           id: `msg_${Date.now()}_assistant`,
           type: 'assistant',
           agent: targetAgent,
@@ -235,7 +235,7 @@ export function useAIChat(initialAgent = 'business_coach', options = {}) {
         
         setMessages(prev => [...prev, assistantMessage])
         
-        let decoder = new TextDecoder()
+        const decoder = new TextDecoder()
         let done = false
         
         while (!done) {

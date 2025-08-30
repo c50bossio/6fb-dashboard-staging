@@ -4,8 +4,8 @@
  * Features: Revenue forecasting, cost analysis, pricing optimization, financial planning
  */
 
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
 // Initialize services

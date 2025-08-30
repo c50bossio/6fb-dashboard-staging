@@ -5,15 +5,15 @@
  * Demonstrates React Query hooks, AI scheduling, and calendar management
  */
 
-import { useState } from 'react'
-import { CalendarConnectionManager } from '@/components/calendar/CalendarConnectionManager'
-import { AISchedulingSidebar } from '@/components/calendar/AISchedulingSidebar'
-import { useCalendarSyncStatus, useCalendarConflicts } from '@/hooks/queries/useCalendar'
-import { useBookingPatterns, useScheduleOptimization } from '@/hooks/queries/useAI'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/badge'
 import { Calendar, Brain, RefreshCw, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react'
+import { useState } from 'react'
+import { AISchedulingSidebar } from '@/components/calendar/AISchedulingSidebar'
+import { CalendarConnectionManager } from '@/components/calendar/CalendarConnectionManager'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { useBookingPatterns, useScheduleOptimization } from '@/hooks/queries/useAI'
+import { useCalendarSyncStatus, useCalendarConflicts } from '@/hooks/queries/useCalendar'
 
 // Test barbershop ID from our migration
 const TEST_BARBERSHOP_ID = 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9'

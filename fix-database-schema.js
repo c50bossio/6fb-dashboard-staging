@@ -5,10 +5,10 @@
  * Applies the appointments.shop_id fix to resolve PostgreSQL errors
  */
 
-import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
 // Load environment variables

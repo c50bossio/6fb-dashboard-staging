@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { getTenant } from '@/lib/tenant-resolver'
 import { createClient } from '@/lib/supabase/server'
+import { getTenant } from '@/lib/tenant-resolver'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

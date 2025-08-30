@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { useState } from 'react'
 
 export default function AuthEmail() {
   const [email, setEmail] = useState('')

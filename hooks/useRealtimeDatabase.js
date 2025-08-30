@@ -138,7 +138,7 @@ export function useRealtime(channelName, barbershopId) {
 
   const sendData = useCallback(async (payload) => {
     try {
-      let insertData = { ...payload, barbershop_id: barbershopId }
+      const insertData = { ...payload, barbershop_id: barbershopId }
       
       if (channelName === 'notifications') {
         const { error } = await supabase

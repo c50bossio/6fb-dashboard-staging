@@ -6,9 +6,9 @@
 import { EventEmitter } from 'events';
 import fs from 'fs/promises';
 import path from 'path';
+import APISecurityTester from '../api-security/api-security-tests.js';
 import { SECURITY_CONFIG } from '../config/security-config.js';
 import AutomatedSecurityScanner from '../sast-dast/automated-scanner.js';
-import APISecurityTester from '../api-security/api-security-tests.js';
 
 export class ContinuousSecurityMonitor extends EventEmitter {
   constructor(options = {}) {

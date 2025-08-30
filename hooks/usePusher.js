@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { getPusherClient, CHANNELS, EVENTS } from '@/lib/pusher/client'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { getPusherClient, CHANNELS, EVENTS } from '@/lib/pusher/client'
 
 export function usePusher() {
   const { user } = useAuth()

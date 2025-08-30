@@ -3,10 +3,10 @@
  * Provides metrics and connection status for the optimized subscription manager
  */
 
-import { useState, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import supabaseService from '@/lib/supabase-service'
+import { useState, useEffect, useCallback } from 'react'
 import { logger } from '@/lib/logger'
+import supabaseService from '@/lib/supabase-service'
 
 const performanceLogger = logger.child('realtime-performance')
 

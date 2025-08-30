@@ -8,9 +8,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import supabaseService from '@/lib/supabase-service'
 import { useAppointmentsWithRealtime } from './useAppointments'
-import { useStaffWithRealtime } from './useStaffQuery'
-import { useServices } from './useServicesQuery'
 import { useCustomersWithRealtime } from './useCustomersQuery'
+import { useServices } from './useServicesQuery'
+import { useStaffWithRealtime } from './useStaffQuery'
 
 /**
  * Get comprehensive shop data for dashboard

@@ -7,8 +7,8 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { createClient } from '@/lib/supabase/client'
 import Stripe from 'stripe'
+import { createClient } from '@/lib/supabase/client'
 
 class PaymentTestEnvironment {
   constructor() {

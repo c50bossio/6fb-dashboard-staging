@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
 import { ShoppingCart, TrendingUp, Star, Clock, DollarSign, X, Plus } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
 import Button from '@/components/ui/Button'
 import { useCrossSellingSuggestions, useTrackCrossSellInteraction } from '@/hooks/queries/useCrossSelling'
 

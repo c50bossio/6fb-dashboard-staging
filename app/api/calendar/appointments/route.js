@@ -122,7 +122,7 @@ export async function GET(request) {
       // Determine color based on status
       let backgroundColor = '#10b981' // Default green
       let borderColor = '#059669'
-      let textColor = '#ffffff'
+      const textColor = '#ffffff'
       
       if (booking.status === 'cancelled') {
         backgroundColor = '#ef4444'

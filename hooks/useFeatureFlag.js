@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
 
 // Initialize Supabase client
 const supabase = createClient()
@@ -180,7 +180,7 @@ export function useFeatureFlag(flagName, options = {}) {
         throw flagError
       }
 
-      let result = {
+      const result = {
         enabled: flagData?.enabled ?? defaultValue,
         metadata: flagData?.metadata || {},
         variants: flagData?.variants || ['control', 'variant'],

@@ -162,7 +162,7 @@ export function usePullToRefresh(onRefresh, options = {}) {
   const startY = useRef(0)
 
   useEffect(() => {
-    let element = document.body
+    const element = document.body
 
     const handleTouchStart = (e) => {
       if (window.scrollY === 0) {

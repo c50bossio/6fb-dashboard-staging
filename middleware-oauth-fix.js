@@ -1,11 +1,11 @@
-import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { NextResponse } from 'next/server'
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl
   
   // Create a response object that we can modify
-  let response = NextResponse.next({
+  const response = NextResponse.next({
     request: {
       headers: request.headers,
     },

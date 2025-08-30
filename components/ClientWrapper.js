@@ -2,17 +2,17 @@
 
 import dynamic from 'next/dynamic'
 import { useEffect, useMemo } from 'react'
+import devErrorSuppressor from '../lib/dev-error-suppressor'
 import { errorHandler } from '../lib/error-handler'
 import errorTracker from '../lib/error-tracker'
 import { initializeFallbackSystems } from '../lib/fallback-systems'
 import { getProductionMonitor } from '../lib/production-monitor'
-import devErrorSuppressor from '../lib/dev-error-suppressor'
+import AuthErrorBoundary from './AuthErrorBoundary'
 import { AppErrorBoundary } from './error-boundary'
 import { QueryProvider } from './QueryProvider'
 import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
-import AuthErrorBoundary from './AuthErrorBoundary'
 
 // Lazy load non-critical providers
 const ServiceWorkerProvider = dynamic(() => import('./ServiceWorkerProvider'), {

@@ -3,8 +3,8 @@
  * Handles commission distribution, franchise fees, and partner payouts
  */
 
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = process.env.STRIPE_SECRET_KEY 

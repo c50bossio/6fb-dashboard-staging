@@ -169,7 +169,7 @@ export class AISchedulingAgent {
     // Score each available slot
     for (const slot of availability) {
       let score = 50 // Base score
-      let reasons = []
+      const reasons = []
       
       // Check if it's a peak hour
       if (patterns.peakHours.includes(slot.hour)) {

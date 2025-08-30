@@ -5,12 +5,12 @@
  * With Error Boundaries and Mock Data Support
  */
 
+import { useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect, Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { useQueryClient } from '@tanstack/react-query'
-import { useServices, useCreateService, useUpdateService } from '@/hooks/queries/useServices'
 import { useRealtimeAppointments, useCreateAppointment } from '@/hooks/queries/useAppointments'
 import { useDashboardData } from '@/hooks/queries/useDashboard'
+import { useServices, useCreateService, useUpdateService } from '@/hooks/queries/useServices'
 
 // Test barbershop ID from our migration
 const TEST_BARBERSHOP_ID = 'c61b33d5-4a96-472b-8f97-d1a3ae5532f9'

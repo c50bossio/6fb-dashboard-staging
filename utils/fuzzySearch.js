@@ -129,7 +129,7 @@ export function fuzzyMatch(text, pattern, options = {}) {
   const patternToCheck = caseSensitive ? pattern : pattern.toLowerCase()
   
   let score = 0
-  let matches = []
+  const matches = []
   let matchType = 'none'
   
   // 1. Exact match (highest priority)
@@ -244,7 +244,7 @@ export function multiFieldSearch(customer, query, fieldWeights = {}) {
   const weights = { ...defaultWeights, ...fieldWeights }
   let totalScore = 0
   let bestMatch = null
-  let fieldMatches = {}
+  const fieldMatches = {}
   
   Object.entries(weights).forEach(([field, weight]) => {
     const fieldValue = customer[field]

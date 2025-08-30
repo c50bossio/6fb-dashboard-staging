@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, Users, Calendar, DollarSign, Star } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 // Mock dashboard with actual cards displaying data
 export default function DashboardMock() {

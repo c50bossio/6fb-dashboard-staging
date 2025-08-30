@@ -6,8 +6,8 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useContext } from 'react'
-import supabaseService from '@/lib/supabase-service'
 import { createClient } from '@/lib/supabase/browser-client'
+import supabaseService from '@/lib/supabase-service'
 
 // Try to import auth context - will work in dev mode
 let AuthContext

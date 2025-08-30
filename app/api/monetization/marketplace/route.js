@@ -3,8 +3,8 @@
  * Integrates with existing Stripe subscriptions to offer premium AI agents
  */
 
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = process.env.STRIPE_SECRET_KEY 

@@ -5,8 +5,8 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import supabaseService from '@/lib/supabase-service'
 import { toast } from 'react-hot-toast'
+import supabaseService from '@/lib/supabase-service'
 
 // Query keys for consistent caching
 export const customerKeys = {

@@ -10,8 +10,8 @@
  * - Support for both SMS and MMS
  */
 
-const twilio = require('twilio');
 const { createClient } = require('@supabase/supabase-js');
+const twilio = require('twilio');
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
