@@ -2,7 +2,7 @@
 
 import { 
   ChartBarIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   TrendingDownIcon,
   StarIcon,
   CurrencyDollarIcon,
