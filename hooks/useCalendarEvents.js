@@ -38,7 +38,7 @@ export const useCalendarEvents = (options = {}) => {
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           barber_id: barberId,
-          shop_id: shopId,
+          barbershop_id: shopId,
           include_single: true,
           timezone: timezone
         })
@@ -73,7 +73,7 @@ export const useCalendarEvents = (options = {}) => {
       const params = new URLSearchParams({
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
-        shop_id: shopId
+        barbershop_id: shopId
       });
 
       if (barberId) {
@@ -131,7 +131,7 @@ export const useCalendarEvents = (options = {}) => {
         },
         body: JSON.stringify({
           ...appointmentData,
-          shop_id: shopId,
+          barbershop_id: shopId,
           timezone: timezone
         })
       });

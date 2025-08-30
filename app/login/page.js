@@ -23,7 +23,7 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const router = useRouter()
-  const { supabase } = useAuth()
+  const { supabase, signIn, signUp, resetPassword } = useAuth()
   
   // Check for OAuth errors on page load - let Supabase handle session detection automatically
   useEffect(() => {

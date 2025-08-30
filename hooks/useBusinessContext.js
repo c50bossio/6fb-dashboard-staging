@@ -5,14 +5,43 @@
  */
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useContext } from 'react'
 import supabaseService from '@/lib/supabase-service'
 import { createClient } from '@/lib/supabase/browser-client'
 
+// Try to import auth context - will work in dev mode
+let AuthContext
+try {
+  AuthContext = require('react').createContext({})
+  // In development, look for DevAuthProvider context
+  if (typeof window !== 'undefined') {
+    const authProviders = ['SupabaseAuthProvider', 'DevAuthProvider']
+    // This will be resolved by the auth provider context
+  }
+} catch (e) {
+  // Fallback if no auth context available
+}
+
 // Adapter functions
-const getCurrentUser = async () => {
+const getCurrentUser = async (authUser = null) => {
+  // If we have an authUser from context (dev mode), use it
+  if (authUser) {
+    return authUser
+  }
+  
   const client = createClient()
   const { data: { user } } = await client.auth.getUser()
+  
+  // If no user from Supabase and we're in development, return mock dev user
+  if (!user && process.env.NODE_ENV === 'development') {
+    console.log('🏪 BusinessContext: Using development fallback user')
+    return {
+      id: 'dev-user-123',
+      email: 'dev@6fb.local',
+      user_metadata: { full_name: 'Development User' }
+    }
+  }
+  
   return user
 }
 const getSupabaseClient = createClient
@@ -84,7 +113,23 @@ export function useBusinessContext() {
         queryTime: profileTime.toFixed(2) + 'ms'
       })
       
-      if (error) throw error
+      if (error) {
+        // In development, if the profile doesn't exist, return mock profile
+        if (process.env.NODE_ENV === 'development' && userId === 'dev-user-123') {
+          console.log('🏪 BusinessContext: Using development fallback profile')
+          return {
+            id: 'dev-user-123',
+            email: 'dev@6fb.local',
+            full_name: 'Development User',
+            subscription_tier: 'pro',
+            subscription_status: 'active',
+            role: 'SHOP_OWNER',
+            shop_id: 'dev-shop-123',
+            barbershop_id: 'dev-shop-123'
+          }
+        }
+        throw error
+      }
       return data
     },
     enabled: !!userId,

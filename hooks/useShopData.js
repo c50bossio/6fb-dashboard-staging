@@ -133,7 +133,7 @@ export function useShopData(shopId, options = {}) {
         appointmentCount: serviceAppointments.length,
         revenue: serviceAppointments
           .filter(apt => apt.status === 'completed')
-          .reduce((sum, apt) => sum + (apt.price || 0), 0)
+          .reduce((sum, apt) => sum + (apt.total_price_cents ? apt.total_price_cents / 100 : 0), 0)
       }
     }).sort((a, b) => b.appointmentCount - a.appointmentCount)
 

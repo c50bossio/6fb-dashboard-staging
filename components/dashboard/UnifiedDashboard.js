@@ -633,8 +633,16 @@ export default function UnifiedDashboard({ user, profile }) {
             )
           }
         }
-        // Default single location view
-        return null
+        
+        // Default single location view - Executive Summary
+        return (
+          <div className="space-y-6">
+            <UnifiedExecutiveSummary data={dashboardData} />
+            {effectiveShopId && (
+              <SmartAlertsPanel data={dashboardData} />
+            )}
+          </div>
+        )
         
       case DASHBOARD_MODES.AI_INSIGHTS:
         return (
