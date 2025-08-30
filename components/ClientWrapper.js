@@ -9,7 +9,7 @@ import { getProductionMonitor } from '../lib/production-monitor'
 import devErrorSuppressor from '../lib/dev-error-suppressor'
 import { AppErrorBoundary } from './error-boundary'
 import { QueryProvider } from './QueryProvider'
-import { AuthProvider } from './AuthProvider'
+import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
 import AuthErrorBoundary from './AuthErrorBoundary'
@@ -31,10 +31,10 @@ function CombinedProviders({ children }) {
       AccessibilityProvider,
       ToastProvider,
       QueryProvider,
-      // Wrap AuthProvider with AuthErrorBoundary for extra protection
+      // Wrap SupabaseAuthProvider with AuthErrorBoundary for extra protection
       ({ children }) => (
         <AuthErrorBoundary>
-          <AuthProvider>{children}</AuthProvider>
+          <SupabaseAuthProvider>{children}</SupabaseAuthProvider>
         </AuthErrorBoundary>
       )
     ],

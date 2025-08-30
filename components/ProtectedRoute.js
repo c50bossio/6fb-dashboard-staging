@@ -1,7 +1,7 @@
 'use client'
 
 import { LoadingSpinner } from './LoadingSpinner'
-import { useAuth } from './AuthProvider'
+import { useAuth } from './SupabaseAuthProvider'
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()

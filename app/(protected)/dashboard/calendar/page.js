@@ -253,16 +253,18 @@ export default function CalendarPage() {
   // Use contextual barbershop ID from active context, fallback to legacy barbershopId
   const contextualBarbershopId = activeContext?.locationId || barbershopId
   
+  const realtimeResult = useRealtimeAppointments(contextualBarbershopId) || {}
+  
   const { 
-    appointments: realtimeAppointments, 
-    loading: realtimeLoading, 
-    error: realtimeErrorMsg,
-    isConnected: realtimeHookConnected,
-    lastUpdate,
-    stats: realtimeStats,
-    refresh: refreshAppointments,
-    log: websocketLog
-  } = useRealtimeAppointments(contextualBarbershopId)
+    appointments: realtimeAppointments = [], 
+    loading: realtimeLoading = true, 
+    error: realtimeErrorMsg = null,
+    isConnected: realtimeHookConnected = false,
+    lastUpdate = null,
+    stats: realtimeStats = {},
+    refresh: refreshAppointments = () => {},
+    log: websocketLog = []
+  } = realtimeResult
   
   const diagnostics = useMemo(() => ({
     subscriptionStatus: realtimeHookConnected ? 'connected' : 'disconnected',
