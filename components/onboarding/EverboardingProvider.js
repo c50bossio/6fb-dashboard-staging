@@ -13,7 +13,7 @@ export function useEverboarding() {
 
 export default function EverboardingProvider({ children }) {
   const router = useRouter()
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [currentPage, setCurrentPage] = useState('')
   const [isEnabled, setIsEnabled] = useState(true)
   const userBehavior = useEverboardingTracking()

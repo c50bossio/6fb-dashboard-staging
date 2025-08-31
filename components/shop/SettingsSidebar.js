@@ -104,7 +104,7 @@ export default function SettingsSidebar({ onSectionChange }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const { profile: _profile } = useAuth()
+  const { profile } = useAuth()
 
   // Role-based access control
   const authorizedRoles = ['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN']

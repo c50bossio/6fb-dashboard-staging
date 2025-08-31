@@ -227,8 +227,8 @@ export default function Navigation() {
   const [isClient, setIsClient] = useState(false)
   
   // Get user role from authentication context
-  const { profile: _profile } = useAuth()
-  const userRole = _profile?.role || 'BARBER' // Default to BARBER if no role is set
+  const { profile } = useAuth()
+  const userRole = profile?.role || 'BARBER' // Default to BARBER if no role is set
 
   useEffect(() => {
     setIsClient(true)
