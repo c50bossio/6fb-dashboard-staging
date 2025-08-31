@@ -35,8 +35,8 @@ export default function PaymentProcessingSettings() {
   const [bankAccounts, setBankAccounts] = useState([])
   const [recentPayouts, setRecentPayouts] = useState([])
   
-  const _supabase = createClient()
-  const { user, profile: _profile } = useAuth()
+  const supabase = createClient()
+  const { user, profile } = useAuth()
   
   // Get barbershop ID using unified tenant resolver
   const getbarbershopId = async () => {

@@ -230,7 +230,7 @@ const JourneyStageProgress = ({ stages, currentStage }) => {
 }
 
 export default function CustomerJourneyVisualizer({ customerId }) {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [journeyData, setJourneyData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

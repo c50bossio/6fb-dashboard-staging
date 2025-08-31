@@ -20,7 +20,7 @@ import ReviewStats from '@/components/reviews/ReviewStats'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function EnterpriseReviewsPage() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [locations, setLocations] = useState([])
   const [selectedLocation, setSelectedLocation] = useState('all')
   const [reviews, setReviews] = useState([])

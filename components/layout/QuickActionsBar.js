@@ -80,7 +80,7 @@ const getColorClasses = (color, variant = 'default') => {
 }
 
 export default function QuickActionsBar() {
-  const { profile: _profile } = useAuth()
+  const { profile } = useAuth()
   const [showMore, setShowMore] = useState(false)
 
   const visibleActions = QUICK_ACTIONS.filter(action => {

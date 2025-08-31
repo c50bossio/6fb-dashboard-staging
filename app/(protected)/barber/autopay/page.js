@@ -27,8 +27,8 @@ import { formatCurrency } from '@/lib/utils'
  * - Backup payment methods
  */
 export default function AutopayPage() {
-  const { user, profile: _profile } = useAuth()
-  const _supabase = createClient()
+  const { user, profile } = useAuth()
+  const supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

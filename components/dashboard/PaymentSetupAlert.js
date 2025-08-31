@@ -12,8 +12,8 @@ export default function PaymentSetupAlert() {
   const [showAlert, setShowAlert] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const [setupStatus, setSetupStatus] = useState(null)
-  const { user, profile: _profile } = useAuth()
-  const _supabase = createClient()
+  const { user, profile } = useAuth()
+  const supabase = createClient()
   
   useEffect(() => {
     const checkPaymentSetup = async () => {

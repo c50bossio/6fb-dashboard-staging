@@ -12,7 +12,7 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { getBarberPermissions, getPermissionLevel } from '@/lib/permissions'
 
 export default function BarberServices() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [permissions, setPermissions] = useState(null)
   const [barbershopId, setbarbershopId] = useState(null)

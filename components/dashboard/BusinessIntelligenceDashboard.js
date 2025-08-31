@@ -54,7 +54,7 @@ function MetricCard({ title, value, change, trend, subtitle, icon: Icon }) {
 }
 
 export default function BusinessIntelligenceDashboard() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [metrics, setMetrics] = useState({
     revenue: { value: '$0', change: '+0%', trend: 'up' },
     clients: { value: '0', change: '-0%', trend: 'down' },

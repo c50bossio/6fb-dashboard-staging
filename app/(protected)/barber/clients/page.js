@@ -43,7 +43,7 @@ function BarberClientsContent({ onAction }) {
 }
 
 function BarberClientsPageContent({ onAction }) {
-  const { user: _user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const router = useRouter()
   const [clients, setClients] = useState([])
   const [searchTerm, setSearchTerm] = useState('')

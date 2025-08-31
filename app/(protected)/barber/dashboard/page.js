@@ -17,7 +17,7 @@ import ComponentErrorBoundary from '../../../../components/dashboard/ComponentEr
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberDashboard() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [stats, setStats] = useState({
     todayAppointments: 0,
     completedToday: 0,

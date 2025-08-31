@@ -23,7 +23,7 @@ import QRCodeModal from '../../../../components/barber/QRCodeModal'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BookingLinksPage() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [bookingLinks, setBookingLinks] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)

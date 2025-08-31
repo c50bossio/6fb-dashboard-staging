@@ -339,7 +339,7 @@ const CampaignLaunchModal = ({ isOpen, onClose, customer, actionType }) => {
 }
 
 export default function ChurnRiskMonitor() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [riskCustomers, setRiskCustomers] = useState([])
   const [trendsData, setTrendsData] = useState([])
   const [summary, setSummary] = useState({})

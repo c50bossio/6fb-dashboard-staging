@@ -14,7 +14,7 @@ import { useAuth } from '../SupabaseAuthProvider'
 import AddBarberModal from './AddBarberModal'
 
 export default function PerspectiveSelector({ selectedLocation, selectedPerspective, onPerspectiveSelect }) {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [staff, setStaff] = useState([])
   const [loading, setLoading] = useState(false)
   const [showAddBarberModal, setShowAddBarberModal] = useState(false)

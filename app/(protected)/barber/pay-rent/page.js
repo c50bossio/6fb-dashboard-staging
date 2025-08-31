@@ -29,8 +29,8 @@ import { formatCurrency } from '@/lib/utils'
  * Inspired by RentRedi's simplicity and tenant-first design
  */
 export default function PayRentPage() {
-  const { user, profile: _profile } = useAuth()
-  const _supabase = createClient()
+  const { user, profile } = useAuth()
+  const supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)

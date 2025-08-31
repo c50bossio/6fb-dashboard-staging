@@ -181,7 +181,7 @@ const SegmentTemplate = ({ template, onApply }) => {
 }
 
 export default function SegmentBuilder() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [segmentName, setSegmentName] = useState('')
   const [segmentDescription, setSegmentDescription] = useState('')
   const [segmentType, setSegmentType] = useState('behavioral')

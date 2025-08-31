@@ -13,7 +13,7 @@ import { useAuth } from '../SupabaseAuthProvider'
 import AddLocationModal from './AddLocationModal'
 
 export default function LocationSelector({ selectedLocation, onLocationSelect }) {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [locations, setLocations] = useState([])
   const [loading, setLoading] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)

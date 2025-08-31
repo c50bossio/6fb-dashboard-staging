@@ -21,8 +21,8 @@ import SettingsSection from './SettingsSection'
 import TipSettings from './TipSettings'
 
 export default function UnifiedSettingsInterface() {
-  const { user, profile: _profile } = useAuth()
-  const _supabase = createClient()
+  const { user, profile } = useAuth()
+  const supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

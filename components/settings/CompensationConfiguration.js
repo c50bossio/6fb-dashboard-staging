@@ -20,8 +20,8 @@ import Button from '../ui/Button'
 import { Card } from '../ui/card'
 
 export default function CompensationConfiguration() {
-  const { user, profile: _profile } = useAuth()
-  const _supabase = createClient()
+  const { user, profile } = useAuth()
+  const supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

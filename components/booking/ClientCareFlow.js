@@ -53,7 +53,7 @@ export default function ClientCareFlow({
   isOpen = false,
   isManager = false
 }) {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   
   // Care flow state
   const [currentStep, setCurrentStep] = useState(clientData ? 'understanding' : 'client_selection')

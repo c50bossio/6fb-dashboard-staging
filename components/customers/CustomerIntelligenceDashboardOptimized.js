@@ -147,7 +147,7 @@ const CLVTrend = React.memo(({ current, predicted, trend }) => {
 })
 
 export default function CustomerIntelligenceDashboard() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   
   // State management with reduced initial loads
   const [healthScores, setHealthScores] = useState([])
