@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/AuthProvider'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 import { LogoHeader } from '@/components/ui/Logo'
 import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
 
