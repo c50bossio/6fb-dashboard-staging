@@ -817,7 +817,7 @@ function AgentSystemStatusWidget() {
 }
 
 function IntelligentDashboardContent() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const { tenant } = useTenant()
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [globalLoading, setGlobalLoading] = useState(false)

@@ -29,7 +29,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { cn } from '@/lib/utils'
 
 export default function BookingRulesPage() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)

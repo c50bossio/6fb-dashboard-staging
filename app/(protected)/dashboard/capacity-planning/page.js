@@ -14,7 +14,7 @@ import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function CapacityPlanningPage() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
 
   return (
     <ProtectedRoute>

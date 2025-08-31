@@ -19,7 +19,7 @@ const RealtimeChat = dynamic(
 )
 
 export default function RealtimePage() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [activeTab, setActiveTab] = useState('dashboard')
   
   const barbershopId = profile?.barbershop_id || user?.barbershop_id

@@ -21,7 +21,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function ShopBookingsManagement() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [appointments, setAppointments] = useState([])
   const [summary, setSummary] = useState({})
   const [loading, setLoading] = useState(true)

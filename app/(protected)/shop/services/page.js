@@ -30,7 +30,7 @@ import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function ShopServicesAndPricing() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const [services, setServices] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)

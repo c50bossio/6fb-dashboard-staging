@@ -122,7 +122,7 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 
 export default function ShopAnalytics() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const { activeContext, contextualData, contextLoading } = useGlobalDashboard()
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('month') // week, month, quarter, year

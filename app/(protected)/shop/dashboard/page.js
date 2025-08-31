@@ -19,7 +19,7 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useShopDashboard, useCurrentShopId } from '@/hooks'
 
 export default function ShopDashboard() {
-  const { user, profile: _profile } = useAuth()
+  const { user, profile } = useAuth()
   const barbershopId = useCurrentShopId()
   const { shop, metrics, analytics, isLoading, error } = useShopDashboard(barbershopId)
   
