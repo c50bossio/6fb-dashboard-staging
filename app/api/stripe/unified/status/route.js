@@ -10,18 +10,18 @@ import { checkBarbershopAccess } from '../../../../../lib/tenant-resolver.js'
  * Replaces multiple status endpoints across different components
  * 
  * Query Parameters:
- * - barberbarberbarbershop_id: Required barbershop ID
+ * - barberbarbershop_id: Required barbershop ID
  * - force_refresh: Optional, bypass cache
  */
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barberbarberbarbershopId = searchParams.get('barberbarberbarbershop_id')
+    const barbershopId = searchParams.get('barberbarbershop_id')
     const forceRefresh = searchParams.get('force_refresh') === 'true'
 
-    if (!barberbarberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'barberbarberbarbershop_id is required' },
+        { error: 'barberbarbershop_id is required' },
         { status: 400 }
       )
     }
@@ -35,7 +35,7 @@ export async function GET(request) {
     }
 
     // Verify barbershop access using unified tenant resolver
-    const accessResult = await checkBarbershopAccess(session.user.id, barberbarberbarbershopId, { supabase })
+    const accessResult = await checkBarbershopAccess(session.user.id, barbershopId, { supabase })
     
     // Also check for SUPER_ADMIN role
     if (!accessResult.hasAccess) {
@@ -54,11 +54,11 @@ export async function GET(request) {
     }
 
     // Get comprehensive Stripe status
-    const status = await getUnifiedStripeStatus(supabase, barberbarberbarbershopId)
+    const status = await getUnifiedStripeStatus(supabase, barbershopId)
 
     return NextResponse.json({
       success: true,
-      barberbarberbarbershop_id: barberbarberbarbershopId,
+      barberbarbershop_id: barbershopId,
       status: status,
       cached: !forceRefresh,
       timestamp: new Date().toISOString()
@@ -77,7 +77,7 @@ export async function GET(request) {
  * Get unified Stripe status from all related tables
  * Consolidates status checking logic from multiple components
  */
-async function getUnifiedStripeStatus(supabase, barberbarberbarbershopId) {
+async function getUnifiedStripeStatus(supabase, barbershopId) {
   // Get Stripe Connect account information
   const { data: connectAccount, error: connectError } = await supabase
     .from('stripe_connected_accounts')
@@ -85,21 +85,21 @@ async function getUnifiedStripeStatus(supabase, barberbarberbarbershopId) {
       *,
       barbershops(name, owner_id)
     `)
-    .eq('barberbarberbarbershop_id', barberbarberbarbershopId)
+    .eq('barberbarbershop_id', barbershopId)
     .single()
 
   // Get terminal configuration if it exists
   const { data: terminalConfig } = await supabase
     .from('stripe_terminal_config')
     .select('*')
-    .eq('barberbarberbarbershop_id', barberbarberbarbershopId)
+    .eq('barberbarbershop_id', barbershopId)
     .single()
 
   // Get financial arrangements using Stripe Connect
   const { data: financialArrangements } = await supabase
     .from('financial_arrangements')
     .select('barber_id, stripe_account_id, stripe_onboarding_complete')
-    .eq('barberbarberbarbershop_id', barberbarberbarbershopId)
+    .eq('barberbarbershop_id', barbershopId)
     .not('stripe_account_id', 'is', null)
 
   // Calculate unified status

@@ -1,20 +1,15 @@
 'use client'
 
-import { 
+import {
   HomeIcon,
   ChartPieIcon,
   ChatBubbleLeftRightIcon,
   ChartBarIcon,
-  TrophyIcon,
   SparklesIcon,
   Cog6ToothIcon,
   CalendarDaysIcon,
   UserGroupIcon,
-  UserPlusIcon,
   LinkIcon,
-  QrCodeIcon,
-  GlobeAltIcon,
-  EyeIcon,
   Bars3Icon,
   XMarkIcon,
   PresentationChartLineIcon,
@@ -25,7 +20,6 @@ import {
   CubeIcon,
   CreditCardIcon,
   BuildingStorefrontIcon,
-  BuildingOffice2Icon,
   ScissorsIcon,
   ShoppingBagIcon,
   DocumentChartBarIcon,
@@ -233,8 +227,8 @@ export default function Navigation() {
   const [isClient, setIsClient] = useState(false)
   
   // Get user role from authentication context
-  const { profile } = useAuth()
-  const userRole = profile?.role || 'BARBER' // Default to BARBER if no role is set
+  const { profile: _profile } = useAuth()
+  const userRole = _profile?.role || 'BARBER' // Default to BARBER if no role is set
 
   useEffect(() => {
     setIsClient(true)

@@ -6,7 +6,7 @@ export async function POST() {
     const supabase = await createServiceRoleClient()
     
     // IDs of test/dev barbershops to remove (from our previous query)
-    const testBarberbarbershopIds = [
+    const testbarbershopIds = [
       '9d235d60-4e34-4f85-9aa7-e50556f18eec', // Mike's Professional Barbershop
       '6ae0a322-c656-43aa-9ab2-dc9c93237fcf', // Dev Test Barbershop
       '944afb4f-c731-4914-bc5a-4b83edb6d0c1', // E2E Test Barbershop 1
@@ -15,7 +15,7 @@ export async function POST() {
     ]
     
     // Keep this one - Tomb45 Channelside
-    const keepBarberbarbershopId = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
+    const keepbarbershopId = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'
     
     const cleanupResults = {
       barbershopsRemoved: [],
@@ -24,26 +24,26 @@ export async function POST() {
     }
 
     // Step 1: Remove test barbershops
-    for (const barberbarbershopId of testBarberbarbershopIds) {
+    for (const barbershopId of testbarbershopIds) {
       try {
         // First remove any related data (appointments, staff, etc.)
-        await supabase.from('appointments').delete().eq('barberbarbershop_id', barberbarbershopId)
-        await supabase.from('barbershop_staff').delete().eq('barberbarbershop_id', barberbarbershopId)
-        await supabase.from('services').delete().eq('barberbarbershop_id', barberbarbershopId)
+        await supabase.from('appointments').delete().eq('barbershop_id', barbershopId)
+        await supabase.from('barbershop_staff').delete().eq('barbershop_id', barbershopId)
+        await supabase.from('services').delete().eq('barbershop_id', barbershopId)
         
         // Then remove the barbershop itself
         const { error } = await supabase
           .from('barbershops')
           .delete()
-          .eq('id', barberbarbershopId)
+          .eq('id', barbershopId)
           
         if (error) {
-          cleanupResults.errors.push(`Failed to remove barbershop ${barberbarbershopId}: ${error.message}`)
+          cleanupResults.errors.push(`Failed to remove barbershop ${barbershopId}: ${error.message}`)
         } else {
-          cleanupResults.barbershopsRemoved.push(barberbarbershopId)
+          cleanupResults.barbershopsRemoved.push(barbershopId)
         }
       } catch (error) {
-        cleanupResults.errors.push(`Error processing barbershop ${barberbarbershopId}: ${error.message}`)
+        cleanupResults.errors.push(`Error processing barbershop ${barbershopId}: ${error.message}`)
       }
     }
 
@@ -51,7 +51,7 @@ export async function POST() {
     // First, let's find users who might need to be associated with the correct shop
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, full_name, role, barbershop_id, barberbarbershop_id')
+      .select('id, email, full_name, role, barbershop_id, barbershop_id')
       .neq('role', 'CLIENT') // Don't modify client profiles
       
     if (profilesError) {
@@ -61,14 +61,14 @@ export async function POST() {
       for (const profile of profiles || []) {
         if (['SHOP_OWNER', 'BARBER', 'ENTERPRISE_OWNER'].includes(profile.role)) {
           // If they don't have a barbershop_id or have a test barbershop_id, update to Tomb45
-          const needsUpdate = !profile.shop_id || testBarberbarbershopIds.includes(profile.shop_id)
+          const needsUpdate = !profile.shop_id || testbarbershopIds.includes(profile.shop_id)
           
           if (needsUpdate) {
             const { error } = await supabase
               .from('profiles')
               .update({ 
-                barbershop_id: keepBarberbarbershopId,
-                barberbarbershop_id: keepBarberbarbershopId 
+                barbershop_id: keepbarbershopId,
+                barbershop_id: keepbarbershopId 
               })
               .eq('id', profile.id)
               
@@ -90,7 +90,7 @@ export async function POST() {
     const { data: tomb45, error: tomb45Error } = await supabase
       .from('barbershops')
       .select('id, name, owner_id')
-      .eq('id', keepBarberbarbershopId)
+      .eq('id', keepbarbershopId)
       .single()
       
     if (tomb45Error) {

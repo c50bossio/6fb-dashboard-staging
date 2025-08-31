@@ -1,10 +1,9 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { 
-  ExclamationTriangleIcon, 
-  CalendarIcon, 
-  ClockIcon,
+import {
+  ExclamationTriangleIcon,
+  CalendarIcon,
   UserIcon,
   BellIcon,
   EnvelopeIcon,

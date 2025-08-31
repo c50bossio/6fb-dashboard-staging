@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  ScissorsIcon,
   SparklesIcon,
   ClockIcon,
   CurrencyDollarIcon,
@@ -9,7 +8,6 @@ import {
   TrashIcon,
   InformationCircleIcon,
   ChartBarIcon,
-  MapPinIcon,
   UserGroupIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'

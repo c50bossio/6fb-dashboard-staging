@@ -207,7 +207,7 @@ async function handleGenericWebhook(body) {
   
   const { data: existingProduct } = await supabase
     .from('products')
-    .select('id, barberbarbershop_id')
+    .select('id, barbershop_id')
     .eq('sku', updatedProduct.sku)
     .single()
   
@@ -226,7 +226,7 @@ async function handleGenericWebhook(body) {
     }
     
     
-    await logProductChange('updated', existingProduct.id, updatedProduct, existingProduct.barberbarbershop_id)
+    await logProductChange('updated', existingProduct.id, updatedProduct, existingProduct.barbershop_id)
     
   } else {
   }
@@ -278,13 +278,13 @@ function mapCin7ProductData(productData) {
   }
 }
 
-async function logProductChange(action, productId, newData, barberbarbershopId) {
+async function logProductChange(action, productId, newData, barbershopId) {
   try {
     await supabase
       .from('product_change_logs')
       .insert({
         product_id: productId,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         action: action, // 'created', 'updated', 'deleted'
         changes: newData,
         timestamp: new Date().toISOString(),

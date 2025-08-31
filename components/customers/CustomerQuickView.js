@@ -12,7 +12,6 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   CalendarIcon,
-  MapPinIcon,
   StarIcon,
   ClockIcon,
   CurrencyDollarIcon,
@@ -24,7 +23,7 @@ import {
   HeartIcon,
   GiftIcon
 } from '@heroicons/react/24/outline'
-import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
+
 import React, { useState, useEffect, useRef } from 'react'
 import { AnimatedContainer, CountUp } from '../../utils/animations'
 import { customerDesignTokens } from './CustomerDesignSystem'

@@ -18,7 +18,7 @@ const mockAuthContext = {
     subscription_status: 'active',
     role: 'SHOP_OWNER',
     barbershop_id: 'dev-shop-123',
-    barberbarbershop_id: 'dev-shop-123'
+    barbershop_id: 'dev-shop-123'
   },
   loading: false,
   isAuthenticated: true,

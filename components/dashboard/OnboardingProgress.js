@@ -14,7 +14,9 @@ import {
   ArrowRightIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
+
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -96,26 +98,26 @@ export default function OnboardingProgress({ user, profile }) {
 
   // Determine user context for role-aware routing
   const userRole = profile?.role || 'SHOP_OWNER'
-  const [barberbarbershopId, setBarberbarbershopId] = useState('default')
+  const [barbershopId, setbarbershopId] = useState('default')
   
   // Get dynamic steps based on user role and context
   const ONBOARDING_STEPS = getOnboardingSteps(userRole)
 
   // Get barbershop ID using getTenant
   useEffect(() => {
-    const resolveBarberbarbershopId = async () => {
+    const resolvebarbershopId = async () => {
       if (profile?.id) {
         try {
-          const { barberbarbershopId } = await getTenant(profile.id, { supabase })
-          setBarberbarbershopId(barberbarbershopId || 'default')
+          const { barbershopId } = await getTenant(profile.id, { supabase })
+          setbarbershopId(barbershopId || 'default')
         } catch (error) {
           console.error('Error getting barbershop ID:', error)
-          setBarberbarbershopId('default')
+          setbarbershopId('default')
         }
       }
     }
     
-    resolveBarberbarbershopId()
+    resolvebarbershopId()
   }, [profile?.id, supabase])
 
   // Load status from simplified API
@@ -276,7 +278,7 @@ export default function OnboardingProgress({ user, profile }) {
         from: 'dashboard',
         stepTitle: step.title,
         userRole,
-        barberbarbershopId
+        barbershopId
       }
       
       try {

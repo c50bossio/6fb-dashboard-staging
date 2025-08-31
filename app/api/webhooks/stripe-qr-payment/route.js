@@ -176,7 +176,7 @@ async function createSalesRecords(qrSession, stripeSession) {
     
     // Create sales records for each item
     const salesRecords = qrSession.cart_items.map(item => ({
-      barberbarbershop_id: qrSession.barberbarbershop_id,
+      barbershop_id: qrSession.barbershop_id,
       product_id: item.id,
       quantity: item.quantity,
       unit_price: item.price,
@@ -245,7 +245,7 @@ async function createCommissionRecords(qrSession, receiptNumber) {
         
         return {
           barber_id: qrSession.barber_id,
-          barberbarbershop_id: qrSession.barberbarbershop_id,
+          barbershop_id: qrSession.barbershop_id,
           product_id: item.id,
           sale_amount: itemTotal,
           commission_rate: item.commission_rate,

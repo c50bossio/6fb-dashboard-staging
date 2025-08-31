@@ -18,7 +18,7 @@ class StripeConnectService {
    */
   async createConnectAccount({
     barberId,
-    barberbarbershopId,
+    barbershopId,
     email,
     firstName,
     lastName,
@@ -46,7 +46,7 @@ class StripeConnectService {
         },
         metadata: {
           barberId,
-          barberbarbershopId,
+          barbershopId,
           platform: 'bookedbarber',
           created_at: new Date().toISOString()
         },

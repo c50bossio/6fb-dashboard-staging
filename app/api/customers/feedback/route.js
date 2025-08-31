@@ -31,34 +31,34 @@ async function verifyAuth(request) {
       return { error: 'Invalid token', status: 401 }
     }
 
-    // Get barberbarbershop_id for the user
+    // Get barbershop_id for the user
     const { data: barbershopData, error: barbershopError } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
       .single()
 
-    let barberbarbershopId = null
+    let barbershopId = null
     if (barbershopData) {
-      barberbarbershopId = barbershopData.id
+      barbershopId = barbershopData.id
     } else {
       // Check if user is a barber
       const { data: barberData, error: barberError } = await supabase
         .from('barbers')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .single()
       
       if (barberData) {
-        barberbarbershopId = barberData.barberbarbershop_id
+        barbershopId = barberData.barbershop_id
       }
     }
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return { error: 'User not associated with any barbershop', status: 403 }
     }
 
-    return { user, barberbarbershopId }
+    return { user, barbershopId }
   } catch (error) {
     return { error: 'Authentication failed', status: 401 }
   }
@@ -104,14 +104,14 @@ function analyzeSentiment(text) {
 }
 
 // Helper function to update customer intelligence
-async function updateCustomerIntelligence(customerId, feedbackData, barberbarbershopId) {
+async function updateCustomerIntelligence(customerId, feedbackData, barbershopId) {
   try {
     // Get current customer intelligence
     const { data: intelData, error: intelError } = await supabase
       .from('customer_intelligence')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     if (intelData) {
@@ -160,7 +160,7 @@ export async function POST(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { user, barberbarbershopId } = authResult
+    const { user, barbershopId } = authResult
     const body = await request.json()
 
     const {
@@ -198,7 +198,7 @@ export async function POST(request) {
     // Create feedback record
     const feedbackData = {
       id: crypto.randomUUID(),
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       customer_id,
       appointment_id,
       barber_id,
@@ -248,7 +248,7 @@ export async function POST(request) {
     }
 
     // Update customer intelligence in background
-    updateCustomerIntelligence(customer_id, feedbackData, barberbarbershopId)
+    updateCustomerIntelligence(customer_id, feedbackData, barbershopId)
 
     // Prepare response
     const response = {
@@ -274,7 +274,7 @@ export async function GET(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const { searchParams } = new URL(request.url)
 
     // Parse query parameters
@@ -295,7 +295,7 @@ export async function GET(request) {
         customers!customer_id(name, email),
         barbers!barber_id(name)
       `)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
 
     // Apply filters
     if (feedbackType) query = query.eq('feedback_type', feedbackType)
@@ -341,7 +341,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const body = await request.json()
     const { feedback_id, status, internal_notes, resolution_notes, assigned_to_user_id } = body
 
@@ -360,7 +360,7 @@ export async function PUT(request) {
         updated_at: new Date().toISOString()
       })
       .eq('id', feedback_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .select()
       .single()
 

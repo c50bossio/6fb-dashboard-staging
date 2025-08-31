@@ -5,12 +5,11 @@ import {
   ArrowPathIcon,
   ExclamationTriangleIcon,
   XCircleIcon,
-  CloudArrowUpIcon,
   ClockIcon,
   SignalIcon,
   SignalSlashIcon
 } from '@heroicons/react/24/outline'
-import { CheckCircleIcon as CheckCircleSolidIcon } from '@heroicons/react/24/solid'
+
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 

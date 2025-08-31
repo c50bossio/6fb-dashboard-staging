@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   CalendarDaysIcon,
   ClockIcon,
   CreditCardIcon,
@@ -8,13 +8,7 @@ import {
   StarIcon,
   GiftIcon,
   ShoppingBagIcon,
-  ChevronRightIcon,
-  ArrowPathIcon,
-  XMarkIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  BellIcon,
-  CogIcon
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
@@ -32,7 +26,7 @@ export default function CustomerPortal({ customerId }) {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   useEffect(() => {
     loadCustomerData()

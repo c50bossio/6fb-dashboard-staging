@@ -5,7 +5,6 @@ import {
   CurrencyDollarIcon,
   CalendarDaysIcon,
   ChartBarIcon,
-  ClockIcon,
   StarIcon,
   ArrowTrendingDownIcon,
   UserPlusIcon,
@@ -20,7 +19,7 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useShopDashboard, useCurrentShopId } from '@/hooks'
 
 export default function ShopDashboard() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const barbershopId = useCurrentShopId()
   const { shop, metrics, analytics, isLoading, error } = useShopDashboard(barbershopId)
   

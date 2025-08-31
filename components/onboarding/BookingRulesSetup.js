@@ -1,19 +1,15 @@
 'use client'
 
 import {
-  ClockIcon,
   CalendarIcon,
   ExclamationTriangleIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
   BellIcon,
-  DocumentTextIcon,
-  ShieldCheckIcon,
   InformationCircleIcon,
-  CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useOnboardingSession } from '@/contexts/OnboardingContext'
 import { FieldNormalizer } from '@/lib/booking-rules-engine/FieldNormalizer'
 

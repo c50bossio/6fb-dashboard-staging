@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   UsersIcon,
   PlusIcon,
   MagnifyingGlassIcon,
@@ -9,7 +9,6 @@ import {
   EnvelopeIcon,
   CalendarIcon,
   StarIcon,
-  MapPinIcon,
   ChartBarIcon,
   FunnelIcon,
   ExclamationTriangleIcon,
@@ -160,7 +159,7 @@ function CustomersPageContent() {
       notes: customer.notes || '',
       isVip: customer.vip_status || false,
       isActive: customer.is_active !== false,
-      barberbarbershopId: customer.barberbarbershop_id || barbershopId,
+      barbershopId: customer.barbershop_id || barbershopId,
       loyaltyPoints: customer.loyalty_points || 0
     }))
   }
@@ -405,7 +404,7 @@ function CustomersPageContent() {
 
     try {
       await createCustomerMutation.mutateAsync({
-        barberbarbershop_id: barbershopId,
+        barbershop_id: barbershopId,
         name: customerData.name,
         email: customerData.email,
         phone: customerData.phone,
@@ -490,7 +489,7 @@ function CustomersPageContent() {
 
           <AchievementBadges
             customerId={selectedCustomerForBadges.id}
-            barberbarbershopId="demo-barbershop"
+            barbershopId="demo-barbershop"
             showProgress={true}
             autoRefresh={true}
             onBadgeUnlock={(badges) => {
@@ -500,7 +499,7 @@ function CustomersPageContent() {
 
           <BadgeProgress
             customerId={selectedCustomerForBadges.id}
-            barberbarbershopId="demo-barbershop"
+            barbershopId="demo-barbershop"
             showQuickActions={true}
             onProgressUpdate={(data) => {
               
@@ -684,7 +683,7 @@ function CustomersPageContent() {
 
         {badgeView === 'leaderboard' && (
           <BadgeLeaderboard
-            barberbarbershopId="demo-barbershop"
+            barbershopId="demo-barbershop"
             showFilters={true}
             showStatistics={true}
             allowSharing={true}
@@ -1069,7 +1068,7 @@ function CustomersPageContent() {
                       <div className="mb-2">
                         <LoyaltyPointsBadge 
                           customerId={customer.id}
-                          barberbarbershopId={customer.barberbarbershopId}
+                          barbershopId={customer.barbershopId}
                           size="default"
                           showProgress={true}
                         />
@@ -1109,7 +1108,7 @@ function CustomersPageContent() {
                       <span>Last visit: {customer.lastVisit || 'Never'}</span>
                       <QuickRedeemButton 
                         customerId={customer.id}
-                        barberbarbershopId={customer.barberbarbershopId}
+                        barbershopId={customer.barbershopId}
                       />
                     </div>
                     
@@ -1427,7 +1426,7 @@ function CustomersPageContent() {
                     setShowImportModal(false)
                   }}
                   profile={{
-                    barberbarbershop_id: barbershopId
+                    barbershop_id: barbershopId
                   }}
                   initialData={{}}
                   context="company-wide"

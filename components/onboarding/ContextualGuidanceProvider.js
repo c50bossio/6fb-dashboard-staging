@@ -1,13 +1,11 @@
 'use client'
 
-import { 
-  CheckCircleIcon, 
-  ExclamationTriangleIcon, 
-  InformationCircleIcon,
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
   SparklesIcon,
   TrophyIcon,
-  LightBulbIcon,
-  ArrowRightIcon
+  LightBulbIcon
 } from '@heroicons/react/24/outline'
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import smartSuggestions from '../../services/SmartSuggestionsAPI'

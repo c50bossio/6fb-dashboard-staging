@@ -1,6 +1,6 @@
 'use client'
 
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+
 
 export default function ReviewAttributionModal({ review, isOpen, onClose, onEditAttribution = null }) {
   if (!isOpen || !review) return null

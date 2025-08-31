@@ -2,7 +2,7 @@
 
 import { Dialog, Transition } from '@headlessui/react'
 import { CheckCircleIcon, CalendarDaysIcon, ClockIcon, UserIcon, CurrencyDollarIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
+
 import { useState, useEffect, Fragment } from 'react'
 
 export default function BookingConfirmationModal({

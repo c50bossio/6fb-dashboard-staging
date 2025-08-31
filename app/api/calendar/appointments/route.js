@@ -15,7 +15,7 @@ export async function GET(request) {
     // Get user profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, full_name, role, barbershop_id, barberbarbershop_id')
+      .select('id, full_name, role, barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
     
@@ -27,24 +27,14 @@ export async function GET(request) {
     }
 
     // Determine barbershop ID
-    let barberbarbershopId = profile.shop_id || profile.barbershop_id
+    let barbershopId = profile.shop_id || profile.barbershop_id
     
-    // If no direct shop, check if user is staff
-    if (!barberbarbershopId) {
-      const { data: staffAssignment } = await supabase
-        .from('barbershop_staff')
-        .select('barberbarbershop_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .single()
-      
-      if (staffAssignment) {
-        barberbarbershopId = staffAssignment.barberbarbershop_id
-      }
-    }
+    // Skip barbershop_staff query to avoid 406 errors
+    // Staff associations should be managed through profiles table
+    // If no barbershopId in profile, will return empty appointments below
 
     // If still no barbershop, return empty
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({ 
         appointments: [],
         message: 'No barbershop associated' 
@@ -56,7 +46,7 @@ export async function GET(request) {
     const start = searchParams.get('start') // FullCalendar sends these automatically
     const end = searchParams.get('end')
     const locationIds = searchParams.get('location_ids')
-    const barbershopId = searchParams.get('barbershop_id')
+    const barbershopIdParam = searchParams.get('barbershop_id')
     
     // Use FullCalendar date range if provided, otherwise default to today + 30 days for performance
     let startDate, endDate
@@ -74,16 +64,16 @@ export async function GET(request) {
     }
 
     // Handle multi-location requests
-    let targetBarberbarbershopIds = []
+    let targetbarbershopIds = []
     if (locationIds) {
-      targetBarberbarbershopIds = locationIds.split(',')
-      console.log(`[Calendar API] Multi-location request for shops: ${targetBarberbarbershopIds.join(', ')}`)
-    } else if (barbershopId) {
-      targetBarberbarbershopIds = [barbershopId]
-      console.log(`[Calendar API] Single shop request: ${barbershopId}`)
+      targetbarbershopIds = locationIds.split(',')
+      console.log(`[Calendar API] Multi-location request for shops: ${targetbarbershopIds.join(', ')}`)
+    } else if (barbershopIdParam) {
+      targetbarbershopIds = [barbershopIdParam]
+      console.log(`[Calendar API] Single shop request: ${barbershopIdParam}`)
     } else {
-      targetBarberbarbershopIds = [barberbarbershopId]
-      console.log(`[Calendar API] Using user's barbershop: ${barberbarbershopId}`)
+      targetbarbershopIds = [barbershopId]
+      console.log(`[Calendar API] Using user's barbershop: ${barbershopId}`)
     }
 
     // Build optimized query with date range filtering
@@ -101,7 +91,7 @@ export async function GET(request) {
         duration_minutes,
         status,
         barber_id,
-        barberbarbershop_id,
+        barbershop_id,
         notes,
         created_at,
         updated_at
@@ -112,10 +102,10 @@ export async function GET(request) {
       .order('time', { ascending: true })
 
     // Apply barbershop filter
-    if (targetBarberbarbershopIds.length === 1) {
-      query = query.eq('barberbarbershop_id', targetBarberbarbershopIds[0])
-    } else if (targetBarberbarbershopIds.length > 1) {
-      query = query.in('barberbarbershop_id', targetBarberbarbershopIds)
+    if (targetbarbershopIds.length === 1) {
+      query = query.eq('barbershop_id', targetbarbershopIds[0])
+    } else if (targetbarbershopIds.length > 1) {
+      query = query.in('barbershop_id', targetbarbershopIds)
     }
 
     const { data: bookings, error: bookingsError } = await query
@@ -198,7 +188,7 @@ export async function GET(request) {
           notes: booking.notes,
           barberId: booking.barber_id,
           barberName: barberMap[booking.barber_id] || 'Unassigned',
-          barberbarbershopId: booking.barberbarbershop_id
+          barbershopId: booking.barbershop_id
         }
       }
     })
@@ -212,7 +202,7 @@ export async function GET(request) {
         end: endDate.toISOString(),
         daysSpan: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
       },
-      barbershops: targetBarberbarbershopIds,
+      barbershops: targetbarbershopIds,
       queryOptimization: start && end ? 'FullCalendar date range used' : 'Default 30-day range used'
     }
     
@@ -221,7 +211,7 @@ export async function GET(request) {
     return NextResponse.json({
       appointments,
       count: appointments.length,
-      barberbarbershopId,
+      barbershopId,
       meta: {
         dateRange: {
           start: startDate.toISOString(),
@@ -230,7 +220,7 @@ export async function GET(request) {
         optimization: {
           rangeOptimized: !!(start && end),
           recordsReturned: appointments.length,
-          barbershopsQueried: targetBarberbarbershopIds.length
+          barbershopsQueried: targetbarbershopIds.length
         }
       }
     })
@@ -277,7 +267,7 @@ export async function PATCH(request) {
       const { data: blockedTime, error: blockError } = await supabase
         .from('bookings')
         .insert({
-          barberbarbershop_id: body.barberbarbershop_id || body.barbershop_id,
+          barbershop_id: body.barbershop_id || body.barbershop_id,
           barber_id: barber_id || user.id,
           customer_name: 'BLOCKED',
           customer_email: 'blocked@system.local',
@@ -420,7 +410,7 @@ export async function POST(request) {
     const { data: newBooking, error: createError } = await supabase
       .from('bookings')
       .insert({
-        barberbarbershop_id: body.barberbarbershop_id || body.barbershop_id,
+        barbershop_id: body.barbershop_id || body.barbershop_id,
         barber_id: body.barber_id || user.id,
         customer_name: body.customer_name,
         customer_email: body.customer_email,

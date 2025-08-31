@@ -27,7 +27,7 @@ export async function POST(request) {
     // Verify customer exists
     const { data: customer, error: customerError } = await supabase
       .from('customers')
-      .select('id, name, barberbarbershop_id')
+      .select('id, name, barbershop_id')
       .eq('id', customer_id)
       .single()
 
@@ -128,7 +128,7 @@ export async function GET(request) {
         total_visits,
         total_spent,
         created_at,
-        barberbarbershop_id
+        barbershop_id
       `)
       .eq('id', customerId)
       .single()

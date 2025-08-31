@@ -19,14 +19,14 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { barberId, barberbarbershopId } = body;
+    const { barberId, barbershopId } = body;
 
     // Get financial arrangement
     const { data: arrangement } = await supabase
       .from('financial_arrangements')
       .select('barber_stripe_account_id, barber_stripe_onboarded')
       .eq('barber_id', barberId || user.id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single();
 
     if (!arrangement?.barber_stripe_account_id) {

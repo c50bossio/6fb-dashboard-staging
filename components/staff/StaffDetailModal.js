@@ -1,18 +1,16 @@
 'use client'
 
-import { 
-  XMarkIcon, 
+import {
+  XMarkIcon,
   UserCircleIcon,
   PhoneIcon,
   EnvelopeIcon,
   BriefcaseIcon,
   CurrencyDollarIcon,
-  CalendarIcon,
   ChartBarIcon,
   PencilIcon,
   TrashIcon,
-  CheckIcon,
-  XCircleIcon
+  CheckIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'

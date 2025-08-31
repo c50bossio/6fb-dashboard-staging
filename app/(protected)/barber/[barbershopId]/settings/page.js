@@ -5,14 +5,9 @@ import {
   PaintBrushIcon,
   CalendarDaysIcon,
   SparklesIcon,
-  PhotoIcon,
   CheckCircleIcon,
-  ClockIcon,
-  PhoneIcon,
-  EnvelopeIcon,
   XMarkIcon,
   StarIcon,
-  ChatBubbleBottomCenterTextIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
 import { useParams } from 'next/navigation'
@@ -22,9 +17,9 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function BarberSettings() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const params = useParams()
-  const barberbarbershopId = params.barberbarbershopId
+  const barbershopId = params.barbershopId
 
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
@@ -67,7 +62,7 @@ export default function BarberSettings() {
     show_specializations: true
   })
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const tabs = [
     {
@@ -98,10 +93,10 @@ export default function BarberSettings() {
 
   useEffect(() => {
     loadBarberSettings()
-  }, [user, barberbarbershopId])
+  }, [user, barbershopId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadBarberSettings = async () => {
-    if (!user || !barberbarbershopId) return
+    if (!user || !barbershopId) return
 
     try {
       setLoading(true)
@@ -111,7 +106,7 @@ export default function BarberSettings() {
         .from('barbershop_staff')
         .select('*')
         .eq('user_id', user.id)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .single()
 
       if (staffError && staffError.code !== 'PGRST116') {
@@ -151,7 +146,7 @@ export default function BarberSettings() {
   }
 
   const handleSave = async () => {
-    if (!user || !barberbarbershopId) return
+    if (!user || !barbershopId) return
 
     try {
       setSaving(true)
@@ -162,7 +157,7 @@ export default function BarberSettings() {
         .from('barbershop_staff')
         .upsert({
           user_id: user.id,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           full_name: settings.full_name,
           bio: settings.bio,
           profile_image_url: settings.profile_image_url,
@@ -180,7 +175,7 @@ export default function BarberSettings() {
           show_specializations: settings.show_specializations,
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'user_id,barberbarbershop_id'
+          onConflict: 'user_id,barbershop_id'
         })
 
       if (error) {

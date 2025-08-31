@@ -16,7 +16,7 @@ import { Badge } from '../ui/badge'
 import { Button } from '../ui/Button'
 
 export default function ProductBridgeSelector({ 
-  barberbarbershopId, 
+  barbershopId, 
   onClose, 
   onProductsAdded 
 }) {
@@ -32,7 +32,7 @@ export default function ProductBridgeSelector({
   // Fetch available master products
   useEffect(() => {
     fetchMasterProducts()
-  }, [barberbarbershopId, selectedCategory, searchTerm])
+  }, [barbershopId, selectedCategory, searchTerm])
 
   const fetchMasterProducts = async () => {
     try {
@@ -40,7 +40,7 @@ export default function ProductBridgeSelector({
       setError(null)
 
       const params = new URLSearchParams({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         exclude_existing: 'true'
       })
 
@@ -97,7 +97,7 @@ export default function ProductBridgeSelector({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           master_product_ids: Array.from(selectedProducts)
         })
       })

@@ -50,25 +50,12 @@ export async function GET() {
         .single();
       barbershopData = shopData;
     }
-    // 3. Employee of a barbershop (via barbershop_staff table)
+    // 3. Skip barbershop_staff table to avoid 406 errors
+    // Staff associations should be managed through profiles table
     else {
-      const { data: staffRecord } = await supabase
-        .from('barbershop_staff')
-        .select('barbershop_id, role')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .single();
-
-      if (staffRecord) {
-        barbershopId = staffRecord.barbershop_id;
-        const { data: shopData } = await supabase
-          .from('barbershops')
-          .select('*')
-          .eq('id', staffRecord.barbershop_id)
-          .single();
-        barbershopData = shopData;
-        profile.staff_role = staffRecord.role; // Add staff role to profile
-      }
+      // No barbershop association found
+      barbershopId = null;
+      barbershopData = null;
     }
 
     // Add barbershop info to profile response

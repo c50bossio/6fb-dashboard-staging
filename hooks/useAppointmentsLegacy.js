@@ -49,7 +49,7 @@ export const useCreateAppointment = () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       
       // Optionally update cache optimistically
-      const barbershopId = data.barberbarbershop_id;
+      const barbershopId = data.barbershop_id;
       queryClient.setQueryData(
         ['appointments', barbershopId],
         (oldData) => oldData ? [...oldData, data] : [data]

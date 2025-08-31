@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { dbLogger, apiLogger } from '@/lib/logger'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 const bookingSchema = z.object({
-  barberbarbershop_id: z.string().uuid(),
+  barbershop_id: z.string().uuid(),
   client_id: z.string().uuid().optional(),
   barber_id: z.string().uuid(),
   service_id: z.string().uuid(),
@@ -33,7 +34,7 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const barberbarbershop_id = searchParams.get('barberbarbershop_id')
+    const barbershop_id = searchParams.get('barbershop_id')
     const barber_id = searchParams.get('barber_id')
     const client_id = searchParams.get('client_id')
     const start_date = searchParams.get('start_date')
@@ -50,8 +51,8 @@ export async function GET(request) {
       .order('scheduled_at', { ascending: true })
       .range(offset, offset + limit - 1)
 
-    if (barberbarbershop_id) {
-      query = query.eq('barberbarbershop_id', barberbarbershop_id)
+    if (barbershop_id) {
+      query = query.eq('barbershop_id', barbershop_id)
     }
     if (barber_id) {
       query = query.eq('barber_id', barber_id)
@@ -72,7 +73,12 @@ export async function GET(request) {
     const { data: bookings, error } = await query
 
     if (error) {
-      console.error('Database query failed:', error.message)
+      dbLogger.error('Database query failed in appointments GET', error, {
+        context: 'appointments_query',
+        barbershop_id,
+        barber_id,
+        client_id
+      })
       return NextResponse.json({ 
         error: 'Failed to fetch bookings',
         details: error.message 
@@ -84,14 +90,14 @@ export async function GET(request) {
       const clientIds = [...new Set(bookings.map(b => b.client_id).filter(Boolean))]
       const barberIds = [...new Set(bookings.map(b => b.barber_id).filter(Boolean))]
       const serviceIds = [...new Set(bookings.map(b => b.service_id).filter(Boolean))]
-      const barberbarbershopIds = [...new Set(bookings.map(b => b.barberbarbershop_id).filter(Boolean))]
+      const barbershopIds = [...new Set(bookings.map(b => b.barbershop_id).filter(Boolean))]
 
       // Fetch related data in parallel
       const [clientsData, barbersData, servicesData, barbershopsData] = await Promise.all([
         clientIds.length > 0 ? supabase.from('users').select('id, name, email, phone').in('id', clientIds) : { data: [] },
         barberIds.length > 0 ? supabase.from('users').select('id, name, email').in('id', barberIds) : { data: [] },
         serviceIds.length > 0 ? supabase.from('services').select('id, name, description, duration_minutes, price, category').in('id', serviceIds) : { data: [] },
-        barberbarbershopIds.length > 0 ? supabase.from('barbershops').select('id, name, address, phone').in('id', barberbarbershopIds) : { data: [] }
+        barbershopIds.length > 0 ? supabase.from('barbershops').select('id, name, address, phone').in('id', barbershopIds) : { data: [] }
       ])
 
       // Create lookup maps for better performance
@@ -105,7 +111,7 @@ export async function GET(request) {
         booking.client = clientsMap.get(booking.client_id) || null
         booking.barber = barbersMap.get(booking.barber_id) || null
         booking.service = servicesMap.get(booking.service_id) || null
-        booking.barbershop = barbershopsMap.get(booking.barberbarbershop_id) || null
+        booking.barbershop = barbershopsMap.get(booking.barbershop_id) || null
       })
     }
 
@@ -113,7 +119,7 @@ export async function GET(request) {
       .from('bookings')
       .select('*', { count: 'exact', head: true })
 
-    if (barberbarbershop_id) countQuery = countQuery.eq('barberbarbershop_id', barberbarbershop_id)
+    if (barbershop_id) countQuery = countQuery.eq('barbershop_id', barbershop_id)
     if (barber_id) countQuery = countQuery.eq('barber_id', barber_id)
     if (client_id) countQuery = countQuery.eq('client_id', client_id)
     if (start_date) countQuery = countQuery.gte('scheduled_at', start_date)
@@ -123,7 +129,12 @@ export async function GET(request) {
     const { count, error: countError } = await countQuery
 
     if (countError) {
-      console.error('Error getting bookings count:', countError)
+      dbLogger.error('Error getting bookings count', countError, {
+        context: 'appointments_count',
+        barbershop_id,
+        barber_id,
+        client_id
+      })
     }
 
     return NextResponse.json({
@@ -137,7 +148,10 @@ export async function GET(request) {
     })
 
   } catch (error) {
-    console.error('Unexpected error in GET /api/bookings:', error)
+    apiLogger.error('Unexpected error in appointments GET', error, {
+      context: 'appointments_get_exception',
+      endpoint: 'GET /api/appointments'
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -206,7 +220,11 @@ export async function POST(request) {
           .single()
 
         if (customerError) {
-          console.error('Error creating customer:', customerError)
+          dbLogger.error('Error creating customer during appointment creation', customerError, {
+            context: 'customer_creation',
+            client_email: validatedData.client_email,
+            barbershop_id: validatedData.barbershop_id
+          })
           return NextResponse.json({ 
             error: 'Failed to create customer record',
             details: customerError.message 
@@ -227,7 +245,11 @@ export async function POST(request) {
       .neq('id', 'ignore') // For future use in updates
 
     if (conflictCheck.error) {
-      console.error('Error checking conflicts:', conflictCheck.error)
+      dbLogger.error('Error checking appointment conflicts', conflictCheck.error, {
+        context: 'appointment_conflict_check',
+        barber_id: validatedData.barber_id,
+        scheduled_at: validatedData.scheduled_at
+      })
       return NextResponse.json({ error: 'Failed to check time conflicts' }, { status: 500 })
     }
 
@@ -250,7 +272,7 @@ export async function POST(request) {
 
     // CRITICAL FIX: Use proper client_id and avoid PostgREST syntax issues
     const bookingToInsert = {
-      barberbarbershop_id: appointmentData.barberbarbershop_id,
+      barbershop_id: appointmentData.barbershop_id,
       client_id: finalClientId,
       barber_id: appointmentData.barber_id,
       service_id: appointmentData.service_id,
@@ -274,7 +296,11 @@ export async function POST(request) {
       .single()
 
     if (error) {
-      console.error('Error creating appointment:', error)
+      dbLogger.error('Error creating appointment', error, {
+        context: 'appointment_creation',
+        barbershop_id: validatedData.barbershop_id,
+        barber_id: validatedData.barber_id
+      })
       return NextResponse.json({ error: 'Failed to create appointment', details: error.message }, { status: 500 })
     }
 
@@ -284,7 +310,7 @@ export async function POST(request) {
         finalClientId ? supabase.from('users').select('id, name, email, phone').eq('id', finalClientId).single() : { data: null },
         supabase.from('users').select('id, name, email').eq('id', appointment.barber_id).single(),
         supabase.from('services').select('id, name, description, duration_minutes, price, category').eq('id', appointment.service_id).single(),
-        supabase.from('barbershops').select('id, name, address, phone').eq('id', appointment.barberbarbershop_id).single()
+        supabase.from('barbershops').select('id, name, address, phone').eq('id', appointment.barbershop_id).single()
       ])
 
       appointment.client = clientData.data
@@ -302,7 +328,10 @@ export async function POST(request) {
     }, { status: 201 })
 
   } catch (error) {
-    console.error('Unexpected error in POST /api/appointments:', error)
+    apiLogger.error('Unexpected error in appointments POST', error, {
+      context: 'appointments_post_exception',
+      endpoint: 'POST /api/appointments'
+    })
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

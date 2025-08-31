@@ -2,7 +2,7 @@
 
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import BarberOnboardingFlow from '@/components/shop/BarberOnboardingFlow'
 
 export default function BarberOnboardingPage() {

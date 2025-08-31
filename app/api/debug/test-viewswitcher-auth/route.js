@@ -11,7 +11,7 @@ export async function GET() {
     // Get user profile (what auth would return)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('organization_id, role, barbershop_id, barberbarbershop_id, email')
+      .select('organization_id, role, barbershop_id, barbershop_id, email')
       .eq('id', testUserId)
       .single()
 
@@ -84,7 +84,7 @@ export async function GET() {
               avatar_url
             )
           `)
-          .in('barberbarbershop_id', barbershopIds)
+          .in('barbershop_id', barbershopIds)
           .eq('role', 'BARBER')
           .eq('is_active', true)
 

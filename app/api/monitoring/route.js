@@ -8,6 +8,21 @@ export async function GET(request) {
     const type = searchParams.get('type') || 'health'
     const hours = parseInt(searchParams.get('hours')) || 24
 
+    // Return mock data in development mode
+    if (process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true') {
+      return NextResponse.json({
+        health: {
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          dev_mode: true
+        },
+        errorCount: 0,
+        alerts: [],
+        metrics: [],
+        message: 'Development mode - using mock monitoring data'
+      })
+    }
+
     const timeThreshold = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
     const client = optimizedSupabase.getClient()
 
@@ -245,6 +260,16 @@ export async function POST(request) {
         { error: 'Missing required fields: type, data' },
         { status: 400 }
       )
+    }
+
+    // Skip database operations in development mode if tables don't exist
+    if (process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true') {
+      console.log('[Monitoring] Development mode - skipping database storage')
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Development mode - monitoring data not stored',
+        dev_mode: true 
+      })
     }
 
     const client = optimizedSupabase.getClient()

@@ -40,7 +40,7 @@ export async function GET(request) {
       const { data: arrangements } = await supabase
         .from('financial_arrangements')
         .select('id')
-        .eq('barberbarbershop_id', shop.id)
+        .eq('barbershop_id', shop.id)
         .eq('is_active', true)
         .limit(1)
       

@@ -10,7 +10,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function RealtimeAvailabilityChecker({
-  barberbarbershopId,
+  barbershopId,
   barberId,
   serviceId,
   selectedDate,
@@ -24,13 +24,13 @@ export default function RealtimeAvailabilityChecker({
   const [conflictedSlots, setConflictedSlots] = useState([])
   const [error, setError] = useState(null)
   
-  const supabase = createClient()
+  const _supabase = createClient()
   const checkIntervalRef = useRef(null)
   const subscriptionRef = useRef(null)
 
   // Real-time slot generation with conflict detection
   const generateRealTimeSlots = useCallback(async () => {
-    if (!barberbarbershopId || !selectedDate) return []
+    if (!barbershopId || !selectedDate) return []
 
     try {
       setLoading(true)
@@ -50,7 +50,7 @@ export default function RealtimeAvailabilityChecker({
             business_hours_override
           )
         `)
-        .eq('id', barberbarbershopId)
+        .eq('id', barbershopId)
         .single()
 
       const businessHours = shopData?.business_hours || {
@@ -81,7 +81,7 @@ export default function RealtimeAvailabilityChecker({
       const { data: existingBookings } = await supabase
         .from('bookings')
         .select('scheduled_at, duration_minutes, status, id')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('barber_id', barberId || 'any')
         .gte('scheduled_at', startOfDay.toISOString())
         .lt('scheduled_at', endOfDay.toISOString())
@@ -176,7 +176,7 @@ export default function RealtimeAvailabilityChecker({
     } finally {
       setLoading(false)
     }
-  }, [barberbarbershopId, barberId, serviceId, selectedDate, duration, onSlotsUpdate])
+  }, [barbershopId, barberId, serviceId, selectedDate, duration, onSlotsUpdate])
 
   // Helper function to determine popular times
   const isPopularTime = (time) => {
@@ -193,17 +193,17 @@ export default function RealtimeAvailabilityChecker({
 
   // Set up real-time subscription for booking changes
   useEffect(() => {
-    if (!barberbarbershopId || !selectedDate) return
+    if (!barbershopId || !selectedDate) return
 
     const channel = supabase
-      .channel(`bookings-${barberbarbershopId}-${selectedDate.toDateString()}`)
+      .channel(`bookings-${barbershopId}-${selectedDate.toDateString()}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'bookings',
-          filter: `barberbarberbarbershop_id=eq.${barberbarbershopId}`
+          filter: `barbershop_id=eq.${barbershopId}`
         },
         (payload) => {
           console.log('Booking change detected:', payload)
@@ -225,7 +225,7 @@ export default function RealtimeAvailabilityChecker({
         supabase.removeChannel(subscriptionRef.current)
       }
     }
-  }, [barberbarbershopId, selectedDate, generateRealTimeSlots])
+  }, [barbershopId, selectedDate, generateRealTimeSlots])
 
   // Set up periodic refresh (every 5 minutes)
   useEffect(() => {
@@ -256,7 +256,7 @@ export default function RealtimeAvailabilityChecker({
       const { data: conflicts } = await supabase
         .from('bookings')
         .select('id, scheduled_at, duration_minutes')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('barber_id', barberId || 'any')
         .gte('scheduled_at', slotStart.toISOString())
         .lt('scheduled_at', slotEnd.toISOString())
@@ -270,7 +270,7 @@ export default function RealtimeAvailabilityChecker({
       console.error('Error validating time slot:', error)
       return { available: false, error: error.message }
     }
-  }, [barberbarbershopId, barberId, duration])
+  }, [barbershopId, barberId, duration])
 
   return (
     <div className="space-y-4">
@@ -357,7 +357,7 @@ export default function RealtimeAvailabilityChecker({
 }
 
 // Hook for using real-time availability in other components
-export function useRealtimeAvailability(barberbarbershopId, barberId, serviceId, selectedDate, duration = 30) {
+export function useRealtimeAvailability(barbershopId, barberId, serviceId, selectedDate, duration = 30) {
   const [availableSlots, setAvailableSlots] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -375,7 +375,7 @@ export function useRealtimeAvailability(barberbarbershopId, barberId, serviceId,
     lastUpdated,
     RealtimeChecker: ({ children }) => (
       <RealtimeAvailabilityChecker
-        barberbarbershopId={barberbarbershopId}
+        barbershopId={barbershopId}
         barberId={barberId}
         serviceId={serviceId}
         selectedDate={selectedDate}

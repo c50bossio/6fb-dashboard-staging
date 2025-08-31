@@ -4,7 +4,6 @@ import {
   HeartIcon,
   ChatBubbleLeftRightIcon,
   GiftIcon,
-  HandRaiseIcon,
   SparklesIcon,
   UserGroupIcon,
   PhoneIcon,

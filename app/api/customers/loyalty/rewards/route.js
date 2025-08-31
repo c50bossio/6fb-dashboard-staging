@@ -45,7 +45,7 @@ export async function GET(request) {
       // Try to find if user is a barber
       const { data: barbers, error: barberError } = await supabase
         .from('barbers')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .single();
 
@@ -53,10 +53,10 @@ export async function GET(request) {
         return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
       }
       
-      barbershops = { id: barbers.barberbarbershop_id };
+      barbershops = { id: barbers.barbershop_id };
     }
 
-    const barberbarbershopId = barbershops.id;
+    const barbershopId = barbershops.id;
     const url = new URL(request.url);
     const action = url.searchParams.get('action') || 'catalog';
     const programId = url.searchParams.get('program_id');
@@ -68,12 +68,12 @@ export async function GET(request) {
 
     if (action === 'catalog') {
       // Get available rewards catalog
-      const rewards = await getAvailableRewards(barberbarbershopId, programId, customerTier);
+      const rewards = await getAvailableRewards(barbershopId, programId, customerTier);
       
       return NextResponse.json({ 
         success: true, 
         rewards,
-        barberbarbershop_id: barberbarbershopId
+        barbershop_id: barbershopId
       });
 
     } else if (action === 'redemptions') {
@@ -84,7 +84,7 @@ export async function GET(request) {
           *,
           customers!inner(first_name, last_name, email)
         `)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .order('redeemed_at', { ascending: false });
 
       if (customerId) {
@@ -152,7 +152,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
 
-    const barberbarbershopId = barbershops.id;
+    const barbershopId = barbershops.id;
     const body = await request.json();
 
     const {
@@ -185,7 +185,7 @@ export async function POST(request) {
       .select('*')
       .eq('customer_id', customer_id)
       .eq('loyalty_program_id', loyalty_program_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .single();
 
@@ -212,7 +212,7 @@ export async function POST(request) {
 
     // Create redemption record
     const redemptionData = {
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       customer_id,
       loyalty_program_id,
       reward_type,
@@ -243,7 +243,7 @@ export async function POST(request) {
 
     // Create points deduction transaction
     const transactionData = {
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       customer_id,
       loyalty_program_id,
       transaction_type: 'redeemed',
@@ -338,7 +338,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
 
-    const barberbarbershopId = barbershops.id;
+    const barbershopId = barbershops.id;
     const body = await request.json();
     const { redemption_id, new_status, applied_to_appointment_id, applied_to_transaction_id, cancellation_reason } = body;
 
@@ -360,7 +360,7 @@ export async function PUT(request) {
       .from('reward_redemptions')
       .select('*')
       .eq('id', redemption_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single();
 
     if (redemptionError || !redemption) {
@@ -389,7 +389,7 @@ export async function PUT(request) {
       updateData.cancellation_reason = cancellation_reason;
       
       // If cancelling, refund points
-      await refundRedemptionPoints(redemption, barberbarbershopId, user.id);
+      await refundRedemptionPoints(redemption, barbershopId, user.id);
     }
 
     // Update redemption
@@ -420,13 +420,13 @@ export async function PUT(request) {
 /**
  * Helper function to get available rewards from loyalty programs
  */
-async function getAvailableRewards(barberbarbershopId, programId, customerTier) {
+async function getAvailableRewards(barbershopId, programId, customerTier) {
   try {
     // Get loyalty programs
     let query = supabase
       .from('loyalty_programs')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true);
 
     if (programId) {
@@ -526,7 +526,7 @@ function generateRedemptionCode() {
 /**
  * Helper function to refund points when redemption is cancelled
  */
-async function refundRedemptionPoints(redemption, barberbarbershopId, userId) {
+async function refundRedemptionPoints(redemption, barbershopId, userId) {
   try {
     // Get current enrollment
     const { data: enrollment, error: enrollmentError } = await supabase
@@ -534,7 +534,7 @@ async function refundRedemptionPoints(redemption, barberbarbershopId, userId) {
       .select('current_points')
       .eq('customer_id', redemption.customer_id)
       .eq('loyalty_program_id', redemption.loyalty_program_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single();
 
     if (enrollmentError || !enrollment) {
@@ -548,7 +548,7 @@ async function refundRedemptionPoints(redemption, barberbarbershopId, userId) {
 
     // Create refund transaction
     const refundTransactionData = {
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       customer_id: redemption.customer_id,
       loyalty_program_id: redemption.loyalty_program_id,
       transaction_type: 'adjusted',
@@ -582,7 +582,7 @@ async function refundRedemptionPoints(redemption, barberbarbershopId, userId) {
       })
       .eq('customer_id', redemption.customer_id)
       .eq('loyalty_program_id', redemption.loyalty_program_id)
-      .eq('barberbarbershop_id', barberbarbershopId);
+      .eq('barbershop_id', barbershopId);
 
     if (updateError) {
       console.error('Error updating enrollment for refund:', updateError);

@@ -1,11 +1,10 @@
 'use client'
 
-import { 
+import {
   UserGroupIcon,
   CheckCircleIcon,
   XCircleIcon,
   ChartBarIcon,
-  CurrencyDollarIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback } from 'react'
@@ -38,7 +37,7 @@ const calculateDaysRemaining = (endDate) => {
 }
 
 export default function TierAssignmentManager({ 
-  barberbarbershopId, 
+  barbershopId, 
   staff = [], 
   onAssignmentChange 
 }) {
@@ -50,13 +49,13 @@ export default function TierAssignmentManager({
   
   // Load tier structures and current assignments
   const loadData = useCallback(async () => {
-    if (!barberbarbershopId) return
+    if (!barbershopId) return
     
     try {
       setLoading(true)
       
       // Load tier structures
-      const { data: structures, error: structuresError } = await financialService.getTierStructure(barberbarbershopId)
+      const { data: structures, error: structuresError } = await financialService.getTierStructure(barbershopId)
       if (structuresError) {
         console.error('Error loading tier structures:', structuresError)
         setTierStructures([])
@@ -67,7 +66,7 @@ export default function TierAssignmentManager({
       // Load current assignments for each staff member
       const assignmentPromises = staff.map(async (member) => {
         try {
-          const { data: status } = await financialService.getBarberTierStatus(member.id, barberbarbershopId)
+          const { data: status } = await financialService.getBarberTierStatus(member.id, barbershopId)
           return { barberId: member.id, status }
         } catch (error) {
           console.error(`Error loading tier status for ${member.id}:`, error)
@@ -90,7 +89,7 @@ export default function TierAssignmentManager({
     } finally {
       setLoading(false)
     }
-  }, [barberbarbershopId, staff])
+  }, [barbershopId, staff])
   
   useEffect(() => {
     loadData()
@@ -108,7 +107,7 @@ export default function TierAssignmentManager({
       
       const { data, error } = await financialService.assignBarberToTierStructure(
         barberId, 
-        barberbarbershopId, 
+        barbershopId, 
         structureId
       )
       

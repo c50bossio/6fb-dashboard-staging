@@ -44,30 +44,30 @@ const getGoogleOAuthConfig = (request) => ({
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const userId = searchParams.get('user_id')
     
     const GOOGLE_OAUTH_CONFIG = getGoogleOAuthConfig(request)
     
-    if (!barberbarbershopId || !userId) {
+    if (!barbershopId || !userId) {
       return NextResponse.json({
         success: false,
-        error: 'Missing required parameters: barberbarbershop_id and user_id'
+        error: 'Missing required parameters: barbershop_id and user_id'
       }, { status: 400 })
     }
     
     const { data: permission, error: permissionError } = await supabase
       .from('barbershop_staff')
-      .select('role, barberbarbershop_id')
+      .select('role, barbershop_id')
       .eq('user_id', userId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
     
     if (permissionError || !permission) {
       const { data: ownership, error: ownershipError } = await supabase
         .from('barbershops')
         .select('id, owner_id')
-        .eq('id', barberbarbershopId)
+        .eq('id', barbershopId)
         .eq('owner_id', userId)
         .single()
       
@@ -80,7 +80,7 @@ export async function GET(request) {
     }
     
     const state = generateSecureState({
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       user_id: userId,
       timestamp: Date.now()
     })
@@ -90,7 +90,7 @@ export async function GET(request) {
         .from('oauth_states')
         .insert({
           state_token: state,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           user_id: userId,
           provider: 'google_mybusiness',
           expires_at: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes

@@ -63,15 +63,15 @@ function formatCustomerData(customer, eventType = 'birthday') {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const eventType = searchParams.get('type') || 'birthday'; // 'birthday' or 'anniversary'
     const daysAhead = parseInt(searchParams.get('days_ahead')) || 30;
     const includeAll = searchParams.get('include_all') === 'true';
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({
         customers: [],
-        error: 'barberbarbershop_id parameter is required'
+        error: 'barbershop_id parameter is required'
       }, { status: 400 });
     }
 
@@ -95,7 +95,7 @@ export async function GET(request) {
         preferences,
         created_at
       `)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true);
 
     // Filter by event type and reminder preferences
@@ -167,7 +167,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const { 
-      barberbarbershop_id, 
+      barbershop_id, 
       customer_ids, 
       campaign_type, 
       message_type, 
@@ -178,9 +178,9 @@ export async function POST(request) {
       discount_amount 
     } = body;
 
-    if (!barberbarbershop_id || !customer_ids || !campaign_type) {
+    if (!barbershop_id || !customer_ids || !campaign_type) {
       return NextResponse.json({
-        error: 'barberbarbershop_id, customer_ids, and campaign_type are required'
+        error: 'barbershop_id, customer_ids, and campaign_type are required'
       }, { status: 400 });
     }
 
@@ -201,7 +201,7 @@ export async function POST(request) {
           .from('birthday_templates')
           .select('*')
           .eq('id', template_id)
-          .eq('barberbarbershop_id', barberbarbershop_id)
+          .eq('barbershop_id', barbershop_id)
           .eq('is_active', true)
           .single();
 
@@ -234,7 +234,7 @@ export async function POST(request) {
 
     // Create campaign records for each customer
     const campaigns = customer_ids.map(customerId => ({
-      barberbarbershop_id,
+      barbershop_id,
       customer_id: customerId,
       campaign_type,
       message_type: message_type || 'sms',

@@ -1,11 +1,9 @@
 'use client'
 
-import { 
-  PhotoIcon, 
-  ArrowUpTrayIcon, 
-  XMarkIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon
+import {
+  PhotoIcon,
+  ArrowUpTrayIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import { useState, useCallback } from 'react'
 import { toast } from 'react-hot-toast'

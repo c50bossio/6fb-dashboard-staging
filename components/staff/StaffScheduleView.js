@@ -1,12 +1,10 @@
 'use client'
 
-import { 
+import {
   CalendarIcon,
   PlusIcon,
-  ClockIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon,
-  XCircleIcon
+  CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import EnhancedProfessionalCalendar from '@/components/calendar/EnhancedProfessionalCalendar'
@@ -43,24 +41,24 @@ export default function StaffScheduleView({ staff, onRefresh }) {
   const loadScheduleData = useCallback(async () => {
     try {
       setLoading(true)
-      const supabase = createClient()
+      const _supabase = createClient()
       
       // Get barbershop ID from first staff member
-      const barberbarbershopId = staff[0]?.barberbarbershop_id
-      if (!barberbarbershopId) return
+      const barbershopId = staff[0]?.barbershop_id
+      if (!barbershopId) return
 
       // Load staff schedules
       const { data: schedules } = await supabase
         .from('staff_schedules')
         .select('*')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('is_active', true)
 
       // Load time off requests
       const { data: timeOff } = await supabase
         .from('staff_time_off')
         .select('*')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .in('status', ['approved', 'pending'])
 
       // Load appointments for the next 30 days
@@ -71,7 +69,7 @@ export default function StaffScheduleView({ staff, onRefresh }) {
       const { data: appointments } = await supabase
         .from('appointments')
         .select('*')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('appointment_date', startDate.toISOString())
         .lte('appointment_date', endDate.toISOString())
 

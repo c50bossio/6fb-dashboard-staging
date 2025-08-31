@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   avatar_url TEXT,
   role TEXT DEFAULT 'CLIENT',
   barbershop_id UUID,
-  barberbarbershop_id UUID,
+  barbershop_id UUID,
   subscription_tier TEXT DEFAULT 'individual',
   subscription_status TEXT DEFAULT 'active',
   phone TEXT,

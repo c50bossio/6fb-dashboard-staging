@@ -1,7 +1,6 @@
 'use client'
 
-import { 
-  XMarkIcon,
+import {
   ExclamationTriangleIcon,
   CurrencyDollarIcon,
   UserMinusIcon,

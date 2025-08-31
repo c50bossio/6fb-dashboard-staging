@@ -6,12 +6,11 @@ import {
   CheckCircleIcon,
   LightBulbIcon,
   XMarkIcon,
-  ChartBarIcon,
-  ArrowTrendingDownIcon
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function SmartBusinessMonitor({ barberbarbershop_id = 'demo' }) {
+export default function SmartBusinessMonitor({ barbershop_id = 'demo' }) {
   const [businessHealth, setBusinessHealth] = useState(null)
   const [alerts, setAlerts] = useState([])
   const [dailyPulse, setDailyPulse] = useState(null)
@@ -27,13 +26,13 @@ export default function SmartBusinessMonitor({ barberbarbershop_id = 'demo' }) {
     }, 5 * 60 * 1000)
     
     return () => clearInterval(interval)
-  }, [barberbarbershop_id])
+  }, [barbershop_id])
 
   const loadBusinessData = async () => {
     try {
       setLoading(true)
       
-      const healthResponse = await fetch(`/api/ai/business-monitor?barberbarbershop_id=${barberbarbershop_id}`)
+      const healthResponse = await fetch(`/api/ai/business-monitor?barbershop_id=${barbershop_id}`)
       const healthData = await healthResponse.json()
       
       if (healthData.success) {
@@ -41,7 +40,7 @@ export default function SmartBusinessMonitor({ barberbarbershop_id = 'demo' }) {
         setAlerts(healthData.data.alerts || [])
       }
       
-      const pulseResponse = await fetch(`/api/ai/daily-report?barberbarbershop_id=${barberbarbershop_id}&type=business_pulse`)
+      const pulseResponse = await fetch(`/api/ai/daily-report?barbershop_id=${barbershop_id}&type=business_pulse`)
       const pulseData = await pulseResponse.json()
       
       if (pulseData.success) {
@@ -64,7 +63,7 @@ export default function SmartBusinessMonitor({ barberbarbershop_id = 'demo' }) {
         body: JSON.stringify({
           action: 'dismiss_alert',
           alert_id: alertId,
-          barberbarbershop_id
+          barbershop_id
         })
       })
       

@@ -1,11 +1,10 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
   TrophyIcon,
   CalendarIcon,
   ArrowTrendingDownIcon,
-  UsersIcon,
   CurrencyDollarIcon,
   AcademicCapIcon,
   StarIcon
@@ -16,7 +15,7 @@ import { Card } from '@/components/ui/card'
 import financialService from '@/lib/financial-service'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-const supabase = createClient()
+const _supabase = createClient()
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', {
@@ -39,7 +38,7 @@ const formatPercentage = (value) => {
   return `${(value || 0).toFixed(1)}%`
 }
 
-export default function TierAnalyticsDashboard({ barberbarbershopId }) {
+export default function TierAnalyticsDashboard({ barbershopId }) {
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('3months') // '1month', '3months', '6months', '1year'
   const [tierStructure, setTierStructure] = useState(null)
@@ -50,14 +49,14 @@ export default function TierAnalyticsDashboard({ barberbarbershopId }) {
 
   // Load all tier analytics data
   const loadAnalyticsData = async () => {
-    if (!barberbarbershopId) return
+    if (!barbershopId) return
     
     try {
       setLoading(true)
       setError(null)
       
       // Load tier structure
-      const { data: structure } = await financialService.getTierStructure(barberbarbershopId)
+      const { data: structure } = await financialService.getTierStructure(barbershopId)
       setTierStructure(structure)
       
       // Load real tier history data
@@ -66,7 +65,7 @@ export default function TierAnalyticsDashboard({ barberbarbershopId }) {
         .select(`
           id,
           barber_id,
-          barberbarbershop_id,
+          barbershop_id,
           tier_id,
           period_start,
           period_end,
@@ -79,7 +78,7 @@ export default function TierAnalyticsDashboard({ barberbarbershopId }) {
           period_product_sales,
           combined_period_revenue
         `)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('achieved_at', getDateRangeStart(dateRange))
         .order('achieved_at', { ascending: false })
 
@@ -118,7 +117,7 @@ export default function TierAnalyticsDashboard({ barberbarbershopId }) {
           profiles:barber_id(id, first_name, last_name, full_name),
           current_tier:commission_tiers(tier_level, name, commission_percentage)
         `)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('is_active', true)
       
       if (staffError) throw staffError
@@ -148,7 +147,7 @@ export default function TierAnalyticsDashboard({ barberbarbershopId }) {
   }
   
   // Helper function to get date range start based on selection
-  const getDateRangeStart = (range) => {
+  const getDateRangeStart = (_range) => {
     const now = new Date()
     switch (range) {
       case '1month':
@@ -166,7 +165,7 @@ export default function TierAnalyticsDashboard({ barberbarbershopId }) {
   
   useEffect(() => {
     loadAnalyticsData()
-  }, [barberbarbershopId, dateRange])
+  }, [barbershopId, dateRange])
   
   // Calculate analytics from tier history
   const analytics = useMemo(() => {

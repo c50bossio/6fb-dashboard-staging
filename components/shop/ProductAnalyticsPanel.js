@@ -2,8 +2,6 @@
 
 import {
   ChartBarIcon,
-  CurrencyDollarIcon,
-  ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   LightBulbIcon,
   ChevronDownIcon,

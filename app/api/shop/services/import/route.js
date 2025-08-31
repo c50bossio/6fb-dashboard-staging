@@ -18,25 +18,25 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, barberbarbershop_id')
+      .select('barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
 
-    let barberbarbershopId = profile?.shop_id || profile?.barbershop_id
+    let barbershopId = profile?.shop_id || profile?.barbershop_id
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       // Try barbershop_staff table
       const { data: staffData } = await supabase
         .from('barbershop_staff')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
 
-      if (!staffData?.barberbarbershop_id) {
+      if (!staffData?.barbershop_id) {
         return NextResponse.json({ error: 'No barbershop found' }, { status: 400 })
       }
-      barberbarbershopId = staffData.barberbarbershop_id
+      barbershopId = staffData.barbershop_id
     }
 
     // Parse the CSV file
@@ -73,8 +73,8 @@ export async function POST(request) {
         service[header] = value
       })
       
-      // Add barbershop_id and ensure required fields (services table uses 'barbershop_id' not 'barberbarbershop_id')
-      service.barbershop_id = barberbarbershopId
+      // Add barbershop_id and ensure required fields (services table uses 'barbershop_id' not 'barbershop_id')
+      service.barbershop_id = barbershopId
       service.is_active = service.is_active ?? true
       service.online_booking_enabled = service.online_booking_enabled ?? true
       service.display_order = service.display_order || services.length

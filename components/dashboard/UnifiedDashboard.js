@@ -1,6 +1,6 @@
 'use client'
 
-// Updated to remove SparklesIcon dependencies
+// Fixed icon imports - removed SparklesIcon dependencies
 import { 
   ChartBarIcon,
   CpuChipIcon,
@@ -12,12 +12,15 @@ import {
   PlayIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline'
-import { 
+
+import {
   ChartBarIcon as ChartBarSolid,
   CpuChipIcon as CpuChipSolid,
   ClipboardDocumentListIcon as ClipboardSolid,
-  PresentationChartLineIcon as PresentationChartSolid
+  Squares2X2Icon as OverviewSolid,
+  PresentationChartLineIcon as PresentationSolid
 } from '@heroicons/react/24/solid'
+
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 
@@ -65,7 +68,7 @@ const modeConfigs = {
   [DASHBOARD_MODES.EXECUTIVE]: {
     label: 'Executive Overview',
     icon: Squares2X2Icon,
-    solidIcon: Squares2X2Icon,
+    solidIcon: OverviewSolid,
     color: 'indigo',
     description: 'High-level business performance'
   },
@@ -93,7 +96,7 @@ const modeConfigs = {
   [DASHBOARD_MODES.PREDICTIVE]: {
     label: 'Predictive',
     icon: PresentationChartLineIcon,
-    solidIcon: PresentationChartSolid,
+    solidIcon: PresentationSolid,
     color: 'purple',
     description: 'AI-powered forecasting & predictions'
   },
@@ -121,89 +124,36 @@ export default function UnifiedDashboard({ user, profile }) {
     hasProfile: !!profile,
     profileRole: profile?.role,
     profileShopId: profile?.shop_id,
-    profileBarberbarbershopId: profile?.barbershop_id,
+    profilebarbershopId: profile?.barbershop_id,
     modeParam
   })
   
   // React Query hooks replacing GlobalDashboardContext
-  console.log('🏠 Dashboard: Loading business context...')
-  const businessContextStart = performance.now()
   const { businessContext, user: contextUser, profile: contextProfile, barbershopId, isLoading: contextLoading } = useBusinessContext()
-  console.log('⏱️ Timing: useBusinessContext call took', (performance.now() - businessContextStart).toFixed(2), 'ms')
-  
-  const currentShopIdStart = performance.now()
   const currentShopId = useCurrentShopId()
-  console.log('⏱️ Timing: useCurrentShopId call took', (performance.now() - currentShopIdStart).toFixed(2), 'ms')
   
   const effectiveUser = contextUser || user
   const effectiveProfile = contextProfile || profile
 
-  console.log('🏠 Dashboard: Business context state:', {
-    hasBusinessContext: !!businessContext,
-    contextLoading,
-    contextUser: contextUser?.email,
-    contextProfile: !!contextProfile,
-    contextShopId: barbershopId,
-    currentShopId,
-    effectiveUserEmail: effectiveUser?.email,
-    effectiveProfileRole: effectiveProfile?.role
-  })
   
   // Use getTenant() to resolve shop ID
   const [effectiveShopId, setEffectiveShopId] = useState(currentShopId)
   
   useEffect(() => {
     const resolveShopId = async () => {
-      const resolveStart = performance.now()
-      console.log('🏠 Dashboard: Starting shop ID resolution...')
-      console.log('🏪 BookedBarber: Resolve context:', {
-        hasCurrentShopId: !!currentShopId,
-        currentShopId,
-        hasEffectiveProfile: !!effectiveProfile,
-        effectiveProfileId: effectiveProfile?.id,
-        effectiveProfileRole: effectiveProfile?.role,
-        hasBusinessContext: !!businessContext,
-        hasSupabaseClient: !!businessContext?.supabase
-      })
-      
       if (currentShopId) {
-        console.log('🏪 BookedBarber: Using currentShopId directly:', currentShopId)
         setEffectiveShopId(currentShopId)
-        console.log('⏱️ Timing: Shop ID resolution (direct) took', (performance.now() - resolveStart).toFixed(2), 'ms')
         return
       }
       
       if (effectiveProfile?.id) {
         try {
-          console.log('🏪 BookedBarber: Calling getTenant for profile:', effectiveProfile.id)
-          const tenantStart = performance.now()
-          const { barberbarbershopId, source, metadata } = await getTenant(effectiveProfile.id, { supabase: businessContext?.supabase })
-          const tenantTime = performance.now() - tenantStart
-          
-          console.log('🏪 BookedBarber: getTenant result:', {
-            barberbarbershopId,
-            source,
-            metadata,
-            timeTaken: tenantTime.toFixed(2) + 'ms'
-          })
-          
-          setEffectiveShopId(barberbarbershopId)
-          console.log('⏱️ Timing: Shop ID resolution (getTenant) took', (performance.now() - resolveStart).toFixed(2), 'ms')
-          
-          if (!barberbarbershopId) {
-            console.warn('🏪 BookedBarber: WARNING - No shop association found for user')
-            console.warn('🏪 BookedBarber: User role:', effectiveProfile.role)
-            console.warn('🏪 BookedBarber: This may cause dashboard functionality issues')
-          }
+          const { barbershopId, source, metadata } = await getTenant(effectiveProfile.id, { supabase: businessContext?.supabase })
+          setEffectiveShopId(barbershopId)
         } catch (error) {
           console.error('🏪 BookedBarber: Error getting barbershop ID:', error)
-          console.error('❌ Error: getTenant failed with:', error.message)
           setEffectiveShopId(null)
-          console.log('⏱️ Timing: Shop ID resolution (error) took', (performance.now() - resolveStart).toFixed(2), 'ms')
         }
-      } else {
-        console.warn('🏪 BookedBarber: No effective profile ID available for shop resolution')
-        console.log('⏱️ Timing: Shop ID resolution (no profile) took', (performance.now() - resolveStart).toFixed(2), 'ms')
       }
     }
     
@@ -211,8 +161,6 @@ export default function UnifiedDashboard({ user, profile }) {
   }, [currentShopId, effectiveProfile?.id, businessContext?.supabase])
   
   // Dashboard data hooks
-  console.log('🏠 Dashboard: Loading shop dashboard data for barbershopId:', effectiveShopId)
-  const shopDataStart = performance.now()
   const { 
     shop, 
     metrics, 
@@ -223,30 +171,10 @@ export default function UnifiedDashboard({ user, profile }) {
     error: shopDataError,
     refetch: refetchShopData
   } = useShopDashboard(effectiveShopId)
-  console.log('⏱️ Timing: useShopDashboard hook took', (performance.now() - shopDataStart).toFixed(2), 'ms')
-  
-  // Log shop data loading state
-  console.log('🏠 Dashboard: Shop data loading state:', {
-    hasShop: !!shop,
-    shopName: shop?.name,
-    hasMetrics: !!metrics,
-    hasAppointments: !!appointments,
-    hasStaff: !!staff,
-    shopDataLoading,
-    hasShopDataError: !!shopDataError,
-    shopDataErrorMessage: shopDataError?.message
-  })
   
   // Additional data hooks for specific needs
-  const additionalDataStart = performance.now()
   const { data: todayAppointments } = useTodayAppointments(effectiveShopId)
   const { data: activeStaff } = useActiveStaff(effectiveShopId)
-  console.log('⏱️ Timing: Additional data hooks took', (performance.now() - additionalDataStart).toFixed(2), 'ms')
-  
-  console.log('🏠 Dashboard: Additional data loaded:', {
-    todayAppointmentsCount: todayAppointments?.length || 0,
-    activeStaffCount: activeStaff?.length || 0
-  })
   
   // Keep DashboardPerspectiveContext as it manages UI state
   const { selectedPerspective, isOwnerView, currentViewUserId } = useDashboardPerspective()
@@ -402,28 +330,17 @@ export default function UnifiedDashboard({ user, profile }) {
 
   // Handle errors and onboarding
   useEffect(() => {
-    const errorHandlingStart = performance.now()
-    console.log('🏠 Dashboard: Error handling useEffect triggered')
-    console.log('🏠 Dashboard: Error handling context:', {
-      hasShopDataError: !!shopDataError,
-      shopDataErrorMessage: shopDataError?.message,
-      effectiveShopId,
-      effectiveProfileRole: effectiveProfile?.role,
-      contextLoading,
-      hasErrorState: !!errorState
-    })
-
     if (shopDataError) {
-      console.error('🏠 Dashboard: Shop data error detected:', shopDataError)
-      console.error('❌ Error: Setting technical error state')
+      // Only log errors in production, not in dev mode
+      if (process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH !== 'true') {
+        console.error('🏠 Dashboard: Shop data error detected:', shopDataError)
+      }
       setErrorState({
         type: 'technical_error',
         message: 'Failed to load barbershop data. Please try again.',
         isWelcome: false
       })
     } else if (!effectiveShopId && effectiveProfile?.role === 'SHOP_OWNER' && !contextLoading) {
-      console.log('🏠 Dashboard: Onboarding needed detected')
-      console.log('🏪 BookedBarber: SHOP_OWNER without shop association, showing welcome state')
       setErrorState({
         type: 'onboarding_needed',
         message: 'Let\'s set up your barbershop to get started!',
@@ -437,12 +354,8 @@ export default function UnifiedDashboard({ user, profile }) {
         ]
       })
     } else if (effectiveShopId) {
-      console.log('🏠 Dashboard: Valid shop ID found, clearing error state')
-      console.log('🏪 BookedBarber: Dashboard should render normally')
       setErrorState(null)
     }
-
-    console.log('⏱️ Timing: Error handling took', (performance.now() - errorHandlingStart).toFixed(2), 'ms')
   }, [shopDataError, effectiveShopId, effectiveProfile?.role, contextLoading])
 
   // Auto-refresh for operations mode
@@ -703,7 +616,7 @@ export default function UnifiedDashboard({ user, profile }) {
       case DASHBOARD_MODES.OPERATIONS:
         return <ActionCenter data={{
           ...dashboardData,
-          barberbarbershop_id: effectiveShopId
+          barbershop_id: effectiveShopId
         }} />
         
       default:
@@ -875,12 +788,12 @@ return !isOwnerView && selectedPerspective && (
               {/* Campaign Credit Widget - Shows earned credits from payment processing */}
               {effectiveShopId && (
                 <CampaignCreditWidget 
-                  barberbarbershopId={effectiveShopId}
+                  barbershopId={effectiveShopId}
                 />
               )}
               
               {effectiveShopId && (
-                <SmartAlertsPanel barberbarbershop_id={effectiveShopId} />
+                <SmartAlertsPanel barbershop_id={effectiveShopId} />
               )}
             </>
           ) : null}

@@ -1,7 +1,7 @@
 'use client'
 
 import { XMarkIcon, ChevronDownIcon, ChevronRightIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
-import { useState, useEffect, useCallback, memo } from 'react'
+import { useState, useCallback, memo } from 'react'
 import { toast } from 'react-hot-toast'
 import Button from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -44,7 +44,7 @@ const FormSection = memo(({ id, title, isOpen, onToggle, children }) => (
 
 export default function AddStaffModal({ onClose, onSuccess }) {
   const [loading, setLoading] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
+  const [_retryCount, setRetryCount] = useState(0)
   const [emailStatus, setEmailStatus] = useState(null) // Track email sending status
   const [activeSection, setActiveSection] = useState('basic') // Track which section is open
   const [invitationDetails, setInvitationDetails] = useState(null) // Track invitation details after sending
@@ -203,22 +203,22 @@ export default function AddStaffModal({ onClose, onSuccess }) {
     const timeoutId = setTimeout(() => controller.abort(), 25000) // 25 second timeout
     
     try {
-      const supabase = createClient()
+      const _supabase = createClient()
       
       // Get current user's barbershop with timeout
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Authentication required. Please log in and try again.')
       
-      // Get barbershop ID from barbershop_staff table (users table doesn't have barbershop_id/barberbarbershop_id)
+      // Get barbershop ID from barbershop_staff table (users table doesn't have barbershop_id/barbershop_id)
       const { data: staffRecord } = await supabase
         .from('barbershop_staff')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
       
-      const barberbarbershopId = staffRecord?.barberbarbershop_id
-      if (!barberbarbershopId) throw new Error('No barbershop found. Please contact support if this continues.')
+      const barbershopId = staffRecord?.barbershop_id
+      if (!barbershopId) throw new Error('No barbershop found. Please contact support if this continues.')
       
       // Call the invitation API with timeout
       const response = await fetch('/api/staff/invite', {
@@ -231,7 +231,7 @@ export default function AddStaffModal({ onClose, onSuccess }) {
           email: formData.email,
           full_name: formData.full_name,
           role: formData.role.toUpperCase(),
-          barberbarbershopId: barberbarbershopId,
+          barbershopId: barbershopId,
           sendEmail: true,
           
           // Include all the enhanced data for storage

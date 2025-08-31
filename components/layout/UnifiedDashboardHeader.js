@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import UnifiedContextSelector from '../shared/UnifiedContextSelector'
 import { MobileContextIndicator } from '../shared/UnifiedContextSelector'

@@ -98,7 +98,7 @@ export function useCreateAppointment() {
   return useMutation({
     mutationFn: (appointmentData) => createClient().createAppointment(appointmentData),
     onMutate: async (appointmentData) => {
-      const barbershopId = appointmentData.barberbarbershop_id
+      const barbershopId = appointmentData.barbershop_id
       const queryKey = appointmentKeys.byDateRange(barbershopId, 
         appointmentData.appointment_date?.split('T')[0],
         appointmentData.appointment_date?.split('T')[0]
@@ -142,7 +142,7 @@ export function useCreateAppointment() {
 
       // Update dashboard metrics
       queryClient.invalidateQueries({ 
-        queryKey: ['dashboard-metrics', newAppointment.barberbarbershop_id] 
+        queryKey: ['dashboard-metrics', newAppointment.barbershop_id] 
       })
     },
     onError: (error, variables, context) => {
@@ -171,7 +171,7 @@ export function useUpdateAppointment() {
       
       // Invalidate and refetch appointments
       queryClient.invalidateQueries({ 
-        queryKey: appointmentKeys.byShop(updatedAppointment.barberbarbershop_id) 
+        queryKey: appointmentKeys.byShop(updatedAppointment.barbershop_id) 
       })
     },
     onError: (error) => {
@@ -194,7 +194,7 @@ export function useDeleteAppointment() {
       
       // Invalidate and refetch appointments
       queryClient.invalidateQueries({ 
-        queryKey: appointmentKeys.byShop(deletedAppointment.barberbarbershop_id) 
+        queryKey: appointmentKeys.byShop(deletedAppointment.barbershop_id) 
       })
     },
     onError: (error) => {
@@ -215,7 +215,7 @@ export function useRealtimeAppointments(barbershopId) {
 
     const unsubscribe = createClient().subscribeToChanges(
       'appointments',
-      { barberbarbershop_id: barbershopId },
+      { barbershop_id: barbershopId },
       (payload) => {
         const { eventType, new: newRecord, old: oldRecord } = payload
         

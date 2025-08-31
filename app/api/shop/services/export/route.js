@@ -18,32 +18,32 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, barberbarbershop_id')
+      .select('barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
 
-    let barberbarbershopId = profile?.shop_id || profile?.barbershop_id
+    let barbershopId = profile?.shop_id || profile?.barbershop_id
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       // Try barbershop_staff table
       const { data: staffData } = await supabase
         .from('barbershop_staff')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
 
-      if (!staffData?.barberbarbershop_id) {
+      if (!staffData?.barbershop_id) {
         return NextResponse.json({ error: 'No barbershop found' }, { status: 400 })
       }
-      barberbarbershopId = staffData.barberbarbershop_id
+      barbershopId = staffData.barbershop_id
     }
 
     // Get services
     const { data: services, error } = await supabase
       .from('services')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .order('display_order', { ascending: true })
 
     if (error) {

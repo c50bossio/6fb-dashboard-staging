@@ -13,12 +13,12 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const status = searchParams.get('status');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({ error: 'Barbershop ID required' }, { status: 400 });
     }
 
@@ -37,7 +37,7 @@ export async function GET(request) {
           )
         )
       `, { count: 'exact' })
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .order('order_date', { ascending: false });
 
     if (status && status !== 'all') {
@@ -100,7 +100,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      barberbarbershop_id,
+      barbershop_id,
       items,
       shipping_address,
       shipping_method,
@@ -109,7 +109,7 @@ export async function POST(request) {
     } = body;
 
     // Validate required fields
-    if (!barberbarbershop_id || !items || !Array.isArray(items) || items.length === 0) {
+    if (!barbershop_id || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ 
         error: 'Invalid order data' 
       }, { status: 400 });
@@ -119,7 +119,7 @@ export async function POST(request) {
     const { data: enrollment, error: enrollmentError } = await supabase
       .from('marketplace_enrollment')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .single();
 
     if (enrollmentError || !enrollment?.is_enrolled) {
@@ -220,7 +220,7 @@ export async function POST(request) {
       .from('marketplace_orders')
       .insert({
         order_number: orderNumber,
-        barberbarbershop_id,
+        barbershop_id,
         status: payment_method === 'credit_card' ? 'submitted' : 'draft',
         subtotal,
         shipping_cost: shippingCost,
@@ -268,7 +268,7 @@ export async function POST(request) {
         total_orders_placed: enrollment.total_orders_placed + 1,
         total_amount_spent: enrollment.total_amount_spent + totalAmount
       })
-      .eq('barberbarbershop_id', barberbarbershop_id);
+      .eq('barbershop_id', barbershop_id);
 
     // Send order confirmation email (implement separately)
     // await sendOrderConfirmation(order, orderItems);

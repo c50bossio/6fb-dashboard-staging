@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
+import { authLogger, dbLogger } from '@/lib/logger'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 export async function GET(request) {
@@ -18,7 +19,12 @@ export async function GET(request) {
     const timestamp = new Date().toISOString()
     
     if (error) {
-      console.error('❌ Session API: Session retrieval error:', error.message)
+      authLogger.error('Session retrieval error', error, {
+        context: 'session_api_get',
+        endpoint: 'GET /api/auth/session',
+        include_profile: includeProfile,
+        validate_consistency: validateConsistency
+      })
       return NextResponse.json({ 
         authenticated: false, 
         error: error.message,
@@ -51,7 +57,10 @@ export async function GET(request) {
 
       // Include full session data with tokens if requested (for session sync)
       if (includeTokens) {
-        console.log('🔑 [Session API] Including full session tokens for sync')
+        authLogger.info('Including full session tokens for sync', {
+          context: 'session_token_sync',
+          user_id: session.user.id
+        })
         responseData.session_data = {
           access_token: session.access_token,
           refresh_token: session.refresh_token,
@@ -72,13 +81,19 @@ export async function GET(request) {
             .single()
           
           if (profileError) {
-            console.warn('⚠️ Session API: Profile fetch error:', profileError.message)
+            dbLogger.warn('Profile fetch error in session API', profileError, {
+              context: 'session_profile_fetch',
+              user_id: session.user.id
+            })
             responseData.profile_error = profileError.message
           } else if (profile) {
             responseData.profile = profile
           }
         } catch (profileErr) {
-          console.error('💥 Session API: Profile fetch exception:', profileErr)
+          dbLogger.error('Profile fetch exception in session API', profileErr, {
+            context: 'session_profile_exception',
+            user_id: session.user.id
+          })
           responseData.profile_error = profileErr.message
         }
       }
@@ -97,11 +112,17 @@ export async function GET(request) {
           }
           
           if (authError) {
-            console.warn('⚠️ Session API: Auth user check error:', authError.message)
+            authLogger.warn('Auth user check error in consistency validation', authError, {
+              context: 'session_consistency_check',
+              user_id: session.user.id
+            })
             responseData.consistency_check.auth_error = authError.message
           }
         } catch (consistencyErr) {
-          console.error('💥 Session API: Consistency check failed:', consistencyErr)
+          authLogger.error('Consistency check failed in session API', consistencyErr, {
+            context: 'session_consistency_exception',
+            user_id: session.user.id
+          })
           responseData.consistency_check = {
             error: consistencyErr.message,
             timestamp: new Date().toISOString()
@@ -120,7 +141,12 @@ export async function GET(request) {
     })
     
   } catch (err) {
-    console.error('💥 Session API: Unexpected error:', err)
+    authLogger.error('Unexpected error in session API', err, {
+      context: 'session_api_exception',
+      endpoint: 'GET /api/auth/session',
+      include_profile: includeProfile,
+      validate_consistency: validateConsistency
+    })
     return NextResponse.json({ 
       authenticated: false,
       error: err.message,
@@ -179,7 +205,11 @@ export async function POST(request) {
     }
     
   } catch (err) {
-    console.error('💥 Session API POST: Error:', err)
+    authLogger.error('Unexpected error in session API POST', err, {
+      context: 'session_api_post_exception',
+      endpoint: 'POST /api/auth/session',
+      action: body?.action
+    })
     return NextResponse.json({
       success: false,
       error: err.message

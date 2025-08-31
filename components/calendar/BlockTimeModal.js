@@ -17,9 +17,9 @@ export default function BlockTimeModal({
   onClose,
   editingBlock = null,
   onBlockComplete,
-  barberbarbershopId
+  barbershopId
 }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const isEditing = !!editingBlock
   
   const [formData, setFormData] = useState({
@@ -126,8 +126,8 @@ export default function BlockTimeModal({
       const endDate = new Date(startDate.getTime() + formData.duration_minutes * 60000)
       
       const blockData = {
-        barberbarbershop_id: barberbarbershopId,
-        barbershop_id: barberbarbershopId, // Some endpoints expect barbershop_id
+        barbershop_id: barbershopId,
+        barbershop_id: barbershopId, // Some endpoints expect barbershop_id
         barber_id: user?.id,
         start_time: startDate.toISOString(),
         end_time: endDate.toISOString(),

@@ -1,9 +1,8 @@
 'use client'
 
-import { 
+import {
   EyeIcon,
   SparklesIcon,
-  StarIcon,
   CheckCircleIcon,
   ArrowRightIcon,
   FunnelIcon,
@@ -11,10 +10,9 @@ import {
   PlayIcon,
   HeartIcon,
   ChartBarIcon,
-  TrophyIcon,
-  ClockIcon
+  TrophyIcon
 } from '@heroicons/react/24/outline'
-import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid'
+
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { templateEngine, TEMPLATE_CATEGORIES, PREMIUM_TEMPLATES } from '@/lib/templates/template-engine'
@@ -346,7 +344,7 @@ const TemplatePreviewModal = ({ template, isOpen, onClose, onApply, isApplying }
 }
 
 export default function TemplateGallery({ onTemplateApplied }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [templates, setTemplates] = useState([])
   const [recommendations, setRecommendations] = useState([])
   const [loading, setLoading] = useState(true)

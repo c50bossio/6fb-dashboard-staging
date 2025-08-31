@@ -45,7 +45,7 @@ export async function GET(request) {
       // Try to find if user is a barber
       const { data: barbers, error: barberError } = await supabase
         .from('barbers')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .single();
 
@@ -53,10 +53,10 @@ export async function GET(request) {
         return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
       }
       
-      barbershops = { id: barbers.barberbarbershop_id };
+      barbershops = { id: barbers.barbershop_id };
     }
 
-    const barberbarbershopId = barbershops.id;
+    const barbershopId = barbershops.id;
     const url = new URL(request.url);
     const action = url.searchParams.get('action') || 'leaderboard';
     const customerId = url.searchParams.get('customer_id');
@@ -67,7 +67,7 @@ export async function GET(request) {
     if (action === 'leaderboard') {
       // Get customer leaderboard
       const leaderboardType = url.searchParams.get('type') || 'points';
-      const leaderboard = await getEnhancedLeaderboard(barberbarbershopId, leaderboardType, period, limit);
+      const leaderboard = await getEnhancedLeaderboard(barbershopId, leaderboardType, period, limit);
       
       return NextResponse.json({ 
         success: true, 
@@ -83,7 +83,7 @@ export async function GET(request) {
         return NextResponse.json({ error: 'customer_id parameter required for achievements' }, { status: 400 });
       }
 
-      const achievements = await getCustomerAchievements(customerId, barberbarbershopId, programId);
+      const achievements = await getCustomerAchievements(customerId, barbershopId, programId);
       
       return NextResponse.json({ 
         success: true, 
@@ -93,7 +93,7 @@ export async function GET(request) {
 
     } else if (action === 'badges') {
       // Get available badges and customer progress
-      const badges = await getBadgesAndProgress(barberbarbershopId, customerId);
+      const badges = await getBadgesAndProgress(barbershopId, customerId);
       
       return NextResponse.json({ 
         success: true, 
@@ -102,7 +102,7 @@ export async function GET(request) {
 
     } else if (action === 'challenges') {
       // Get active challenges
-      const challenges = await getActiveChallenges(barberbarbershopId, customerId);
+      const challenges = await getActiveChallenges(barbershopId, customerId);
       
       return NextResponse.json({ 
         success: true, 
@@ -111,7 +111,7 @@ export async function GET(request) {
 
     } else if (action === 'stats') {
       // Get gamification statistics
-      const stats = await getGamificationStats(barberbarbershopId, programId);
+      const stats = await getGamificationStats(barbershopId, programId);
       
       return NextResponse.json({ 
         success: true, 
@@ -157,7 +157,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not associated with barbershop' }, { status: 403 });
     }
 
-    const barberbarbershopId = barbershops.id;
+    const barbershopId = barbershops.id;
     const body = await request.json();
     const action = body.action || 'award-badge';
 
@@ -171,7 +171,7 @@ export async function POST(request) {
         }, { status: 400 });
       }
 
-      const result = await awardBadge(customer_id, barberbarbershopId, badge_type, badge_name, reason);
+      const result = await awardBadge(customer_id, barbershopId, badge_type, badge_name, reason);
       
       return NextResponse.json({ 
         success: true, 
@@ -197,7 +197,7 @@ export async function POST(request) {
         }, { status: 400 });
       }
 
-      const challenge = await createChallenge(barberbarbershopId, {
+      const challenge = await createChallenge(barbershopId, {
         challenge_name,
         challenge_description,
         challenge_type,
@@ -224,7 +224,7 @@ export async function POST(request) {
         }, { status: 400 });
       }
 
-      const achievements = await checkAndAwardAchievements(customer_id, barberbarbershopId);
+      const achievements = await checkAndAwardAchievements(customer_id, barbershopId);
       
       return NextResponse.json({ 
         success: true, 
@@ -241,7 +241,7 @@ export async function POST(request) {
         }, { status: 400 });
       }
 
-      const result = await joinChallenge(customer_id, challenge_id, barberbarbershopId);
+      const result = await joinChallenge(customer_id, challenge_id, barbershopId);
       
       return NextResponse.json({ 
         success: true, 
@@ -260,7 +260,7 @@ export async function POST(request) {
 /**
  * Helper function to get customer leaderboard
  */
-async function getCustomerLeaderboard(barberbarbershopId, programId, period, limit) {
+async function getCustomerLeaderboard(barbershopId, programId, period, limit) {
   try {
     // Build base query
     let query = supabase
@@ -273,7 +273,7 @@ async function getCustomerLeaderboard(barberbarbershopId, programId, period, lim
         member_since,
         customers!inner(first_name, last_name, email)
       `)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true);
 
     if (programId) {
@@ -297,7 +297,7 @@ async function getCustomerLeaderboard(barberbarbershopId, programId, period, lim
 
     // For period-based leaderboards, calculate points earned in period
     if (period !== 'all_time') {
-      filteredEnrollments = await addPeriodPoints(filteredEnrollments, barberbarbershopId, period);
+      filteredEnrollments = await addPeriodPoints(filteredEnrollments, barbershopId, period);
     }
 
     // Sort by points and add positions
@@ -316,8 +316,8 @@ async function getCustomerLeaderboard(barberbarbershopId, programId, period, lim
       tier: enrollment.current_tier,
       member_since: enrollment.member_since,
       badge: getPositionBadge(index + 1),
-      streak: await getCustomerStreak(enrollment.customer_id, barberbarbershopId),
-      achievements_count: await getCustomerAchievementsCount(enrollment.customer_id, barberbarbershopId)
+      streak: await getCustomerStreak(enrollment.customer_id, barbershopId),
+      achievements_count: await getCustomerAchievementsCount(enrollment.customer_id, barbershopId)
     })));
 
     return leaderboard;
@@ -331,28 +331,28 @@ async function getCustomerLeaderboard(barberbarbershopId, programId, period, lim
 /**
  * Enhanced leaderboard function with multiple metrics
  */
-async function getEnhancedLeaderboard(barberbarbershopId, leaderboardType = 'points', period = 'all_time', limit = 10) {
+async function getEnhancedLeaderboard(barbershopId, leaderboardType = 'points', period = 'all_time', limit = 10) {
   try {
     let leaderboardData = [];
     
     switch (leaderboardType) {
       case 'points':
-        leaderboardData = await getPointsLeaderboard(barberbarbershopId, period, limit);
+        leaderboardData = await getPointsLeaderboard(barbershopId, period, limit);
         break;
       case 'visits':
-        leaderboardData = await getVisitsLeaderboard(barberbarbershopId, period, limit);
+        leaderboardData = await getVisitsLeaderboard(barbershopId, period, limit);
         break;
       case 'spending':
-        leaderboardData = await getSpendingLeaderboard(barberbarbershopId, period, limit);
+        leaderboardData = await getSpendingLeaderboard(barbershopId, period, limit);
         break;
       case 'streaks':
-        leaderboardData = await getStreaksLeaderboard(barberbarbershopId, limit);
+        leaderboardData = await getStreaksLeaderboard(barbershopId, limit);
         break;
       case 'engagement':
-        leaderboardData = await getEngagementLeaderboard(barberbarbershopId, period, limit);
+        leaderboardData = await getEngagementLeaderboard(barbershopId, period, limit);
         break;
       default:
-        leaderboardData = await getPointsLeaderboard(barberbarbershopId, period, limit);
+        leaderboardData = await getPointsLeaderboard(barbershopId, period, limit);
     }
     
     return leaderboardData;
@@ -366,7 +366,7 @@ async function getEnhancedLeaderboard(barberbarbershopId, leaderboardType = 'poi
 /**
  * Get points-based leaderboard
  */
-async function getPointsLeaderboard(barberbarbershopId, period, limit) {
+async function getPointsLeaderboard(barbershopId, period, limit) {
   const { data: enrollments } = await supabase
     .from('loyalty_program_enrollments')
     .select(`
@@ -377,7 +377,7 @@ async function getPointsLeaderboard(barberbarbershopId, period, limit) {
       member_since,
       customers!inner(first_name, last_name, email)
     `)
-    .eq('barberbarbershop_id', barberbarbershopId)
+    .eq('barbershop_id', barbershopId)
     .eq('is_active', true)
     .order('current_points', { ascending: false })
     .limit(limit);
@@ -385,8 +385,8 @@ async function getPointsLeaderboard(barberbarbershopId, period, limit) {
   if (!enrollments) return [];
   
   return await Promise.all(enrollments.map(async (enrollment, index) => {
-    const achievements = await getCustomerAchievementsCount(enrollment.customer_id, barberbarbershopId);
-    const streak = await getCustomerStreak(enrollment.customer_id, barberbarbershopId);
+    const achievements = await getCustomerAchievementsCount(enrollment.customer_id, barbershopId);
+    const streak = await getCustomerStreak(enrollment.customer_id, barbershopId);
     
     return {
       position: index + 1,
@@ -407,7 +407,7 @@ async function getPointsLeaderboard(barberbarbershopId, period, limit) {
 /**
  * Get visits-based leaderboard
  */
-async function getVisitsLeaderboard(barberbarbershopId, period, limit) {
+async function getVisitsLeaderboard(barbershopId, period, limit) {
   let dateFilter = '';
   const cutoffDate = getPeriodCutoffDate(period);
   
@@ -424,7 +424,7 @@ async function getVisitsLeaderboard(barberbarbershopId, period, limit) {
       SUM(a.total_amount::numeric) as total_spent
     FROM customers c
     LEFT JOIN appointments a ON c.id = a.customer_id AND a.status = 'completed'${dateFilter}
-    WHERE c.barberbarbershop_id = $1
+    WHERE c.barbershop_id = $1
     GROUP BY c.id, c.first_name, c.last_name
     HAVING COUNT(a.id) > 0
     ORDER BY visit_count DESC
@@ -433,14 +433,14 @@ async function getVisitsLeaderboard(barberbarbershopId, period, limit) {
   
   const { data: results } = await supabase.rpc('execute_sql', {
     query: query,
-    params: [barberbarbershopId, limit]
+    params: [barbershopId, limit]
   });
   
   if (!results) return [];
   
   return await Promise.all(results.map(async (customer, index) => {
-    const achievements = await getCustomerAchievementsCount(customer.customer_id, barberbarbershopId);
-    const streak = await getCustomerStreak(customer.customer_id, barberbarbershopId);
+    const achievements = await getCustomerAchievementsCount(customer.customer_id, barbershopId);
+    const streak = await getCustomerStreak(customer.customer_id, barbershopId);
     
     return {
       position: index + 1,
@@ -459,7 +459,7 @@ async function getVisitsLeaderboard(barberbarbershopId, period, limit) {
 /**
  * Get spending-based leaderboard
  */
-async function getSpendingLeaderboard(barberbarbershopId, period, limit) {
+async function getSpendingLeaderboard(barbershopId, period, limit) {
   let dateFilter = '';
   const cutoffDate = getPeriodCutoffDate(period);
   
@@ -476,7 +476,7 @@ async function getSpendingLeaderboard(barberbarbershopId, period, limit) {
       SUM(a.total_amount::numeric) as total_spent
     FROM customers c
     LEFT JOIN appointments a ON c.id = a.customer_id AND a.status = 'completed'${dateFilter}
-    WHERE c.barberbarbershop_id = $1
+    WHERE c.barbershop_id = $1
     GROUP BY c.id, c.first_name, c.last_name
     HAVING SUM(a.total_amount::numeric) > 0
     ORDER BY total_spent DESC
@@ -485,14 +485,14 @@ async function getSpendingLeaderboard(barberbarbershopId, period, limit) {
   
   const { data: results } = await supabase.rpc('execute_sql', {
     query: query,
-    params: [barberbarbershopId, limit]
+    params: [barbershopId, limit]
   });
   
   if (!results) return [];
   
   return await Promise.all(results.map(async (customer, index) => {
-    const achievements = await getCustomerAchievementsCount(customer.customer_id, barberbarbershopId);
-    const streak = await getCustomerStreak(customer.customer_id, barberbarbershopId);
+    const achievements = await getCustomerAchievementsCount(customer.customer_id, barbershopId);
+    const streak = await getCustomerStreak(customer.customer_id, barbershopId);
     
     return {
       position: index + 1,
@@ -511,7 +511,7 @@ async function getSpendingLeaderboard(barberbarbershopId, period, limit) {
 /**
  * Get streaks-based leaderboard
  */
-async function getStreaksLeaderboard(barberbarbershopId, limit) {
+async function getStreaksLeaderboard(barbershopId, limit) {
   const { data: streaks } = await supabase
     .from('customer_streaks')
     .select(`
@@ -521,7 +521,7 @@ async function getStreaksLeaderboard(barberbarbershopId, limit) {
       streak_type,
       customers!inner(first_name, last_name)
     `)
-    .eq('barberbarbershop_id', barberbarbershopId)
+    .eq('barbershop_id', barbershopId)
     .eq('is_active', true)
     .eq('streak_type', 'monthly_visits')
     .order('current_streak', { ascending: false })
@@ -530,7 +530,7 @@ async function getStreaksLeaderboard(barberbarbershopId, limit) {
   if (!streaks) return [];
   
   return await Promise.all(streaks.map(async (streak, index) => {
-    const achievements = await getCustomerAchievementsCount(streak.customer_id, barberbarbershopId);
+    const achievements = await getCustomerAchievementsCount(streak.customer_id, barbershopId);
     
     return {
       position: index + 1,
@@ -549,19 +549,19 @@ async function getStreaksLeaderboard(barberbarbershopId, limit) {
 /**
  * Get engagement-based leaderboard
  */
-async function getEngagementLeaderboard(barberbarbershopId, period, limit) {
+async function getEngagementLeaderboard(barbershopId, period, limit) {
   // Get all customers and calculate engagement scores
   const { data: customers } = await supabase
     .from('customers')
     .select('id, first_name, last_name')
-    .eq('barberbarbershop_id', barberbarbershopId);
+    .eq('barbershop_id', barbershopId);
     
   if (!customers) return [];
   
   const customerEngagement = await Promise.all(customers.map(async (customer) => {
-    const analytics = await getCustomerAnalytics(customer.id, barberbarbershopId);
-    const achievements = await getCustomerAchievementsCount(customer.id, barberbarbershopId);
-    const streak = await getCustomerStreak(customer.id, barberbarbershopId);
+    const analytics = await getCustomerAnalytics(customer.id, barbershopId);
+    const achievements = await getCustomerAchievementsCount(customer.id, barbershopId);
+    const streak = await getCustomerStreak(customer.id, barbershopId);
     
     return {
       customer_id: customer.id,
@@ -592,14 +592,14 @@ async function getEngagementLeaderboard(barberbarbershopId, period, limit) {
 /**
  * Helper function to get customer achievements
  */
-async function getCustomerAchievements(customerId, barberbarbershopId, programId) {
+async function getCustomerAchievements(customerId, barbershopId, programId) {
   try {
     // Get customer milestones
     const { data: milestones, error: milestonesError } = await supabase
       .from('customer_milestones')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .order('achieved_at', { ascending: false });
 
     if (milestonesError) {
@@ -607,13 +607,13 @@ async function getCustomerAchievements(customerId, barberbarbershopId, programId
     }
 
     // Get customer analytics for achievement calculation
-    const analytics = await getCustomerAnalytics(customerId, barberbarbershopId);
+    const analytics = await getCustomerAnalytics(customerId, barbershopId);
 
     // Calculate achievements based on analytics and milestones
-    const achievements = await calculateCustomerAchievements(customerId, barberbarbershopId, analytics, milestones || []);
+    const achievements = await calculateCustomerAchievements(customerId, barbershopId, analytics, milestones || []);
 
     // Get progress toward next achievements
-    const nextAchievements = await getNextAchievements(customerId, barberbarbershopId, analytics);
+    const nextAchievements = await getNextAchievements(customerId, barbershopId, analytics);
 
     return {
       milestones: milestones || [],
@@ -636,7 +636,7 @@ async function getCustomerAchievements(customerId, barberbarbershopId, programId
 /**
  * Helper function to get badges and progress
  */
-async function getBadgesAndProgress(barberbarbershopId, customerId) {
+async function getBadgesAndProgress(barbershopId, customerId) {
   try {
     // Define available badge categories
     const badgeCategories = {
@@ -700,10 +700,10 @@ async function getBadgesAndProgress(barberbarbershopId, customerId) {
     // If customer ID provided, get their progress
     let customerProgress = {};
     if (customerId) {
-      const analytics = await getCustomerAnalytics(customerId, barberbarbershopId);
-      const milestones = await getCustomerMilestones(customerId, barberbarbershopId);
+      const analytics = await getCustomerAnalytics(customerId, barbershopId);
+      const milestones = await getCustomerMilestones(customerId, barbershopId);
       
-      customerProgress = await calculateBadgeProgress(customerId, barberbarbershopId, badgeCategories, analytics, milestones);
+      customerProgress = await calculateBadgeProgress(customerId, barbershopId, badgeCategories, analytics, milestones);
     }
 
     return {
@@ -720,7 +720,7 @@ async function getBadgesAndProgress(barberbarbershopId, customerId) {
 /**
  * Helper function to get active challenges
  */
-async function getActiveChallenges(barberbarbershopId, customerId) {
+async function getActiveChallenges(barbershopId, customerId) {
   try {
     // For now, return predefined challenges
     // In a full implementation, these would be stored in a database
@@ -735,7 +735,7 @@ async function getActiveChallenges(barberbarbershopId, customerId) {
         rewards: { points: 200, badge: 'Monthly Regular' },
         start_date: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
         end_date: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0),
-        progress: customerId ? await getChallengeProgress(customerId, 'monthly_visits', barberbarbershopId) : null,
+        progress: customerId ? await getChallengeProgress(customerId, 'monthly_visits', barbershopId) : null,
         participants: 0, // Would be calculated from database
         completed_by: 0
       },
@@ -748,7 +748,7 @@ async function getActiveChallenges(barberbarbershopId, customerId) {
         rewards: { points: 500, badge: 'Review Warrior' },
         start_date: new Date(currentDate.getFullYear(), Math.floor(currentDate.getMonth() / 3) * 3, 1),
         end_date: new Date(currentDate.getFullYear(), Math.floor(currentDate.getMonth() / 3) * 3 + 3, 0),
-        progress: customerId ? await getChallengeProgress(customerId, 'review_warrior', barberbarbershopId) : null,
+        progress: customerId ? await getChallengeProgress(customerId, 'review_warrior', barbershopId) : null,
         participants: 0,
         completed_by: 0
       },
@@ -761,7 +761,7 @@ async function getActiveChallenges(barberbarbershopId, customerId) {
         rewards: { points: 1000, badge: 'Referral Master' },
         start_date: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
         end_date: new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0),
-        progress: customerId ? await getChallengeProgress(customerId, 'referral_master', barberbarbershopId) : null,
+        progress: customerId ? await getChallengeProgress(customerId, 'referral_master', barbershopId) : null,
         participants: 0,
         completed_by: 0
       }
@@ -783,13 +783,13 @@ async function getActiveChallenges(barberbarbershopId, customerId) {
 /**
  * Helper function to get gamification statistics
  */
-async function getGamificationStats(barberbarbershopId, programId) {
+async function getGamificationStats(barbershopId, programId) {
   try {
     // Get total enrollments
     let query = supabase
       .from('loyalty_program_enrollments')
       .select('*', { count: 'exact' })
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true);
 
     if (programId) {
@@ -802,7 +802,7 @@ async function getGamificationStats(barberbarbershopId, programId) {
     const { data: milestones } = await supabase
       .from('customer_milestones')
       .select('milestone_type')
-      .eq('barberbarbershop_id', barberbarbershopId);
+      .eq('barbershop_id', barbershopId);
 
     const milestoneStats = (milestones || []).reduce((stats, milestone) => {
       stats[milestone.milestone_type] = (stats[milestone.milestone_type] || 0) + 1;
@@ -813,7 +813,7 @@ async function getGamificationStats(barberbarbershopId, programId) {
     const { data: enrollments } = await supabase
       .from('loyalty_program_enrollments')
       .select('current_tier')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true);
 
     const tierDistribution = (enrollments || []).reduce((dist, enrollment) => {
@@ -845,11 +845,11 @@ async function getGamificationStats(barberbarbershopId, programId) {
 /**
  * Helper function to award badge
  */
-async function awardBadge(customerId, barberbarbershopId, badgeType, badgeName, reason) {
+async function awardBadge(customerId, barbershopId, badgeType, badgeName, reason) {
   try {
     // Create milestone for badge
     const milestoneData = {
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       customer_id: customerId,
       milestone_type: 'badge_earned',
       milestone_name: `${badgeName} Badge`,
@@ -892,13 +892,13 @@ async function awardBadge(customerId, barberbarbershopId, badgeType, badgeName, 
 /**
  * Helper function to create challenge
  */
-async function createChallenge(barberbarbershopId, challengeData) {
+async function createChallenge(barbershopId, challengeData) {
   try {
     // In a full implementation, this would create a challenge record in the database
     // For now, return the challenge data with an ID
     const challenge = {
       id: `challenge_${Date.now()}`,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       ...challengeData,
       status: 'active',
       participants: 0,
@@ -918,9 +918,9 @@ async function createChallenge(barberbarbershopId, challengeData) {
 /**
  * Helper function to check and award achievements
  */
-async function checkAndAwardAchievements(customerId, barberbarbershopId) {
+async function checkAndAwardAchievements(customerId, barbershopId) {
   try {
-    const analytics = await getCustomerAnalytics(customerId, barberbarbershopId);
+    const analytics = await getCustomerAnalytics(customerId, barbershopId);
     const newAchievements = [];
 
     // Check visit-based achievements
@@ -936,9 +936,9 @@ async function checkAndAwardAchievements(customerId, barberbarbershopId) {
     for (const achievement of visitAchievements) {
       if (analytics.total_visits >= achievement.visits) {
         // Check if already awarded
-        const existing = await checkExistingAchievement(customerId, barberbarbershopId, achievement.name);
+        const existing = await checkExistingAchievement(customerId, barbershopId, achievement.name);
         if (!existing) {
-          await awardBadge(customerId, barberbarbershopId, 'visits', achievement.name, 
+          await awardBadge(customerId, barbershopId, 'visits', achievement.name, 
             `Completed ${achievement.visits} appointments`);
           newAchievements.push(achievement);
         }
@@ -955,9 +955,9 @@ async function checkAndAwardAchievements(customerId, barberbarbershopId) {
 
     for (const achievement of spendingAchievements) {
       if (analytics.total_spent >= achievement.amount) {
-        const existing = await checkExistingAchievement(customerId, barberbarbershopId, achievement.name);
+        const existing = await checkExistingAchievement(customerId, barbershopId, achievement.name);
         if (!existing) {
-          await awardBadge(customerId, barberbarbershopId, 'spending', achievement.name, 
+          await awardBadge(customerId, barbershopId, 'spending', achievement.name, 
             `Spent $${achievement.amount} total`);
           newAchievements.push(achievement);
         }
@@ -967,7 +967,7 @@ async function checkAndAwardAchievements(customerId, barberbarbershopId) {
     return {
       achievements_checked: true,
       new_achievements: newAchievements,
-      total_achievements: await getCustomerAchievementsCount(customerId, barberbarbershopId)
+      total_achievements: await getCustomerAchievementsCount(customerId, barbershopId)
     };
 
   } catch (error) {
@@ -983,7 +983,7 @@ async function checkAndAwardAchievements(customerId, barberbarbershopId) {
 /**
  * Helper function to join challenge
  */
-async function joinChallenge(customerId, challengeId, barberbarbershopId) {
+async function joinChallenge(customerId, challengeId, barbershopId) {
   try {
     // In a full implementation, this would create a challenge participation record
     // For now, return success
@@ -1025,7 +1025,7 @@ function getPeriodCutoffDate(period) {
 /**
  * Helper function to add period points
  */
-async function addPeriodPoints(enrollments, barberbarbershopId, period) {
+async function addPeriodPoints(enrollments, barbershopId, period) {
   const cutoffDate = getPeriodCutoffDate(period);
   
   for (const enrollment of enrollments) {
@@ -1034,7 +1034,7 @@ async function addPeriodPoints(enrollments, barberbarbershopId, period) {
       .from('loyalty_points')
       .select('points_amount')
       .eq('customer_id', enrollment.customer_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .gt('points_amount', 0)
       .gte('created_at', cutoffDate.toISOString());
 
@@ -1059,7 +1059,7 @@ function getPositionBadge(position) {
 /**
  * Helper function to get customer streak
  */
-async function getCustomerStreak(customerId, barberbarbershopId) {
+async function getCustomerStreak(customerId, barbershopId) {
   try {
     // Get recent appointments to calculate streak
     const { data: appointments } = await supabase
@@ -1104,13 +1104,13 @@ async function getCustomerStreak(customerId, barberbarbershopId) {
 /**
  * Helper function to get customer achievements count
  */
-async function getCustomerAchievementsCount(customerId, barberbarbershopId) {
+async function getCustomerAchievementsCount(customerId, barbershopId) {
   try {
     const { count } = await supabase
       .from('customer_milestones')
       .select('*', { count: 'exact', head: true })
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('milestone_type', 'badge_earned');
 
     return count || 0;
@@ -1124,7 +1124,7 @@ async function getCustomerAchievementsCount(customerId, barberbarbershopId) {
 /**
  * Helper function to get customer analytics
  */
-async function getCustomerAnalytics(customerId, barberbarbershopId) {
+async function getCustomerAnalytics(customerId, barbershopId) {
   try {
     // Get basic customer stats
     const { data: appointments } = await supabase
@@ -1158,7 +1158,7 @@ async function getCustomerAnalytics(customerId, barberbarbershopId) {
       .from('loyalty_points')
       .select('points_amount')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .gt('points_amount', 0);
 
     const totalPointsEarned = pointsTransactions?.reduce((sum, t) => sum + t.points_amount, 0) || 0;
@@ -1168,7 +1168,7 @@ async function getCustomerAnalytics(customerId, barberbarbershopId) {
       .from('loyalty_program_enrollments')
       .select('current_points, current_tier, member_since')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .single();
     
@@ -1181,7 +1181,7 @@ async function getCustomerAnalytics(customerId, barberbarbershopId) {
       .from('customer_feedback')
       .select('overall_rating')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .not('overall_rating', 'is', null);
 
     const reviewsCount = reviews?.length || 0;
@@ -1193,7 +1193,7 @@ async function getCustomerAnalytics(customerId, barberbarbershopId) {
       .from('referral_tracking')
       .select('status')
       .eq('referrer_customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId);
+      .eq('barbershop_id', barbershopId);
 
     const totalReferrals = referrals?.length || 0;
     const successfulReferrals = referrals?.filter(r => r.status === 'qualified' || r.status === 'rewarded').length || 0;
@@ -1277,13 +1277,13 @@ function calculateEngagementScore({ totalVisits, totalSpent, reviewsCount, total
 /**
  * Helper function to get customer milestones
  */
-async function getCustomerMilestones(customerId, barberbarbershopId) {
+async function getCustomerMilestones(customerId, barbershopId) {
   try {
     const { data: milestones } = await supabase
       .from('customer_milestones')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId);
+      .eq('barbershop_id', barbershopId);
 
     return milestones || [];
 
@@ -1296,7 +1296,7 @@ async function getCustomerMilestones(customerId, barberbarbershopId) {
 /**
  * Helper function to calculate customer achievements
  */
-async function calculateCustomerAchievements(customerId, barberbarbershopId, analytics, milestones) {
+async function calculateCustomerAchievements(customerId, barbershopId, analytics, milestones) {
   const achievements = {
     badges: [],
     streaks: {},
@@ -1344,7 +1344,7 @@ async function calculateCustomerAchievements(customerId, barberbarbershopId, ana
   }
 
   // Calculate streaks
-  achievements.streaks = await getCustomerStreak(customerId, barberbarbershopId);
+  achievements.streaks = await getCustomerStreak(customerId, barbershopId);
 
   return achievements;
 }
@@ -1352,7 +1352,7 @@ async function calculateCustomerAchievements(customerId, barberbarbershopId, ana
 /**
  * Helper function to get next achievements
  */
-async function getNextAchievements(customerId, barberbarbershopId, analytics) {
+async function getNextAchievements(customerId, barbershopId, analytics) {
   const nextAchievements = [];
 
   // Visit-based next achievements
@@ -1400,7 +1400,7 @@ async function getNextAchievements(customerId, barberbarbershopId, analytics) {
 /**
  * Helper function to calculate badge progress
  */
-async function calculateBadgeProgress(customerId, barberbarbershopId, badgeCategories, analytics, milestones) {
+async function calculateBadgeProgress(customerId, barbershopId, badgeCategories, analytics, milestones) {
   const progress = {};
 
   for (const [categoryId, category] of Object.entries(badgeCategories)) {
@@ -1459,13 +1459,13 @@ async function calculateBadgeProgress(customerId, barberbarbershopId, badgeCateg
 /**
  * Helper function to check existing achievement
  */
-async function checkExistingAchievement(customerId, barberbarbershopId, achievementName) {
+async function checkExistingAchievement(customerId, barbershopId, achievementName) {
   try {
     const { data: existing } = await supabase
       .from('customer_milestones')
       .select('id')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('milestone_type', 'badge_earned')
       .ilike('milestone_name', `%${achievementName}%`)
       .single();
@@ -1480,19 +1480,19 @@ async function checkExistingAchievement(customerId, barberbarbershopId, achievem
 /**
  * Helper function to get challenge progress
  */
-async function getChallengeProgress(customerId, challengeId, barberbarbershopId) {
+async function getChallengeProgress(customerId, challengeId, barbershopId) {
   try {
     // Get specific challenge details from database
     const { data: challenge } = await supabase
       .from('gamification_challenges')
       .select('*')
       .eq('id', challengeId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single();
       
     if (!challenge) {
       // Fallback for predefined challenges
-      return await getChallengeProgressLegacy(customerId, challengeId, barberbarbershopId);
+      return await getChallengeProgressLegacy(customerId, challengeId, barbershopId);
     }
     
     // Get customer's participation record
@@ -1558,9 +1558,9 @@ async function getChallengeProgress(customerId, challengeId, barberbarbershopId)
 /**
  * Legacy challenge progress calculation for predefined challenges
  */
-async function getChallengeProgressLegacy(customerId, challengeId, barberbarbershopId) {
+async function getChallengeProgressLegacy(customerId, challengeId, barbershopId) {
   try {
-    const analytics = await getCustomerAnalytics(customerId, barberbarbershopId);
+    const analytics = await getCustomerAnalytics(customerId, barbershopId);
     
     // Calculate progress based on challenge type
     switch (challengeId) {
@@ -1589,7 +1589,7 @@ async function getChallengeProgressLegacy(customerId, challengeId, barberbarbers
           .from('customer_feedback')
           .select('id')
           .eq('customer_id', customerId)
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .gte('created_at', quarterStart.toISOString());
           
         return {
@@ -1607,7 +1607,7 @@ async function getChallengeProgressLegacy(customerId, challengeId, barberbarbers
           .from('referral_tracking')
           .select('id')
           .eq('referrer_customer_id', customerId)
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .gte('created_at', referralMonthStart.toISOString());
           
         return {
@@ -1629,7 +1629,7 @@ async function getChallengeProgressLegacy(customerId, challengeId, barberbarbers
 /**
  * Update customer challenge progress
  */
-async function updateChallengeProgress(customerId, challengeId, barberbarbershopId, progressData) {
+async function updateChallengeProgress(customerId, challengeId, barbershopId, progressData) {
   try {
     // Get current participation record
     const { data: participation } = await supabase
@@ -1644,7 +1644,7 @@ async function updateChallengeProgress(customerId, challengeId, barberbarbershop
       const { data: newParticipation, error } = await supabase
         .from('customer_challenge_participations')
         .insert({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           customer_id: customerId,
           challenge_id: challengeId,
           current_progress: progressData,
@@ -1676,7 +1676,7 @@ async function updateChallengeProgress(customerId, challengeId, barberbarbershop
       
       // Check if challenge completed and award rewards
       if (progressPercentage >= 100 && participation.status !== 'completed') {
-        await awardChallengeRewards(customerId, challengeId, barberbarbershopId);
+        await awardChallengeRewards(customerId, challengeId, barbershopId);
       }
       
       return updatedParticipation;
@@ -1713,7 +1713,7 @@ function calculateProgressPercentage(progressData, challengeId) {
 /**
  * Award challenge completion rewards
  */
-async function awardChallengeRewards(customerId, challengeId, barberbarbershopId) {
+async function awardChallengeRewards(customerId, challengeId, barbershopId) {
   try {
     const { data: challenge } = await supabase
       .from('gamification_challenges')
@@ -1729,12 +1729,12 @@ async function awardChallengeRewards(customerId, challengeId, barberbarbershopId
     
     if (reward.type === 'points' && reward.amount) {
       // Award loyalty points
-      await awardLoyaltyPoints(customerId, barberbarbershopId, reward.amount, 'challenge_completion', challengeId);
+      await awardLoyaltyPoints(customerId, barbershopId, reward.amount, 'challenge_completion', challengeId);
     }
     
     if (reward.type === 'badge' && reward.value) {
       // Award badge through milestone system
-      await awardBadge(customerId, barberbarbershopId, 'challenge', reward.value, `Completed challenge`);
+      await awardBadge(customerId, barbershopId, 'challenge', reward.value, `Completed challenge`);
     }
     
   } catch (error) {
@@ -1745,14 +1745,14 @@ async function awardChallengeRewards(customerId, challengeId, barberbarbershopId
 /**
  * Award loyalty points helper
  */
-async function awardLoyaltyPoints(customerId, barberbarbershopId, points, source, sourceId) {
+async function awardLoyaltyPoints(customerId, barbershopId, points, source, sourceId) {
   try {
     // Get current balance
     const { data: enrollment } = await supabase
       .from('loyalty_program_enrollments')
       .select('current_points')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single();
       
     const currentBalance = enrollment?.current_points || 0;
@@ -1761,7 +1761,7 @@ async function awardLoyaltyPoints(customerId, barberbarbershopId, points, source
     const { error } = await supabase
       .from('loyalty_points')
       .insert({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         customer_id: customerId,
         loyalty_program_id: enrollment.loyalty_program_id,
         transaction_type: 'earned',

@@ -88,9 +88,9 @@ export async function POST(request) {
  */
 async function handleAppointmentCompleted(data) {
   try {
-    const { appointment_id, customer_id, barberbarbershop_id, service_amount, services } = data;
+    const { appointment_id, customer_id, barbershop_id, service_amount, services } = data;
 
-    if (!appointment_id || !customer_id || !barberbarbershop_id || !service_amount) {
+    if (!appointment_id || !customer_id || !barbershop_id || !service_amount) {
       throw new Error('Missing required appointment data');
     }
 
@@ -102,7 +102,7 @@ async function handleAppointmentCompleted(data) {
         loyalty_programs!inner(*)
       `)
       .eq('customer_id', customer_id)
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('is_active', true);
 
     if (enrollmentError || !enrollments || enrollments.length === 0) {
@@ -132,7 +132,7 @@ async function handleAppointmentCompleted(data) {
         const { data: tiers } = await supabase
           .from('loyalty_tiers')
           .select('*')
-          .eq('barberbarbershop_id', barberbarbershop_id)
+          .eq('barbershop_id', barbershop_id)
           .eq('loyalty_program_id', enrollment.loyalty_program_id)
           .eq('tier_name', enrollment.current_tier)
           .single();
@@ -170,7 +170,7 @@ async function handleAppointmentCompleted(data) {
         const result = await awardLoyaltyPoints({
           customer_id,
           loyalty_program_id: enrollment.loyalty_program_id,
-          barberbarbershop_id,
+          barbershop_id,
           points_amount: finalPoints,
           source_type: 'appointment',
           source_id: appointment_id,
@@ -188,7 +188,7 @@ async function handleAppointmentCompleted(data) {
     }
 
     // Check for milestone achievements
-    await checkAndCreateMilestones(customer_id, barberbarbershop_id, 'appointment_completed', {
+    await checkAndCreateMilestones(customer_id, barbershop_id, 'appointment_completed', {
       service_amount: parseFloat(service_amount),
       points_awarded: totalPointsAwarded
     });
@@ -210,13 +210,13 @@ async function handleAppointmentCompleted(data) {
  */
 async function handleAppointmentCancelled(data) {
   try {
-    const { appointment_id, customer_id, barberbarbershop_id, cancellation_reason, advance_notice_hours } = data;
+    const { appointment_id, customer_id, barbershop_id, cancellation_reason, advance_notice_hours } = data;
 
     // Check if points should be deducted for late cancellations
     const { data: programs } = await supabase
       .from('loyalty_programs')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('is_active', true);
 
     if (!programs || programs.length === 0) {
@@ -240,7 +240,7 @@ async function handleAppointmentCancelled(data) {
           .select('*')
           .eq('customer_id', customer_id)
           .eq('loyalty_program_id', program.id)
-          .eq('barberbarbershop_id', barberbarbershop_id)
+          .eq('barbershop_id', barbershop_id)
           .eq('is_active', true)
           .single();
 
@@ -249,7 +249,7 @@ async function handleAppointmentCancelled(data) {
           const result = await awardLoyaltyPoints({
             customer_id,
             loyalty_program_id: program.id,
-            barberbarbershop_id,
+            barbershop_id,
             points_amount: -penaltyPoints,
             source_type: 'cancellation_penalty',
             source_id: appointment_id,
@@ -280,7 +280,7 @@ async function handleAppointmentCancelled(data) {
  */
 async function handlePaymentCompleted(data) {
   try {
-    const { payment_id, customer_id, barberbarbershop_id, amount, payment_method, appointment_id } = data;
+    const { payment_id, customer_id, barbershop_id, amount, payment_method, appointment_id } = data;
 
     // Get active loyalty programs
     const { data: enrollments } = await supabase
@@ -290,7 +290,7 @@ async function handlePaymentCompleted(data) {
         loyalty_programs!inner(*)
       `)
       .eq('customer_id', customer_id)
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('is_active', true);
 
     if (!enrollments || enrollments.length === 0) {
@@ -322,7 +322,7 @@ async function handlePaymentCompleted(data) {
         const result = await awardLoyaltyPoints({
           customer_id,
           loyalty_program_id: enrollment.loyalty_program_id,
-          barberbarbershop_id,
+          barbershop_id,
           points_amount: paymentBonus,
           source_type: 'payment_bonus',
           source_id: payment_id,
@@ -352,7 +352,7 @@ async function handlePaymentCompleted(data) {
  */
 async function handleReviewSubmitted(data) {
   try {
-    const { review_id, customer_id, barberbarbershop_id, rating, appointment_id } = data;
+    const { review_id, customer_id, barbershop_id, rating, appointment_id } = data;
 
     if (!rating || rating < 1 || rating > 5) {
       return { bonus_points: 0, message: 'Invalid rating' };
@@ -366,7 +366,7 @@ async function handleReviewSubmitted(data) {
         loyalty_programs!inner(*)
       `)
       .eq('customer_id', customer_id)
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('is_active', true);
 
     if (!enrollments || enrollments.length === 0) {
@@ -394,7 +394,7 @@ async function handleReviewSubmitted(data) {
         const result = await awardLoyaltyPoints({
           customer_id,
           loyalty_program_id: enrollment.loyalty_program_id,
-          barberbarbershop_id,
+          barbershop_id,
           points_amount: reviewBonus,
           source_type: 'review',
           source_id: review_id,
@@ -408,7 +408,7 @@ async function handleReviewSubmitted(data) {
     }
 
     // Create milestone for review submission
-    await checkAndCreateMilestones(customer_id, barberbarbershop_id, 'review_submitted', {
+    await checkAndCreateMilestones(customer_id, barbershop_id, 'review_submitted', {
       rating,
       points_awarded: totalBonusPoints
     });
@@ -430,13 +430,13 @@ async function handleReviewSubmitted(data) {
  */
 async function handleCustomerSignup(data) {
   try {
-    const { customer_id, barberbarbershop_id, signup_method, referral_code } = data;
+    const { customer_id, barbershop_id, signup_method, referral_code } = data;
 
     // Get active loyalty programs with auto-enroll enabled
     const { data: programs } = await supabase
       .from('loyalty_programs')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('is_active', true)
       .eq('auto_enroll_new_customers', true);
 
@@ -461,7 +461,7 @@ async function handleCustomerSignup(data) {
 
       // Create enrollment
       const enrollmentData = {
-        barberbarbershop_id,
+        barbershop_id,
         customer_id,
         loyalty_program_id: program.id,
         enrolled_at: new Date().toISOString(),
@@ -494,7 +494,7 @@ async function handleCustomerSignup(data) {
           const result = await awardLoyaltyPoints({
             customer_id,
             loyalty_program_id: program.id,
-            barberbarbershop_id,
+            barbershop_id,
             points_amount: welcomeBonus,
             source_type: 'welcome_bonus',
             source_id: customer_id,
@@ -509,7 +509,7 @@ async function handleCustomerSignup(data) {
     }
 
     // Create signup milestone
-    await checkAndCreateMilestones(customer_id, barberbarbershop_id, 'customer_signup', {
+    await checkAndCreateMilestones(customer_id, barbershop_id, 'customer_signup', {
       signup_method,
       enrollments_created: enrollments.length,
       welcome_points: totalWelcomePoints
@@ -533,7 +533,7 @@ async function handleCustomerSignup(data) {
  */
 async function handleReferralSignup(data) {
   try {
-    const { referral_code, new_customer_id, barberbarbershop_id } = data;
+    const { referral_code, new_customer_id, barbershop_id } = data;
 
     if (!referral_code) {
       return { referral_processed: false, message: 'No referral code provided' };
@@ -544,7 +544,7 @@ async function handleReferralSignup(data) {
       .from('referral_tracking')
       .select('*')
       .eq('referral_code', referral_code)
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .single();
 
     if (referralError || !referral) {
@@ -585,7 +585,7 @@ async function handleReferralSignup(data) {
         referral.referee_reward_value,
         'referral_signup_bonus',
         referral.id,
-        barberbarbershop_id
+        barbershop_id
       );
       if (result.success) {
         signupBonus = referral.referee_reward_value;
@@ -610,7 +610,7 @@ async function handleReferralSignup(data) {
  */
 async function handleBirthdayBonus(data) {
   try {
-    const { customer_id, barberbarbershop_id } = data;
+    const { customer_id, barbershop_id } = data;
 
     // Get customer's active loyalty enrollments
     const { data: enrollments } = await supabase
@@ -620,7 +620,7 @@ async function handleBirthdayBonus(data) {
         loyalty_programs!inner(*)
       `)
       .eq('customer_id', customer_id)
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('is_active', true);
 
     if (!enrollments || enrollments.length === 0) {
@@ -639,7 +639,7 @@ async function handleBirthdayBonus(data) {
         const result = await awardLoyaltyPoints({
           customer_id,
           loyalty_program_id: enrollment.loyalty_program_id,
-          barberbarbershop_id,
+          barbershop_id,
           points_amount: birthdayBonus,
           source_type: 'birthday_bonus',
           source_id: customer_id,
@@ -653,7 +653,7 @@ async function handleBirthdayBonus(data) {
     }
 
     // Create birthday milestone
-    await checkAndCreateMilestones(customer_id, barberbarbershop_id, 'birthday_bonus', {
+    await checkAndCreateMilestones(customer_id, barbershop_id, 'birthday_bonus', {
       bonus_points: totalBirthdayBonus
     });
 
@@ -675,7 +675,7 @@ async function handleSpecialPromotion(data) {
   try {
     const { 
       customer_id, 
-      barberbarbershop_id, 
+      barbershop_id, 
       promotion_type, 
       promotion_value, 
       promotion_name,
@@ -686,7 +686,7 @@ async function handleSpecialPromotion(data) {
       .from('loyalty_program_enrollments')
       .select('*')
       .eq('customer_id', customer_id)
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('is_active', true);
 
     if (program_id) {
@@ -706,7 +706,7 @@ async function handleSpecialPromotion(data) {
         const result = await awardLoyaltyPoints({
           customer_id,
           loyalty_program_id: enrollment.loyalty_program_id,
-          barberbarbershop_id,
+          barbershop_id,
           points_amount: promotion_value,
           source_type: 'special_promotion',
           source_id: `promotion_${promotion_name}`,
@@ -742,7 +742,7 @@ async function awardLoyaltyPoints(pointsData) {
       .select('*')
       .eq('customer_id', pointsData.customer_id)
       .eq('loyalty_program_id', pointsData.loyalty_program_id)
-      .eq('barberbarbershop_id', pointsData.barberbarbershop_id)
+      .eq('barbershop_id', pointsData.barbershop_id)
       .eq('is_active', true)
       .single();
 
@@ -771,7 +771,7 @@ async function awardLoyaltyPoints(pointsData) {
 
     // Create points transaction
     const transactionData = {
-      barberbarbershop_id: pointsData.barberbarbershop_id,
+      barbershop_id: pointsData.barbershop_id,
       customer_id: pointsData.customer_id,
       loyalty_program_id: pointsData.loyalty_program_id,
       transaction_type: pointsData.points_amount > 0 ? 'earned' : 'adjusted',
@@ -836,14 +836,14 @@ async function awardLoyaltyPoints(pointsData) {
 /**
  * Helper function to award referral points
  */
-async function awardReferralPoints(customerId, points, type, referralId, barberbarbershopId) {
+async function awardReferralPoints(customerId, points, type, referralId, barbershopId) {
   try {
     // Get customer's first active loyalty enrollment
     const { data: enrollment, error: enrollmentError } = await supabase
       .from('loyalty_program_enrollments')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .limit(1)
       .single();
@@ -855,7 +855,7 @@ async function awardReferralPoints(customerId, points, type, referralId, barberb
     return await awardLoyaltyPoints({
       customer_id: customerId,
       loyalty_program_id: enrollment.loyalty_program_id,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       points_amount: points,
       source_type: type,
       source_id: referralId,
@@ -871,7 +871,7 @@ async function awardReferralPoints(customerId, points, type, referralId, barberb
 /**
  * Helper function to check and create milestones
  */
-async function checkAndCreateMilestones(customerId, barberbarbershopId, milestoneType, data) {
+async function checkAndCreateMilestones(customerId, barbershopId, milestoneType, data) {
   try {
     let milestoneData = {};
 
@@ -913,7 +913,7 @@ async function checkAndCreateMilestones(customerId, barberbarbershopId, mileston
     }
 
     const milestone = {
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       customer_id: customerId,
       milestone_type: milestoneType,
       milestone_name: milestoneData.milestone_name,

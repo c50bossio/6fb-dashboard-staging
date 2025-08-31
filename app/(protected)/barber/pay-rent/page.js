@@ -29,8 +29,8 @@ import { formatCurrency } from '@/lib/utils'
  * Inspired by RentRedi's simplicity and tenant-first design
  */
 export default function PayRentPage() {
-  const { user, profile } = useAuth()
-  const supabase = createClient()
+  const { user, profile: _profile } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
@@ -49,7 +49,7 @@ export default function PayRentPage() {
     if (user && profile) {
       loadRentData()
     }
-  }, [user, profile])
+  }, [user, profile]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadRentData = async () => {
     setLoading(true)
@@ -154,7 +154,7 @@ export default function PayRentPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ledger_id: rentData.current_due.id,
-          barberbarbershop_id: rentData.arrangement.barberbarbershop_id,
+          barbershop_id: rentData.arrangement.barbershop_id,
           barber_id: user.id,
           force_method: selectedMethod
         })
@@ -213,7 +213,7 @@ export default function PayRentPage() {
             <BuildingLibraryIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h2 className="text-lg font-semibold mb-2">No Rent Arrangement</h2>
             <p className="text-gray-600 mb-4">
-              You don't have an active booth rent arrangement.
+              You don&apos;t have an active booth rent arrangement.
             </p>
             <Link href="/dashboard">
               <Button variant="outline">Return to Dashboard</Button>

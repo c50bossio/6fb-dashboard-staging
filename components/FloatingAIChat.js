@@ -1,15 +1,12 @@
 'use client'
 
-import { 
-  SparklesIcon, 
-  XMarkIcon, 
+import {
+  SparklesIcon,
+  XMarkIcon,
   PaperAirplaneIcon,
   ChatBubbleLeftRightIcon,
   ArrowsPointingOutIcon,
-  MicrophoneIcon,
-  HeartIcon,
-  FaceSmileIcon,
-  ExclamationTriangleIcon
+  MicrophoneIcon
 } from '@heroicons/react/24/outline'
 import { useState, useRef, useEffect } from 'react'
 import { useAIChat } from '../hooks/useAISDK'
@@ -17,7 +14,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useAuth } from './SupabaseAuthProvider'
 
 export default function FloatingAIChat() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   
   // Modern AI SDK integration
   const {
@@ -179,31 +176,63 @@ export default function FloatingAIChat() {
 
   useEffect(() => {
     const fetchShopData = async () => {
-      if (!user) return
+      if (!_user) return
       
-      const supabase = createClient()
+      // Check if we're in dev mode with mock auth
+      const isDevMode = process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true'
+      
+      if (isDevMode && _user?.id === 'dev-user-123') {
+        // Use mock data in dev mode
+        setShopData({
+          shopName: 'Dev Barbershop',
+          shopId: 'dev-barbershop-123',
+          totalRevenue: 15420,
+          totalCustomers: 127,
+          todayAppointments: 8,
+          upcomingAppointments: [
+            { start_time: '10:00 AM', service_name: 'Haircut', price: 30 },
+            { start_time: '11:30 AM', service_name: 'Beard Trim', price: 20 }
+          ],
+          analytics: {
+            revenueGrowth: 12.5,
+            customerGrowth: 8.3,
+            averageServicePrice: 45
+          },
+          predictions: {
+            nextMonthRevenue: 18500,
+            expectedBookings: 245,
+            peakDays: ['Monday', 'Friday', 'Saturday']
+          },
+          alerts: []
+        })
+        return
+      }
+      
+      const _supabase = createClient()
       
       try {
-        const { data: profileData, error: profileError } = await supabase
+        const { data: profileData, error: profileError } = await _supabase
           .from('profiles')
-          .select('id, role, shop_name, email')
-          .eq('id', user.id)
+          .select('id, role, shop_id, barbershop_id, email')
+          .eq('id', _user.id)
           .maybeSingle()
         
         if (profileError) {
           console.warn('Profile query warning:', profileError.message)
         }
         
-        if (profileData?.shop_id) {
+        const shopId = profileData?.shop_id || profileData?.barbershop_id
+        
+        if (shopId) {
           
           const [shopInfo, analytics, predictions, alerts] = await Promise.allSettled([
-            supabase.from('barbershops').select('*').eq('id', profileData.shop_id).single(),
+            _supabase.from('barbershops').select('*').eq('id', shopId).single(),
             
-            fetch(`/api/analytics/live-data?barberbarbershop_id=${profileData.shop_id}`).then(r => r.json()),
+            fetch(`/api/analytics/live-data?barbershop_id=${shopId}`).then(r => r.json()),
             
-            fetch(`/api/ai/predictive?type=comprehensive&barbershopId=${profileData.shop_id}`).then(r => r.json()),
+            fetch(`/api/ai/predictive?type=comprehensive&barbershopId=${shopId}`).then(r => r.json()),
             
-            fetch(`/api/alerts/intelligent?barberbarbershop_id=${profileData.shop_id}`).then(r => r.json())
+            fetch(`/api/alerts/intelligent?barbershop_id=${shopId}`).then(r => r.json())
           ])
 
           const shopData = shopInfo.status === 'fulfilled' ? shopInfo.value.data : null
@@ -211,15 +240,15 @@ export default function FloatingAIChat() {
           const predictionsData = predictions.status === 'fulfilled' && predictions.value.success ? predictions.value.predictions : null
           const alertsData = alerts.status === 'fulfilled' && alerts.value.success ? alerts.value : null
 
-          const { data: customers } = await supabase
+          const { data: customers } = await _supabase
             .from('customers')
             .select('total_spent, total_visits, created_at')
-            .eq('barbershop_id', profileData.shop_id)
+            .eq('barbershop_id', shopId)
           
-          const { data: bookings } = await supabase
+          const { data: bookings } = await _supabase
             .from('bookings')
             .select('price, status, service_name, start_time, created_at')
-            .eq('barbershop_id', profileData.shop_id)
+            .eq('barbershop_id', shopId)
             .gte('start_time', new Date().toISOString().split('T')[0])
           
           const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
@@ -229,9 +258,9 @@ export default function FloatingAIChat() {
           
           setShopData({
             ...shopData,
-            shop_name: shopData?.name || profileData.shop_name,
-            barbershop_id: profileData.shop_id,
-            user_role: profileData.role,
+            shop_name: shopData?.name || 'My Barbershop',
+            barbershop_id: shopId,
+            user_role: profileData?.role,
             location: shopData?.location || shopData?.address || 'Main Location',
             staff_count: shopData?.staff_count || 1
           })
@@ -249,8 +278,8 @@ export default function FloatingAIChat() {
 
           setBusinessContext({
             shop: {
-              name: shopData?.name || profileData.shop_name,
-              id: profileData.shop_id,
+              name: shopData?.name || 'My Barbershop',
+              id: shopId,
               location: shopData?.location || 'Main Location',
               staff_count: shopData?.staff_count || 1,
               operating_hours: shopData?.operating_hours || '9 AM - 7 PM',
@@ -298,7 +327,7 @@ export default function FloatingAIChat() {
     }
     
     fetchShopData()
-  }, [user])
+  }, [_user])
 
   useEffect(() => {
     let existingSession = null
@@ -431,7 +460,7 @@ export default function FloatingAIChat() {
 
   const analyzeMessageEmotion = async (messageText) => {
     if (!messageText.trim()) return null
-    if (!user?.id) {
+    if (!_user?.id) {
       console.warn('Cannot analyze emotion without user ID')
       return null
     }
@@ -445,7 +474,7 @@ export default function FloatingAIChat() {
         body: JSON.stringify({
           text: messageText,
           action: 'analyze',
-          userId: user.id,
+          userId: _user.id,
           context: {
             sessionId: sessionId,
             previousEmotion: currentMood,
@@ -519,7 +548,7 @@ export default function FloatingAIChat() {
         message: messageText,
         emotion: emotionAnalysis.emotion,
         emotionConfidence: emotionAnalysis.confidence,
-        userId: user?.id,
+        userId: _user?.id,
         timestamp: new Date().toISOString(),
         businessEvent: detectBusinessEvent(messageText, emotionAnalysis)
       }
@@ -530,7 +559,7 @@ export default function FloatingAIChat() {
         body: JSON.stringify({
           action: 'process_triggers',
           context: triggerContext,
-          userId: user?.id,
+          userId: _user?.id,
           businessContext: businessContext
         })
       })

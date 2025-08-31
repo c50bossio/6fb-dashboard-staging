@@ -18,7 +18,7 @@ export async function GET() {
     // Query all user profiles 
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, full_name, role, barbershop_id, barberbarbershop_id')
+      .select('id, email, full_name, role, barbershop_id, barbershop_id')
 
     if (profilesError) {
       console.error('Profiles query error:', profilesError)

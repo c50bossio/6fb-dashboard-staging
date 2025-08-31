@@ -7,19 +7,13 @@ import {
   ChartBarIcon,
   BanknotesIcon,
   UserGroupIcon,
-  ClockIcon,
   LightBulbIcon,
   RocketLaunchIcon,
   AcademicCapIcon,
-  HandThumbUpIcon,
   SparklesIcon,
   BoltIcon
 } from '@heroicons/react/24/outline'
-import { 
-  TrophyIcon as TrophySolidIcon,
-  FireIcon as FireSolidIcon,
-  StarIcon as StarSolidIcon
-} from '@heroicons/react/24/solid'
+
 import { useState, useEffect, useCallback } from 'react'
 
 import ProtectedRoute from '../../../../components/ProtectedRoute'

@@ -14,8 +14,8 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function GeneralSettingsPage() {
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -40,7 +40,7 @@ export default function GeneralSettingsPage() {
 
   useEffect(() => {
     loadShopData()
-  }, [user])
+  }, [_user])
 
   // Capture initial state on first render
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function GeneralSettingsPage() {
   }, [formData])
 
   const loadShopData = async () => {
-    if (!user) return
+    if (!_user) return
     
     try {
       setLoading(true)
@@ -74,7 +74,7 @@ export default function GeneralSettingsPage() {
       if (!shop || error) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('barbershop_id, barberbarbershop_id')
+          .select('barbershop_id, barbershop_id')
           .eq('id', user.id)
           .single()
         
@@ -189,7 +189,7 @@ export default function GeneralSettingsPage() {
             .from('profiles')
             .update({ 
               barbershop_id: newShop.id,
-              barberbarbershop_id: newShop.id 
+              barbershop_id: newShop.id 
             })
             .eq('id', user?.id)
         }

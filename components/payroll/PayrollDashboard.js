@@ -27,7 +27,7 @@ const formatCurrency = (amount) => {
   }).format(amount || 0)
 }
 
-export default function PayrollDashboard({ staff = [], metrics = {}, barberbarbershopId }) {
+export default function PayrollDashboard({ staff = [], metrics = {}, barbershopId }) {
   const [loading, setLoading] = useState(false)
   const [tierData, setTierData] = useState({})
   const [tierStructure, setTierStructure] = useState(null)
@@ -35,17 +35,17 @@ export default function PayrollDashboard({ staff = [], metrics = {}, barberbarbe
   // Load tier data for staff members
   useEffect(() => {
     const loadTierData = async () => {
-      if (!barberbarbershopId || !staff.length) return
+      if (!barbershopId || !staff.length) return
       
       try {
         // Load tier structure
-        const { data: structure } = await financialService.getTierStructure(barberbarbershopId)
+        const { data: structure } = await financialService.getTierStructure(barbershopId)
         setTierStructure(structure)
         
         // Load tier status for each staff member
         const tierPromises = staff.map(async (member) => {
           try {
-            const { data: tierStatus } = await financialService.getBarberTierStatus(member.id, barberbarbershopId)
+            const { data: tierStatus } = await financialService.getBarberTierStatus(member.id, barbershopId)
             return { memberId: member.id, tierStatus }
           } catch (error) {
             return { memberId: member.id, tierStatus: null }
@@ -66,7 +66,7 @@ export default function PayrollDashboard({ staff = [], metrics = {}, barberbarbe
     }
 
     loadTierData()
-  }, [barberbarbershopId, staff])
+  }, [barbershopId, staff])
 
   // Calculate aggregate payroll metrics
   const boothRentDue = staff

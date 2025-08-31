@@ -30,7 +30,7 @@ const APPOINTMENT_STATUSES = [
   { id: 'in_progress', label: 'In Progress', icon: ClockIcon, color: 'text-blue-600' },
   { id: 'completed', label: 'Completed', icon: CheckCircleIcon, color: 'text-gray-600' },
   { id: 'cancelled', label: 'Cancelled', icon: XCircleIcon, color: 'text-red-600' },
-  { id: 'no_show', label: 'No Show', icon: ExclamationCircleIcon, color: 'text-orange-600' }
+  { id: 'no_show', label: 'No Show', icon: _ExclamationCircleIcon, color: 'text-orange-600' }
 ]
 
 const TIME_RANGES = [
@@ -257,7 +257,7 @@ export default function CalendarFilters({
                               </Disclosure.Button>
                               <Disclosure.Panel className="px-4 pb-2 pt-4">
                                 <div className="space-y-2">
-                                  {TIME_RANGES.map((range) => (
+                                  {TIME_RANGES.map((_range) => (
                                     <label key={range.id} className="flex items-center">
                                       <input
                                         type="radio"

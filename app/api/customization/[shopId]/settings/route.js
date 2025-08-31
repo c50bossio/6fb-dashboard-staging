@@ -41,7 +41,7 @@ export async function GET(request, { params }) {
     const { data: businessHours } = await supabase
       .from('business_hours')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .order('day_of_week')
 
     const customizationData = {
@@ -178,10 +178,10 @@ export async function PUT(request, { params }) {
       await supabase
         .from('business_hours')
         .delete()
-        .eq('barberbarbershop_id', barbershopId)
+        .eq('barbershop_id', barbershopId)
 
       const hoursToInsert = updates.business_hours.map(hour => ({
-        barberbarbershop_id: barbershopId,
+        barbershop_id: barbershopId,
         day_of_week: hour.day_of_week,
         is_open: hour.is_open,
         open_time: hour.open_time,
@@ -216,7 +216,7 @@ export async function PUT(request, { params }) {
           await supabase
             .from('website_sections')
             .insert({
-              barberbarbershop_id: barbershopId,
+              barbershop_id: barbershopId,
               section_type: section.section_type,
               title: section.title,
               content: section.content,
@@ -307,12 +307,12 @@ export async function DELETE(request, { params }) {
     await supabase
       .from('website_sections')
       .delete()
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
 
     await supabase
       .from('barbershop_gallery')
       .delete()
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
 
     return NextResponse.json({ 
       message: 'Customization reset to defaults',

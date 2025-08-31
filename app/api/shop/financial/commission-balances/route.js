@@ -38,7 +38,7 @@ export async function GET(request) {
           full_name
         )
       `)
-      .eq('barberbarbershop_id', shop.id)
+      .eq('barbershop_id', shop.id)
       .order('pending_amount', { ascending: false })
 
     if (balancesError) {

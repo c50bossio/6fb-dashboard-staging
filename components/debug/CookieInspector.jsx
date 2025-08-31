@@ -14,7 +14,7 @@ export default function CookieInspector({ isOpen, onClose }) {
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [logs, setLogs] = useState([])
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const addLog = (message, type = 'info') => {
     const timestamp = new Date().toLocaleTimeString()

@@ -3,7 +3,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 
-export function useRealtimeAppointments(barberbarbershopId) {
+export function useRealtimeAppointments(barbershopId) {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -17,13 +17,13 @@ export function useRealtimeAppointments(barberbarbershopId) {
   if (typeof window !== 'undefined') {
     window.realtimeHookDebug = {
       called: true,
-      barberbarbershopId,
+      barbershopId,
       timestamp: new Date().toISOString()
     }
   }
 
   const refresh = async () => {
-    if (!barberbarbershopId) return
+    if (!barbershopId) return
     
     try {
       const response = await fetch('/api/calendar/appointments')
@@ -43,7 +43,7 @@ export function useRealtimeAppointments(barberbarbershopId) {
   }
 
   useEffect(() => {
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       setLoading(false)
       return
     }
@@ -72,14 +72,14 @@ export function useRealtimeAppointments(barberbarbershopId) {
     refresh()
 
     const channel = supabase
-      .channel(`bookings-${barberbarbershopId}`)
+      .channel(`bookings-${barbershopId}`)
       .on(
         'postgres_changes',
         {
           event: '*', // Listen to all events
           schema: 'public',
           table: 'bookings',
-          filter: `barberbarbershop_id=eq.${barberbarbershopId}`
+          filter: `barbershop_id=eq.${barbershopId}`
         },
         (payload) => {
           if (payload.eventType === 'UPDATE') {
@@ -163,7 +163,7 @@ export function useRealtimeAppointments(barberbarbershopId) {
       }
       supabase.removeChannel(channel)
     }
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   return {
     appointments,

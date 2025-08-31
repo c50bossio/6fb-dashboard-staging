@@ -9,7 +9,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const userId = searchParams.get('user_id');
     const days = parseInt(searchParams.get('days') || '7');
     const limit = parseInt(searchParams.get('limit') || '100');
@@ -18,9 +18,9 @@ export async function GET(request) {
     const status = searchParams.get('status');
     const includeAnalytics = searchParams.get('include_analytics') !== 'false';
     
-    if (!barberbarbershopId || !userId) {
+    if (!barbershopId || !userId) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id and user_id are required parameters' },
+        { error: 'barbershop_id and user_id are required parameters' },
         { status: 400 }
       );
     }
@@ -31,7 +31,7 @@ export async function GET(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         user_id: userId,
         days: days,
         limit: limit,
@@ -61,7 +61,7 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       data: {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         user_id: userId,
         query_parameters: {
           days,
@@ -98,7 +98,7 @@ export async function POST(request) {
     const body = await request.json();
     
     const { 
-      barberbarbershop_id, 
+      barbershop_id, 
       user_id, 
       action,
       export_format = 'json',
@@ -107,9 +107,9 @@ export async function POST(request) {
       bulk_operation
     } = body;
     
-    if (!barberbarbershop_id || !user_id || !action) {
+    if (!barbershop_id || !user_id || !action) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id, user_id, and action are required' },
+        { error: 'barbershop_id, user_id, and action are required' },
         { status: 400 }
       );
     }
@@ -118,23 +118,23 @@ export async function POST(request) {
     
     switch (action) {
       case 'export':
-        result = await handleExport(barberbarbershop_id, user_id, export_format, date_range, filters);
+        result = await handleExport(barbershop_id, user_id, export_format, date_range, filters);
         break;
         
       case 'bulk_acknowledge':
-        result = await handleBulkAcknowledge(barberbarbershop_id, user_id, bulk_operation);
+        result = await handleBulkAcknowledge(barbershop_id, user_id, bulk_operation);
         break;
         
       case 'bulk_dismiss':
-        result = await handleBulkDismiss(barberbarbershop_id, user_id, bulk_operation);
+        result = await handleBulkDismiss(barbershop_id, user_id, bulk_operation);
         break;
         
       case 'generate_report':
-        result = await handleGenerateReport(barberbarbershop_id, user_id, date_range, filters);
+        result = await handleGenerateReport(barbershop_id, user_id, date_range, filters);
         break;
         
       case 'analyze_patterns':
-        result = await handleAnalyzePatterns(barberbarbershop_id, user_id, date_range);
+        result = await handleAnalyzePatterns(barbershop_id, user_id, date_range);
         break;
         
       default:
@@ -147,7 +147,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       data: {
-        barberbarbershop_id,
+        barbershop_id,
         user_id,
         action,
         result,
@@ -169,14 +169,14 @@ export async function POST(request) {
 }
 
 
-async function handleExport(barberbarbershopId, userId, format, dateRange, filters) {
+async function handleExport(barbershopId, userId, format, dateRange, filters) {
   const exportResponse = await fetch('http://localhost:8001/intelligent-alerts/export', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       user_id: userId,
       export_format: format,
       date_range: dateRange,
@@ -203,7 +203,7 @@ async function handleExport(barberbarbershopId, userId, format, dateRange, filte
   };
 }
 
-async function handleBulkAcknowledge(barberbarbershopId, userId, bulkOperation) {
+async function handleBulkAcknowledge(barbershopId, userId, bulkOperation) {
   const { alert_ids, criteria } = bulkOperation;
   
   if (!alert_ids && !criteria) {
@@ -216,7 +216,7 @@ async function handleBulkAcknowledge(barberbarbershopId, userId, bulkOperation) 
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       user_id: userId,
       alert_ids: alert_ids,
       criteria: criteria,
@@ -241,7 +241,7 @@ async function handleBulkAcknowledge(barberbarbershopId, userId, bulkOperation) 
   };
 }
 
-async function handleBulkDismiss(barberbarbershopId, userId, bulkOperation) {
+async function handleBulkDismiss(barbershopId, userId, bulkOperation) {
   const { alert_ids, criteria, reason } = bulkOperation;
   
   if (!alert_ids && !criteria) {
@@ -254,7 +254,7 @@ async function handleBulkDismiss(barberbarbershopId, userId, bulkOperation) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       user_id: userId,
       alert_ids: alert_ids,
       criteria: criteria,
@@ -279,14 +279,14 @@ async function handleBulkDismiss(barberbarbershopId, userId, bulkOperation) {
   };
 }
 
-async function handleGenerateReport(barberbarbershopId, userId, dateRange, filters) {
+async function handleGenerateReport(barbershopId, userId, dateRange, filters) {
   const reportResponse = await fetch('http://localhost:8001/intelligent-alerts/generate-report', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       user_id: userId,
       date_range: dateRange,
       filters: filters,
@@ -314,14 +314,14 @@ async function handleGenerateReport(barberbarbershopId, userId, dateRange, filte
   };
 }
 
-async function handleAnalyzePatterns(barberbarbershopId, userId, dateRange) {
+async function handleAnalyzePatterns(barbershopId, userId, dateRange) {
   const analysisResponse = await fetch('http://localhost:8001/intelligent-alerts/analyze-patterns', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       user_id: userId,
       date_range: dateRange,
       analysis_type: 'comprehensive',

@@ -18,19 +18,19 @@ import { useAuth } from '../SupabaseAuthProvider'
  * Inspired by Stripe, Shopify, Square onboarding patterns
  */
 export default function DataImportWidget({ profile, onStartImport }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [showWidget, setShowWidget] = useState(false)
   const [importProgress, setImportProgress] = useState(null)
   
   // Initialize Supabase client
-  const supabase = createClient(
+  const _supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   )
   
   // Only show widget if:
   // 1. User has completed onboarding 
-  // 2. User has a barbershop (barberbarbershop_id exists)
+  // 2. User has a barbershop (barbershop_id exists)
   // 3. No existing customer data in the database
   useEffect(() => {
     const checkShouldShowWidget = async () => {
@@ -42,9 +42,9 @@ export default function DataImportWidget({ profile, onStartImport }) {
       
       try {
         // Use getTenant() to get barbershop ID
-        const { barberbarbershopId } = await getTenant(profile.id, { supabase })
+        const { barbershopId } = await getTenant(profile.id, { supabase })
         
-        if (!barberbarbershopId) {
+        if (!barbershopId) {
           setShowWidget(false)
           return
         }
@@ -53,7 +53,7 @@ export default function DataImportWidget({ profile, onStartImport }) {
         const { data: existingCustomers, error } = await supabase
           .from('customers')
           .select('id')
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .limit(1)
         
         // If customers exist, don't show the import widget

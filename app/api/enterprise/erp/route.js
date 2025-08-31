@@ -267,7 +267,7 @@ async function generateInventoryManagement(organizationId, locationIds, startDat
       .from('barbershop_inventory')
       .select(`
         id,
-        barberbarbershop_id,
+        barbershop_id,
         product_name,
         quantity,
         min_quantity,
@@ -278,14 +278,14 @@ async function generateInventoryManagement(organizationId, locationIds, startDat
         reorder_threshold,
         auto_reorder_quantity
       `)
-      .in('barberbarbershop_id', locationIds)
+      .in('barbershop_id', locationIds)
       .eq('is_active', true)
 
     // Get recent inventory movements
     const { data: movements } = await supabase
       .from('inventory_movements')
       .select('*')
-      .in('barberbarbershop_id', locationIds)
+      .in('barbershop_id', locationIds)
       .gte('movement_date', startDate)
       .lte('movement_date', endDate)
       .order('movement_date', { ascending: false })
@@ -354,7 +354,7 @@ function analyzeInventoryData(inventory, movements) {
         name: item.product_name,
         current_quantity: item.quantity,
         min_quantity: item.min_quantity,
-        location_id: item.barberbarbershop_id
+        location_id: item.barbershop_id
       })
     }
 
@@ -542,7 +542,7 @@ async function generateFinancialManagement(organizationId, locationIds, startDat
     const { data: payments } = await supabase
       .from('payments')
       .select('*')
-      .in('barberbarbershop_id', locationIds)
+      .in('barbershop_id', locationIds)
       .gte('created_at', startDate + 'T00:00:00.000Z')
       .lte('created_at', endDate + 'T23:59:59.999Z')
 
@@ -610,7 +610,7 @@ function analyzeFinancialData(payments, expenses) {
     analysis.payment_methods[method] = (analysis.payment_methods[method] || 0) + amount
 
     // Track revenue by location
-    const locationId = payment.barberbarbershop_id
+    const locationId = payment.barbershop_id
     analysis.revenue_by_location[locationId] = (analysis.revenue_by_location[locationId] || 0) + amount
   })
 
@@ -678,7 +678,7 @@ function analyzeProfitability(locationIds, payments, expenses) {
   // Calculate profitability by location
   locationIds.forEach(locationId => {
     const locationRevenue = payments
-      .filter(p => p.barberbarbershop_id === locationId)
+      .filter(p => p.barbershop_id === locationId)
       .reduce((sum, p) => sum + parseFloat(p.amount || 0), 0)
 
     const locationExpenses = expenses
@@ -780,8 +780,8 @@ async function generateVendorManagement(organizationId, locationIds, startDate, 
     // Get vendor information from inventory supplier data
     const { data: inventory } = await supabase
       .from('barbershop_inventory')
-      .select('supplier, unit_cost, product_name, barberbarbershop_id, last_updated')
-      .in('barberbarbershop_id', locationIds)
+      .select('supplier, unit_cost, product_name, barbershop_id, last_updated')
+      .in('barbershop_id', locationIds)
       .neq('supplier', null)
 
     // Get purchase orders if available
@@ -838,7 +838,7 @@ function analyzeVendorData(inventory, purchaseOrders) {
 
       vendorStats[item.supplier].products_count++
       vendorStats[item.supplier].total_inventory_value += item.unit_cost || 0
-      vendorStats[item.supplier].locations.add(item.barberbarbershop_id)
+      vendorStats[item.supplier].locations.add(item.barbershop_id)
     }
   })
 
@@ -1151,8 +1151,8 @@ async function generateSystemAlerts(organizationId, locationIds) {
     // Check for critical inventory levels
     const { data: lowStock } = await supabase
       .from('barbershop_inventory')
-      .select('product_name, quantity, min_quantity, barberbarbershop_id')
-      .in('barberbarbershop_id', locationIds)
+      .select('product_name, quantity, min_quantity, barbershop_id')
+      .in('barbershop_id', locationIds)
       .lt('quantity', 'min_quantity')
 
     if (lowStock && lowStock.length > 0) {
@@ -1161,7 +1161,7 @@ async function generateSystemAlerts(organizationId, locationIds) {
         severity: 'high',
         title: 'Low Inventory Levels',
         message: `${lowStock.length} items are below minimum stock levels`,
-        affected_locations: [...new Set(lowStock.map(item => item.barberbarbershop_id))],
+        affected_locations: [...new Set(lowStock.map(item => item.barbershop_id))],
         action_required: true,
         created_at: new Date().toISOString()
       })
@@ -1171,7 +1171,7 @@ async function generateSystemAlerts(organizationId, locationIds) {
     const { data: overduePayments } = await supabase
       .from('payments')
       .select('*')
-      .in('barberbarbershop_id', locationIds)
+      .in('barbershop_id', locationIds)
       .eq('status', 'pending')
       .lt('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
 
@@ -1181,7 +1181,7 @@ async function generateSystemAlerts(organizationId, locationIds) {
         severity: 'medium',
         title: 'Overdue Payments',
         message: `${overduePayments.length} payments are overdue`,
-        affected_locations: [...new Set(overduePayments.map(p => p.barberbarbershop_id))],
+        affected_locations: [...new Set(overduePayments.map(p => p.barbershop_id))],
         action_required: true,
         created_at: new Date().toISOString()
       })

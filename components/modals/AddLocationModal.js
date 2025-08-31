@@ -8,7 +8,7 @@ import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import { useAuth } from '../SupabaseAuthProvider'
 
 export default function AddLocationModal({ isOpen, onClose }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const { refreshLocations } = useGlobalDashboard()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -24,7 +24,7 @@ export default function AddLocationModal({ isOpen, onClose }) {
     description: ''
   })
   
-  const supabase = createClient()
+  const _supabase = createClient()
   
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -67,7 +67,7 @@ export default function AddLocationModal({ isOpen, onClose }) {
       ]
       
       const servicesData = defaultServices.map(service => ({
-        barberbarbershop_id: data.id,
+        barbershop_id: data.id,
         name: service.name,
         duration: service.duration,
         price: service.price,

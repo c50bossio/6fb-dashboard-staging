@@ -1,31 +1,23 @@
 'use client'
 
-import { 
+import {
   UserPlusIcon,
-  EnvelopeIcon,
-  PhoneIcon,
   UserIcon,
   CurrencyDollarIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
-  XCircleIcon,
   DocumentTextIcon,
-  ChartBarIcon,
-  CogIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-  ClockIcon,
-  BanknotesIcon
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function AddBarber() {
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   const router = useRouter()
   
   const [loading, setLoading] = useState(false)

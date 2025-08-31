@@ -102,7 +102,7 @@ function BarberProfilePageContent({ activeTab }) {
     if (user?.id) {
       loadBarbershopId()
     }
-  }, [user?.id])
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const loadProfile = async () => {
@@ -147,8 +147,8 @@ function BarberProfilePageContent({ activeTab }) {
       }
       
       // Then try from staff association
-      const supabase = createClient()
-      const { data: staffRecord } = await supabase
+      const _supabase = createClient()
+      const { data: staffRecord } = await _supabase
         .from('barbershop_staff')
         .select('barbershop_id')
         .eq('user_id', user.id)

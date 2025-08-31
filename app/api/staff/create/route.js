@@ -85,7 +85,7 @@ export async function POST(request) {
     // Get user's profile to check permissions
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, role, barbershop_id, barberbarbershop_id, organization_id')
+      .select('id, role, barbershop_id, barbershop_id, organization_id')
       .eq('id', user.id)
       .single()
 
@@ -101,14 +101,14 @@ export async function POST(request) {
     }
 
     // Validate required fields
-    const { email, fullName, phone, role = 'BARBER', locationId, barberbarbershopId } = body
-    const finalBarberbarbershopId = barberbarbershopId || locationId
+    const { email, fullName, phone, role = 'BARBER', locationId, barbershopId } = body
+    const finalbarbershopId = barbershopId || locationId
     
     if (!email || !email.trim()) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
 
-    if (!finalBarberbarbershopId) {
+    if (!finalbarbershopId) {
       return NextResponse.json({ error: 'Location ID is required' }, { status: 400 })
     }
 
@@ -116,7 +116,7 @@ export async function POST(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, name')
-      .eq('id', finalBarberbarbershopId)
+      .eq('id', finalbarbershopId)
       .single()
 
     if (!barbershop) {
@@ -135,7 +135,7 @@ export async function POST(request) {
       const { data: staffMember, error: staffError } = await supabase
         .from('barbershop_staff')
         .insert({
-          barberbarbershop_id: finalBarberbarbershopId,
+          barbershop_id: finalbarbershopId,
           user_id: existingUser.id,
           role: role,
           is_active: true
@@ -190,7 +190,7 @@ export async function POST(request) {
         phone: phone || '',
         role: role,
         created_by: user.id,
-        barberbarbershop_id: finalBarberbarbershopId,
+        barbershop_id: finalbarbershopId,
         temp_password: true // Flag to force password change
       }
     })
@@ -214,8 +214,8 @@ export async function POST(request) {
         last_name: fullName ? fullName.split(' ').slice(1).join(' ') : '',
         phone: phone || '',
         role: role,
-        barbershop_id: finalBarberbarbershopId,
-        barberbarbershop_id: finalBarberbarbershopId,
+        barbershop_id: finalbarbershopId,
+        barbershop_id: finalbarbershopId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -236,7 +236,7 @@ export async function POST(request) {
     const { data: staffMember, error: staffError } = await supabase
       .from('barbershop_staff')
       .insert({
-        barberbarbershop_id: finalBarberbarbershopId,
+        barbershop_id: finalbarbershopId,
         user_id: newAuthUser.user.id,
         role: role,
         is_active: true,
@@ -276,7 +276,7 @@ export async function POST(request) {
         fullName: fullName || '',
         phone: phone || '',
         role: role,
-        locationId: finalBarberbarbershopId,
+        locationId: finalbarbershopId,
         tempPassword: isDevelopment ? tempPassword : undefined, // Only show in dev
         emailSent: emailResult.success,
         emailError: emailResult.error

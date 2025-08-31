@@ -23,7 +23,7 @@ export default function ClientHistoryTracker({
   rules = {}, 
   onClientUpdate,
   onClientSelect,
-  barberbarbershopId,
+  barbershopId,
   showFullHistory = false,
   compact = false 
 }) {
@@ -290,7 +290,7 @@ export default function ClientHistoryTracker({
 
   // Create a test customer for demo purposes
   const createTestCustomer = async () => {
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       setError({ type: 'error', message: 'No barbershop ID available. Please try refreshing the page.' })
       return
     }
@@ -299,7 +299,7 @@ export default function ClientHistoryTracker({
       setLoadingClients(true)
       
       const testCustomerData = {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         name: 'Test Customer',
         email: 'test@example.com',
         phone: '555-0123',
@@ -354,12 +354,12 @@ export default function ClientHistoryTracker({
 
   // Load available clients for selection
   const loadAvailableClients = async () => {
-    if (!barberbarbershopId) return
+    if (!barbershopId) return
     
     try {
       setLoadingClients(true)
       
-      const response = await fetch(`/api/customers?barberbarbershop_id=${barberbarbershopId}&limit=50`)
+      const response = await fetch(`/api/customers?barbershop_id=${barbershopId}&limit=50`)
       
       if (response.ok) {
         const data = await response.json()

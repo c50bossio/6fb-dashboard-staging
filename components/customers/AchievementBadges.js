@@ -20,7 +20,7 @@ const categoryIcons = {
 
 export default function AchievementBadges({ 
   customerId, 
-  barberbarbershopId,
+  barbershopId,
   onBadgeUnlock = null,
   showProgress = true,
   autoRefresh = false,
@@ -47,7 +47,7 @@ export default function AchievementBadges({
         customer_id: customerId,
         include_progress: showProgress.toString()
       })
-      if (barberbarbershopId) badgesParams.append('barberbarbershop_id', barberbarbershopId)
+      if (barbershopId) badgesParams.append('barbershop_id', barbershopId)
 
       const badgesResponse = await fetch(`/api/customers/badges?${badgesParams}`)
       const badgesData = await badgesResponse.json()
@@ -137,7 +137,7 @@ export default function AchievementBadges({
       const interval = setInterval(checkForNewBadges, 30000) // Check every 30 seconds
       return () => clearInterval(interval)
     }
-  }, [customerId, barberbarbershopId, showProgress, autoRefresh])
+  }, [customerId, barbershopId, showProgress, autoRefresh])
 
   // Filter badges by category
   const filterBadgesByCategory = (badges, category) => {

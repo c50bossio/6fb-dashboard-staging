@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
     // Get user's profile to check permissions
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, role, barbershop_id, barberbarbershop_id, organization_id')
+      .select('id, role, barbershop_id, barbershop_id, organization_id')
       .eq('id', user.id)
       .single()
 
@@ -45,9 +45,9 @@ export async function GET(request, { params }) {
         // Check if they're staff at this location
         const { data: staffRecord } = await supabase
           .from('barbershop_staff')
-          .select('barberbarbershop_id')
+          .select('barbershop_id')
           .eq('user_id', user.id)
-          .eq('barberbarbershop_id', locationId)
+          .eq('barbershop_id', locationId)
           .eq('is_active', true)
           .single()
         
@@ -85,7 +85,7 @@ export async function GET(request, { params }) {
           phone
         )
       `)
-      .eq('barberbarbershop_id', locationId)
+      .eq('barbershop_id', locationId)
       .eq('is_active', true)
 
     if (staffError) {

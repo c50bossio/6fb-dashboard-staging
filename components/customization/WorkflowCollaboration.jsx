@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   UserGroupIcon,
   ClockIcon,
   CheckCircleIcon,
@@ -11,24 +11,13 @@ import {
   PencilSquareIcon,
   EyeIcon,
   PlayIcon,
-  PauseIcon,
-  ArrowPathIcon,
   BellIcon,
   CalendarIcon,
   TagIcon,
-  FolderIcon,
-  ShareIcon,
-  HeartIcon,
-  HandThumbUpIcon,
-  HandThumbDownIcon,
-  BookmarkIcon,
   ArchiveBoxIcon,
   ClipboardDocumentListIcon,
-  CommandLineIcon,
   Cog6ToothIcon,
   CubeTransparentIcon,
-  LinkIcon,
-  LockClosedIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useMemo } from 'react'
@@ -617,7 +606,7 @@ const ActivityFeed = ({ activities }) => {
 }
 
 export default function WorkflowCollaboration() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [workflows, setWorkflows] = useState([])
   const [versions, setVersions] = useState([])
@@ -626,7 +615,7 @@ export default function WorkflowCollaboration() {
   const [activeTab, setActiveTab] = useState('workflows')
   const [message, setMessage] = useState({ type: '', text: '' })
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   // Mock data
   const mockData = useMemo(() => ({

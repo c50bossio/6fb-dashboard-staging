@@ -63,12 +63,12 @@ function ErrorFallback({ error, resetErrorBoundary }) {
 }
 
 // Component for Services Section with Mock Data Fallback
-function ServicesSection({ barberbarbershopId, useMockData }) {
+function ServicesSection({ barbershopId, useMockData }) {
   const [newServiceName, setNewServiceName] = useState('')
   const [newServicePrice, setNewServicePrice] = useState('')
   const [localServices, setLocalServices] = useState(useMockData ? MOCK_SERVICES : [])
   
-  const { data: services, isLoading, error } = useServices(barberbarbershopId, {
+  const { data: services, isLoading, error } = useServices(barbershopId, {
     enabled: !useMockData,
     onError: (err) => console.error('Services query error:', err)
   })
@@ -94,7 +94,7 @@ function ServicesSection({ barberbarbershopId, useMockData }) {
       setLocalServices([...localServices, newService])
     } else {
       createService.mutate({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         name: newServiceName,
         price: parseFloat(newServicePrice),
         duration_minutes: 30,
@@ -116,7 +116,7 @@ function ServicesSection({ barberbarbershopId, useMockData }) {
     } else {
       updateService.mutate({
         serviceId: service.id,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         updates: { active: !service.active }
       })
     }
@@ -181,10 +181,10 @@ function ServicesSection({ barberbarbershopId, useMockData }) {
 }
 
 // Component for Appointments Section with Mock Data
-function AppointmentsSection({ barberbarbershopId, useMockData }) {
+function AppointmentsSection({ barbershopId, useMockData }) {
   const [localAppointments, setLocalAppointments] = useState(useMockData ? MOCK_APPOINTMENTS : [])
   
-  const { data: appointments, isLoading } = useRealtimeAppointments(barberbarbershopId, {
+  const { data: appointments, isLoading } = useRealtimeAppointments(barbershopId, {
     enabled: !useMockData
   })
   
@@ -199,7 +199,7 @@ function AppointmentsSection({ barberbarbershopId, useMockData }) {
     
     const newAppointment = {
       id: Date.now().toString(),
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       customer_name: 'Test Customer',
       customer_phone: '555-0123',
       customer_email: 'test@example.com',
@@ -334,14 +334,14 @@ export default function EnhancedReactQueryTestPage() {
         {/* Services Section with Error Boundary */}
         <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
           <Suspense fallback={<div className="bg-white rounded-lg shadow p-6 mb-6">Loading...</div>}>
-            <ServicesSection barberbarbershopId={TEST_BARBERSHOP_ID} useMockData={useMockData} />
+            <ServicesSection barbershopId={TEST_BARBERSHOP_ID} useMockData={useMockData} />
           </Suspense>
         </ErrorBoundary>
         
         {/* Appointments Section with Error Boundary */}
         <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
           <Suspense fallback={<div className="bg-white rounded-lg shadow p-6 mb-6">Loading...</div>}>
-            <AppointmentsSection barberbarbershopId={TEST_BARBERSHOP_ID} useMockData={useMockData} />
+            <AppointmentsSection barbershopId={TEST_BARBERSHOP_ID} useMockData={useMockData} />
           </Suspense>
         </ErrorBoundary>
         
@@ -372,7 +372,7 @@ export default function EnhancedReactQueryTestPage() {
                 </div>
               </div>
             ) : (
-              <DashboardMetrics barberbarbershopId={TEST_BARBERSHOP_ID} />
+              <DashboardMetrics barbershopId={TEST_BARBERSHOP_ID} />
             )}
           </div>
         </ErrorBoundary>
@@ -394,8 +394,8 @@ export default function EnhancedReactQueryTestPage() {
 }
 
 // Dashboard Metrics Component
-function DashboardMetrics({ barberbarbershopId }) {
-  const dashboardData = useDashboardData(barberbarbershopId)
+function DashboardMetrics({ barbershopId }) {
+  const dashboardData = useDashboardData(barbershopId)
   
   if (dashboardData.isLoading) return <p>Loading dashboard data...</p>
   if (dashboardData.isError) return <p className="text-red-600">Error loading dashboard</p>

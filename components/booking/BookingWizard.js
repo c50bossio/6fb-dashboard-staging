@@ -18,7 +18,7 @@ export default function BookingWizard({
   settings = {}
 }) {
   const router = useRouter()
-  const supabase = createClient()
+  const _supabase = createClient()
   
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)

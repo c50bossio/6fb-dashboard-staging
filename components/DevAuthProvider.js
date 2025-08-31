@@ -31,7 +31,7 @@ export function DevAuthProvider({ children }) {
     subscription_status: 'active',
     role: 'BARBER',
     barbershop_id: 'dev-shop-123',
-    barberbarbershop_id: 'dev-shop-123'
+    barbershop_id: 'dev-shop-123'
   })
   
   const [loading, setLoading] = useState(true)

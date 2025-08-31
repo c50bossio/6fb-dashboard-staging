@@ -31,34 +31,34 @@ async function verifyAuth(request) {
       return { error: 'Invalid token', status: 401 }
     }
 
-    // Get barberbarbershop_id for the user
+    // Get barbershop_id for the user
     const { data: barbershopData } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
       .single()
 
-    let barberbarbershopId = null
+    let barbershopId = null
     if (barbershopData) {
-      barberbarbershopId = barbershopData.id
+      barbershopId = barbershopData.id
     } else {
       // Check if user is a barber
       const { data: barberData } = await supabase
         .from('barbers')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .single()
       
       if (barberData) {
-        barberbarbershopId = barberData.barberbarbershop_id
+        barbershopId = barberData.barbershop_id
       }
     }
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return { error: 'User not associated with any barbershop', status: 403 }
     }
 
-    return { user, barberbarbershopId }
+    return { user, barbershopId }
   } catch (error) {
     return { error: 'Authentication failed', status: 401 }
   }
@@ -66,8 +66,8 @@ async function verifyAuth(request) {
 
 // CLV calculation engine
 class CLVCalculator {
-  constructor(barberbarbershopId) {
-    this.barberbarbershopId = barberbarbershopId
+  constructor(barbershopId) {
+    this.barbershopId = barbershopId
   }
 
   async calculateCLV(customerId, method = 'historical_plus_predictive') {
@@ -96,7 +96,7 @@ class CLVCalculator {
       .from('customers')
       .select('*')
       .eq('id', customerId)
-      .eq('barberbarbershop_id', this.barberbarbershopId)
+      .eq('barbershop_id', this.barbershopId)
       .single()
     
     if (error) throw error
@@ -108,7 +108,7 @@ class CLVCalculator {
       .from('appointments')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', this.barberbarbershopId)
+      .eq('barbershop_id', this.barbershopId)
       .eq('status', 'completed')
       .order('appointment_date', { ascending: true })
     
@@ -129,14 +129,14 @@ class CLVCalculator {
       .from('customer_feedback')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', this.barberbarbershopId)
+      .eq('barbershop_id', this.barbershopId)
 
     // Get referral data
     const { data: referralData } = await supabase
       .from('customer_referrals')
       .select('*')
       .eq('referrer_customer_id', customerId)
-      .eq('barberbarbershop_id', this.barberbarbershopId)
+      .eq('barbershop_id', this.barbershopId)
 
     return {
       loyalty: loyaltyData,
@@ -322,7 +322,7 @@ class CLVCalculator {
       const { data: allCLVs, error } = await supabase
         .from('customer_intelligence')
         .select('clv')
-        .eq('barberbarbershop_id', this.barberbarbershopId)
+        .eq('barbershop_id', this.barbershopId)
         .not('clv', 'is', null)
         .order('clv', { ascending: true })
 
@@ -350,7 +350,7 @@ export async function POST(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const body = await request.json()
 
     const {
@@ -369,14 +369,14 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    const calculator = new CLVCalculator(barberbarbershopId)
+    const calculator = new CLVCalculator(barbershopId)
 
     // Get current CLV
     const { data: currentIntel, error: intelError } = await supabase
       .from('customer_intelligence')
       .select('*')
       .eq('customer_id', customer_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     const oldCLV = currentIntel?.clv || 0
@@ -397,7 +397,7 @@ export async function POST(request) {
     // Prepare intelligence data
     const intelligenceData = {
       customer_id,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       clv: newCLV,
       clv_tier: clvTier,
       clv_percentile: clvPercentile,
@@ -446,7 +446,7 @@ export async function POST(request) {
       const clvLog = {
         id: crypto.randomUUID(),
         customer_id,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         old_clv: oldCLV,
         new_clv: newCLV,
         change_amount: clvChange,
@@ -518,7 +518,7 @@ export async function GET(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const { searchParams } = new URL(request.url)
 
     const customerId = searchParams.get('customer_id')
@@ -529,14 +529,14 @@ export async function GET(request) {
       return NextResponse.json({ error: 'customer_id is required' }, { status: 400 })
     }
 
-    const calculator = new CLVCalculator(barberbarbershopId)
+    const calculator = new CLVCalculator(barbershopId)
 
     // Get current intelligence
     const { data: currentIntel } = await supabase
       .from('customer_intelligence')
       .select('*')
       .eq('customer_id', customerId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     // Calculate fresh CLV for comparison
@@ -548,7 +548,7 @@ export async function GET(request) {
         .from('clv_history')
         .select('*')
         .eq('customer_id', customerId)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .order('created_at', { ascending: false })
         .limit(50)
       

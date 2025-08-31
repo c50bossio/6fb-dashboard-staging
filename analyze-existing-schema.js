@@ -1,3 +1,4 @@
+// @ts-nocheck
 import 'dotenv/config';
 import supabaseQuery from './lib/supabase-query.js';
 

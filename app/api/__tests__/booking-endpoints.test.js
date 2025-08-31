@@ -48,9 +48,9 @@ const mockAvailabilityHandler = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { barberbarbershopId, date, serviceId, duration = 30 } = req.method === 'GET' ? req.query : req.body
+  const { barbershopId, date, serviceId, duration = 30 } = req.method === 'GET' ? req.query : req.body
 
-  if (!barberbarbershopId || !date) {
+  if (!barbershopId || !date) {
     return res.status(400).json({ error: 'Missing required parameters' })
   }
 
@@ -81,7 +81,7 @@ const mockAvailabilityHandler = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        barberbarbershopId,
+        barbershopId,
         date,
         slots,
         totalSlots: slots.length,
@@ -99,7 +99,7 @@ const mockBookingHandler = async (req, res) => {
   }
 
   const {
-    barberbarbershopId,
+    barbershopId,
     barberId,
     serviceId,
     scheduledAt,
@@ -110,7 +110,7 @@ const mockBookingHandler = async (req, res) => {
   } = req.body
 
   // Validation
-  const requiredFields = ['barberbarbershopId', 'serviceId', 'scheduledAt', 'customerName', 'customerEmail']
+  const requiredFields = ['barbershopId', 'serviceId', 'scheduledAt', 'customerName', 'customerEmail']
   const missingFields = requiredFields.filter(field => !req.body[field])
   
   if (missingFields.length > 0) {
@@ -151,7 +151,7 @@ const mockBookingHandler = async (req, res) => {
     // Mock successful booking
     const booking = {
       id: `booking-${Date.now()}`,
-      barberbarbershopId,
+      barbershopId,
       barberId: barberId || null,
       serviceId,
       scheduledAt,
@@ -185,7 +185,7 @@ const mockBookingUpdateHandler = async (req, res) => {
     // Get booking details
     const booking = {
       id,
-      barberbarbershopId: 'shop-123',
+      barbershopId: 'shop-123',
       serviceId: 'service-456',
       scheduledAt: '2024-01-15T09:00:00Z',
       customerName: 'Jane Doe',
@@ -220,7 +220,7 @@ const mockBookingUpdateHandler = async (req, res) => {
 
     const updatedBooking = {
       id,
-      barberbarbershopId: 'shop-123',
+      barbershopId: 'shop-123',
       serviceId: 'service-456',
       scheduledAt: updates.scheduledAt || '2024-01-15T09:00:00Z',
       customerName: updates.customerName || 'Jane Doe',
@@ -258,9 +258,9 @@ const mockValidationHandler = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { barberbarbershopId, scheduledAt, durationMinutes = 30, barberId } = req.body
+  const { barbershopId, scheduledAt, durationMinutes = 30, barberId } = req.body
 
-  if (!barberbarbershopId || !scheduledAt) {
+  if (!barbershopId || !scheduledAt) {
     return res.status(400).json({ error: 'Missing required parameters' })
   }
 
@@ -338,7 +338,7 @@ describe('Booking API Endpoints', () => {
           const res = await fetch({
             method: 'GET',
             query: {
-              barberbarbershopId: 'shop-123',
+              barbershopId: 'shop-123',
               date: '2024-01-15',
               serviceId: 'service-456'
             }
@@ -361,7 +361,7 @@ describe('Booking API Endpoints', () => {
           const res = await fetch({
             method: 'GET',
             query: {
-              barberbarbershopId: 'shop-123'
+              barbershopId: 'shop-123'
               // Missing date parameter
             }
           })
@@ -382,7 +382,7 @@ describe('Booking API Endpoints', () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              barberbarbershopId: 'shop-123',
+              barbershopId: 'shop-123',
               date: '2024-01-15',
               serviceId: 'service-456',
               duration: 45
@@ -403,7 +403,7 @@ describe('Booking API Endpoints', () => {
         test: async ({ fetch }) => {
           const res = await fetch({
             method: 'DELETE',
-            query: { barberbarbershopId: 'shop-123', date: '2024-01-15' }
+            query: { barbershopId: 'shop-123', date: '2024-01-15' }
           })
 
           const json = await res.json()
@@ -421,7 +421,7 @@ describe('Booking API Endpoints', () => {
         handler: mockBookingHandler,
         test: async ({ fetch }) => {
           const bookingData = {
-            barberbarbershopId: 'shop-123',
+            barbershopId: 'shop-123',
             serviceId: 'service-456',
             scheduledAt: '2024-01-15T09:00:00Z',
             customerName: 'John Doe',
@@ -451,7 +451,7 @@ describe('Booking API Endpoints', () => {
         handler: mockBookingHandler,
         test: async ({ fetch }) => {
           const incompleteData = {
-            barberbarbershopId: 'shop-123',
+            barbershopId: 'shop-123',
             // Missing required fields
             scheduledAt: '2024-01-15T09:00:00Z'
           }
@@ -477,7 +477,7 @@ describe('Booking API Endpoints', () => {
         handler: mockBookingHandler,
         test: async ({ fetch }) => {
           const bookingData = {
-            barberbarbershopId: 'shop-123',
+            barbershopId: 'shop-123',
             serviceId: 'service-456',
             scheduledAt: '2024-01-15T09:00:00Z',
             customerName: 'John Doe',
@@ -504,7 +504,7 @@ describe('Booking API Endpoints', () => {
         handler: mockBookingHandler,
         test: async ({ fetch }) => {
           const bookingData = {
-            barberbarbershopId: 'shop-123',
+            barbershopId: 'shop-123',
             serviceId: 'service-456',
             scheduledAt: '2020-01-15T09:00:00Z', // Past date
             customerName: 'John Doe',
@@ -530,7 +530,7 @@ describe('Booking API Endpoints', () => {
         handler: mockBookingHandler,
         test: async ({ fetch }) => {
           const conflictingBooking = {
-            barberbarbershopId: 'shop-123',
+            barbershopId: 'shop-123',
             serviceId: 'service-456',
             scheduledAt: '2024-01-15T10:00:00Z', // This time has a conflict
             customerName: 'John Doe',
@@ -691,7 +691,7 @@ describe('Booking API Endpoints', () => {
         handler: mockValidationHandler,
         test: async ({ fetch }) => {
           const validationData = {
-            barberbarbershopId: 'shop-123',
+            barbershopId: 'shop-123',
             scheduledAt: '2024-01-15T14:00:00Z', // Monday 2 PM
             durationMinutes: 30
           }
@@ -718,7 +718,7 @@ describe('Booking API Endpoints', () => {
         handler: mockValidationHandler,
         test: async ({ fetch }) => {
           const validationData = {
-            barberbarbershopId: 'shop-123',
+            barbershopId: 'shop-123',
             scheduledAt: '2024-01-14T14:00:00Z', // Sunday (closed)
             durationMinutes: 30
           }
@@ -744,7 +744,7 @@ describe('Booking API Endpoints', () => {
         handler: mockValidationHandler,
         test: async ({ fetch }) => {
           const validationData = {
-            barberbarbershopId: 'shop-123',
+            barbershopId: 'shop-123',
             scheduledAt: '2024-01-15T10:00:00Z', // Conflicted time
             durationMinutes: 30
           }
@@ -773,7 +773,7 @@ describe('Booking API Endpoints', () => {
           const tooSoon = new Date(now.getTime() + 30 * 60 * 1000) // 30 minutes from now
 
           const validationData = {
-            barberbarbershopId: 'shop-123',
+            barbershopId: 'shop-123',
             scheduledAt: tooSoon.toISOString(),
             durationMinutes: 30
           }
@@ -807,7 +807,7 @@ describe('Booking API Endpoints', () => {
           const res = await fetch({
             method: 'GET',
             query: {
-              barberbarbershopId: 'shop-123',
+              barbershopId: 'shop-123',
               date: '2024-01-15'
             }
           })
@@ -845,7 +845,7 @@ describe('Booking API Endpoints', () => {
             return fetch({
               method: 'GET',
               query: {
-                barberbarbershopId: 'shop-123',
+                barbershopId: 'shop-123',
                 date: '2024-01-15'
               }
             })
@@ -869,7 +869,7 @@ describe('Booking API Endpoints', () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              barberbarbershopId: 'shop-123',
+              barbershopId: 'shop-123',
               date: '2024-01-15',
               endDate: '2024-01-21' // Week range
             })
@@ -893,7 +893,7 @@ describe('Booking API Endpoints', () => {
           const res = await fetch({
             method: 'GET',
             query: {
-              barberbarbershopId: "'; DROP TABLE bookings; --",
+              barbershopId: "'; DROP TABLE bookings; --",
               date: '2024-01-15'
             }
           })
@@ -913,7 +913,7 @@ describe('Booking API Endpoints', () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              barberbarbershopId: 'shop-123',
+              barbershopId: 'shop-123',
               serviceId: 'service-456',
               scheduledAt: '2024-01-15T09:00:00Z',
               customerName: 'A'.repeat(1000), // Very long name
@@ -935,7 +935,7 @@ describe('Booking API Endpoints', () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              barberbarbershopId: 'shop-123',
+              barbershopId: 'shop-123',
               serviceId: 'service-456',
               scheduledAt: '2024-01-15T09:00:00Z',
               customerName: '<script>alert("xss")</script>',
@@ -963,7 +963,7 @@ describe('Booking API Endpoints', () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                barberbarbershopId: 'shop-123',
+                barbershopId: 'shop-123',
                 serviceId: 'service-456',
                 scheduledAt: '2024-01-15T09:00:00Z',
                 customerName: 'John Doe',

@@ -5,12 +5,11 @@
  * Intelligently modifies onboarding flow based on user segmentation and behavior
  */
 
-import { 
-  DocumentArrowUpIcon, 
-  BuildingOfficeIcon, 
-  ChartBarIcon, 
-  MapIcon, 
-  CheckBadgeIcon 
+import {
+  DocumentArrowUpIcon,
+  BuildingOfficeIcon,
+  ChartBarIcon,
+  MapIcon
 } from '@heroicons/react/24/outline'
 import smartSuggestions from '../../services/SmartSuggestionsAPI'
 

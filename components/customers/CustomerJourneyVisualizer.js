@@ -10,7 +10,7 @@ import {
   UserIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon,
+  _ExclamationCircleIcon,
   TrophyIcon,
   HeartIcon
 } from '@heroicons/react/24/outline'
@@ -230,7 +230,7 @@ const JourneyStageProgress = ({ stages, currentStage }) => {
 }
 
 export default function CustomerJourneyVisualizer({ customerId }) {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [journeyData, setJourneyData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -244,7 +244,7 @@ export default function CustomerJourneyVisualizer({ customerId }) {
       try {
         setLoading(true)
         const response = await fetch(
-          `/api/customers/analytics/journey?barberbarbershop_id=${profile.barbershop_id}&customer_id=${customerId}&days_back=${selectedTimeframe}&include_events=true&include_touchpoints=true&include_milestones=true`
+          `/api/customers/analytics/journey?barbershop_id=${profile.barbershop_id}&customer_id=${customerId}&days_back=${selectedTimeframe}&include_events=true&include_touchpoints=true&include_milestones=true`
         )
 
         if (!response.ok) {

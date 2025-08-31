@@ -18,11 +18,11 @@ export async function GET(request) {
 
     // Get search parameters
     const { searchParams } = new URL(request.url)
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const startDate = searchParams.get('start_date')
     const endDate = searchParams.get('end_date')
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json(
         { error: 'Barbershop ID is required' }, 
         { status: 400 }
@@ -33,7 +33,7 @@ export async function GET(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, owner_id')
-      .eq('id', barberbarbershopId)
+      .eq('id', barbershopId)
       .single()
 
     if (!barbershop) {
@@ -51,7 +51,7 @@ export async function GET(request) {
       const { data: staffRecord } = await supabase
         .from('barbershop_staff')
         .select('id, role')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
@@ -74,7 +74,7 @@ export async function GET(request) {
 
     // Get tier progression analytics
     const { data: analytics, error } = await financialService.getTierProgressionAnalytics(
-      barberbarbershopId, 
+      barbershopId, 
       dateRange
     )
 

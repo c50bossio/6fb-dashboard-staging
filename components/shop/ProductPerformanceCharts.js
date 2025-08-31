@@ -3,7 +3,6 @@
 import {
   ChartBarIcon,
   CurrencyDollarIcon,
-  ArrowTrendingDownIcon,
   CalendarIcon,
   AdjustmentsHorizontalIcon
 } from '@heroicons/react/24/outline'

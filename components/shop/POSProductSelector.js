@@ -8,12 +8,11 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   ShoppingCartIcon,
   CurrencyDollarIcon,
   TagIcon
 } from '@heroicons/react/24/outline'
-import { CheckIcon } from '@heroicons/react/24/solid'
+
 import { useState, useEffect } from 'react'
 
 export default function POSProductSelector({ products = [], onSave }) {

@@ -34,7 +34,7 @@ export async function POST(request) {
     const { data: credentials } = await supabase
       .from('cin7_credentials')
       .select('*')
-      .eq('barberbarbershop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
       .eq('is_active', true)
       .single()
     

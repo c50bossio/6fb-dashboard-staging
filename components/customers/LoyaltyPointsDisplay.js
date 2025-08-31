@@ -34,7 +34,7 @@ import PointsExpirationWarning from './PointsExpirationWarning'
  */
 export default function LoyaltyPointsDisplay({ 
   customerId, 
-  barberbarbershopId, 
+  barbershopId, 
   programId = null,
   showHistory = true,
   showRewards = true,
@@ -157,7 +157,7 @@ export default function LoyaltyPointsDisplay({
   const fetchAvailableRewards = async (customerTier = null) => {
     try {
       const rewardsUrl = new URL('/api/customers/loyalty/rewards', window.location.origin)
-      rewardsUrl.searchParams.set('barberbarbershop_id', barberbarbershopId)
+      rewardsUrl.searchParams.set('barbershop_id', barbershopId)
       if (programId) rewardsUrl.searchParams.set('program_id', programId)
       if (customerTier) rewardsUrl.searchParams.set('customer_tier', customerTier)
 
@@ -282,7 +282,7 @@ export default function LoyaltyPointsDisplay({
 
   useEffect(() => {
     fetchPointsData()
-  }, [customerId, barberbarbershopId, programId])
+  }, [customerId, barbershopId, programId])
 
   if (loading) {
     return (
@@ -438,7 +438,7 @@ export default function LoyaltyPointsDisplay({
         {/* Expiring Points Warning */}
         <PointsExpirationWarning 
           customerId={customerId}
-          barberbarbershopId={barberbarbershopId}
+          barbershopId={barbershopId}
           programId={pointsData?.loyalty_program_id}
           threshold={30}
           className="mb-4"

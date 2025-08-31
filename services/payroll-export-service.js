@@ -138,7 +138,7 @@ export class PayrollExportService {
   async getPayrollData(dateRange, staffFilter = 'all') {
     try {
       // Get barbershop context
-      const { barbershopId } = await staffService.getUserBarberbarbershopId()
+      const { barbershopId } = await staffService.getUserbarbershopId()
 
       // Load staff data
       const staffData = await staffService.loadStaffData(barbershopId)
@@ -327,7 +327,7 @@ export class PayrollExportService {
     const { data, error } = await this.supabase
       .from('commission_transactions')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('barber_id', staffId)
       .gte('created_at', dateRange.start)
       .lte('created_at', dateRange.end)
@@ -348,7 +348,7 @@ export class PayrollExportService {
     const { data, error } = await this.supabase
       .from('product_commission_transactions')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('barber_id', staffId)
       .gte('created_at', dateRange.start)
       .lte('created_at', dateRange.end)
@@ -401,7 +401,7 @@ export class PayrollExportService {
     const { data: ytdServiceCommissions } = await this.supabase
       .from('commission_transactions')
       .select('commission_amount, tier_bonus_amount')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('barber_id', staffId)
       .gte('created_at', yearStart)
       .lte('created_at', now)
@@ -410,7 +410,7 @@ export class PayrollExportService {
     const { data: ytdProductCommissions } = await this.supabase
       .from('product_commission_transactions')
       .select('total_commission_amount, tier_bonus_amount')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('barber_id', staffId)
       .gte('created_at', yearStart)
       .lte('created_at', now)
@@ -488,7 +488,7 @@ export class PayrollExportService {
     const { data, error } = await this.supabase
       .from('product_commission_transactions')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .gte('created_at', dateRange.start)
       .lte('created_at', dateRange.end)
 
@@ -524,7 +524,7 @@ export class PayrollExportService {
     const { data, error } = await this.supabase
       .from('financial_arrangements')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('arrangement_type', 'booth_rent')
       .eq('is_active', true)
 
@@ -1775,10 +1775,10 @@ export class PayrollExportService {
    */
   async saveExportRecord(exportResult, exportOptions) {
     try {
-      const { barbershopId, userId } = await staffService.getUserBarberbarbershopId()
+      const { barbershopId, userId } = await staffService.getUserbarbershopId()
 
       const exportRecord = {
-        barberbarbershop_id: barbershopId,
+        barbershop_id: barbershopId,
         generated_by: userId,
         export_format: exportResult.format,
         file_name: exportResult.fileName,
@@ -1817,12 +1817,12 @@ export class PayrollExportService {
    */
   async getExportHistory(limit = 50) {
     try {
-      const { barbershopId } = await staffService.getUserBarberbarbershopId()
+      const { barbershopId } = await staffService.getUserbarbershopId()
 
       const { data, error } = await this.supabase
         .from('payroll_export_history')
         .select('*')
-        .eq('barberbarbershop_id', barbershopId)
+        .eq('barbershop_id', barbershopId)
         .order('created_at', { ascending: false })
         .limit(limit)
 
@@ -1842,14 +1842,14 @@ export class PayrollExportService {
    */
   async cleanupOldExports(daysOld = 30) {
     try {
-      const { barbershopId } = await staffService.getUserBarberbarbershopId()
+      const { barbershopId } = await staffService.getUserbarbershopId()
       const cutoffDate = new Date()
       cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
       const { data, error } = await this.supabase
         .from('payroll_export_history')
         .delete()
-        .eq('barberbarbershop_id', barbershopId)
+        .eq('barbershop_id', barbershopId)
         .lt('created_at', cutoffDate.toISOString())
         .select()
 

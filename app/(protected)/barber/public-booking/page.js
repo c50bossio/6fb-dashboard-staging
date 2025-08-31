@@ -17,11 +17,12 @@ import {
 } from '@heroicons/react/24/outline'
 import QRCode from 'qrcode'
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function PublicBookingPage() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [activeTab, setActiveTab] = useState('preview')
   const [copied, setCopied] = useState({})
   const [qrSize, setQrSize] = useState(200)
@@ -90,7 +91,7 @@ export default function PublicBookingPage() {
     }
 
     return () => clearTimeout(timer)
-  }, [qrSize])
+  }, [qrSize]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const copyToClipboard = async (text, key) => {
     try {
@@ -498,7 +499,7 @@ export default function PublicBookingPage() {
                   <div className="text-center">
                     <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg shadow-inner">
                       {qrCodeUrl ? (
-                        <img 
+                        <Image 
                           src={qrCodeUrl} 
                           alt="QR Code"
                           width={qrSize}
@@ -647,7 +648,7 @@ export default function PublicBookingPage() {
                 </h4>
                 <ul className="text-xs text-olive-700 space-y-1">
                   <li>• Customize the templates with your personal touch</li>
-                  <li>• Add specific services or promotions you're offering</li>
+                  <li>• Add specific services or promotions you&apos;re offering</li>
                   <li>• Include your business hours and contact information</li>
                   <li>• Use relevant hashtags for your local area</li>
                 </ul>

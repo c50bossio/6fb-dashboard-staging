@@ -15,15 +15,15 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const { 
-      barberbarberbarbershop_id, 
+      barberbarbershop_id, 
       email, 
       business_type = 'individual',
       return_url
     } = body
 
-    if (!barberbarberbarbershop_id || !email) {
+    if (!barberbarbershop_id || !email) {
       return NextResponse.json(
-        { error: 'barberbarberbarbershop_id and email are required' },
+        { error: 'barberbarbershop_id and email are required' },
         { status: 400 }
       )
     }
@@ -40,7 +40,7 @@ export async function POST(request) {
     const { data: barbershop, error: shopError } = await supabase
       .from('barbershops')
       .select('id, name, owner_id, address, city, state, zip_code')
-      .eq('id', barberbarberbarbershop_id)
+      .eq('id', barberbarbershop_id)
       .single()
 
     if (shopError || !barbershop) {
@@ -53,12 +53,12 @@ export async function POST(request) {
     // Verify user has permission to create Connect account
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, barberbarbershop_id, barberbarberbarbershop_id, role')
+      .select('id, barbershop_id, barberbarbershop_id, role')
       .eq('id', session.user.id)
       .single()
 
-    const hasPermission = profile?.barbershop_id === barberbarberbarbershop_id || 
-                         profile?.barberbarbershop_id === barberbarberbarbershop_id ||
+    const hasPermission = profile?.barbershop_id === barberbarbershop_id || 
+                         profile?.barbershop_id === barberbarbershop_id ||
                          profile?.role === 'SUPER_ADMIN' ||
                          barbershop.owner_id === session.user.id
 
@@ -70,7 +70,7 @@ export async function POST(request) {
     const { data: existingAccount } = await supabase
       .from('stripe_connected_accounts')
       .select('stripe_account_id')
-      .eq('barberbarberbarbershop_id', barberbarberbarbershop_id)
+      .eq('barberbarbershop_id', barberbarbershop_id)
       .single()
 
     if (existingAccount?.stripe_account_id) {
@@ -88,10 +88,10 @@ export async function POST(request) {
       business_profile: {
         name: barbershop.name,
         mcc: '7230', // Barber shops MCC
-        url: `https://bookedbarber.com/shop/${barberbarberbarbershop_id}`
+        url: `https://bookedbarber.com/shop/${barberbarbershop_id}`
       },
       metadata: {
-        barberbarberbarbershop_id: barberbarberbarbershop_id,
+        barberbarbershop_id: barberbarbershop_id,
         created_by: session.user.id,
         platform: 'bookedbarber'
       }
@@ -109,7 +109,7 @@ export async function POST(request) {
     const { data: savedAccount, error: saveError } = await supabase
       .from('stripe_connected_accounts')
       .upsert({
-        barberbarberbarbershop_id: barberbarberbarbershop_id,
+        barberbarbershop_id: barberbarbershop_id,
         stripe_account_id: connectAccount.id,
         charges_enabled: false,
         payouts_enabled: false,
@@ -141,7 +141,7 @@ export async function POST(request) {
       success: true,
       account_id: connectAccount.id,
       onboarding_url: accountLink.url,
-      barberbarberbarbershop_id: barberbarberbarbershop_id,
+      barberbarbershop_id: barberbarbershop_id,
       message: 'Stripe Connect account created successfully'
     })
 

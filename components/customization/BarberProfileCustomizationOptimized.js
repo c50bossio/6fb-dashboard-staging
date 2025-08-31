@@ -14,21 +14,13 @@ const ConfirmationDialog = lazy(() => import('@/components/ui/ConfirmationDialog
 const SaveChangesDialog = lazy(() => import('@/components/ui/ConfirmationDialog').then(module => ({ default: module.SaveChangesDialog })))
 const DiscardChangesDialog = lazy(() => import('@/components/ui/ConfirmationDialog').then(module => ({ default: module.DiscardChangesDialog })))
 
-import { 
+import {
   UserCircleIcon,
   CalendarDaysIcon,
   SparklesIcon,
   PaintBrushIcon,
-  CheckCircleIcon,
-  XMarkIcon,
-  StarIcon,
   ClockIcon,
-  ArrowTopRightOnSquareIcon,
-  EyeIcon,
-  DevicePhoneMobileIcon,
-  ComputerDesktopIcon,
-  PhotoIcon,
-  LinkIcon
+  PhotoIcon
 } from '@heroicons/react/24/outline'
 
 // Default settings with proper structure
@@ -123,7 +115,7 @@ const ErrorBoundaryWrapper = memo(function ErrorBoundaryWrapper({ children, fall
 })
 
 function BarberProfileCustomizationOptimized({ onUnsavedChanges }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const router = useRouter()
   
   // State management with custom hook

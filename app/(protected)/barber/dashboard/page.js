@@ -4,7 +4,6 @@ import {
   CalendarIcon, 
   UserGroupIcon, 
   CurrencyDollarIcon,
-  ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
   ChartBarIcon,
@@ -18,7 +17,7 @@ import ComponentErrorBoundary from '../../../../components/dashboard/ComponentEr
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberDashboard() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [stats, setStats] = useState({
     todayAppointments: 0,
     completedToday: 0,
@@ -32,11 +31,11 @@ export default function BarberDashboard() {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
+  const [_retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
     loadDashboardData()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadDashboardData = async () => {
     try {
@@ -44,14 +43,14 @@ export default function BarberDashboard() {
       setError(null)
       
       // Get barbershop context from profile
-      const barberbarbershopId = profile?.shop_id || profile?.barbershop_id
+      const barbershopId = profile?.shop_id || profile?.barbershop_id
       const barberId = user?.id
       
       if (!barberId) {
         throw new Error('No user ID available')
       }
 
-      if (!barberbarbershopId) {
+      if (!barbershopId) {
         // For barbers without barbershop association, show helpful error
         if (profile?.role === 'BARBER') {
           setError('Your barber account is not associated with a barbershop. Please contact your shop owner to complete your profile setup.')
@@ -62,8 +61,8 @@ export default function BarberDashboard() {
         return
       }
       
-      // Build API URL with both barber_id and barberbarbershop_id for proper authorization
-      const apiUrl = `/api/appointments?barber_id=${barberId}&barberbarbershop_id=${barberbarbershopId}`
+      // Build API URL with both barber_id and barbershop_id for proper authorization
+      const apiUrl = `/api/appointments?barber_id=${barberId}&barbershop_id=${barbershopId}`
 
       const appointmentsRes = await fetch(apiUrl)
       

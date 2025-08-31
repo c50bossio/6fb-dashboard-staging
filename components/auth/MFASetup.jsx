@@ -16,7 +16,7 @@ export default function MFASetup({ onComplete, onCancel }) {
   const [secret, setSecret] = useState('')
   const [verificationCode, setVerificationCode] = useState('')
   const [backupCodes, setBackupCodes] = useState([])
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
 
   const handleSetupMFA = async () => {
     setLoading(true)

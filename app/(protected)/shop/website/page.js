@@ -3,20 +3,15 @@
 import {
   PaintBrushIcon,
   PhotoIcon,
-  GlobeAltIcon,
   EyeIcon,
   Cog6ToothIcon,
   UsersIcon,
-  DocumentTextIcon,
   MegaphoneIcon,
   CheckIcon,
   CloudArrowUpIcon,
   XMarkIcon,
   HomeIcon,
-  SparklesIcon,
   CalendarDaysIcon,
-  StarIcon,
-  ChatBubbleBottomCenterTextIcon,
   BuildingStorefrontIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
@@ -25,7 +20,7 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function ShopWebsiteCustomization() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [activeTab, setActiveTab] = useState('general')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -133,16 +128,16 @@ export default function ShopWebsiteCustomization() {
   // Fetch shop data and website settings on mount
   useEffect(() => {
     const fetchShopData = async () => {
-      if (!user) return
+      if (!_user) return
       
       try {
         setLoading(true)
-        const supabase = createClient()
+        const _supabase = createClient()
         
         // Get user's barbershop
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('barberbarbershop_id')
+          .select('barbershop_id')
           .eq('id', user.id)
           .single()
         
@@ -168,7 +163,7 @@ export default function ShopWebsiteCustomization() {
             *,
             user:users(id, full_name)
           `)
-          .eq('barberbarbershop_id', profile.barbershop_id)
+          .eq('barbershop_id', profile.barbershop_id)
           .order('created_at', { ascending: false })
         
         if (barbers && !barbersError) {
@@ -191,7 +186,7 @@ export default function ShopWebsiteCustomization() {
     }
     
     fetchShopData()
-  }, [user])
+  }, [_user])
 
   const handleSave = async () => {
     if (!barbershopId) {

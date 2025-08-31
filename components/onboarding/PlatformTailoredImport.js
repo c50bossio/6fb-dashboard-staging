@@ -1,16 +1,15 @@
 'use client'
 
-import { 
+import {
   CloudArrowUpIcon,
   DocumentTextIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
-  ArrowDownTrayIcon,
   ChevronRightIcon,
   DocumentDuplicateIcon
 } from '@heroicons/react/24/outline'
-import { useState, useCallback, useRef } from 'react'
+import { useState } from 'react'
 import { parseCSV, analyzeCSV } from '@/lib/csv-auto-detector'
 import { platformImportConfigs } from '@/lib/platform-import-configs'
 import MultiFileUploader from './MultiFileUploader'
@@ -242,15 +241,15 @@ export default function PlatformTailoredImport({ onComplete, initialData = {}, p
     setImportStatus('importing')
     
     try {
-      // Get barberbarbershopId with fallback for onboarding
-      const barberbarbershopId = profile?.shop_id || 
+      // Get barbershopId with fallback for onboarding
+      const barbershopId = profile?.shop_id || 
                           profile?.barbershop_id || 
-                          initialData?.barberbarbershopId || 
+                          initialData?.barbershopId || 
                           'onboarding-temp-' + Date.now()
       
       const formData = new FormData()
       formData.append('platform', selectedPlatform)
-      formData.append('barberbarbershopId', barberbarbershopId)
+      formData.append('barbershopId', barbershopId)
       
       // Add all files to FormData with numbered keys for the API
       let fileIndex = 1

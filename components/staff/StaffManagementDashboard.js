@@ -1,13 +1,11 @@
 'use client'
 
-import { 
+import {
   UserGroupIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
-  ClockIcon,
   PlusIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   ChevronRightIcon,
   StarIcon,
   CheckCircleIcon,

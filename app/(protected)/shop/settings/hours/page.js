@@ -12,8 +12,8 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function BusinessHoursPage() {
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -35,7 +35,7 @@ export default function BusinessHoursPage() {
 
   useEffect(() => {
     loadBusinessHours()
-  }, [user])
+  }, [_user])
 
   useEffect(() => {
     const changed = originalHours === null 
@@ -49,7 +49,7 @@ export default function BusinessHoursPage() {
   }, [hours, originalHours])
 
   const loadBusinessHours = async () => {
-    if (!user) return
+    if (!_user) return
     
     try {
       setLoading(true)
@@ -57,7 +57,7 @@ export default function BusinessHoursPage() {
       const { data: shop, error } = await supabase
         .from('barbershops')
         .select('business_hours')
-        .eq('owner_id', user.id)
+        .eq('owner_id', _user.id)
         .single()
       
       if (shop && shop.business_hours) {

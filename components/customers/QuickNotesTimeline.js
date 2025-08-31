@@ -1,12 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { 
-  PlusIcon, 
-  CameraIcon, 
-  ClockIcon, 
+import {
+  PlusIcon,
+  CameraIcon,
+  ClockIcon,
   XMarkIcon,
-  PencilIcon,
   TrashIcon,
   PhotoIcon,
   ChevronLeftIcon,

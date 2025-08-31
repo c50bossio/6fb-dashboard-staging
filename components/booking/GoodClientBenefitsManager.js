@@ -2,21 +2,13 @@
 
 import {
   ShieldCheckIcon,
-  CalendarDaysIcon,
   ClockIcon,
   UserGroupIcon,
   GiftIcon,
-  ArrowPathIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
   InformationCircleIcon,
-  Cog6ToothIcon,
-  ChartPieIcon,
-  SparklesIcon,
   HeartIcon,
   StarIcon,
-  TrophyIcon,
-  AdjustmentsHorizontalIcon
+  TrophyIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -105,7 +97,7 @@ const SEGMENT_QUALIFICATIONS = {
 }
 
 export default function GoodClientBenefitsManager({
-  barberbarbershopId,
+  barbershopId,
   currentRules = {},
   onUpdate,
   isManager = false

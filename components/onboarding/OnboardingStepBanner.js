@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowLeftIcon, CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
+
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, useCallback } from 'react'
 

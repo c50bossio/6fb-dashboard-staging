@@ -2,9 +2,6 @@
 
 import {
   PlusIcon,
-  TrashIcon,
-  EyeIcon,
-  EyeSlashIcon,
   ChartBarIcon,
   Cog6ToothIcon,
   ExclamationTriangleIcon,
@@ -15,7 +12,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { FeatureFlagAdmin, FEATURE_FLAGS } from '../../hooks/useFeatureFlag'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-const supabase = createClient()
+const _supabase = createClient()
 
 /**
  * Comprehensive Feature Flag Admin Interface

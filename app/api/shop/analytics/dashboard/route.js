@@ -39,8 +39,8 @@ export async function GET(request) {
     }
 
     // Get barbershop ID using unified tenant resolver
-    const { barberbarbershopId } = await getTenant(profile.id, { supabase })
-    if (!barberbarbershopId) {
+    const { barbershopId } = await getTenant(profile.id, { supabase })
+    if (!barbershopId) {
       return NextResponse.json({ error: 'No barbershop access' }, { status: 403 })
     }
 
@@ -60,7 +60,7 @@ export async function GET(request) {
       supabase
         .from('bookings')
         .select('total_amount, service_price, tip_amount')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('payment_status', 'PAID')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString()),
@@ -69,7 +69,7 @@ export async function GET(request) {
       supabase
         .from('bookings')
         .select('id, status, scheduled_at')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString()),
         
@@ -77,7 +77,7 @@ export async function GET(request) {
       supabase
         .from('bookings')
         .select('service_id, services(name)')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString()),
         
@@ -85,7 +85,7 @@ export async function GET(request) {
       supabase
         .from('payments')
         .select('payment_method, amount')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('status', 'completed')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString())

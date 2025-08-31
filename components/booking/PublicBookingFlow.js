@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   CalendarDaysIcon,
   ClockIcon,
   CheckCircleIcon,
@@ -10,8 +10,7 @@ import {
   ArrowRightIcon,
   ShieldCheckIcon,
   StarIcon,
-  BoltIcon,
-  PhotoIcon
+  BoltIcon
 } from '@heroicons/react/24/outline'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import Cookies from 'js-cookie'
@@ -31,7 +30,7 @@ const getDefaultServiceImage = (category) => {
   return imageMap[category] || imageMap.haircut
 }
 
-export default function PublicBookingFlow({ barberbarbershopId, barbershopSlug }) {
+export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
   // Simplified state - just 3 steps
   const [currentStep, setCurrentStep] = useState(1) // 1: Service, 2: Time, 3: Confirm
   const [selectedService, setSelectedService] = useState(null)
@@ -73,11 +72,11 @@ export default function PublicBookingFlow({ barberbarbershopId, barbershopSlug }
     
     // Load services
     loadServices()
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   const loadServices = async () => {
     try {
-      const response = await fetch(`/api/public/services?barberbarbershop_id=${barberbarbershopId}`)
+      const response = await fetch(`/api/public/services?barbershop_id=${barbershopId}`)
       const data = await response.json()
       if (data.success) {
         setServices(data.services)
@@ -167,7 +166,7 @@ export default function PublicBookingFlow({ barberbarbershopId, barbershopSlug }
     try {
       // Create booking without authentication
       const bookingData = {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         service_id: selectedService.id,
         service_name: selectedService.name,
         scheduled_at: selectedDateTime.time,
@@ -550,7 +549,7 @@ export default function PublicBookingFlow({ barberbarbershopId, barbershopSlug }
         <ProgressiveAccountCreation
           bookingDetails={{
             id: bookingId,
-            barberbarbershop_id: barberbarbershopId,
+            barbershop_id: barbershopId,
             scheduled_at: selectedDateTime?.time,
             service: selectedService?.name
           }}

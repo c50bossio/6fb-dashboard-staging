@@ -111,12 +111,12 @@ export function useCreateCustomer() {
       
       // Invalidate customer queries
       queryClient.invalidateQueries({ 
-        queryKey: customerKeys.byShop(newCustomer.barberbarbershop_id) 
+        queryKey: customerKeys.byShop(newCustomer.barbershop_id) 
       })
       
       // Update count
       queryClient.invalidateQueries({ 
-        queryKey: ['customers', 'count', newCustomer.barberbarbershop_id] 
+        queryKey: ['customers', 'count', newCustomer.barbershop_id] 
       })
     },
     onError: (error) => {
@@ -140,7 +140,7 @@ export function useUpdateCustomer() {
       
       // Invalidate customer queries
       queryClient.invalidateQueries({ 
-        queryKey: customerKeys.byShop(updatedCustomer.barberbarbershop_id) 
+        queryKey: customerKeys.byShop(updatedCustomer.barbershop_id) 
       })
     },
     onError: (error) => {
@@ -161,7 +161,7 @@ export function useRealtimeCustomers(barbershopId) {
 
     const unsubscribe = createClient().subscribeToChanges(
       'customers',
-      { barberbarbershop_id: barbershopId },
+      { barbershop_id: barbershopId },
       (payload) => {
         const { eventType, new: newRecord, old: oldRecord } = payload
         

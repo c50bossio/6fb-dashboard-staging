@@ -3,7 +3,6 @@
 import {
   BuildingOfficeIcon,
   MapPinIcon,
-  ClockIcon,
   UsersIcon,
   PhoneIcon,
   EnvelopeIcon,
@@ -11,12 +10,7 @@ import {
   TrashIcon,
   ChevronUpIcon,
   ChevronDownIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
   DocumentDuplicateIcon,
-  ArrowRightIcon,
-  GlobeAltIcon,
-  CalendarDaysIcon,
   CurrencyDollarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'

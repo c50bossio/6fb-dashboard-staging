@@ -6,7 +6,6 @@ import {
   CurrencyDollarIcon,
   SparklesIcon,
   CalendarDaysIcon,
-  ArrowTrendingDownIcon,
   TrophyIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'

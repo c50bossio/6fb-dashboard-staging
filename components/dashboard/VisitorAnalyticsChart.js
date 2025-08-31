@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { DevicePhoneMobileIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline'
 
 export default function VisitorAnalyticsChart({ dateRange, onDateRangeChange }) {
@@ -40,7 +40,7 @@ export default function VisitorAnalyticsChart({ dateRange, onDateRangeChange }) 
   const maxValue = Math.max(...chartData.map(d => d.total))
   const chartHeight = 300
 
-  const handleRangeChange = (range) => {
+  const handleRangeChange = (_range) => {
     setSelectedRange(range)
     if (onDateRangeChange) {
       onDateRangeChange(range)

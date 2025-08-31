@@ -70,10 +70,25 @@ function createSupabaseClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options)
+              // Enhanced cookie configuration for session persistence
+              const isSessionCookie = name.includes('auth-token') || name.includes('sb-')
+              
+              const enhancedOptions = {
+                name,
+                value,
+                path: '/',
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
+                httpOnly: false, // Required for client-side Supabase access
+                maxAge: isSessionCookie ? 60 * 60 * 24 * 7 : (options?.maxAge || 60 * 60), // 7 days for session cookies
+                ...options
+              }
+              
+              console.log(`🍪 Setting cookie [${name}] (session: ${isSessionCookie})`)
+              cookieStore.set(enhancedOptions)
             })
           } catch (error) {
-            console.error('Cookie setting error:', error)
+            console.error('🚨 Cookie setting error:', error)
           }
         },
       },
@@ -112,6 +127,7 @@ async function handleOAuthCallback(request, provider = 'google') {
     const supabase = createSupabaseClient()
     
     // Exchange code for session
+    console.log(`🔄 Exchanging OAuth code for session [${provider}]...`)
     const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
     if (exchangeError) {
@@ -133,9 +149,27 @@ async function handleOAuthCallback(request, provider = 'google') {
       email: data.user.email
     })
 
+    // Verify session was properly established
+    console.log(`🔍 Verifying session establishment [${provider}]...`)
+    const { data: { session: verifySession }, error: sessionVerifyError } = await supabase.auth.getSession()
+    
+    if (sessionVerifyError || !verifySession) {
+      console.error(`❌ Session verification failed [${provider}]:`, sessionVerifyError)
+      return NextResponse.redirect(
+        new URL('/login?error=session_verification_failed', requestUrl.origin)
+      )
+    }
+    
+    console.log(`✅ Session verified [${provider}]:`, {
+      sessionId: verifySession.access_token ? 'present' : 'missing',
+      expiresAt: verifySession.expires_at ? new Date(verifySession.expires_at * 1000).toISOString() : 'none'
+    })
+
     // Ensure user profile exists
     await ensureUserProfile(supabase, data.user)
 
+    console.log(`🎯 Redirecting to dashboard [${provider}]: ${next}`)
+    
     // Redirect to intended destination
     return NextResponse.redirect(new URL(next, requestUrl.origin))
 
@@ -407,36 +441,122 @@ async function getAuthHealth(request) {
 
 // Utility: Ensure user profile exists in profiles table
 async function ensureUserProfile(supabase, user) {
-  if (!user) return
+  if (!user) return null
 
   try {
+    console.log('🔍 Ensuring profile for user:', user.id, user.email)
+    
     // Check if profile exists
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile, error: selectError } = await supabase
       .from('profiles')
-      .select('id')
+      .select('*')
       .eq('id', user.id)
       .single()
 
-    if (!existingProfile) {
-      // Create profile
-      const { error: insertError } = await supabase
+    if (selectError && selectError.code !== 'PGRST116') {
+      console.error('❌ Profile select error:', selectError)
+      // Don't return here - try to create the profile anyway
+    }
+
+    if (existingProfile) {
+      console.log('✅ Profile already exists:', existingProfile.id)
+      return existingProfile
+    }
+
+    // Extract user metadata from OAuth provider
+    const metadata = user.user_metadata || {}
+    const appMetadata = user.app_metadata || {}
+    
+    // Determine full name from various sources
+    const fullName = metadata.full_name || 
+                    metadata.name || 
+                    `${metadata.given_name || ''} ${metadata.family_name || ''}`.trim() ||
+                    user.email?.split('@')[0] || 
+                    'User'
+
+    // Create comprehensive profile with all fields
+    const profileData = {
+      id: user.id,
+      email: user.email,
+      full_name: fullName,
+      role: metadata.role || 'CLIENT',
+      avatar_url: metadata.avatar_url || metadata.picture || null,
+      phone: metadata.phone || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      
+      // Subscription fields with defaults
+      subscription_tier: 'individual',
+      subscription_status: 'active',
+      trial_end_date: null,
+      
+      // Shop association fields (will be set during onboarding)
+      shop_id: null,
+      barbershop_id: null,
+      
+      // Onboarding tracking
+      onboarding_completed: false,
+      onboarding_step: 'welcome',
+      
+      // OAuth provider info
+      oauth_provider: appMetadata.provider || 'email',
+      last_sign_in_at: user.last_sign_in_at || new Date().toISOString()
+    }
+
+    console.log('📝 Creating profile with data:', {
+      id: profileData.id,
+      email: profileData.email,
+      full_name: profileData.full_name,
+      role: profileData.role,
+      oauth_provider: profileData.oauth_provider
+    })
+
+    // Use upsert to handle any race conditions
+    const { data: newProfile, error: upsertError } = await supabase
+      .from('profiles')
+      .upsert(profileData, {
+        onConflict: 'id',
+        ignoreDuplicates: false
+      })
+      .select()
+      .single()
+
+    if (upsertError) {
+      console.error('❌ Profile upsert error:', upsertError)
+      console.error('Error details:', {
+        code: upsertError.code,
+        message: upsertError.message,
+        details: upsertError.details,
+        hint: upsertError.hint
+      })
+      
+      // Try a simpler insert as fallback
+      const { data: fallbackProfile, error: fallbackError } = await supabase
         .from('profiles')
         .insert({
           id: user.id,
           email: user.email,
-          full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-          role: user.user_metadata?.role || 'CLIENT',
-          avatar_url: user.user_metadata?.avatar_url
+          full_name: fullName,
+          role: 'CLIENT'
         })
-
-      if (insertError) {
-        console.error('Profile creation error:', insertError)
-      } else {
-        console.log('✅ Profile created for user:', user.id)
+        .select()
+        .single()
+        
+      if (fallbackError) {
+        console.error('❌ Fallback profile creation also failed:', fallbackError)
+        return null
       }
+      
+      console.log('✅ Profile created via fallback:', fallbackProfile.id)
+      return fallbackProfile
     }
+
+    console.log('✅ Profile created successfully:', newProfile.id)
+    return newProfile
+    
   } catch (error) {
-    console.error('Profile ensure error:', error)
+    console.error('❌ Profile ensure error:', error)
+    return null
   }
 }
 

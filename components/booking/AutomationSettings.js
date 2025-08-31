@@ -13,16 +13,8 @@ import {
   XMarkIcon,
   InformationCircleIcon,
   EyeIcon,
-  PlayIcon,
-  PauseIcon,
-  ClockIcon,
-  CreditCardIcon,
-  EnvelopeIcon,
-  DevicePhoneMobileIcon,
   BeakerIcon,
-  SparklesIcon,
-  MagnifyingGlassIcon,
-  LockClosedIcon
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'

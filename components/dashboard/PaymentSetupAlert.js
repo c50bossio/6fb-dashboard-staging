@@ -12,8 +12,8 @@ export default function PaymentSetupAlert() {
   const [showAlert, setShowAlert] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const [setupStatus, setSetupStatus] = useState(null)
-  const { user, profile } = useAuth()
-  const supabase = createClient()
+  const { user, profile: _profile } = useAuth()
+  const _supabase = createClient()
   
   useEffect(() => {
     const checkPaymentSetup = async () => {
@@ -34,8 +34,8 @@ export default function PaymentSetupAlert() {
       // Get barbershop ID using unified tenant resolver
       let barbershopId
       try {
-        const { barberbarbershopId } = await getTenant(profile.id, { supabase })
-        barbershopId = barberbarbershopId
+        const { barbershopId } = await getTenant(profile.id, { supabase })
+        barbershopId = barbershopId
       } catch (error) {
         console.error('Error getting barbershop ID:', error)
         return

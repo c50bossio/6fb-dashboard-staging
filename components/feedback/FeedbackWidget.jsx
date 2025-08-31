@@ -1,6 +1,10 @@
 'use client'
 
-import { XMarkIcon, ChatBubbleBottomCenterTextIcon, FaceSmileIcon, FaceFrownIcon } from '@heroicons/react/24/outline'
+import {
+  XMarkIcon,
+  ChatBubbleBottomCenterTextIcon,
+  FaceSmileIcon
+} from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { toast } from '@/hooks/use-toast'
 

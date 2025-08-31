@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server'
 
 export async function GET(request, { params }) {
   try {
-    const barberbarbershopId = params.id
+    const barbershopId = params.id
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({
         success: false,
         error: 'Barbershop ID is required'
@@ -29,7 +29,7 @@ export async function GET(request, { params }) {
     const { data: barbershop, error: barbershopError } = await supabase
       .from('barbershops')
       .select('id, name, booking_settings')
-      .eq('id', barberbarbershopId)
+      .eq('id', barbershopId)
       .single()
 
     if (barbershopError || !barbershop) {
@@ -64,7 +64,7 @@ export async function GET(request, { params }) {
         is_active,
         created_at
       `)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .order('category')
       .order('name')
@@ -127,7 +127,7 @@ export async function GET(request, { params }) {
       services_by_category: servicesByCategory,
       categories: Object.keys(servicesByCategory),
       stats,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       barbershop_name: barbershop.name,
       count: publicServices.length
     })

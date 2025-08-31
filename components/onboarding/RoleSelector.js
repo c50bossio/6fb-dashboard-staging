@@ -4,7 +4,6 @@ import {
   UserIcon,
   BuildingOfficeIcon,
   BuildingOffice2Icon,
-  ChartBarIcon,
   CalendarDaysIcon,
   UsersIcon,
   CurrencyDollarIcon,

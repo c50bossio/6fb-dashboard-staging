@@ -150,7 +150,7 @@ export async function GET(request) {
     const { data: savedMapping } = await supabase
       .from('import_field_mappings')
       .select('*')
-      .eq('barberbarbershop_id', importRecord.barberbarbershop_id)
+      .eq('barbershop_id', importRecord.barbershop_id)
       .eq('source_platform', importRecord.source_platform)
       .eq('entity_type', entityType)
       .eq('is_default', true)

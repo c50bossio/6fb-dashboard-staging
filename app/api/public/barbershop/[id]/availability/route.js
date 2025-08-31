@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server'
 
 export async function GET(request, { params }) {
   try {
-    const barberbarbershopId = params.id
+    const barbershopId = params.id
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({
         success: false,
         error: 'Barbershop ID is required'
@@ -29,7 +29,7 @@ export async function GET(request, { params }) {
     const { data: barbershop, error: barbershopError } = await supabase
       .from('barbershops')
       .select('id, name, booking_settings')
-      .eq('id', barberbarbershopId)
+      .eq('id', barbershopId)
       .single()
 
     if (barbershopError || !barbershop) {
@@ -54,7 +54,7 @@ export async function GET(request, { params }) {
     const { data: staff, error: staffError } = await supabase
       .from('barbershop_staff')
       .select('user_id, role, is_active')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
 
     if (staffError) {
@@ -71,7 +71,7 @@ export async function GET(request, { params }) {
         success: true,
         availability: [],
         staff_count: 0,
-        barberbarbershop_id: barberbarbershopId
+        barbershop_id: barbershopId
       })
     }
 
@@ -90,7 +90,7 @@ export async function GET(request, { params }) {
         specific_date,
         notes
       `)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .in('barber_id', staffIds)
       .order('day_of_week')
       .order('start_time')
@@ -128,7 +128,7 @@ export async function GET(request, { params }) {
       availability: availability || [],
       availability_by_barber: availabilityByBarber,
       staff_count: staff.length,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       barbershop_name: barbershop.name
     })
 

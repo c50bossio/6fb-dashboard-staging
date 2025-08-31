@@ -7,7 +7,7 @@
 
 import { 
   CheckCircleIcon, 
-  ExclamationCircleIcon, 
+  _ExclamationCircleIcon, 
   ExclamationTriangleIcon,
   InformationCircleIcon,
   XMarkIcon 
@@ -51,7 +51,7 @@ export function Notification({
     error: {
       bg: 'bg-red-50 border-red-200',
       text: 'text-red-800',
-      icon: ExclamationCircleIcon,
+      icon: _ExclamationCircleIcon,
       iconColor: 'text-red-600'
     },
     warning: {

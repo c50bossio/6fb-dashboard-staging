@@ -51,12 +51,12 @@ export async function POST(request) {
     // Check user permissions
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, barberbarbershop_id, barberbarberbarbershop_id, role')
+      .select('id, barbershop_id, barberbarbershop_id, role')
       .eq('id', session.user.id)
       .single()
 
-    const hasPermission = profile?.barbershop_id === connectAccount.barberbarberbarbershop_id || 
-                         profile?.barberbarbershop_id === connectAccount.barberbarberbarbershop_id ||
+    const hasPermission = profile?.barbershop_id === connectAccount.barberbarbershop_id || 
+                         profile?.barbershop_id === connectAccount.barberbarbershop_id ||
                          profile?.role === 'SUPER_ADMIN' ||
                          connectAccount.barbershops?.owner_id === session.user.id
 

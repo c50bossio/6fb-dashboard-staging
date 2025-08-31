@@ -3,9 +3,7 @@
 import {
   HeartIcon,
   CheckCircleIcon,
-  ClockIcon,
   UserGroupIcon,
-  CalendarDaysIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
   XMarkIcon,
@@ -55,7 +53,7 @@ export default function ClientCareFlow({
   isOpen = false,
   isManager = false
 }) {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   
   // Care flow state
   const [currentStep, setCurrentStep] = useState(clientData ? 'understanding' : 'client_selection')
@@ -159,9 +157,9 @@ export default function ClientCareFlow({
 
     try {
       // Use getTenant() to get barbershop ID
-      const { barberbarbershopId } = await getTenant(profile.id, { supabase: useAuth().supabase })
+      const { barbershopId } = await getTenant(profile.id, { supabase: useAuth().supabase })
       
-      if (!barberbarbershopId) {
+      if (!barbershopId) {
         setError('No barbershop associated with your account')
         return
       }
@@ -169,7 +167,7 @@ export default function ClientCareFlow({
       setLoadingSearch(true)
       setError(null)
 
-      const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}&barberbarbershop_id=${barberbarbershopId}`, {
+      const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}&barbershop_id=${barbershopId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       })

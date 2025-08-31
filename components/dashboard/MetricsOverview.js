@@ -1,10 +1,9 @@
 'use client'
 
-import { 
+import {
   ChatBubbleLeftRightIcon,
   SparklesIcon,
   ChartBarIcon,
-  PhoneIcon,
   ArrowTrendingDownIcon,
   MinusIcon,
   CalendarDaysIcon,

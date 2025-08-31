@@ -43,7 +43,7 @@ export async function GET(request) {
     const { data: credentials } = await supabase
       .from('cin7_credentials')
       .select('*')
-      .eq('barberbarbershop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
       .eq('is_active', true)
       .single()
 
@@ -69,7 +69,7 @@ export async function GET(request) {
     const { data: recentSyncs } = await supabase
       .from('sale_syncs')
       .select('sync_status, timestamp')
-      .eq('barberbarbershop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
       .order('timestamp', { ascending: false })
       .limit(10)
 
@@ -82,7 +82,7 @@ export async function GET(request) {
     const { data: activeAlerts } = await supabase
       .from('inventory_alerts')
       .select('alert_type, severity')
-      .eq('barberbarbershop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
       .eq('resolved', false)
 
     // Determine health status
@@ -158,7 +158,7 @@ export async function GET(request) {
     const { data: products } = await supabase
       .from('products')
       .select('current_stock, min_stock_level')
-      .eq('barberbarbershop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
       .eq('cin7_sync_enabled', true)
 
     const metrics = products ? {

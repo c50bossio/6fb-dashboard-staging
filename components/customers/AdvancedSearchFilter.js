@@ -1,12 +1,10 @@
 'use client'
 
-import { 
-  MagnifyingGlassIcon, 
+import {
+  MagnifyingGlassIcon,
   FunnelIcon,
-  AdjustmentsHorizontalIcon,
   XMarkIcon,
   ChevronDownIcon,
-  BookmarkIcon,
   DocumentArrowDownIcon,
   ClockIcon,
   CurrencyDollarIcon,

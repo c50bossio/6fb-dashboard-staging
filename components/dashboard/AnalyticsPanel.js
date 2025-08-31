@@ -5,8 +5,7 @@ import {
   UserGroupIcon,
   CurrencyDollarIcon,
   ArrowTrendingDownIcon,
-  CalendarDaysIcon,
-  ClockIcon
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useRef } from 'react'
 import {
@@ -313,7 +312,7 @@ export default function AnalyticsPanel({ data }) {
               { key: '90days', label: '90 Days' },
               { key: 'ytd', label: 'YTD' },
               { key: 'previous_year', label: 'Prev Year' }
-            ].map((range) => (
+            ].map((_range) => (
               <button
                 key={range.key}
                 onClick={() => {

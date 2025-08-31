@@ -317,7 +317,7 @@ async function checkPayrollPermissions(supabase, userId) {
     // Get user profile and role
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, barbershop_id, barberbarbershop_id')
+      .select('role, barbershop_id, barbershop_id')
       .eq('id', userId)
       .single()
 

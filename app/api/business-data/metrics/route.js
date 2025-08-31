@@ -8,9 +8,9 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 const rateLimitStore = new Map();
 
-function validateInput(barberbarbershopId, format) {
-  if (barberbarbershopId && !/^[a-zA-Z0-9_-]+$/.test(barberbarbershopId)) {
-    throw new Error('Invalid barberbarbershop_id format');
+function validateInput(barbershopId, format) {
+  if (barbershopId && !/^[a-zA-Z0-9_-]+$/.test(barbershopId)) {
+    throw new Error('Invalid barbershop_id format');
   }
   
   const validFormats = ['dashboard', 'ai', 'json'];
@@ -49,11 +49,11 @@ export async function GET(request) {
     checkRateLimit(clientIP);
     
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const forceRefresh = searchParams.get('force_refresh') === 'true';
     const format = searchParams.get('format') || 'dashboard'; // dashboard, ai, json
     
-    validateInput(barberbarbershopId, format);
+    validateInput(barbershopId, format);
 
     let businessData;
     
@@ -65,7 +65,7 @@ export async function GET(request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barberbarbershop_id: barberbarbershopId || null,
+          barbershop_id: barbershopId || null,
           force_refresh: forceRefresh,
           format: format
         }),
@@ -89,7 +89,7 @@ export async function GET(request) {
         success: true,
         data: businessData.formatted_summary || businessData.ai_summary,
         meta: {
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           data_source: businessData.data_source || 'unified_fallback',
           timestamp: new Date().toISOString(),
         }
@@ -101,7 +101,7 @@ export async function GET(request) {
         success: true,
         data: businessData.dashboard_data || businessData.data || businessData,
         meta: {
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           force_refresh: forceRefresh,
           data_source: businessData.data_source || 'unified_fallback',
           cache_status: businessData.cache_status,
@@ -114,7 +114,7 @@ export async function GET(request) {
       success: true,
       data: businessData,
       meta: {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         force_refresh: forceRefresh,
         data_source: businessData.data_source || 'unified_fallback',
         timestamp: new Date().toISOString(),
@@ -254,7 +254,7 @@ Data Source: ${baseMetrics.data_source.toUpperCase()} | Status: ${baseMetrics.da
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { barberbarbershop_id, refresh_cache, format } = body;
+    const { barbershop_id, refresh_cache, format } = body;
 
     try {
       const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
@@ -264,7 +264,7 @@ export async function POST(request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barberbarbershop_id,
+          barbershop_id,
           refresh_cache: refresh_cache !== false,
           format
         }),

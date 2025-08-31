@@ -12,8 +12,8 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function AppointmentSettingsPage() {
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -38,7 +38,7 @@ export default function AppointmentSettingsPage() {
 
   useEffect(() => {
     loadSettings()
-  }, [user])
+  }, [_user])
 
   // Capture initial state on first render
   useEffect(() => {
@@ -56,14 +56,14 @@ export default function AppointmentSettingsPage() {
   }, [formData])
 
   const loadSettings = async () => {
-    if (!user) return
+    if (!_user) return
     
     try {
       setLoading(true)
       const { data: settings } = await supabase
         .from('business_settings')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', _user.id)
         .single()
       
       if (settings?.booking_rules) {
@@ -101,7 +101,7 @@ export default function AppointmentSettingsPage() {
       const { data: existing } = await supabase
         .from('business_settings')
         .select('id, booking_rules')
-        .eq('user_id', user.id)
+        .eq('user_id', _user.id)
         .single()
       
       const updatedBookingRules = {
@@ -116,12 +116,12 @@ export default function AppointmentSettingsPage() {
             booking_rules: updatedBookingRules,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', user.id)
+          .eq('user_id', _user.id)
       } else {
         await supabase
           .from('business_settings')
           .insert({
-            user_id: user.id,
+            user_id: _user.id,
             booking_rules: updatedBookingRules
           })
       }

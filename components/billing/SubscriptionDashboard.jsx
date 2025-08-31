@@ -11,7 +11,7 @@ export default function SubscriptionDashboard() {
   const [usage, setUsage] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
 
   useEffect(() => {
     if (user) {

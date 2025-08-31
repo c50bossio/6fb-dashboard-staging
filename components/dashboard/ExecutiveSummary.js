@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
   ArrowTrendingDownIcon,
   CheckCircleIcon,
@@ -8,8 +8,7 @@ import {
   LightBulbIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
-  StarIcon,
-  ClockIcon
+  StarIcon
 } from '@heroicons/react/24/outline'
 
 export default function ExecutiveSummary({ data }) {

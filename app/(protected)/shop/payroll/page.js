@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarIcon, DollarSignIcon, UsersIcon, BarChart3Icon } from 'lucide-react'
+import { CalendarIcon, DollarSignIcon, UsersIcon, BarChart3Icon as ChartBarIcon } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/Button'

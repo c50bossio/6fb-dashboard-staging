@@ -1,7 +1,12 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import {
+  XMarkIcon,
+  CalendarIcon,
+  ClockIcon,
+  CurrencyDollarIcon
+} from '@heroicons/react/24/outline'
 import { useState, useEffect, Fragment } from 'react'
 
 const services = [

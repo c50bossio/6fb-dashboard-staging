@@ -1,9 +1,8 @@
 'use client'
 
-import { 
-  DevicePhoneMobileIcon, 
+import {
+  DevicePhoneMobileIcon,
   ComputerDesktopIcon,
-  BoltIcon,
   ExclamationTriangleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
@@ -114,7 +113,7 @@ const BookingLoadingSkeleton = () => (
  */
 export default function BookingFlowOrchestrator({
   // Core props - compatible with existing booking components
-  barberbarbershopId,
+  barbershopId,
   barbershopSlug,
   preselectedBarber = null,
   preselectedService = null,
@@ -147,7 +146,7 @@ export default function BookingFlowOrchestrator({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [componentProps, setComponentProps] = useState({})
-  const [retryCount, setRetryCount] = useState(0)
+  const [_retryCount, setRetryCount] = useState(0)
 
   // Device detection utility
   const detectDevice = () => {
@@ -325,7 +324,7 @@ export default function BookingFlowOrchestrator({
         
         // Prepare component props
         const props = {
-          barberbarbershopId,
+          barbershopId,
           barbershopSlug,
           preselectedBarber: urlParams.barberId || preselectedBarber,
           preselectedService: urlParams.serviceId || preselectedService,
@@ -363,7 +362,7 @@ export default function BookingFlowOrchestrator({
           // Fallback to safe default
           setSelectedComponent('PublicBookingFlow')
           setComponentProps({
-            barberbarbershopId,
+            barbershopId,
             barbershopSlug,
             preselectedBarber,
             preselectedService,
@@ -382,7 +381,7 @@ export default function BookingFlowOrchestrator({
     return () => {
       mounted = false
     }
-  }, [barberbarbershopId, barbershopSlug, retryCount])
+  }, [barbershopId, barbershopSlug, retryCount])
 
   // Error retry handler
   const handleRetry = () => {
@@ -435,7 +434,7 @@ export default function BookingFlowOrchestrator({
     
     return (
       <RealtimeAvailabilityChecker
-        barberbarbershopId={barberbarbershopId}
+        barbershopId={barbershopId}
         barberId={componentProps.preselectedBarber}
         serviceId={componentProps.preselectedService}
         selectedDate={new Date()}
@@ -519,7 +518,7 @@ export default function BookingFlowOrchestrator({
 // TypeScript support (if needed)
 BookingFlowOrchestrator.propTypes = {
   // Core props
-  barberbarbershopId: (props, propName, componentName) => {
+  barbershopId: (props, propName, componentName) => {
     if (!props[propName]) {
       return new Error(`${propName} is required for ${componentName}`)
     }

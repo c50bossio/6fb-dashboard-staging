@@ -1,24 +1,16 @@
 'use client'
 
-import { 
+import {
   BuildingStorefrontIcon,
   PaintBrushIcon,
   GlobeAltIcon,
-  EyeIcon,
   CheckCircleIcon,
   XMarkIcon,
   PhotoIcon,
   CalendarDaysIcon,
   ClockIcon,
   ArrowTopRightOnSquareIcon,
-  MagnifyingGlassIcon,
-  DevicePhoneMobileIcon,
-  ComputerDesktopIcon,
-  MapPinIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  StarIcon,
-  LinkIcon
+  MagnifyingGlassIcon
 } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
@@ -29,7 +21,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getTenant } from '@/lib/tenant-resolver-client'
 
 export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('general')
   const [saving, setSaving] = useState(false)
@@ -135,7 +127,7 @@ export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
     }
   }, [hasUnsavedChanges, saveToDatabase, setMessage, setAutoSaving])
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const tabs = [
     { id: 'general', name: 'General Info', icon: BuildingStorefrontIcon, description: 'Basic business details' },
@@ -177,8 +169,8 @@ export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
 
       let barbershopId
       try {
-        const { barberbarbershopId } = await getTenant(profile.id, { supabase })
-        barbershopId = barberbarbershopId
+        const result = await getTenant(profile.id, { supabase })
+        barbershopId = result.barbershopId
       } catch (error) {
         console.error('Error getting barbershop ID:', error)
         return
@@ -255,8 +247,8 @@ export default function BarbershopWebsiteCustomization({ onUnsavedChanges }) {
 
     let barbershopId
     try {
-      const { barberbarbershopId } = await getTenant(profile.id, { supabase })
-      barbershopId = barberbarbershopId
+      const result = await getTenant(profile.id, { supabase })
+      barbershopId = result.barbershopId
     } catch (error) {
       console.error('Error getting barbershop ID:', error)
       throw new Error('No barbershop associated with your account')

@@ -19,13 +19,13 @@ const RealtimeChat = dynamic(
 )
 
 export default function RealtimePage() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [activeTab, setActiveTab] = useState('dashboard')
   
-  const barberbarbershopId = profile?.barbershop_id || user?.barberbarbershop_id
-  const { data: notifications = [], refresh } = useRealtimeNotifications(barberbarbershopId)
+  const barbershopId = profile?.barbershop_id || user?.barbershop_id
+  const { data: notifications = [], refresh } = useRealtimeNotifications(barbershopId)
   
-  if (!barberbarbershopId) {
+  if (!barbershopId) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

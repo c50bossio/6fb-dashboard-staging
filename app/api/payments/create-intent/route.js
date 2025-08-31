@@ -13,7 +13,7 @@ const getStripeInstance = () => {
 
 export async function POST(request) {
   try {
-    const { booking_id, customer_id, barber_id, service_id, payment_type, amount, barberbarbershop_id, tip_amount = 0 } = await request.json()
+    const { booking_id, customer_id, barber_id, service_id, payment_type, amount, barbershop_id, tip_amount = 0 } = await request.json()
 
     if (!booking_id || !service_id || !amount) {
       return NextResponse.json({
@@ -32,11 +32,11 @@ export async function POST(request) {
     
     // Get barbershop fee settings
     let customerPaysProcessingFee = false
-    if (barberbarbershop_id) {
+    if (barbershop_id) {
       const { data: barbershop } = await supabase
         .from('barbershops')
         .select('customer_pays_processing_fee')
-        .eq('id', barberbarbershop_id)
+        .eq('id', barbershop_id)
         .single()
       
       customerPaysProcessingFee = barbershop?.customer_pays_processing_fee || false
@@ -62,12 +62,12 @@ export async function POST(request) {
     let stripeConnectAccountId = null
     
     // Try to get Connect account ID based on available information
-    if (barberbarbershop_id) {
-      // If barberbarbershop_id is provided directly
+    if (barbershop_id) {
+      // If barbershop_id is provided directly
       const { data: connectAccount } = await supabase
         .from('stripe_connected_accounts')
         .select('stripe_account_id, charges_enabled, payouts_enabled')
-        .eq('barberbarbershop_id', barberbarbershop_id)
+        .eq('barbershop_id', barbershop_id)
         .single()
       
       if (connectAccount) {
@@ -83,15 +83,15 @@ export async function POST(request) {
       // If only barber_id is provided, look up their barbershop
       const { data: barber } = await supabase
         .from('barbers')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('id', barber_id)
         .single()
       
-      if (barber?.barberbarbershop_id) {
+      if (barber?.barbershop_id) {
         const { data: connectAccount } = await supabase
           .from('stripe_connected_accounts')
           .select('stripe_account_id, charges_enabled, payouts_enabled')
-          .eq('barberbarbershop_id', barber.barberbarbershop_id)
+          .eq('barbershop_id', barber.barbershop_id)
           .single()
         
         if (connectAccount) {
@@ -108,18 +108,18 @@ export async function POST(request) {
 
     // Get financial arrangement for commission calculation
     let arrangementData = null
-    if (barber_id && (barberbarbershop_id || (barber_id && typeof barber_id === 'string'))) {
-      const barbershopId = barberbarbershop_id || (await supabase
+    if (barber_id && (barbershop_id || (barber_id && typeof barber_id === 'string'))) {
+      const barbershopId = barbershop_id || (await supabase
         .from('barbers')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('id', barber_id)
-        .single())?.data?.barberbarbershop_id
+        .single())?.data?.barbershop_id
 
       if (barbershopId) {
         const { data: arrangement } = await supabase
           .from('financial_arrangements')
           .select('*')
-          .eq('barberbarbershop_id', barbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('barber_id', barber_id)
           .eq('is_active', true)
           .single()
@@ -158,7 +158,7 @@ export async function POST(request) {
         booking_id,
         customer_id: customer_id || 'guest',
         barber_id: barber_id || 'staff',
-        barberbarbershop_id: barberbarbershop_id || '',
+        barbershop_id: barbershop_id || '',
         service_id,
         payment_type: payment_type || 'full_payment',
         // Fee information

@@ -3,9 +3,9 @@ import { NextResponse } from 'next/server'
 
 export async function GET(request, { params }) {
   try {
-    const barberbarbershopId = params.id
+    const barbershopId = params.id
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({
         success: false,
         error: 'Barbershop ID is required'
@@ -30,7 +30,7 @@ export async function GET(request, { params }) {
     const { data: barbershop, error } = await supabase
       .from('barbershops')
       .select('*')
-      .eq('id', barberbarbershopId)
+      .eq('id', barbershopId)
       .single()
 
     if (error || !barbershop) {
@@ -58,14 +58,14 @@ export async function GET(request, { params }) {
     const { count: servicesCount } = await supabase
       .from('services')
       .select('*', { count: 'exact', head: true })
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
 
     // Get active barbers count
     const { count: barbersCount } = await supabase
       .from('barbershop_staff')
       .select('*', { count: 'exact', head: true })
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .eq('role', 'barber')
 

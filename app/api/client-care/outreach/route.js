@@ -22,7 +22,7 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -57,7 +57,7 @@ export async function GET(request) {
           relationship_building_notes
         )
       `)
-      .eq('barberbarbershop_id', profile.barbershop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .order('initiated_at', { ascending: false })
     
     // Apply filters
@@ -127,7 +127,7 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role, full_name')
+      .select('barbershop_id, role, full_name')
       .eq('id', user.id)
       .single()
     
@@ -135,13 +135,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barberbarbershopId = profile.barbershop_id
+    const barbershopId = profile.barbershop_id
 
     // Check current client care status
     const { data: clientStatus } = await supabase
       .from('client_care_status')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('client_id', clientId)
       .single()
 
@@ -158,7 +158,7 @@ export async function POST(request) {
 
     // Create or update client care status
     const careStatusData = {
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       client_id: clientId,
       care_level: 'reaching_out',
       relationship_status: 'reconnecting',
@@ -170,7 +170,7 @@ export async function POST(request) {
 
     const { data: careStatus, error: careStatusError } = await supabase
       .from('client_care_status')
-      .upsert(careStatusData, { onConflict: 'barberbarbershop_id,client_id' })
+      .upsert(careStatusData, { onConflict: 'barbershop_id,client_id' })
       .select()
       .single()
 
@@ -181,7 +181,7 @@ export async function POST(request) {
       .from('client_care_outreach')
       .insert({
         client_care_status_id: careStatus.id,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         client_id: clientId,
         care_option: careOption,
         outreach_status: 'caring_for',
@@ -208,7 +208,7 @@ export async function POST(request) {
         .from('client_care_interactions')
         .insert({
           outreach_id: outreach.id,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           client_id: clientId,
           interaction_type: 'caring_email',
           communication_method: 'email',
@@ -234,7 +234,7 @@ export async function POST(request) {
         .from('client_care_interactions')
         .insert({
           outreach_id: outreach.id,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           client_id: clientId,
           interaction_type: 'caring_sms',
           communication_method: 'sms',
@@ -259,7 +259,7 @@ export async function POST(request) {
         user_id: user.id,
         action: 'initiate_client_care',
         details: {
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           client_id: clientId,
           outreach_id: outreach.id,
           care_approach: approach,
@@ -309,7 +309,7 @@ export async function PUT(request) {
     // Get user's barbershop and check authorization
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -322,7 +322,7 @@ export async function PUT(request) {
       .from('client_care_outreach')
       .select('*')
       .eq('id', outreach_id)
-      .eq('barberbarbershop_id', profile.barbershop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .single()
     
     if (outreachError || !outreach) {
@@ -355,7 +355,7 @@ export async function PUT(request) {
             care_success: true,
             success_approach: outreach.approach_type
           })
-          .eq('barberbarbershop_id', profile.barbershop_id)
+          .eq('barbershop_id', profile.barbershop_id)
           .eq('client_id', outreach.client_id)
         
         // Reset any "break" status since they're back
@@ -367,7 +367,7 @@ export async function PUT(request) {
             care_success_date: new Date().toISOString(),
             relationship_status: 'positive'
           })
-          .eq('barberbarbershop_id', profile.barbershop_id)
+          .eq('barbershop_id', profile.barbershop_id)
           .eq('client_id', outreach.client_id)
         
         break
@@ -388,7 +388,7 @@ export async function PUT(request) {
             care_level: 'supportive',
             improvement_noted_at: new Date().toISOString()
           })
-          .eq('barberbarbershop_id', profile.barbershop_id)
+          .eq('barbershop_id', profile.barbershop_id)
           .eq('client_id', outreach.client_id)
         
         break
@@ -432,7 +432,7 @@ export async function PUT(request) {
         user_id: user.id,
         action: `client_care_${action}`,
         details: {
-          barberbarbershop_id: profile.barbershop_id,
+          barbershop_id: profile.barbershop_id,
           outreach_id,
           client_id: outreach.client_id,
           outcome: relationship_outcome,

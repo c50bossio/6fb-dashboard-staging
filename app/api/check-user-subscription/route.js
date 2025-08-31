@@ -27,7 +27,7 @@ export async function GET(request) {
         subscription_status,
         role,
         barbershop_id,
-        barberbarbershop_id,
+        barbershop_id,
         created_at,
         updated_at
       `)

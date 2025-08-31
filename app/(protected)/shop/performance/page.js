@@ -1,7 +1,7 @@
 'use client'
 
 import { 
-  BarChart3Icon, 
+  BarChart3Icon as ChartBarIcon, 
   ClockIcon, 
   StarIcon,
   UsersIcon,

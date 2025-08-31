@@ -8,7 +8,7 @@ import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import { useAuth } from '../SupabaseAuthProvider'
 
 export default function DeleteLocationModal({ isOpen, onClose, onComplete, location }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const { refreshLocations } = useGlobalDashboard()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -27,7 +27,7 @@ export default function DeleteLocationModal({ isOpen, onClose, onComplete, locat
     customers: 0
   })
   
-  const supabase = createClient()
+  const _supabase = createClient()
   
   // Reset state when modal opens/closes
   useEffect(() => {
@@ -59,28 +59,28 @@ export default function DeleteLocationModal({ isOpen, onClose, onComplete, locat
       const { count: appointmentCount } = await supabase
         .from('appointments')
         .select('*', { count: 'exact', head: true })
-        .eq('barberbarbershop_id', location.id)
+        .eq('barbershop_id', location.id)
         .gte('appointment_date', new Date().toISOString())
       
       // Count staff
       const { count: staffCount } = await supabase
         .from('barbershop_staff')
         .select('*', { count: 'exact', head: true })
-        .eq('barberbarbershop_id', location.id)
+        .eq('barbershop_id', location.id)
         .eq('is_active', true)
       
       // Count services
       const { count: serviceCount } = await supabase
         .from('services')
         .select('*', { count: 'exact', head: true })
-        .or(`(barberbarbershop_id.eq.${location.id}),(barbershop_id.eq.${location.id})`)
+        .or(`(barbershop_id.eq.${location.id}),(barbershop_id.eq.${location.id})`)
         .eq('is_active', true)
       
       // Count customers
       const { count: customerCount } = await supabase
         .from('customers')
         .select('*', { count: 'exact', head: true })
-        .eq('barberbarbershop_id', location.id)
+        .eq('barbershop_id', location.id)
       
       setAffectedData({
         appointments: appointmentCount || 0,

@@ -1,13 +1,10 @@
 'use client'
 
-import { 
+import {
   XMarkIcon,
-  PlusIcon,
-  MinusIcon,
   CalendarIcon,
   ClockIcon,
   CurrencyDollarIcon,
-  TagIcon,
   LinkIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'

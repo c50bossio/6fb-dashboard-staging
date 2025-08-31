@@ -27,7 +27,7 @@ export default function ProgressiveAccountCreation({
   const [error, setError] = useState(null)
   const [accountCreated, setAccountCreated] = useState(false)
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const benefits = [
     {
@@ -115,7 +115,7 @@ export default function ProgressiveAccountCreation({
           .from('customers')
           .insert({
             id: authData.user.id,
-            barberbarbershop_id: bookingDetails.barberbarbershop_id,
+            barbershop_id: bookingDetails.barbershop_id,
             name: customerInfo.name,
             email: customerInfo.email,
             phone: customerInfo.phone,

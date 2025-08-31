@@ -88,9 +88,9 @@ export async function POST(request) {
     }
     
     const body = await request.json()
-    const { email, full_name, firstName, lastName, first_name, last_name, role = 'BARBER', barberbarbershopId, sendEmail = true } = body
+    const { email, full_name, firstName, lastName, first_name, last_name, role = 'BARBER', barbershopId, sendEmail = true } = body
     
-    if (!email || !barberbarbershopId) {
+    if (!email || !barbershopId) {
       return NextResponse.json(
         { error: 'Email and barbershop ID are required' },
         { status: 400 }
@@ -101,7 +101,7 @@ export async function POST(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('id, name, owner_id')
-      .eq('id', barberbarbershopId)
+      .eq('id', barbershopId)
       .single()
     
     if (!barbershop || barbershop.owner_id !== user.id) {
@@ -123,7 +123,7 @@ export async function POST(request) {
       const { data: existingStaff } = await supabase
         .from('barbershop_staff')
         .select('id')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('user_id', existingUser.id)
         .single()
       
@@ -138,7 +138,7 @@ export async function POST(request) {
       const { data: staffMember, error: staffError } = await supabase
         .from('barbershop_staff')
         .insert({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           user_id: existingUser.id,
           role: role,
           is_active: true,
@@ -167,7 +167,7 @@ export async function POST(request) {
       const { financialModel, commissionRate, paymentMethod, bankAccount, enableStripeConnect } = body
       if (financialModel) {
         const arrangementData = {
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           barber_id: existingUser.id,
           arrangement_type: financialModel,
           is_active: true,
@@ -237,7 +237,7 @@ export async function POST(request) {
       const { data: pendingStaff, error: pendingError } = await supabase
         .from('barbershop_staff')
         .insert({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           user_id: user.id, // Temporarily use inviter's ID
           role: role,
           is_active: false, // Mark as inactive until accepted

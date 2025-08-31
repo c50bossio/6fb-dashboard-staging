@@ -11,12 +11,12 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({
         customers: [],
-        error: 'barberbarbershop_id parameter is required'
+        error: 'barbershop_id parameter is required'
       }, { status: 400 })
     }
     const limit = parseInt(searchParams.get('limit')) || 10
@@ -41,7 +41,7 @@ export async function GET(request) {
         preferences,
         vip_status
       `)
-      .or(`barbershop_id.eq.${barberbarbershopId},barberbarbershop_id.eq.${barberbarbershopId}`)
+      .or(`barbershop_id.eq.${barbershopId},barbershop_id.eq.${barbershopId}`)
       .eq('is_active', true)
     
     // Add search filter conditionally
@@ -99,11 +99,11 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const { phone, email, barberbarbershop_id } = await request.json()
+    const { phone, email, barbershop_id } = await request.json()
     
-    if (!barberbarbershop_id) {
+    if (!barbershop_id) {
       return NextResponse.json({
-        error: 'barberbarbershop_id is required'
+        error: 'barbershop_id is required'
       }, { status: 400 })
     }
 
@@ -128,7 +128,7 @@ export async function POST(request) {
         notification_preferences,
         vip_status
       `)
-      .or(`barbershop_id.eq.${barberbarbershop_id},barberbarbershop_id.eq.${barberbarbershop_id}`)
+      .or(`barbershop_id.eq.${barbershop_id},barbershop_id.eq.${barbershop_id}`)
       .eq('is_active', true)
 
     if (phone && email) {

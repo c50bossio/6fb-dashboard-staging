@@ -27,8 +27,8 @@ import { formatCurrency } from '@/lib/utils'
  * - Backup payment methods
  */
 export default function AutopayPage() {
-  const { user, profile } = useAuth()
-  const supabase = createClient()
+  const { user, profile: _profile } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -49,7 +49,7 @@ export default function AutopayPage() {
     if (user && profile) {
       loadAutopayConfig()
     }
-  }, [user, profile])
+  }, [user, profile]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAutopayConfig = async () => {
     setLoading(true)
@@ -113,7 +113,7 @@ export default function AutopayPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           arrangement_id: arrangement.id,
-          barberbarbershop_id: arrangement.barberbarbershop_id,
+          barbershop_id: arrangement.barbershop_id,
           barber_id: user.id,
           is_active: autopayConfig.enabled,
           payment_day: autopayConfig.payment_day,
@@ -217,7 +217,7 @@ export default function AutopayPage() {
             <BuildingLibraryIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h2 className="text-lg font-semibold mb-2">No Rent Arrangement</h2>
             <p className="text-gray-600 mb-4">
-              You don't have an active booth rent arrangement.
+              You don&apos;t have an active booth rent arrangement.
             </p>
             <Link href="/dashboard">
               <Button variant="outline">Return to Dashboard</Button>
@@ -282,9 +282,9 @@ export default function AutopayPage() {
               <div className="bg-blue-50 rounded-lg p-3 text-sm text-blue-700">
                 <p className="font-medium mb-1">How it works:</p>
                 <ul className="space-y-1 text-xs">
-                  <li>• We'll try payment methods in your preferred order</li>
+                  <li>• We&apos;ll try payment methods in your preferred order</li>
                   <li>• If one fails, we automatically try the next</li>
-                  <li>• You'll be notified before and after each payment</li>
+                  <li>• You&apos;ll be notified before and after each payment</li>
                   <li>• Cancel anytime with no penalties</li>
                 </ul>
               </div>
@@ -346,7 +346,7 @@ export default function AutopayPage() {
                   Payment Method Priority
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  We'll try payment methods in this order to minimize fees:
+                  We&apos;ll try payment methods in this order to minimize fees:
                 </p>
 
                 <div className="space-y-2">

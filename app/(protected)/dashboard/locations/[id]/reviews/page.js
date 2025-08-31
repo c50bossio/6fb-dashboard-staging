@@ -17,7 +17,7 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import useReviews from '@/hooks/useReviews'
 
 export default function LocationReviewsPage() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const params = useParams()
   const router = useRouter()
   const locationId = params.id

@@ -11,19 +11,19 @@ export const dynamic = 'force-dynamic'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const timeRange = searchParams.get('time_range') || '30d'; // 7d, 30d, 90d
     const analyticsType = searchParams.get('type') || 'comprehensive'; // comprehensive, revenue, efficiency, patterns
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id is required' },
+        { error: 'barbershop_id is required' },
         { status: 400 }
       );
     }
     
     // Fetch staff data for context
-    const staffData = await unifiedStaffService.getStaff(barberbarbershopId, {
+    const staffData = await unifiedStaffService.getStaff(barbershopId, {
       useCache: true,
       includeAvailability: false
     });
@@ -33,7 +33,7 @@ export async function GET(request) {
     
     const Analytics = {
       success: true,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       time_range: timeRange,
       analytics_type: analyticsType,
       generated_at: new Date().toISOString(),
@@ -245,7 +245,7 @@ export async function GET(request) {
     if (analyticsType !== 'comprehensive') {
       const filteredAnalytics = { 
         success: true,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         time_range: timeRange,
         analytics_type: analyticsType,
         generated_at: mockAnalytics.generated_at
@@ -286,11 +286,11 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { barberbarbershop_id, report_type, custom_metrics, date_range } = body;
+    const { barbershop_id, report_type, custom_metrics, date_range } = body;
     
-    if (!barberbarbershop_id || !report_type) {
+    if (!barbershop_id || !report_type) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id and report_type are required' },
+        { error: 'barbershop_id and report_type are required' },
         { status: 400 }
       );
     }
@@ -298,7 +298,7 @@ export async function POST(request) {
     const CustomReport = {
       success: true,
       report_id: `report_${Date.now()}`,
-      barberbarbershop_id: barberbarbershop_id,
+      barbershop_id: barbershop_id,
       report_type: report_type,
       generated_at: new Date().toISOString(),
       status: "completed",
@@ -366,9 +366,9 @@ export async function POST(request) {
         insights_generated: 342
       },
       
-      report_url: `/reports/${barberbarbershop_id}/scheduling-analytics-${Date.now()}.pdf`,
+      report_url: `/reports/${barbershop_id}/scheduling-analytics-${Date.now()}.pdf`,
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-      share_link: `https://app.6fbai.com/reports/shared/${barberbarbershop_id}/analytics-${Date.now()}`
+      share_link: `https://app.6fbai.com/reports/shared/${barbershop_id}/analytics-${Date.now()}`
     };
     
     return NextResponse.json(CustomReport);

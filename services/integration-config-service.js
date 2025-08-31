@@ -113,13 +113,13 @@ class IntegrationConfigService {
   /**
    * Get integration status for a barbershop
    */
-  async getIntegrationStatus(barberbarbershopId, userId = null) {
+  async getIntegrationStatus(barbershopId, userId = null) {
     try {
       const status = {}
 
       for (const [key, integration] of Object.entries(this.integrations)) {
         try {
-          const integrationStatus = await this.checkIntegrationStatus(key, barberbarbershopId, userId)
+          const integrationStatus = await this.checkIntegrationStatus(key, barbershopId, userId)
           status[key] = {
             ...integrationStatus,
             name: integration.name,
@@ -164,10 +164,10 @@ class IntegrationConfigService {
   /**
    * Check individual integration status
    */
-  async checkIntegrationStatus(integrationKey, barberbarbershopId, userId = null) {
+  async checkIntegrationStatus(integrationKey, barbershopId, userId = null) {
     switch (integrationKey) {
       case 'stripe':
-        return await this.checkStripeStatus(barberbarbershopId, userId)
+        return await this.checkStripeStatus(barbershopId, userId)
       
       case 'twilio':
         return await this.checkTwilioStatus()
@@ -189,7 +189,7 @@ class IntegrationConfigService {
   /**
    * Check Stripe integration status
    */
-  async checkStripeStatus(barberbarbershopId, userId) {
+  async checkStripeStatus(barbershopId, userId) {
     try {
       const stripeService = await this.getService('stripe')
       if (!stripeService) {
@@ -383,18 +383,18 @@ class IntegrationConfigService {
   /**
    * Enable/disable integration for barbershop
    */
-  async toggleIntegration(integrationKey, barberbarbershopId, userId, enabled) {
+  async toggleIntegration(integrationKey, barbershopId, userId, enabled) {
     try {
       const { error } = await supabase
         .from('barbershop_integrations')
         .upsert({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           integration_type: integrationKey,
           enabled: enabled,
           configured_by: userId,
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'barberbarbershop_id,integration_type'
+          onConflict: 'barbershop_id,integration_type'
         })
 
       if (error) {
@@ -415,12 +415,12 @@ class IntegrationConfigService {
   /**
    * Get integration configuration for barbershop
    */
-  async getIntegrationConfig(barberbarbershopId, integrationKey = null) {
+  async getIntegrationConfig(barbershopId, integrationKey = null) {
     try {
       let query = supabase
         .from('barbershop_integrations')
         .select('*')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
 
       if (integrationKey) {
         query = query.eq('integration_type', integrationKey)
@@ -453,18 +453,18 @@ class IntegrationConfigService {
   /**
    * Save integration settings
    */
-  async saveIntegrationSettings(barberbarbershopId, userId, integrationKey, settings) {
+  async saveIntegrationSettings(barbershopId, userId, integrationKey, settings) {
     try {
       const { error } = await supabase
         .from('barbershop_integrations')
         .upsert({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           integration_type: integrationKey,
           settings: settings,
           configured_by: userId,
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'barberbarbershop_id,integration_type'
+          onConflict: 'barbershop_id,integration_type'
         })
 
       if (error) {
@@ -485,7 +485,7 @@ class IntegrationConfigService {
   /**
    * Test integration connection
    */
-  async testIntegration(integrationKey, barberbarbershopId, userId = null) {
+  async testIntegration(integrationKey, barbershopId, userId = null) {
     try {
       let testResult
 
@@ -541,9 +541,9 @@ class IntegrationConfigService {
   /**
    * Get integration recommendations for barbershop
    */
-  async getRecommendations(barberbarbershopId) {
+  async getRecommendations(barbershopId) {
     try {
-      const status = await this.getIntegrationStatus(barberbarbershopId)
+      const status = await this.getIntegrationStatus(barbershopId)
       const recommendations = []
 
       // Analyze current status and provide recommendations

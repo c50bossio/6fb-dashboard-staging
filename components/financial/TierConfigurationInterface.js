@@ -1,13 +1,11 @@
 'use client'
 
-import { 
-  PlusIcon, 
-  TrashIcon, 
-  CheckCircleIcon,
+import {
+  PlusIcon,
+  TrashIcon,
   ExclamationTriangleIcon,
   CurrencyDollarIcon,
-  ChartBarIcon,
-  Cog6ToothIcon
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -50,7 +48,7 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat('en-US').format(num || 0)
 }
 
-export default function TierConfigurationInterface({ barberbarbershopId, onSave }) {
+export default function TierConfigurationInterface({ barbershopId, onSave }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [structure, setStructure] = useState({
@@ -91,10 +89,10 @@ export default function TierConfigurationInterface({ barberbarbershopId, onSave 
 
   // Load existing tier structure
   const loadTierStructure = useCallback(async () => {
-    if (!barberbarbershopId) return
+    if (!barbershopId) return
     
     try {
-      const { data, error } = await financialService.getTierStructure(barberbarbershopId)
+      const { data, error } = await financialService.getTierStructure(barbershopId)
       
       if (error) {
         console.error('Error loading tier structure:', error)
@@ -121,7 +119,7 @@ export default function TierConfigurationInterface({ barberbarbershopId, onSave 
     } finally {
       setLoading(false)
     }
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   useEffect(() => {
     loadTierStructure()
@@ -287,7 +285,7 @@ export default function TierConfigurationInterface({ barberbarbershopId, onSave 
     setSaving(true)
     
     try {
-      const { data, error } = await financialService.saveTierStructure(barberbarbershopId, structure)
+      const { data, error } = await financialService.saveTierStructure(barbershopId, structure)
       
       if (error) {
         throw new Error(error)

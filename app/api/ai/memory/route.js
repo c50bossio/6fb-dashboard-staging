@@ -303,7 +303,7 @@ function analyzeMessageContent(message, response, messageType) {
  * Update long-term business profile based on conversation patterns
  */
 function updateBusinessProfile(businessContext, memory) {
-  const businessId = businessContext.barberbarbershop_id || 'demo'
+  const businessId = businessContext.barbershop_id || 'demo'
   
   if (!businessProfiles.has(businessId)) {
     businessProfiles.set(businessId, {

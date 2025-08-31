@@ -5,10 +5,7 @@ import {
   EyeIcon,
   LinkIcon,
   QrCodeIcon,
-  ShareIcon,
   ChartBarIcon,
-  CalendarIcon,
-  ClockIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
   XCircleIcon,
@@ -23,7 +20,7 @@ import EmbedCodeModal from '../EmbedCodeModal'
 import QRCodeModal from '../QRCodeModal'
 
 export default function MarketingLinksTab() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [bookingLinks, setBookingLinks] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)

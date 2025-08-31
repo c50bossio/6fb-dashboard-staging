@@ -13,7 +13,7 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const category = searchParams.get('category');
     const brand = searchParams.get('brand');
     const search = searchParams.get('search');
@@ -25,11 +25,11 @@ export async function GET(request) {
     let enrollmentStatus = null;
     let subscriptionTier = 'free';
     
-    if (barberbarbershopId) {
+    if (barbershopId) {
       const { data: enrollment } = await supabase
         .from('marketplace_enrollment')
         .select('is_enrolled, enrollment_status, subscription_tier, discount_tier')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .single();
 
       enrollmentStatus = enrollment;
@@ -243,7 +243,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const {
-      barberbarbershop_id,
+      barbershop_id,
       master_product_id,
       initial_quantity,
       retail_price,
@@ -252,7 +252,7 @@ export async function POST(request) {
     } = body;
 
     // Validate required fields
-    if (!barberbarbershop_id || !master_product_id) {
+    if (!barbershop_id || !master_product_id) {
       return NextResponse.json({ 
         error: 'Missing required fields' 
       }, { status: 400 });
@@ -273,7 +273,7 @@ export async function POST(request) {
     const { data: existing } = await supabase
       .from('barbershop_inventory')
       .select('id')
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('marketplace_product_id', master_product_id)
       .single();
 
@@ -287,7 +287,7 @@ export async function POST(request) {
     const { data: enrollment } = await supabase
       .from('marketplace_enrollment')
       .select('subscription_tier')
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .single();
 
     const subscriptionTier = enrollment?.subscription_tier || 'free';
@@ -307,7 +307,7 @@ export async function POST(request) {
     const { data: newInventory, error: insertError } = await supabase
       .from('barbershop_inventory')
       .insert({
-        barberbarbershop_id,
+        barbershop_id,
         product_source: 'marketplace',
         marketplace_product_id: master_product_id,
         name: masterProduct.name,

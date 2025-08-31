@@ -41,7 +41,7 @@ export async function POST(request) {
 
     const body = await request.json()
     const {
-      barberbarbershopId,
+      barbershopId,
       barberId,
       cartItems,
       customerContact,
@@ -50,9 +50,9 @@ export async function POST(request) {
     } = body
 
     // Validate required fields
-    if (!barberbarbershopId || !cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+    if (!barbershopId || !cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
       return NextResponse.json(
-        { error: 'Missing required fields: barberbarbershopId, cartItems' },
+        { error: 'Missing required fields: barbershopId, cartItems' },
         { status: 400 }
       )
     }
@@ -80,10 +80,10 @@ export async function POST(request) {
 
     const userShopId = profile?.shop_id || 
       (profile?.barbershop_staff && profile.barbershop_staff.length > 0 
-        ? profile.barbershop_staff[0].barberbarbershop_id 
+        ? profile.barbershop_staff[0].barbershop_id 
         : null)
 
-    if (userShopId !== barberbarbershopId) {
+    if (userShopId !== barbershopId) {
       return NextResponse.json(
         { error: 'Unauthorized: No access to this barbershop' },
         { status: 403 }
@@ -94,7 +94,7 @@ export async function POST(request) {
     const { data: stripeAccount } = await supabase
       .from('stripe_connected_accounts')
       .select('stripe_account_id, charges_enabled, payouts_enabled')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('onboarding_completed', true)
       .single()
 
@@ -167,7 +167,7 @@ export async function POST(request) {
         }
       ],
       metadata: {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         barber_id: barberId || null,
         customer_contact: customerContact,
         contact_method: contactMethod,
@@ -182,7 +182,7 @@ export async function POST(request) {
     const { data: paymentLinkRecord, error: insertError } = await supabase
       .from('pos_payment_links')
       .insert({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         barber_id: barberId,
         cart_data: {
           items: cartItems,
@@ -274,7 +274,7 @@ export async function POST(request) {
       customer_contact: customerContact,
       contact_method: contactMethod,
       send_result: sendResult,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       barber_id: barberId,
       created_at: paymentLinkRecord.created_at,
       currency: 'usd',
@@ -286,7 +286,7 @@ export async function POST(request) {
   } catch (error) {
     const errorResponse = handlePOSError(error, {
       operation: 'payment_link_creation',
-      barberbarbershopId: body.barberbarbershopId
+      barbershopId: body.barbershopId
     })
     return NextResponse.json(errorResponse, { status: errorResponse.statusCode })
   }

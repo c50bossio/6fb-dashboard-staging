@@ -55,7 +55,7 @@ export default function Cin7IntegrationManager({ onConnectionChange, onClose }) 
   const [syncHistory, setSyncHistory] = useState([])
   
   const router = useRouter()
-  const supabase = createClient()
+  const _supabase = createClient()
 
   // Load existing credentials and status on mount
   useEffect(() => {

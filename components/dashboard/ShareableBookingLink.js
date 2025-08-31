@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function ShareableBookingLink() {
   const { user, loading: authLoading } = useAuth()
-  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   const [barbershopName, setBarbershopName] = useState('')
   const [bookingUrl, setBookingUrl] = useState('')
   const [copied, setCopied] = useState(false)
@@ -36,12 +36,38 @@ export default function ShareableBookingLink() {
 
   const loadBarbershopInfo = async () => {
     try {
-      const supabase = createClient()
+      // Check if we're in dev mode with mock auth
+      const isDevMode = process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true'
+      
+      if (isDevMode && user?.id === 'dev-user-123') {
+        // Use mock data in dev mode
+        const mockBarbershop = {
+          id: 'dev-barbershop-123',
+          name: 'Dev Barbershop',
+          slug: 'dev-barbershop'
+        }
+        
+        setbarbershopId(mockBarbershop.id)
+        setBarbershopName(mockBarbershop.name)
+        
+        const baseUrl = window.location.origin
+        const url = `${baseUrl}/book/public/${mockBarbershop.id}`
+        setBookingUrl(url)
+        setAnalytics({
+          views: 250,
+          bookings: 45,
+          conversion: 18
+        })
+        setLoading(false)
+        return
+      }
+      
+      const _supabase = createClient()
       
       // First get the user's profile to find their barbershop
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await _supabase
         .from('profiles')
-        .select('barberbarbershop_id, barbershop_id')
+        .select('barbershop_id, barbershop_id')
         .eq('id', user.id)
         .single()
 
@@ -51,14 +77,14 @@ export default function ShareableBookingLink() {
         // Development fallback: Use first available barbershop
         if (process.env.NODE_ENV === 'development') {
           
-          const { data: barbershops, error: shopError } = await supabase
+          const { data: barbershops, error: shopError } = await _supabase
             .from('barbershops')
             .select('id, name, slug')
             .limit(1)
           
           if (!shopError && barbershops && barbershops.length > 0) {
             const barbershop = barbershops[0]
-            setBarberbarbershopId(barbershop.id)
+            setbarbershopId(barbershop.id)
             setBarbershopName(barbershop.name)
             
             const baseUrl = window.location.origin
@@ -88,7 +114,7 @@ export default function ShareableBookingLink() {
       }
 
       // Get barbershop details
-      const { data: barbershop, error: shopError } = await supabase
+      const { data: barbershop, error: shopError } = await _supabase
         .from('barbershops')
         .select('id, name, slug')
         .eq('id', barbershopId)
@@ -101,7 +127,7 @@ export default function ShareableBookingLink() {
         return
       }
 
-      setBarberbarbershopId(barbershop.id)
+      setbarbershopId(barbershop.id)
       setBarbershopName(barbershop.name)
       
       // Generate the booking URL

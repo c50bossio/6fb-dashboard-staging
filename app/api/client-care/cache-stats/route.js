@@ -27,7 +27,7 @@ export async function GET(request) {
     // Get user profile to check permissions
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role, barberbarbershop_id, barbershop_id')
+      .select('role, barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
     
@@ -93,7 +93,7 @@ export async function GET(request) {
       performance_assessment: performanceAssessment,
       monitoring: {
         timestamp: new Date().toISOString(),
-        barberbarbershop_id: profile.barbershop_id || profile.shop_id,
+        barbershop_id: profile.barbershop_id || profile.shop_id,
         checked_by: user.email
       },
       recommendations: {

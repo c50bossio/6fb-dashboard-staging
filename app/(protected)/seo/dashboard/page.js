@@ -13,18 +13,18 @@ function GMBIntegrationTab() {
     const fetchUserContext = async () => {
       try {
         
-        const response = await fetch('/api/analytics/live-data?barberbarbershop_id=0b2d7524-49bc-47db-920d-db9c9822c416')
+        const response = await fetch('/api/analytics/live-data?barbershop_id=0b2d7524-49bc-47db-920d-db9c9822c416')
 
         setUserContext({
           userId: '11111111-1111-1111-1111-111111111111', // Development test user
-          barberbarbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416' // Real UUID from database
+          barbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416' // Real UUID from database
         })
         
       } catch (error) {
         console.error('Failed to fetch user context:', error)
         setUserContext({
           userId: '11111111-1111-1111-1111-111111111111',
-          barberbarbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416'
+          barbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416'
         })
         
       }
@@ -32,7 +32,7 @@ function GMBIntegrationTab() {
     
     setUserContext({
       userId: '11111111-1111-1111-1111-111111111111',
-      barberbarbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416'
+      barbershopId: '0b2d7524-49bc-47db-920d-db9c9822c416'
     })
     
     fetchUserContext()
@@ -79,7 +79,7 @@ function GMBIntegrationTab() {
     setLoading(true)
     try {
       
-      const response = await fetch(`/api/gmb/oauth?barberbarbershop_id=${userContext.barberbarbershopId}&user_id=${userContext.userId}`)
+      const response = await fetch(`/api/gmb/oauth?barbershop_id=${userContext.barbershopId}&user_id=${userContext.userId}`)
       const data = await response.json()
 
       if (data.success) {

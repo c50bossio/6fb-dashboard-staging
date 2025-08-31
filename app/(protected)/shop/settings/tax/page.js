@@ -15,14 +15,14 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function TaxSettingsPage() {
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [notification, setNotification] = useState(null)
-  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   
   const [formData, setFormData] = useState({
     // Stripe Tax Integration
@@ -51,7 +51,7 @@ export default function TaxSettingsPage() {
 
   useEffect(() => {
     loadTaxData()
-  }, [user])
+  }, [_user])
 
   // Capture initial state on first render
   useEffect(() => {
@@ -69,7 +69,7 @@ export default function TaxSettingsPage() {
   }, [formData])
 
   const loadTaxData = async () => {
-    if (!user) return
+    if (!_user) return
     
     try {
       setLoading(true)
@@ -77,7 +77,7 @@ export default function TaxSettingsPage() {
       // Get user's barbershop
       const { data: profile } = await supabase
         .from('profiles')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('id', user.id)
         .single()
       
@@ -90,7 +90,7 @@ export default function TaxSettingsPage() {
         return
       }
       
-      setBarberbarbershopId(profile.barbershop_id)
+      setbarbershopId(profile.barbershop_id)
       
       // Load tax settings from business_settings
       const { data: settings, error } = await supabase

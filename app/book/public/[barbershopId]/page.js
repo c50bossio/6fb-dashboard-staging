@@ -110,7 +110,7 @@ function BookingErrorDisplay({ error, onRetry, barbershopName }) {
 function PublicBookingPageContent() {
   const params = useParams()
   const searchParams = useSearchParams()
-  const barberbarbershopId = params.barberbarbershopId
+  const barbershopId = params.barbershopId
   
   // State management
   const [barbershopInfo, setBarbershopInfo] = useState(null)
@@ -131,14 +131,14 @@ function PublicBookingPageContent() {
 
   useEffect(() => {
     loadBarbershopInfo()
-  }, [barberbarbershopId, retryCount])
+  }, [barbershopId, retryCount])
 
   const loadBarbershopInfo = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      const response = await fetch(`/api/public/barbershop/${barberbarbershopId}`)
+      const response = await fetch(`/api/public/barbershop/${barbershopId}`)
       const data = await response.json()
       
       if (data.success) {
@@ -146,7 +146,7 @@ function PublicBookingPageContent() {
         
         // Track successful load
         trackEvent('public_booking_loaded', {
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           barbershop_name: data.barbershop.name,
           has_url_params: Object.keys(urlParams).some(key => urlParams[key]),
           enhanced_requested: urlParams.enhanced,
@@ -163,7 +163,7 @@ function PublicBookingPageContent() {
       
       // Track error
       trackEvent('public_booking_error', {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         error: err.message,
         retry_count: retryCount
       })
@@ -181,7 +181,7 @@ function PublicBookingPageContent() {
     // Analytics tracking for component selection
     trackEvent('booking_component_selected', {
       component: componentName,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       device_type: selectionData.device?.isMobile ? 'mobile' : 
                    selectionData.device?.isTablet ? 'tablet' : 'desktop',
       screen_width: selectionData.device?.screenWidth,
@@ -195,7 +195,7 @@ function PublicBookingPageContent() {
     // Track conversion events
     trackEvent('booking_conversion_event', {
       event_type: eventType,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       ...eventData
     })
   }
@@ -222,7 +222,7 @@ function PublicBookingPageContent() {
       {/* Enhanced Booking Orchestrator */}
       <BookingFlowOrchestrator
         // Core props
-        barberbarbershopId={barberbarbershopId}
+        barbershopId={barbershopId}
         barbershopSlug={barbershopInfo?.slug}
         
         // URL parameter integration
@@ -252,7 +252,7 @@ function PublicBookingPageContent() {
           title: `Book at ${barbershopInfo?.name}`,
           description: barbershopInfo?.description,
           image: barbershopInfo?.image_url,
-          url: `${process.env.NEXT_PUBLIC_APP_URL}/book/public/${barberbarbershopId}`
+          url: `${process.env.NEXT_PUBLIC_APP_URL}/book/public/${barbershopId}`
         }}
         
         // Debug mode
@@ -266,7 +266,7 @@ function PublicBookingPageContent() {
         <div className="fixed bottom-4 left-4 bg-black bg-opacity-90 text-white p-4 rounded-lg text-xs max-w-sm z-50">
           <div className="font-bold mb-2">Public Booking Debug Info</div>
           <div>Barbershop: {barbershopInfo?.name}</div>
-          <div>ID: {barberbarbershopId}</div>
+          <div>ID: {barbershopId}</div>
           <div>Slug: {barbershopInfo?.slug}</div>
           <div>Enhanced: {urlParams.enhanced ? 'Yes' : 'No'}</div>
           <div>Mobile: {urlParams.mobile ? 'Yes' : 'No'}</div>

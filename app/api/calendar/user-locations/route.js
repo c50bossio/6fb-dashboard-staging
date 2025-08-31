@@ -15,7 +15,7 @@ export async function GET() {
     // Get user profile to determine their role and access
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, full_name, role, barbershop_id, barberbarbershop_id, organization_id')
+      .select('id, full_name, role, barbershop_id, barbershop_id, organization_id')
       .eq('id', user.id)
       .single()
     
@@ -53,18 +53,18 @@ export async function GET() {
     if (locations.length === 0) {
       const { data: staffAssignments } = await supabase
         .from('barbershop_staff')
-        .select('barberbarbershop_id, role, is_active')
+        .select('barbershop_id, role, is_active')
         .eq('user_id', user.id)
         .eq('is_active', true)
       
       if (staffAssignments && staffAssignments.length > 0) {
         // Get all barbershops where user is staff
-        const barberbarbershopIds = staffAssignments.map(s => s.barberbarbershop_id)
+        const barbershopIds = staffAssignments.map(s => s.barbershop_id)
         
         const { data: barbershops } = await supabase
           .from('barbershops')
           .select('id, name, address')
-          .in('id', barberbarbershopIds)
+          .in('id', barbershopIds)
         
         if (barbershops) {
           locations = barbershops.map(shop => ({

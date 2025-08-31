@@ -1,14 +1,11 @@
 'use client';
 
-import { 
-  BellIcon, 
-  ChartBarIcon,
-  CogIcon,
-  ClockIcon,
+import {
+  BellIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   InformationCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/24/outline'
 import React, { useState, useEffect } from 'react';
 
 import AlertManagementDashboard from '../../../../components/alerts/AlertManagementDashboard';
@@ -32,7 +29,7 @@ const AlertsDashboardPage = () => {
           // Fallback for development
           const fallbackUser = {
             id: 'user_001',
-            barberbarbershop_id: null,
+            barbershop_id: null,
             name: 'Development User',
             email: 'dev@barbershop.com'
           };
@@ -174,7 +171,7 @@ const AlertsDashboardPage = () => {
         {activeTab === 'alerts' && (
           <div className="space-y-6">
             <AlertManagementDashboard
-              barberbarbershopId={user?.barberbarbershop_id}
+              barbershopId={user?.barbershop_id}
               userId={user?.id}
               className="w-full"
             />
@@ -183,7 +180,7 @@ const AlertsDashboardPage = () => {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Create Test Alert</h3>
               <AlertCreationDemo 
-                barberbarbershopId={user?.barberbarbershop_id}
+                barbershopId={user?.barbershop_id}
                 userId={user?.id}
               />
             </div>
@@ -196,7 +193,7 @@ const AlertsDashboardPage = () => {
         
         {activeTab === 'configuration' && (
           <AlertConfigurationDashboard 
-            barberbarbershopId={user?.barberbarbershop_id}
+            barbershopId={user?.barbershop_id}
             userId={user?.id}
           />
         )}
@@ -254,7 +251,7 @@ const IntegrationStatusIndicator = ({ status }) => {
   );
 };
 
-const AlertCreationDemo = ({ barberbarbershopId, userId }) => {
+const AlertCreationDemo = ({ barbershopId, userId }) => {
   const [selectedType, setSelectedType] = useState('revenue_anomaly');
   const [customTitle, setCustomTitle] = useState('');
   const [customMessage, setCustomMessage] = useState('');
@@ -313,7 +310,7 @@ const AlertCreationDemo = ({ barberbarbershopId, userId }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           title: customTitle || alertConfig.title,
           message: customMessage || alertConfig.message,
           category: selectedType,
@@ -486,7 +483,7 @@ const AlertAnalyticsDashboard = ({ integrationStatus }) => {
   );
 };
 
-const AlertConfigurationDashboard = ({ barberbarbershopId, userId }) => {
+const AlertConfigurationDashboard = ({ barbershopId, userId }) => {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow p-6">

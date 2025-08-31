@@ -1,12 +1,10 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
-  TrendingDownIcon,
   StarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
-  ClockIcon,
   CalendarIcon,
   ArrowUpIcon,
   ArrowDownIcon
@@ -29,11 +27,11 @@ export default function StaffPerformanceView({ staff }) {
   const loadPerformanceMetrics = async () => {
     try {
       setLoading(true)
-      const supabase = createClient()
+      const _supabase = createClient()
       
       if (!staff.length) return
 
-      const barberbarbershopId = staff[0].barberbarbershop_id
+      const barbershopId = staff[0].barbershop_id
       
       // Calculate date range
       const endDate = new Date()
@@ -49,7 +47,7 @@ export default function StaffPerformanceView({ staff }) {
       const { data: appointments } = await supabase
         .from('appointments')
         .select('*')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('appointment_date', startDate.toISOString())
         .lte('appointment_date', endDate.toISOString())
 
@@ -57,7 +55,7 @@ export default function StaffPerformanceView({ staff }) {
       const { data: reviews } = await supabase
         .from('reviews')
         .select('*')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('created_at', startDate.toISOString())
 
       // Calculate metrics for each staff member

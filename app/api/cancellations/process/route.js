@@ -173,7 +173,7 @@ export async function POST(request) {
         const { data: shopPolicy } = await supabase
             .from('cancellation_policies')
             .select('*')
-            .eq('barberbarbershop_id', booking.barberbarbershop_id)
+            .eq('barbershop_id', booking.barbershop_id)
             .single();
         
         if (body.force_refund) {
@@ -271,7 +271,7 @@ export async function POST(request) {
         const { data: waitlistCustomers, error: waitlistError } = await supabase
             .from('waitlist')
             .select('*')
-            .eq('barberbarbershop_id', booking.barberbarbershop_id)
+            .eq('barbershop_id', booking.barbershop_id)
             .eq('service_id', booking.service_id)
             .eq('preferred_date', scheduledAt.toISOString().split('T')[0])
             .eq('status', 'waiting')

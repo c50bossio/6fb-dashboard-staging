@@ -142,7 +142,7 @@ export async function POST(request) {
       // Save to database using service client
       const accountData = {
         user_id: currentUser.id,
-        barberbarbershop_id: barbershop?.id || null,
+        barbershop_id: barbershop?.id || null,
         stripe_account_id: account.id,
         account_type,
         business_type,

@@ -1,17 +1,12 @@
 'use client'
 
 import {
-  ClockIcon,
-  CalendarDaysIcon,
   PauseIcon,
   XMarkIcon,
   PlusIcon,
   InformationCircleIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  ArrowPathIcon,
-  SunIcon,
-  MoonIcon
+  _ExclamationCircleIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 

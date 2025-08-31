@@ -2,7 +2,6 @@
 
 import {
   CheckBadgeIcon,
-  ExclamationTriangleIcon,
   InformationCircleIcon,
   PencilIcon,
   TrashIcon,
@@ -13,7 +12,7 @@ import {
   ArrowRightIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 // Mock imported data for demonstration
 const MOCK_IMPORTED_DATA = {

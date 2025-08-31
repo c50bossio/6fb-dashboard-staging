@@ -5,7 +5,7 @@ import { z } from 'zod'
 
 // Enhanced validation schema
 const publicBookingSchema = z.object({
-  barberbarbershop_id: z.string().min(1, 'Barbershop ID is required'),
+  barbershop_id: z.string().min(1, 'Barbershop ID is required'),
   barber_id: z.string().optional(),
   service_id: z.string().min(1, 'Service ID is required'),
   service_name: z.string().min(1, 'Service name is required'),
@@ -54,12 +54,12 @@ function checkRateLimit(ip) {
 }
 
 // Business hours validation
-async function validateBusinessHours(supabase, barberbarbershopId, scheduledAt) {
+async function validateBusinessHours(supabase, barbershopId, scheduledAt) {
   try {
     const { data: shopData } = await supabase
       .from('barbershops')
       .select('business_hours, timezone')
-      .eq('id', barberbarbershopId)
+      .eq('id', barbershopId)
       .single()
 
     if (!shopData?.business_hours) {
@@ -107,7 +107,7 @@ async function checkTimeSlotAvailability(supabase, bookingData) {
   const { data: conflicts, error } = await supabase
     .from('bookings')
     .select('id, start_time, duration_minutes, customer_name, status')
-    .eq('barbershop_id', bookingData.barberbarbershop_id)
+    .eq('barbershop_id', bookingData.barbershop_id)
     .in('status', ['confirmed', 'checked_in'])
 
   if (error) {
@@ -198,7 +198,7 @@ export async function POST(request) {
     const { data: barbershop, error: shopError } = await supabase
       .from('barbershops')
       .select('id, name, address, phone, booking_settings, business_hours')
-      .eq('id', bookingData.barberbarbershop_id)
+      .eq('id', bookingData.barbershop_id)
       .single()
 
     if (shopError || !barbershop) {
@@ -220,7 +220,7 @@ export async function POST(request) {
     // Validate business hours
     const businessHoursCheck = await validateBusinessHours(
       supabase, 
-      bookingData.barberbarbershop_id, 
+      bookingData.barbershop_id, 
       bookingData.scheduled_at
     )
     
@@ -253,7 +253,7 @@ export async function POST(request) {
     const endTime = new Date(scheduledDate.getTime() + bookingData.duration_minutes * 60000)
 
     const bookingInsert = {
-      barbershop_id: bookingData.barberbarbershop_id,
+      barbershop_id: bookingData.barbershop_id,
       service_id: bookingData.service_id,
       service_name: bookingData.service_name,
       start_time: scheduledDate.toISOString(),
@@ -299,7 +299,7 @@ export async function POST(request) {
     const { data: barbershopDetails } = await supabase
       .from('barbershops')
       .select('name, address, phone, brand_colors')
-      .eq('id', bookingData.barberbarbershop_id)
+      .eq('id', bookingData.barbershop_id)
       .single()
 
     // Merge data in JavaScript

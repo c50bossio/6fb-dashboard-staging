@@ -35,9 +35,9 @@ export async function GET(request) {
     }
     
     const { searchParams } = new URL(request.url);
-    // Support both single barberbarbershop_id and multiple barberbarbershop_ids
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
-    const barberbarbershopIds = searchParams.get('barberbarbershop_ids')?.split(',').filter(Boolean) || (barberbarbershopId ? [barberbarbershopId] : []);
+    // Support both single barbershop_id and multiple barbershop_ids
+    const barbershopId = searchParams.get('barbershop_id');
+    const barbershopIds = searchParams.get('barbershop_ids')?.split(',').filter(Boolean) || (barbershopId ? [barbershopId] : []);
     const barberIds = searchParams.get('barber_ids')?.split(',').filter(Boolean) || [];
     const viewUserId = searchParams.get('view_user_id'); // For viewing as a specific staff member
     const forceRefresh = searchParams.get('force_refresh') === 'true';
@@ -51,7 +51,7 @@ export async function GET(request) {
 
     const cacheType = 'live-analytics';
     const cacheParams = { 
-      barberbarbershopIds: barberbarbershopIds.join(','), 
+      barbershopIds: barbershopIds.join(','), 
       barberIds: barberIds.join(','),
       format, 
       metric, 
@@ -64,11 +64,11 @@ export async function GET(request) {
     try {
       if (!forceRefresh) {
         analyticsData = await cacheQuery(cacheType, cacheParams, async () => {
-          return await getSupabaseAnalyticsData(barberbarbershopIds, barberIds, format, metric);
+          return await getSupabaseAnalyticsData(barbershopIds, barberIds, format, metric);
         });
       } else {
         invalidateCache(cacheType);
-        analyticsData = await getSupabaseAnalyticsData(barberbarbershopIds, barberIds, format, metric);
+        analyticsData = await getSupabaseAnalyticsData(barbershopIds, barberIds, format, metric);
       }
       
     } catch (error) {
@@ -112,7 +112,7 @@ export async function GET(request) {
       success: true,
       data: analyticsData.data || analyticsData,
       meta: {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         force_refresh: forceRefresh,
         data_source: analyticsData.data_source || 'supabase',
         cache_info: analyticsData._cache || { hit: false },
@@ -145,20 +145,20 @@ export async function GET(request) {
 /**
  * ENHANCED: Comprehensive Supabase analytics data with proper aggregations
  */
-async function getSupabaseAnalyticsData(barberbarbershopIds, barberIds, format, metric) {
+async function getSupabaseAnalyticsData(barbershopIds, barberIds, format, metric) {
   try {
     const { createClient } = await import('../../../../lib/supabase/server');
     const supabase = await createClient();
     
-    if (!barberbarbershopIds || barberbarbershopIds.length === 0) {
+    if (!barbershopIds || barbershopIds.length === 0) {
       return NextResponse.json({
         success: false,
-        error: 'barberbarbershop_ids are required'
+        error: 'barbershop_ids are required'
       }, { status: 400 })
     }
     
     // Support single or multiple barbershop IDs
-    const barbershopIds = Array.isArray(barberbarbershopIds) ? barberbarbershopIds : [barberbarbershopIds];
+    const barbershopIds = Array.isArray(barbershopIds) ? barbershopIds : [barbershopIds];
     
     // Query all relevant tables for comprehensive analytics (supporting multiple locations)
     const [
@@ -167,12 +167,12 @@ async function getSupabaseAnalyticsData(barberbarbershopIds, barberIds, format, 
       transactionsResult,
       servicesResult
     ] = await Promise.all([
-      supabase.from('customers').select('*').in('barberbarbershop_id', barbershopIds),
+      supabase.from('customers').select('*').in('barbershop_id', barbershopIds),
       barberIds.length > 0 
-        ? supabase.from('appointments').select('*').in('barberbarbershop_id', barbershopIds).in('barber_id', barberIds)
-        : supabase.from('appointments').select('*').in('barberbarbershop_id', barbershopIds),
-      supabase.from('transactions').select('*').in('barberbarbershop_id', barbershopIds),
-      supabase.from('services').select('*').in('barberbarbershop_id', barbershopIds)
+        ? supabase.from('appointments').select('*').in('barbershop_id', barbershopIds).in('barber_id', barberIds)
+        : supabase.from('appointments').select('*').in('barbershop_id', barbershopIds),
+      supabase.from('transactions').select('*').in('barbershop_id', barbershopIds),
+      supabase.from('services').select('*').in('barbershop_id', barbershopIds)
     ]);
 
     const customers = customersResult.data || [];
@@ -383,8 +383,8 @@ async function getSupabaseAnalyticsData(barberbarbershopIds, barberIds, format, 
  * Simplified fallback - always use the main Supabase function
  * NO MOCK DATA - real database only
  */
-async function getConsistentFallbackData(barberbarbershopId, format, metric) {
-  return await getSupabaseAnalyticsData(barberbarbershopId, format, metric);
+async function getConsistentFallbackData(barbershopId, format, metric) {
+  return await getSupabaseAnalyticsData(barbershopId, format, metric);
 }
 
 /**
@@ -393,7 +393,7 @@ async function getConsistentFallbackData(barberbarbershopId, format, metric) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { barberbarbershop_id, refresh_cache } = body;
+    const { barbershop_id, refresh_cache } = body;
 
     try {
       const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://localhost:8001';
@@ -403,7 +403,7 @@ export async function POST(request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barberbarbershop_id,
+          barbershop_id,
           refresh_cache: refresh_cache !== false
         }),
         timeout: 15000, // 15 second timeout for refresh

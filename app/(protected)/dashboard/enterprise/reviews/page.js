@@ -4,14 +4,12 @@ import {
   BuildingOffice2Icon,
   ChartBarIcon,
   MapPinIcon,
-  UsersIcon,
   StarIcon,
   ArrowPathIcon,
-  FunnelIcon,
   ArrowUpIcon,
   ArrowDownIcon
 } from '@heroicons/react/24/outline'
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 
@@ -22,7 +20,7 @@ import ReviewStats from '@/components/reviews/ReviewStats'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function EnterpriseReviewsPage() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [locations, setLocations] = useState([])
   const [selectedLocation, setSelectedLocation] = useState('all')
   const [reviews, setReviews] = useState([])

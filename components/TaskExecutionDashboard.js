@@ -12,18 +12,11 @@
 
 import {
   CheckCircleIcon,
-  XCircleIcon,
   ClockIcon,
   ExclamationTriangleIcon,
   PlayIcon,
-  PauseIcon,
-  EyeIcon,
   ChartBarIcon,
   BoltIcon,
-  UserIcon,
-  CalendarIcon,
-  CogIcon,
-  HeartIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect } from 'react'

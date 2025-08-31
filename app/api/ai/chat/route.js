@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { trackAIUsage } from '@/lib/usage-middleware'
+import { apiLogger, analyticsLogger } from '@/lib/logger'
 
 export const runtime = 'nodejs'
 
@@ -89,7 +90,11 @@ export async function POST(request) {
           model: 'estimated'
         })
       } catch (trackingError) {
-        console.warn('Failed to track AI usage:', trackingError)
+        analyticsLogger.warn('Failed to track AI usage', trackingError, {
+          context: 'ai_chat_usage_tracking',
+          user_id: userId,
+          agent_id: agentId
+        })
         // Continue with response even if tracking fails
       }
     }
@@ -124,7 +129,12 @@ export async function POST(request) {
     })
 
   } catch (error) {
-    console.error('Streaming chat error:', error)
+    apiLogger.error('Streaming chat error', error, {
+      context: 'ai_chat_stream',
+      endpoint: 'POST /api/ai/chat',
+      user_id: userId,
+      agent_id: agentId || 'none'
+    })
     
     const fallbackMessage = "I'm your AI business assistant. I can help you with scheduling, customer management, revenue optimization, and business insights. What would you like to know?"
     

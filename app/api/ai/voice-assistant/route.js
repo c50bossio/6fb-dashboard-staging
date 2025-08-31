@@ -14,7 +14,7 @@ export async function POST(request) {
       command, 
       original_command, 
       session_id, 
-      barberbarbershop_id, 
+      barbershop_id, 
       context,
       transcript,
       confidence 
@@ -34,7 +34,7 @@ export async function POST(request) {
       voiceCommand, 
       original_command || voiceCommand, 
       session_id, 
-      barberbarbershop_id,
+      barbershop_id,
       detectedAgent,
       confidence || 0.9
     )
@@ -64,7 +64,7 @@ export async function POST(request) {
 /**
  * Process voice command and generate appropriate response
  */
-async function processVoiceCommand(command, originalCommand, sessionId, barberbarbershopId, agentType, confidence) {
+async function processVoiceCommand(command, originalCommand, sessionId, barbershopId, agentType, confidence) {
   const commandLower = command.toLowerCase()
   
   const classification = classifyVoiceCommand(commandLower)
@@ -82,27 +82,27 @@ async function processVoiceCommand(command, originalCommand, sessionId, barberba
 
   switch (classification.type) {
     case 'business_status':
-      response = await handleBusinessStatusCommand(commandLower, barberbarbershopId)
+      response = await handleBusinessStatusCommand(commandLower, barbershopId)
       break
       
     case 'revenue_inquiry':
-      response = await handleRevenueCommand(commandLower, barberbarbershopId)
+      response = await handleRevenueCommand(commandLower, barbershopId)
       break
       
     case 'booking_inquiry':
-      response = await handleBookingCommand(commandLower, barberbarbershopId)
+      response = await handleBookingCommand(commandLower, barbershopId)
       break
       
     case 'task_management':
-      response = await handleTaskCommand(commandLower, barberbarbershopId)
+      response = await handleTaskCommand(commandLower, barbershopId)
       break
       
     case 'customer_management':
-      response = await handleCustomerCommand(commandLower, barberbarbershopId)
+      response = await handleCustomerCommand(commandLower, barbershopId)
       break
       
     case 'marketing_action':
-      response = await handleMarketingCommand(commandLower, barberbarbershopId)
+      response = await handleMarketingCommand(commandLower, barbershopId)
       break
       
     case 'navigation':
@@ -110,7 +110,7 @@ async function processVoiceCommand(command, originalCommand, sessionId, barberba
       break
       
     default:
-      response = await handleGeneralCommand(command, sessionId, barberbarbershopId)
+      response = await handleGeneralCommand(command, sessionId, barbershopId)
   }
 
   const voiceProfile = getVoiceProfile(agentType)
@@ -184,9 +184,9 @@ function classifyVoiceCommand(command) {
 /**
  * Handle business status commands
  */
-async function handleBusinessStatusCommand(command, barberbarbershopId) {
+async function handleBusinessStatusCommand(command, barbershopId) {
   try {
-    const healthResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/business-monitor?barberbarbershop_id=${barberbarbershopId}`)
+    const healthResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/business-monitor?barbershop_id=${barbershopId}`)
     const healthData = await healthResponse.json()
     
     if (healthData.success) {
@@ -236,9 +236,9 @@ async function handleBusinessStatusCommand(command, barberbarbershopId) {
 /**
  * Handle revenue inquiry commands
  */
-async function handleRevenueCommand(command, barberbarbershopId) {
+async function handleRevenueCommand(command, barbershopId) {
   try {
-    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barberbarbershop_id=${barberbarbershopId}`)
+    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershopId}`)
     const analyticsData = await analyticsResponse.json()
     
     if (analyticsData.success) {
@@ -299,9 +299,9 @@ async function handleRevenueCommand(command, barberbarbershopId) {
 /**
  * Handle booking inquiry commands
  */
-async function handleBookingCommand(command, barberbarbershopId) {
+async function handleBookingCommand(command, barbershopId) {
   try {
-    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barberbarbershop_id=${barberbarbershopId}`)
+    const analyticsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/analytics/live-data?barbershop_id=${barbershopId}`)
     const analyticsData = await analyticsResponse.json()
     
     if (analyticsData.success) {
@@ -354,9 +354,9 @@ async function handleBookingCommand(command, barberbarbershopId) {
 /**
  * Handle task management commands
  */
-async function handleTaskCommand(command, barberbarbershopId) {
+async function handleTaskCommand(command, barbershopId) {
   try {
-    const tasksResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/task-manager?barberbarbershop_id=${barberbarbershopId}&status=pending`)
+    const tasksResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/task-manager?barbershop_id=${barbershopId}&status=pending`)
     const tasksData = await tasksResponse.json()
     
     if (tasksData.success) {
@@ -408,7 +408,7 @@ async function handleTaskCommand(command, barberbarbershopId) {
 /**
  * Handle customer management commands
  */
-async function handleCustomerCommand(command, barberbarbershopId) {
+async function handleCustomerCommand(command, barbershopId) {
   const message = "Your customer retention rate is 68%. I recommend following up with customers who haven't booked in 60+ days to improve retention."
   
   return {
@@ -431,7 +431,7 @@ async function handleCustomerCommand(command, barberbarbershopId) {
 /**
  * Handle marketing commands
  */
-async function handleMarketingCommand(command, barberbarbershopId) {
+async function handleMarketingCommand(command, barbershopId) {
   const message = "I can help you create a promotional campaign. Consider a Tuesday special discount to boost your slowest day, or promote your premium services on social media."
   
   return {
@@ -492,7 +492,7 @@ async function handleNavigationCommand(command) {
 /**
  * Handle general commands using enhanced chat API
  */
-async function handleGeneralCommand(command, sessionId, barberbarbershopId) {
+async function handleGeneralCommand(command, sessionId, barbershopId) {
   try {
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/analytics-enhanced-chat`, {
       method: 'POST',
@@ -502,10 +502,10 @@ async function handleGeneralCommand(command, sessionId, barberbarbershopId) {
         session_id: sessionId,
         business_context: {
           shop_name: 'Demo Barbershop',
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           context: 'voice_interaction'
         },
-        barberbarbershop_id
+        barbershop_id
       })
     })
 

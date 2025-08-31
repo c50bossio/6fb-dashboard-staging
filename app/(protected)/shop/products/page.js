@@ -1,18 +1,14 @@
 'use client'
 
-import { 
+import {
   PlusIcon,
   MagnifyingGlassIcon,
   PencilIcon,
   TrashIcon,
-  TagIcon,
   CurrencyDollarIcon,
   ArchiveBoxIcon,
   ExclamationTriangleIcon,
-  ChartBarIcon,
-  ArrowTrendingDownIcon,
-  LinkIcon,
-  Cog6ToothIcon
+  LinkIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'

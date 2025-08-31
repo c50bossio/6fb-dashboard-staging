@@ -9,8 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function InventoryPage() {
-  const { user, profile } = useAuth()
-  const [barberbarbershopId, setBarberbarbershopId] = useState<string | null>(null)
+  const { user, profile: _profile } = useAuth()
+  const [barbershopId, setbarbershopId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -31,13 +31,13 @@ export default function InventoryPage() {
       if (response.ok && data.profile) {
         // Use the resolved barbershop ID from the API response
         // This handles both individual barbers and shop employees
-        const contextId = data.profile.resolved_barberbarbershop_id || 
+        const contextId = data.profile.resolved_barbershop_id || 
                          data.profile.barbershop_id || 
                          data.profile.shop_id ||
                          data.profile.id // Fallback to user ID for individual barbers
 
         if (contextId) {
-          setBarberbarbershopId(contextId)
+          setbarbershopId(contextId)
         } else {
           throw new Error('Unable to determine inventory access. Please complete your profile setup.')
         }
@@ -84,7 +84,7 @@ export default function InventoryPage() {
     )
   }
 
-  if (!barberbarbershopId) {
+  if (!barbershopId) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto">
@@ -189,15 +189,15 @@ export default function InventoryPage() {
         </TabsList>
 
         <TabsContent value="inventory" className="space-y-6">
-          <LocalInventoryManager barberbarbershopId={barberbarbershopId} />
+          <LocalInventoryManager barbershopId={barbershopId} />
         </TabsContent>
 
         <TabsContent value="marketplace" className="space-y-6">
-          <MarketplaceBrowser barberbarbershopId={barberbarbershopId} />
+          <MarketplaceBrowser barbershopId={barbershopId} />
         </TabsContent>
 
         <TabsContent value="orders" className="space-y-6">
-          <OrdersHistory barberbarbershopId={barberbarbershopId} />
+          <OrdersHistory barbershopId={barbershopId} />
         </TabsContent>
       </Tabs>
     </div>
@@ -205,17 +205,17 @@ export default function InventoryPage() {
 }
 
 // Marketplace Browser Component
-function MarketplaceBrowser({ barberbarbershopId }: { barberbarbershopId: string }) {
+function MarketplaceBrowser({ barbershopId }: { barbershopId: string }) {
   const [enrolled, setEnrolled] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     checkEnrollment()
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   const checkEnrollment = async () => {
     try {
-      const response = await fetch(`/api/marketplace/enrollment?barberbarbershop_id=${barberbarbershopId}`)
+      const response = await fetch(`/api/marketplace/enrollment?barbershop_id=${barbershopId}`)
       const data = await response.json()
       setEnrolled(data.enrolled || false)
     } catch (error) {
@@ -290,7 +290,7 @@ function MarketplaceBrowser({ barberbarbershopId }: { barberbarbershopId: string
 }
 
 // Orders History Component
-function OrdersHistory({ barberbarbershopId }: { barberbarbershopId: string }) {
+function OrdersHistory({ barbershopId }: { barbershopId: string }) {
   return (
     <div className="space-y-6">
       <Card>

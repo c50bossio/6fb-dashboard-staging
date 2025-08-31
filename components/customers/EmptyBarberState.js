@@ -1,12 +1,10 @@
 'use client'
 
-import { 
+import {
   UserPlusIcon,
   MagnifyingGlassIcon,
   ExclamationCircleIcon,
-  SparklesIcon,
   LightBulbIcon,
-  InformationCircleIcon,
   RocketLaunchIcon
 } from '@heroicons/react/24/outline'
 import React from 'react'

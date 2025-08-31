@@ -79,7 +79,7 @@ class NotificationService {
       await this.logNotification({
         booking_id: booking.id,
         customer_id: customer.id,
-        barberbarbershop_id: barbershop.id,
+        barbershop_id: barbershop.id,
         notification_type: 'appointment_confirmation',
         channels: results.map(r => r.channel),
         results: results,
@@ -151,7 +151,7 @@ class NotificationService {
       await this.logNotification({
         booking_id: booking.id,
         customer_id: customer.id,
-        barberbarbershop_id: barbershop.id,
+        barbershop_id: barbershop.id,
         notification_type: `appointment_reminder_${reminderType}`,
         channels: results.map(r => r.channel),
         results: results,

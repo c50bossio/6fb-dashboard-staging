@@ -1,15 +1,13 @@
 'use client'
 
-import { 
+import {
   XMarkIcon,
   CheckCircleIcon,
   SparklesIcon,
   ArrowRightIcon,
-  ChevronRightIcon,
   BuildingOfficeIcon,
   UserIcon,
   CurrencyDollarIcon,
-  ClockIcon,
   PaintBrushIcon,
   UserGroupIcon,
   ChartBarIcon,

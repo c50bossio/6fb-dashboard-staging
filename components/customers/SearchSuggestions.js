@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   MagnifyingGlassIcon,
   ClockIcon,
   StarIcon,
@@ -9,7 +9,6 @@ import {
   AtSymbolIcon,
   PhoneIcon,
   BuildingOfficeIcon,
-  SparklesIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useCallback, useMemo } from 'react'

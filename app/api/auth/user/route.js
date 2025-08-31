@@ -1,10 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { getUserBarberbarbershopId } from '@/lib/barbershop-helper'
+import { getUserbarbershopId } from '@/lib/barbershop-helper'
 import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
 import { hasPermission } from '@/lib/permissions'
 import { isTier } from '@/lib/subscription-tiers'
+import { authLogger, dbLogger } from '@/lib/logger'
 export const runtime = 'nodejs'
 
 export async function GET(request) {
@@ -42,7 +43,10 @@ export async function GET(request) {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     
     if (sessionError) {
-      console.error('❌ User API: Session error:', sessionError.message)
+      authLogger.error('Session error in user API', sessionError, {
+        context: 'user_session_check',
+        endpoint: 'GET /api/auth/user'
+      })
       return NextResponse.json({ 
         authenticated: false, 
         error: sessionError.message
@@ -64,20 +68,24 @@ export async function GET(request) {
       .single()
     
     if (profileError) {
-      console.error('❌ User API: Profile error:', profileError.message)
+      dbLogger.error('Profile error in user API', profileError, {
+        context: 'user_profile_fetch',
+        user_id: session.user.id,
+        endpoint: 'GET /api/auth/user'
+      })
       return NextResponse.json({ 
         authenticated: true,
         user: {
           id: session.user.id,
           email: session.user.email,
-          barberbarbershop_id: null
+          barbershop_id: null
         },
         error: 'Profile not found'
       })
     }
     
     // Get barbershop ID using helper function
-    const barberbarbershopId = await getUserBarberbarbershopId(session.user, profile)
+    const barbershopId = await getUserbarbershopId(session.user, profile)
     
     // Determine customer management access based on subscription tier and permissions
     const subscriptionTier = profile?.subscription_tier || 'individual'
@@ -86,12 +94,16 @@ export async function GET(request) {
     if (isTier(subscriptionTier, 'INDIVIDUAL')) {
       // Individual barber subscription gets automatic customer access
       hasCustomerAccess = true
-    } else if (barberbarbershopId) {
+    } else if (barbershopId) {
       // Employee barber - check shop owner's permission settings
       try {
-        hasCustomerAccess = await hasPermission(session.user.id, barberbarbershopId, 'can_view_all_clients')
+        hasCustomerAccess = await hasPermission(session.user.id, barbershopId, 'can_view_all_clients')
       } catch (error) {
-        console.warn('Error checking customer permission:', error)
+        authLogger.warn('Error checking customer permission', error, {
+          context: 'user_permission_check',
+          user_id: session.user.id,
+          barbershop_id: barbershopId
+        })
         hasCustomerAccess = false
       }
     }
@@ -117,7 +129,7 @@ export async function GET(request) {
       user: {
         id: session.user.id,
         email: session.user.email,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         has_customer_access: hasCustomerAccess,
         subscription_tier: subscriptionTier,
         profile: {
@@ -144,7 +156,10 @@ export async function GET(request) {
     })
     
   } catch (error) {
-    console.error('💥 User API: Unexpected error:', error)
+    authLogger.error('Unexpected error in user API', error, {
+      context: 'user_api_unexpected',
+      endpoint: 'GET /api/auth/user'
+    })
     return NextResponse.json({ 
       authenticated: false,
       error: 'Internal server error'

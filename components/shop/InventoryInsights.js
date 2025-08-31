@@ -11,7 +11,6 @@ import {
   LightBulbIcon,
   BanknotesIcon,
   TruckIcon,
-  TagIcon,
   CalendarDaysIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'

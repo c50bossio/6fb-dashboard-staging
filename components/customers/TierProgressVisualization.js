@@ -23,7 +23,7 @@ import { Badge } from '../ui/badge'
  */
 export default function TierProgressVisualization({ 
   customerId, 
-  barberbarbershopId, 
+  barbershopId, 
   programId = null,
   showBenefits = true,
   showRoadmap = true,
@@ -86,7 +86,7 @@ export default function TierProgressVisualization({
       const userData = await userResponse.json()
 
       const tiersUrl = new URL('/api/customers/loyalty/tiers', window.location.origin)
-      tiersUrl.searchParams.set('barberbarbershop_id', barberbarbershopId)
+      tiersUrl.searchParams.set('barbershop_id', barbershopId)
       if (loyaltyProgramId) tiersUrl.searchParams.set('program_id', loyaltyProgramId)
 
       const tiersResponse = await fetch(tiersUrl, {
@@ -200,7 +200,7 @@ export default function TierProgressVisualization({
 
   useEffect(() => {
     fetchTierData()
-  }, [customerId, barberbarbershopId, programId])
+  }, [customerId, barbershopId, programId])
 
   if (loading) {
     return (

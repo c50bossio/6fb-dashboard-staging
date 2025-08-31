@@ -1,9 +1,8 @@
 'use client'
 
-import { 
-  DevicePhoneMobileIcon, 
+import {
+  DevicePhoneMobileIcon,
   ComputerDesktopIcon,
-  BoltIcon,
   ExclamationTriangleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
@@ -57,7 +56,7 @@ interface FeatureFlags {
 
 interface BookingFlowOrchestratorProps {
   // Core props - compatible with existing booking components
-  barberbarbershopId: string
+  barbershopId: string
   barbershopSlug?: string
   preselectedBarber?: string | null
   preselectedService?: string | null
@@ -214,7 +213,7 @@ const BookingLoadingSkeleton: React.FC = () => (
  */
 const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
   // Core props
-  barberbarbershopId,
+  barbershopId,
   barbershopSlug,
   preselectedBarber = null,
   preselectedService = null,
@@ -471,7 +470,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
         
         // Prepare component props with intelligent defaults
         const props = {
-          barberbarbershopId,
+          barbershopId,
           barbershopSlug,
           preselectedBarber: urlParams.barberId || preselectedBarber,
           preselectedService: urlParams.serviceId || preselectedService,
@@ -520,7 +519,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
           // Fallback to safe default with minimal props
           setSelectedComponent('PublicBookingFlow')
           setComponentProps({
-            barberbarbershopId,
+            barbershopId,
             barbershopSlug,
             preselectedBarber,
             preselectedService,
@@ -542,7 +541,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
       mounted = false
       clearTimeout(timeoutId)
     }
-  }, [barberbarbershopId, barbershopSlug, retryCount])
+  }, [barbershopId, barbershopSlug, retryCount])
 
   // Error retry handler with exponential backoff
   const handleRetry = () => {
@@ -605,7 +604,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
     
     return (
       <RealtimeAvailabilityChecker
-        barberbarbershopId={barberbarbershopId}
+        barbershopId={barbershopId}
         barberId={componentProps.preselectedBarber}
         serviceId={componentProps.preselectedService}
         selectedDate={new Date()}

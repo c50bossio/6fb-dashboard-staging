@@ -1,6 +1,11 @@
 'use client'
 
-import { CreditCardIcon, CurrencyDollarIcon, ShieldCheckIcon, LockClosedIcon, BanknotesIcon } from '@heroicons/react/24/outline'
+import {
+  CreditCardIcon,
+  CurrencyDollarIcon,
+  LockClosedIcon,
+  BanknotesIcon
+} from '@heroicons/react/24/outline'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import { useState, useEffect } from 'react'
@@ -62,7 +67,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState(null)
   const [showAlternativePayment, setShowAlternativePayment] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
+  const [_retryCount, setRetryCount] = useState(0)
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',

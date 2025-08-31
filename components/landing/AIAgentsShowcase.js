@@ -1,10 +1,9 @@
 'use client'
 
-import { 
+import {
   ChatBubbleBottomCenterTextIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
-  ChartBarIcon,
   RocketLaunchIcon,
   ClockIcon,
   CheckCircleIcon,

@@ -6,7 +6,6 @@ import {
   ClockIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
-  CalendarDaysIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
   XMarkIcon,

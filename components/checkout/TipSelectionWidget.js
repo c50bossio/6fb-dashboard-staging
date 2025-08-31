@@ -12,7 +12,7 @@ import { getTipSettingsForCheckout, calculateTipAmount } from '@/lib/tip-setting
  * 
  * Usage:
  * <TipSelectionWidget
- *   barberbarbershopId={barberbarbershopId}
+ *   barbershopId={barbershopId}
  *   barberId={barberId}
  *   serviceId={serviceId}
  *   serviceAmount={35.00}
@@ -20,7 +20,7 @@ import { getTipSettingsForCheckout, calculateTipAmount } from '@/lib/tip-setting
  * />
  */
 export default function TipSelectionWidget({
-  barberbarbershopId,
+  barbershopId,
   barberId,
   serviceId,
   serviceAmount = 0,
@@ -35,14 +35,14 @@ export default function TipSelectionWidget({
 
   useEffect(() => {
     loadTipSettings()
-  }, [barberbarbershopId, barberId, serviceId, serviceAmount])
+  }, [barbershopId, barberId, serviceId, serviceAmount])
 
   const loadTipSettings = async () => {
     try {
       setLoading(true)
       
       const config = await getTipSettingsForCheckout({
-        barberbarbershopId,
+        barbershopId,
         barberId,
         serviceId,
         serviceAmount

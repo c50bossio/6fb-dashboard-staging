@@ -3,12 +3,10 @@
 import {
   CreditCardIcon,
   ChartBarIcon,
-  CalendarDaysIcon,
   ArrowDownTrayIcon,
   ArrowTrendingDownIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
-  PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline'
 import Script from 'next/script'

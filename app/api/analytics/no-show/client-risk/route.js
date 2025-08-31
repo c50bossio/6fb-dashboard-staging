@@ -15,12 +15,12 @@ import { createServerClient } from '@/lib/supabase-server'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const dateRange = searchParams.get('date_range') || '30_days'
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'Missing barberbarbershop_id parameter' },
+        { error: 'Missing barbershop_id parameter' },
         { status: 400 }
       )
     }
@@ -55,7 +55,7 @@ export async function GET(request) {
           customer_email,
           customer_phone
         `)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('created_at', startDate.toISOString()),
 
       // Customer profile data
@@ -71,7 +71,7 @@ export async function GET(request) {
           total_spent,
           last_appointment
         `)
-        .eq('barberbarbershop_id', barberbarbershopId),
+        .eq('barbershop_id', barbershopId),
 
       // Behavior scores if available
       supabase
@@ -83,7 +83,7 @@ export async function GET(request) {
           no_show_count,
           last_updated
         `)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
     ])
 
     const appointments = appointmentsQuery.data || []

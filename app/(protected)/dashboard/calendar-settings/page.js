@@ -10,13 +10,13 @@ import {
   ArrowTopRightOnSquareIcon,
   Cog6ToothIcon
 } from '@heroicons/react/24/outline'
-import { CalendarDaysIcon as CalendarSolid } from '@heroicons/react/24/solid'
+
 import { useState, useEffect } from 'react'
 
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function CalendarSettings() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [connectedAccounts, setConnectedAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [connecting, setConnecting] = useState('')

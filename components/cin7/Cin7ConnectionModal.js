@@ -10,7 +10,7 @@ export default function Cin7ConnectionModal({ isOpen, onClose, onConnect }) {
   const [apiKey, setApiKey] = useState('')
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState('')
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
 
   const handleConnect = async (e) => {
     e.preventDefault()

@@ -15,7 +15,7 @@ import RealtimeBookingWrapper, { useRealtimeBooking } from '../RealtimeBookingWr
 export function BasicPublicBookingPage({ params }) {
   return (
     <RealtimeBookingWrapper
-      barberbarbershopId={params.barbershopId}
+      barbershopId={params.barbershopId}
       barbershopSlug={params.slug}
       enableRealtime={true}
       enableConflictPrevention={true}
@@ -75,7 +75,7 @@ export function PreselectedServiceBooking({ barbershopId, serviceId, barberId })
   return (
     <div className="max-w-4xl mx-auto p-6">
       <RealtimeBookingWrapper
-        barberbarbershopId={barbershopId}
+        barbershopId={barbershopId}
         preselectedService={serviceId}
         preselectedBarber={barberId}
         flowComponent="enhanced"
@@ -131,7 +131,7 @@ export function MobileOptimizedBooking({ barbershopId }) {
     if (window.gtag) {
       window.gtag('event', 'realtime_error', {
         error_message: error.message,
-        barberbarbershop_id: barbershopId
+        barbershop_id: barbershopId
       })
     }
   }
@@ -156,7 +156,7 @@ export function MobileOptimizedBooking({ barbershopId }) {
       )}
 
       <RealtimeBookingWrapper
-        barberbarbershopId={barbershopId}
+        barbershopId={barbershopId}
         flowComponent={networkStatus.slow ? "public" : "auto"}
         enableRealtime={networkStatus.online}
         enableConflictPrevention={networkStatus.online}
@@ -190,7 +190,7 @@ export function CustomBookingComponent({ barbershopId, className = '' }) {
     validateSlot,
     refreshAvailability
   } = useRealtimeBooking({
-    barberbarbershopId: barbershopId,
+    barbershopId: barbershopId,
     enableRealtime: true,
     enableConflictPrevention: true
   })
@@ -392,7 +392,7 @@ export function ABTestingBookingPage({ barbershopId, experimentId }) {
   return (
     <div className="ab-testing-booking-page">
       <RealtimeBookingWrapper
-        barberbarbershopId={barbershopId}
+        barbershopId={barbershopId}
         flowComponent="orchestrator" // Let orchestrator choose optimal component
         experimentId={experimentId}
         enableRealtime={true}
@@ -465,7 +465,7 @@ export function HighTrafficBookingPage({ barbershopId }) {
   return (
     <div className="high-traffic-booking">
       <RealtimeBookingWrapper
-        barberbarbershopId={barbershopId}
+        barbershopId={barbershopId}
         flowComponent="orchestrator"
         enableRealtime={true}
         enableConflictPrevention={true}
@@ -537,7 +537,7 @@ export function URLParameterBooking() {
 
   return (
     <RealtimeBookingWrapper
-      barberbarbershopId={barbershopId}
+      barbershopId={barbershopId}
       flowComponent="orchestrator" // Will auto-detect URL parameters
       enableRealtime={true}
       enableConflictPrevention={true}

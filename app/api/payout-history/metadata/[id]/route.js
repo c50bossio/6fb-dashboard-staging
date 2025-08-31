@@ -50,9 +50,9 @@ export async function GET(request, { params }) {
     // Verify the payout belongs to this barbershop
     const { data: payout, error: payoutError } = await supabase
       .from('commission_payout_records')
-      .select('id, barberbarbershop_id, barber_id, amount, status')
+      .select('id, barbershop_id, barber_id, amount, status')
       .eq('id', payoutId)
-      .eq('barberbarbershop_id', profile.shop_id)
+      .eq('barbershop_id', profile.shop_id)
       .single()
 
     if (payoutError || !payout) {
@@ -84,7 +84,7 @@ export async function GET(request, { params }) {
         metadata
       `)
       .eq('barber_id', payout.barber_id)
-      .eq('barberbarbershop_id', payout.barberbarbershop_id)
+      .eq('barbershop_id', payout.barbershop_id)
       .eq('status', 'paid_out')
       .order('created_at', { ascending: false })
       .limit(10)
@@ -119,7 +119,7 @@ export async function GET(request, { params }) {
       },
       metadata: {
         processing_time_ms: processingTime,
-        barberbarbershop_id: profile.shop_id,
+        barbershop_id: profile.shop_id,
         generated_at: new Date().toISOString(),
         user_role: profile.role
       }
@@ -185,9 +185,9 @@ export async function PATCH(request, { params }) {
     // Verify the payout belongs to this barbershop
     const { data: payout, error: payoutError } = await supabase
       .from('commission_payout_records')
-      .select('id, barberbarbershop_id')
+      .select('id, barbershop_id')
       .eq('id', payoutId)
-      .eq('barberbarbershop_id', profile.shop_id)
+      .eq('barbershop_id', profile.shop_id)
       .single()
 
     if (payoutError || !payout) {
@@ -231,7 +231,7 @@ export async function PATCH(request, { params }) {
       .from('payout_transaction_metadata')
       .upsert({
         payout_record_id: payoutId,
-        barberbarbershop_id: profile.shop_id,
+        barbershop_id: profile.shop_id,
         ...updateData
       }, {
         onConflict: 'payout_record_id'
@@ -251,7 +251,7 @@ export async function PATCH(request, { params }) {
     await supabase
       .from('payout_audit_trail')
       .insert({
-        barberbarbershop_id: profile.shop_id,
+        barbershop_id: profile.shop_id,
         action_type: 'metadata_updated',
         entity_type: 'metadata',
         entity_id: updatedMetadata.id,

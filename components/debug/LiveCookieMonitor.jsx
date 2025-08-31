@@ -16,7 +16,7 @@ export default function LiveCookieMonitor({ isVisible = false }) {
   const eventIdRef = useRef(0)
   const lastCookieSnapshot = useRef({})
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const addEvent = (type, message, data = {}) => {
     const event = {

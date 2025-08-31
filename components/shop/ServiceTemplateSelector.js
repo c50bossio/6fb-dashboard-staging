@@ -1,12 +1,11 @@
 'use client'
 
-import { 
-  PlusIcon, 
-  CheckIcon, 
+import {
+  PlusIcon,
+  CheckIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-  SparklesIcon,
-  XMarkIcon
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'

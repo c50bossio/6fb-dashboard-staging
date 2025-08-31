@@ -12,9 +12,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { 
-  EyeIcon, 
-  EyeSlashIcon, 
+import {
   QuestionMarkCircleIcon,
   CheckCircleIcon,
   XCircleIcon

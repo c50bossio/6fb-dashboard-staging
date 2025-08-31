@@ -38,7 +38,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import financialService from '@/lib/financial-service'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-const supabase = createClient()
+const _supabase = createClient()
 
 // Register Chart.js components
 ChartJS.register(
@@ -96,13 +96,13 @@ interface BarberCommissionData {
 }
 
 interface UnifiedCommissionDashboardProps {
-  barberbarbershopId: string
+  barbershopId: string
   currentUser?: any
   showBarberFilter?: boolean
 }
 
 const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
-  barberbarbershopId,
+  barbershopId,
   currentUser,
   showBarberFilter = true
 }) => {
@@ -118,14 +118,14 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
 
   useEffect(() => {
     loadCommissionData()
-  }, [barberbarbershopId, dateRange, selectedBarber])
+  }, [barbershopId, dateRange, selectedBarber])
 
   const loadCommissionData = async () => {
     setLoading(true)
     try {
       // Load comprehensive commission summary
       const summaryResult = await financialService.getComprehensiveCommissionSummary(
-        barberbarbershopId, 
+        barbershopId, 
         dateRange
       )
       
@@ -155,7 +155,7 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
 
       const barberPromises = Array.from(allBarberIds).map(async (barberId) => {
         // Get barber's tier status
-        const { data: tierStatus } = await financialService.getBarberTierStatus(barberId, barberbarbershopId)
+        const { data: tierStatus } = await financialService.getBarberTierStatus(barberId, barbershopId)
         
         // Get barber profile info
         const { data: profile } = await supabase

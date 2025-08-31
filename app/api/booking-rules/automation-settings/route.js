@@ -16,7 +16,7 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -150,7 +150,7 @@ export async function POST(request) {
     // Get user's barbershop and check authorization
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -218,7 +218,7 @@ export async function POST(request) {
         user_id: user.id,
         action: 'update_automation_settings',
         details: {
-          barberbarbershop_id: profile.barbershop_id,
+          barbershop_id: profile.barbershop_id,
           settings_updated: Object.keys(automationSettings).filter(key => 
             automationSettings[key]?.enabled
           )

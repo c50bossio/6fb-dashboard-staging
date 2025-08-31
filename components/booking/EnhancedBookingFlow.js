@@ -1,26 +1,21 @@
 'use client'
 
-import { 
+import {
   CalendarDaysIcon,
   ClockIcon,
   CheckCircleIcon,
-  UserIcon,
   CreditCardIcon,
-  SparklesIcon,
-  ArrowRightIcon,
   ShieldCheckIcon,
   StarIcon,
   BoltIcon,
-  PhotoIcon,
   PlusIcon,
-  MinusIcon,
   MapPinIcon,
   PhoneIcon
 } from '@heroicons/react/24/outline'
 import { CheckIcon, HeartIcon } from '@heroicons/react/24/solid'
 import { motion, AnimatePresence } from 'framer-motion'
 import Cookies from 'js-cookie'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 
 // Enhanced service images with better categorization
 const getServiceImage = (category, serviceName) => {
@@ -47,7 +42,7 @@ const getServiceImage = (category, serviceName) => {
 }
 
 export default function EnhancedBookingFlow({ 
-  barberbarbershopId, 
+  barbershopId, 
   barbershopSlug, 
   preselectedBarber = null,
   preselectedService = null 
@@ -104,7 +99,7 @@ export default function EnhancedBookingFlow({
     loadServices()
     loadBarbers()
     loadAddOns()
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   useEffect(() => {
     // Auto-load slots when service and barber are selected
@@ -115,7 +110,7 @@ export default function EnhancedBookingFlow({
 
   const loadBarbershopData = async () => {
     try {
-      const response = await fetch(`/api/public/barbershop?id=${barberbarbershopId}`)
+      const response = await fetch(`/api/public/barbershop?id=${barbershopId}`)
       const data = await response.json()
       if (data.success) {
         setBarbershopInfo(data.barbershop)
@@ -127,7 +122,7 @@ export default function EnhancedBookingFlow({
 
   const loadServices = async () => {
     try {
-      const response = await fetch(`/api/public/services?barberbarbershop_id=${barberbarbershopId}`)
+      const response = await fetch(`/api/public/services?barbershop_id=${barbershopId}`)
       const data = await response.json()
       if (data.success) {
         setServices(data.services.map(service => ({
@@ -174,7 +169,7 @@ export default function EnhancedBookingFlow({
 
   const loadBarbers = async () => {
     try {
-      const response = await fetch(`/api/public/barbers?barberbarbershop_id=${barberbarbershopId}`)
+      const response = await fetch(`/api/public/barbers?barbershop_id=${barbershopId}`)
       const data = await response.json()
       if (data.success) {
         setBarbers(data.barbers)
@@ -329,7 +324,7 @@ export default function EnhancedBookingFlow({
     try {
       const totals = calculateTotals()
       const bookingData = {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         barber_id: selectedBarber?.id || 'any',
         service_id: selectedService.id,
         service_name: selectedService.name,

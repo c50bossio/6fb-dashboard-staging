@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   UserIcon,
   PhoneIcon,
   EnvelopeIcon,
@@ -9,10 +9,8 @@ import {
   StarIcon,
   GiftIcon,
   CurrencyDollarIcon,
-  ClockIcon,
   ChatBubbleLeftRightIcon,
   PencilSquareIcon,
-  BookmarkIcon,
   HeartIcon,
   TrophyIcon,
   ExclamationTriangleIcon,
@@ -281,7 +279,7 @@ const AddNoteModal = ({ isOpen, onClose, onSave, customerId }) => {
 }
 
 export default function CustomerProfileEnhanced({ customerId, onClose }) {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [customer, setCustomer] = useState(null)
   const [healthScore, setHealthScore] = useState(null)
   const [clvData, setCLVData] = useState(null)

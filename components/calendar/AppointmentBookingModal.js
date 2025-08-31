@@ -1,7 +1,15 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, CurrencyDollarIcon, TrashIcon, ExclamationTriangleIcon, CheckIcon } from '@heroicons/react/24/outline'
+import {
+  XMarkIcon,
+  CalendarIcon,
+  ClockIcon,
+  UserIcon,
+  TrashIcon,
+  ExclamationTriangleIcon,
+  CheckIcon
+} from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Fragment } from 'react'
 
@@ -16,10 +24,10 @@ export default function AppointmentBookingModal({
   barbers,
   services,
   onBookingComplete,
-  barberbarbershopId,
+  barbershopId,
   editingAppointment = null
 }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const { activeContext, contextualData } = useGlobalDashboard()
   const isEditing = !!editingAppointment
   
@@ -493,7 +501,7 @@ export default function AppointmentBookingModal({
         body: JSON.stringify({
           phone,
           email,
-          barberbarbershop_id: barberbarbershopId
+          barbershop_id: barbershopId
         })
       })
 
@@ -586,7 +594,7 @@ export default function AppointmentBookingModal({
       
       const appointmentData = {
         ...formData,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         client_id: user?.id || null,
         total_amount: formData.service_price + (formData.tip_amount || 0),
         scheduled_at: startDate.toISOString(),
@@ -777,7 +785,7 @@ export default function AppointmentBookingModal({
   }
 
   const handleQuickBlock = async () => {
-    console.log('handleQuickBlock called with barberbarbershopId:', barberbarbershopId)
+    console.log('handleQuickBlock called with barbershopId:', barbershopId)
     setLoading(true)
     setError('')
     
@@ -791,8 +799,8 @@ export default function AppointmentBookingModal({
         start_time: startDate.toTimeString().slice(0, 5), // Extract time part (HH:MM)
         end_time: endDate.toTimeString().slice(0, 5), // Extract time part (HH:MM)
         reason: blockReason || 'Time blocked',
-        barbershop_id: barberbarbershopId,
-        barberbarbershop_id: barberbarbershopId
+        barbershop_id: barbershopId,
+        barbershop_id: barbershopId
       }
       
       console.log('Sending block data to API:', {
@@ -802,7 +810,7 @@ export default function AppointmentBookingModal({
         barber_id: blockData.barber_id,
         reason: blockData.reason,
         barbershop_id: blockData.barbershop_id,
-        barberbarbershop_id: blockData.barberbarbershop_id
+        barbershop_id: blockData.barbershop_id
       })
 
       const response = await fetch(`/api/calendar/appointments?action=block`, {
@@ -2325,7 +2333,7 @@ export default function AppointmentBookingModal({
       onClose={() => setShowCustomerSearch(false)}
       onSelectCustomer={handleSelectCustomer}
       onCreateNewCustomer={handleCreateNewCustomer}
-      barberbarbershopId={barberbarbershopId}
+      barbershopId={barbershopId}
     />
     </>
   )

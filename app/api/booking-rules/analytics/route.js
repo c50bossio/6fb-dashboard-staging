@@ -20,14 +20,14 @@ export async function GET(request) {
     
     // Get query parameters
     const { searchParams } = new URL(request.url)
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const startDate = searchParams.get('start_date')
     const endDate = searchParams.get('end_date')
     const metric = searchParams.get('metric') // 'summary', 'trends', 'effectiveness', 'violations'
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id is required' },
+        { error: 'barbershop_id is required' },
         { status: 400 }
       )
     }
@@ -36,7 +36,7 @@ export async function GET(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', barberbarbershopId)
+      .eq('id', barbershopId)
       .single()
     
     const isOwner = barbershop?.owner_id === user.id
@@ -45,7 +45,7 @@ export async function GET(request) {
       const { data: staffRole } = await supabase
         .from('barbershop_staff')
         .select('role')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('user_id', user.id)
         .single()
       
@@ -58,7 +58,7 @@ export async function GET(request) {
     }
     
     // Initialize auditor
-    const auditor = new RuleAuditor(barberbarbershopId)
+    const auditor = new RuleAuditor(barbershopId)
     
     // Parse dates
     const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -76,7 +76,7 @@ export async function GET(request) {
         break
         
       case 'violations':
-        analyticsData = await getViolationBreakdown(supabase, barberbarbershopId, start, end)
+        analyticsData = await getViolationBreakdown(supabase, barbershopId, start, end)
         break
         
       case 'realtime':
@@ -91,7 +91,7 @@ export async function GET(request) {
     
     return NextResponse.json({
       success: true,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       period: {
         start: start.toISOString(),
         end: end.toISOString()
@@ -112,11 +112,11 @@ export async function GET(request) {
   }
 }
 
-async function getViolationBreakdown(supabase, barberbarbershopId, startDate, endDate) {
+async function getViolationBreakdown(supabase, barbershopId, startDate, endDate) {
   const { data: evaluations, error } = await supabase
     .from('booking_rule_evaluations')
     .select('result, timestamp')
-    .eq('barberbarbershop_id', barberbarbershopId)
+    .eq('barbershop_id', barbershopId)
     .gte('timestamp', startDate.toISOString())
     .lte('timestamp', endDate.toISOString())
   
@@ -207,11 +207,11 @@ export async function POST(request) {
     }
     
     // Get request body
-    const { barberbarbershop_id, format } = await request.json()
+    const { barbershop_id, format } = await request.json()
     
-    if (!barberbarbershop_id) {
+    if (!barbershop_id) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id is required' },
+        { error: 'barbershop_id is required' },
         { status: 400 }
       )
     }
@@ -220,7 +220,7 @@ export async function POST(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', barberbarbershop_id)
+      .eq('id', barbershop_id)
       .single()
     
     const isOwner = barbershop?.owner_id === user.id
@@ -233,7 +233,7 @@ export async function POST(request) {
     }
     
     // Initialize auditor
-    const auditor = new RuleAuditor(barberbarbershop_id)
+    const auditor = new RuleAuditor(barbershop_id)
     
     // Export analytics
     const exportData = await auditor.exportAnalytics(format || 'json')
@@ -243,10 +243,10 @@ export async function POST(request) {
     
     if (format === 'csv') {
       headers.set('Content-Type', 'text/csv')
-      headers.set('Content-Disposition', `attachment; filename="booking-rules-analytics-${barberbarbershop_id}.csv"`)
+      headers.set('Content-Disposition', `attachment; filename="booking-rules-analytics-${barbershop_id}.csv"`)
     } else {
       headers.set('Content-Type', 'application/json')
-      headers.set('Content-Disposition', `attachment; filename="booking-rules-analytics-${barberbarbershop_id}.json"`)
+      headers.set('Content-Disposition', `attachment; filename="booking-rules-analytics-${barbershop_id}.json"`)
     }
     
     return new NextResponse(exportData, { headers })

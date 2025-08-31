@@ -23,37 +23,65 @@ export default function LoginPage() {
   const [success, setSuccess] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const router = useRouter()
-  const { supabase, signIn, signUp, resetPassword } = useAuth()
+  const { user, loading, supabase, signIn, signUp, resetPassword, sessionRecovered } = useAuth()
   
-  // Check for OAuth errors on page load - let Supabase handle session detection automatically
+  // Check for existing authentication and handle OAuth callbacks
   useEffect(() => {
+    // If user is already authenticated, redirect to dashboard
+    if (user && !loading) {
+      const urlParams = new URLSearchParams(window.location.search)
+      const next = urlParams.get('next') || '/dashboard'
+      router.push(next)
+      return
+    }
+
+    // Handle OAuth callback errors and success
     const handleOAuthCallback = () => {
       const urlParams = new URLSearchParams(window.location.search)
       const error = urlParams.get('error')
+      const errorDescription = urlParams.get('error_description')
       
       if (error) {
-        setError(`OAuth error: ${error}`)
+        const errorMsg = errorDescription ? `${error}: ${errorDescription}` : `Authentication error: ${error}`
+        setError(errorMsg)
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname)
         return
       }
       
-      // If there's a code parameter, Supabase will automatically handle it via detectSessionInUrl
+      // Check for OAuth success indicators
       const code = urlParams.get('code')
-      if (code) {
-        
+      if (code && !user) {
         setSuccess('Processing authentication...')
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname)
       }
     }
     
-    handleOAuthCallback()
-  }, [])
+    // Only handle OAuth callback if session hasn't been recovered yet
+    if (sessionRecovered) {
+      handleOAuthCallback()
+    }
+  }, [user, loading, sessionRecovered, router])
   
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     setError('')
+    setSuccess('')
     
     try {
+      // Get the intended redirect destination
+      const urlParams = new URLSearchParams(window.location.search)
+      const next = urlParams.get('next') || '/dashboard'
+      
       // Use the OAuth API route for proper server-side handling
-      window.location.href = '/api/auth/google?next=/dashboard'
+      const oauthUrl = `/api/auth/google?next=${encodeURIComponent(next)}`
+      setSuccess('Redirecting to Google...')
+      
+      // Small delay to show the loading state
+      setTimeout(() => {
+        window.location.href = oauthUrl
+      }, 500)
     } catch (err) {
       console.error('OAuth initiation error:', err)
       setError('Failed to connect with Google. Please try again.')
@@ -112,7 +140,7 @@ export default function LoginPage() {
             setSuccess('Account created! Please check your email to confirm your account before signing in.')
           } else {
             // Auto sign-in if email confirmation not required - auth provider will handle redirect
-            setSuccess('Account created successfully! Signing you in...')
+            setSuccess('Account created successfully! Redirecting to dashboard...')
           }
         }
       } else {
@@ -120,7 +148,7 @@ export default function LoginPage() {
         const data = await signIn({ email, password })
         
         if (data?.user) {
-          setSuccess('Sign in successful! Redirecting...')
+          setSuccess('Sign in successful! Redirecting to dashboard...')
           // Auth provider will handle the redirect to dashboard
         }
       }
@@ -152,6 +180,25 @@ export default function LoginPage() {
     }
   }
   
+  // Show loading spinner if auth is still loading
+  if (loading && !sessionRecovered) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sand-200 via-white to-sand-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md text-center">
+          <div className="flex justify-center mb-4">
+            <LogoHeader size="large" />
+          </div>
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-sand-300">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-brand-600 border-t-transparent"></div>
+              <span className="text-olive-600">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-sand-200 via-white to-sand-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">

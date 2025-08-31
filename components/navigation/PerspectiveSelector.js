@@ -1,10 +1,9 @@
 'use client'
 
 import { Menu, Transition } from '@headlessui/react'
-import { 
+import {
   ChevronDownIcon,
   UserCircleIcon,
-  PlusIcon,
   CheckIcon,
   UserPlusIcon,
   ArrowPathIcon
@@ -15,7 +14,7 @@ import { useAuth } from '../SupabaseAuthProvider'
 import AddBarberModal from './AddBarberModal'
 
 export default function PerspectiveSelector({ selectedLocation, selectedPerspective, onPerspectiveSelect }) {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [staff, setStaff] = useState([])
   const [loading, setLoading] = useState(false)
   const [showAddBarberModal, setShowAddBarberModal] = useState(false)

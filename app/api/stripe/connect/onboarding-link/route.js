@@ -19,13 +19,13 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { accountId, barberId, barberbarbershopId } = body;
+    const { accountId, barberId, barbershopId } = body;
 
     // Verify the requesting user has permission
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', barberbarbershopId)
+      .eq('id', barbershopId)
       .single();
 
     // Allow shop owner or the barber themselves to get onboarding link
@@ -81,7 +81,7 @@ export async function GET(request) {
     // Get the financial arrangement to verify permissions
     const { data: arrangement } = await supabase
       .from('financial_arrangements')
-      .select('barberbarbershop_id, barber_id')
+      .select('barbershop_id, barber_id')
       .eq('barber_stripe_account_id', accountId)
       .single();
 
@@ -93,7 +93,7 @@ export async function GET(request) {
     const { data: barbershop } = await supabase
       .from('barbershops')
       .select('owner_id')
-      .eq('id', arrangement.barberbarbershop_id)
+      .eq('id', arrangement.barbershop_id)
       .single();
 
     const isOwner = barbershop?.owner_id === user.id;

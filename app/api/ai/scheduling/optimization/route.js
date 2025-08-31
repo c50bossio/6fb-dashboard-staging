@@ -12,19 +12,19 @@ export const dynamic = 'force-dynamic'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const dateRange = searchParams.get('date_range') || '7'; // days ahead
     const optimizationType = searchParams.get('type') || 'balanced'; // revenue, efficiency, satisfaction, balanced
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id is required' },
+        { error: 'barbershop_id is required' },
         { status: 400 }
       );
     }
     
     // Fetch real staff data using unified service
-    const staffData = await unifiedStaffService.getStaff(barberbarbershopId, {
+    const staffData = await unifiedStaffService.getStaff(barbershopId, {
       useCache: true,
       includeAvailability: true
     });
@@ -35,7 +35,7 @@ export async function GET(request) {
     // Generate optimization based on real staff data
     const Optimization = {
       success: true,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       optimization_type: optimizationType,
       generated_at: new Date().toISOString(),
       current_metrics: {
@@ -135,18 +135,18 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { barberbarbershop_id, optimization_ids, auto_apply } = body;
+    const { barbershop_id, optimization_ids, auto_apply } = body;
     
-    if (!barberbarbershop_id || !optimization_ids) {
+    if (!barbershop_id || !optimization_ids) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id and optimization_ids are required' },
+        { error: 'barbershop_id and optimization_ids are required' },
         { status: 400 }
       );
     }
     
     const Application = {
       success: true,
-      barberbarbershop_id: barberbarbershop_id,
+      barbershop_id: barbershop_id,
       applied_optimizations: optimization_ids.map(id => ({
         optimization_id: id,
         applied: true,
@@ -183,18 +183,18 @@ export async function POST(request) {
 export async function PUT(request) {
   try {
     const body = await request.json();
-    const { barberbarbershop_id, optimization_preferences } = body;
+    const { barbershop_id, optimization_preferences } = body;
     
-    if (!barberbarbershop_id) {
+    if (!barbershop_id) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id is required' },
+        { error: 'barbershop_id is required' },
         { status: 400 }
       );
     }
     
     const PreferencesUpdate = {
       success: true,
-      barberbarbershop_id: barberbarbershop_id,
+      barbershop_id: barbershop_id,
       updated_preferences: {
         primary_goal: optimization_preferences.primary_goal || 'balanced',
         auto_optimization_enabled: optimization_preferences.auto_optimization_enabled ?? true,

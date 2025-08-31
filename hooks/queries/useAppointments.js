@@ -55,7 +55,7 @@ export function useRealtimeAppointments(barbershopId, options = {}) {
     /* Will re-enable when auth context is available:
     const unsubscribe = createServiceRoleClient().subscribeToChanges(
       'appointments',
-      { barberbarbershop_id: barbershopId },
+      { barbershop_id: barbershopId },
       (payload) => {
         const queryKey = queryKeys.appointments.byShop(barbershopId)
         
@@ -130,13 +130,13 @@ export function useCreateAppointment() {
     
     // Optimistic update
     onMutate: async (newAppointment) => {
-      const barberbarbershop_id = newAppointment.barberbarbershop_id
+      const barbershop_id = newAppointment.barbershop_id
       await queryClient.cancelQueries({ 
-        queryKey: queryKeys.appointments.byShop(barberbarbershop_id) 
+        queryKey: queryKeys.appointments.byShop(barbershop_id) 
       })
       
       const previousAppointments = queryClient.getQueryData(
-        queryKeys.appointments.byShop(barberbarbershop_id)
+        queryKeys.appointments.byShop(barbershop_id)
       )
       
       // Add temporary appointment to cache
@@ -148,17 +148,17 @@ export function useCreateAppointment() {
       }
       
       queryClient.setQueryData(
-        queryKeys.appointments.byShop(barberbarbershop_id),
+        queryKeys.appointments.byShop(barbershop_id),
         (old) => [...(old || []), tempAppointment]
       )
       
-      return { previousAppointments, barberbarbershop_id }
+      return { previousAppointments, barbershop_id }
     },
     
     onError: (err, newAppointment, context) => {
       // Rollback on error
       queryClient.setQueryData(
-        queryKeys.appointments.byShop(context.barberbarbershop_id),
+        queryKeys.appointments.byShop(context.barbershop_id),
         context.previousAppointments
       )
       console.error('Failed to create appointment:', err)
@@ -171,7 +171,7 @@ export function useCreateAppointment() {
     onSettled: (data, error, variables) => {
       // Refetch to ensure consistency
       queryClient.invalidateQueries({ 
-        queryKey: queryKeys.appointments.byShop(variables.barberbarbershop_id) 
+        queryKey: queryKeys.appointments.byShop(variables.barbershop_id) 
       })
     }
   })
@@ -187,18 +187,18 @@ export function useUpdateAppointment() {
     mutationFn: ({ appointmentId, updates }) => 
       createServiceRoleClient().updateAppointment(appointmentId, updates),
     
-    onMutate: async ({ appointmentId, updates, barberbarbershop_id }) => {
+    onMutate: async ({ appointmentId, updates, barbershop_id }) => {
       await queryClient.cancelQueries({ 
-        queryKey: queryKeys.appointments.byShop(barberbarbershop_id) 
+        queryKey: queryKeys.appointments.byShop(barbershop_id) 
       })
       
       const previousAppointments = queryClient.getQueryData(
-        queryKeys.appointments.byShop(barberbarbershop_id)
+        queryKeys.appointments.byShop(barbershop_id)
       )
       
       // Optimistically update the appointment
       queryClient.setQueryData(
-        queryKeys.appointments.byShop(barberbarbershop_id),
+        queryKeys.appointments.byShop(barbershop_id),
         (old) => old?.map(apt => 
           apt.id === appointmentId 
             ? { ...apt, ...updates, updated_at: new Date().toISOString() }
@@ -206,12 +206,12 @@ export function useUpdateAppointment() {
         )
       )
       
-      return { previousAppointments, barberbarbershop_id }
+      return { previousAppointments, barbershop_id }
     },
     
     onError: (err, variables, context) => {
       queryClient.setQueryData(
-        queryKeys.appointments.byShop(context.barberbarbershop_id),
+        queryKeys.appointments.byShop(context.barbershop_id),
         context.previousAppointments
       )
       console.error('Failed to update appointment:', err)
@@ -219,7 +219,7 @@ export function useUpdateAppointment() {
     
     onSettled: (data, error, variables) => {
       queryClient.invalidateQueries({ 
-        queryKey: queryKeys.appointments.byShop(variables.barberbarbershop_id) 
+        queryKey: queryKeys.appointments.byShop(variables.barbershop_id) 
       })
     }
   })
@@ -232,10 +232,10 @@ export function useCancelAppointment() {
   const updateAppointment = useUpdateAppointment()
   
   return useMutation({
-    mutationFn: ({ appointmentId, barberbarbershop_id }) => 
+    mutationFn: ({ appointmentId, barbershop_id }) => 
       updateAppointment.mutate({
         appointmentId,
-        barberbarbershop_id,
+        barbershop_id,
         updates: { 
           status: 'cancelled',
           cancelled_at: new Date().toISOString(),

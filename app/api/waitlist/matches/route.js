@@ -11,7 +11,7 @@ export const runtime = 'nodejs'
  *     tags: [Waitlist]
  *     parameters:
  *       - in: query
- *         name: barberbarbershop_id
+ *         name: barbershop_id
  *         required: true
  *         schema:
  *           type: string
@@ -67,19 +67,19 @@ export const runtime = 'nodejs'
  *                 total_matches:
  *                   type: integer
  *       400:
- *         description: Missing barberbarbershop_id parameter
+ *         description: Missing barbershop_id parameter
  *       500:
  *         description: Internal server error
  */
 export async function GET(request, { params }) {
     try {
         const { searchParams } = request.nextUrl;
-        const barberbarbershop_id = searchParams.get('barberbarbershop_id');
+        const barbershop_id = searchParams.get('barbershop_id');
         const days_ahead = parseInt(searchParams.get('days_ahead') || '7');
         
-        if (!barberbarbershop_id) {
+        if (!barbershop_id) {
             return NextResponse.json(
-                { success: false, error: 'barberbarbershop_id parameter is required' },
+                { success: false, error: 'barbershop_id parameter is required' },
                 { status: 400 }
             );
         }
@@ -95,7 +95,7 @@ export async function GET(request, { params }) {
                 *,
                 customer:profiles!waitlist_customer_id_fkey(id, full_name, email, phone)
             `)
-            .eq('barberbarbershop_id', barberbarbershop_id)
+            .eq('barbershop_id', barbershop_id)
             .eq('status', 'active')
             .order('created_at', { ascending: true });
         
@@ -136,7 +136,7 @@ export async function GET(request, { params }) {
             matches: matches,
             total_matches: matches.length,
             total_entries: waitlistEntries?.length || 0,
-            barberbarbershop_id: barberbarbershop_id
+            barbershop_id: barbershop_id
         }, { status: 200 });
         
     } catch (error) {

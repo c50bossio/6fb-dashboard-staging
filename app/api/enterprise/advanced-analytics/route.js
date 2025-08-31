@@ -767,13 +767,13 @@ async function generateCustomerAnalytics(organizationId, locationIds, timeHorizo
     const { data: customers } = await supabase
       .from('customers')
       .select('*')
-      .in('barberbarbershop_id', locationIds)
+      .in('barbershop_id', locationIds)
       .gte('created_at', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
 
     const { data: appointments } = await supabase
       .from('appointments')
       .select('*')
-      .in('barberbarbershop_id', locationIds)
+      .in('barbershop_id', locationIds)
       .gte('date', new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
 
     return {

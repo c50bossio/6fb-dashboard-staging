@@ -6,7 +6,7 @@ import {
   ScissorsIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+
 import Link from 'next/link'
 import { useState } from 'react'
 

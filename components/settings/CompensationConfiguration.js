@@ -1,10 +1,8 @@
 'use client'
 
-import { 
-  CurrencyDollarIcon,
+import {
   UserGroupIcon,
   CalculatorIcon,
-  ChartBarIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
@@ -22,12 +20,12 @@ import Button from '../ui/Button'
 import { Card } from '../ui/card'
 
 export default function CompensationConfiguration() {
-  const { user, profile } = useAuth()
-  const supabase = createClient()
+  const { user, profile: _profile } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   const [paymentConfig, setPaymentConfig] = useState(null)
   const [staff, setStaff] = useState([])
   const [selectedStaff, setSelectedStaff] = useState(null)
@@ -58,18 +56,18 @@ export default function CompensationConfiguration() {
       setLoading(true)
       
       // Use getTenant() to get barbershop ID
-      const { barberbarbershopId: barbershopId } = await getTenant(profile.id, { supabase })
+      const { barbershopId: barbershopId } = await getTenant(profile.id, { supabase })
       if (!barbershopId) {
         toast.error('No barbershop found')
         return
       }
-      setBarberbarbershopId(barbershopId)
+      setbarbershopId(barbershopId)
 
       // Load payment configuration
       const { data: config } = await supabase
         .from('payment_configurations')
         .select('*')
-        .eq('barberbarbershop_id', barbershopId)
+        .eq('barbershop_id', barbershopId)
         .single()
       
       if (config) {
@@ -81,7 +79,7 @@ export default function CompensationConfiguration() {
       const { data: staffData } = await supabase
         .from('barbershop_staff')
         .select('*')
-        .eq('barberbarbershop_id', barbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('is_active', true)
 
       if (staffData) {
@@ -91,7 +89,7 @@ export default function CompensationConfiguration() {
             const { data: arrangement } = await supabase
               .from('financial_arrangements')
               .select('*')
-              .eq('barberbarbershop_id', barbershopId)
+              .eq('barbershop_id', barbershopId)
               .eq('barber_id', member.user_id)
               .single()
             
@@ -120,7 +118,7 @@ export default function CompensationConfiguration() {
       const { error } = await supabase
         .from('financial_arrangements')
         .upsert({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           barber_id: selectedStaff.user_id,
           ...arrangement,
           updated_at: new Date().toISOString()

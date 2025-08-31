@@ -6,7 +6,7 @@ import {
   InformationCircleIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
-import { Fragment } from 'react'
+
 
 export default function ConfirmationDialog({
   isOpen,

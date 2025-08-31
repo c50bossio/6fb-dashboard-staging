@@ -36,12 +36,12 @@ interface CartItem extends Product {
 }
 
 interface POSInterfaceProps {
-  barberbarbershopId: string
+  barbershopId: string
   barberId?: string
   customerId?: string
 }
 
-export function POSInterface({ barberbarbershopId, barberId, customerId }: POSInterfaceProps) {
+export function POSInterface({ barbershopId, barberId, customerId }: POSInterfaceProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [cart, setCart] = useState<CartItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -62,11 +62,11 @@ export function POSInterface({ barberbarbershopId, barberId, customerId }: POSIn
   useEffect(() => {
     loadProducts()
     checkStripeStatus()
-  }, [barberbarbershopId, selectedCategory])
+  }, [barbershopId, selectedCategory])
 
   const checkStripeStatus = async () => {
     try {
-      const status = await unifiedStripeManager.getUnifiedStatus(barberbarbershopId)
+      const status = await unifiedStripeManager.getUnifiedStatus(barbershopId)
       setStripeStatus(status)
       setTerminalConfigured(status.capabilities?.in_person_payments || false)
     } catch (error) {
@@ -80,7 +80,7 @@ export function POSInterface({ barberbarbershopId, barberId, customerId }: POSIn
     setLoading(true)
     try {
       const params = new URLSearchParams({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         in_stock_only: 'true'
       })
       
@@ -194,7 +194,7 @@ export function POSInterface({ barberbarbershopId, barberId, customerId }: POSIn
     setLoading(true)
     try {
       const sales = cart.map(item => ({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         product_id: item.id,
         quantity: item.quantity,
         unit_price: item.price,
@@ -267,7 +267,7 @@ export function POSInterface({ barberbarbershopId, barberId, customerId }: POSIn
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barberbarbershopId,
+          barbershopId,
           barberId,
           cartItems: cart.map(item => ({
             id: item.id,
@@ -744,7 +744,7 @@ export function POSInterface({ barberbarbershopId, barberId, customerId }: POSIn
         isOpen={qrPaymentModalOpen}
         onClose={() => setQrPaymentModalOpen(false)}
         cartItems={cart}
-        barberbarbershopId={barberbarbershopId}
+        barbershopId={barbershopId}
         barberId={barberId}
         customerId={customerId}
         totalAmount={totals.total}
@@ -756,7 +756,7 @@ export function POSInterface({ barberbarbershopId, barberId, customerId }: POSIn
         isOpen={terminalPaymentModalOpen}
         onClose={() => setTerminalPaymentModalOpen(false)}
         cartItems={cart}
-        barberbarbershopId={barberbarbershopId}
+        barbershopId={barbershopId}
         barberId={barberId}
         customerId={customerId}
         totalAmount={totals.total}
@@ -770,7 +770,7 @@ export function POSInterface({ barberbarbershopId, barberId, customerId }: POSIn
             <DialogTitle>Stripe Terminal Setup</DialogTitle>
           </DialogHeader>
           <StripeTerminalSetup 
-            barberbarbershopId={barberbarbershopId} 
+            barbershopId={barbershopId} 
             onSetupComplete={() => {
               checkStripeStatus()
               setSetupModalOpen(false)

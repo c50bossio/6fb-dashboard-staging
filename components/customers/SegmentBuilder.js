@@ -1,14 +1,11 @@
 'use client'
 
-import { 
+import {
   PlusIcon,
   XMarkIcon,
   FunnelIcon,
   UserGroupIcon,
-  ChevronDownIcon,
-  PlayIcon,
   BookmarkIcon,
-  ArrowPathIcon,
   EyeIcon,
   TrashIcon
 } from '@heroicons/react/24/outline'
@@ -184,7 +181,7 @@ const SegmentTemplate = ({ template, onApply }) => {
 }
 
 export default function SegmentBuilder() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [segmentName, setSegmentName] = useState('')
   const [segmentDescription, setSegmentDescription] = useState('')
   const [segmentType, setSegmentType] = useState('behavioral')
@@ -259,7 +256,7 @@ export default function SegmentBuilder() {
 
     const fetchSegments = async () => {
       try {
-        const response = await fetch(`/api/customer-segments?barberbarbershop_id=${profile.barbershop_id || profile.shop_id}`, {
+        const response = await fetch(`/api/customer-segments?barbershop_id=${profile.barbershop_id || profile.shop_id}`, {
           credentials: 'include'
         })
 
@@ -304,7 +301,7 @@ export default function SegmentBuilder() {
     try {
       setPreviewLoading(true)
       const segmentData = {
-        barberbarbershop_id: profile.barbershop_id || profile.shop_id,
+        barbershop_id: profile.barbershop_id || profile.shop_id,
         conditions: validConditions
       }
 
@@ -341,7 +338,7 @@ export default function SegmentBuilder() {
         name: segmentName,
         description: segmentDescription,
         type: segmentType,
-        barberbarbershop_id: profile.barbershop_id || profile.shop_id,
+        barbershop_id: profile.barbershop_id || profile.shop_id,
         conditions: validConditions,
         created_by: user.id,
         auto_update: true

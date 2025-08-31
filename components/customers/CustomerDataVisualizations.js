@@ -11,11 +11,9 @@ import {
   ChartBarIcon,
   ChartPieIcon,
   ArrowTrendingDownIcon,
-  CalendarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
   StarIcon,
-  ClockIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useRef } from 'react'

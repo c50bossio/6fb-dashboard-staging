@@ -1,11 +1,10 @@
 'use client'
 
-import { 
-  ChartBarIcon, 
+import {
+  ChartBarIcon,
   ExclamationTriangleIcon,
   ArrowTrendingDownIcon,
   UserGroupIcon,
-  BoltIcon,
   HeartIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
@@ -148,7 +147,7 @@ const CLVTrend = React.memo(({ current, predicted, trend }) => {
 })
 
 export default function CustomerIntelligenceDashboard() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   
   // State management with reduced initial loads
   const [healthScores, setHealthScores] = useState([])
@@ -176,15 +175,15 @@ export default function CustomerIntelligenceDashboard() {
   const abortControllerRef = useRef(null)
   
   // Get barbershop ID (using same pattern as original)
-  const getBarberbarbershopId = useCallback(() => {
+  const getbarbershopId = useCallback(() => {
     return profile?.barbershop_id || profile?.shop_id || profile?.barbershopId
   }, [profile])
 
   // Fetch customer count with abort control
   useEffect(() => {
-    const barberbarbershopId = getBarberbarbershopId()
+    const barbershopId = getbarbershopId()
     
-    if (!user || !barberbarbershopId) {
+    if (!user || !barbershopId) {
       setLoading(false)
       return
     }
@@ -195,7 +194,7 @@ export default function CustomerIntelligenceDashboard() {
       try {
         setLoading(true)
         const response = await fetch(
-          `/api/customers?barberbarbershop_id=${barberbarbershopId}&limit=1`,
+          `/api/customers?barbershop_id=${barbershopId}&limit=1`,
           { signal: controller.signal }
         )
         const data = await response.json()
@@ -215,15 +214,15 @@ export default function CustomerIntelligenceDashboard() {
     fetchCustomerCount()
     
     return () => controller.abort()
-  }, [user, getBarberbarbershopId])
+  }, [user, getbarbershopId])
 
   // Lazy load analytics with caching and pagination
   const fetchAnalyticsData = useCallback(async (forceRefresh = false) => {
-    const barberbarbershopId = getBarberbarbershopId()
-    if (!user || !barberbarbershopId || actualCustomerCount < 5) return
+    const barbershopId = getbarbershopId()
+    if (!user || !barbershopId || actualCustomerCount < 5) return
     
     // Check cache first
-    const cacheKey = `${barberbarbershopId}-${selectedTimeframe}`
+    const cacheKey = `${barbershopId}-${selectedTimeframe}`
     if (!forceRefresh && cacheRef.current[cacheKey]) {
       const cachedData = cacheRef.current[cacheKey]
       if (Date.now() - cachedData.timestamp < 5 * 60 * 1000) { // 5 minute cache
@@ -265,10 +264,10 @@ export default function CustomerIntelligenceDashboard() {
       
       // Fetch data with pagination limits and authentication
       const endpoints = [
-        `/api/customers/analytics/health-scores?barberbarbershop_id=${barberbarbershopId}&limit=${pagination.healthScores.limit}&page=${pagination.healthScores.page}`,
-        `/api/customers/analytics/clv?barberbarbershop_id=${barberbarbershopId}&limit=${pagination.clv.limit}&page=${pagination.clv.page}&sort_by=total_clv&sort_desc=true`,
-        `/api/customers/analytics/churn?barberbarbershop_id=${barberbarbershopId}&limit=${pagination.churn.limit}&page=${pagination.churn.page}&min_probability=0.3`,
-        `/api/customers/analytics/segments?barberbarbershop_id=${barberbarbershopId}`
+        `/api/customers/analytics/health-scores?barbershop_id=${barbershopId}&limit=${pagination.healthScores.limit}&page=${pagination.healthScores.page}`,
+        `/api/customers/analytics/clv?barbershop_id=${barbershopId}&limit=${pagination.clv.limit}&page=${pagination.clv.page}&sort_by=total_clv&sort_desc=true`,
+        `/api/customers/analytics/churn?barbershop_id=${barbershopId}&limit=${pagination.churn.limit}&page=${pagination.churn.page}&min_probability=0.3`,
+        `/api/customers/analytics/segments?barbershop_id=${barbershopId}`
       ]
       
       // Fetch in parallel with proper error handling and authentication
@@ -319,7 +318,7 @@ export default function CustomerIntelligenceDashboard() {
     } finally {
       setAnalyticsState(prev => ({ ...prev, loading: false }))
     }
-  }, [user, getBarberbarbershopId, actualCustomerCount, selectedTimeframe, pagination])
+  }, [user, getbarbershopId, actualCustomerCount, selectedTimeframe, pagination])
 
   // Lazy load analytics only when needed
   useEffect(() => {

@@ -75,9 +75,9 @@ export async function POST(request) {
     const cookieStore = cookies()
     const supabase = createClient(cookieStore)
     
-    const { barberbarbershop_id, start_date, end_date, view } = await request.json()
+    const { barbershop_id, start_date, end_date, view } = await request.json()
 
-    if (!barberbarbershop_id) {
+    if (!barbershop_id) {
       return NextResponse.json({ error: 'Barbershop ID is required' }, { status: 400 })
     }
 
@@ -91,12 +91,12 @@ export async function POST(request) {
     // Verify user access to barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, barberbarbershop_id')
+      .select('barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
 
-    const userBarberbarbershopId = profile?.shop_id || profile?.barbershop_id
-    if (userBarberbarbershopId !== barberbarbershop_id) {
+    const userbarbershopId = profile?.shop_id || profile?.barbershop_id
+    if (userbarbershopId !== barbershop_id) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -104,19 +104,19 @@ export async function POST(request) {
 
     switch (view) {
       case 'overview':
-        scoringData = await getOverviewData(supabase, barberbarbershop_id, start_date, end_date)
+        scoringData = await getOverviewData(supabase, barbershop_id, start_date, end_date)
         break
       case 'scoring':
-        scoringData = await getScoringFactorsData(supabase, barberbarbershop_id)
+        scoringData = await getScoringFactorsData(supabase, barbershop_id)
         break
       case 'predictions':
-        scoringData = await getPredictionsData(supabase, barberbarbershop_id)
+        scoringData = await getPredictionsData(supabase, barbershop_id)
         break
       case 'effectiveness':
-        scoringData = await getEffectivenessData(supabase, barberbarbershop_id, start_date, end_date)
+        scoringData = await getEffectivenessData(supabase, barbershop_id, start_date, end_date)
         break
       default:
-        scoringData = await getOverviewData(supabase, barberbarbershop_id, start_date, end_date)
+        scoringData = await getOverviewData(supabase, barbershop_id, start_date, end_date)
     }
 
     return NextResponse.json(scoringData)
@@ -130,7 +130,7 @@ export async function POST(request) {
   }
 }
 
-async function getOverviewData(supabase, barberbarbershopId, startDate, endDate) {
+async function getOverviewData(supabase, barbershopId, startDate, endDate) {
   // Get customer data with booking history
   const { data: customers } = await supabase
     .from('customers')
@@ -155,7 +155,7 @@ async function getOverviewData(supabase, barberbarbershopId, startDate, endDate)
         price
       )
     `)
-    .eq('barberbarbershop_id', barberbarbershopId)
+    .eq('barbershop_id', barbershopId)
     .gte('created_at', startDate)
     .lte('created_at', endDate)
 
@@ -210,13 +210,13 @@ async function getOverviewData(supabase, barberbarbershopId, startDate, endDate)
   }
 }
 
-async function getScoringFactorsData(supabase, barberbarbershopId) {
+async function getScoringFactorsData(supabase, barbershopId) {
   return {
     risk_factors: RISK_FACTORS
   }
 }
 
-async function getPredictionsData(supabase, barberbarbershopId) {
+async function getPredictionsData(supabase, barbershopId) {
   // Get upcoming appointments with customer risk scores
   const { data: upcomingAppointments } = await supabase
     .from('appointments')
@@ -230,7 +230,7 @@ async function getPredictionsData(supabase, barberbarbershopId) {
         email
       )
     `)
-    .eq('barberbarbershop_id', barberbarbershopId)
+    .eq('barbershop_id', barbershopId)
     .gte('start_time', new Date().toISOString())
     .order('start_time', { ascending: true })
     .limit(20)
@@ -247,7 +247,7 @@ async function getPredictionsData(supabase, barberbarbershopId) {
         .from('appointments')
         .select('id, status, start_time')
         .eq('customer_name', appointment.customer_name)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
 
       const customerData = enrichCustomerDataFromHistory(customerHistory || [])
       const riskScore = calculateRiskScore(customerData)
@@ -265,12 +265,12 @@ async function getPredictionsData(supabase, barberbarbershopId) {
   return { predictions }
 }
 
-async function getEffectivenessData(supabase, barberbarbershopId, startDate, endDate) {
+async function getEffectivenessData(supabase, barbershopId, startDate, endDate) {
   // Get historical data to measure effectiveness
   const { data: historicalBookings } = await supabase
     .from('appointments')
     .select('id, status, start_time')
-    .eq('barberbarbershop_id', barberbarbershopId)
+    .eq('barbershop_id', barbershopId)
     .gte('start_time', startDate)
     .lte('start_time', endDate)
 

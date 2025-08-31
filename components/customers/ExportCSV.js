@@ -1,9 +1,7 @@
 'use client'
 
-import { 
+import {
   DocumentArrowDownIcon,
-  Cog6ToothIcon,
-  CheckIcon,
   XMarkIcon,
   InformationCircleIcon,
   DocumentTextIcon,

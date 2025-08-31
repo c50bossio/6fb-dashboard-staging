@@ -27,7 +27,7 @@ export default function VirtualScrollChat({
   overscan = 5, // Number of items to render outside viewport
   onMessage = null,
 }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)

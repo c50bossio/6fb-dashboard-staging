@@ -1,10 +1,15 @@
 'use client'
 
-import { 
-  ChartBarIcon, ArrowTrendingDownIcon, CalendarIcon, 
-   CurrencyDollarIcon, UsersIcon,
-  ExclamationTriangleIcon, InformationCircleIcon,
-  ArrowUpIcon, ArrowDownIcon, ClockIcon, StarIcon
+import {
+  ChartBarIcon,
+  CalendarIcon,
+  CurrencyDollarIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ClockIcon,
+  StarIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useMemo } from 'react'
 import { 
@@ -25,7 +30,7 @@ const COLORS = {
 
 const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#6366F1', '#C5A35B']
 
-export default function ForecastingDashboard({ barberbarbershopId }) {
+export default function ForecastingDashboard({ barbershopId }) {
   const [forecastData, setForecastData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -40,9 +45,9 @@ export default function ForecastingDashboard({ barberbarbershopId }) {
         setError(null)
 
         const [revenueResponse, bookingsResponse, trendsResponse] = await Promise.all([
-          fetch(`/api/forecasting/revenue?barberbarbershop_id=${barberbarbershopId}&time_horizons=1_day,1_week,1_month,3_months,6_months,1_year`),
-          fetch(`/api/forecasting/bookings?barberbarbershop_id=${barberbarbershopId}&forecast_days=30&granularity=daily`),
-          fetch(`/api/forecasting/trends?barberbarbershop_id=${barberbarbershopId}&analysis_type=comprehensive&timeframe=1_year&projections=true`)
+          fetch(`/api/forecasting/revenue?barbershop_id=${barbershopId}&time_horizons=1_day,1_week,1_month,3_months,6_months,1_year`),
+          fetch(`/api/forecasting/bookings?barbershop_id=${barbershopId}&forecast_days=30&granularity=daily`),
+          fetch(`/api/forecasting/trends?barbershop_id=${barbershopId}&analysis_type=comprehensive&timeframe=1_year&projections=true`)
         ])
 
         if (!revenueResponse.ok || !bookingsResponse.ok || !trendsResponse.ok) {
@@ -77,7 +82,7 @@ export default function ForecastingDashboard({ barberbarbershopId }) {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   const chartData = useMemo(() => {
     if (!forecastData) return {}

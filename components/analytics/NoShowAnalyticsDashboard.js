@@ -2,16 +2,11 @@
 
 import {
   ChartBarIcon,
-  UserGroupIcon,
   CurrencyDollarIcon,
   ExclamationTriangleIcon,
   ArrowTrendingDownIcon,
-  CalendarDaysIcon,
-  ClockIcon,
-  FunnelIcon,
   ArrowPathIcon,
   DocumentArrowDownIcon,
-  EyeIcon,
   ChevronDownIcon,
   ChevronUpIcon,
   InformationCircleIcon
@@ -41,7 +36,7 @@ import {
  * Provides deep insights into no-show patterns, policy effectiveness, and revenue impact
  */
 export default function NoShowAnalyticsDashboard({
-  barberbarbershopId,
+  barbershopId,
   dateRange = { start: subDays(new Date(), 30), end: new Date() },
   onExport,
   className = ''
@@ -61,7 +56,7 @@ export default function NoShowAnalyticsDashboard({
 
   useEffect(() => {
     loadAnalyticsData()
-  }, [barberbarbershopId, dateRange.start, dateRange.end, filters])
+  }, [barbershopId, dateRange.start, dateRange.end, filters])
 
   useEffect(() => {
     let interval
@@ -150,7 +145,7 @@ export default function NoShowAnalyticsDashboard({
     } finally {
       setLoading(false)
     }
-  }, [barberbarbershopId, dateRange.start, dateRange.end, filters])
+  }, [barbershopId, dateRange.start, dateRange.end, filters])
 
   const toggleSection = (sectionId) => {
     setCollapsedSections(prev => ({

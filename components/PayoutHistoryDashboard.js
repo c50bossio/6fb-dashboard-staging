@@ -50,7 +50,7 @@ import {
  * - Mobile-responsive design
  */
 export default function PayoutHistoryDashboard({ 
-  barberbarbershopId, 
+  barbershopId, 
   currentUserRole = 'shop_owner',
   initialFilters = {},
   onPayoutSelect = null 
@@ -91,7 +91,7 @@ export default function PayoutHistoryDashboard({
   useEffect(() => {
     async function loadBarbers() {
       try {
-        const response = await fetch(`/api/barbershops/${barberbarbershopId}/staff`)
+        const response = await fetch(`/api/barbershops/${barbershopId}/staff`)
         if (response.ok) {
           const data = await response.json()
           setBarbers(data.staff || [])
@@ -100,10 +100,10 @@ export default function PayoutHistoryDashboard({
         console.error('Error loading barbers:', error)
       }
     }
-    if (barberbarbershopId) {
+    if (barbershopId) {
       loadBarbers()
     }
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   // Load payout history
   const loadPayoutHistory = useCallback(async (resetPagination = false) => {
@@ -157,10 +157,10 @@ export default function PayoutHistoryDashboard({
 
   // Initial load and filter changes
   useEffect(() => {
-    if (barberbarbershopId) {
+    if (barbershopId) {
       loadPayoutHistory(true)
     }
-  }, [barberbarbershopId, filters])
+  }, [barbershopId, filters])
 
   // Refresh functionality
   const handleRefresh = useCallback(async () => {

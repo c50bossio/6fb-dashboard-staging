@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { apiLogger, paymentLogger } from '@/lib/logger'
 
 // Initialize Stripe with error handling
 let stripe = null
@@ -20,6 +21,20 @@ try {
 
 export async function GET() {
   try {
+    // In development mode with dev auth, skip Stripe checks
+    if (process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true') {
+      return NextResponse.json({
+        status: 'healthy',
+        message: 'Development mode - Stripe check skipped',
+        timestamp: new Date().toISOString(),
+        details: {
+          configured: false,
+          dev_mode: true,
+          hasApiKey: !!process.env.STRIPE_SECRET_KEY
+        }
+      })
+    }
+
     // Check if Stripe is properly configured
     if (!stripe) {
       return NextResponse.json({
@@ -98,7 +113,12 @@ export async function GET() {
     }
   } catch (error) {
     // Unexpected errors
-    console.error('Stripe health check error:', error)
+    paymentLogger.error('Stripe health check error', error, {
+      context: 'stripe_health_check',
+      endpoint: 'GET /api/health/stripe',
+      configured: !!stripe,
+      has_api_key: !!process.env.STRIPE_SECRET_KEY
+    })
     return NextResponse.json({
       status: 'error',
       message: 'Health check failed',
@@ -166,7 +186,10 @@ export async function POST(request) {
       timestamp: new Date().toISOString()
     })
   } catch (error) {
-    console.error('Stripe health check POST error:', error)
+    paymentLogger.error('Stripe health check POST error', error, {
+      context: 'stripe_health_check_post',
+      endpoint: 'POST /api/health/stripe'
+    })
     return NextResponse.json({
       error: 'Health check failed',
       details: error.message

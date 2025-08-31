@@ -572,7 +572,7 @@ async function refreshLocationMetrics(organizationId, locationIds) {
       const { data: appointments } = await supabase
         .from('appointments')
         .select('*')
-        .eq('barberbarbershop_id', locationId)
+        .eq('barbershop_id', locationId)
         .gte('date', startDate)
         .lte('date', currentDate)
       
@@ -580,7 +580,7 @@ async function refreshLocationMetrics(organizationId, locationIds) {
       const { data: payments } = await supabase
         .from('payments')
         .select('*')
-        .eq('barberbarbershop_id', locationId)
+        .eq('barbershop_id', locationId)
         .gte('created_at', startDate + 'T00:00:00.000Z')
         .lte('created_at', currentDate + 'T23:59:59.999Z')
 

@@ -50,7 +50,7 @@ export default function AIAgentChatPage() {
           <div className="lg:col-span-2">
             <ChatInterface 
               className="h-[600px]"
-              barberbarbershopId="550e8400-e29b-41d4-a716-446655440000"
+              barbershopId="550e8400-e29b-41d4-a716-446655440000"
             />
           </div>
           

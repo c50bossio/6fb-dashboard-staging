@@ -57,12 +57,12 @@ export async function GET(request) {
       userId = user.id
     }
     
-    // Get user profile with shop_id/barberbarbershop_id
+    // Get user profile with shop_id/barbershop_id
     let profile = null
     if (userId) {
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('role, barbershop_id, barberbarbershop_id')
+        .select('role, barbershop_id, barbershop_id')
         .eq('id', userId)
         .single()
       profile = profileData
@@ -78,7 +78,7 @@ export async function GET(request) {
     // Find the barbershop - check profile first (like Cin7 sync does)
     let shop = null
     
-    // Method 1: Check profile for shop_id or barberbarbershop_id (most reliable)
+    // Method 1: Check profile for shop_id or barbershop_id (most reliable)
     if (profile && (profile.shop_id || profile.barbershop_id)) {
       const barbershopId = profile.shop_id || profile.barbershop_id
       const { data: profileShop } = await supabase
@@ -127,7 +127,7 @@ export async function GET(request) {
     const { data: products, error: productsError } = await supabase
       .from('products')
       .select('*')
-      .eq('barberbarbershop_id', shop.id)
+      .eq('barbershop_id', shop.id)
       .order('name', { ascending: true })
 
     if (productsError) {
@@ -294,7 +294,7 @@ export async function POST(request) {
     
     const productToInsert = {
       ...productData,
-      barberbarbershop_id: shop.id,
+      barbershop_id: shop.id,
       is_active: true
     }
     
@@ -342,7 +342,7 @@ async function generateProductAnalytics(supabase, barbershopId, periodDays, prod
         total_commission,
         barber_id
       `)
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .gte('sale_date', startDateStr)
       .order('sale_date', { ascending: true })
     
@@ -350,7 +350,7 @@ async function generateProductAnalytics(supabase, barbershopId, periodDays, prod
     const { data: appointmentsData } = await supabase
       .from('appointments')
       .select('id, scheduled_at, client_id, barber_id, service_id, total_amount')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .gte('scheduled_at', startDateStr)
       .eq('status', 'COMPLETED')
     

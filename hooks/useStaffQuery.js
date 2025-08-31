@@ -81,7 +81,7 @@ export function useCreateStaffMember() {
       
       // Invalidate staff queries
       queryClient.invalidateQueries({ 
-        queryKey: staffKeys.byShop(newStaff.barberbarbershop_id) 
+        queryKey: staffKeys.byShop(newStaff.barbershop_id) 
       })
     },
     onError: (error) => {
@@ -105,7 +105,7 @@ export function useUpdateStaffMember() {
       
       // Invalidate staff queries
       queryClient.invalidateQueries({ 
-        queryKey: staffKeys.byShop(updatedStaff.barberbarbershop_id) 
+        queryKey: staffKeys.byShop(updatedStaff.barbershop_id) 
       })
       
       // Update specific staff member cache
@@ -134,7 +134,7 @@ export function useDeactivateStaffMember() {
       
       // Invalidate staff queries
       queryClient.invalidateQueries({ 
-        queryKey: staffKeys.byShop(deactivatedStaff.barberbarbershop_id) 
+        queryKey: staffKeys.byShop(deactivatedStaff.barbershop_id) 
       })
     },
     onError: (error) => {
@@ -155,7 +155,7 @@ export function useRealtimeStaff(barbershopId) {
 
     const unsubscribe = createClient().subscribeToChanges(
       'barbershop_staff',
-      { barberbarbershop_id: barbershopId },
+      { barbershop_id: barbershopId },
       (payload) => {
         const { eventType, new: newRecord, old: oldRecord } = payload
         

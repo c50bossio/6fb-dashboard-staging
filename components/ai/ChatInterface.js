@@ -8,7 +8,7 @@ import React, { useState, useEffect, useRef } from 'react';
  * Provides interactive chat with AI agents for business insights
  */
 export default function ChatInterface({ 
-  barberbarbershopId = null,
+  barbershopId = null,
   initialAgent = 'business_coach',
   className = '' 
 }) {
@@ -114,7 +114,7 @@ export default function ChatInterface({
       const { default: aiClient } = await import('@/lib/api/ai-client');
       
       const data = await aiClient.sendMessage(userMessage, selectedAgent, {
-        barberbarbershopId: barberbarbershopId,
+        barbershopId: barbershopId,
         conversationId: conversationId,
         includeAnalytics: true
       });

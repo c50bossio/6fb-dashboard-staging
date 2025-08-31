@@ -4,7 +4,6 @@ import {
   MapPinIcon,
   GlobeAltIcon,
   BuildingStorefrontIcon,
-  PhoneIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ArrowPathIcon,
@@ -15,14 +14,14 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function LocationSettingsPage() {
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [notification, setNotification] = useState(null)
-  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   
   const [formData, setFormData] = useState({
     // Physical Address
@@ -60,7 +59,7 @@ export default function LocationSettingsPage() {
 
   useEffect(() => {
     loadLocationData()
-  }, [user])
+  }, [_user])
 
   // Capture initial state on first render
   useEffect(() => {
@@ -78,7 +77,7 @@ export default function LocationSettingsPage() {
   }, [formData])
 
   const loadLocationData = async () => {
-    if (!user) return
+    if (!_user) return
     
     try {
       setLoading(true)
@@ -86,7 +85,7 @@ export default function LocationSettingsPage() {
       // Get user's barbershop
       const { data: profile } = await supabase
         .from('profiles')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('id', user.id)
         .single()
       
@@ -99,7 +98,7 @@ export default function LocationSettingsPage() {
         return
       }
       
-      setBarberbarbershopId(profile.barbershop_id)
+      setbarbershopId(profile.barbershop_id)
       
       // Load barbershop location data
       const { data: barbershop, error } = await supabase
@@ -201,7 +200,7 @@ export default function LocationSettingsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       setNotification({
         type: 'error',
         message: 'No barbershop ID found'
@@ -232,7 +231,7 @@ export default function LocationSettingsPage() {
           // landmark_description, location_name, location_type
           updated_at: new Date().toISOString()
         })
-        .eq('id', barberbarbershopId)
+        .eq('id', barbershopId)
       
       if (error) throw error
       

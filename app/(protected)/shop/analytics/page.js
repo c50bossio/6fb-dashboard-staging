@@ -8,12 +8,7 @@ import {
   CalendarDaysIcon,
   ArrowTrendingDownIcon,
   StarIcon,
-  ClockIcon,
-  ScissorsIcon,
-  EyeIcon,
-  DocumentArrowDownIcon,
-  FunnelIcon,
-  BuildingStorefrontIcon
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline'
 import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
@@ -127,7 +122,7 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 
 export default function ShopAnalytics() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const { activeContext, contextualData, contextLoading } = useGlobalDashboard()
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('month') // week, month, quarter, year

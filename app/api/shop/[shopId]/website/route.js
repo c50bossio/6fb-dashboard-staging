@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
     const { data: staffCheck, error: staffError } = await supabase
       .from('barbershop_staff')
       .select('role')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('user_id', user.id)
       .single()
 
@@ -31,7 +31,7 @@ export async function GET(request, { params }) {
     const { data: website, error: websiteError } = await supabase
       .from('barbershop_websites')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     if (websiteError && websiteError.code !== 'PGRST116') { // Not found is ok
@@ -54,7 +54,7 @@ export async function GET(request, { params }) {
     if (!website) {
       return NextResponse.json({
         data: {
-          barberbarbershop_id: barbershopId,
+          barbershop_id: barbershopId,
           name: barbershop.name,
           description: barbershop.description,
           phone: barbershop.phone,
@@ -118,7 +118,7 @@ export async function POST(request, { params }) {
     const { data: staffCheck, error: staffError } = await supabase
       .from('barbershop_staff')
       .select('role')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('user_id', user.id)
       .single()
 
@@ -130,12 +130,12 @@ export async function POST(request, { params }) {
     const { data: existing, error: checkError } = await supabase
       .from('barbershop_websites')
       .select('id')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     // Prepare website data
     const websiteData = {
-      barberbarbershop_id: barbershopId,
+      barbershop_id: barbershopId,
       name: body.name,
       tagline: body.tagline,
       description: body.description,
@@ -200,7 +200,7 @@ export async function POST(request, { params }) {
       const { data, error } = await supabase
         .from('barbershop_websites')
         .update(websiteData)
-        .eq('barberbarbershop_id', barbershopId)
+        .eq('barbershop_id', barbershopId)
         .select()
         .single()
 

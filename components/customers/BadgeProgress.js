@@ -20,7 +20,7 @@ const categoryIcons = {
 
 export default function BadgeProgress({ 
   customerId, 
-  barberbarbershopId,
+  barbershopId,
   showOnlyNextTargets = false,
   showCompletedBadges = false,
   groupByCategory = true,
@@ -47,7 +47,7 @@ export default function BadgeProgress({
         customer_id: customerId,
         include_completed: showCompletedBadges.toString()
       })
-      if (barberbarbershopId) params.append('barberbarbershop_id', barberbarbershopId)
+      if (barbershopId) params.append('barbershop_id', barbershopId)
 
       const response = await fetch(`/api/customers/badges/progress?${params}`)
       const data = await response.json()
@@ -74,7 +74,7 @@ export default function BadgeProgress({
 
   useEffect(() => {
     fetchProgressData()
-  }, [customerId, barberbarbershopId, showCompletedBadges])
+  }, [customerId, barbershopId, showCompletedBadges])
 
   // Filter and sort progress data
   const getFilteredAndSortedData = () => {

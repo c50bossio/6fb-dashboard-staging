@@ -1,8 +1,7 @@
 'use client'
 
-import { 
+import {
   UserGroupIcon,
-  CogIcon,
   CheckIcon,
   XMarkIcon,
   LockClosedIcon,
@@ -12,13 +11,12 @@ import {
   CreditCardIcon,
   CalendarDaysIcon,
   GiftIcon,
-  ShieldCheckIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-export default function CustomerPortalSettings({ barberbarbershopId, subscriptionTier = 'basic' }) {
+export default function CustomerPortalSettings({ barbershopId, subscriptionTier = 'basic' }) {
   const [settings, setSettings] = useState({
     // Basic Features (All Tiers)
     allowPublicBooking: true,
@@ -67,7 +65,7 @@ export default function CustomerPortalSettings({ barberbarbershopId, subscriptio
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState(null)
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   // Feature availability by tier
   const tierFeatures = {
@@ -119,14 +117,14 @@ export default function CustomerPortalSettings({ barberbarbershopId, subscriptio
 
   useEffect(() => {
     loadSettings()
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   const loadSettings = async () => {
     try {
       const { data, error } = await supabase
         .from('barbershops')
         .select('customer_portal_settings, booking_settings')
-        .eq('id', barberbarbershopId)
+        .eq('id', barbershopId)
         .single()
 
       if (data) {
@@ -162,7 +160,7 @@ export default function CustomerPortalSettings({ barberbarbershopId, subscriptio
           },
           updated_at: new Date().toISOString()
         })
-        .eq('id', barberbarbershopId)
+        .eq('id', barbershopId)
 
       if (error) throw error
 

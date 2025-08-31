@@ -1,6 +1,9 @@
 'use client'
 
-import { ClockIcon, CalendarDaysIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import {
+  CalendarDaysIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import Button from '@/components/ui/Button'
@@ -91,7 +94,7 @@ export default function StaffAvailabilityEditor({ staffMember, currentAvailabili
   const handleSave = async () => {
     setLoading(true)
     try {
-      const supabase = createClient()
+      const _supabase = createClient()
       
       // Update staff metadata with availability
       const { error } = await supabase

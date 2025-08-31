@@ -7,30 +7,30 @@ export default function TestEnhancedBookingPage() {
   const [selectedTest, setSelectedTest] = useState('auto')
   
   // Test data - using demo IDs for testing
-  const testBarberbarbershopId = 'demo-barbershop-123'
+  const testbarbershopId = 'demo-barbershop-123'
   const testBarberId = 'demo-barber-456'
   const testServiceId = 'demo-service-789'
   
   const testScenarios = {
     auto: {
       title: 'Auto Selection (Smart Device Detection)',
-      props: { barberbarbershopId: testBarberbarbershopId },
+      props: { barbershopId: testbarbershopId },
       description: 'Automatically selects optimal flow based on your device'
     },
     enhanced: {
       title: 'Enhanced Flow (Force Enhanced)',
-      props: { barberbarbershopId: testBarberbarbershopId, enhanced: true },
+      props: { barbershopId: testbarbershopId, enhanced: true },
       description: 'Forces enhanced booking flow with animations and advanced features'
     },
     mobile: {
       title: 'Mobile Optimized (Force Mobile)',
-      props: { barberbarbershopId: testBarberbarbershopId, mobile: true },
+      props: { barbershopId: testbarbershopId, mobile: true },
       description: 'Forces mobile-optimized flow with touch gestures'
     },
     preselected: {
       title: 'Pre-selected Service & Barber',
       props: { 
-        barberbarbershopId: testBarberbarbershopId, 
+        barbershopId: testbarbershopId, 
         preselectedBarber: testBarberId,
         preselectedService: testServiceId,
         enhanced: true 
@@ -39,12 +39,12 @@ export default function TestEnhancedBookingPage() {
     },
     debug: {
       title: 'Debug Mode (Developer View)',
-      props: { barberbarbershopId: testBarberbarbershopId, debug: true, enhanced: true },
+      props: { barbershopId: testbarbershopId, debug: true, enhanced: true },
       description: 'Shows component selection logic and debug information'
     },
     realtime: {
       title: 'Real-time Availability',
-      props: { barberbarbershopId: testBarberbarbershopId, enableRealtime: true, enhanced: true },
+      props: { barbershopId: testbarbershopId, enableRealtime: true, enhanced: true },
       description: 'Demonstrates real-time slot updates and conflict prevention'
     }
   }
@@ -119,7 +119,7 @@ export default function TestEnhancedBookingPage() {
                   /book/{testBarberId}?enhanced=true
                 </div>
                 <div className="bg-gray-100 p-2 rounded font-mono break-all">
-                  /book/public/{testBarberbarbershopId}?mobile=true
+                  /book/public/{testbarbershopId}?mobile=true
                 </div>
                 <div className="bg-gray-100 p-2 rounded font-mono break-all">
                   /test-enhanced-booking

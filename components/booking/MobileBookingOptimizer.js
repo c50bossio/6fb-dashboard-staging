@@ -1,12 +1,10 @@
 'use client'
 
-import { 
+import {
   CalendarDaysIcon,
   ClockIcon,
-  CheckCircleIcon,
   ArrowLeftIcon,
-  ArrowRightIcon,
-  XMarkIcon
+  ArrowRightIcon
 } from '@heroicons/react/24/outline'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import { motion, AnimatePresence, PanInfo } from 'framer-motion'

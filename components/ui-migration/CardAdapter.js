@@ -34,7 +34,7 @@ const paddingStyles = {
   xl: 'p-10'
 }
 
-const Card = ({
+const _Card = ({
   children,
   variant = 'default',
   padding = 'default',

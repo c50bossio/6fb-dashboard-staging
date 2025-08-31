@@ -21,7 +21,7 @@ export default function WebSocketDebugPanel() {
     
     const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
     
-    const supabase = createClient(supabaseUrl, serviceRoleKey)
+    const _supabase = createClient(supabaseUrl, serviceRoleKey)
     
     
     const channel = supabase

@@ -1,24 +1,18 @@
 'use client'
 
-import { 
+import {
   ScissorsIcon,
   CurrencyDollarIcon,
   ClockIcon,
   PlusIcon,
   PencilIcon,
-  TrashIcon,
-  EyeIcon,
-  TagIcon,
   StarIcon,
   ChartBarIcon,
-  FunnelIcon,
   MagnifyingGlassIcon,
   PhotoIcon,
   Cog6ToothIcon,
   GlobeAltIcon,
   CheckCircleIcon,
-  XCircleIcon,
-  ExclamationTriangleIcon,
   ShieldCheckIcon,
   LockClosedIcon
 } from '@heroicons/react/24/outline'
@@ -29,7 +23,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 export default function ServiceManager({ 
   userRole, 
   userId, 
-  barberbarbershopId, 
+  barbershopId, 
   permissions = null,
   onServiceUpdate = null 
 }) {
@@ -49,14 +43,14 @@ export default function ServiceManager({
     if (isBarber && !permissions) {
       loadBarberPermissions()
     }
-  }, [userId, barberbarbershopId])
+  }, [userId, barbershopId])
 
   const loadBarberPermissions = async () => {
-    if (!isBarber || !userId || !barberbarbershopId) return
+    if (!isBarber || !userId || !barbershopId) return
     
     try {
       const { getBarberPermissions } = await import('@/lib/permissions')
-      const perms = await getBarberPermissions(userId, barberbarbershopId)
+      const perms = await getBarberPermissions(userId, barbershopId)
       setUserPermissions(perms)
     } catch (error) {
       console.error('Error loading barber permissions:', error)
@@ -64,7 +58,7 @@ export default function ServiceManager({
   }
 
   const loadServicesData = async () => {
-    const supabase = createClient()
+    const _supabase = createClient()
     
     try {
       let servicesQuery
@@ -74,13 +68,13 @@ export default function ServiceManager({
           .from('barber_services')
           .select('*')
           .eq('barber_id', userId)
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('is_active', true)
         
         const { data: shopServices } = await supabase
           .from('services')
           .select('*')
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('is_active', true)
         
         const mergedServices = mergeServices(shopServices || [], barberServices || [])
@@ -89,7 +83,7 @@ export default function ServiceManager({
         const { data: shopServices } = await supabase
           .from('services')
           .select('*')
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('is_active', true)
           .order('display_order', { ascending: true })
         

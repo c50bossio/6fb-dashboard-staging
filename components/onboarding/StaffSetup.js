@@ -9,10 +9,8 @@ import {
   TrashIcon,
   PencilIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon,
+  _ExclamationCircleIcon,
   InformationCircleIcon,
-  StarIcon,
-  CalendarIcon,
   PhotoIcon,
   CloudArrowUpIcon
 } from '@heroicons/react/24/outline'

@@ -35,7 +35,7 @@ export async function POST(request) {
     // Get barbershop ID from barber's staff record
     const { data: staffRecord, error: staffError } = await supabase
       .from('barbershop_staff')
-      .select('barberbarbershop_id, user_id')
+      .select('barbershop_id, user_id')
       .eq('user_id', barber_id)
       .eq('is_active', true)
       .single()
@@ -47,7 +47,7 @@ export async function POST(request) {
       )
     }
     
-    const barberbarbershop_id = staffRecord.barberbarbershop_id
+    const barbershop_id = staffRecord.barbershop_id
     
     // Generate receipt number
     const receiptNumber = `POS-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`
@@ -61,7 +61,7 @@ export async function POST(request) {
         .from('products')
         .select('*')
         .eq('id', product_id)
-        .eq('barberbarbershop_id', barberbarbershop_id)
+        .eq('barbershop_id', barbershop_id)
         .single()
       
       if (productError || !product) {
@@ -85,7 +85,7 @@ export async function POST(request) {
       const { data: sale, error: saleError } = await supabase
         .from('product_sales')
         .insert({
-          barberbarbershop_id,
+          barbershop_id,
           product_id,
           quantity,
           unit_price,
@@ -139,7 +139,7 @@ export async function POST(request) {
       .from('commission_transactions')
       .insert({
         barber_id,
-        barberbarbershop_id,
+        barbershop_id,
         transaction_type: 'product_sale',
         payment_amount: totalAmount,
         commission_percentage: commissionRate * 100,
@@ -155,7 +155,7 @@ export async function POST(request) {
       .from('commission_balances')
       .select('*')
       .eq('barber_id', barber_id)
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .single()
     
     if (balance) {
@@ -167,13 +167,13 @@ export async function POST(request) {
           last_transaction_at: new Date().toISOString()
         })
         .eq('barber_id', barber_id)
-        .eq('barberbarbershop_id', barberbarbershop_id)
+        .eq('barbershop_id', barbershop_id)
     } else {
       await supabase
         .from('commission_balances')
         .insert({
           barber_id,
-          barberbarbershop_id,
+          barbershop_id,
           pending_amount: commissionAmount,
           paid_amount: 0,
           total_earned: commissionAmount,

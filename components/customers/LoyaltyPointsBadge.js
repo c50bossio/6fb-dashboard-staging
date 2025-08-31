@@ -21,7 +21,7 @@ import { Badge } from '../ui/badge'
  */
 export default function LoyaltyPointsBadge({ 
   customerId, 
-  barberbarbershopId, 
+  barbershopId, 
   programId = null,
   showProgress = true,
   size = 'default' // 'sm', 'default', 'lg'
@@ -136,7 +136,7 @@ export default function LoyaltyPointsBadge({
 
   useEffect(() => {
     fetchLoyaltyData()
-  }, [customerId, barberbarbershopId, programId])
+  }, [customerId, barbershopId, programId])
 
   if (loading) {
     return (
@@ -226,7 +226,7 @@ export default function LoyaltyPointsBadge({
  * Quick Redeem Button Component
  * Shows available rewards that customer can redeem immediately
  */
-export function QuickRedeemButton({ customerId, barberbarbershopId, programId = null }) {
+export function QuickRedeemButton({ customerId, barbershopId, programId = null }) {
   const [quickRewards, setQuickRewards] = useState([])
   const [showRewards, setShowRewards] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -263,7 +263,7 @@ export function QuickRedeemButton({ customerId, barberbarbershopId, programId = 
 
       // Get available rewards
       const rewardsUrl = new URL('/api/customers/loyalty/rewards', window.location.origin)
-      rewardsUrl.searchParams.set('barberbarbershop_id', barberbarbershopId)
+      rewardsUrl.searchParams.set('barbershop_id', barbershopId)
       if (programId) rewardsUrl.searchParams.set('program_id', programId)
 
       const rewardsResponse = await fetch(rewardsUrl, {

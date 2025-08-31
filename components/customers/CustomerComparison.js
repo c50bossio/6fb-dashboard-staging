@@ -16,15 +16,12 @@ import {
   ClockIcon,
   PhoneIcon,
   EnvelopeIcon,
-  MapPinIcon,
   StarIcon,
-  ArrowTrendingDownIcon,
-  MinusIcon,
   PlusIcon,
   UserGroupIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
-import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
+
 import React, { useState, useEffect } from 'react'
 import { AnimatedContainer, CountUp, AnimatedProgressBar } from '../../utils/animations'
 import { customerDesignTokens } from './CustomerDesignSystem'

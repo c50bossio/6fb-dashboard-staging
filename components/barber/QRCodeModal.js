@@ -1,13 +1,11 @@
 'use client'
 
-import { 
+import {
   XMarkIcon,
   ArrowDownTrayIcon,
   PrinterIcon,
   ShareIcon,
   ClipboardIcon,
-  PaintBrushIcon,
-  AdjustmentsHorizontalIcon,
   PhotoIcon
 } from '@heroicons/react/24/outline'
 import Image from 'next/image'

@@ -12,13 +12,13 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function MarketingDashboard() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [notification, setNotification] = useState(null)
   const [campaigns, setCampaigns] = useState([
     {

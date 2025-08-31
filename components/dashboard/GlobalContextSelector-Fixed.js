@@ -7,14 +7,13 @@ import {
   UserGroupIcon,
   PlusIcon,
   CheckIcon,
-  MapPinIcon,
   CogIcon,
   UsersIcon,
   CurrencyDollarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
-import { Fragment, useState, useEffect } from 'react'
+import { Fragment, useState } from 'react'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import AddLocationModal from '../modals/AddLocationModal'
 import AddStaffModal from '../staff/AddStaffModal'
@@ -114,7 +113,7 @@ export default function GlobalContextSelector() {
   
   // Calculate barber count for locations
   const getBarberCountForLocation = (locationId) => {
-    return availableBarbers.filter(b => b.barberbarbershop_id === locationId).length
+    return availableBarbers.filter(b => b.barbershop_id === locationId).length
   }
   
   // Show simplified dropdown with navigation links if no locations

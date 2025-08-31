@@ -1,6 +1,8 @@
 'use client'
 
-import { CheckCircleIcon, GlobeAltIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import {
+  CheckCircleIcon
+} from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
 export default function DomainSelector({ onDomainSelect, businessName }) {

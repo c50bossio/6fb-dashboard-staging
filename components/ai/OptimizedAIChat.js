@@ -27,7 +27,7 @@ export default function OptimizedAIChat({
   enableVoice = false,
   onMessage = null,
 }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [streamingMessage, setStreamingMessage] = useState('')

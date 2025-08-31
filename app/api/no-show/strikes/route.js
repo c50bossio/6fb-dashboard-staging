@@ -27,7 +27,7 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -48,7 +48,7 @@ export async function GET(request) {
           created_at
         )
       `)
-      .eq('barberbarbershop_id', profile.barbershop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .order('active_strikes', { ascending: false })
     
     // Apply filters
@@ -73,7 +73,7 @@ export async function GET(request) {
     const { data: recentIncidents } = await supabase
       .from('no_show_incidents')
       .select('*')
-      .eq('barberbarbershop_id', profile.barbershop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .in('client_id', clientIds)
       .order('incident_date', { ascending: false })
       .limit(100)
@@ -139,7 +139,7 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -151,7 +151,7 @@ export async function POST(request) {
     const { data: policy } = await supabase
       .from('no_show_policies')
       .select('*')
-      .eq('barberbarbershop_id', profile.barbershop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .eq('is_active', true)
       .single()
     
@@ -169,13 +169,13 @@ export async function POST(request) {
       arrived_minutes_late <= effectivePolicy.default_grace_minutes
 
     // Begin transaction
-    const barberbarbershopId = profile.barbershop_id
+    const barbershopId = profile.barbershop_id
     
     // 1. Create no-show incident
     const { data: incident, error: incidentError } = await supabase
       .from('no_show_incidents')
       .insert({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         client_id,
         appointment_id,
         barber_id: user.id,
@@ -203,7 +203,7 @@ export async function POST(request) {
       const { data: currentHistory } = await supabase
         .from('client_strike_history')
         .select('*')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('client_id', client_id)
         .single()
       
@@ -246,7 +246,7 @@ export async function POST(request) {
           await supabase
             .from('blocked_clients')
             .insert({
-              barberbarbershop_id: barberbarbershopId,
+              barbershop_id: barbershopId,
               client_id,
               block_reason: `Exceeded maximum allowed no-shows (${newActiveStrikes} strikes)`,
               strike_count_at_block: newActiveStrikes,
@@ -262,7 +262,7 @@ export async function POST(request) {
         const { error: createError } = await supabase
           .from('client_strike_history')
           .insert({
-            barberbarbershop_id: barberbarbershopId,
+            barbershop_id: barbershopId,
             client_id,
             total_strikes: 1,
             active_strikes: 1,
@@ -288,7 +288,7 @@ export async function POST(request) {
       await supabase
         .from('no_show_fee_transactions')
         .insert({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           client_id,
           incident_id: incident.id,
           transaction_type: 'charge',
@@ -306,7 +306,7 @@ export async function POST(request) {
         user_id: user.id,
         action: 'record_no_show',
         details: {
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           client_id,
           appointment_id,
           within_grace_period: withinGracePeriod,
@@ -356,7 +356,7 @@ export async function PUT(request) {
     // Get user's barbershop and check authorization
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
     
@@ -370,7 +370,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    const barberbarbershopId = profile.barbershop_id
+    const barbershopId = profile.barbershop_id
     
     switch (action) {
       case 'reset_strikes':
@@ -388,7 +388,7 @@ export async function PUT(request) {
             notes: `Strikes reset by ${user.email}: ${reason}`,
             updated_at: new Date().toISOString()
           })
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('client_id', client_id)
           .select()
         
@@ -415,7 +415,7 @@ export async function PUT(request) {
             unblocked_by: user.id,
             updated_at: new Date().toISOString()
           })
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('client_id', client_id)
         
         if (resetUnblockError) {
@@ -435,7 +435,7 @@ export async function PUT(request) {
         let { data: currentHistory, error: historyError } = await supabase
           .from('client_strike_history')
           .select('active_strikes, total_strikes, notes, is_blocked, blocked_at, blocked_reason, last_strike_date')
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('client_id', client_id)
           .single()
         
@@ -444,7 +444,7 @@ export async function PUT(request) {
           const { data: newHistory, error: createError } = await supabase
             .from('client_strike_history')
             .insert({
-              barberbarbershop_id: barberbarbershopId,
+              barbershop_id: barbershopId,
               client_id: client_id,
               total_strikes: 0,
               active_strikes: 0,
@@ -491,7 +491,7 @@ export async function PUT(request) {
             notes: `${currentHistory.notes || ''}\n[${new Date().toISOString()}] Strikes reduced by ${strike_reduction_amount} (${currentHistory.active_strikes} → ${newActiveStrikes}) by ${user.email}: ${reason}`.trim(),
             updated_at: new Date().toISOString()
           })
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('client_id', client_id)
           .select()
         
@@ -520,7 +520,7 @@ export async function PUT(request) {
               notes: `Unblocked due to strike reduction to zero`,
               updated_at: new Date().toISOString()
             })
-            .eq('barberbarbershop_id', barberbarbershopId)
+            .eq('barbershop_id', barbershopId)
             .eq('client_id', client_id)
           
           if (unblockError) {
@@ -541,7 +541,7 @@ export async function PUT(request) {
             notes: `Unblocked by ${user.email}: ${reason}`,
             updated_at: new Date().toISOString()
           })
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('client_id', client_id)
           .select()
         
@@ -569,7 +569,7 @@ export async function PUT(request) {
             notes: reason,
             updated_at: new Date().toISOString()
           })
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('client_id', client_id)
         
         if (unblockClientsError) {
@@ -590,7 +590,7 @@ export async function PUT(request) {
         user_id: user.id,
         action: `strike_management_${action}`,
         details: {
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           client_id,
           strike_reduction_amount: action === 'reduce_strikes' ? strike_reduction_amount : undefined,
           reason

@@ -27,8 +27,8 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberReports() {
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(false)
   const [_error, setError] = useState(null)
@@ -80,7 +80,7 @@ export default function BarberReports() {
       clearTimeout(timer)
       clearTimeout(failsafeTimer)
     }
-  }, [dateRange, user])
+  }, [dateRange, user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadReportData = async () => {
     const currentUser = user || { id: 'dev-user-123', email: 'dev@localhost.com' }

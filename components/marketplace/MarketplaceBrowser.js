@@ -29,7 +29,7 @@ import { Input } from '../ui/Input';
 import { Label } from '../ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs.jsx';
 
-export function MarketplaceBrowser({ barberbarbershopId }) {
+export function MarketplaceBrowser({ barbershopId }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,13 +47,13 @@ export function MarketplaceBrowser({ barberbarbershopId }) {
 
   useEffect(() => {
     loadCatalog();
-  }, [barberbarbershopId, page, searchTerm, selectedCategory, selectedBrand, sortBy]);
+  }, [barbershopId, page, searchTerm, selectedCategory, selectedBrand, sortBy]);
 
   const loadCatalog = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         page: page.toString(),
         limit: '12',
         sort_by: sortBy
@@ -110,7 +110,7 @@ export function MarketplaceBrowser({ barberbarbershopId }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           master_product_id: product.id,
           initial_quantity: 0,
           retail_price: product.msrp,

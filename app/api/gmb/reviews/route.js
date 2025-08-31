@@ -16,7 +16,7 @@ const supabase = createClient(
 export async function GET(request) {
   const startTime = Date.now()
   const auditData = {
-    barberbarbershop_id: null,
+    barbershop_id: null,
     user_id: null,
     endpoint: '/api/gmb/reviews',
     method: 'GET',
@@ -26,7 +26,7 @@ export async function GET(request) {
 
   try {
     const { searchParams } = new URL(request.url)
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const barberId = searchParams.get('barber_id')
     const sentiment = searchParams.get('sentiment')
     const confidence = searchParams.get('confidence')
@@ -34,25 +34,25 @@ export async function GET(request) {
     const offset = parseInt(searchParams.get('offset') || '0')
     const userId = request.headers.get('x-user-id') // From auth middleware
 
-    auditData.barberbarbershop_id = barberbarbershopId
+    auditData.barbershop_id = barbershopId
     auditData.user_id = userId
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       await logGMBAPIRequest({
         ...auditData,
         response_status: 400,
         response_time_ms: Date.now() - startTime,
-        error_details: 'Missing barberbarbershop_id parameter'
+        error_details: 'Missing barbershop_id parameter'
       })
       
       return NextResponse.json({
         success: false,
-        error: 'barberbarbershop_id is required'
+        error: 'barbershop_id is required'
       }, { status: 400 })
     }
 
     // Check rate limits for GMB API compliance
-    const rateLimitCheck = await checkGMBRateLimit(barberbarbershopId)
+    const rateLimitCheck = await checkGMBRateLimit(barbershopId)
     if (!rateLimitCheck.allowed) {
       await logGMBAPIRequest({
         ...auditData,
@@ -111,11 +111,11 @@ export async function GET(request) {
           )
         ),
         gmb_accounts!inner (
-          barberbarbershop_id,
+          barbershop_id,
           business_name
         )
       `)
-      .eq('gmb_accounts.barberbarbershop_id', barberbarbershopId)
+      .eq('gmb_accounts.barbershop_id', barbershopId)
       .order('review_date', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -138,7 +138,7 @@ export async function GET(request) {
     let countQuery = supabase
       .from('gmb_reviews')
       .select('id', { count: 'exact', head: true })
-      .eq('gmb_accounts.barberbarbershop_id', barberbarbershopId)
+      .eq('gmb_accounts.barbershop_id', barbershopId)
 
     if (barberId) {
       countQuery = countQuery.eq('gmb_review_attributions.barber_id', barberId)

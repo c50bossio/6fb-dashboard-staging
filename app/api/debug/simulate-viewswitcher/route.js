@@ -41,7 +41,7 @@ export async function GET() {
           role,
           is_active
         `)
-        .in('barberbarbershop_id', barbershopIds)
+        .in('barbershop_id', barbershopIds)
         .eq('role', 'BARBER')
         .eq('is_active', true)
         

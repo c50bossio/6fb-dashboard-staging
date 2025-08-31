@@ -9,7 +9,7 @@
 import {
   CheckCircleIcon,
   ClockIcon,
-  ExclamationCircleIcon,
+  _ExclamationCircleIcon,
   ArrowPathIcon,
   WifiIcon,
   CloudIcon,

@@ -13,8 +13,8 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function NotificationsPage() {
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -55,7 +55,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     loadSettings()
-  }, [user])
+  }, [_user])
 
   // Capture initial state on first render
   useEffect(() => {
@@ -73,14 +73,14 @@ export default function NotificationsPage() {
   }, [formData])
 
   const loadSettings = async () => {
-    if (!user) return
+    if (!_user) return
     
     try {
       setLoading(true)
       const { data: settings } = await supabase
         .from('business_settings')
         .select('notification_preferences')
-        .eq('user_id', user.id)
+        .eq('user_id', _user.id)
         .single()
       
       if (settings?.notification_preferences) {
@@ -125,7 +125,7 @@ export default function NotificationsPage() {
       const { data: existing } = await supabase
         .from('business_settings')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', _user.id)
         .single()
       
       if (existing) {
@@ -135,7 +135,7 @@ export default function NotificationsPage() {
             notification_preferences: formData,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', user.id)
+          .eq('user_id', _user.id)
       } else {
         await supabase
           .from('business_settings')

@@ -39,7 +39,7 @@ export async function POST(request) {
     const { data: credentials, error: credError } = await supabase
       .from('cin7_credentials')
       .select('*')
-      .eq('barberbarbershop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
       .eq('is_active', true)
       .single()
     
@@ -93,7 +93,7 @@ export async function POST(request) {
       .update({ 
         updated_at: new Date().toISOString()
       })
-      .eq('barberbarbershop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
     
     return NextResponse.json({
       success: true,
@@ -113,7 +113,7 @@ export async function POST(request) {
   }
 }
 
-async function performCin7Sync(apiKey, accountId, barberbarbershopId, supabase) {
+async function performCin7Sync(apiKey, accountId, barbershopId, supabase) {
   
   const apiEndpoints = [
     'https://inventory.dearsystems.com/externalapi/products?limit=50',
@@ -194,7 +194,7 @@ async function performCin7Sync(apiKey, accountId, barberbarbershopId, supabase) 
   const { error: deleteError } = await supabase
     .from('products')
     .delete()
-    .eq('barberbarbershop_id', barberbarbershopId)
+    .eq('barbershop_id', barbershopId)
   
   if (deleteError) {
     console.error('Warning: Could not clear existing products:', deleteError)
@@ -238,7 +238,7 @@ async function performCin7Sync(apiKey, accountId, barberbarbershopId, supabase) 
     }
     
     return {
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       name: product.Name || 'Unnamed Product',
       description: product.Description || '',
       category: mapCategory(product.Category),

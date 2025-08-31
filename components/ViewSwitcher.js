@@ -12,7 +12,7 @@ import { useState, useEffect, Fragment } from 'react'
 import { useAuth } from './SupabaseAuthProvider'
 
 export default function ViewSwitcher() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [activeContext, setActiveContext] = useState(null)
   const [availableContexts, setAvailableContexts] = useState([])
   const [loading, setLoading] = useState(false)

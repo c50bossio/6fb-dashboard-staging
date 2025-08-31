@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   ChartBarIcon,
   HeartIcon,
   CurrencyDollarIcon,
@@ -10,7 +10,6 @@ import {
   SparklesIcon,
   LightBulbIcon,
   RocketLaunchIcon,
-  ArrowRightIcon,
   PlayIcon,
   UserPlusIcon
 } from '@heroicons/react/24/outline'

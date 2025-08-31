@@ -60,7 +60,7 @@ export async function GET(request) {
         track_inventory,
         created_at
       `)
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', includeInactive ? undefined : true)
 
     if (productsError) {
@@ -84,7 +84,7 @@ export async function GET(request) {
           retail_price
         )
       `)
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .gte('sale_date', startDate.toISOString())
       .order('sale_date', { ascending: true })
 

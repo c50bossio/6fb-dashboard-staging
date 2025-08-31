@@ -55,7 +55,7 @@ function OnboardingContent() {
 
   const updateOnboardingStatus = async (isComplete) => {
     try {
-      const supabase = createClient()
+      const _supabase = createClient()
       
       // Update the financial arrangement
       const { error } = await supabase

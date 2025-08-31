@@ -15,9 +15,9 @@ export async function GET(request) {
     
     // Allow public access with limited insights for demo/testing
     if (!user) {
-      const barberbarbershopId = searchParams.get('barberbarbershop_id')
+      const barbershopId = searchParams.get('barbershop_id')
       
-      if (barberbarbershopId) {
+      if (barbershopId) {
         // Provide basic public insights
         return NextResponse.json({
           success: true,
@@ -44,14 +44,14 @@ export async function GET(request) {
         })
       }
       
-      return NextResponse.json({ error: 'Unauthorized - provide barberbarbershop_id for demo access' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized - provide barbershop_id for demo access' }, { status: 401 })
     }
 
     const limit = parseInt(searchParams.get('limit') || '10')
     const type = searchParams.get('type') // Optional filter by insight type
-    const barberbarbershopId = user.barberbarbershop_id
+    const barbershopId = user.barbershop_id
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({
         success: false,
         error: 'No barbershop associated with your account'
@@ -59,7 +59,7 @@ export async function GET(request) {
     }
 
     try {
-      const insights = await getDatabaseInsights(barberbarbershopId, { limit, type })
+      const insights = await getDatabaseInsights(barbershopId, { limit, type })
       
       return NextResponse.json({
         success: true,
@@ -101,9 +101,9 @@ export async function POST(request) {
     }
 
     const { businessContext, forceRefresh } = await request.json()
-    const barberbarbershopId = user.barberbarbershop_id
+    const barbershopId = user.barbershop_id
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({
         success: false,
         error: 'No barbershop associated with your account'
@@ -111,7 +111,7 @@ export async function POST(request) {
     }
 
     try {
-      const insights = await generateInsightsToDatabase(barberbarbershopId, businessContext, forceRefresh)
+      const insights = await generateInsightsToDatabase(barbershopId, businessContext, forceRefresh)
       
       return NextResponse.json({
         success: true,
@@ -140,11 +140,11 @@ export async function POST(request) {
   }
 }
 
-async function getDatabaseInsights(barberbarbershopId, options = {}) {
+async function getDatabaseInsights(barbershopId, options = {}) {
   const { limit = 10, type } = options
   
   try {
-    const insights = await getAIInsights(barberbarbershopId, limit)
+    const insights = await getAIInsights(barbershopId, limit)
     
     if (type) {
       return insights.filter(insight => insight.category === type || insight.type === type)
@@ -158,7 +158,7 @@ async function getDatabaseInsights(barberbarbershopId, options = {}) {
   }
 }
 
-async function generateInsightsToDatabase(barberbarbershopId, businessContext = {}, forceRefresh = false) {
+async function generateInsightsToDatabase(barbershopId, businessContext = {}, forceRefresh = false) {
   const supabase = await createClient()
   
   try {
@@ -166,11 +166,11 @@ async function generateInsightsToDatabase(barberbarbershopId, businessContext = 
       await supabase
         .from('ai_insights')
         .update({ is_active: false })
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
     }
     
     
-    const newInsights = await generateContextualInsights(barberbarbershopId, businessContext)
+    const newInsights = await generateContextualInsights(barbershopId, businessContext)
     
     const { data, error } = await supabase
       .from('ai_insights')
@@ -187,14 +187,14 @@ async function generateInsightsToDatabase(barberbarbershopId, businessContext = 
   }
 }
 
-async function generateContextualInsights(barberbarbershopId, businessContext) {
+async function generateContextualInsights(barbershopId, businessContext) {
   const supabase = await createClient()
   
   try {
     const { data: metrics } = await supabase
       .from('business_metrics')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .gte('date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
       .order('date', { ascending: false })
     
@@ -206,7 +206,7 @@ async function generateContextualInsights(barberbarbershopId, businessContext) {
       
       if (latestRevenue < avgRevenue * 0.9) {
         insights.push({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           type: 'opportunity',
           category: 'revenue',
           priority: 'high',
@@ -223,7 +223,7 @@ async function generateContextualInsights(barberbarbershopId, businessContext) {
       const avgUtilization = metrics.reduce((sum, m) => sum + parseFloat(m.chair_utilization_rate || 0), 0) / metrics.length
       if (avgUtilization < 0.75) {
         insights.push({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           type: 'alert',
           category: 'operations',
           priority: 'medium',
@@ -240,7 +240,7 @@ async function generateContextualInsights(barberbarbershopId, businessContext) {
       const avgSatisfaction = metrics.reduce((sum, m) => sum + parseFloat(m.avg_satisfaction_score || 0), 0) / metrics.length
       if (avgSatisfaction > 4.5) {
         insights.push({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           type: 'success',
           category: 'customer_behavior',
           priority: 'low',
@@ -257,7 +257,7 @@ async function generateContextualInsights(barberbarbershopId, businessContext) {
     
     if (insights.length === 0) {
       insights.push({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         type: 'opportunity',
         category: 'operations',
         priority: 'medium',

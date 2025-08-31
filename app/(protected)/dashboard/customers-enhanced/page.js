@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   PlusIcon,
   MagnifyingGlassIcon,
   UserGroupIcon,
@@ -13,11 +13,10 @@ import {
   TrashIcon,
   ChartBarIcon,
   CurrencyDollarIcon,
-  ClockIcon,
   XMarkIcon,
   CheckIcon
 } from '@heroicons/react/24/outline'
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+
 import { useState, useEffect } from 'react'
 
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
@@ -46,8 +45,8 @@ export default function CustomersEnhancedPage() {
     averageSpent: 0
   })
 
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
 
   useEffect(() => {
     loadCustomers()

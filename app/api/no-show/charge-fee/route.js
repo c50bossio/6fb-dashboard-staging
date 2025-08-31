@@ -30,7 +30,7 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', session.user.id)
       .single()
     
@@ -44,13 +44,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    const barberbarbershopId = profile.barbershop_id
+    const barbershopId = profile.barbershop_id
 
     // Get barbershop's Stripe account
     const { data: stripeAccount, error: stripeError } = await supabase
       .from('stripe_accounts')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('onboarding_completed', true)
       .single()
     
@@ -81,7 +81,7 @@ export async function POST(request) {
         name: customer.name,
         phone: customer.phone,
         metadata: {
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           customer_id: client_id
         }
       }, {
@@ -127,7 +127,7 @@ export async function POST(request) {
           metadata: {
             incident_id,
             client_id,
-            barberbarbershop_id: barberbarbershopId,
+            barbershop_id: barbershopId,
             type: 'no_show_fee'
           },
           // Use default payment method
@@ -171,7 +171,7 @@ export async function POST(request) {
         metadata: {
           incident_id,
           client_id,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           type: 'no_show_fee'
         },
         application_fee_amount: Math.round(amount * 100 * 0.05)
@@ -197,7 +197,7 @@ export async function POST(request) {
         metadata: {
           incident_id,
           client_id,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           type: 'recovery_deposit'
         },
         application_fee_amount: Math.round(amount * 100 * 0.05)
@@ -233,7 +233,7 @@ export async function POST(request) {
       const { data: strikeHistory } = await supabase
         .from('client_strike_history')
         .select('outstanding_balance')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('client_id', client_id)
         .single()
       
@@ -247,7 +247,7 @@ export async function POST(request) {
             last_fee_paid_date: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('client_id', client_id)
       }
     }
@@ -256,7 +256,7 @@ export async function POST(request) {
     await supabase
       .from('payment_logs')
       .insert({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         client_id,
         amount,
         type: 'no_show_fee',
@@ -309,7 +309,7 @@ export async function PUT(request) {
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barberbarbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', session.user.id)
       .single()
     

@@ -83,7 +83,7 @@ export async function GET(request) {
       // Try to get any existing credentials (for development testing)
       const { data: credentials, error } = await supabase
         .from('cin7_credentials')
-        .select('barberbarbershop_id, api_version, last_tested, updated_at, is_active, created_at, encrypted_account_id')
+        .select('barbershop_id, api_version, last_tested, updated_at, is_active, created_at, encrypted_account_id')
         .eq('is_active', true)
         .limit(1)
         .single()
@@ -110,7 +110,7 @@ export async function GET(request) {
       return NextResponse.json({
         hasCredentials: true,
         credentials: {
-          barberbarbershop_id: credentials.barberbarbershop_id,
+          barbershop_id: credentials.barbershop_id,
           api_version: credentials.api_version,
           last_tested: credentials.last_tested,
           updated_at: credentials.updated_at,
@@ -147,7 +147,7 @@ export async function GET(request) {
         // Use a fallback approach to get credentials for testing
         const { data: testCredentials, error: testError } = await supabase
           .from('cin7_credentials')
-          .select('barberbarbershop_id, api_version, last_tested, updated_at, is_active, created_at, encrypted_account_id')
+          .select('barbershop_id, api_version, last_tested, updated_at, is_active, created_at, encrypted_account_id')
           .eq('is_active', true)
           .limit(1)
           .single()
@@ -166,7 +166,7 @@ export async function GET(request) {
           return NextResponse.json({
             hasCredentials: true,
             credentials: {
-              barberbarbershop_id: testCredentials.barberbarbershop_id,
+              barbershop_id: testCredentials.barbershop_id,
               api_version: testCredentials.api_version,
               last_tested: testCredentials.last_tested,
               updated_at: testCredentials.updated_at,
@@ -210,8 +210,8 @@ export async function GET(request) {
     // Get credentials for this barbershop
     const { data: credentials, error } = await supabase
       .from('cin7_credentials')
-      .select('barberbarbershop_id, api_version, last_tested, updated_at, is_active, created_at, encrypted_account_id')
-      .eq('barberbarbershop_id', barbershop.id)
+      .select('barbershop_id, api_version, last_tested, updated_at, is_active, created_at, encrypted_account_id')
+      .eq('barbershop_id', barbershop.id)
       .eq('is_active', true)
       .single()
     
@@ -237,7 +237,7 @@ export async function GET(request) {
     return NextResponse.json({
       hasCredentials: true,
       credentials: {
-        barberbarbershop_id: credentials.barberbarbershop_id,
+        barbershop_id: credentials.barbershop_id,
         api_version: credentials.api_version,
         last_tested: credentials.last_tested,
         updated_at: credentials.updated_at,
@@ -288,8 +288,8 @@ export async function DELETE() {
 
     const { data: existingCreds, error: checkError } = await supabase
       .from('cin7_credentials')
-      .select('barberbarbershop_id')
-      .eq('barberbarbershop_id', barbershop.id)
+      .select('barbershop_id')
+      .eq('barbershop_id', barbershop.id)
       .single()
     
     if (checkError || !existingCreds) {
@@ -302,7 +302,7 @@ export async function DELETE() {
     const { error: deleteError } = await supabase
       .from('cin7_credentials')
       .delete()
-      .eq('barberbarbershop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
     
     if (deleteError) {
       console.error('Error deleting credentials:', deleteError)
@@ -436,7 +436,7 @@ export async function PUT(request) {
     const { error: updateError } = await supabase
       .from('cin7_credentials')
       .upsert({
-        barberbarbershop_id: barbershop.id,
+        barbershop_id: barbershop.id,
         encrypted_api_key: JSON.stringify(encryptedApiKey),
         encrypted_account_id: JSON.stringify(encryptedAccountId),
         api_version: 'v2',
@@ -445,7 +445,7 @@ export async function PUT(request) {
         webhook_registered: webhookRegistered,
         is_active: true,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'barberbarbershop_id' })
+      }, { onConflict: 'barbershop_id' })
     
     if (updateError) {
       console.error('Error updating credentials:', updateError)

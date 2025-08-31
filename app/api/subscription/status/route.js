@@ -12,7 +12,7 @@ export async function GET(request) {
     if ((authError || !user) && process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true') {
       console.log('🔐 API: Using development auth fallback for subscription status')
       user = {
-        id: 'dev-user-123',
+        id: 'a1234567-89ab-cdef-0123-456789abcdef', // Valid UUID format for dev
         email: 'dev@6fb.local',
         user_metadata: { full_name: 'Development User' }
       }
@@ -36,24 +36,24 @@ export async function GET(request) {
         subscription_status,
         role,
         barbershop_id,
-        barberbarbershop_id,
+        barbershop_id,
         created_at
       `)
       .eq('id', user.id)
       .single()
     
     // Development mode fallback for profile data
-    if (userError && process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true' && user.id === 'dev-user-123') {
+    if (userError && process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true' && user.id === 'a1234567-89ab-cdef-0123-456789abcdef') {
       console.log('🔐 API: Using development profile fallback for subscription status')
       userData = {
-        id: 'dev-user-123',
+        id: 'a1234567-89ab-cdef-0123-456789abcdef', // Valid UUID format
         email: 'dev@6fb.local',
         full_name: 'Development User',
         subscription_tier: 'pro',
         subscription_status: 'active',
         role: 'SHOP_OWNER',
-        barbershop_id: 'dev-shop-123',
-        barberbarbershop_id: 'dev-shop-123',
+        barbershop_id: 'b1234567-89ab-cdef-0123-456789abcdef', // Valid UUID format
+        shop_id: 'b1234567-89ab-cdef-0123-456789abcdef', // Valid UUID format
         created_at: new Date().toISOString()
       }
       userError = null
@@ -108,7 +108,7 @@ export async function GET(request) {
       profile: {
         role: userData.role,
         barbershop_id: userData.barbershop_id,
-        barberbarbershop_id: userData.barberbarbershop_id
+        barbershop_id: userData.barbershop_id
       },
       features: getFeaturesByTier(normalizedTier)
     }

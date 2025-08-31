@@ -17,7 +17,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const customerId = searchParams.get('customer_id')
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const unsentOnly = searchParams.get('unsent_only') === 'true'
     const limit = parseInt(searchParams.get('limit')) || 50
 
@@ -37,7 +37,7 @@ export async function GET(request) {
           email,
           phone,
           notification_preferences,
-          barberbarbershop_id
+          barbershop_id
         ),
         badge_definitions (
           id,
@@ -75,10 +75,10 @@ export async function GET(request) {
     }
 
     // Filter by barbershop if specified
-    const filteredNotifications = barberbarbershopId 
+    const filteredNotifications = barbershopId 
       ? notifications?.filter(n => 
-          n.customers?.barberbarbershop_id === barberbarbershopId || 
-          n.customers?.barbershop_id === barberbarbershopId
+          n.customers?.barbershop_id === barbershopId || 
+          n.customers?.barbershop_id === barbershopId
         ) 
       : notifications
 
@@ -122,7 +122,7 @@ export async function GET(request) {
       unsent_count: formattedNotifications.filter(n => !n.notification_sent).length,
       filters: {
         customer_id: customerId,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         unsent_only: unsentOnly
       }
     })
@@ -149,7 +149,7 @@ export async function POST(request) {
       customer_id = null, 
       delivery_method = 'email', 
       send_all_unsent = false,
-      barberbarbershop_id = null
+      barbershop_id = null
     } = body
 
     let notificationsToSend = []
@@ -167,7 +167,7 @@ export async function POST(request) {
             email,
             phone,
             notification_preferences,
-            barberbarbershop_id
+            barbershop_id
           ),
           badge_definitions (
             badge_key,
@@ -210,7 +210,7 @@ export async function POST(request) {
             email,
             phone,
             notification_preferences,
-            barberbarbershop_id
+            barbershop_id
           ),
           badge_definitions (
             badge_key,
@@ -243,10 +243,10 @@ export async function POST(request) {
     }
 
     // Filter by barbershop if specified
-    if (barberbarbershopId) {
+    if (barbershopId) {
       notificationsToSend = notificationsToSend.filter(n => 
-        n.customers?.barberbarbershop_id === barberbarbershopId || 
-        n.customers?.barbershop_id === barberbarbershopId
+        n.customers?.barbershop_id === barbershopId || 
+        n.customers?.barbershop_id === barbershopId
       )
     }
 

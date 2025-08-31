@@ -2,7 +2,7 @@
 
 import {
   ExclamationTriangleIcon,
-  ExclamationCircleIcon,
+  _ExclamationCircleIcon,
   InformationCircleIcon,
   XMarkIcon,
   CheckCircleIcon,

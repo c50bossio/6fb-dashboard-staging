@@ -7,18 +7,13 @@ import {
   ClockIcon,
   ArrowTrendingDownIcon,
   EyeIcon,
-  HeartIcon,
-  ShareIcon,
-  StarIcon,
   MapIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   GlobeAltIcon,
   CalendarIcon,
   FunnelIcon,
-  PresentationChartLineIcon,
-  DocumentChartBarIcon,
-  CursorArrowRippleIcon
+  PresentationChartLineIcon
 } from '@heroicons/react/24/outline'
 import {
   Chart as ChartJS,
@@ -554,7 +549,7 @@ const DeviceAndLocationAnalytics = ({ deviceData, locationData }) => {
 }
 
 export default function AdvancedAnalyticsDashboard() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('30d')
   const [analytics, setAnalytics] = useState(null)

@@ -5,15 +5,13 @@ import {
   StarIcon,
   TrophyIcon,
   CalendarDaysIcon,
-  CurrencyDollarIcon,
   ChartBarIcon,
   EyeIcon,
   AdjustmentsHorizontalIcon,
   PlusIcon,
   TrashIcon,
   InformationCircleIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'

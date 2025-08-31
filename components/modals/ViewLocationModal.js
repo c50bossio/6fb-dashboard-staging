@@ -1,16 +1,15 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { 
-  XMarkIcon, 
+import {
+  XMarkIcon,
   BuildingOfficeIcon,
   MapPinIcon,
   PhoneIcon,
   EnvelopeIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
-  ClockIcon,
-  StarIcon
+  ClockIcon
 } from '@heroicons/react/24/outline'
 import { Fragment, useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
@@ -21,7 +20,7 @@ export default function ViewLocationModal({ isOpen, onClose, location }) {
   const [locationDetails, setLocationDetails] = useState(null)
   const [loading, setLoading] = useState(true)
   
-  const supabase = createClient()
+  const _supabase = createClient()
   
   useEffect(() => {
     if (location && isOpen) {
@@ -38,14 +37,14 @@ export default function ViewLocationModal({ isOpen, onClose, location }) {
         supabase
           .from('barbershop_staff')
           .select('*', { count: 'exact', head: true })
-          .eq('barberbarbershop_id', location.id)
+          .eq('barbershop_id', location.id)
           .eq('is_active', true),
         
         // Get services
         supabase
           .from('services')
           .select('*')
-          .or(`(barberbarbershop_id.eq.${location.id}),(barbershop_id.eq.${location.id})`)
+          .or(`(barbershop_id.eq.${location.id}),(barbershop_id.eq.${location.id})`)
           .eq('is_active', true)
           .limit(5),
         
@@ -53,7 +52,7 @@ export default function ViewLocationModal({ isOpen, onClose, location }) {
         supabase
           .from('appointments')
           .select('*', { count: 'exact', head: true })
-          .eq('barberbarbershop_id', location.id)
+          .eq('barbershop_id', location.id)
           .gte('appointment_date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
       ])
       

@@ -716,7 +716,7 @@ async function handleAccountUpdated(account) {
       // Get the account record to find user_id
       const { data: accountData } = await supabase
         .from('stripe_connected_accounts')
-        .select('user_id, barberbarbershop_id')
+        .select('user_id, barbershop_id')
         .eq('stripe_account_id', account.id)
         .single()
       
@@ -732,13 +732,13 @@ async function handleAccountUpdated(account) {
           .eq('id', accountData.user_id)
         
         // Update barbershop
-        if (accountData.barberbarbershop_id) {
+        if (accountData.barbershop_id) {
           await supabase
             .from('barbershops')
             .update({
               accepts_online_payments: true
             })
-            .eq('id', accountData.barberbarbershop_id)
+            .eq('id', accountData.barbershop_id)
         }
         
       }
@@ -1207,10 +1207,10 @@ async function processCommissionCalculation(paymentIntent, supabase) {
     const metadata = paymentIntent.metadata
     const arrangementId = metadata.arrangement_id
     const barberId = metadata.barber_id
-    const barberbarbershopId = metadata.barberbarbershop_id
+    const barbershopId = metadata.barbershop_id
     
     // Skip if no arrangement data - this is normal for non-commission payments
-    if (!arrangementId || !barberId || !barberbarbershopId) {
+    if (!arrangementId || !barberId || !barbershopId) {
       
       return { success: false, reason: 'no_arrangement' }
     }
@@ -1251,7 +1251,7 @@ async function processCommissionCalculation(paymentIntent, supabase) {
       const tierCalculation = await calculateTieredCommissionWebhook(
         paymentAmount, 
         barberId, 
-        barberbarbershopId, 
+        barbershopId, 
         arrangement, 
         supabase
       )
@@ -1315,7 +1315,7 @@ async function processCommissionCalculation(paymentIntent, supabase) {
       payment_intent_id: paymentIntent.id,
       arrangement_id: arrangementId,
       barber_id: barberId,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       payment_amount: paymentAmount,
       commission_amount: commissionAmount,
       shop_amount: shopAmount,
@@ -1370,7 +1370,7 @@ async function processCommissionCalculation(paymentIntent, supabase) {
     // Update barber's commission balance with atomic operations
     const balanceResult = await updateBarberCommissionBalance(
       barberId, 
-      barberbarbershopId, 
+      barbershopId, 
       commissionAmount, 
       insertedTransaction.id, 
       supabase
@@ -1409,7 +1409,7 @@ async function processCommissionCalculation(paymentIntent, supabase) {
     if (tierInfo) {
       await updateBarberTierProgressWebhook(
         barberId, 
-        barberbarbershopId, 
+        barbershopId, 
         paymentAmount, 
         tierInfo, 
         supabase
@@ -1436,14 +1436,14 @@ async function processCommissionCalculation(paymentIntent, supabase) {
 // Tiered Commission Calculation for Webhooks
 // ==========================================
 
-async function calculateTieredCommissionWebhook(amount, barberId, barberbarbershopId, arrangement, supabase) {
+async function calculateTieredCommissionWebhook(amount, barberId, barbershopId, arrangement, supabase) {
   try {
     // Get barber's current tier assignment
     const { data: tierAssignment } = await supabase
       .from('barber_tier_assignments')
       .select('*')
       .eq('barber_id', barberId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .single()
 
@@ -1523,13 +1523,13 @@ async function calculateTieredCommissionWebhook(amount, barberId, barberbarbersh
   }
 }
 
-async function updateBarberTierProgressWebhook(barberId, barberbarbershopId, transactionAmount, tierInfo, supabase) {
+async function updateBarberTierProgressWebhook(barberId, barbershopId, transactionAmount, tierInfo, supabase) {
   try {
     const { data: assignment } = await supabase
       .from('barber_tier_assignments')
       .select('*')
       .eq('barber_id', barberId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .single()
 
@@ -1575,7 +1575,7 @@ async function updateBarberTierProgressWebhook(barberId, barberbarbershopId, tra
         .from('commission_tier_history')
         .insert({
           barber_id: barberId,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           tier_id: tierInfo.applicableTier.id,
           period_start: assignment.current_period_start,
           period_end: assignment.current_period_end,
@@ -1617,20 +1617,20 @@ function calculateTierProgressWebhook(currentRevenue, allTiers, currentLevel) {
 }
 
 // Helper function to update barber commission balance atomically
-async function updateBarberCommissionBalance(barberId, barberbarbershopId, commissionAmount, transactionId, supabase) {
+async function updateBarberCommissionBalance(barberId, barbershopId, commissionAmount, transactionId, supabase) {
   try {
     // Use upsert with conflict resolution for atomic balance updates
     const { data: balanceData, error: balanceError } = await supabase
       .from('barber_commission_balances')
       .upsert({
         barber_id: barberId,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         pending_amount: supabase.raw(`COALESCE(pending_amount, 0) + ${commissionAmount}`),
         total_earned: supabase.raw(`COALESCE(total_earned, 0) + ${commissionAmount}`),
         last_transaction_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }, {
-        onConflict: 'barber_id,barberbarbershop_id',
+        onConflict: 'barber_id,barbershop_id',
         returning: 'representation'
       })
       .select()
@@ -1643,7 +1643,7 @@ async function updateBarberCommissionBalance(barberId, barberbarbershopId, commi
         .from('barber_commission_balances')
         .select('*')
         .eq('barber_id', barberId)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .single()
 
       if (existingBalance) {
@@ -1665,7 +1665,7 @@ async function updateBarberCommissionBalance(barberId, barberbarbershopId, commi
           .from('barber_commission_balances')
           .insert({
             barber_id: barberId,
-            barberbarbershop_id: barberbarbershopId,
+            barbershop_id: barbershopId,
             pending_amount: commissionAmount,
             paid_amount: 0,
             total_earned: commissionAmount,
@@ -1796,7 +1796,7 @@ async function handleTransferPaid(transfer) {
           metadata: supabase.raw(`metadata || '{"stripe_transfer_paid_at": "${new Date().toISOString()}", "transfer_amount": ${transferAmount}}'::jsonb`)
         })
         .eq('id', commissionTransactionId)
-        .select('barber_id, barberbarbershop_id, commission_amount')
+        .select('barber_id, barbershop_id, commission_amount')
         .single()
       
       if (commissionTx) {
@@ -1809,12 +1809,12 @@ async function handleTransferPaid(transfer) {
             updated_at: new Date().toISOString()
           })
           .eq('barber_id', commissionTx.barber_id)
-          .eq('barberbarbershop_id', commissionTx.barberbarbershop_id)
+          .eq('barbershop_id', commissionTx.barbershop_id)
         
         // Send notification to barber
         await sendCommissionPaidNotification({
           barberId: commissionTx.barber_id,
-          barberbarbershopId: commissionTx.barberbarbershop_id,
+          barbershopId: commissionTx.barbershop_id,
           amount: transferAmount,
           transferId: transfer.id,
           method: 'stripe_transfer'
@@ -1900,7 +1900,7 @@ async function handleTransferReversed(transfer) {
           metadata: supabase.raw(`metadata || '{"transfer_reversed_at": "${new Date().toISOString()}", "reversal_reason": "stripe_transfer_reversed"}'::jsonb`)
         })
         .eq('id', commissionTransactionId)
-        .select('barber_id, barberbarbershop_id')
+        .select('barber_id, barbershop_id')
         .single()
       
       if (commissionTx) {
@@ -1913,7 +1913,7 @@ async function handleTransferReversed(transfer) {
             updated_at: new Date().toISOString()
           })
           .eq('barber_id', commissionTx.barber_id)
-          .eq('barberbarbershop_id', commissionTx.barberbarbershop_id)
+          .eq('barbershop_id', commissionTx.barbershop_id)
 
       }
       
@@ -1937,7 +1937,7 @@ async function handleTransferReversed(transfer) {
 // Helper function to send commission paid notification
 async function sendCommissionPaidNotification(data) {
   try {
-    const { barberId, barberbarbershopId, amount, transferId, method } = data
+    const { barberId, barbershopId, amount, transferId, method } = data
     
     // TODO: Integrate with notification service
 
@@ -1957,14 +1957,14 @@ async function handlePOSPaymentLinkCompleted(session) {
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
 
-    const barberbarbershopId = session.metadata?.barberbarbershop_id
+    const barbershopId = session.metadata?.barbershop_id
     const barberId = session.metadata?.barber_id
     const customerContact = session.metadata?.customer_contact
     const contactMethod = session.metadata?.contact_method
 
     console.log('Processing POS payment link completion:', {
       session_id: session.id,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       amount: session.amount_total / 100
     })
 
@@ -1980,7 +1980,7 @@ async function handlePOSPaymentLinkCompleted(session) {
       const { data: linkByMetadata } = await supabase
         .from('pos_payment_links')
         .select('*')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('status', 'pending')
         .eq('customer_contact', customerContact)
         .order('created_at', { ascending: false })
@@ -2038,7 +2038,7 @@ async function handlePOSPaymentLinkCompleted(session) {
         const { error: saleError } = await supabase
           .from('pos_sales') // Note: This table may need to be created if it doesn't exist
           .insert({
-            barberbarbershop_id: barberbarbershopId,
+            barbershop_id: barbershopId,
             product_id: item.id,
             quantity: item.quantity,
             unit_price: item.price,
@@ -2076,7 +2076,7 @@ async function handlePOSPaymentLinkCompleted(session) {
             .from('pos_commissions')
             .insert({
               barber_id: barberId,
-              barberbarbershop_id: barberbarbershopId,
+              barbershop_id: barbershopId,
               product_id: item.id,
               sale_amount: item.price * item.quantity,
               commission_rate: item.commission_rate,
@@ -2108,7 +2108,7 @@ async function handlePOSPaymentLinkCompleted(session) {
           receiptNumber,
           total: amountPaid,
           items: cartData.items,
-          barberbarbershopId
+          barbershopId
         })
       }
     } catch (confirmationError) {
@@ -2271,13 +2271,13 @@ async function handleQRPaymentCompleted(session) {
     const supabase = await createClient()
 
     const sessionId = session.id
-    const barberbarbershopId = session.metadata?.barberbarbershop_id
+    const barbershopId = session.metadata?.barbershop_id
     const barberId = session.metadata?.barber_id
     const customerId = session.metadata?.customer_id
 
     console.log('Processing QR payment completion:', {
       session_id: sessionId,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       amount: session.amount_total / 100
     })
 
@@ -2310,7 +2310,7 @@ async function handleQRPaymentCompleted(session) {
 
     // Process unified sales and inventory
     await processUnifiedPOSSale({
-      barberbarbershopId,
+      barbershopId,
       barberId,
       customerId,
       cartItems: qrSession.cart_items,
@@ -2401,14 +2401,14 @@ async function handleTerminalPaymentSucceeded(paymentIntent) {
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
 
-    const barberbarbershopId = paymentIntent.metadata?.barberbarbershop_id
+    const barbershopId = paymentIntent.metadata?.barbershop_id
     const barberId = paymentIntent.metadata?.barber_id
     const customerId = paymentIntent.metadata?.customer_id
     const readerId = paymentIntent.metadata?.reader_id
 
     console.log('Processing Terminal payment success:', {
       payment_intent_id: paymentIntent.id,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       amount: paymentIntent.amount / 100
     })
 
@@ -2454,7 +2454,7 @@ async function handleTerminalPaymentSucceeded(paymentIntent) {
     const cartItems = terminalPayment.metadata?.cart_items
     if (cartItems && cartItems.length > 0) {
       await processUnifiedPOSSale({
-        barberbarbershopId,
+        barbershopId,
         barberId,
         customerId,
         cartItems,
@@ -2480,7 +2480,7 @@ async function handleTerminalPaymentSucceeded(paymentIntent) {
  * Works for all payment types: Payment Links, QR Codes, Terminal
  */
 async function processUnifiedPOSSale({
-  barberbarbershopId,
+  barbershopId,
   barberId,
   customerId,
   cartItems,
@@ -2496,7 +2496,7 @@ async function processUnifiedPOSSale({
     for (const item of cartItems) {
       // Record the sale
       const saleData = {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         product_id: item.id,
         quantity: item.quantity,
         unit_price: item.price,
@@ -2547,7 +2547,7 @@ async function processUnifiedPOSSale({
 
         const commissionData = {
           barber_id: barberId,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           product_id: item.id,
           sale_amount: item.price * item.quantity,
           commission_rate: item.commission_rate,

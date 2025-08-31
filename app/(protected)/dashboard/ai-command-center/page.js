@@ -1,12 +1,11 @@
 'use client'
 
-import { 
+import {
   ChatBubbleLeftRightIcon,
   SparklesIcon,
   RocketLaunchIcon,
   ClockIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
   PaperAirplaneIcon,
   Cog6ToothIcon,
   ChartBarIcon,
@@ -14,10 +13,8 @@ import {
   MegaphoneIcon,
   UserGroupIcon,
   LightBulbIcon,
-  FireIcon,
   BoltIcon,
   TrashIcon,
-  XMarkIcon,
   ArrowDownTrayIcon,
   EllipsisVerticalIcon
 } from '@heroicons/react/24/outline'
@@ -575,14 +572,14 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
 }
 
 function AICommandCenter() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [conversations, setConversations] = useState([])
   const [activeConversation, setActiveConversation] = useState(null)
   const [showHistory, setShowHistory] = useState(true)
-  const [retryCount, setRetryCount] = useState(0)
+  const [_retryCount, setRetryCount] = useState(0)
   const [lastFailedMessage, setLastFailedMessage] = useState(null)
   const [modelConfig, setModelConfig] = useState({
     model: 'gpt-4o',

@@ -23,7 +23,7 @@ export function ConversionTracker({
   customProperties = {}
 }) {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const timeTrackers = useRef({})
   const visibilityObserver = useRef(null)
   const scrollDepthTracked = useRef(new Set())

@@ -100,12 +100,12 @@ export async function GET(request) {
     
     const alertId = searchParams.get('alert_id');
     const userId = searchParams.get('user_id');
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const days = parseInt(searchParams.get('days') || '7');
     
-    if (!userId || !barberbarbershopId) {
+    if (!userId || !barbershopId) {
       return NextResponse.json(
-        { error: 'user_id and barberbarbershop_id are required parameters' },
+        { error: 'user_id and barbershop_id are required parameters' },
         { status: 400 }
       );
     }
@@ -118,7 +118,7 @@ export async function GET(request) {
       body: JSON.stringify({
         alert_id: alertId,
         user_id: userId,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         days: days
       }),
     });
@@ -138,7 +138,7 @@ export async function GET(request) {
       data: {
         alert_id: alertId,
         user_id: userId,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         time_period_days: days,
         acknowledgment_history: historyData,
         response_time_statistics: responseTimeStats,

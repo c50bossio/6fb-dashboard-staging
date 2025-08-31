@@ -627,7 +627,7 @@ const CreateExperimentModal = ({ isOpen, onClose, onCreate }) => {
 }
 
 export default function ABTestingDashboard() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [experiments, setExperiments] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)

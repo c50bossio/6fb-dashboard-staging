@@ -17,7 +17,7 @@ const EnhancedProfessionalCalendar = dynamic(
 )
 
 export default function BookingsPage() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [events, setEvents] = useState([])
   const [resources, setResources] = useState([])
   const [loading, setLoading] = useState(false)
@@ -34,18 +34,18 @@ export default function BookingsPage() {
       setLoading(true)
       setError(null)
       
-      if (!user.barberbarbershop_id) {
+      if (!user.barbershop_id) {
         throw new Error('No barbershop associated with your account. Please contact support.')
       }
       
-      const barberbarbershopId = user.barberbarbershop_id
+      const barbershopId = user.barbershop_id
       
       const today = new Date()
       const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
       
       const [appointmentsResponse, barbersResponse] = await Promise.all([
-        fetch(`/api/calendar/appointments?barberbarbershop_id=${barberbarbershopId}&start_date=${today.toISOString()}&end_date=${nextWeek.toISOString()}`).then(r => r.json()),
-        fetch(`/api/barbers?barberbarbershop_id=${barberbarbershopId}`).then(r => r.json())
+        fetch(`/api/calendar/appointments?barbershop_id=${barbershopId}&start_date=${today.toISOString()}&end_date=${nextWeek.toISOString()}`).then(r => r.json()),
+        fetch(`/api/barbers?barbershop_id=${barbershopId}`).then(r => r.json())
       ])
       
       const resources = (barbersResponse.barbers || []).map((barber, index) => ({

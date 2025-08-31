@@ -462,7 +462,7 @@ function BookingPageContent() {
         )}
         
         <BookingFlowOrchestrator
-          barberbarbershopId={barberData.location?.name || '6fb-downtown'}
+          barbershopId={barberData.location?.name || '6fb-downtown'}
           barbershopSlug="6fb-downtown"
           preselectedBarber={params.barberId}
           preselectedService={urlServices[0] || null}

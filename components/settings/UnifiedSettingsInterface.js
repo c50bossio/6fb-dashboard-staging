@@ -2,9 +2,6 @@
 
 import {
   BuildingStorefrontIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  GlobeAltIcon,
   ClockIcon,
   CreditCardIcon,
   BellIcon,
@@ -24,14 +21,14 @@ import SettingsSection from './SettingsSection'
 import TipSettings from './TipSettings'
 
 export default function UnifiedSettingsInterface() {
-  const { user, profile } = useAuth()
-  const supabase = createClient()
+  const { user, profile: _profile } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState({})
   const [activeCategory, setActiveCategory] = useState('business_info')
-  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   
   // Settings categories for navigation
   const categories = [
@@ -46,35 +43,35 @@ export default function UnifiedSettingsInterface() {
 
   // Resolve barbershop ID using getTenant
   useEffect(() => {
-    const resolveBarberbarbershopId = async () => {
+    const resolvebarbershopId = async () => {
       if (profile?.id) {
         try {
-          const { barberbarbershopId } = await getTenant(profile.id, { supabase })
-          setBarberbarbershopId(barberbarbershopId)
+          const { barbershopId } = await getTenant(profile.id, { supabase })
+          setbarbershopId(barbershopId)
         } catch (error) {
           console.error('Error getting barbershop ID:', error)
-          setBarberbarbershopId(null)
+          setbarbershopId(null)
         }
       }
     }
     
-    resolveBarberbarbershopId()
+    resolvebarbershopId()
   }, [profile?.id, supabase])
 
   useEffect(() => {
-    if (user && profile && barberbarbershopId) {
+    if (user && profile && barbershopId) {
       loadSettings()
     }
-  }, [user, profile, barberbarbershopId])
+  }, [user, profile, barbershopId])
 
   const loadSettings = async () => {
     setLoading(true)
     try {
-      if (barberbarbershopId) {
+      if (barbershopId) {
         const { data: barbershop } = await supabase
           .from('barbershops')
           .select('*')
-          .eq('id', barberbarbershopId)
+          .eq('id', barbershopId)
           .single()
         
         if (barbershop) {
@@ -129,7 +126,7 @@ export default function UnifiedSettingsInterface() {
   const saveSettings = async () => {
     setSaving(true)
     try {
-      if (barberbarbershopId && settings.business_info) {
+      if (barbershopId && settings.business_info) {
         // Update barbershop table with business info
         await supabase
           .from('barbershops')
@@ -148,7 +145,7 @@ export default function UnifiedSettingsInterface() {
             logo_url: settings.appearance?.logo_url,
             updated_at: new Date().toISOString()
           })
-          .eq('id', barberbarbershopId)
+          .eq('id', barbershopId)
       }
       
       // TODO: Implement settings_hierarchy integration for other categories
@@ -339,7 +336,7 @@ export default function UnifiedSettingsInterface() {
 
           {activeCategory === 'tips' && (
             <div className="space-y-6">
-              <TipSettings barberbarbershopId={barberbarbershopId} />
+              <TipSettings barbershopId={barbershopId} />
             </div>
           )}
 

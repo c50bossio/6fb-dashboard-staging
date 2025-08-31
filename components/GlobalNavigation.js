@@ -1,8 +1,8 @@
 'use client'
 
 import { Menu, Transition } from '@headlessui/react'
-import { 
-  Bars3Icon, 
+import {
+  Bars3Icon,
   XMarkIcon,
   HomeIcon,
   CalendarIcon,
@@ -12,7 +12,6 @@ import {
   BellIcon,
   UserCircleIcon,
   ArrowRightOnRectangleIcon,
-  AcademicCapIcon,
   SparklesIcon,
   BanknotesIcon,
   ChatBubbleLeftRightIcon,

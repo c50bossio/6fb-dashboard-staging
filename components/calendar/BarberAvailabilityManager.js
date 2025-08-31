@@ -31,11 +31,11 @@ export default function BarberAvailabilityManager({
   onClose,
   barberId,
   barberName,
-  barberbarbershopId
+  barbershopId
 }) {
   
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   
   const [availability, setAvailability] = useState([])
   const [loading, setLoading] = useState(true)
@@ -53,8 +53,8 @@ export default function BarberAvailabilityManager({
   })
 
   const fetchAvailability = useCallback(async () => {
-    if (!barberId || !barberbarbershopId) {
-      console.warn('⚠️ BarberAvailabilityManager: Missing barberId or barberbarbershopId')
+    if (!barberId || !barbershopId) {
+      console.warn('⚠️ BarberAvailabilityManager: Missing barberId or barbershopId')
       return
     }
     
@@ -62,9 +62,9 @@ export default function BarberAvailabilityManager({
       setLoading(true)
 
       // First, verify the barber exists using unified staff service
-      const barberData = await unifiedStaffService.getBarberById(barberId, barberbarbershopId)
+      const barberData = await unifiedStaffService.getBarberById(barberId, barbershopId)
       if (!barberData) {
-        console.error(`❌ Barber ${barberId} not found in barbershop ${barberbarbershopId}`)
+        console.error(`❌ Barber ${barberId} not found in barbershop ${barbershopId}`)
         setAvailability([])
         setLoading(false)
         return
@@ -75,7 +75,7 @@ export default function BarberAvailabilityManager({
         .from('barber_availability')
         .select('*')
         .eq('barber_id', barberId)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .order('day_of_week')
         .order('start_time')
 
@@ -87,7 +87,7 @@ export default function BarberAvailabilityManager({
     } finally {
       setLoading(false)
     }
-  }, [barberId, barberbarbershopId, supabase])
+  }, [barberId, barbershopId, supabase])
 
   useEffect(() => {
     if (isOpen) {
@@ -102,7 +102,7 @@ export default function BarberAvailabilityManager({
     try {
       const availabilityData = {
         barber_id: barberId,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         ...formData,
         specific_date: formData.specific_date || null,
         break_times: JSON.stringify(formData.break_times)

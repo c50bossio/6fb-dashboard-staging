@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react'
 import { FaPercent, FaDollarSign, FaToggleOn, FaToggleOff } from 'react-icons/fa'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-export default function BarberTipSettings({ barberId, barberbarbershopId }) {
-  const supabase = createClient()
+export default function BarberTipSettings({ barberId, barbershopId }) {
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -28,7 +28,7 @@ export default function BarberTipSettings({ barberId, barberbarbershopId }) {
 
   useEffect(() => {
     loadSettings()
-  }, [barberId, barberbarbershopId])
+  }, [barberId, barbershopId])
 
   const loadSettings = async () => {
     try {
@@ -39,7 +39,7 @@ export default function BarberTipSettings({ barberId, barberbarbershopId }) {
       const { data: shopData } = await supabase
         .from('barbershop_settings')
         .select('tip_settings')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .single()
 
       if (shopData?.tip_settings) {
@@ -59,7 +59,7 @@ export default function BarberTipSettings({ barberId, barberbarbershopId }) {
         .from('barber_tip_settings')
         .select('*')
         .eq('barber_id', barberId)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .single()
 
       if (barberData) {
@@ -137,7 +137,7 @@ export default function BarberTipSettings({ barberId, barberbarbershopId }) {
       // Prepare data for save
       const dataToSave = {
         barber_id: barberId,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         use_shop_defaults: settings.use_shop_defaults,
         default_tip_index: settings.default_tip_index
       }
@@ -160,7 +160,7 @@ export default function BarberTipSettings({ barberId, barberbarbershopId }) {
       const { error: saveError } = await supabase
         .from('barber_tip_settings')
         .upsert(dataToSave, {
-          onConflict: 'barber_id,barberbarbershop_id'
+          onConflict: 'barber_id,barbershop_id'
         })
 
       if (saveError) throw saveError
@@ -172,7 +172,7 @@ export default function BarberTipSettings({ barberId, barberbarbershopId }) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              barberbarbershop_id: barberbarbershopId,
+              barbershop_id: barbershopId,
               barber_id: barberId,
               service_tip_percentages: settings.service_tip_percentages,
               service_tip_fixed_amounts: settings.service_tip_fixed_amounts,

@@ -101,7 +101,7 @@ describe('RealtimeBookingWrapper', () => {
     test('renders with required props', async () => {
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           flowComponent="public"
         />
       )
@@ -114,7 +114,7 @@ describe('RealtimeBookingWrapper', () => {
     test('passes enhanced props to wrapped component', async () => {
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           barbershopSlug="test-shop"
           flowComponent="public"
           enableRealtime={true}
@@ -129,7 +129,7 @@ describe('RealtimeBookingWrapper', () => {
     test('selects appropriate component based on flowComponent prop', async () => {
       const { rerender } = render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           flowComponent="orchestrator"
         />
       )
@@ -140,7 +140,7 @@ describe('RealtimeBookingWrapper', () => {
 
       rerender(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           flowComponent="public"
         />
       )
@@ -155,7 +155,7 @@ describe('RealtimeBookingWrapper', () => {
     test('establishes real-time connection when enabled', async () => {
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           flowComponent="orchestrator"
           enableRealtime={true}
         />
@@ -181,7 +181,7 @@ describe('RealtimeBookingWrapper', () => {
 
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           flowComponent="orchestrator"
           enableRealtime={true}
         />
@@ -195,7 +195,7 @@ describe('RealtimeBookingWrapper', () => {
     test('shows real-time status indicator', async () => {
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           enableRealtime={true}
           debugMode={true}
         />
@@ -213,7 +213,7 @@ describe('RealtimeBookingWrapper', () => {
 
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           flowComponent="public"
           enableConflictPrevention={true}
           onSlotConflict={onSlotConflict}
@@ -258,7 +258,7 @@ describe('RealtimeBookingWrapper', () => {
 
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           flowComponent="public"
           enableConflictPrevention={true}
           onSlotConflict={onSlotConflict}
@@ -291,7 +291,7 @@ describe('RealtimeBookingWrapper', () => {
 
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           enableRealtime={true}
         />
       )
@@ -306,7 +306,7 @@ describe('RealtimeBookingWrapper', () => {
 
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           onNetworkStatusChange={onNetworkStatusChange}
         />
       )
@@ -329,7 +329,7 @@ describe('RealtimeBookingWrapper', () => {
     test('shows debug panel when enabled', async () => {
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           debugMode={true}
         />
       )
@@ -342,7 +342,7 @@ describe('RealtimeBookingWrapper', () => {
     test('hides debug panel when disabled', () => {
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           debugMode={false}
         />
       )
@@ -357,7 +357,7 @@ describe('RealtimeBookingWrapper', () => {
 
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           onAvailabilityUpdate={onAvailabilityUpdate}
         />
       )
@@ -381,7 +381,7 @@ describe('RealtimeBookingWrapper', () => {
 
       render(
         <RealtimeBookingWrapper 
-          barberbarbershopId="shop-123"
+          barbershopId="shop-123"
           onRealtimeError={onRealtimeError}
         />
       )
@@ -401,7 +401,7 @@ describe('useRealtimeBooking hook', () => {
 
     function TestComponent() {
       hookResult = useRealtimeBooking({
-        barberbarbershopId: 'shop-123',
+        barbershopId: 'shop-123',
         enableRealtime: true
       })
       
@@ -435,7 +435,7 @@ describe('useRealtimeBooking hook', () => {
 
     function TestComponent() {
       hookResult = useRealtimeBooking({
-        barberbarbershopId: 'shop-123',
+        barbershopId: 'shop-123',
         enableRealtime: true
       })
       
@@ -454,7 +454,7 @@ describe('Accessibility', () => {
   test('provides appropriate ARIA labels and roles', async () => {
     render(
       <RealtimeBookingWrapper 
-        barberbarbershopId="shop-123"
+        barbershopId="shop-123"
         flowComponent="public"
         enableRealtime={true}
       />
@@ -472,7 +472,7 @@ describe('Accessibility', () => {
   test('supports keyboard navigation', async () => {
     render(
       <RealtimeBookingWrapper 
-        barberbarbershopId="shop-123"
+        barbershopId="shop-123"
         flowComponent="public"
       />
     )
@@ -492,7 +492,7 @@ describe('Performance', () => {
   test('lazy loads components', async () => {
     const { container } = render(
       <RealtimeBookingWrapper 
-        barberbarbershopId="shop-123"
+        barbershopId="shop-123"
         flowComponent="public"
       />
     )
@@ -508,7 +508,7 @@ describe('Performance', () => {
   test('cleans up subscriptions on unmount', () => {
     const { unmount } = render(
       <RealtimeBookingWrapper 
-        barberbarbershopId="shop-123"
+        barbershopId="shop-123"
         enableRealtime={true}
       />
     )
@@ -523,7 +523,7 @@ describe('Performance', () => {
 
     render(
       <RealtimeBookingWrapper 
-        barberbarbershopId="shop-123"
+        barbershopId="shop-123"
         flowComponent="public"
         conflictCheckDelay={500}
       />

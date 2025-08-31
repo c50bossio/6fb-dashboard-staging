@@ -29,7 +29,7 @@ export async function GET() {
       message: `Successfully retrieved ${customers.length} customers`,
       customers: customers,
       testInfo: {
-        barberbarbershopId: 'c6261c6d-08e7-4e5f-89c3-ad3f3529caed',
+        barbershopId: 'c6261c6d-08e7-4e5f-89c3-ad3f3529caed',
         totalFound: customers.length,
         hasVipCustomers: customers.some(c => c.vip_status),
         averageVisits: customers.reduce((sum, c) => sum + (c.total_visits || 0), 0) / customers.length || 0,

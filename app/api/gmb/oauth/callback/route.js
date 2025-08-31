@@ -64,7 +64,7 @@ export async function GET(request) {
     } catch (error) {
       console.error('State verification failed:', error)
       stateData = {
-        barberbarbershop_id: '0b2d7524-49bc-47db-920d-db9c9822c416',
+        barbershop_id: '0b2d7524-49bc-47db-920d-db9c9822c416',
         user_id: '11111111-1111-1111-1111-111111111111'
       }
     }
@@ -92,7 +92,7 @@ export async function GET(request) {
         .from('temp_oauth_tokens')
         .insert({
           user_id: stateData.user_id,
-          barberbarbershop_id: stateData.barberbarbershop_id,
+          barbershop_id: stateData.barbershop_id,
           access_token: tokenData.access_token,
           refresh_token: tokenData.refresh_token,
           expires_at: new Date(Date.now() + tokenData.expires_in * 1000),
@@ -109,7 +109,7 @@ export async function GET(request) {
     if (!gmbAccount) {
       throw new Error('No GMB accounts found')
     }
-    await saveGMBAccount(stateData.barberbarbershop_id, stateData.user_id, gmbAccount, tokenData)
+    await saveGMBAccount(stateData.barbershop_id, stateData.user_id, gmbAccount, tokenData)
     
     await supabase
       .from('oauth_states')
@@ -227,11 +227,11 @@ async function fetchGMBAccounts(accessToken) {
 /**
  * Save GMB account connection to database
  */
-async function saveGMBAccount(barberbarbershopId, userId, gmbAccount, tokenData) {
+async function saveGMBAccount(barbershopId, userId, gmbAccount, tokenData) {
   const { data, error } = await supabase
     .from('gmb_accounts')
     .insert({
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       gmb_account_id: gmbAccount.account_id,
       gmb_location_id: gmbAccount.location_id,
       business_name: gmbAccount.business_name,

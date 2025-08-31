@@ -10,7 +10,7 @@ export async function POST(request) {
     const { 
       query, 
       userId = 'demo-user',
-      barberbarbershopId = 'demo-shop',
+      barbershopId = 'demo-shop',
       context = {},
       forceCollaboration = false
     } = await request.json()
@@ -23,7 +23,7 @@ export async function POST(request) {
     }
 
 
-    const businessData = await fetchBusinessData(barberbarbershopId)
+    const businessData = await fetchBusinessData(barbershopId)
 
     const complexityAnalysis = multiAgentCollaboration.analyzeQueryComplexity(query)
     
@@ -139,11 +139,11 @@ export async function GET(request) {
 /**
  * Fetch business data for context
  */
-async function fetchBusinessData(barberbarbershopId) {
+async function fetchBusinessData(barbershopId) {
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:9999'
   
   try {
-    const analyticsRes = await fetch(`${baseUrl}/api/analytics/live-data?barberbarbershop_id=${barberbarbershopId}`)
+    const analyticsRes = await fetch(`${baseUrl}/api/analytics/live-data?barbershop_id=${barbershopId}`)
     const analyticsData = await analyticsRes.json()
     
     return {

@@ -25,7 +25,7 @@ import {
  * - Message template management
  * - Campaign effectiveness tracking
  */
-const BirthdayReminder = ({ barberbarbershopId }) => {
+const BirthdayReminder = ({ barbershopId }) => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [eventType, setEventType] = useState('birthday');
   const [customers, setCustomers] = useState([]);
@@ -43,17 +43,17 @@ const BirthdayReminder = ({ barberbarbershopId }) => {
   // Fetch customers with upcoming birthdays/anniversaries
   useEffect(() => {
     fetchUpcomingEvents();
-  }, [barberbarbershopId, eventType]);
+  }, [barbershopId, eventType]);
 
   const fetchUpcomingEvents = async () => {
-    if (!barberbarbershopId) return;
+    if (!barbershopId) return;
     
     setLoading(true);
     setError(null);
 
     try {
       const response = await fetch(
-        `/api/customers/birthdays?barberbarbershop_id=${barberbarbershopId}&type=${eventType}&days_ahead=30`,
+        `/api/customers/birthdays?barbershop_id=${barbershopId}&type=${eventType}&days_ahead=30`,
         {
           method: 'GET',
           headers: {
@@ -113,7 +113,7 @@ const BirthdayReminder = ({ barberbarbershopId }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           customer_ids: selectedCustomers,
           campaign_type: eventType,
           message_type: campaignSettings.message_type,

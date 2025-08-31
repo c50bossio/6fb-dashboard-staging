@@ -55,7 +55,7 @@ const TIER_LABELS = {
  * Extends BookingRulesAnalytics with AI-powered customer risk assessment
  * Integrates with existing analytics infrastructure to minimize code duplication
  */
-export default function CustomerBehaviorScoring({ barberbarbershopId }) {
+export default function CustomerBehaviorScoring({ barbershopId }) {
   const [scoringData, setScoringData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -65,7 +65,7 @@ export default function CustomerBehaviorScoring({ barberbarbershopId }) {
 
   // Load customer scoring data
   const loadScoringData = useCallback(async () => {
-    if (!barberbarbershopId) return
+    if (!barbershopId) return
     
     setLoading(true)
     try {
@@ -76,7 +76,7 @@ export default function CustomerBehaviorScoring({ barberbarbershopId }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           view: selectedView
@@ -95,7 +95,7 @@ export default function CustomerBehaviorScoring({ barberbarbershopId }) {
     } finally {
       setLoading(false)
     }
-  }, [barberbarbershopId, dateRange, selectedView])
+  }, [barbershopId, dateRange, selectedView])
 
   // Manual refresh with visual feedback
   const handleRefresh = async () => {

@@ -74,7 +74,7 @@ export async function POST(request) {
       // Continue even if analytics fails
     }
     
-    // 1. Update profile with onboarding completion (but wait for barberbarbershop_id)
+    // 1. Update profile with onboarding completion (but wait for barbershop_id)
     // Normalize name data from various sources
     const userDisplayName = prePopulatedData?.displayName || user.user_metadata?.full_name || null
     const nameData = normalizeNameData({
@@ -99,10 +99,10 @@ export async function POST(request) {
       updated_at: new Date().toISOString()
     }
     
-    // We'll update profile after creating barbershop to include barberbarbershop_id
+    // We'll update profile after creating barbershop to include barbershop_id
     
     // 2. Create or update barbershop
-    let barberbarbershopId = null
+    let barbershopId = null
     
     const { data: existingShop } = await supabase
       .from('barbershops')
@@ -129,7 +129,7 @@ export async function POST(request) {
         results.errors.push({ type: 'barbershop_update', error: shopError.message })
       } else {
         results.barbershop = shopData
-        barberbarbershopId = shopData.id
+        barbershopId = shopData.id
       }
     } else {
       const shopSlug = generateSlug(finalData.businessName)
@@ -171,7 +171,7 @@ export async function POST(request) {
         results.errors.push({ type: 'barbershop_create', error: shopError.message })
       } else {
         results.barbershop = shopData
-        barberbarbershopId = shopData.id
+        barbershopId = shopData.id
       }
     }
     
@@ -181,14 +181,14 @@ export async function POST(request) {
       ? importedData.services 
       : finalData.services
       
-    if (barberbarbershopId && servicesToAdd && servicesToAdd.length > 0) {
+    if (barbershopId && servicesToAdd && servicesToAdd.length > 0) {
       await supabase
         .from('services')
         .delete()
-        .eq('barbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
       
       const servicesData = servicesToAdd.map(service => ({
-        barbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         name: service.name,
         description: service.description || '',
         price: service.price || service.cost,
@@ -215,15 +215,15 @@ export async function POST(request) {
       ? importedData.staff 
       : finalData.staff
       
-    if (barberbarbershopId && staffToAdd && staffToAdd.length > 0) {
+    if (barbershopId && staffToAdd && staffToAdd.length > 0) {
       // First, delete existing staff for this barbershop (for updates)
       await supabase
         .from('barbers')
         .delete()
-        .eq('barbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
       
       const staffData = staffToAdd.map(member => ({
-        barbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         name: member.name || `${member.firstName} ${member.lastName}` || member.full_name,
         email: member.email,
         phone: member.phone,
@@ -255,9 +255,9 @@ export async function POST(request) {
     }
     
     // 5. Add imported customers if present and barbershop was created
-    if (barberbarbershopId && importedData?.customers && importedData.customers.length > 0) {
+    if (barbershopId && importedData?.customers && importedData.customers.length > 0) {
       const customersData = importedData.customers.map(customer => ({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         name: customer.name || customer.full_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim(),
         email: customer.email,
         phone: customer.phone,
@@ -288,9 +288,9 @@ export async function POST(request) {
     }
     
     // 6. Add imported appointments if present and barbershop was created
-    if (barberbarbershopId && importedData?.appointments && importedData.appointments.length > 0) {
+    if (barbershopId && importedData?.appointments && importedData.appointments.length > 0) {
       const appointmentsData = importedData.appointments.map(appointment => ({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         customer_id: appointment.customer_id, // Will need to be mapped to new customer IDs
         service_id: appointment.service_id,   // Will need to be mapped to new service IDs
         barber_id: appointment.barber_id,     // Will need to be mapped to new barber IDs
@@ -323,16 +323,16 @@ export async function POST(request) {
     }
     
     // 7. NOW update profile with barbershop_id if we have one
-    if (barberbarbershopId) {
+    if (barbershopId) {
       // Update both fields to ensure compatibility
-      profileUpdateData.barberbarbershop_id = barberbarbershopId
-      profileUpdateData.shop_id = barberbarbershopId
+      profileUpdateData.barbershop_id = barbershopId
+      profileUpdateData.shop_id = barbershopId
     }
     
     // First, check current profile state
     const { data: currentProfile } = await supabase
       .from('profiles')
-      .select('barbershop_id, barberbarbershop_id, onboarding_completed')
+      .select('barbershop_id, barbershop_id, onboarding_completed')
       .eq('id', user.id)
       .single()
     
@@ -370,7 +370,7 @@ export async function POST(request) {
     
     // 9. Verify completion was successful
     const verificationChecks = {
-      barbershopCreated: !!barberbarbershopId,
+      barbershopCreated: !!barbershopId,
       profileUpdated: !!profileData && profileData.onboarding_completed === true,
       servicesAdded: servicesToAdd ? results.services?.length > 0 : true,
       staffAdded: staffToAdd ? results.staff?.length > 0 : true,
@@ -428,7 +428,7 @@ export async function POST(request) {
       success: true,
       message: successMessage,
       results,
-      barberbarbershopId,
+      barbershopId,
       bookingUrl: `https://bookedbarber.com/${results.barbershop?.shop_slug || 'shop'}`,
       importSummary: importedData ? {
         customersImported: importedData.customers?.length || 0,

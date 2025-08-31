@@ -6,12 +6,10 @@ import {
   BanknotesIcon,
   MegaphoneIcon,
   CogIcon,
-  ExclamationTriangleIcon,
   CheckCircleIcon,
   LightBulbIcon,
   RocketLaunchIcon,
   ClockIcon,
-  UserGroupIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback } from 'react'
@@ -34,7 +32,7 @@ function StrategicPricingWidget({ onRefresh, loading }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prediction_type: 'pricing_optimization',
-          barberbarbershop_id: 'demo_barbershop_001',
+          barbershop_id: 'demo_barbershop_001',
           parameters: {
             current_pricing: {
               haircut: 25.0,
@@ -819,7 +817,7 @@ function AgentSystemStatusWidget() {
 }
 
 function IntelligentDashboardContent() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const { tenant } = useTenant()
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [globalLoading, setGlobalLoading] = useState(false)

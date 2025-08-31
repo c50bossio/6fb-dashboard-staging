@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { apiLogger } from '@/lib/logger'
 export const runtime = 'nodejs'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
@@ -18,7 +19,11 @@ export async function GET(request) {
       status: backendResponse.status 
     })
   } catch (error) {
-    console.error('Health API Proxy Error:', error)
+    apiLogger.error('Health API proxy error', error, {
+      context: 'health_proxy',
+      backend_url: BACKEND_URL,
+      endpoint: 'GET /api/v1/health'
+    })
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

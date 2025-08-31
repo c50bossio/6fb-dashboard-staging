@@ -61,14 +61,14 @@ export async function POST(request) {
       const { data: barbershop } = await supabaseAdmin
         .from('barbershops')
         .select('name')
-        .eq('id', invitation.barberbarbershop_id)
+        .eq('id', invitation.barbershop_id)
         .single()
       
       return NextResponse.json({
         success: true,
         invitation: {
           id: invitation.id,
-          barberbarbershop_id: invitation.barberbarbershop_id,
+          barbershop_id: invitation.barbershop_id,
           barbershop_name: barbershop?.name || 'Unknown Barbershop',
           role: invitation.role,
           invited_email: invitation.metadata.invited_email,
@@ -102,7 +102,7 @@ export async function POST(request) {
       const { data: existingStaff } = await supabaseAdmin
         .from('barbershop_staff')
         .select('id')
-        .eq('barberbarbershop_id', invitation.barberbarbershop_id)
+        .eq('barbershop_id', invitation.barbershop_id)
         .eq('user_id', user.id)
         .neq('id', invitation.id) // Exclude the current invitation record
         .single()
@@ -148,7 +148,7 @@ export async function POST(request) {
       // Update user's profile with barbershop association if they don't have one
       const { data: profile } = await supabaseAdmin
         .from('profiles')
-        .select('barbershop_id, barberbarbershop_id')
+        .select('barbershop_id, barbershop_id')
         .eq('id', user.id)
         .single()
 
@@ -157,8 +157,8 @@ export async function POST(request) {
         await supabaseAdmin
           .from('profiles')
           .update({
-            barbershop_id: invitation.barberbarbershop_id,
-            barberbarbershop_id: invitation.barberbarbershop_id
+            barbershop_id: invitation.barbershop_id,
+            barbershop_id: invitation.barbershop_id
           })
           .eq('id', user.id)
       }

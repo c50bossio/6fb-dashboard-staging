@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+
 
 // Core booking types
 export interface BookingSlot {
@@ -88,7 +88,7 @@ export interface BookingSettings {
 // Component Props
 export interface RealtimeBookingWrapperProps {
   // Core booking props
-  barberbarbershopId: string
+  barbershopId: string
   barbershopSlug?: string
   preselectedBarber?: string | null
   preselectedService?: string | null
@@ -125,7 +125,7 @@ export interface RealtimeBookingWrapperProps {
 // Enhanced props passed to wrapped components
 export interface EnhancedBookingProps {
   // Original props
-  barberbarbershopId: string
+  barbershopId: string
   barbershopSlug?: string
   preselectedBarber?: string | null
   preselectedService?: string | null
@@ -158,7 +158,7 @@ export interface EnhancedBookingProps {
 
 // Hook types
 export interface UseRealtimeBookingOptions {
-  barberbarbershopId: string
+  barbershopId: string
   barberId?: string | null
   serviceId?: string | null
   enableRealtime?: boolean
@@ -201,7 +201,7 @@ export interface ExistingBooking {
 }
 
 export interface BookingData {
-  barberbarbershop_id: string
+  barbershop_id: string
   barber_id?: string
   service_id: string
   service_name: string

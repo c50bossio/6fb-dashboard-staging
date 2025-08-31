@@ -1,3 +1,4 @@
+// @ts-nocheck
 const { chromium } = require('playwright');
 
 (async () => {

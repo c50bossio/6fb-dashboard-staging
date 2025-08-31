@@ -7,8 +7,7 @@ import {
   UserIcon,
   ClockIcon,
   CurrencyDollarIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
+  _ExclamationCircleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
@@ -27,7 +26,7 @@ export default function BookingPaymentModal({
   onPaymentSuccess,
   onPaymentError
 }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [clientSecret, setClientSecret] = useState('')
   const [amount, setAmount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -65,7 +64,7 @@ export default function BookingPaymentModal({
       setError('')
 
       // First, check shop's accepted payment methods
-      const barbershopId = booking.barbershop_id || booking.barberbarbershop_id
+      const barbershopId = booking.barbershop_id || booking.barbershop_id
       if (barbershopId) {
         const paymentMethodsResponse = await fetch(`/api/shop/payment-methods?barbershop_id=${barbershopId}`)
         if (paymentMethodsResponse.ok) {
@@ -91,7 +90,7 @@ export default function BookingPaymentModal({
           barber_id: booking.barber_id,
           service_id: booking.service_id,
           payment_type: paymentType,
-          barberbarbershop_id: barbershopId,
+          barbershop_id: barbershopId,
           amount: booking.price || booking.service_price,
           tip_amount: tipAmount
         })
@@ -222,7 +221,7 @@ export default function BookingPaymentModal({
             {/* Tip Selection Widget */}
             {!loading && booking && (
               <TipSelectionWidget
-                barberbarbershopId={booking.barbershop_id || booking.barberbarbershop_id}
+                barbershopId={booking.barbershop_id || booking.barbershop_id}
                 barberId={booking.barber_id}
                 serviceId={booking.service_id}
                 serviceAmount={serviceAmount / 100} // Convert from cents

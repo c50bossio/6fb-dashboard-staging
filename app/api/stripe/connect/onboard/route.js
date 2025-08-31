@@ -24,7 +24,7 @@ export async function POST(request) {
     const body = await request.json();
     const { 
       barberId,
-      barberbarbershopId,
+      barbershopId,
       returnUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/financial/success`,
       refreshUrl = `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/financial/refresh`
     } = body;
@@ -45,7 +45,7 @@ export async function POST(request) {
       .from('financial_arrangements')
       .select('*')
       .eq('barber_id', barberId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single();
 
     let accountId = arrangement?.barber_stripe_account_id;
@@ -55,7 +55,7 @@ export async function POST(request) {
       const nameParts = barberProfile.full_name?.split(' ') || ['', ''];
       const createResult = await stripeConnectService.createConnectAccount({
         barberId,
-        barberbarbershopId,
+        barbershopId,
         email: barberProfile.email,
         firstName: nameParts[0],
         lastName: nameParts.slice(1).join(' ') || ''
@@ -68,7 +68,7 @@ export async function POST(request) {
         await supabase
           .from('financial_arrangements')
           .insert({
-            barberbarbershop_id: barberbarbershopId,
+            barbershop_id: barbershopId,
             barber_id: barberId,
             arrangement_type: 'commission',
             commission_rate: 70, // Default 70% to barber
@@ -139,9 +139,9 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const barberId = searchParams.get('barberId');
-    const barberbarbershopId = searchParams.get('barberbarbershopId');
+    const barbershopId = searchParams.get('barbershopId');
 
-    if (!barberId || !barberbarbershopId) {
+    if (!barberId || !barbershopId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
@@ -150,7 +150,7 @@ export async function GET(request) {
       .from('financial_arrangements')
       .select('*')
       .eq('barber_id', barberId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single();
 
     if (!arrangement?.barber_stripe_account_id) {

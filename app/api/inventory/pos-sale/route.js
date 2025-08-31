@@ -7,14 +7,14 @@ const supabase = createClient(
 )
 
 // Commission calculation function
-async function calculateAndRecordCommission({ barber_id, barberbarbershop_id, payment_amount, transaction_id, payment_intent_id }) {
+async function calculateAndRecordCommission({ barber_id, barbershop_id, payment_amount, transaction_id, payment_intent_id }) {
   try {
     // Get barber's financial arrangement
     const { data: arrangement, error: arrangementError } = await supabase
       .from('financial_arrangements')
       .select('*')
       .eq('barber_id', barber_id)
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('status', 'active')
       .single()
 
@@ -23,7 +23,7 @@ async function calculateAndRecordCommission({ barber_id, barberbarbershop_id, pa
       // Use default 40% commission if no arrangement found
       await recordCommission({
         barber_id,
-        barberbarbershop_id,
+        barbershop_id,
         payment_amount,
         commission_percentage: 40.0,
         commission_amount: payment_amount * 0.40,
@@ -56,7 +56,7 @@ async function calculateAndRecordCommission({ barber_id, barberbarbershop_id, pa
 
       case 'hybrid':
         // Hybrid: Base rent + commission on revenue over threshold
-        const monthly_revenue = await getBarberMonthlyRevenue(barber_id, barberbarbershop_id)
+        const monthly_revenue = await getBarberMonthlyRevenue(barber_id, barbershop_id)
         if (monthly_revenue > (arrangement.hybrid_revenue_threshold || 3000)) {
           commission_percentage = arrangement.hybrid_commission_rate || 20.0
           commission_amount = payment_amount * (commission_percentage / 100)
@@ -79,7 +79,7 @@ async function calculateAndRecordCommission({ barber_id, barberbarbershop_id, pa
     // Record the commission transaction
     await recordCommission({
       barber_id,
-      barberbarbershop_id,
+      barbershop_id,
       payment_amount,
       commission_percentage,
       commission_amount,
@@ -95,7 +95,7 @@ async function calculateAndRecordCommission({ barber_id, barberbarbershop_id, pa
 }
 
 // Helper function to record commission transaction
-async function recordCommission({ barber_id, barberbarbershop_id, payment_amount, commission_percentage, commission_amount, shop_amount, arrangement_type, payment_intent_id, arrangement_id }) {
+async function recordCommission({ barber_id, barbershop_id, payment_amount, commission_percentage, commission_amount, shop_amount, arrangement_type, payment_intent_id, arrangement_id }) {
   try {
     // Insert commission transaction
     const { error: commissionError } = await supabase
@@ -104,7 +104,7 @@ async function recordCommission({ barber_id, barberbarbershop_id, payment_amount
         payment_intent_id,
         arrangement_id,
         barber_id,
-        barberbarbershop_id,
+        barbershop_id,
         payment_amount,
         commission_amount,
         shop_amount,
@@ -124,7 +124,7 @@ async function recordCommission({ barber_id, barberbarbershop_id, payment_amount
       .from('barber_commission_balances')
       .select('*')
       .eq('barber_id', barber_id)
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .single()
 
     if (existingBalance) {
@@ -148,7 +148,7 @@ async function recordCommission({ barber_id, barberbarbershop_id, payment_amount
         .from('barber_commission_balances')
         .insert({
           barber_id,
-          barberbarbershop_id,
+          barbershop_id,
           pending_amount: commission_amount,
           paid_amount: 0,
           total_earned: commission_amount,
@@ -167,7 +167,7 @@ async function recordCommission({ barber_id, barberbarbershop_id, payment_amount
 }
 
 // Helper function to get barber's monthly revenue
-async function getBarberMonthlyRevenue(barber_id, barberbarbershop_id) {
+async function getBarberMonthlyRevenue(barber_id, barbershop_id) {
   const startOfMonth = new Date()
   startOfMonth.setDate(1)
   startOfMonth.setHours(0, 0, 0, 0)
@@ -176,7 +176,7 @@ async function getBarberMonthlyRevenue(barber_id, barberbarbershop_id) {
     .from('commission_transactions')
     .select('payment_amount')
     .eq('barber_id', barber_id)
-    .eq('barberbarbershop_id', barberbarbershop_id)
+    .eq('barbershop_id', barbershop_id)
     .gte('created_at', startOfMonth.toISOString())
 
   return transactions?.reduce((total, t) => total + parseFloat(t.payment_amount), 0) || 0
@@ -216,7 +216,7 @@ export async function POST(request) {
       )
     }
     
-    const barberbarbershopId = '550e8400-e29b-41d4-a716-446655440000' // Demo shop
+    const barbershopId = '550e8400-e29b-41d4-a716-446655440000' // Demo shop
     const inventoryTransactions = []
     const productUpdates = []
     let totalSaleValue = 0
@@ -237,7 +237,7 @@ export async function POST(request) {
         .from('products')
         .select('*')
         .eq('id', product_id)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .single()
       
       if (productError || !product) {
@@ -269,7 +269,7 @@ export async function POST(request) {
       
       // Prepare inventory transaction record
       inventoryTransactions.push({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         product_id: product.id,
         transaction_type: 'sale',
         quantity: -quantity, // Negative for sales
@@ -313,7 +313,7 @@ export async function POST(request) {
     const { data: transaction, error: saleError } = await supabase
       .from('transactions')
       .insert({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         appointment_id: appointment_id || null,
         barber_id: barber_id,
         transaction_type: 'sale',
@@ -334,7 +334,7 @@ export async function POST(request) {
     if (transaction && !saleError) {
       await calculateAndRecordCommission({
         barber_id,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         payment_amount: payment_total || totalSaleValue,
         transaction_id: transaction.id,
         payment_intent_id: transaction.id // Using transaction ID as payment intent for now
@@ -345,7 +345,7 @@ export async function POST(request) {
     const { data: updatedProducts } = await supabase
       .from('products')
       .select('current_stock, min_stock_level, retail_price, name')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .in('id', items.map(item => item.product_id))
     
     const lowStockAlerts = updatedProducts?.filter(p => 
@@ -396,7 +396,7 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 20
     const product_id = searchParams.get('product_id')
     
-    const barberbarbershopId = '550e8400-e29b-41d4-a716-446655440000'
+    const barbershopId = '550e8400-e29b-41d4-a716-446655440000'
     
     let query = supabase
       .from('inventory_transactions')
@@ -408,7 +408,7 @@ export async function GET(request) {
           retail_price
         )
       `)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .order('created_at', { ascending: false })
       .limit(limit)
     

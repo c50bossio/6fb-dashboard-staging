@@ -17,7 +17,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const customerId = searchParams.get('customer_id')
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const includeProgress = searchParams.get('include_progress') === 'true'
     
     if (!customerId) {
@@ -36,7 +36,7 @@ export async function GET(request) {
         total_visits,
         total_spent,
         created_at,
-        barberbarbershop_id
+        barbershop_id
       `)
       .eq('id', customerId)
       .single()
@@ -49,7 +49,7 @@ export async function GET(request) {
     }
 
     // Verify barbershop access if provided
-    if (barberbarbershopId && customer.barberbarbershop_id !== barberbarbershopId) {
+    if (barbershopId && customer.barbershop_id !== barbershopId) {
       return NextResponse.json({
         success: false,
         error: 'Access denied to customer badges'

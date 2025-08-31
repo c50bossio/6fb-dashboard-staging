@@ -93,7 +93,7 @@ export async function GET(request) {
           avatar_url
         )
       `)
-      .in('barberbarbershop_id', barbershopIds)
+      .in('barbershop_id', barbershopIds)
       .eq('role', 'BARBER')
       .eq('is_active', true)
     

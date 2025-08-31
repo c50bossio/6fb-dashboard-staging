@@ -5,15 +5,12 @@ import {
   SpeakerWaveIcon,
   XMarkIcon,
   PlayIcon,
-  PauseIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
-import {
-  MicrophoneIcon as MicrophoneSolid
-} from '@heroicons/react/24/solid'
+
 import { useState, useEffect, useRef } from 'react'
 
-export default function VoiceAssistant({ barberbarbershop_id = 'demo' }) {
+export default function VoiceAssistant({ barbershop_id = 'demo' }) {
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -114,7 +111,7 @@ export default function VoiceAssistant({ barberbarbershop_id = 'demo' }) {
           command: processedCommand,
           original_command: command,
           session_id: sessionId,
-          barberbarbershop_id,
+          barbershop_id,
           context: 'voice_interaction'
         })
       })

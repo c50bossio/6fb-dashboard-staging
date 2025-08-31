@@ -14,7 +14,7 @@ if (process.env.SENDGRID_API_KEY) {
 export async function POST(request) {
   try {
     const { 
-      barberbarbershop_id, 
+      barbershop_id, 
       campaign_type, 
       channel, // 'sms', 'email', or 'both'
       recipients,
@@ -29,7 +29,7 @@ export async function POST(request) {
     const { data: credits } = await supabase
       .from('campaign_credits')
       .select('sms_credits, email_credits, tier')
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .single()
 
     if (!credits) {
@@ -139,7 +139,7 @@ export async function POST(request) {
         email_credits: credits.email_credits - results.email.sent,
         last_used_at: new Date().toISOString()
       })
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
 
     if (deductError) {
       console.error('Failed to deduct credits:', deductError)
@@ -149,7 +149,7 @@ export async function POST(request) {
     await supabase
       .from('campaign_usage_log')
       .insert({
-        barberbarbershop_id,
+        barbershop_id,
         credit_type: channel,
         credits_used: results.sms.sent + results.email.sent,
         recipient_count: recipients.length,
@@ -202,7 +202,7 @@ function generateSuccessMessage(results, tier) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barberbarbershop_id = searchParams.get('barberbarbershop_id')
+    const barbershop_id = searchParams.get('barbershop_id')
     const recipient_count = parseInt(searchParams.get('recipient_count') || '0')
     const channel = searchParams.get('channel') || 'sms'
 
@@ -212,7 +212,7 @@ export async function GET(request) {
     const { data: credits } = await supabase
       .from('campaign_credits')
       .select('sms_credits, email_credits, tier')
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .single()
 
     if (!credits) {

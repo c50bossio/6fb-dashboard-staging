@@ -1,9 +1,7 @@
 'use client'
 
 import {
-  FunnelIcon,
   MagnifyingGlassIcon,
-  CalendarIcon,
   ArrowPathIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'

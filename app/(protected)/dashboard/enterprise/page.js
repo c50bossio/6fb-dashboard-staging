@@ -1,13 +1,7 @@
 'use client'
 
-import { 
-  RocketLaunchIcon,
-  SparklesIcon,
-  ChartBarIcon,
-  BoltIcon,
-  CreditCardIcon,
-  BellIcon,
-  FlagIcon
+import {
+  RocketLaunchIcon
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 

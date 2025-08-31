@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   GlobeAltIcon,
   BuildingOfficeIcon,
   MapIcon,
@@ -8,7 +8,6 @@ import {
   CheckCircleIcon,
   XMarkIcon,
   PlusIcon,
-  TrashIcon,
   EyeIcon,
   LinkIcon
 } from '@heroicons/react/24/outline'
@@ -21,7 +20,7 @@ import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function EnterpriseWebsiteCustomization() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const { availableLocations, refreshLocations, permissions } = useGlobalDashboard()
   const [activeTab, setActiveTab] = useState('overview')
   const [saving, setSaving] = useState(false)
@@ -63,7 +62,7 @@ export default function EnterpriseWebsiteCustomization() {
     automated_marketing: false
   })
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: BuildingOfficeIcon },

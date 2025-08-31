@@ -124,9 +124,9 @@ async function validateContextAccess(userId, contextType, contextId, userRole, s
         // Verify the barber works in one of the owned shops
         const { data: barberAccess } = await supabase
           .from('barbershop_staff')
-          .select('barberbarbershop_id, role')
+          .select('barbershop_id, role')
           .eq('user_id', contextId)
-          .in('barberbarbershop_id', barbershopIds)
+          .in('barbershop_id', barbershopIds)
           .eq('is_active', true)
           .single()
         

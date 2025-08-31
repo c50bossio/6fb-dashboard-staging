@@ -85,13 +85,13 @@ export async function GET(request, { params }) {
         .eq('id', currentUser.id)
       
       // Update barbershop using service client
-      if (dbAccount.barberbarbershop_id) {
+      if (dbAccount.barbershop_id) {
         await serviceClient
           .from('barbershops')
           .update({
             accepts_online_payments: true
           })
-          .eq('id', dbAccount.barberbarbershop_id)
+          .eq('id', dbAccount.barbershop_id)
       }
     }
     

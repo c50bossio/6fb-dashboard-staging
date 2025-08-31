@@ -128,10 +128,10 @@ export function useRiskBasedNotifications() {
   /**
    * Get communication history for a customer
    */
-  const getCommunicationHistory = useCallback(async (customerId, barberbarbershopId) => {
+  const getCommunicationHistory = useCallback(async (customerId, barbershopId) => {
     try {
       const response = await fetch(
-        `/api/customer-behavior/notifications?barberbarbershop_id=${barberbarbershopId}&customer_id=${customerId}&type=communication_history`
+        `/api/customer-behavior/notifications?barbershop_id=${barbershopId}&customer_id=${customerId}&type=communication_history`
       )
       
       if (!response.ok) {
@@ -148,10 +148,10 @@ export function useRiskBasedNotifications() {
   /**
    * Get notification effectiveness metrics
    */
-  const getEffectivenessMetrics = useCallback(async (barberbarbershopId) => {
+  const getEffectivenessMetrics = useCallback(async (barbershopId) => {
     try {
       const response = await fetch(
-        `/api/customer-behavior/notifications?barberbarbershop_id=${barberbarbershopId}&type=effectiveness_metrics`
+        `/api/customer-behavior/notifications?barbershop_id=${barbershopId}&type=effectiveness_metrics`
       )
       
       if (!response.ok) {
@@ -172,7 +172,7 @@ export function useRiskBasedNotifications() {
     return {
       booking_id: booking.id,
       customer_id: customer.id || booking.customer_id,
-      barberbarbershop_id: barbershop.id || booking.barberbarbershop_id || booking.barbershop_id,
+      barbershop_id: barbershop.id || booking.barbershop_id || booking.barbershop_id,
       appointment_time: booking.start_time || booking.appointment_time,
       service_name: service?.name || booking.service_name || 'Barbershop Service',
       customer_phone: customer.phone || booking.customer_phone,

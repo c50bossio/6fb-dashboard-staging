@@ -68,7 +68,7 @@ class CalendarIntegrationService {
   /**
    * Generate OAuth URL for Google Calendar authorization
    */
-  getAuthUrl(userId, barberbarbershopId) {
+  getAuthUrl(userId, barbershopId) {
     if (!this.initialized) {
       throw new Error('Calendar service not initialized')
     }
@@ -81,7 +81,7 @@ class CalendarIntegrationService {
     const authUrl = this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: scopes,
-      state: JSON.stringify({ userId, barberbarbershopId })
+      state: JSON.stringify({ userId, barbershopId })
     })
 
     return authUrl
@@ -90,7 +90,7 @@ class CalendarIntegrationService {
   /**
    * Exchange authorization code for tokens
    */
-  async exchangeCodeForTokens(code, userId, barberbarbershopId) {
+  async exchangeCodeForTokens(code, userId, barbershopId) {
     try {
       if (!this.initialized) {
         throw new Error('Calendar service not initialized')
@@ -103,7 +103,7 @@ class CalendarIntegrationService {
         .from('calendar_integrations')
         .upsert({
           user_id: userId,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           provider: 'google',
           access_token: encryptionService.encryptToken(tokens.access_token, 'access_token'),
           refresh_token: encryptionService.encryptToken(tokens.refresh_token, 'refresh_token'),
@@ -545,16 +545,16 @@ class CalendarIntegrationService {
   /**
    * Sync all appointments to calendar
    */
-  async syncAllAppointments(userId, barberbarbershopId) {
+  async syncAllAppointments(userId, barbershopId) {
     const startTime = Date.now()
     
     try {
       // Validate inputs
-      if (!userId || !barberbarbershopId) {
-        throw new Error('Missing required parameters: userId and barberbarbershopId')
+      if (!userId || !barbershopId) {
+        throw new Error('Missing required parameters: userId and barbershopId')
       }
 
-      console.log(`📅 Starting full calendar sync for barbershop ${barberbarbershopId}`)
+      console.log(`📅 Starting full calendar sync for barbershop ${barbershopId}`)
 
       // Get all confirmed appointments for the barbershop that don't have calendar events
       const { data: appointments, error } = await supabase
@@ -565,7 +565,7 @@ class CalendarIntegrationService {
           barbershops (*),
           barbershop_staff (*)
         `)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .in('status', ['confirmed', 'checked_in'])
         .gte('appointment_date', new Date().toISOString().split('T')[0])
         .is('google_calendar_event_id', null)
@@ -688,17 +688,17 @@ class CalendarIntegrationService {
   /**
    * Generate iCal feed for barbershop
    */
-  async generateICalFeed(barberbarbershopId, token = null) {
+  async generateICalFeed(barbershopId, token = null) {
     try {
       // Verify token if provided (for private feeds)
       if (token) {
         const { data: integration, error } = await supabase
           .from('calendar_integrations')
-          .select('barberbarbershop_id')
+          .select('barbershop_id')
           .eq('ical_token', token)
           .single()
 
-        if (error || !integration || integration.barberbarbershop_id !== barberbarbershopId) {
+        if (error || !integration || integration.barbershop_id !== barbershopId) {
           throw new Error('Invalid iCal token')
         }
       }
@@ -716,7 +716,7 @@ class CalendarIntegrationService {
           barbershops (*),
           barbershop_staff (*)
         `)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .in('status', ['confirmed', 'checked_in'])
         .gte('appointment_date', startDate.toISOString().split('T')[0])
         .lte('appointment_date', endDate.toISOString().split('T')[0])
@@ -730,7 +730,7 @@ class CalendarIntegrationService {
         name: appointments[0]?.barbershops?.name || 'Barbershop Appointments',
         description: 'Appointment schedule',
         timezone: 'America/New_York',
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/ical/${barberbarbershopId}${token ? `?token=${token}` : ''}`,
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/api/calendar/ical/${barbershopId}${token ? `?token=${token}` : ''}`,
         ttl: 60 * 60 // 1 hour TTL
       })
 

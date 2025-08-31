@@ -75,12 +75,12 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, barberbarbershop_id')
+      .select('barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
 
-    const barberbarbershopId = profile?.shop_id || profile?.barbershop_id
-    if (!barberbarbershopId) {
+    const barbershopId = profile?.shop_id || profile?.barbershop_id
+    if (!barbershopId) {
       return NextResponse.json(
         { error: 'No barbershop association found' },
         { status: 400 }
@@ -92,7 +92,7 @@ export async function POST(request) {
 
     // Create scheduled export record
     const scheduleData = {
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       created_by: user.id,
       name: name || `${frequency.charAt(0).toUpperCase() + frequency.slice(1)} Payroll Report`,
       description: description || `Automated ${frequency} payroll export`,
@@ -171,12 +171,12 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, barberbarbershop_id')
+      .select('barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
 
-    const barberbarbershopId = profile?.shop_id || profile?.barbershop_id
-    if (!barberbarbershopId) {
+    const barbershopId = profile?.shop_id || profile?.barbershop_id
+    if (!barbershopId) {
       return NextResponse.json(
         { error: 'No barbershop association found' },
         { status: 400 }
@@ -192,7 +192,7 @@ export async function GET(request) {
         const { data: schedules } = await supabase
           .from('payroll_export_schedules')
           .select('*')
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .order('created_at', { ascending: false })
 
         return NextResponse.json({
@@ -225,7 +225,7 @@ export async function GET(request) {
           .from('payroll_export_schedules')
           .select('*')
           .eq('id', scheduleId)
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .single()
 
         if (!schedule) {
@@ -276,7 +276,7 @@ export async function GET(request) {
         const { data: upcomingSchedules } = await supabase
           .from('payroll_export_schedules')
           .select('id, name, next_run_at, frequency, email_options')
-          .eq('barberbarbershop_id', barberbarbershopId)
+          .eq('barbershop_id', barbershopId)
           .eq('is_active', true)
           .gte('next_run_at', new Date().toISOString())
           .order('next_run_at', { ascending: true })
@@ -344,18 +344,18 @@ export async function PUT(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, barberbarbershop_id')
+      .select('barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
 
-    const barberbarbershopId = profile?.shop_id || profile?.barbershop_id
+    const barbershopId = profile?.shop_id || profile?.barbershop_id
 
     // Verify ownership
     const { data: existingSchedule } = await supabase
       .from('payroll_export_schedules')
       .select('*')
       .eq('id', id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     if (!existingSchedule) {
@@ -451,18 +451,18 @@ export async function DELETE(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, barberbarbershop_id')
+      .select('barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
 
-    const barberbarbershopId = profile?.shop_id || profile?.barbershop_id
+    const barbershopId = profile?.shop_id || profile?.barbershop_id
 
     // Verify ownership and delete
     const { data: deletedSchedule, error } = await supabase
       .from('payroll_export_schedules')
       .delete()
       .eq('id', scheduleId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .select()
       .single()
 
@@ -592,7 +592,7 @@ async function executeScheduledExport(schedule) {
       recipients: schedule.email_options.recipients,
       reportData: exportResult,
       scheduleName: schedule.name,
-      barberbarbershopId: schedule.barberbarbershop_id,
+      barbershopId: schedule.barbershop_id,
       customMessage: schedule.email_options.customMessage
     })
 
@@ -651,7 +651,7 @@ async function checkSchedulePermissions(supabase, userId) {
   try {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, barbershop_id, barberbarbershop_id')
+      .select('role, barbershop_id, barbershop_id')
       .eq('id', userId)
       .single()
 

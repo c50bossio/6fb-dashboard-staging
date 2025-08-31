@@ -4,7 +4,6 @@ import {
   CurrencyDollarIcon,
   UserGroupIcon,
   CalculatorIcon,
-  CalendarIcon,
   PencilIcon,
   PlusIcon,
   ChartBarIcon,
@@ -889,7 +888,7 @@ export default function FinancialManagement() {
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ 
                                   ledger_id: entry.id,
-                                  barberbarbershop_id: entry.barberbarbershop_id,
+                                  barbershop_id: entry.barbershop_id,
                                   barber_id: entry.barber_id
                                 })
                               })

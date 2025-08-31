@@ -1,8 +1,15 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { MagnifyingGlassIcon, UserIcon, PhoneIcon, EnvelopeIcon, StarIcon, XMarkIcon, PlusIcon } from '@heroicons/react/24/outline'
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import {
+  MagnifyingGlassIcon,
+  UserIcon,
+  PhoneIcon,
+  StarIcon,
+  XMarkIcon,
+  PlusIcon
+} from '@heroicons/react/24/outline'
+
 import { useState, useEffect, Fragment, useCallback } from 'react'
 
 export default function CustomerSearchModal({
@@ -10,7 +17,7 @@ export default function CustomerSearchModal({
   onClose,
   onSelectCustomer,
   onCreateNewCustomer,
-  barberbarbershopId
+  barbershopId
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [customers, setCustomers] = useState([])
@@ -28,7 +35,7 @@ export default function CustomerSearchModal({
     setError('')
 
     try {
-      const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}&barberbarbershop_id=${barberbarbershopId}&limit=10`)
+      const response = await fetch(`/api/customers/search?q=${encodeURIComponent(query)}&barbershop_id=${barbershopId}&limit=10`)
       
       if (!response.ok) {
         throw new Error('Failed to search customers')
@@ -43,7 +50,7 @@ export default function CustomerSearchModal({
     } finally {
       setLoading(false)
     }
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

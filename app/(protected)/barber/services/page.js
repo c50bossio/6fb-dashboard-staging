@@ -12,15 +12,15 @@ import { useAuth } from '@/components/SupabaseAuthProvider'
 import { getBarberPermissions, getPermissionLevel } from '@/lib/permissions'
 
 export default function BarberServices() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [permissions, setPermissions] = useState(null)
-  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     loadBarberData()
-  }, [user])
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadBarberData = async () => {
     if (!user?.id) return
@@ -28,13 +28,13 @@ export default function BarberServices() {
     try {
       setLoading(true)
       
-      const barbershopId = await getBarberBarbershop()
+      const barbershopId = await getbarbershop()
       if (!barbershopId) {
         setError('No barbershop association found. Please contact your shop owner.')
         return
       }
       
-      setBarberbarbershopId(barbershopId)
+      setbarbershopId(barbershopId)
       
       const perms = await getBarberPermissions(user.id, barbershopId)
       setPermissions(perms)
@@ -47,7 +47,7 @@ export default function BarberServices() {
     }
   }
 
-  const getBarberBarbershop = async () => {
+  const getbarbershop = async () => {
     
     if (profile?.barbershop_id) {
       return profile.barbershop_id
@@ -198,11 +198,11 @@ export default function BarberServices() {
       )}
 
       {/* Service Manager Component */}
-      {barberbarbershopId && (
+      {barbershopId && (
         <ServiceManager
           userRole="BARBER"
           userId={user?.id}
-          barberbarbershopId={barberbarbershopId}
+          barbershopId={barbershopId}
           permissions={permissions}
           onServiceUpdate={loadBarberData}
         />

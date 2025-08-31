@@ -10,27 +10,17 @@ export default function ServiceWorkerProvider({ children }) {
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false)
 
   useEffect(() => {
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      registerServiceWorker()
-      
-      // Setup automatic update detection
-      cacheManager.setupUpdatePrompt((registration) => {
-        setSwUpdateAvailable(true)
-        setSwRegistration(registration)
-        
-        toast({
-          title: "Update Available",
-          description: "A new version is ready. Click to update.",
-          action: (
-            <button
-              onClick={() => handleUpdate(registration)}
-              className="text-sm font-medium underline"
-            >
-              Update Now
-            </button>
-          ),
-          duration: 10000
+    // Completely disable service worker and unregister any existing ones
+    // Service workers disabled for authentication debugging
+    
+    if ('serviceWorker' in navigator) {
+      // Unregister all existing service workers
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => {
+          registration.unregister()
         })
+      }).catch(error => {
+        // Silent failure - service worker cleanup is not critical
       })
     }
 
@@ -65,46 +55,9 @@ export default function ServiceWorkerProvider({ children }) {
 
   async function registerServiceWorker() {
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
-      })
-
-      setSwRegistration(registration)
-
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing
-
-        newWorker?.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            setSwUpdateAvailable(true)
-            
-            toast({
-              title: "Update Available",
-              description: "A new version of the app is available.",
-              action: (
-                <button
-                  onClick={() => updateServiceWorker(newWorker)}
-                  className="text-sm font-medium underline"
-                >
-                  Update Now
-                </button>
-              ),
-              duration: 10000
-            })
-          }
-        })
-      })
-
-      // Check for updates more frequently - every 5 minutes
-      setInterval(() => {
-        registration.update()
-        cacheManager.checkForUpdates().then(result => {
-          if (result.updateAvailable) {
-            
-            setSwUpdateAvailable(true)
-          }
-        })
-      }, 5 * 60 * 1000)
+      // Service worker registration temporarily disabled for auth debugging
+      setSwRegistration(null)
+      return null
 
     } catch (error) {
       console.error('Service Worker registration failed:', error)

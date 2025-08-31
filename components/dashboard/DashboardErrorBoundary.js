@@ -50,7 +50,7 @@ class DashboardErrorBoundary extends React.Component {
                   </h3>
                   <pre className="text-xs text-red-700 dark:text-red-300 overflow-auto max-h-32">
                     {this.state.error && this.state.error.toString()}
-                    {this.state.errorInfo.componentStack}
+                    {this.state.errorInfo && this.state.errorInfo.componentStack}
                   </pre>
                 </div>
               )}

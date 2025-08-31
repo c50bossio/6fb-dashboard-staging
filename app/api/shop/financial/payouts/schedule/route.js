@@ -124,7 +124,7 @@ export async function GET(request) {
           last_transaction_at
         )
       `)
-      .eq('barberbarbershop_id', shop.id)
+      .eq('barbershop_id', shop.id)
       .eq('is_active', true)
 
     const scheduler = new PayoutScheduler()

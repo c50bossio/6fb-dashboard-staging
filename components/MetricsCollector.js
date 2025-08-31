@@ -17,7 +17,7 @@ export function MetricsCollector({
   autoTrackPerformance = true,
   autoTrackInteractions = true 
 }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [consent, setConsent] = useState(null)
   const [showConsentBanner, setShowConsentBanner] = useState(false)
   const metricsRef = useRef(metricsTracker)

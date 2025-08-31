@@ -25,7 +25,7 @@ export class RiskBasedNotificationEngine {
     try {
       const {
         customer_id,
-        barberbarbershop_id,
+        barbershop_id,
         appointment_time,
         booking_id,
         customer_phone,
@@ -34,7 +34,7 @@ export class RiskBasedNotificationEngine {
       } = bookingData
 
       // Step 1: Get or calculate customer risk score
-      const riskAssessment = await this.assessCustomerRisk(customer_id, barberbarbershop_id, {
+      const riskAssessment = await this.assessCustomerRisk(customer_id, barbershop_id, {
         phone: customer_phone,
         email: customer_email
       })
@@ -45,7 +45,7 @@ export class RiskBasedNotificationEngine {
         {
           appointment_time,
           service_name,
-          barberbarbershop_id
+          barbershop_id
         }
       )
 
@@ -92,14 +92,14 @@ export class RiskBasedNotificationEngine {
   /**
    * Assess customer risk using existing scoring system or real-time analysis
    */
-  async assessCustomerRisk(customerId, barberbarbershopId, contactInfo) {
+  async assessCustomerRisk(customerId, barbershopId, contactInfo) {
     try {
       // First, try to get existing risk score
       const { data: existingScore } = await this.supabase
         .from('customer_behavior_scores')
         .select('*')
         .eq('customer_id', customerId)
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .single()
 
       if (existingScore && this.isScoreRecentEnough(existingScore.calculated_at)) {
@@ -112,7 +112,7 @@ export class RiskBasedNotificationEngine {
       }
 
       // If no recent score, calculate real-time risk for new/infrequent customers
-      const realTimeRisk = await this.calculateRealTimeRisk(customerId, barberbarbershopId, contactInfo)
+      const realTimeRisk = await this.calculateRealTimeRisk(customerId, barbershopId, contactInfo)
       
       return {
         risk_score: realTimeRisk.risk_score,
@@ -137,7 +137,7 @@ export class RiskBasedNotificationEngine {
   /**
    * Calculate real-time risk for new customers or when no recent score exists
    */
-  async calculateRealTimeRisk(customerId, barberbarbershopId, contactInfo) {
+  async calculateRealTimeRisk(customerId, barbershopId, contactInfo) {
     // Check if customer exists in our system
     const { data: customerData } = await this.supabase
       .from('customers')
@@ -163,7 +163,7 @@ export class RiskBasedNotificationEngine {
     }
 
     // Existing customers: Calculate based on historical data
-    const behaviorMetrics = await this.getCustomerBehaviorMetrics(customerId, barberbarbershopId)
+    const behaviorMetrics = await this.getCustomerBehaviorMetrics(customerId, barbershopId)
     const calculatedScore = await this.calculateRiskScoreFromMetrics(behaviorMetrics)
     
     return {
@@ -229,14 +229,14 @@ export class RiskBasedNotificationEngine {
    */
   async generateCommunicationPlan(riskAssessment, appointmentDetails) {
     const { risk_tier } = riskAssessment
-    const { appointment_time, service_name, barberbarbershop_id } = appointmentDetails
+    const { appointment_time, service_name, barbershop_id } = appointmentDetails
     
     const appointmentDate = new Date(appointment_time)
     const now = new Date()
     const hoursUntilAppointment = (appointmentDate - now) / (1000 * 60 * 60)
 
     // Get barbershop preferences
-    const barbershopSettings = await this.getBarbershopNotificationSettings(barberbarbershop_id)
+    const barbershopSettings = await this.getBarbershopNotificationSettings(barbershop_id)
     
     switch (risk_tier) {
       case 'green':
@@ -494,11 +494,11 @@ export class RiskBasedNotificationEngine {
     return new Date(appointmentTime.getTime() - (hoursBeforeAppointment * 60 * 60 * 1000))
   }
 
-  async getBarbershopNotificationSettings(barberbarbershopId) {
+  async getBarbershopNotificationSettings(barbershopId) {
     const { data } = await this.supabase
       .from('barbershops')
       .select('notification_preferences')
-      .eq('id', barberbarbershopId)
+      .eq('id', barbershopId)
       .single()
 
     return data?.notification_preferences || {

@@ -25,18 +25,22 @@ const API_CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutes
 let isNewInstallation = false;
 
 self.addEventListener('install', (event) => {
+  console.log('Service worker installing...');
   isNewInstallation = true;
 
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        
+        console.log('Service worker cache opened');
         return cache.addAll(urlsToCache);
       })
       .then(() => {
         // Immediately take control of all clients
-        
+        console.log('Service worker installed, skipping waiting');
         return self.skipWaiting();
+      })
+      .catch(error => {
+        console.error('Service worker install failed:', error);
       })
   );
 });
@@ -113,7 +117,7 @@ self.addEventListener('fetch', (event) => {
               // Wrap in try-catch to prevent network errors
               try {
                 cache.put(request, responseToCache).catch(err => {
-                  :', err);
+                  console.error('Failed to cache:', err);
                 });
               } catch (err) {
                 
@@ -226,7 +230,7 @@ async function networkFirstStrategy(request, cacheName, maxAge) {
       const cache = await caches.open(cacheName);
       try {
         await cache.put(request, response.clone()).catch(err => {
-          :', err);
+          console.error('Failed to cache response:', err);
         });
       } catch (err) {
         
@@ -260,7 +264,7 @@ async function fetchAndCache(request, cacheName) {
       const cache = await caches.open(cacheName);
       try {
         await cache.put(request, response.clone()).catch(err => {
-          :', err);
+          console.error('Failed to cache response:', err);
         });
       } catch (err) {
         

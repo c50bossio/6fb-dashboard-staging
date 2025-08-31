@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     // Get user's profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('barbershop_id, barberbarbershop_id, full_name, email')
+      .select('barbershop_id, barbershop_id, full_name, email')
       .eq('id', user.id)
       .single()
 
@@ -29,13 +29,13 @@ export async function POST(request: NextRequest) {
     if (!barbershopId) {
       const { data: staffRecord, error: staffError } = await supabase
         .from('barbershop_staff')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .single()
       
       if (!staffError && staffRecord) {
-        barbershopId = staffRecord.barberbarbershop_id
+        barbershopId = staffRecord.barbershop_id
         console.log('Found shop ID via staff association:', barbershopId)
       }
     }
@@ -72,10 +72,10 @@ export async function POST(request: NextRequest) {
 
       barbershopId = newBarbershop.id
       
-      // Update user's profile with the new barberbarbershop_id
+      // Update user's profile with the new barbershop_id
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ barberbarbershop_id: barbershopId })
+        .update({ barbershop_id: barbershopId })
         .eq('id', user.id)
 
       if (updateError) {

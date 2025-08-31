@@ -56,7 +56,7 @@ const RISK_TIER_CONFIG = {
  * Provides real-time monitoring and alert system for high-risk customers
  * Integrates with the risk-based notification system to prevent no-shows
  */
-export default function HighRiskCustomerAlerts({ barberbarbershopId }) {
+export default function HighRiskCustomerAlerts({ barbershopId }) {
   const [alerts, setAlerts] = useState([])
   const [upcomingHighRisk, setUpcomingHighRisk] = useState([])
   const [summary, setSummary] = useState(null)
@@ -69,14 +69,14 @@ export default function HighRiskCustomerAlerts({ barberbarbershopId }) {
 
   // Load high-risk customer alerts
   const loadHighRiskAlerts = useCallback(async () => {
-    if (!barberbarbershopId) return
+    if (!barbershopId) return
     
     setLoading(true)
     try {
       // Get high-risk customers and upcoming notifications
       const [highRiskResponse, upcomingResponse] = await Promise.all([
-        fetch(`/api/customer-behavior/manage?barberbarbershop_id=${barberbarbershopId}&type=high_risk_customers`),
-        fetch(`/api/customer-behavior/notifications?barberbarbershop_id=${barberbarbershopId}&type=upcoming_notifications`)
+        fetch(`/api/customer-behavior/manage?barbershop_id=${barbershopId}&type=high_risk_customers`),
+        fetch(`/api/customer-behavior/notifications?barbershop_id=${barbershopId}&type=upcoming_notifications`)
       ])
       
       if (!highRiskResponse.ok || !upcomingResponse.ok) {
@@ -100,7 +100,7 @@ export default function HighRiskCustomerAlerts({ barberbarbershopId }) {
     } finally {
       setLoading(false)
     }
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   // Process alerts with additional context
   const processAlerts = async (customers) => {
@@ -109,7 +109,7 @@ export default function HighRiskCustomerAlerts({ barberbarbershopId }) {
     for (const customer of customers) {
       try {
         // Get upcoming appointments for this customer
-        const appointmentResponse = await fetch(`/api/appointments?customer_id=${customer.customer_id}&barberbarbershop_id=${barberbarbershopId}&upcoming=true`)
+        const appointmentResponse = await fetch(`/api/appointments?customer_id=${customer.customer_id}&barbershop_id=${barbershopId}&upcoming=true`)
         const appointments = appointmentResponse.ok ? (await appointmentResponse.json()).data || [] : []
         
         // Calculate urgency based on next appointment
@@ -121,7 +121,7 @@ export default function HighRiskCustomerAlerts({ barberbarbershopId }) {
           next_appointment: nextAppointment,
           urgency,
           alert_type: determineAlertType(customer, nextAppointment),
-          last_contact: await getLastContactTime(customer.customer_id, barberbarbershopId)
+          last_contact: await getLastContactTime(customer.customer_id, barbershopId)
         })
       } catch (error) {
         console.error(`Error processing customer ${customer.customer_id}:`, error)
@@ -193,9 +193,9 @@ export default function HighRiskCustomerAlerts({ barberbarbershopId }) {
   }
 
   // Get last contact time (simplified - would integrate with notification history)
-  const getLastContactTime = async (customerId, barberbarbershopId) => {
+  const getLastContactTime = async (customerId, barbershopId) => {
     try {
-      const history = await getCommunicationHistory(customerId, barberbarbershopId)
+      const history = await getCommunicationHistory(customerId, barbershopId)
       const lastContact = history.communication_history?.[0]
       return lastContact?.scheduled_time || null
     } catch (error) {

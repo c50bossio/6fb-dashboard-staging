@@ -29,13 +29,13 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { cn } from '@/lib/utils'
 
 export default function BookingRulesPage() {
-  const { user, profile } = useAuth()
-  const supabase = createClient()
+  const { user, profile: _profile } = useAuth()
+  const _supabase = createClient()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [notification, setNotification] = useState(null)
-  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   const [bookingRules, setBookingRules] = useState({})
   const [originalRules, setOriginalRules] = useState({})
   
@@ -218,7 +218,7 @@ export default function BookingRulesPage() {
     }
   }
 
-  const handleSelectClient = (clientId) => {
+  const handleSelectClient = (_clientId) => {
     const newSelection = new Set(selectedClients)
     if (newSelection.has(clientId)) {
       newSelection.delete(clientId)
@@ -239,7 +239,7 @@ export default function BookingRulesPage() {
     
     if (isDev || isLocalhost) {
       setLoading(false)
-      setBarberbarbershopId('mock-barbershop-id')
+      setbarbershopId('mock-barbershop-id')
       setBookingRules({})
       setOriginalRules({})
       return
@@ -260,7 +260,7 @@ export default function BookingRulesPage() {
       // Get user's barbershop
       const { data: profile } = await supabase
         .from('profiles')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('id', user.id)
         .single()
       
@@ -273,7 +273,7 @@ export default function BookingRulesPage() {
         return
       }
       
-      setBarberbarbershopId(profile.barbershop_id)
+      setbarbershopId(profile.barbershop_id)
       
       // Load booking rules from business_settings table
       const { data: settings, error } = await supabase
@@ -557,7 +557,7 @@ export default function BookingRulesPage() {
               <div className="border border-gray-200 rounded-lg p-6">
                 <h4 className="font-medium text-gray-900 mb-4">Client Strike History</h4>
                 <ClientHistoryTracker 
-                  barberbarbershopId={barberbarbershopId}
+                  barbershopId={barbershopId}
                   onClientSelect={(client) => {
                     setSelectedClient(client)
                     if (client?.isBlocked) {
@@ -607,7 +607,7 @@ export default function BookingRulesPage() {
               {useSimplifiedBenefits ? (
                 <div className="space-y-4">
                   <SimplifiedClientBenefits 
-                    barberbarbershopId={barberbarbershopId}
+                    barbershopId={barbershopId}
                     currentRules={bookingRules}
                     onUpdate={(benefitSettings) => {
                       setBookingRules(prev => ({ ...prev, goodClientBenefits: benefitSettings }))
@@ -650,7 +650,7 @@ export default function BookingRulesPage() {
                   </div>
                   
                   <GoodClientBenefitsManager 
-                    barberbarbershopId={barberbarbershopId}
+                    barbershopId={barbershopId}
                     currentRules={bookingRules}
                     onUpdate={(benefitSettings) => {
                       setBookingRules(prev => ({ ...prev, goodClientBenefits: benefitSettings }))
@@ -672,7 +672,7 @@ export default function BookingRulesPage() {
                 </p>
               </div>
               <NoShowAnalyticsDashboard 
-                barberbarbershopId={barberbarbershopId}
+                barbershopId={barbershopId}
                 dateRange={{ start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), end: new Date() }}
                 onExport={(data) => {
                   // Handle export functionality
@@ -800,7 +800,7 @@ export default function BookingRulesPage() {
         isOpen={showAutomationSettings}
         onClose={() => setShowAutomationSettings(false)}
         isManager={authorizedRoles.includes(profile?.role)}
-        shopSettings={{ barberbarbershopId }}
+        shopSettings={{ barbershopId }}
       />
 
       {/* Client Care Flow Modal */}

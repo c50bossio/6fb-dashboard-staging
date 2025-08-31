@@ -9,7 +9,7 @@ import { useAuth } from '../SupabaseAuthProvider'
 import DeleteLocationModal from './DeleteLocationModal'
 
 export default function EditLocationModal({ isOpen, onClose, location }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const { refreshLocations } = useGlobalDashboard()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -26,7 +26,7 @@ export default function EditLocationModal({ isOpen, onClose, location }) {
     description: ''
   })
   
-  const supabase = createClient()
+  const _supabase = createClient()
   
   // Populate form when location changes
   useEffect(() => {

@@ -1,21 +1,19 @@
 'use client'
 
-import { 
-  CreditCardIcon, 
+import {
+  CreditCardIcon,
   BanknotesIcon,
-  CalculatorIcon,
   BuildingLibraryIcon,
   UsersIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon,
+  _ExclamationCircleIcon,
   ArrowTopRightOnSquareIcon,
   ArrowRightIcon,
-  ShieldCheckIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getTenant } from '@/lib/tenant-resolver-client'
@@ -31,9 +29,9 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
   const [stripeAccountId, setStripeAccountId] = useState(initialData.stripeAccountId || null)
   const [bankAccounts, setBankAccounts] = useState([])
   const [payoutSettings, setPayoutSettings] = useState(null)
-  const [barberbarbershopId, setBarberbarbershopId] = useState(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   
-  const supabase = createClient()
+  const _supabase = createClient()
   const router = useRouter()
   
   const [formData, setFormData] = useState({
@@ -107,7 +105,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
 
         let barbershopId
         try {
-          const { barberbarbershopId: resolvedShopId } = await getTenant(profile.id, { supabase })
+          const { barbershopId: resolvedShopId } = await getTenant(profile.id, { supabase })
           barbershopId = resolvedShopId
         } catch (error) {
           console.error('Error getting barbershop ID:', error)
@@ -116,7 +114,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
 
         if (!barbershopId) return
 
-        setBarberbarbershopId(barbershopId)
+        setbarbershopId(barbershopId)
 
         // Get unified Stripe status
         const status = await unifiedStripeManager.getUnifiedStatus(barbershopId)
@@ -156,11 +154,11 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
   
   // Poll for unified Stripe status updates during onboarding
   useEffect(() => {
-    if (!barberbarbershopId) return
+    if (!barbershopId) return
     
     const pollStripeStatus = async () => {
       try {
-        const status = await unifiedStripeManager.getUnifiedStatus(barberbarbershopId, true) // Force refresh
+        const status = await unifiedStripeManager.getUnifiedStatus(barbershopId, true) // Force refresh
         setStripeStatus(status)
         
         if (status.connect_account?.account_id) {
@@ -177,7 +175,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       const interval = setInterval(pollStripeStatus, 10000)
       return () => clearInterval(interval)
     }
-  }, [barberbarbershopId, stripeStatus?.overall_status])
+  }, [barbershopId, stripeStatus?.overall_status])
 
   // Load bank accounts
   useEffect(() => {
@@ -214,7 +212,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
   }, [])
 
   const createStripeConnectAccount = async () => {
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       setError('Unable to determine barbershop. Please try again.')
       return
     }
@@ -227,7 +225,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       const { data: { user } } = await supabase.auth.getUser()
       
       // Use unified setup orchestration
-      const result = await unifiedStripeManager.orchestrateSetup(barberbarbershopId, {
+      const result = await unifiedStripeManager.orchestrateSetup(barbershopId, {
         email: user?.email || 'demo@bookedbarber.com',
         businessType: formData.businessType,
         enableTerminal: true,
@@ -257,7 +255,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
         setFormData(prev => ({ ...prev, stripeConnected: true }))
         
         // Refresh status
-        const status = await unifiedStripeManager.getUnifiedStatus(barberbarbershopId, true)
+        const status = await unifiedStripeManager.getUnifiedStatus(barbershopId, true)
         setStripeStatus(status)
         
       } else {
@@ -269,7 +267,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       
       if (err.message.includes('Authentication required')) {
         setError('Please log in to set up payment processing.')
-      } else if (err.message.includes('barberbarbershop_id') && err.message.includes('required')) {
+      } else if (err.message.includes('barbershop_id') && err.message.includes('required')) {
         setError('Unable to identify your business. Please contact support.')
       } else {
         setError(err.message || 'Failed to create payment account. Please try again.')
@@ -292,7 +290,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       sessionStorage.setItem('onboarding_step', currentSection)
       
       // Use UnifiedStripeManager for onboarding link
-      const result = await unifiedStripeManager.generateOnboardingLink(barberbarbershopId, {
+      const result = await unifiedStripeManager.generateOnboardingLink(barbershopId, {
         refresh_url: `${window.location.origin}/stripe-redirect?refresh=true`,
         return_url: `${window.location.origin}/stripe-redirect?step=banking&success=true`
       })
@@ -317,7 +315,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
     
     try {
       // Use UnifiedStripeManager for dashboard link
-      const result = await unifiedStripeManager.generateOnboardingLink(barberbarbershopId, {
+      const result = await unifiedStripeManager.generateOnboardingLink(barbershopId, {
         type: 'dashboard' // Generate dashboard link instead of onboarding
       })
       
@@ -350,12 +348,12 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
       const settings = scheduleMap[formData.depositSchedule] || scheduleMap.daily
       
       // Use UnifiedStripeManager for payout settings
-      const result = await unifiedStripeManager.updatePayoutSettings(barberbarbershopId, settings)
+      const result = await unifiedStripeManager.updatePayoutSettings(barbershopId, settings)
       
       if (result.success) {
         setSuccess('Payout settings updated successfully')
         // Refresh unified status to reflect changes
-        const refreshedStatus = await unifiedStripeManager.getUnifiedStatus(barberbarbershopId, true)
+        const refreshedStatus = await unifiedStripeManager.getUnifiedStatus(barbershopId, true)
         setStripeStatus(refreshedStatus)
       } else {
         throw new Error(result.error || 'Failed to update payout settings')

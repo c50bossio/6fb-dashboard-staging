@@ -31,46 +31,46 @@ async function verifyAuth(request) {
       return { error: 'Invalid token', status: 401 }
     }
 
-    // Get barberbarbershop_id for the user
+    // Get barbershop_id for the user
     const { data: barbershopData } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
       .single()
 
-    let barberbarbershopId = null
+    let barbershopId = null
     if (barbershopData) {
-      barberbarbershopId = barbershopData.id
+      barbershopId = barbershopData.id
     } else {
       // Check if user is a barber
       const { data: barberData } = await supabase
         .from('barbers')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .single()
       
       if (barberData) {
-        barberbarbershopId = barberData.barberbarbershop_id
+        barbershopId = barberData.barbershop_id
       }
     }
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return { error: 'User not associated with any barbershop', status: 403 }
     }
 
-    return { user, barberbarbershopId }
+    return { user, barbershopId }
   } catch (error) {
     return { error: 'Authentication failed', status: 401 }
   }
 }
 
 // Helper function to calculate NPS score
-async function calculateNPSScore(barberbarbershopId, dateFrom, dateTo, barberId = null, serviceType = null) {
+async function calculateNPSScore(barbershopId, dateFrom, dateTo, barberId = null, serviceType = null) {
   try {
     let query = supabase
       .from('customer_feedback')
       .select('nps_score')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('feedback_type', 'nps')
       .not('nps_score', 'is', null)
 
@@ -131,7 +131,7 @@ export async function GET(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const { searchParams } = new URL(request.url)
 
     // Parse query parameters
@@ -147,7 +147,7 @@ export async function GET(request) {
 
     // Calculate current period NPS
     const currentNPS = await calculateNPSScore(
-      barberbarbershopId,
+      barbershopId,
       dateFrom.toISOString(),
       dateTo.toISOString(),
       barberId,
@@ -166,7 +166,7 @@ export async function GET(request) {
       const previousDateFrom = new Date(previousDateTo.getTime() - periodDays * 24 * 60 * 60 * 1000)
 
       const previousNPS = await calculateNPSScore(
-        barberbarbershopId,
+        barbershopId,
         previousDateFrom.toISOString(),
         previousDateTo.toISOString(),
         barberId,
@@ -206,7 +206,7 @@ export async function POST(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const body = await request.json()
 
     const {
@@ -236,7 +236,7 @@ export async function POST(request) {
     // Create NPS feedback record
     const feedbackData = {
       id: crypto.randomUUID(),
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       customer_id,
       appointment_id,
       barber_id,
@@ -268,7 +268,7 @@ export async function POST(request) {
     }
 
     // Get updated NPS metrics for this barbershop
-    const currentMetrics = await calculateNPSScore(barberbarbershopId, null, null)
+    const currentMetrics = await calculateNPSScore(barbershopId, null, null)
 
     const response = {
       feedback: feedbackResult,

@@ -7,13 +7,10 @@ import {
   UserGroupIcon,
   GiftIcon,
   ArrowPathIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
   InformationCircleIcon,
   Cog6ToothIcon,
   ChartPieIcon,
   SparklesIcon,
-  HeartIcon,
   StarIcon,
   TrophyIcon,
   AdjustmentsHorizontalIcon

@@ -45,7 +45,7 @@ import CustomerBehaviorScoring from './CustomerBehaviorScoring'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d']
 
-export default function BookingRulesAnalytics({ barberbarbershopId }) {
+export default function BookingRulesAnalytics({ barbershopId }) {
   const { 
     rules, 
     loading, 
@@ -54,7 +54,7 @@ export default function BookingRulesAnalytics({ barberbarbershopId }) {
     syncStatus, 
     connectedUsers,
     isConnected 
-  } = useBookingRules(barberbarbershopId)
+  } = useBookingRules(barbershopId)
   
   const [analyticsData, setAnalyticsData] = useState(null)
   const [loadingAnalytics, setLoadingAnalytics] = useState(true)
@@ -64,7 +64,7 @@ export default function BookingRulesAnalytics({ barberbarbershopId }) {
 
   // Load analytics data
   const loadAnalytics = useCallback(async () => {
-    if (!barberbarbershopId) return
+    if (!barbershopId) return
     
     setLoadingAnalytics(true)
     try {
@@ -83,7 +83,7 @@ export default function BookingRulesAnalytics({ barberbarbershopId }) {
     } finally {
       setLoadingAnalytics(false)
     }
-  }, [barberbarbershopId, dateRange, selectedMetric, getAnalytics])
+  }, [barbershopId, dateRange, selectedMetric, getAnalytics])
 
   // Initial load and refresh
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function BookingRulesAnalytics({ barberbarbershopId }) {
       const response = await fetch('/api/booking-rules/analytics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barberbarbershop_id: barberbarbershopId, format })
+        body: JSON.stringify({ barbershop_id: barbershopId, format })
       })
       
       const blob = await response.blob()
@@ -438,7 +438,7 @@ export default function BookingRulesAnalytics({ barberbarbershopId }) {
 
         {/* Customer Intelligence Tab */}
         <TabsContent value="customer-intelligence" className="space-y-4">
-          <CustomerBehaviorScoring barberbarbershopId={barberbarbershopId} />
+          <CustomerBehaviorScoring barbershopId={barbershopId} />
         </TabsContent>
       </Tabs>
     </div>

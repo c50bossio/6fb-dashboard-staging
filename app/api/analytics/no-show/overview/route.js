@@ -16,12 +16,12 @@ import { createServerClient } from '@/lib/supabase-server'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const dateRange = searchParams.get('date_range') || '30_days'
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json(
-        { error: 'Missing barberbarbershop_id parameter' },
+        { error: 'Missing barbershop_id parameter' },
         { status: 400 }
       )
     }
@@ -53,14 +53,14 @@ export async function GET(request) {
       supabase
         .from('appointments')
         .select('id, status, service_price, created_at')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('created_at', startDate.toISOString()),
 
       // No-show appointments
       supabase
         .from('appointments')
         .select('id, service_price, created_at, customer_id')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .eq('status', 'no_show')
         .gte('created_at', startDate.toISOString()),
 
@@ -68,21 +68,21 @@ export async function GET(request) {
       supabase
         .from('payments')
         .select('amount, status, created_at')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('created_at', startDate.toISOString()),
 
       // High-risk clients (using customer behavior scoring if available)
       supabase
         .from('customer_behavior_scores')
         .select('customer_id, risk_score')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('risk_score', 70), // High risk threshold
 
       // Daily trends for mini chart
       supabase
         .from('appointments')
         .select('created_at, status')
-        .eq('barberbarbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .gte('created_at', startDate.toISOString())
         .order('created_at', { ascending: true })
     ])

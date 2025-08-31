@@ -1,31 +1,19 @@
 'use client'
 
-import { 
+import {
   PaintBrushIcon,
   BuildingOffice2Icon,
   StarIcon,
   PhotoIcon,
   LinkIcon,
-  CloudArrowUpIcon,
   CheckCircleIcon,
   XMarkIcon,
-  ExclamationTriangleIcon,
   Cog6ToothIcon,
-  GlobeAltIcon,
-  PencilSquareIcon,
-  DocumentDuplicateIcon,
   ShareIcon,
-  EyeIcon,
-  InformationCircleIcon,
   BeakerIcon,
   SparklesIcon,
-  ArrowTopRightOnSquareIcon,
-  ChatBubbleLeftRightIcon,
   MegaphoneIcon,
-  CameraIcon,
-  VideoCameraIcon,
-  DocumentTextIcon,
-  ChartBarIcon
+  CameraIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
@@ -772,7 +760,7 @@ const IntegrationConfigModal = ({ integration, isOpen, onClose, onSave }) => {
 }
 
 export default function ExternalIntegrations() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [integrations, setIntegrations] = useState([])
   const [loading, setLoading] = useState(true)
   const [connecting, setConnecting] = useState(new Set())
@@ -781,7 +769,7 @@ export default function ExternalIntegrations() {
   const [activeTab, setActiveTab] = useState('canva')
   const [message, setMessage] = useState({ type: '', text: '' })
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   // Available integrations
   const availableIntegrations = [

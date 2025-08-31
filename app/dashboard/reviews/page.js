@@ -52,16 +52,16 @@ export default function ReviewsPage() {
         setIsLoading(true)
         setError(null)
         
-        const barberbarbershopId = profile?.shop_id || profile?.barbershop_id
+        const barbershopId = profile?.shop_id || profile?.barbershop_id
         
-        if (!barberbarbershopId) {
+        if (!barbershopId) {
           setError('No barbershop associated with your account. Please contact support.')
           setIsLoading(false)
           return
         }
         
         // Load barbers for filter
-        const barbersResponse = await fetch(`/api/barbers?barberbarbershop_id=${barberbarbershopId}&active_only=true`)
+        const barbersResponse = await fetch(`/api/barbers?barbershop_id=${barbershopId}&active_only=true`)
         if (barbersResponse.ok) {
           const barbersResult = await barbersResponse.json()
           if (barbersResult.barbers) {
@@ -70,7 +70,7 @@ export default function ReviewsPage() {
         }
 
         // Load reviews with attribution
-        const reviewsResponse = await fetch(`/api/gmb/reviews?barberbarbershop_id=${barberbarbershopId}&limit=50`)
+        const reviewsResponse = await fetch(`/api/gmb/reviews?barbershop_id=${barbershopId}&limit=50`)
         if (reviewsResponse.ok) {
           const reviewsResult = await reviewsResponse.json()
           if (reviewsResult.success && reviewsResult.data?.reviews) {

@@ -26,7 +26,7 @@ export async function POST(request) {
     const { 
       planType, // 'starter', 'professional', 'enterprise'
       billingInterval = 'month', // 'month' or 'year'
-      barberbarbershopId
+      barbershopId
     } = body;
 
     // Define price IDs (these should be created in Stripe Dashboard)
@@ -68,7 +68,7 @@ export async function POST(request) {
         name: profile.full_name,
         metadata: {
           user_id: user.id,
-          barberbarbershop_id: barberbarbershopId
+          barbershop_id: barbershopId
         }
       });
       
@@ -123,14 +123,14 @@ export async function POST(request) {
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
       metadata: {
         user_id: user.id,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         plan_type: planType,
         billing_interval: billingInterval
       },
       subscription_data: {
         metadata: {
           user_id: user.id,
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           plan_type: planType
         },
         trial_period_days: planType === 'starter' ? 14 : 7

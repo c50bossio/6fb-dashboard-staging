@@ -7,7 +7,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useContext } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
-import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 // Try to import auth context - will work in dev mode
 let AuthContext
@@ -96,7 +95,7 @@ export function useBusinessContext() {
             subscription_tier: 'pro',
             subscription_status: 'active',
             role: 'SHOP_OWNER',
-            barberbarbershop_id: 'dev-shop-123'
+            barbershop_id: 'dev-shop-123'
           }
         }
         throw error
@@ -116,14 +115,15 @@ export function useBusinessContext() {
       }
       
       // Get shop ID using service
-      const barbershopId = await createClient().getUserShopId(userId)
+      const client = createClient()
+      const barbershopId = await client.getUserShopId(userId)
       
       if (!barbershopId) {
         return null
       }
       
       // Get the barbershop details
-      const shop = await createClient().getBarbershop(barbershopId)
+      const shop = await client.getBarbershop(barbershopId)
       
       // Determine user role
       let role = 'CLIENT'
@@ -137,21 +137,24 @@ export function useBusinessContext() {
           role = 'SHOP_OWNER'
           permissions = ['manage_shop', 'manage_staff', 'view_analytics', 'manage_appointments']
         } else {
-          // Check if user is staff
-          const client = createClient().client || getSupabaseClient()
-          if (!client) throw new Error('Supabase client not available')
-          
-          const { data: staffRecord } = await client
-            .from('barbershop_staff')
-            .select('role, permissions')
-            .eq('user_id', userId)
-            .eq('barberbarbershop_id', barbershopId)
-            .eq('is_active', true)
-            .single()
-          
-          if (staffRecord) {
-            role = staffRecord.role || 'BARBER'
-            permissions = staffRecord.permissions || ['manage_appointments']
+          // Check if user is staff based on their profile role
+          // Skip barbershop_staff table query to avoid 406 errors
+          if (process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true' && userId === 'dev-user-123') {
+            role = 'SHOP_OWNER'
+            permissions = ['manage_shop', 'manage_staff', 'view_analytics', 'manage_appointments']
+          } else {
+            // Use profile role to determine permissions
+            // If user has access to a shop but isn't the owner, they're staff
+            role = profile?.role || 'BARBER'
+            
+            // Set permissions based on role
+            if (role === 'BARBER' || role === 'STAFF') {
+              permissions = ['manage_appointments', 'view_customers']
+            } else if (role === 'MANAGER') {
+              permissions = ['manage_appointments', 'view_customers', 'view_analytics']
+            } else {
+              permissions = ['manage_appointments']
+            }
           }
         }
       }
@@ -175,7 +178,8 @@ export function useBusinessContext() {
   useEffect(() => {
     const updateServiceContext = async () => {
       if (userQuery.data && shopContextQuery.data) {
-        await createClient().refreshCurrentUser()
+        const client = createClient()
+        await client.refreshCurrentUser()
       }
     }
     

@@ -334,7 +334,7 @@ async function getBusinessMetrics(context, testMode) {
     const { data: appointments, error: aptError } = await supabase
       .from('appointments')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
 
     // Get real bookings data  
     const { data: bookings, error: bookError } = await supabase
@@ -346,7 +346,7 @@ async function getBusinessMetrics(context, testMode) {
     const { data: customers, error: custError } = await supabase
       .from('customers')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
 
     const appointmentCount = appointments?.length || 0
     const bookingCount = bookings?.length || 0

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 export default function GrowthChart({ data, period }) {
   const [chartType, setChartType] = useState('net') // net, new, canceled

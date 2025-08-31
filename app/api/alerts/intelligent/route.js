@@ -11,18 +11,18 @@ export const dynamic = 'force-dynamic'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
-    if (!barberbarbershopId) {
+    const barbershopId = searchParams.get('barbershop_id');
+    if (!barbershopId) {
       return NextResponse.json({
         success: false,
-        error: 'barberbarbershop_id parameter is required'
+        error: 'barbershop_id parameter is required'
       }, { status: 400 });
     }
 
     // Use optimized caching with the new service
-    const queryKey = `intelligent-alerts-${barberbarbershopId}`;
+    const queryKey = `intelligent-alerts-${barbershopId}`;
     const alerts = await optimizedSupabase.executeQuery(queryKey, async () => {
-      return await generateIntelligentAlerts(barberbarbershopId);
+      return await generateIntelligentAlerts(barbershopId);
     }, { cacheTTL: 180000 }); // 3 minute cache
 
     return NextResponse.json({
@@ -47,7 +47,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const { action, barberbarbershopId, thresholds, alertId } = await request.json();
+    const { action, barbershopId, thresholds, alertId } = await request.json();
 
     switch (action) {
       case 'update_thresholds':
@@ -90,12 +90,12 @@ export async function POST(request) {
 /**
  * Generate intelligent alerts based on real business data
  */
-async function generateIntelligentAlerts(barberbarbershopId) {
+async function generateIntelligentAlerts(barbershopId) {
   try {
     // Use batch queries to fetch data more efficiently
     const results = await batchQueries([
       {
-        key: `bookings-${barberbarbershopId}`,
+        key: `bookings-${barbershopId}`,
         fn: (client) => client
           .from('bookings')
           .select('*, customers:customer_id(id, email, created_at)')
@@ -104,7 +104,7 @@ async function generateIntelligentAlerts(barberbarbershopId) {
         options: { cacheTTL: 300000 } // 5 minute cache
       },
       {
-        key: `customers-recent-${barberbarbershopId}`,
+        key: `customers-recent-${barbershopId}`,
         fn: (client) => client
           .from('customers')
           .select('*')

@@ -7,8 +7,6 @@ import {
   UserGroupIcon,
   BellIcon,
   ChartBarIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
   ArrowRightIcon,
   SparklesIcon,
   DocumentCheckIcon,
@@ -21,7 +19,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function SettingsDashboard() {
   const router = useRouter()
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [shopData, setShopData] = useState(null)
   const [loading, setLoading] = useState(true)
   // Removed completion status tracking - now handled by OnboardingOrchestrator
@@ -35,7 +33,7 @@ export default function SettingsDashboard() {
     if (!user) return
 
     try {
-      const supabase = createClient()
+      const _supabase = createClient()
       
       // Load shop data
       const { data: shop } = await supabase

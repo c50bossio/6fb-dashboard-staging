@@ -50,7 +50,7 @@ const getTierColor = (tier) => {
   return tier?.color_code || '#6B7280'
 }
 
-export default function TierProgressTracker({ barberId, barberbarbershopId }) {
+export default function TierProgressTracker({ barberId, barbershopId }) {
   const [loading, setLoading] = useState(true)
   const [tierStatus, setTierStatus] = useState(null)
   const [error, setError] = useState(null)
@@ -58,11 +58,11 @@ export default function TierProgressTracker({ barberId, barberbarbershopId }) {
   
   // Load tier status
   const loadTierStatus = async () => {
-    if (!barberId || !barberbarbershopId) return
+    if (!barberId || !barbershopId) return
     
     try {
       setRefreshing(true)
-      const { data, error: loadError } = await financialService.getBarberTierStatus(barberId, barberbarbershopId)
+      const { data, error: loadError } = await financialService.getBarberTierStatus(barberId, barbershopId)
       
       if (loadError) {
         throw new Error(loadError)
@@ -85,7 +85,7 @@ export default function TierProgressTracker({ barberId, barberbarbershopId }) {
     // Refresh every 5 minutes
     const interval = setInterval(loadTierStatus, 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [barberId, barberbarbershopId])
+  }, [barberId, barbershopId])
   
   // Calculate forecast and progress metrics
   const progressMetrics = useMemo(() => {

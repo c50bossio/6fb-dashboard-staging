@@ -17,8 +17,8 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
   const loadServices = async () => {
     try {
       // First try to load real services from database
-      const barberbarbershopId = bookingData.location?.id || bookingData.barberbarbershop_id
-      const response = await fetch(`/api/services?barberbarbershop_id=${barberbarbershopId || 'default'}`)
+      const barbershopId = bookingData.location?.id || bookingData.barbershop_id
+      const response = await fetch(`/api/services?barbershop_id=${barbershopId || 'default'}`)
       
       if (response.ok) {
         const data = await response.json()

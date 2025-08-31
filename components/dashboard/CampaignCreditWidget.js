@@ -18,18 +18,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
-export default function CampaignCreditWidget({ barberbarbershopId }) {
+export default function CampaignCreditWidget({ barbershopId }) {
   const [creditData, setCreditData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
     fetchCreditBalance()
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   const fetchCreditBalance = async () => {
     try {
-      const response = await fetch(`/api/campaigns/credit-allocation?barberbarbershop_id=${barberbarbershopId}`)
+      const response = await fetch(`/api/campaigns/credit-allocation?barbershop_id=${barbershopId}`)
       const data = await response.json()
       
       if (data.success) {

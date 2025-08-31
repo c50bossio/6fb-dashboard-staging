@@ -7,12 +7,15 @@ import { errorHandler } from '../lib/error-handler'
 import errorTracker from '../lib/error-tracker'
 import { initializeFallbackSystems } from '../lib/fallback-systems'
 import { getProductionMonitor } from '../lib/production-monitor'
+import preventAnalyticsErrors from '../lib/analytics-prevention'
 import AuthErrorBoundary from './AuthErrorBoundary'
 import { AppErrorBoundary } from './error-boundary'
 import { QueryProvider } from './QueryProvider'
 import { SupabaseAuthProvider } from './SupabaseAuthProvider'
+// import { TestAuthProvider as SupabaseAuthProvider } from './TestAuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
+import AuthTest from './AuthTest'
 
 // Lazy load non-critical providers
 const ServiceWorkerProvider = dynamic(() => import('./ServiceWorkerProvider'), {
@@ -49,11 +52,17 @@ function CombinedProviders({ children }) {
 
 export default function ClientWrapper({ children }) {
   useEffect(() => {
+    // Prevent phantom analytics script loading errors
+    preventAnalyticsErrors()
+    
     // Initialize development error suppression (development only)
     if (process.env.NODE_ENV === 'development') {
-      console.log('🤫 Development error suppressor initialized')
-      // Dev error suppressor is already initialized in its constructor
-      // Just log that it's active
+      // Dev error suppressor and analytics prevention initialized silently
+      // Debug logging can be enabled via NEXT_PUBLIC_DEBUG_CLIENT_WRAPPER
+      if (process.env.NEXT_PUBLIC_DEBUG_CLIENT_WRAPPER) {
+        console.log('🤫 Development error suppressor initialized')
+        console.log('🚫 Analytics prevention measures active')
+      }
     }
     
     // Initialize error tracking in production only
@@ -119,6 +128,7 @@ export default function ClientWrapper({ children }) {
   
   return (
     <>
+      <AuthTest />
       <SkipToContent />
       {/* <StripeModeBanner /> */}
       <AppErrorBoundary>

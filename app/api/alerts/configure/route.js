@@ -9,12 +9,12 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const userId = searchParams.get('user_id');
     
-    if (!barberbarbershopId || !userId) {
+    if (!barbershopId || !userId) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id and user_id are required parameters' },
+        { error: 'barbershop_id and user_id are required parameters' },
         { status: 400 }
       );
     }
@@ -26,7 +26,7 @@ export async function GET(request) {
       },
       body: JSON.stringify({
         user_id: userId,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         action: 'get'
       }),
     });
@@ -39,7 +39,7 @@ export async function GET(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         action: 'list'
       }),
     });
@@ -81,7 +81,7 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       data: {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         user_id: userId,
         user_preferences: preferences,
         alert_rules: rules,
@@ -112,16 +112,16 @@ export async function POST(request) {
     const body = await request.json();
     
     const { 
-      barberbarbershop_id, 
+      barbershop_id, 
       user_id, 
       preferences, 
       rules,
       action = 'update_preferences'
     } = body;
     
-    if (!barberbarbershop_id || !user_id) {
+    if (!barbershop_id || !user_id) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id and user_id are required' },
+        { error: 'barbershop_id and user_id are required' },
         { status: 400 }
       );
     }
@@ -136,7 +136,7 @@ export async function POST(request) {
         },
         body: JSON.stringify({
           user_id,
-          barberbarbershop_id,
+          barbershop_id,
           action: 'update',
           preferences: {
             ...preferences,
@@ -168,7 +168,7 @@ export async function POST(request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barberbarbershop_id,
+          barbershop_id,
           action: 'update',
           rules: rules.map(rule => ({
             ...rule,
@@ -200,7 +200,7 @@ export async function POST(request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barberbarbershop_id,
+          barbershop_id,
           action: 'create',
           rule: {
             ...body.rule_config,
@@ -233,7 +233,7 @@ export async function POST(request) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barberbarbershop_id,
+          barbershop_id,
           user_id,
           test_type: body.test_type || 'sample_alert'
         }),
@@ -260,7 +260,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: allSuccessful,
       data: {
-        barberbarbershop_id,
+        barbershop_id,
         user_id,
         action,
         updates: response.updates,
@@ -291,14 +291,14 @@ export async function PUT(request) {
     const body = await request.json();
     
     const { 
-      barberbarbershop_id, 
+      barbershop_id, 
       user_id, 
       configuration 
     } = body;
     
-    if (!barberbarbershop_id || !user_id || !configuration) {
+    if (!barbershop_id || !user_id || !configuration) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id, user_id, and configuration are required' },
+        { error: 'barbershop_id, user_id, and configuration are required' },
         { status: 400 }
       );
     }
@@ -309,7 +309,7 @@ export async function PUT(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        barberbarbershop_id,
+        barbershop_id,
         user_id,
         configuration: {
           ...configuration,
@@ -335,7 +335,7 @@ export async function PUT(request) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            barberbarbershop_id,
+            barbershop_id,
             trigger: 'preference_update'
           }),
         });

@@ -63,7 +63,7 @@ import {
  * - Export capabilities
  */
 export default function PayoutReconciliation({ 
-  barberbarbershopId, 
+  barbershopId, 
   currentUserRole = 'admin' 
 }) {
   // State Management
@@ -121,7 +121,7 @@ export default function PayoutReconciliation({
       
       // Load main reconciliation data
       const response = await fetch(`/api/payout-reconciliation?${new URLSearchParams({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         period_start: period.start.toISOString(),
         period_end: period.end.toISOString(),
         include_discrepancies: 'true',
@@ -138,7 +138,7 @@ export default function PayoutReconciliation({
 
       // Load reconciliation reports
       const reportsResponse = await fetch(`/api/payout-reconciliation/reports?${new URLSearchParams({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         limit: '10'
       })}`)
 
@@ -154,14 +154,14 @@ export default function PayoutReconciliation({
     } finally {
       setLoading(false)
     }
-  }, [barberbarbershopId, selectedPeriod, getPeriodDates])
+  }, [barbershopId, selectedPeriod, getPeriodDates])
 
   // Initial load
   useEffect(() => {
-    if (barberbarbershopId) {
+    if (barbershopId) {
       loadReconciliationData()
     }
-  }, [barberbarbershopId, loadReconciliationData])
+  }, [barbershopId, loadReconciliationData])
 
   // Run reconciliation process
   const runReconciliation = async () => {
@@ -176,7 +176,7 @@ export default function PayoutReconciliation({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          barberbarbershop_id: barberbarbershopId,
+          barbershop_id: barbershopId,
           period_start: period.start.toISOString(),
           period_end: period.end.toISOString(),
           auto_resolve_matches: true
@@ -208,7 +208,7 @@ export default function PayoutReconciliation({
       const period = getPeriodDates(selectedPeriod)
       
       const response = await fetch(`/api/payout-reconciliation/export?${new URLSearchParams({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         period_start: period.start.toISOString(),
         period_end: period.end.toISOString(),
         format: 'csv'

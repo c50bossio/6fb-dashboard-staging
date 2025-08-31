@@ -266,7 +266,7 @@ async function performLocationOptimization(location, organizationId, optimizatio
           phone
         )
       `)
-      .eq('barberbarbershop_id', location.id)
+      .eq('barbershop_id', location.id)
       .eq('is_active', true)
 
     optimization.current_staff = staff || []
@@ -355,7 +355,7 @@ async function generateDemandForecast(locationId, startDate, endDate) {
     const { data: historicalData } = await supabase
       .from('appointments')
       .select('date, service_id, status, created_at')
-      .eq('barberbarbershop_id', locationId)
+      .eq('barbershop_id', locationId)
       .gte('date', new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
       .in('status', ['completed', 'confirmed'])
 

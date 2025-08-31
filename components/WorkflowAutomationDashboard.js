@@ -3,7 +3,6 @@
 import {
   CogIcon,
   PlayIcon,
-  PauseIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ClockIcon,
@@ -15,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function WorkflowAutomationDashboard({ barberbarbershop_id = 'demo', compact = false }) {
+export default function WorkflowAutomationDashboard({ barbershop_id = 'demo', compact = false }) {
   const [dashboard, setDashboard] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('overview')
@@ -23,12 +22,12 @@ export default function WorkflowAutomationDashboard({ barberbarbershop_id = 'dem
 
   useEffect(() => {
     loadDashboard()
-  }, [barberbarbershop_id])
+  }, [barbershop_id])
 
   const loadDashboard = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/ai/workflow-automation?barberbarbershop_id=${barberbarbershop_id}`)
+      const response = await fetch(`/api/ai/workflow-automation?barbershop_id=${barbershop_id}`)
       const data = await response.json()
       
       if (data.success) {
@@ -49,7 +48,7 @@ export default function WorkflowAutomationDashboard({ barberbarbershop_id = 'dem
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action_type: 'trigger_workflow',
-          barberbarbershop_id,
+          barbershop_id,
           parameters: {
             workflow_id: workflowId,
             override_conditions: true
@@ -80,7 +79,7 @@ export default function WorkflowAutomationDashboard({ barberbarbershop_id = 'dem
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action_type: 'create_automation',
-          barberbarbershop_id,
+          barbershop_id,
           parameters: {
             name: suggestion.title,
             description: suggestion.description,

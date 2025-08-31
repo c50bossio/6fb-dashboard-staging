@@ -57,14 +57,14 @@ Book Now: {{booking_link}}`
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const templateType = searchParams.get('type') || 'birthday'; // 'birthday' or 'anniversary'
     const messageType = searchParams.get('message_type'); // 'sms', 'email', or null for both
     
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({
         templates: [],
-        error: 'barberbarbershop_id parameter is required'
+        error: 'barbershop_id parameter is required'
       }, { status: 400 });
     }
 
@@ -73,7 +73,7 @@ export async function GET(request) {
       let query = supabase
         .from('birthday_templates')
         .select('*')
-        .or(`barberbarbershop_id.eq.${barberbarbershopId},barberbarbershop_id.eq.default`)
+        .or(`barbershop_id.eq.${barbershopId},barbershop_id.eq.default`)
         .eq('template_type', templateType)
         .eq('is_active', true)
         .order('is_default', { ascending: false })
@@ -151,7 +151,7 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const { 
-      barberbarbershop_id,
+      barbershop_id,
       template_name,
       template_type,
       message_type,
@@ -165,14 +165,14 @@ export async function POST(request) {
       is_default
     } = body;
 
-    if (!barberbarbershop_id || !template_name || !template_type || !message_type || !message_content) {
+    if (!barbershop_id || !template_name || !template_type || !message_type || !message_content) {
       return NextResponse.json({
-        error: 'barberbarbershop_id, template_name, template_type, message_type, and message_content are required'
+        error: 'barbershop_id, template_name, template_type, message_type, and message_content are required'
       }, { status: 400 });
     }
 
     const templateData = {
-      barberbarbershop_id,
+      barbershop_id,
       template_name,
       template_type,
       message_type,
@@ -334,7 +334,7 @@ function getDefaultTemplates(templateType, messageType) {
       is_default: true,
       times_used: 0,
       created_at: new Date().toISOString(),
-      barberbarbershop_id: 'default'
+      barbershop_id: 'default'
     });
   }
 
@@ -355,7 +355,7 @@ function getDefaultTemplates(templateType, messageType) {
       is_default: true,
       times_used: 0,
       created_at: new Date().toISOString(),
-      barberbarbershop_id: 'default'
+      barbershop_id: 'default'
     });
   }
 

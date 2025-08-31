@@ -291,7 +291,7 @@ export function withFeatureFlagErrorBoundary(WrappedComponent, options = {}) {
 // Hook for safely using feature flags with error handling
 export function useSafeFeatureFlag(flagName, options = {}) {
   const [error, setError] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
+  const [_retryCount, setRetryCount] = useState(0)
   const { reportError } = useFeatureFlagError()
 
   const {

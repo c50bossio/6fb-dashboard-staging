@@ -46,10 +46,10 @@ interface DashboardStats {
 }
 
 interface POSDashboardProps {
-  barberbarbershopId: string
+  barbershopId: string
 }
 
-export function POSDashboard({ barberbarbershopId }: POSDashboardProps) {
+export function POSDashboard({ barbershopId }: POSDashboardProps) {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState<7 | 30 | 90>(7)
@@ -57,7 +57,7 @@ export function POSDashboard({ barberbarbershopId }: POSDashboardProps) {
 
   useEffect(() => {
     loadDashboardData()
-  }, [barberbarbershopId, selectedPeriod])
+  }, [barbershopId, selectedPeriod])
 
   const loadDashboardData = async () => {
     setLoading(true)
@@ -69,10 +69,10 @@ export function POSDashboard({ barberbarbershopId }: POSDashboardProps) {
         lowStockRes,
         recentSalesRes
       ] = await Promise.all([
-        fetch(`/api/pos/analytics/daily-sales?barberbarbershop_id=${barberbarbershopId}&days=${selectedPeriod}`),
-        fetch(`/api/pos/analytics/top-products?barberbarbershop_id=${barberbarbershopId}&days=${selectedPeriod}&limit=5`),
-        fetch(`/api/pos/products?barberbarbershop_id=${barberbarbershopId}&low_stock=true`),
-        fetch(`/api/pos/sales?barberbarbershop_id=${barberbarbershopId}&limit=10`)
+        fetch(`/api/pos/analytics/daily-sales?barbershop_id=${barbershopId}&days=${selectedPeriod}`),
+        fetch(`/api/pos/analytics/top-products?barbershop_id=${barbershopId}&days=${selectedPeriod}&limit=5`),
+        fetch(`/api/pos/products?barbershop_id=${barbershopId}&low_stock=true`),
+        fetch(`/api/pos/sales?barbershop_id=${barbershopId}&limit=10`)
       ])
 
       const [dailySales, topProducts, lowStock, recentSales] = await Promise.all([

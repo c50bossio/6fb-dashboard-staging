@@ -21,7 +21,7 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershopId');
+    const barbershopId = searchParams.get('barbershopId');
     const barberId = searchParams.get('barberId') || user.id;
     const limit = parseInt(searchParams.get('limit') || '10');
 
@@ -30,7 +30,7 @@ export async function GET(request) {
       .from('financial_arrangements')
       .select('barber_stripe_account_id')
       .eq('barber_id', barberId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single();
 
     if (!arrangement?.barber_stripe_account_id) {
@@ -97,7 +97,7 @@ export async function POST(request) {
 
     const body = await request.json();
     const { 
-      barberbarbershopId,
+      barbershopId,
       barberId = user.id,
       amount, // in dollars
       description = 'Manual payout request'
@@ -115,7 +115,7 @@ export async function POST(request) {
       .from('financial_arrangements')
       .select('barber_stripe_account_id, barber_stripe_onboarded')
       .eq('barber_id', barberId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single();
 
     if (!arrangement?.barber_stripe_account_id) {
@@ -152,7 +152,7 @@ export async function POST(request) {
       description,
       metadata: {
         barberId,
-        barberbarbershopId,
+        barbershopId,
         requested_by: user.id,
         requested_at: new Date().toISOString()
       }
@@ -162,7 +162,7 @@ export async function POST(request) {
     await supabase
       .from('payout_history')
       .insert({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         barber_id: barberId,
         stripe_payout_id: payout.payout.id,
         amount: amount,

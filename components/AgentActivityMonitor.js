@@ -1,13 +1,12 @@
 'use client'
 
-import { 
-  SparklesIcon, 
-  ChartBarIcon, 
-  MegaphoneIcon, 
+import {
+  SparklesIcon,
+  ChartBarIcon,
+  MegaphoneIcon,
   CogIcon,
   CheckCircleIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'

@@ -36,7 +36,7 @@ export async function GET(request, { params }) {
       .from('barber_performance')
       .select('*')
       .eq('barber_id', barberId)
-      .eq('barberbarbershop_id', shop.id)
+      .eq('barbershop_id', shop.id)
       .eq('period_type', period)
       .order('period_start', { ascending: false })
     
@@ -76,7 +76,7 @@ export async function GET(request, { params }) {
     const { data: shopRankings } = await supabase
       .from('barber_performance')
       .select('barber_id, total_revenue')
-      .eq('barberbarbershop_id', shop.id)
+      .eq('barbershop_id', shop.id)
       .eq('period_type', period)
       .order('total_revenue', { ascending: false })
     
@@ -126,7 +126,7 @@ async function generatePerformanceMetrics(supabase, barberId, barbershopId, peri
       .from('appointments')
       .select('*')
       .eq('barber_id', barberId)
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .gte('appointment_date', startDate.toISOString())
       .lte('appointment_date', endDate.toISOString())
     

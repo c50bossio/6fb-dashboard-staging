@@ -1,31 +1,19 @@
 'use client'
 
-import { 
+import {
   BuildingOffice2Icon,
-  GlobeAltIcon,
-  UserGroupIcon,
   DocumentDuplicateIcon,
   CheckCircleIcon,
   XMarkIcon,
   ClockIcon,
-  ArrowUpTrayIcon,
   ArrowDownTrayIcon,
   PencilSquareIcon,
-  TrashIcon,
-  EyeIcon,
-  PlayIcon,
-  PauseIcon,
   Cog6ToothIcon,
-  ChartBarIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon,
   CloudArrowUpIcon,
-  FolderOpenIcon,
-  DocumentCheckIcon,
-  BarsArrowUpIcon,
-  BarsArrowDownIcon
+  DocumentCheckIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { templateEngine, PREMIUM_TEMPLATES } from '@/lib/templates/template-engine'
@@ -516,7 +504,7 @@ const BulkActionsToolbar = ({ selectedLocations, onAction, onSelectAll, onDesele
 }
 
 export default function EnterpriseBulkOperations() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [locations, setLocations] = useState([])
   const [selectedLocations, setSelectedLocations] = useState([])
   const [loading, setLoading] = useState(true)
@@ -528,7 +516,7 @@ export default function EnterpriseBulkOperations() {
   const [sortBy, setSortBy] = useState('name')
   const [filterStatus, setFilterStatus] = useState('all')
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   // Load user's locations
   useEffect(() => {

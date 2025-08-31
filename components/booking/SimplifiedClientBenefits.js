@@ -61,7 +61,7 @@ const QUICK_SETUP_PRESETS = {
 }
 
 export default function SimplifiedClientBenefits({
-  barberbarbershopId,
+  barbershopId,
   currentRules = {},
   onUpdate,
   isManager = false

@@ -1,9 +1,6 @@
 'use client'
 
-import { 
-  CalendarIcon,
-  ClockIcon,
-  UserIcon,
+import {
   PhoneIcon,
   CheckIcon,
   XMarkIcon,
@@ -13,7 +10,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberSchedule() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [appointments, setAppointments] = useState([])
   const [availability, setAvailability] = useState({
@@ -30,7 +27,7 @@ export default function BarberSchedule() {
 
   useEffect(() => {
     loadScheduleData()
-  }, [selectedDate])
+  }, [selectedDate]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadScheduleData = async () => {
     try {

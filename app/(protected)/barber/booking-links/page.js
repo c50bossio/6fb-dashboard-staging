@@ -10,13 +10,10 @@ import {
   ClipboardIcon,
   ShareIcon,
   ChartBarIcon,
-  CalendarIcon,
-  ClockIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
-  ArrowTopRightOnSquareIcon,
   CodeBracketIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
@@ -26,7 +23,7 @@ import QRCodeModal from '../../../../components/barber/QRCodeModal'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BookingLinksPage() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [bookingLinks, setBookingLinks] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -40,7 +37,7 @@ export default function BookingLinksPage() {
 
   useEffect(() => {
     loadBookingLinks()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const showToastNotification = (message, type = 'success') => {
     setToastMessage(message)

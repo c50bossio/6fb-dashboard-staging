@@ -10,10 +10,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ChevronRightIcon,
-  PlayIcon,
-  PauseIcon,
   ArrowPathIcon,
-  FlagIcon,
   CameraIcon,
   WrenchScrewdriverIcon,
   ChatBubbleLeftIcon
@@ -30,9 +27,9 @@ export default function ActionCenter({ data }) {
   const appointments = data?.appointments || []
   const alerts = data?.alerts || []
   const realtime = data?.realtime || {}
-  const barberbarbershopId = data?.barberbarbershop_id
+  const barbershopId = data?.barbershop_id
   
-  if (!barberbarbershopId) {
+  if (!barbershopId) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="text-center text-gray-500">
@@ -46,14 +43,14 @@ export default function ActionCenter({ data }) {
   // Load dynamic priority actions from API
   useEffect(() => {
     loadPriorityActions()
-  }, [barberbarbershopId])
+  }, [barbershopId])
 
   const loadPriorityActions = async () => {
     try {
       setLoadingActions(true)
       setActionsError(null)
       
-      const response = await fetch(`/api/operations/priority-actions?barberbarbershop_id=${barberbarbershopId}`)
+      const response = await fetch(`/api/operations/priority-actions?barbershop_id=${barbershopId}`)
       const result = await response.json()
       
       if (result.success && result.data?.actions) {

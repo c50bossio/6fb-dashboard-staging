@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function POSPage() {
   const { user, profile } = useAuth()
-  const [barberbarbershopId, setBarberbarbershopId] = useState<string | null>(null)
+  const [barbershopId, setbarbershopId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,13 +29,13 @@ export default function POSPage() {
       if (response.ok && data.profile) {
         // Use the resolved barbershop ID from the API response
         // This handles both individual barbers and shop employees
-        const contextId = data.profile.resolved_barberbarbershop_id || 
+        const contextId = data.profile.resolved_barbershop_id || 
                          data.profile.barbershop_id || 
                          data.profile.shop_id ||
                          data.profile.id // Fallback to user ID for individual barbers
 
         if (contextId) {
-          setBarberbarbershopId(contextId)
+          setbarbershopId(contextId)
         } else {
           throw new Error('Unable to determine inventory access. Please complete your profile setup.')
         }
@@ -82,7 +82,7 @@ export default function POSPage() {
     )
   }
 
-  if (!barberbarbershopId) {
+  if (!barbershopId) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card className="max-w-2xl mx-auto">
@@ -117,7 +117,7 @@ export default function POSPage() {
 
       {/* POS Interface */}
       <POSInterface 
-        barberbarbershopId={barberbarbershopId}
+        barbershopId={barbershopId}
         barberId={user?.id}
         customerId={undefined}
       />

@@ -16,7 +16,7 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barberbarbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const limit = parseInt(searchParams.get('limit')) || 20
     const category = searchParams.get('category') // Filter by badge category
     const timeframe = searchParams.get('timeframe') || 'all' // all, month, week
@@ -29,13 +29,13 @@ export async function GET(request) {
         name,
         total_visits,
         total_spent,
-        barberbarbershop_id
+        barbershop_id
       `)
       .eq('is_active', true)
       .limit(limit * 2) // Get more customers to account for filtering
 
-    if (barberbarbershopId) {
-      customerQuery = customerQuery.or(`barbershop_id.eq.${barberbarbershopId},barberbarbershop_id.eq.${barberbarbershopId}`)
+    if (barbershopId) {
+      customerQuery = customerQuery.or(`barbershop_id.eq.${barbershopId},barbershop_id.eq.${barbershopId}`)
     }
 
     const { data: customers, error: customerError } = await customerQuery
@@ -160,7 +160,7 @@ export async function GET(request) {
       category: category || 'all',
       limit,
       filters: {
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         category,
         timeframe
       }
@@ -183,7 +183,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { barberbarbershop_id, trigger_notifications = false } = body
+    const { barbershop_id, trigger_notifications = false } = body
 
     // Get fresh leaderboard data
     const leaderboardResponse = await GET(request)

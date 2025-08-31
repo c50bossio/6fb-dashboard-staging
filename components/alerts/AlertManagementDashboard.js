@@ -1,21 +1,19 @@
 'use client';
 
-import { 
-  BellIcon, 
+import {
+  BellIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XMarkIcon,
   ClockIcon,
-  AdjustmentsHorizontalIcon,
   ChartBarIcon,
-  ArrowTrendingDownIcon,
   EyeIcon,
   EyeSlashIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 const AlertManagementDashboard = ({ 
-  barberbarbershopId, 
+  barbershopId, 
   userId, 
   className = '' 
 }) => {
@@ -40,7 +38,7 @@ const AlertManagementDashboard = ({
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         user_id: userId,
         limit: '50'
       });
@@ -64,12 +62,12 @@ const AlertManagementDashboard = ({
     } finally {
       setLoading(false);
     }
-  }, [barberbarbershopId, userId, filters]);
+  }, [barbershopId, userId, filters]);
   
   const fetchPreferences = useCallback(async () => {
     try {
       const params = new URLSearchParams({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         user_id: userId
       });
       
@@ -83,7 +81,7 @@ const AlertManagementDashboard = ({
     } catch (err) {
       console.error('Error fetching preferences:', err);
     }
-  }, [barberbarbershopId, userId]);
+  }, [barbershopId, userId]);
   
   const initializeRealTime = useCallback(() => {
     if (!realTimeEnabled || !window.Pusher) return;
@@ -96,7 +94,7 @@ const AlertManagementDashboard = ({
       const channel = pusher.subscribe(`dashboard-${userId}`);
       
       channel.bind('alert-created', (data) => {
-        if (data.alert && data.alert.barberbarbershop_id === barberbarbershopId) {
+        if (data.alert && data.alert.barbershop_id === barbershopId) {
           setAlerts(prev => [data.alert, ...prev]);
           showRealTimeNotification('New Alert', data.alert.title, 'info');
         }
@@ -124,7 +122,7 @@ const AlertManagementDashboard = ({
       console.error('Real-time connection failed:', err);
       retryTimeoutRef.current = setTimeout(initializeRealTime, 30000);
     }
-  }, [userId, barberbarbershopId, realTimeEnabled]);
+  }, [userId, barbershopId, realTimeEnabled]);
   
   const handleAlertAction = async (alertId, action, options = {}) => {
     try {

@@ -3,7 +3,6 @@
 import {
   CpuChipIcon,
   CircleStackIcon,
-  CloudIcon,
   WifiIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,

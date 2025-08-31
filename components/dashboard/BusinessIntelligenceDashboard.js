@@ -1,15 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
-  ChartBarIcon, 
+import {
+  ChartBarIcon,
   ArrowTrendingDownIcon,
   UsersIcon,
   CalendarDaysIcon,
-  CurrencyDollarIcon,
-  CpuChipIcon,
-  BoltIcon,
-  CheckCircleIcon
+  CurrencyDollarIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
@@ -57,7 +54,7 @@ function MetricCard({ title, value, change, trend, subtitle, icon: Icon }) {
 }
 
 export default function BusinessIntelligenceDashboard() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [metrics, setMetrics] = useState({
     revenue: { value: '$0', change: '+0%', trend: 'up' },
     clients: { value: '0', change: '-0%', trend: 'down' },
@@ -126,7 +123,7 @@ export default function BusinessIntelligenceDashboard() {
       }
       
       // Alternative approach using Supabase directly as fallback
-      const supabase = createClient()
+      const _supabase = createClient()
       
       // Fetch revenue data
       const { data: revenueData, error: revenueError } = await supabase
@@ -204,7 +201,7 @@ export default function BusinessIntelligenceDashboard() {
     }
   }
 
-  const getDateRangeStart = (range) => {
+  const getDateRangeStart = (_range) => {
     const now = new Date()
     switch(range) {
       case '7days':
@@ -217,7 +214,7 @@ export default function BusinessIntelligenceDashboard() {
     }
   }
 
-  const fetchPreviousPeriodRevenue = async (range) => {
+  const fetchPreviousPeriodRevenue = async (_range) => {
     // Mock implementation - would fetch actual previous period data
     return 10000 // $100.00 in cents
   }

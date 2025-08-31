@@ -14,11 +14,6 @@ import {
   FunnelIcon,
   ArrowPathIcon,
   DocumentDuplicateIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon,
-  PhoneIcon,
-  EnvelopeIcon,
   StarIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'

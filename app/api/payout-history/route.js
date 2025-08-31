@@ -52,7 +52,7 @@ export async function GET(request) {
       )
     }
 
-    const barberbarbershopId = profile.shop_id
+    const barbershopId = profile.shop_id
 
     // Parse and validate query parameters
     const filters = {
@@ -99,7 +99,7 @@ export async function GET(request) {
     // Get comprehensive payout history using database function
     const { data: payoutHistory, error: historyError } = await supabase
       .rpc('get_payout_history', {
-        p_barberbarbershop_id: barberbarbershopId,
+        p_barbershop_id: barbershopId,
         p_barber_id: filters.barber_id || null,
         p_status: filters.status || null,
         p_method: filters.method || null,
@@ -142,7 +142,7 @@ export async function GET(request) {
 
     // Get summary statistics
     const summary = await getPayoutSummaryStats(
-      barberbarbershopId, 
+      barbershopId, 
       filters, 
       supabase
     )
@@ -176,7 +176,7 @@ export async function GET(request) {
       },
       metadata: {
         processing_time_ms: processingTime,
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         generated_at: new Date().toISOString()
       }
     })
@@ -245,9 +245,9 @@ export async function POST(request) {
     // Get current payout record to verify ownership and get current status
     const { data: payoutRecord, error: payoutError } = await supabase
       .from('commission_payout_records')
-      .select('id, barberbarbershop_id, status')
+      .select('id, barbershop_id, status')
       .eq('id', payout_record_id)
-      .eq('barberbarbershop_id', profile.shop_id)
+      .eq('barbershop_id', profile.shop_id)
       .single()
 
     if (payoutError || !payoutRecord) {
@@ -261,7 +261,7 @@ export async function POST(request) {
     const { data: updateId, error: updateError } = await supabase
       .rpc('create_payout_status_update', {
         p_payout_record_id: payout_record_id,
-        p_barberbarbershop_id: payoutRecord.barberbarbershop_id,
+        p_barbershop_id: payoutRecord.barbershop_id,
         p_previous_status: payoutRecord.status,
         p_new_status: new_status,
         p_status_reason: status_reason || 'Manual update by admin',
@@ -413,13 +413,13 @@ async function enrichPayoutHistory(payouts, supabase, options) {
   return enrichedPayouts
 }
 
-async function getPayoutSummaryStats(barberbarbershopId, filters, supabase) {
+async function getPayoutSummaryStats(barbershopId, filters, supabase) {
   try {
     // Base query for summary statistics
     let query = supabase
       .from('commission_payout_records')
       .select('amount, status, payout_method, created_at')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
     
     // Apply filters to summary query
     if (filters.barber_id) {

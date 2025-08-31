@@ -1,17 +1,15 @@
 'use client'
 
-import { 
+import {
   ScissorsIcon,
   CurrencyDollarIcon,
   ClockIcon,
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  EyeIcon,
   TagIcon,
   StarIcon,
   ChartBarIcon,
-  FunnelIcon,
   MagnifyingGlassIcon,
   PhotoIcon,
   Cog6ToothIcon,
@@ -32,7 +30,7 @@ import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function ShopServicesAndPricing() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
   const [services, setServices] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -73,16 +71,16 @@ export default function ShopServicesAndPricing() {
     
     // Try to get from barbershop_staff table
     if (profile?.id) {
-      const supabase = createClient()
+      const _supabase = createClient()
       const { data: staffData } = await supabase
         .from('barbershop_staff')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', profile.id)
         .eq('is_active', true)
         .single()
       
-      if (staffData?.barberbarbershop_id) {
-        return staffData.barberbarbershop_id
+      if (staffData?.barbershop_id) {
+        return staffData.barbershop_id
       }
     }
     
@@ -109,11 +107,11 @@ export default function ShopServicesAndPricing() {
 
   const loadServicesData = async () => {
     try {
-      const supabase = createClient()
+      const _supabase = createClient()
       
-      const barberbarbershopId = await getUserBarbershop()
+      const barbershopId = await getUserBarbershop()
       
-      if (!barberbarbershopId || barberbarbershopId === 'demo-barbershop-id') {
+      if (!barbershopId || barbershopId === 'demo-barbershop-id') {
         
         setServices([])
         setCategories([])
@@ -127,7 +125,7 @@ export default function ShopServicesAndPricing() {
       const { data: servicesData, error: servicesError } = await supabase
         .from('services')
         .select('*')
-        .eq('barbershop_id', barberbarbershopId)
+        .eq('barbershop_id', barbershopId)
         .order('created_at', { ascending: true })
 
       if (servicesError) {
@@ -187,10 +185,10 @@ export default function ShopServicesAndPricing() {
 
     setSaving(true)
     try {
-      const supabase = createClient()
-      const barberbarbershopId = await getUserBarbershop()
+      const _supabase = createClient()
+      const barbershopId = await getUserBarbershop()
       
-      if (!barberbarbershopId || barberbarbershopId === 'demo-barbershop-id') {
+      if (!barbershopId || barbershopId === 'demo-barbershop-id') {
         toast.error('No barbershop found. Please complete your setup first.')
         setSaving(false)
         return
@@ -198,7 +196,7 @@ export default function ShopServicesAndPricing() {
 
       // Build service data - all features now fully implemented!
       const serviceData = {
-        barbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         name: formData.name,
         description: formData.description,
         category: formData.category,
@@ -259,10 +257,10 @@ export default function ShopServicesAndPricing() {
   const handleQuickAddTemplate = async (templateData) => {
     setSaving(true)
     try {
-      const supabase = createClient()
-      const barberbarbershopId = await getUserBarbershop()
+      const _supabase = createClient()
+      const barbershopId = await getUserBarbershop()
       
-      if (!barberbarbershopId || barberbarbershopId === 'demo-barbershop-id') {
+      if (!barbershopId || barbershopId === 'demo-barbershop-id') {
         toast.error('No barbershop found. Please complete your setup first.')
         setSaving(false)
         return Promise.reject(new Error('No barbershop found'))
@@ -272,7 +270,7 @@ export default function ShopServicesAndPricing() {
       const { data: existingService } = await supabase
         .from('services')
         .select('id')
-        .eq('barbershop_id', barberbarbershopId)  // Correct: actual database uses barbershop_id
+        .eq('barbershop_id', barbershopId)  // Correct: actual database uses barbershop_id
         .ilike('name', templateData.name)
         .single()
 
@@ -284,7 +282,7 @@ export default function ShopServicesAndPricing() {
 
       // Include all fields that exist in the database schema
       const serviceData = {
-        barbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         name: templateData.name,
         description: templateData.description || '',
         category: templateData.category || 'general',
@@ -345,7 +343,7 @@ export default function ShopServicesAndPricing() {
 
     setSaving(true)
     try {
-      const supabase = createClient()
+      const _supabase = createClient()
       const { error } = await supabase
         .from('services')
         .delete()
@@ -368,7 +366,7 @@ export default function ShopServicesAndPricing() {
 
   const handleToggleActive = async (service) => {
     try {
-      const supabase = createClient()
+      const _supabase = createClient()
       const { error } = await supabase
         .from('services')
         .update({ is_active: !service.is_active })

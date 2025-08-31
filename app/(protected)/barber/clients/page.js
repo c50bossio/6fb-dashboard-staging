@@ -7,13 +7,10 @@ import {
   CalendarDaysIcon,
   MagnifyingGlassIcon,
   StarIcon,
-  ClockIcon,
   CurrencyDollarIcon,
   PlusIcon,
   DocumentArrowDownIcon,
-  DocumentArrowUpIcon,
-  ChatBubbleLeftRightIcon,
-  ChartBarIcon
+  DocumentArrowUpIcon
 } from '@heroicons/react/24/outline'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -23,7 +20,7 @@ import ExportCSV from '../../../../components/customers/ExportCSV'
 import PlatformTailoredImport from '../../../../components/onboarding/PlatformTailoredImport'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
-const supabase = createClient(
+const _supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
@@ -46,7 +43,7 @@ function BarberClientsContent({ onAction }) {
 }
 
 function BarberClientsPageContent({ onAction }) {
-  const { user, profile } = useAuth()
+  const { user: _user, profile: _profile } = useAuth()
   const router = useRouter()
   const [clients, setClients] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -55,7 +52,7 @@ function BarberClientsPageContent({ onAction }) {
   const [selectedClient, setSelectedClient] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [showImportModal, setShowImportModal] = useState(false)
-  const [showExportModal, setShowExportModal] = useState(false)
+  const [_showExportModal, setShowExportModal] = useState(false)
 
   // Handle action from URL params
   useEffect(() => {
@@ -70,23 +67,23 @@ function BarberClientsPageContent({ onAction }) {
     if (profile?.barbershop_id || profile?.shop_id) {
       loadClients()
     }
-  }, [profile])
+  }, [profile]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadClients = async () => {
     try {
       setLoading(true)
       
       // Get barbershop ID from profile
-      const barberbarbershopId = profile?.barbershop_id || profile?.shop_id
+      const barbershopId = profile?.barbershop_id || profile?.shop_id
       
-      if (!barberbarbershopId) {
+      if (!barbershopId) {
         console.error('No barbershop ID found in profile')
         toast.error('Unable to load clients - no barbershop associated')
         return
       }
 
       // Fetch real customers from API
-      const response = await fetch(`/api/customers?barberbarbershop_id=${barberbarbershopId}&limit=100`)
+      const response = await fetch(`/api/customers?barbershop_id=${barbershopId}&limit=100`)
       const data = await response.json()
       
       if (data.error) {
@@ -272,14 +269,14 @@ function BarberClientsPageContent({ onAction }) {
   // Handle client creation
   const handleAddClient = async (clientData) => {
     try {
-      const barberbarbershopId = profile?.barbershop_id || profile?.shop_id
+      const barbershopId = profile?.barbershop_id || profile?.shop_id
       
       const response = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...clientData,
-          barberbarbershop_id: barberbarbershopId
+          barbershop_id: barbershopId
         })
       })
 

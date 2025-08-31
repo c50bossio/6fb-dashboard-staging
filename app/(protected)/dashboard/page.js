@@ -32,7 +32,7 @@ export default function BarbershopDashboard() {
     hasProfile: !!profile,
     profileRole: profile?.role,
     shopId: profile?.shop_id,
-    barberbarbershopId: profile?.barbershop_id,
+    barbershopId: profile?.barbershop_id,
     subscriptionTier: profile?.subscription_tier,
     subscriptionStatus: profile?.subscription_status,
     onboardingCompleted: profile?.onboarding_completed
@@ -46,14 +46,23 @@ export default function BarbershopDashboard() {
 
   if (profile && !profile.shop_id && !profile.barbershop_id && profile.role !== 'CLIENT') {
     console.warn('🏠 Dashboard: WARNING - Profile exists but no shop association')
-    console.warn('🏪 BookedBarber: Role is', profile.role, 'but no barbershop_id or barberbarbershop_id')
+    console.warn('🏪 BookedBarber: Role is', profile.role, 'but no barbershop_id or barbershop_id')
   }
+  
+  // Check if we're in dev mode
+  const isDevMode = process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true'
   
   // Handle redirect in useEffect to avoid hooks order issues
   useEffect(() => {
     const effectStart = performance.now()
     console.log('🏠 Dashboard: Redirect useEffect triggered')
     console.log('⏱️ Timing: Redirect check at', new Date().toISOString())
+    
+    // Skip redirect in dev mode
+    if (isDevMode) {
+      console.log('🏠 Dashboard: Dev mode enabled, skipping authentication redirect')
+      return
+    }
     
     if (!authLoading && !user) {
       console.log('🏠 Dashboard: No user found, redirecting to login')
@@ -80,8 +89,8 @@ export default function BarbershopDashboard() {
     )
   }
   
-  // If no user, show loading while redirect happens
-  if (!user) {
+  // If no user and not in dev mode, show loading while redirect happens
+  if (!user && !isDevMode) {
     console.log('🏠 Dashboard: Rendering no-user redirect state')
     console.log('❌ Error: No user found after auth loading complete')
     console.log('⏱️ Timing: No-user render at', (performance.now() - startTime).toFixed(2), 'ms from start')
@@ -94,6 +103,24 @@ export default function BarbershopDashboard() {
       </div>
     )
   }
+  
+  // In dev mode, create mock user and profile if needed
+  const mockUser = isDevMode && !user ? {
+    id: 'dev-user-123',
+    email: 'dev@bookedbarber.com',
+    user_metadata: { full_name: 'Dev User' }
+  } : user
+  
+  const mockProfile = isDevMode && !profile ? {
+    id: 'dev-user-123',
+    email: 'dev@bookedbarber.com',
+    full_name: 'Dev User',
+    shop_id: 'dev-barbershop-123',
+    barbershop_id: 'dev-barbershop-123',
+    role: 'SHOP_OWNER',
+    subscription_tier: 'premium',
+    subscription_status: 'active'
+  } : profile
 
   // If we get here, we have a user - log the success
   console.log('🏠 Dashboard: Successfully rendering dashboard for authenticated user')
@@ -104,7 +131,7 @@ export default function BarbershopDashboard() {
     <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
       {/* Main Dashboard - Onboarding is now handled globally in layout.js */}
       <DashboardErrorBoundary>
-        <UnifiedDashboard user={user} profile={profile} />
+        <UnifiedDashboard user={mockUser} profile={mockProfile} />
       </DashboardErrorBoundary>
     </div>
   )

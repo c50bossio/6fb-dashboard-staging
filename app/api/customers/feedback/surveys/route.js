@@ -31,34 +31,34 @@ async function verifyAuth(request) {
       return { error: 'Invalid token', status: 401 }
     }
 
-    // Get barberbarbershop_id for the user
+    // Get barbershop_id for the user
     const { data: barbershopData } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
       .single()
 
-    let barberbarbershopId = null
+    let barbershopId = null
     if (barbershopData) {
-      barberbarbershopId = barbershopData.id
+      barbershopId = barbershopData.id
     } else {
       // Check if user is a barber
       const { data: barberData } = await supabase
         .from('barbers')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .single()
       
       if (barberData) {
-        barberbarbershopId = barberData.barberbarbershop_id
+        barbershopId = barberData.barbershop_id
       }
     }
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return { error: 'User not associated with any barbershop', status: 403 }
     }
 
-    return { user, barberbarbershopId }
+    return { user, barbershopId }
   } catch (error) {
     return { error: 'Authentication failed', status: 401 }
   }
@@ -72,7 +72,7 @@ export async function POST(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { user, barberbarbershopId } = authResult
+    const { user, barbershopId } = authResult
     const body = await request.json()
 
     const {
@@ -109,7 +109,7 @@ export async function POST(request) {
     // Create survey record
     const surveyData = {
       id: crypto.randomUUID(),
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       created_by_user_id: user.id,
       survey_name,
       survey_description,
@@ -158,7 +158,7 @@ export async function GET(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const { searchParams } = new URL(request.url)
 
     // Parse query parameters
@@ -171,7 +171,7 @@ export async function GET(request) {
     let query = supabase
       .from('feedback_surveys')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
 
     // Apply filters
     if (surveyType) query = query.eq('survey_type', surveyType)
@@ -203,7 +203,7 @@ export async function PUT(request) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const body = await request.json()
     const { survey_id, ...updateData } = body
 
@@ -219,7 +219,7 @@ export async function PUT(request) {
         updated_at: new Date().toISOString()
       })
       .eq('id', survey_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .select()
       .single()
 

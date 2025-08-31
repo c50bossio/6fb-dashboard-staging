@@ -31,34 +31,34 @@ async function verifyAuth(request) {
       return { error: 'Invalid token', status: 401 }
     }
 
-    // Get barberbarbershop_id for the user
+    // Get barbershop_id for the user
     const { data: barbershopData } = await supabase
       .from('barbershops')
       .select('id')
       .eq('owner_id', user.id)
       .single()
 
-    let barberbarbershopId = null
+    let barbershopId = null
     if (barbershopData) {
-      barberbarbershopId = barbershopData.id
+      barbershopId = barbershopData.id
     } else {
       // Check if user is a barber
       const { data: barberData } = await supabase
         .from('barbers')
-        .select('barberbarbershop_id')
+        .select('barbershop_id')
         .eq('user_id', user.id)
         .single()
       
       if (barberData) {
-        barberbarbershopId = barberData.barberbarbershop_id
+        barbershopId = barberData.barbershop_id
       }
     }
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return { error: 'User not associated with any barbershop', status: 403 }
     }
 
-    return { user, barberbarbershopId }
+    return { user, barbershopId }
   } catch (error) {
     return { error: 'Authentication failed', status: 401 }
   }
@@ -72,7 +72,7 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const { survey_id } = params
     const body = await request.json()
 
@@ -97,7 +97,7 @@ export async function POST(request, { params }) {
       .from('feedback_surveys')
       .select('*')
       .eq('id', survey_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     if (surveyError || !surveyData) {
@@ -139,7 +139,7 @@ export async function POST(request, { params }) {
     const responseData = {
       id: crypto.randomUUID(),
       survey_id,
-      barberbarbershop_id: barberbarbershopId,
+      barbershop_id: barbershopId,
       customer_id,
       appointment_id,
       responses,
@@ -175,7 +175,7 @@ export async function POST(request, { params }) {
     }
 
     // Process responses for feedback insights
-    await processResponseForInsights(responseResult, surveyData, barberbarbershopId)
+    await processResponseForInsights(responseResult, surveyData, barbershopId)
 
     return NextResponse.json({
       success: true,
@@ -197,7 +197,7 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status })
     }
 
-    const { barberbarbershopId } = authResult
+    const { barbershopId } = authResult
     const { survey_id } = params
     const { searchParams } = new URL(request.url)
 
@@ -212,7 +212,7 @@ export async function GET(request, { params }) {
       .from('feedback_surveys')
       .select('*')
       .eq('id', survey_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     if (surveyError || !surveyData) {
@@ -227,7 +227,7 @@ export async function GET(request, { params }) {
         customers!customer_id(name, email)
       `)
       .eq('survey_id', survey_id)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
 
     if (customerId) query = query.eq('customer_id', customerId)
 
@@ -251,7 +251,7 @@ export async function GET(request, { params }) {
 
     let analytics = null
     if (includeAnalytics) {
-      analytics = await generateSurveyAnalytics(survey_id, surveyData, barberbarbershopId)
+      analytics = await generateSurveyAnalytics(survey_id, surveyData, barbershopId)
     }
 
     const result = {
@@ -270,7 +270,7 @@ export async function GET(request, { params }) {
 }
 
 // Helper function to process response for insights
-async function processResponseForInsights(responseData, surveyData, barberbarbershopId) {
+async function processResponseForInsights(responseData, surveyData, barbershopId) {
   try {
     // Extract key metrics from responses
     const responses = responseData.responses
@@ -300,7 +300,7 @@ async function processResponseForInsights(responseData, surveyData, barberbarber
     if (rating || npsScore || comment) {
       const feedbackData = {
         id: crypto.randomUUID(),
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         customer_id: responseData.customer_id,
         appointment_id: responseData.appointment_id,
         feedback_type: surveyData.survey_type,
@@ -327,14 +327,14 @@ async function processResponseForInsights(responseData, surveyData, barberbarber
 }
 
 // Helper function to generate survey analytics
-async function generateSurveyAnalytics(surveyId, surveyData, barberbarbershopId) {
+async function generateSurveyAnalytics(surveyId, surveyData, barbershopId) {
   try {
     // Get all responses for this survey
     const { data: responses, error } = await supabase
       .from('survey_responses')
       .select('responses, submitted_at, completion_time_seconds')
       .eq('survey_id', surveyId)
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
 
     if (error || !responses) {
       return null

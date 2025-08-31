@@ -29,7 +29,7 @@ export async function POST(request) {
     const file = formData.get('file')
     const platform = formData.get('platform')
     const entityType = formData.get('entityType')
-    const barberbarbershopId = formData.get('barberbarbershopId')
+    const barbershopId = formData.get('barbershopId')
     const userId = formData.get('userId')
 
     // Validate required fields
@@ -40,9 +40,9 @@ export async function POST(request) {
       )
     }
 
-    if (!platform || !barberbarbershopId) {
+    if (!platform || !barbershopId) {
       return NextResponse.json(
-        { error: 'Missing required fields: platform and barberbarbershopId' },
+        { error: 'Missing required fields: platform and barbershopId' },
         { status: 400 }
       )
     }
@@ -91,7 +91,7 @@ export async function POST(request) {
     const { data: importRecord, error: dbError } = await supabase
       .from('data_imports')
       .insert({
-        barberbarbershop_id: barberbarbershopId,
+        barbershop_id: barbershopId,
         user_id: userId || null,
         source_platform: platform,
         import_type: entityType || 'unknown',

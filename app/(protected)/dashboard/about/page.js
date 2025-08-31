@@ -42,7 +42,7 @@ export default function AboutPage() {
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-olive-100 max-w-4xl mx-auto leading-relaxed">
-            We're revolutionizing the barbershop industry with AI-powered automation that helps 
+            We&apos;re revolutionizing the barbershop industry with AI-powered automation that helps 
             business owners focus on what they do best while AI handles the rest.
           </p>
         </div>

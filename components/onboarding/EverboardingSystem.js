@@ -1,13 +1,10 @@
 'use client'
 
 import {
-  LightBulbIcon,
   SparklesIcon,
-  StarIcon,
   TrophyIcon,
   ArrowRightIcon,
-  XMarkIcon,
-  CheckIcon
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 

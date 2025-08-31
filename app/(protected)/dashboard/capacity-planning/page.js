@@ -14,7 +14,7 @@ import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function CapacityPlanningPage() {
-  const { user, profile } = useAuth()
+  const { user, profile: _profile } = useAuth()
 
   return (
     <ProtectedRoute>
@@ -93,7 +93,7 @@ export default function CapacityPlanningPage() {
               </div>
 
               {/* Main Capacity Planning Component */}
-              <CapacityPlanningPanel barberbarbershop_id={profile?.shop_id} />
+              <CapacityPlanningPanel barbershop_id={profile?.shop_id} />
 
               {/* Additional Resources */}
               <div className="mt-8 bg-olive-50 rounded-lg border border-olive-200 p-6">

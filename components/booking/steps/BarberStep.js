@@ -1,7 +1,7 @@
 'use client'
 
 import { StarIcon, ClockIcon, ScissorsIcon, CalendarIcon } from '@heroicons/react/24/outline'
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+
 import { useState, useEffect } from 'react'
 
 export default function BarberStep({ bookingData, onNext, onBack }) {
@@ -26,11 +26,11 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
         // User not authenticated, try public endpoint
         // Need to get barbershop ID from booking data or URL
         const urlParams = new URLSearchParams(window.location.search)
-        const barberbarbershopId = bookingData.location?.id || urlParams.get('barbershop_id') || urlParams.get('barberbarbershop_id')
+        const barbershopId = bookingData.location?.id || urlParams.get('barbershop_id') || urlParams.get('barbershop_id')
         
-        if (barberbarbershopId) {
+        if (barbershopId) {
           
-          response = await fetch(`/api/public/barbershop/${barberbarbershopId}/barbers`)
+          response = await fetch(`/api/public/barbershop/${barbershopId}/barbers`)
           if (response.ok) {
             data = await response.json()
           }

@@ -5,7 +5,7 @@ import { NotificationCenter } from '@novu/notification-center'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function NovuNotificationCenter() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
 
   if (!user) return null
 

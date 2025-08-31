@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 
-export default function CapacityPlanningPanel({ barberbarbershop_id }) {
+export default function CapacityPlanningPanel({ barbershop_id }) {
   const [capacityData, setCapacityData] = useState(null)
   const [recommendations, setRecommendations] = useState([])
   const [loading, setLoading] = useState(true)
@@ -23,14 +23,14 @@ export default function CapacityPlanningPanel({ barberbarbershop_id }) {
     loadCapacityData()
     const interval = setInterval(loadCapacityData, 5 * 60 * 1000) // Refresh every 5 minutes
     return () => clearInterval(interval)
-  }, [barberbarbershop_id, selectedTimeframe, optimizationFocus])
+  }, [barbershop_id, selectedTimeframe, optimizationFocus])
 
   const loadCapacityData = async () => {
     try {
       setLoading(true)
       
-      // Validate barberbarbershop_id is provided and not demo
-      if (!barberbarbershop_id || barberbarbershop_id === 'demo' || barberbarbershop_id === 'demo-shop-001') {
+      // Validate barbershop_id is provided and not demo
+      if (!barbershop_id || barbershop_id === 'demo' || barbershop_id === 'demo-shop-001') {
         setCapacityData({
           error: 'Barbershop setup required',
           message: 'Configure your barbershop profile to enable capacity planning'
@@ -40,11 +40,11 @@ export default function CapacityPlanningPanel({ barberbarbershop_id }) {
       }
       
       const [predictiveData, alertsData, analyticsData] = await Promise.allSettled([
-        fetch(`/api/ai/predictive?type=comprehensive&barbershopId=${barberbarbershop_id}&focus=capacity`).then(r => r.json()),
+        fetch(`/api/ai/predictive?type=comprehensive&barbershopId=${barbershop_id}&focus=capacity`).then(r => r.json()),
         
-        fetch(`/api/alerts/intelligent?barberbarbershop_id=${barberbarbershop_id}`).then(r => r.json()),
+        fetch(`/api/alerts/intelligent?barbershop_id=${barbershop_id}`).then(r => r.json()),
         
-        fetch(`/api/analytics/live-data?barberbarbershop_id=${barberbarbershop_id}&metric=capacity`).then(r => r.json())
+        fetch(`/api/analytics/live-data?barbershop_id=${barbershop_id}&metric=capacity`).then(r => r.json())
       ])
 
       const predictions = predictiveData.status === 'fulfilled' && predictiveData.value.success ? predictiveData.value.predictions : null

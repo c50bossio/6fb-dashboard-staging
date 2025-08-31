@@ -1,11 +1,8 @@
 'use client'
 
-import { 
+import {
   PaperAirplaneIcon,
-  SparklesIcon,
-  ChatBubbleLeftRightIcon,
   CpuChipIcon,
-  ExclamationTriangleIcon,
   MicrophoneIcon,
   SpeakerWaveIcon,
   SpeakerXMarkIcon

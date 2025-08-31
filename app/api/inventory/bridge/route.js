@@ -13,11 +13,11 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { barberbarbershop_id, master_product_ids } = body;
+    const { barbershop_id, master_product_ids } = body;
 
-    if (!barberbarbershop_id || !master_product_ids || !Array.isArray(master_product_ids)) {
+    if (!barbershop_id || !master_product_ids || !Array.isArray(master_product_ids)) {
       return NextResponse.json({ 
-        error: 'Missing required fields: barberbarbershop_id, master_product_ids (array)' 
+        error: 'Missing required fields: barbershop_id, master_product_ids (array)' 
       }, { status: 400 });
     }
 
@@ -40,7 +40,7 @@ export async function POST(request) {
     const { data: existingProducts, error: existingError } = await supabase
       .from('barbershop_inventory')
       .select('sku, master_product_id')
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .in('sku', masterProducts.map(p => p.sku));
 
     if (existingError) {
@@ -65,7 +65,7 @@ export async function POST(request) {
 
     // Create barbershop_inventory records from master_products
     const inventoryRecords = newProducts.map(masterProduct => ({
-      barberbarbershop_id,
+      barbershop_id,
       master_product_id: masterProduct.id,
       product_source: 'cin7',
       name: masterProduct.name,
@@ -103,7 +103,7 @@ export async function POST(request) {
 
     // Create inventory movement records for tracking
     const movementRecords = insertedProducts.map(product => ({
-      barberbarbershop_id,
+      barbershop_id,
       barbershop_inventory_id: product.id,
       movement_type: 'bridged_from_cin7',
       quantity_change: 0,
@@ -144,12 +144,12 @@ export async function GET(request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const barberbarbershopId = searchParams.get('barberbarbershop_id');
+    const barbershopId = searchParams.get('barbershop_id');
     const category = searchParams.get('category');
     const search = searchParams.get('search');
     const excludeExisting = searchParams.get('exclude_existing') === 'true';
 
-    if (!barberbarbershopId) {
+    if (!barbershopId) {
       return NextResponse.json({ error: 'Barbershop ID required' }, { status: 400 });
     }
 
@@ -157,7 +157,7 @@ export async function GET(request) {
     let query = supabase
       .from('master_products')
       .select('*')
-      .eq('barberbarbershop_id', barberbarbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .order('name', { ascending: true });
 
@@ -184,7 +184,7 @@ export async function GET(request) {
       const { data: existingProducts } = await supabase
         .from('barbershop_inventory')
         .select('sku, master_product_id')
-        .eq('barberbarbershop_id', barberbarbershopId);
+        .eq('barbershop_id', barbershopId);
 
       const existingSkus = new Set(existingProducts?.map(p => p.sku) || []);
       const existingMasterIds = new Set(existingProducts?.map(p => p.master_product_id) || []);
