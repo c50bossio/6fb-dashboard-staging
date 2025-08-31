@@ -19,13 +19,18 @@ export async function middleware(request) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Only set cookie in request if not already set
+            if (!request.cookies.get(name)) {
+              request.cookies.set(name, value)
+            }
+          })
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }) => {
             supabaseResponse.cookies.set(name, value, options)
-          )
+          })
         },
       },
     }
@@ -37,14 +42,23 @@ export async function middleware(request) {
 
   const {
     data: { user },
+    error: userError
   } = await supabase.auth.getUser()
+  
+  // Only log unexpected authentication errors
+  if (userError && userError.message !== 'Auth session missing!') {
+    console.error('Middleware auth error:', userError.message, 'for path:', pathname)
+  }
   
   // API routes should never be protected - they handle their own logic  
   const isApiRoute = pathname.startsWith('/api/')
   
   // Public routes that don't need auth
-  const publicRoutes = ['/login', '/signup', '/', '/auth']
+  const publicRoutes = ['/login', '/signup', '/', '/auth', '/terms', '/privacy', '/contact']
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  
+  // OAuth callback routes that need special handling
+  const isAuthCallback = pathname.includes('/callback') || pathname.includes('/auth/')
   
   // Protected routes that require authentication
   const protectedRoutes = ['/dashboard', '/(protected)']
@@ -53,11 +67,23 @@ export async function middleware(request) {
     pathname.includes('/(protected)/')
   )
   
+  // Allow OAuth callbacks to proceed without authentication check
+  if (isAuthCallback) {
+    return supabaseResponse
+  }
+  
   // If accessing a protected route without user, redirect to login
   if (isProtectedRoute && !user && !isApiRoute && !isPublicRoute) {
     const redirectUrl = new URL('/login', request.url)
     redirectUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(redirectUrl)
+  }
+
+  // If user is authenticated and trying to access login page, redirect to dashboard
+  if (user && pathname === '/login') {
+    const urlSearchParams = new URLSearchParams(request.nextUrl.search)
+    const next = urlSearchParams.get('next') || '/dashboard'
+    return NextResponse.redirect(new URL(next, request.url))
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
