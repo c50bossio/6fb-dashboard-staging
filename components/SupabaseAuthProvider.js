@@ -23,6 +23,15 @@ function SupabaseAuthProvider({ children }) {
   // Auth subscription ref for cleanup
   const authSubscriptionRef = useRef(null)
   
+  // Tab switch tracking refs - prevent unwanted refreshes
+  const hasUserNavigatedRef = useRef(false)
+  const pageLoadTimeRef = useRef(Date.now())
+  const lastPathRef = useRef(null)
+  
+  // Session comparison refs - prevent duplicate events
+  const currentSessionRef = useRef(null)
+  const lastAccessTokenRef = useRef(null)
+  
   // Single Supabase client instance - use singleton from UNIFIED_CLIENT
   const supabase = createClient()
 
@@ -150,6 +159,17 @@ function SupabaseAuthProvider({ children }) {
   useEffect(() => {
     let isMounted = true
 
+    // Add visibility change monitoring for tab switch debugging
+    const handleVisibilityChange = () => {
+      console.log('👁️ [TAB DEBUG] Visibility changed:', {
+        hidden: document.hidden,
+        visibilityState: document.visibilityState,
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
     const initAuth = async () => {
       try {
         // Get initial session
@@ -167,9 +187,35 @@ function SupabaseAuthProvider({ children }) {
           setLoading(false)
         }
 
-        // Set up auth state listener
+        // Set up auth state listener with advanced tab switch protection
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
           if (!isMounted) return
+          
+          // Session comparison - prevent duplicate events
+          const newAccessToken = session?.access_token
+          const currentAccessToken = lastAccessTokenRef.current
+          const sessionId = session?.user?.id
+          const currentSessionId = currentSessionRef.current?.user?.id
+          
+          // Check if this is a duplicate event with same session data
+          if (newAccessToken && newAccessToken === currentAccessToken && sessionId === currentSessionId) {
+            console.log('🔄 [AUTH DEBUG] Duplicate event filtered:', event)
+            return // Skip duplicate events
+          }
+          
+          // Update session tracking
+          currentSessionRef.current = session
+          lastAccessTokenRef.current = newAccessToken
+          
+          // Track navigation vs tab switching
+          const currentPath = window.location.pathname
+          const pathChanged = lastPathRef.current !== null && lastPathRef.current !== currentPath
+          if (pathChanged && lastPathRef.current !== null) {
+            hasUserNavigatedRef.current = true
+          }
+          lastPathRef.current = currentPath
+          
+          console.log(`🔐 [AUTH DEBUG] Event: ${event}, hasNavigated: ${hasUserNavigatedRef.current}, pathChanged: ${pathChanged}, sessionChanged: ${sessionId !== currentSessionId}`)
           
           if (event === 'SIGNED_IN' && session?.user) {
             setUser(session.user)
@@ -179,15 +225,32 @@ function SupabaseAuthProvider({ children }) {
             }
             setLoading(false)
           } else if (event === 'SIGNED_OUT') {
+            // Reset session tracking on logout
+            currentSessionRef.current = null
+            lastAccessTokenRef.current = null
             setUser(null)
             setProfile(null)
             setLoading(false)
             router.push('/login')
           } else if (event === 'TOKEN_REFRESHED') {
-            // Handle token refresh silently
+            console.log('✅ [AUTH DEBUG] Token refreshed (background) - NO REDIRECT')
+            // Handle token refresh silently - DO NOT REDIRECT
             if (session?.user) {
               setUser(session.user)
             }
+            return // Critical: prevent any redirect logic
+          } else if (event === 'INITIAL_SESSION' && !hasUserNavigatedRef.current) {
+            console.log('✅ [AUTH DEBUG] Initial session without navigation - NO REDIRECT')
+            // Page load or tab switch, not actual navigation
+            if (session?.user) {
+              setUser(session.user)
+              const profileData = await fetchProfile(session.user.id)
+              if (profileData) {
+                setProfile(profileData)
+              }
+            }
+            setLoading(false)
+            return // Critical: prevent any redirect logic
           }
         })
 
@@ -206,6 +269,7 @@ function SupabaseAuthProvider({ children }) {
     return () => {
       isMounted = false
       authSubscriptionRef.current?.unsubscribe()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [router, supabase])
 
@@ -270,6 +334,28 @@ function SupabaseAuthProvider({ children }) {
     }
   }
 
+  // Background token refresh function
+  const refreshTokensInBackground = async () => {
+    try {
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        console.warn('Background token refresh failed:', response.status)
+        return false
+      }
+      
+      const result = await response.json()
+      console.log('✅ [AUTH DEBUG] Background token refresh successful')
+      return true
+    } catch (error) {
+      console.error('Background token refresh error:', error)
+      return false
+    }
+  }
+
   // Tier access helper function
   const hasTierAccess = (requiredTier) => {
     if (!profile) return false
@@ -297,6 +383,7 @@ function SupabaseAuthProvider({ children }) {
     signUp,
     signOut,
     updateProfile,
+    refreshTokensInBackground,
     hasTierAccess
   }
   

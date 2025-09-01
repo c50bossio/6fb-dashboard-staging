@@ -35,20 +35,6 @@ export async function middleware(request) {
       },
     }
   )
-
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  const {
-    data: { user },
-    error: userError
-  } = await supabase.auth.getUser()
-  
-  // Only log unexpected authentication errors
-  if (userError && userError.message !== 'Auth session missing!') {
-    console.error('Middleware auth error:', userError.message, 'for path:', pathname)
-  }
   
   // API routes should never be protected - they handle their own logic  
   const isApiRoute = pathname.startsWith('/api/')
@@ -72,8 +58,32 @@ export async function middleware(request) {
     return supabaseResponse
   }
   
+  // Skip auth check for public routes and API routes - MAJOR PERFORMANCE OPTIMIZATION
+  if (isPublicRoute || isApiRoute || !isProtectedRoute) {
+    return supabaseResponse
+  }
+  
+  // ONLY call getUser() for protected routes that actually need it
+  // This eliminates the blocking network call for most requests
+  let user = null
+  let userError = null
+  
+  try {
+    const result = await supabase.auth.getUser()
+    user = result.data?.user
+    userError = result.error
+    
+    // Only log unexpected authentication errors
+    if (userError && userError.message !== 'Auth session missing!') {
+      console.error('Middleware auth error:', userError.message, 'for path:', pathname)
+    }
+  } catch (error) {
+    console.error('Middleware auth check failed:', error.message)
+    userError = error
+  }
+  
   // If accessing a protected route without user, redirect to login
-  if (isProtectedRoute && !user && !isApiRoute && !isPublicRoute) {
+  if (isProtectedRoute && !user) {
     const redirectUrl = new URL('/login', request.url)
     redirectUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(redirectUrl)
