@@ -95,7 +95,6 @@
     "worker:start": "node workers/automation-worker.js",
     "worker:health": "curl -s http://localhost:9999/api/automation/health?detailed=true | jq"
   },
-  "type": "module",
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.8",
     "@ai-sdk/google": "^2.0.11",
