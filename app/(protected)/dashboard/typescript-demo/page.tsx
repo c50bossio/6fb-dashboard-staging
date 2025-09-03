@@ -97,6 +97,7 @@ export default function TypeScriptDemoPage() {
           value="$12,456"
           description="12% increase from last month"
           icon={<DollarSign className="h-4 w-4" />}
+          change="+$1,456"
           trend={{ value: 12, isPositive: true }}
         />
         <StatsCard
@@ -104,6 +105,7 @@ export default function TypeScriptDemoPage() {
           value="2,345"
           description="New customers this month"
           icon={<Users className="h-4 w-4" />}
+          change="+187"
           trend={{ value: 8, isPositive: true }}
         />
         <StatsCard
@@ -111,6 +113,7 @@ export default function TypeScriptDemoPage() {
           value="189"
           description="Scheduled this week"
           icon={<Calendar className="h-4 w-4" />}
+          change="-10"
           trend={{ value: 5, isPositive: false }}
         />
         <StatsCard
@@ -118,6 +121,7 @@ export default function TypeScriptDemoPage() {
           value="24.5%"
           description="Year over year"
           icon={<TrendingUp className="h-4 w-4" />}
+          change="+6.2%"
           trend={{ value: 24.5, isPositive: true }}
         />
       </div>
