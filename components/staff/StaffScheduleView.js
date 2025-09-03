@@ -9,7 +9,7 @@ import {
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import EnhancedProfessionalCalendar from '@/components/calendar/EnhancedProfessionalCalendar'
 import Button from '@/components/ui/Button'
-import { Card } from "@/components/ui/card.jsx"
+import { Card } from "@/components/ui/card"
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { formatTime } from '@/lib/utils'
 

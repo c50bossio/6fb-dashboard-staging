@@ -18,7 +18,7 @@ import { toast } from 'react-hot-toast'
 // import ProfileUpdateTest from '@/components/debug/ProfileUpdateTest'
 // import StaffSaveDebugger from '@/components/debug/StaffSaveDebugger'
 import Button from '@/components/ui/Button'
-import { Card } from "@/components/ui/card.jsx"
+import { Card } from "@/components/ui/card"
 import { Modal } from '@/components/ui/Modal'
 import {
   formatCommissionDisplay,
@@ -38,6 +38,30 @@ import {
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { formatCurrency } from '@/lib/utils'
 
+// Helper function to format role display
+function formatRoleDisplay(role) {
+  if (!role) return 'Staff Member'
+  
+  return role
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
+// Helper function to get role capabilities
+function getRoleCapabilities(role) {
+  const canTakeAppointments = role === 'BARBER' || role === 'ENTERPRISE_OWNER' || role === 'SHOP_OWNER'
+  const isVisibleForBooking = true // Default to true for all roles
+  
+  return {
+    canTakeAppointments,
+    isVisibleForBooking,
+    description: canTakeAppointments 
+      ? 'Can take appointments and appear in booking dropdowns'
+      : 'Cannot take appointments by default (administrative role)'
+  }
+}
+
 export default function StaffDetailModal({ staff, onClose, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -46,7 +70,7 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
   useEffect(() => {
     if (staff) {
-      // Simple direct field access - no transformations
+      // Initialize with all staff data including appointment capabilities
       setEditedData({
         first_name: staff.first_name || staff.user?.first_name || '',
         last_name: staff.last_name || staff.user?.last_name || '',
@@ -54,6 +78,10 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
         email: staff.email || staff.user?.email || '',
         phone: staff.phone || staff.user?.phone || '',
         role: staff.role || 'barber',
+        // Appointment capability fields
+        can_take_appointments: staff.can_take_appointments ?? getRoleCapabilities(staff.role || 'barber').canTakeAppointments,
+        is_visible_for_booking: staff.is_visible_for_booking ?? true,
+        // Financial arrangement fields
         arrangement_type: staff.arrangement_type || staff.financial_model || 'commission',
         commission_rate: staff.commission_rate || 0.6, // Default 60%
         hourly_rate: staff.hourly_rate || 0,
@@ -132,7 +160,10 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
             first_name: data.staff.user?.first_name || editedData.first_name,
             last_name: data.staff.user?.last_name || editedData.last_name,
             full_name: data.staff.user?.full_name || `${editedData.first_name} ${editedData.last_name}`.trim(),
-            display_name: data.staff.user?.full_name || `${editedData.first_name} ${editedData.last_name}`.trim() || data.staff.user?.email || 'Staff Member'
+            display_name: data.staff.user?.full_name || 
+                         (editedData.first_name || editedData.last_name ? 
+                           `${editedData.first_name} ${editedData.last_name}`.trim() : 
+                           data.staff.user?.email || 'Staff Member')
           }
           onUpdate(updatedStaffData)
         }
@@ -209,9 +240,14 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                {editedData.full_name || `${editedData.first_name} ${editedData.last_name}`.trim() || editedData.email || 'Staff Member'}
+                {
+                  editedData.full_name || 
+                  (editedData.first_name || editedData.last_name ? 
+                    `${editedData.first_name} ${editedData.last_name}`.trim() : 
+                    editedData.email || 'Staff Member - Profile Incomplete')
+                }
               </h2>
-              <p className="text-gray-600 capitalize">{editedData.role}</p>
+              <p className="text-gray-600">{formatRoleDisplay(editedData.role)}</p>
               {isInactive && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 mt-1">
                   Inactive
@@ -265,7 +301,7 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                 <Button
                   onClick={() => {
                     setIsEditing(false)
-                    // Reset to original values - simple direct access
+                    // Reset to original values including appointment capabilities
                     setEditedData({
                       first_name: staff.first_name || staff.user?.first_name || '',
                       last_name: staff.last_name || staff.user?.last_name || '',
@@ -273,10 +309,15 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                       email: staff.email || staff.user?.email || '',
                       phone: staff.phone || staff.user?.phone || '',
                       role: staff.role || 'barber',
-                      financial_model: staff.financial_model || 'commission',
-                      commission_rate: staff.commission_rate || 0.5, // Default 50%
+                      // Reset appointment capability fields
+                      can_take_appointments: staff.can_take_appointments ?? getRoleCapabilities(staff.role || 'barber').canTakeAppointments,
+                      is_visible_for_booking: staff.is_visible_for_booking ?? true,
+                      // Reset financial fields
+                      arrangement_type: staff.arrangement_type || staff.financial_model || 'commission',
+                      commission_rate: staff.commission_rate || 0.6, // Default 60%
                       hourly_rate: staff.hourly_rate || 0,
                       booth_rent_amount: staff.booth_rent_amount || 0,
+                      rent_frequency: staff.rent_frequency || 'monthly',
                       is_active: staff.is_active !== false
                     })
                   }}
@@ -392,14 +433,76 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                     onChange={(e) => setEditedData(prev => ({ ...prev, role: e.target.value }))}
                     className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
                   >
-                    <option value="barber">Barber</option>
-                    <option value="barber & manager">Barber & Manager</option>
-                    <option value="manager">Manager</option>
-                    <option value="receptionist">Receptionist</option>
-                    <option value="owner">Owner</option>
+                    <option value="ENTERPRISE_OWNER">Enterprise Owner</option>
+                    <option value="SHOP_OWNER">Shop Owner</option>
+                    <option value="BARBER">Barber</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="STAFF">Staff</option>
                   </select>
                 ) : (
-                  <p className="text-gray-900 font-medium capitalize">{editedData.role}</p>
+                  <p className="text-gray-900 font-medium">{formatRoleDisplay(editedData.role)}</p>
+                )}
+              </div>
+
+              {/* Appointment Capabilities - Now Editable */}
+              <div>
+                <label className="text-sm text-gray-600">Appointment Capability</label>
+                {isEditing ? (
+                  <div className="mt-2 space-y-3">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="can_take_appointments"
+                        checked={editedData.can_take_appointments}
+                        onChange={(e) => setEditedData(prev => ({ ...prev, can_take_appointments: e.target.checked }))}
+                        className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="can_take_appointments" className="ml-2 text-sm text-gray-900">
+                        Can take appointments
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="is_visible_for_booking"
+                        checked={editedData.is_visible_for_booking}
+                        onChange={(e) => setEditedData(prev => ({ ...prev, is_visible_for_booking: e.target.checked }))}
+                        className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="is_visible_for_booking" className="ml-2 text-sm text-gray-900">
+                        Available for public booking
+                      </label>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500">
+                        Role default: {getRoleCapabilities(editedData.role).canTakeAppointments ? 'Can take appointments' : 'Administrative role (no appointments)'}
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        {editedData.is_visible_for_booking 
+                          ? "✓ Customers can book online with this staff member" 
+                          : "Only accepts bookings through admin/internal system"}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-1">
+                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      editedData.can_take_appointments 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {editedData.can_take_appointments ? '✓ Can Take Appointments' : '— Cannot Take Appointments'}
+                    </div>
+                    {editedData.can_take_appointments && (
+                      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ml-2 ${
+                        editedData.is_visible_for_booking 
+                          ? 'bg-blue-100 text-blue-800' 
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {editedData.is_visible_for_booking ? '🌐 Available for Public Booking' : '🔒 Private Bookings Only'}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -421,10 +524,15 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
           {/* Financial Information */}
           <Card className="p-4">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
+            <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
               <CurrencyDollarIcon className="h-5 w-5 mr-2 text-gray-600" />
               Financial Arrangement
             </h3>
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-700">
+                <strong>Individual Override:</strong> These settings override the barbershop's default financial arrangement for this staff member specifically.
+              </p>
+            </div>
             <div className="space-y-3">
               <div>
                 <label className="text-sm text-gray-600">Model</label>
@@ -642,22 +750,27 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
             </div>
           </Card>
 
-          {/* Performance Metrics */}
+          {/* Performance Summary */}
           <Card className="p-4">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <ChartBarIcon className="h-5 w-5 mr-2 text-gray-600" />
-              Performance (30 Days)
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center justify-between">
+              <div className="flex items-center">
+                <ChartBarIcon className="h-5 w-5 mr-2 text-gray-600" />
+                Performance (30 Days)
+              </div>
+              <button
+                onClick={() => {
+                  // TODO: Navigate to analytics dashboard with staff filter
+                  console.log('Navigate to analytics for staff:', staff.id)
+                }}
+                className="text-sm text-olive-600 hover:text-olive-800 font-medium"
+              >
+                View Full Analytics →
+              </button>
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Total Bookings</span>
                 <span className="font-medium text-gray-900">{staff.metrics?.totalBookings || 0}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Revenue Generated</span>
-                <span className="font-medium text-gray-900">
-                  {formatCurrency(staff.metrics?.revenue || 0)}
-                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Completion Rate</span>
@@ -666,17 +779,14 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">No-Show Rate</span>
+                <span className="text-sm text-gray-600">Revenue Generated</span>
                 <span className="font-medium text-gray-900">
-                  {staff.metrics?.noShowRate || 0}%
+                  {formatCurrency(staff.metrics?.revenue || 0)}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Average Rating</span>
-                <span className="font-medium text-gray-900">
-                  {staff.metrics?.rating > 0 ? `${staff.metrics.rating}/5` : 'N/A'}
-                </span>
-              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                For detailed analytics including trends, comparisons, and insights, click "View Full Analytics" above.
+              </p>
             </div>
           </Card>
         </div>

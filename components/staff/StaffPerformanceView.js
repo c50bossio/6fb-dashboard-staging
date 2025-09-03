@@ -10,7 +10,7 @@ import {
   ArrowDownIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useMemo } from 'react'
-import { Card } from "@/components/ui/card.jsx"
+import { Card } from "@/components/ui/card"
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { formatCurrency } from '@/lib/utils'
 

@@ -7,7 +7,7 @@ import {
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import Button from '@/components/ui/Button'
-import { Card } from "@/components/ui/card.jsx"
+import { Card } from "@/components/ui/card"
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function StaffAvailabilityEditor({ staffMember, currentAvailability, onSave, onCancel }) {

@@ -16,7 +16,7 @@ import { useState, useCallback, useMemo, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { StaffHeader } from '@/components/layout/UnifiedDashboardHeader'
 import Button from '@/components/ui/Button'
-import { Card } from "@/components/ui/card.jsx"
+import { Card } from "@/components/ui/card"
 import { useBusinessContext, useCurrentShopId } from '@/hooks/useBusinessContext'
 import { 
   useStaffWithRealtime, 
@@ -31,6 +31,8 @@ import AddStaffModal from './AddStaffModal'
 import StaffAvailabilityEditor from './StaffAvailabilityEditor'
 import StaffDetailModal from './StaffDetailModal'
 import StaffPerformanceView from './StaffPerformanceView'
+import RoleDebugger from '../debug/RoleDebugger'
+import BarberOverrideDialog from '@/components/compensation/BarberOverrideDialog'
 
 // React Query hooks
 
@@ -62,6 +64,7 @@ export default function StaffManagementDashboard() {
   const [selectedStaff, setSelectedStaff] = useState(null)
   const [addButtonLoading, setAddButtonLoading] = useState(false)
   const [editingAvailability, setEditingAvailability] = useState(null)
+  const [editingCompensation, setEditingCompensation] = useState(null)
   
   // Ref to prevent multiple rapid clicks
   const addStaffTimeoutRef = useRef(null)
@@ -299,31 +302,53 @@ export default function StaffManagementDashboard() {
             </span>
           </div>
           
-          {/* Edit Schedule Button */}
+          {/* Action Buttons */}
           {!member.isPendingInvitation && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation() // Prevent card click event
-                if (!isUpdating) {
-                  setEditingAvailability(member)
-                }
-              }}
-              disabled={isUpdating}
-              className={`w-full mt-2 px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 flex items-center justify-center ${
-                isUpdating 
-                  ? 'text-gray-500 bg-gray-100 cursor-not-allowed' 
-                  : 'text-olive-700 bg-olive-50 hover:bg-olive-100'
-              }`}
-            >
-              {isUpdating ? (
-                <>
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500 mr-2"></div>
-                  Updating...
-                </>
-              ) : (
-                'Edit Availability'
-              )}
-            </button>
+            <div className="space-y-2 mt-2">
+              {/* Edit Schedule Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation() // Prevent card click event
+                  if (!isUpdating) {
+                    setEditingAvailability(member)
+                  }
+                }}
+                disabled={isUpdating}
+                className={`w-full px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 flex items-center justify-center ${
+                  isUpdating 
+                    ? 'text-gray-500 bg-gray-100 cursor-not-allowed' 
+                    : 'text-olive-700 bg-olive-50 hover:bg-olive-100'
+                }`}
+              >
+                {isUpdating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-gray-500 mr-2"></div>
+                    Updating...
+                  </>
+                ) : (
+                  'Edit Availability'
+                )}
+              </button>
+
+              {/* Edit Compensation Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation() // Prevent card click event
+                  if (!isUpdating) {
+                    setEditingCompensation(member)
+                  }
+                }}
+                disabled={isUpdating}
+                className={`w-full px-3 py-1.5 text-sm rounded-lg transition-colors duration-200 flex items-center justify-center ${
+                  isUpdating 
+                    ? 'text-gray-500 bg-gray-100 cursor-not-allowed' 
+                    : 'text-blue-700 bg-blue-50 hover:bg-blue-100'
+                }`}
+              >
+                <CurrencyDollarIcon className="h-3 w-3 mr-1" />
+                Edit Compensation
+              </button>
+            </div>
           )}
         </div>
       </Card>
@@ -360,17 +385,23 @@ export default function StaffManagementDashboard() {
     )
   }
 
-  // Check permissions
+  // Check permissions (with debug info)
   if (!canManageStaff) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="p-8 max-w-md mx-4">
-          <div className="text-center">
-            <XCircleIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Restricted</h3>
-            <p className="text-gray-600">You don't have permission to manage staff members.</p>
-          </div>
-        </Card>
+      <div className="min-h-screen bg-gray-50 p-4">
+        {/* Debug Component - Shows why access is denied */}
+        <RoleDebugger />
+        
+        <div className="flex items-center justify-center">
+          <Card className="p-8 max-w-md mx-4">
+            <div className="text-center">
+              <XCircleIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Restricted</h3>
+              <p className="text-gray-600">You don't have permission to manage staff members.</p>
+              <p className="text-sm text-gray-500 mt-2">Check the debug info above to see your current role and permissions.</p>
+            </div>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -654,6 +685,23 @@ export default function StaffManagementDashboard() {
               console.error('Staff update failed:', error)
               // Error toast is handled by the mutation hook
             }
+          }}
+        />
+      )}
+
+      {/* Edit Compensation Modal */}
+      {editingCompensation && (
+        <BarberOverrideDialog
+          barberId={editingCompensation.user_id}
+          barberName={getDisplayName(editingCompensation)}
+          barbershopId={barbershopId}
+          isOpen={!!editingCompensation}
+          onClose={() => setEditingCompensation(null)}
+          onSave={(compensationData) => {
+            // Refresh staff data to show updated compensation
+            refetchStaff()
+            setEditingCompensation(null)
+            toast.success(`Compensation updated for ${getDisplayName(editingCompensation)}`)
           }}
         />
       )}
