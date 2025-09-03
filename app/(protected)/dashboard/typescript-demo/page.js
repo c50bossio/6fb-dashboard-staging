@@ -71,7 +71,7 @@ export default function TypeScriptDemoPage() {
     },
   })
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (data) => {
     setLoading(true)
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000))
