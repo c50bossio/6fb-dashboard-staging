@@ -49,7 +49,7 @@ export default function IntegrationsPage() {
   const getIconComponent = (iconType) => {
     switch (iconType) {
       case 'calendar':
-        return CalendarSolid
+        return CalendarDaysIcon
       default:
         return LinkIcon
     }

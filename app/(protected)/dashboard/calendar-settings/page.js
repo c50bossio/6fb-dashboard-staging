@@ -233,7 +233,7 @@ export default function CalendarSettings() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="bg-gradient-to-r from-olive-500 to-gold-600 rounded-xl p-3">
-              <CalendarSolid className="h-8 w-8 text-white" />
+              <CalendarDaysIcon className="h-8 w-8 text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Calendar Integration</h1>
