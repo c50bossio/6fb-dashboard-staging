@@ -14,8 +14,7 @@ export async function POST(request) {
     const userId = body.userId || 'anonymous-' + Date.now()
     
     // Log onboarding completion for analytics
-    .toISOString()
-    })
+    console.log('Onboarding completed for user:', userId, 'at', new Date().toISOString())
 
     return NextResponse.json({
       success: true,
