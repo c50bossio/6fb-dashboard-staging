@@ -54,13 +54,13 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 })
 
-type FormData = z.infer<typeof formSchema>
+// FormData type definition (converted from TypeScript)
 
 export default function TypeScriptDemoPage() {
   const [loading, setLoading] = useState(false)
-  const [buttonVariant, setButtonVariant] = useState<'default' | 'primary' | 'secondary' | 'success' | 'warning'>('default')
+  const [buttonVariant, setButtonVariant] = useState('default')
 
-  const form = useForm<FormData>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
