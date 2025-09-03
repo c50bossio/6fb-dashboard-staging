@@ -34,6 +34,18 @@ function SupabaseAuthProvider({ children }) {
   
   // Single Supabase client instance - use singleton from UNIFIED_CLIENT
   const supabase = createClient()
+  
+  // Emergency timeout to prevent infinite loading
+  React.useEffect(() => {
+    const emergencyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('Authentication timeout - forcing load completion')
+        setLoading(false)
+      }
+    }, 5000)
+    
+    return () => clearTimeout(emergencyTimeout)
+  }, [])
 
   // Fetch user profile 
   const fetchProfile = async (userId) => {
@@ -54,7 +66,7 @@ function SupabaseAuthProvider({ children }) {
 
       if (profileData) {
         // Check for shop association issues
-        const hasShopId = profileData.shop_id || profileData.barbershop_id
+        const hasShopId = profileData.barbershop_id
         
         setProfile(profileData)
         return profileData
@@ -91,7 +103,6 @@ function SupabaseAuthProvider({ children }) {
         updated_at: new Date().toISOString(),
         
         // Shop fields (set during onboarding)
-        shop_id: null,
         barbershop_id: null,
         
         // Onboarding
@@ -158,6 +169,7 @@ function SupabaseAuthProvider({ children }) {
   // Initialize auth state using Supabase best practices
   useEffect(() => {
     let isMounted = true
+    let authTimeout = null
 
     // Add visibility change monitoring for tab switch debugging
     const handleVisibilityChange = () => {
@@ -172,18 +184,55 @@ function SupabaseAuthProvider({ children }) {
 
     const initAuth = async () => {
       try {
+        console.log('🔐 [AUTH DEBUG] Starting auth initialization...')
+        
+        // Set up timeout to prevent infinite loading
+        authTimeout = setTimeout(() => {
+          if (isMounted) {
+            console.log('🔐 [AUTH DEBUG] Auth initialization timeout - forcing loading=false')
+            setUser(null)
+            setProfile(null)
+            setLoading(false)
+          }
+        }, 5000) // 5 second timeout (reduced for faster debugging)
+        
         // Get initial session
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        
+        console.log('🔐 [AUTH DEBUG] Session check result:', {
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userId: session?.user?.id,
+          email: session?.user?.email,
+          sessionError,
+          isMounted
+        })
         
         if (session?.user && isMounted) {
+          console.log('🔐 [AUTH DEBUG] Setting user from session:', session.user.id)
           setUser(session.user)
-          const profileData = await fetchProfile(session.user.id)
-          if (profileData) {
-            setProfile(profileData)
+          
+          try {
+            const profileData = await fetchProfile(session.user.id)
+            if (profileData) {
+              setProfile(profileData)
+            }
+          } catch (profileError) {
+            console.error('🔐 [AUTH DEBUG] Profile fetch failed, continuing without profile:', profileError)
+            // Continue with just the user, don't block loading
           }
+        } else {
+          console.log('🔐 [AUTH DEBUG] No session or user found:', { hasSession: !!session, hasUser: !!session?.user, isMounted })
+        }
+        
+        // Clear timeout and set loading false
+        if (authTimeout) {
+          clearTimeout(authTimeout)
+          authTimeout = null
         }
         
         if (isMounted) {
+          console.log('🔐 [AUTH DEBUG] Setting loading to false')
           setLoading(false)
         }
 
@@ -268,6 +317,9 @@ function SupabaseAuthProvider({ children }) {
 
     return () => {
       isMounted = false
+      if (authTimeout) {
+        clearTimeout(authTimeout)
+      }
       authSubscriptionRef.current?.unsubscribe()
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }

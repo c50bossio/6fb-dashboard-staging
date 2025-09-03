@@ -38,7 +38,7 @@ async function resetOnboardingProgress() {
   })
   
   // Since user has no barbershop, these completions are false
-  if (!profile.shop_id && !profile.barbershop_id) {
+  if (!profile.barbershop_id && !profile.barbershop_id) {
 
     // Reset the onboarding progress
 

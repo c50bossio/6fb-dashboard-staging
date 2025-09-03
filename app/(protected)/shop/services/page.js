@@ -65,14 +65,14 @@ export default function ShopServicesAndPricing() {
     if (profile?.barbershop_id) {
       return profile.barbershop_id
     }
-    if (profile?.shop_id) {
-      return profile.shop_id
+    if (profile?.barbershop_id) {
+      return profile.barbershop_id
     }
     
     // Try to get from barbershop_staff table
     if (profile?.id) {
       const _supabase = createClient()
-      const { data: staffData } = await supabase
+      const { data: staffData } = await _supabase
         .from('barbershop_staff')
         .select('barbershop_id')
         .eq('user_id', profile.id)
@@ -122,7 +122,7 @@ export default function ShopServicesAndPricing() {
       // Get the services for the barbershop
       // Note: actual production database uses 'barbershop_id'
       // Using select('*') to only get existing columns - prevents errors if image_url doesn't exist yet
-      const { data: servicesData, error: servicesError } = await supabase
+      const { data: servicesData, error: servicesError } = await _supabase
         .from('services')
         .select('*')
         .eq('barbershop_id', barbershopId)
@@ -211,7 +211,7 @@ export default function ShopServicesAndPricing() {
 
       if (editingService) {
         // Update existing service
-        const { error } = await supabase
+        const { error } = await _supabase
           .from('services')
           .update(serviceData)
           .eq('id', editingService.id)
@@ -220,7 +220,7 @@ export default function ShopServicesAndPricing() {
         toast.success('Service updated successfully!')
       } else {
         // Add new service
-        const { error } = await supabase
+        const { error } = await _supabase
           .from('services')
           .insert([serviceData])
 
@@ -267,7 +267,7 @@ export default function ShopServicesAndPricing() {
       }
 
       // Check if service with same name already exists
-      const { data: existingService } = await supabase
+      const { data: existingService } = await _supabase
         .from('services')
         .select('id')
         .eq('barbershop_id', barbershopId)  // Correct: actual database uses barbershop_id
@@ -298,7 +298,7 @@ export default function ShopServicesAndPricing() {
       // Note: is_featured, online_booking_enabled, requires_consultation 
       // still need database columns if you want these features
 
-      const { error } = await supabase
+      const { error } = await _supabase
         .from('services')
         .insert([serviceData])
 
@@ -344,7 +344,7 @@ export default function ShopServicesAndPricing() {
     setSaving(true)
     try {
       const _supabase = createClient()
-      const { error } = await supabase
+      const { error } = await _supabase
         .from('services')
         .delete()
         .eq('id', deletingServiceId)
@@ -367,7 +367,7 @@ export default function ShopServicesAndPricing() {
   const handleToggleActive = async (service) => {
     try {
       const _supabase = createClient()
-      const { error } = await supabase
+      const { error } = await _supabase
         .from('services')
         .update({ is_active: !service.is_active })
         .eq('id', service.id)

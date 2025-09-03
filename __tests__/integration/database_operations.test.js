@@ -447,7 +447,7 @@ describe('Database Operations Integration Tests', () => {
       const appointmentData = {
         client_id: testClient.id,
         barber_id: testBarber.id,
-        shop_id: testShop.id,
+        barbershop_id: testShop.id,
         service_id: testService.id,
         scheduled_time: new Date('2024-02-15T10:00:00Z'),
         notes: 'Client prefers fade cut'
@@ -469,7 +469,7 @@ describe('Database Operations Integration Tests', () => {
       const appointment = await appointmentRepo.create({
         client_id: testClient.id,
         barber_id: testBarber.id,
-        shop_id: testShop.id,
+        barbershop_id: testShop.id,
         service_id: testService.id,
         scheduled_time: new Date('2024-02-15T11:00:00Z')
       });
@@ -500,7 +500,7 @@ describe('Database Operations Integration Tests', () => {
       const appointment1 = await appointmentRepo.create({
         client_id: testClient.id,
         barber_id: testBarber.id,
-        shop_id: testShop.id,
+        barbershop_id: testShop.id,
         service_id: testService.id,
         scheduled_time: scheduledTime
       });
@@ -510,7 +510,7 @@ describe('Database Operations Integration Tests', () => {
       await expect(appointmentRepo.create({
         client_id: testClient.id, // Different client, same barber
         barber_id: testBarber.id,
-        shop_id: testShop.id,
+        barbershop_id: testShop.id,
         service_id: testService.id,
         scheduled_time: conflictingTime
       })).rejects.toThrow(/scheduling conflict/i);
@@ -525,7 +525,7 @@ describe('Database Operations Integration Tests', () => {
         const appointment = await appointmentRepo.create({
           client_id: testClient.id,
           barber_id: testBarber.id,
-          shop_id: testShop.id,
+          barbershop_id: testShop.id,
           service_id: testService.id,
           scheduled_time: appointmentTime
         });
@@ -605,7 +605,7 @@ describe('Database Operations Integration Tests', () => {
         const appointment = await appointmentRepo.create({
           client_id: testClient.id,
           barber_id: testBarber.id,
-          shop_id: testShop.id,
+          barbershop_id: testShop.id,
           service_id: testService.id,
           scheduled_time: appointmentTime
         });
@@ -647,7 +647,7 @@ describe('Database Operations Integration Tests', () => {
           const appointment = await appointmentRepo.create({
             client_id: client.id,
             barber_id: testBarber.id,
-            shop_id: testShop.id,
+            barbershop_id: testShop.id,
             service_id: testService.id,
             scheduled_time: new Date(`2024-01-${(j + 1).toString().padStart(2, '0')}T10:00:00Z`)
           });
@@ -691,7 +691,7 @@ describe('Database Operations Integration Tests', () => {
         const appt1 = await appointmentRepo.create({
           client_id: testClient.id,
           barber_id: testBarber.id,
-          shop_id: testShop.id,
+          barbershop_id: testShop.id,
           service_id: testService.id,
           scheduled_time: new Date(`2024-01-${(i + 1).toString().padStart(2, '0')}T10:00:00Z`)
         });
@@ -704,7 +704,7 @@ describe('Database Operations Integration Tests', () => {
         const appt2 = await appointmentRepo.create({
           client_id: testClient.id,
           barber_id: barber2.id,
-          shop_id: testShop.id,
+          barbershop_id: testShop.id,
           service_id: testService.id,
           scheduled_time: new Date(`2024-01-${(i + 1).toString().padStart(2, '0')}T14:00:00Z`)
         });
@@ -821,7 +821,7 @@ describe('Database Operations Integration Tests', () => {
       await expect(appointmentRepo.create({
         client_id: 'non-existent-client',
         barber_id: 'non-existent-barber',
-        shop_id: 'non-existent-shop',
+        barbershop_id: 'non-existent-shop',
         service_id: 'non-existent-service',
         scheduled_time: new Date()
       })).rejects.toThrow();
@@ -841,13 +841,13 @@ describe('Database Operations Integration Tests', () => {
     });
 
     it('should validate data types and ranges', async () => {
-      await expect(shopRepo.addService('shop_id', {
+      await expect(shopRepo.addService('barbershop_id', {
         name: 'Invalid Service',
         price: -10.00, // Negative price should be invalid
         duration: 30
       })).rejects.toThrow();
 
-      await expect(shopRepo.addService('shop_id', {
+      await expect(shopRepo.addService('barbershop_id', {
         name: 'Invalid Duration Service',
         price: 35.00,
         duration: 0 // Zero duration should be invalid

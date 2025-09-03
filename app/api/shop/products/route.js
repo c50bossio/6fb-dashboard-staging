@@ -79,8 +79,8 @@ export async function GET(request) {
     let shop = null
     
     // Method 1: Check profile for shop_id or barbershop_id (most reliable)
-    if (profile && (profile.shop_id || profile.barbershop_id)) {
-      const barbershopId = profile.shop_id || profile.barbershop_id
+    if (profile && (profile.barbershop_id || profile.barbershop_id)) {
+      const barbershopId = profile.barbershop_id || profile.barbershop_id
       const { data: profileShop } = await supabase
         .from('barbershops')
         .select('id, name')

@@ -6,12 +6,14 @@ import {
   PhoneIcon,
   GlobeAltIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useRef } from 'react'
 import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
+import Link from 'next/link'
 
 export default function GeneralSettingsPage() {
   const { user: _user } = useAuth()
@@ -27,12 +29,7 @@ export default function GeneralSettingsPage() {
     description: '',
     email: '',
     phone: '',
-    website: '',
-    address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    country: 'USA'
+    website: ''
   })
 
   const [originalData, setOriginalData] = useState(null)
@@ -64,23 +61,23 @@ export default function GeneralSettingsPage() {
       setLoading(true)
       
       // First try to get shop by owner_id
-      let { data: shop, error } = await supabase
+      let { data: shop, error } = await _supabase
         .from('barbershops')
         .select('*')
-        .eq('owner_id', user.id)
+        .eq('owner_id', _user.id)
         .single()
       
       // If no shop found by owner_id, check profile for shop_id
       if (!shop || error) {
-        const { data: profile } = await supabase
+        const { data: profile } = await _supabase
           .from('profiles')
           .select('barbershop_id, barbershop_id')
-          .eq('id', user.id)
+          .eq('id', _user.id)
           .single()
         
-        const barbershopId = profile?.shop_id || profile?.barbershop_id
+        const barbershopId = profile?.barbershop_id || profile?.barbershop_id
         if (barbershopId) {
-          const { data: shopByProfile } = await supabase
+          const { data: shopByProfile } = await _supabase
             .from('barbershops')
             .select('*')
             .eq('id', barbershopId)
@@ -96,12 +93,7 @@ export default function GeneralSettingsPage() {
           description: shop.description || '',
           email: shop.email || '',
           phone: shop.phone || '',
-          website: shop.website || '',
-          address: shop.address || '',
-          city: shop.city || '',
-          state: shop.state || '',
-          zip_code: shop.zip_code || '',
-          country: shop.country || 'USA'
+          website: shop.website || ''
         }
         setFormData(shopData)
         setOriginalData(shopData)
@@ -113,7 +105,7 @@ export default function GeneralSettingsPage() {
         // Pre-fill with user's email if available
         setFormData(prev => ({
           ...prev,
-          email: user.email || prev.email
+          email: _user.email || prev.email
         }))
       }
     } catch (error) {
@@ -131,17 +123,34 @@ export default function GeneralSettingsPage() {
     setSaving(true)
     setNotification(null)
     
+    // Basic validation for general business info
+    const validationErrors = []
+    
+    if (!formData.name?.trim()) {
+      validationErrors.push('Business name is required')
+    }
+    
+    if (!formData.email?.trim()) {
+      validationErrors.push('Email address is required')
+    }
+    
+    if (validationErrors.length > 0) {
+      showNotification('error', validationErrors.join(', '))
+      setSaving(false)
+      return
+    }
+    
     try {
       // Check if barbershop exists
-      const { data: existingShop } = await supabase
+      const { data: existingShop } = await _supabase
         .from('barbershops')
         .select('id')
-        .eq('owner_id', user?.id)
+        .eq('owner_id', _user?.id)
         .single()
       
       if (existingShop) {
-        // Update existing barbershop
-        const { error } = await supabase
+        // Update existing barbershop (general info only)
+        const { error } = await _supabase
           .from('barbershops')
           .update({
             name: formData.name,
@@ -149,32 +158,22 @@ export default function GeneralSettingsPage() {
             email: formData.email,
             phone: formData.phone,
             website: formData.website,
-            address: formData.address,
-            city: formData.city,
-            state: formData.state,
-            zip_code: formData.zip_code,
-            country: formData.country,
             updated_at: new Date().toISOString()
           })
-          .eq('owner_id', user?.id)
+          .eq('owner_id', _user?.id)
         
         if (error) throw error
       } else {
-        // Create new barbershop (during onboarding)
-        const { data: newShop, error } = await supabase
+        // Create new barbershop (during onboarding - general info only)
+        const { data: newShop, error } = await _supabase
           .from('barbershops')
           .insert({
-            owner_id: user?.id,
+            owner_id: _user?.id,
             name: formData.name,
             description: formData.description,
             email: formData.email,
             phone: formData.phone,
             website: formData.website,
-            address: formData.address,
-            city: formData.city,
-            state: formData.state,
-            zip_code: formData.zip_code,
-            country: formData.country,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
@@ -185,13 +184,13 @@ export default function GeneralSettingsPage() {
         
         // Update profile with shop_id
         if (newShop) {
-          await supabase
+          await _supabase
             .from('profiles')
             .update({ 
               barbershop_id: newShop.id,
               barbershop_id: newShop.id 
             })
-            .eq('id', user?.id)
+            .eq('id', _user?.id)
         }
       }
       
@@ -227,6 +226,34 @@ export default function GeneralSettingsPage() {
     setNotification({ type, message })
     setTimeout(() => setNotification(null), 5000)
   }
+
+  // State to track location completion
+  const [locationStatus, setLocationStatus] = useState({ complete: false, missing: [] })
+  
+  // Check location completion status
+  useEffect(() => {
+    const checkLocationStatus = async () => {
+      try {
+        const response = await fetch('/api/onboarding/status')
+        const data = await response.json()
+        
+        // Check if business step shows location-related missing items
+        const businessStep = data.steps?.business
+        const locationMissing = businessStep?.missing?.filter(item => 
+          item.includes('Location Settings')
+        ) || []
+        
+        setLocationStatus({
+          complete: locationMissing.length === 0,
+          missing: locationMissing
+        })
+      } catch (error) {
+        console.error('Error checking location status:', error)
+      }
+    }
+    
+    checkLocationStatus()
+  }, [_user])
 
   if (loading) {
     return (
@@ -377,6 +404,7 @@ export default function GeneralSettingsPage() {
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                 placeholder="Enter your shop name"
+                autoComplete="organization"
               />
             </div>
             
@@ -404,13 +432,14 @@ export default function GeneralSettingsPage() {
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                 placeholder="shop@example.com"
+                autoComplete="email"
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <PhoneIcon className="h-4 w-4 inline mr-1" />
-                Phone Number *
+                Phone Number
               </label>
               <input
                 type="tel"
@@ -418,6 +447,7 @@ export default function GeneralSettingsPage() {
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                 placeholder="(555) 123-4567"
+                autoComplete="tel"
               />
             </div>
             
@@ -438,79 +468,59 @@ export default function GeneralSettingsPage() {
         </div>
       </div>
 
-      {/* Location Section */}
+      {/* Location Status Section */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Location</h2>
-          <p className="text-sm text-gray-600">Your shop's physical address</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <MapPinIcon className="h-6 w-6 text-gray-400 mr-3" />
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Location Information</h2>
+                <p className="text-sm text-gray-600">Manage your shop's physical address and contact details</p>
+              </div>
+            </div>
+            <div className="flex items-center">
+              {locationStatus.complete ? (
+                <CheckCircleIcon className="h-5 w-5 text-green-500" />
+              ) : (
+                <ExclamationTriangleIcon className="h-5 w-5 text-orange-500" />
+              )}
+            </div>
+          </div>
         </div>
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Street Address
-              </label>
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
-                placeholder="123 Main Street"
-              />
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              {locationStatus.complete ? (
+                <div className="flex items-center text-green-700">
+                  <CheckCircleIcon className="h-5 w-5 mr-2" />
+                  <span className="text-sm font-medium">Location information is complete</span>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center text-orange-700 mb-2">
+                    <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+                    <span className="text-sm font-medium">Location information needed</span>
+                  </div>
+                  {locationStatus.missing.length > 0 && (
+                    <div className="text-sm text-gray-600">
+                      <p className="mb-1">Missing information:</p>
+                      <ul className="list-disc list-inside ml-4 space-y-1">
+                        {locationStatus.missing.map((item, index) => (
+                          <li key={index} className="text-gray-600">{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                City
-              </label>
-              <input
-                type="text"
-                value={formData.city}
-                onChange={(e) => setFormData({...formData, city: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
-                placeholder="New York"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                State
-              </label>
-              <input
-                type="text"
-                value={formData.state}
-                onChange={(e) => setFormData({...formData, state: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
-                placeholder="NY"
-                maxLength={2}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ZIP Code
-              </label>
-              <input
-                type="text"
-                value={formData.zip_code}
-                onChange={(e) => setFormData({...formData, zip_code: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
-                placeholder="10001"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Country
-              </label>
-              <input
-                type="text"
-                value={formData.country}
-                onChange={(e) => setFormData({...formData, country: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
-                placeholder="USA"
-              />
-            </div>
+            <Link 
+              href="/shop/settings/location"
+              className="ml-4 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors text-sm font-medium"
+            >
+              Manage Location
+            </Link>
           </div>
         </div>
       </div>

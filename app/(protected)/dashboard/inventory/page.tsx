@@ -33,7 +33,7 @@ export default function InventoryPage() {
         // This handles both individual barbers and shop employees
         const contextId = data.profile.resolved_barbershop_id || 
                          data.profile.barbershop_id || 
-                         data.profile.shop_id ||
+                         data.profile.barbershop_id ||
                          data.profile.id // Fallback to user ID for individual barbers
 
         if (contextId) {

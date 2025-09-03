@@ -73,8 +73,8 @@ export default function WebsiteSettingsPage() {
           const response = await fetch('/api/profile')
           if (response.ok) {
             const { profile } = await response.json()
-            if (profile?.shop_id) {
-              setShopId(profile.shop_id)
+            if (profile?.barbershop_id) {
+              setShopId(profile.barbershop_id)
             } else {
               // If no barbershop_id in profile, check if user owns any barbershops
               const shopResponse = await fetch('/api/barbershops/user-shops')

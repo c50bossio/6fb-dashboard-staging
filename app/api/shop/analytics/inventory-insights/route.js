@@ -31,11 +31,11 @@ export async function GET(request) {
       .eq('id', user.id)
       .single()
     
-    if (!profile?.shop_id) {
+    if (!profile?.barbershop_id) {
       return NextResponse.json({ error: 'Shop not found' }, { status: 404 })
     }
 
-    const barbershopId = profile.shop_id
+    const barbershopId = profile.barbershop_id
     const { searchParams } = new URL(request.url)
     const periodDays = parseInt(searchParams.get('period_days') || '90') // Longer period for inventory analysis
     const includeInactive = searchParams.get('include_inactive') === 'true'

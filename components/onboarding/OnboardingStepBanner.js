@@ -153,7 +153,7 @@ export default function OnboardingStepBanner({
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
             {canComplete ? (
-              <CheckCircleIconSolid className="h-5 w-5 text-blue-600" />
+              <CheckCircleIcon className="h-5 w-5 text-blue-600" />
             ) : (
               <ClockIcon className="h-5 w-5 text-blue-600" />
             )}

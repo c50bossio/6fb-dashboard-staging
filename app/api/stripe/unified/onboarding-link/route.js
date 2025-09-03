@@ -33,12 +33,12 @@ export async function POST(request) {
 
     // Verify the Connect account exists and user has access
     const { data: connectAccount, error: accountError } = await supabase
-      .from('stripe_connected_accounts')
+      .from('stripe_accounts')
       .select(`
         *,
         barbershops(owner_id, name)
       `)
-      .eq('stripe_account_id', account_id)
+      .eq('account_id', account_id)
       .single()
 
     if (accountError || !connectAccount) {
@@ -51,12 +51,12 @@ export async function POST(request) {
     // Check user permissions
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, barbershop_id, barberbarbershop_id, role')
+      .select('id, barbershop_id, barbershop_id, role')
       .eq('id', session.user.id)
       .single()
 
-    const hasPermission = profile?.barbershop_id === connectAccount.barberbarbershop_id || 
-                         profile?.barbershop_id === connectAccount.barberbarbershop_id ||
+    const hasPermission = profile?.barbershop_id === connectAccount.barbershop_id || 
+                         profile?.barbershop_id === connectAccount.barbershop_id ||
                          profile?.role === 'SUPER_ADMIN' ||
                          connectAccount.barbershops?.owner_id === session.user.id
 
@@ -92,26 +92,23 @@ export async function POST(request) {
     }
 
     // Create onboarding link
-    const defaultReturnUrl = `${request.nextUrl.origin}/dashboard/settings#payments`
+    const defaultReturnUrl = `${request.nextUrl.origin}/shop/settings/payment-setup?onboarding=complete`
+    const refreshUrl = `${request.nextUrl.origin}/shop/settings/payment-setup?refresh=true`
+    
     const accountLink = await stripe.accountLinks.create({
       account: account_id,
-      refresh_url: return_url || defaultReturnUrl,
+      refresh_url: refreshUrl,
       return_url: return_url || defaultReturnUrl,
       type: 'account_onboarding'
     })
 
     // Update onboarding tracking in database
     const { error: updateError } = await supabase
-      .from('stripe_connected_accounts')
+      .from('stripe_accounts')
       .update({
-        setup_progress: {
-          ...connectAccount.setup_progress,
-          onboarding_link_generated: true,
-          last_onboarding_attempt: new Date().toISOString()
-        },
-        last_updated: new Date().toISOString()
+        updated_at: new Date().toISOString()
       })
-      .eq('stripe_account_id', account_id)
+      .eq('account_id', account_id)
 
     if (updateError) {
       console.error('Error updating onboarding tracking:', updateError)

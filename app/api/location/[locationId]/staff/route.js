@@ -38,7 +38,7 @@ export async function GET(request, { params }) {
       hasAccess = true
     } else if (userRole === 'SHOP_OWNER') {
       // Check if this is their shop or they're staff there
-      const userShopId = profile.shop_id || profile.barbershop_id
+      const userShopId = profile.barbershop_id || profile.barbershop_id
       if (userShopId === locationId) {
         hasAccess = true
       } else {

@@ -7,21 +7,27 @@ import {
   BellIcon,
   PaintBrushIcon,
   UserGroupIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getTenant } from '@/lib/tenant-resolver-client'
 import { Card } from '../ui/card'
 import CompensationConfiguration from './CompensationConfiguration'
+import CommissionSettings from './CommissionSettings'
 import InheritanceIndicator from './InheritanceIndicator'
 import PaymentProcessingSettings from './PaymentProcessingSettings'
 import SettingsSection from './SettingsSection'
 import TipSettings from './TipSettings'
+import NoShowSettings from './NoShowSettings'
 
 export default function UnifiedSettingsInterface() {
   const { user, profile } = useAuth()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
   
   const [loading, setLoading] = useState(true)
@@ -30,11 +36,20 @@ export default function UnifiedSettingsInterface() {
   const [activeCategory, setActiveCategory] = useState('business_info')
   const [barbershopId, setbarbershopId] = useState(null)
   
+  // Set active tab from URL parameter
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && categories.find(c => c.id === tab)) {
+      setActiveCategory(tab)
+    }
+  }, [searchParams])
+  
   // Settings categories for navigation
   const categories = [
     { id: 'business_info', name: 'Business Info', icon: BuildingStorefrontIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'booking_preferences', name: 'Booking', icon: ClockIcon },
+    { id: 'no_show_management', name: 'No-Show Management', icon: ExclamationTriangleIcon },
     { id: 'integrations', name: 'Integrations', icon: CreditCardIcon },
     { id: 'compensation', name: 'Staff Compensation', icon: UserGroupIcon },
     { id: 'tips', name: 'Tip Settings', icon: CurrencyDollarIcon },
@@ -330,7 +345,14 @@ export default function UnifiedSettingsInterface() {
 
           {activeCategory === 'compensation' && (
             <div className="space-y-6">
-              <CompensationConfiguration />
+              <CommissionSettings 
+                barbershopId={barbershopId}
+                currentUser={profile}
+                onUpdate={() => {
+                  // Refresh settings or trigger any necessary updates
+                  console.log('Commission settings updated')
+                }}
+              />
             </div>
           )}
 
@@ -403,6 +425,12 @@ export default function UnifiedSettingsInterface() {
                 <p>Booking preferences configuration will be available soon.</p>
               </div>
             </SettingsSection>
+          )}
+
+          {activeCategory === 'no_show_management' && (
+            <div className="space-y-6">
+              <NoShowSettings />
+            </div>
           )}
 
           {activeCategory === 'appearance' && (

@@ -152,7 +152,7 @@ export async function POST(request) {
         .eq('id', user.id)
         .single()
 
-      if (profile && !profile.shop_id && !profile.barbershop_id) {
+      if (profile && !profile.barbershop_id && !profile.barbershop_id) {
         // User doesn't have a barbershop, set this one
         await supabaseAdmin
           .from('profiles')

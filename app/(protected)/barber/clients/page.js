@@ -64,7 +64,7 @@ function BarberClientsPageContent({ onAction }) {
   }, [onAction])
 
   useEffect(() => {
-    if (profile?.barbershop_id || profile?.shop_id) {
+    if (profile?.barbershop_id || profile?.barbershop_id) {
       loadClients()
     }
   }, [profile]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -74,7 +74,7 @@ function BarberClientsPageContent({ onAction }) {
       setLoading(true)
       
       // Get barbershop ID from profile
-      const barbershopId = profile?.barbershop_id || profile?.shop_id
+      const barbershopId = profile?.barbershop_id || profile?.barbershop_id
       
       if (!barbershopId) {
         console.error('No barbershop ID found in profile')
@@ -269,7 +269,7 @@ function BarberClientsPageContent({ onAction }) {
   // Handle client creation
   const handleAddClient = async (clientData) => {
     try {
-      const barbershopId = profile?.barbershop_id || profile?.shop_id
+      const barbershopId = profile?.barbershop_id || profile?.barbershop_id
       
       const response = await fetch('/api/customers', {
         method: 'POST',

@@ -57,21 +57,29 @@ export async function GET(request, { params }) {
       }, { status: 403 })
     }
 
-    // Get active staff for this barbershop
-    // // Debug log removed for production
-const { data: staff, error: staffError } = await supabase
-      .from('barbershop_staff')
+    // Get staff who can take appointments for this barbershop from profiles table
+    // NOW USING CAPABILITY-BASED FILTERING instead of role-based filtering
+    const { data: staff, error: staffError } = await supabase
+      .from('profiles')
       .select(`
         id,
-        user_id,
         barbershop_id,
         role,
         is_active,
+        first_name,
+        last_name,
+        full_name,
+        avatar_url,
         created_at,
-        metadata
+        metadata,
+        can_take_appointments,
+        is_visible_for_booking,
+        service_provider_since
       `)
       .eq('barbershop_id', actualbarbershopId)  // Use actualbarbershopId instead of barbershopId
       .eq('is_active', true)
+      .eq('can_take_appointments', true)       // MUST be able to take appointments
+      .eq('is_visible_for_booking', true)      // MUST be visible in public booking
       .order('created_at', { ascending: true })
     
     // // Debug log removed for production
@@ -99,37 +107,11 @@ return NextResponse.json({
       })
     }
 
-    // Get public profile details for each staff member (only public info)
-    const userIds = staff.map(s => s.user_id).filter(Boolean)
-    
-    // Skip profile fetch if no user IDs
-    if (userIds.length === 0) {
-      return NextResponse.json({
-        success: true,
-        staff: [],
-        count: 0,
-        barbershop_id: barbershopId,
-        barbershop_name: barbershop.name,
-        message: 'No active staff found for this barbershop'
-      })
-    }
-    
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name, full_name, avatar_url')
-      .in('id', userIds)
-
-    if (profilesError) {
-      console.error('Warning: Could not fetch profiles, using staff metadata:', profilesError)
-      // Don't fail - we can use metadata from barbershop_staff table as fallback
-    }
-
-    // Combine staff data with public profile information
-    const staffWithProfiles = staff.map(staffMember => {
-      const profile = profiles?.find(p => p.id === staffMember.user_id) || {}
-      const metadata = staffMember.metadata || {}
+    // Transform profile data to staff format (we already have all the data from profiles table)
+    const staffWithProfiles = staff.map(profile => {
+      const metadata = profile.metadata || {}
       
-      // Use profile first, then metadata, then empty string
+      // Use profile data directly since we're querying profiles table
       const firstName = profile.first_name || metadata.first_name || ''
       const lastName = profile.last_name || metadata.last_name || ''
       let fullName = profile.full_name || metadata.full_name || ''
@@ -151,33 +133,38 @@ return NextResponse.json({
       // Get display name with proper fallbacks
       let displayName = fullName || `${finalFirstName} ${finalLastName}`.trim() || 'Staff Member'
       
-      // Final fallback based on role
+      // Final fallback based on role (but ANY role can now appear if capabilities allow)
       if (!displayName || displayName.trim() === '' || displayName === 'Staff Member') {
-        displayName = `${staffMember.role === 'OWNER' ? 'Owner' : 'Barber'}`
+        displayName = `${profile.role === 'SHOP_OWNER' || profile.role === 'ENTERPRISE_OWNER' ? 'Owner' : 
+                        profile.role === 'MANAGER' ? 'Manager' : 'Service Provider'}`
       }
       
       return {
-        // Use user_id as primary identifier for consistency
-        id: staffMember.user_id,
-        user_id: staffMember.user_id,
-        staff_id: staffMember.id, // barbershop_staff.id for reference
-        barbershop_id: staffMember.barbershop_id,
-        role: staffMember.role,
-        is_active: staffMember.is_active,
-        created_at: staffMember.created_at,
+        // Use profile.id as primary identifier for consistency
+        id: profile.id,
+        user_id: profile.id,
+        staff_id: profile.id, // profiles.id is now the staff identifier
+        barbershop_id: profile.barbershop_id,
+        role: profile.role,
+        is_active: profile.is_active,
+        can_take_appointments: profile.can_take_appointments ?? true, // Default to true for backward compatibility
+        is_visible_for_booking: profile.is_visible_for_booking ?? true, // Default to true
+        service_provider_since: profile.service_provider_since || profile.created_at,
+        created_at: profile.created_at,
         first_name: finalFirstName,
         last_name: finalLastName,
         full_name: fullName,
         display_name: displayName,
         avatar_url: profile.avatar_url || null,
-        // Public-safe defaults for booking UI
-        title: staffMember.role === 'OWNER' ? 'Owner/Master Barber' : 'Barber',
+        // Public-safe defaults for booking UI - now role-agnostic
+        title: profile.role === 'SHOP_OWNER' || profile.role === 'ENTERPRISE_OWNER' ? 'Owner/Master Barber' : 
+               profile.role === 'MANAGER' ? 'Service Manager' : 'Service Provider',
         experience: '5+ years',
         rating: 4.8,
         reviewCount: 0,
         specialties: ['Haircuts', 'Styling'],
         availability: 'Available',
-        bio: `Professional ${staffMember.role.toLowerCase()} providing quality service`
+        bio: `Professional ${profile.role.toLowerCase().replace('_', ' ')} providing quality service`
       }
     })
 

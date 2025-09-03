@@ -82,28 +82,61 @@ export function useShopData(barbershopId, options = {}) {
     staleTime: 30 * 60 * 1000, // 30 minutes
   })
 
-  // Dashboard metrics - with development mode fallback
+  // Dashboard metrics - calculated from real database data
   const metricsQuery = useQuery({
     queryKey: ['dashboard-metrics', barbershopId],
     queryFn: async () => {
-      // In development mode, return mock data
-      if (process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true') {
+      try {
+        const client = createClient()
+        
+        // Calculate real metrics from appointments and customers
+        const { data: appointments } = await client
+          .from('appointments')
+          .select('*')
+          .eq('barbershop_id', barbershopId)
+          .eq('status', 'completed')
+        
+        const { data: allAppointments } = await client
+          .from('appointments')
+          .select('id, start_time, status')
+          .eq('barbershop_id', barbershopId)
+        
+        const { count: customerCount } = await client
+          .from('customers')
+          .select('*', { count: 'exact', head: true })
+          .eq('barbershop_id', barbershopId)
+        
+        const today = new Date().toISOString().split('T')[0]
+        const todayAppointments = allAppointments?.filter(apt => 
+          apt.start_time?.startsWith(today)
+        ) || []
+        
+        const totalRevenue = appointments?.reduce((sum, apt) => sum + (apt.price || 0), 0) || 0
+        const averageRating = appointments?.length > 0 
+          ? appointments.reduce((sum, apt) => sum + (apt.rating || 0), 0) / appointments.length 
+          : 0
+        
         return {
-          total_revenue: 5432.10,
-          total_appointments: 42,
-          total_customers: 28,
-          average_rating: 4.8,
-          today_appointments: 8,
-          week_appointments: 35,
-          month_appointments: 142
+          total_revenue: totalRevenue,
+          total_appointments: allAppointments?.length || 0,
+          total_customers: customerCount || 0,
+          average_rating: Number(averageRating.toFixed(1)),
+          today_appointments: todayAppointments.length,
+          week_appointments: 0, // Would need week calculation
+          month_appointments: appointments?.length || 0
         }
-      }
-      // Production: would calculate metrics from appointments
-      return {
-        total_revenue: 0,
-        total_appointments: 0,
-        total_customers: 0,
-        average_rating: 0
+      } catch (error) {
+        console.error('Error calculating dashboard metrics:', error)
+        // Return zero metrics instead of throwing
+        return {
+          total_revenue: 0,
+          total_appointments: 0,
+          total_customers: 0,
+          average_rating: 0,
+          today_appointments: 0,
+          week_appointments: 0,
+          month_appointments: 0
+        }
       }
     },
     enabled: !!barbershopId,
@@ -153,15 +186,49 @@ export function useShopData(barbershopId, options = {}) {
     includeCustomers
   ])
 
-  // Compute error state
+  // Compute error state with classification
   const error = useMemo(() => {
-    return shopQuery.error || 
-           businessHoursQuery.error || 
-           metricsQuery.error ||
-           appointmentsQuery.error ||
-           staffQuery.error ||
-           servicesQuery.error ||
-           customersQuery.error
+    // Prioritize core data errors (shop, business hours)
+    const coreDataError = shopQuery.error || businessHoursQuery.error
+    if (coreDataError) {
+      return {
+        type: 'technical_error',
+        message: 'Failed to load barbershop data. Please try again.',
+        originalError: coreDataError
+      }
+    }
+
+    // Check for insufficient data errors from AI/predictive features
+    const aiErrors = [metricsQuery.error]
+      .filter(err => err && (
+        err.message?.includes('insufficient') || 
+        err.message?.includes('Insufficient') ||
+        err.response?.data?.insufficient_data
+      ))
+    
+    if (aiErrors.length > 0) {
+      return {
+        type: 'insufficient_data',
+        message: "Let's get some bookings to unlock AI insights! Your dashboard will show powerful analytics once you have a few appointments.",
+        originalError: aiErrors[0]
+      }
+    }
+
+    // Other query errors are non-blocking
+    const otherErrors = appointmentsQuery.error || 
+                       staffQuery.error || 
+                       servicesQuery.error || 
+                       customersQuery.error
+
+    if (otherErrors) {
+      return {
+        type: 'partial_error',
+        message: 'Some features may be limited. Core functionality is available.',
+        originalError: otherErrors
+      }
+    }
+
+    return null
   }, [
     shopQuery.error,
     businessHoursQuery.error,
@@ -185,7 +252,7 @@ export function useShopData(barbershopId, options = {}) {
     const completedAppointments = appointments.filter(apt => apt.status === 'completed')
     const todayAppointments = appointments.filter(apt => {
       const today = new Date().toISOString().split('T')[0]
-      return apt.appointment_date?.startsWith(today)
+      return apt.start_time?.startsWith(today)
     })
 
     const popularServices = services.map(service => {

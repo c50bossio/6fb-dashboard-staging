@@ -51,7 +51,7 @@ export async function POST(request) {
         customers (id, name, email, phone),
         services (id, name, duration_minutes, price, category)
       `)
-      .eq('shop_id', shop_id)
+      .eq('barbershop_id', shop_id)
       .eq('is_test', false);
 
     if (barber_id) {
@@ -142,7 +142,7 @@ export async function POST(request) {
           customers (id, name, email, phone),
           services (id, name, duration_minutes, price, category)
         `)
-        .eq('shop_id', shop_id)
+        .eq('barbershop_id', shop_id)
         .eq('is_test', false)
         .eq('is_recurring', false)
         .gte('start_time', startDate.toISOString())

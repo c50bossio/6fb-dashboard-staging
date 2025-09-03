@@ -99,7 +99,7 @@ export async function GET(request) {
       trial_end_date: null,
       
       // Shop fields (set during onboarding)
-      shop_id: null,
+      barbershop_id: null,
       barbershop_id: null,
       
       // Onboarding

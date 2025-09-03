@@ -59,7 +59,7 @@ export async function GET(request) {
     }
     
     // Check both barbershop_id and barbershop_id fields
-    let barbershopId = profile?.barbershop_id || profile?.shop_id
+    let barbershopId = profile?.barbershop_id || profile?.barbershop_id
     
     if (!barbershopId) {
       // Try to get barbershop from ownership

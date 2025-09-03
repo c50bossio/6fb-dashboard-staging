@@ -97,7 +97,7 @@ async function diagnoseAndFix() {
           .from('profiles')
           .update({ 
             role: 'SHOP_OWNER',
-            shop_id: newBarbershop.id,
+            barbershop_id: newBarbershop.id,
             barbershop_id: newBarbershop.id
           })
           .eq('id', users[0].id)
@@ -133,12 +133,12 @@ async function diagnoseAndFix() {
         }
         
         // Fix missing associations for SHOP_OWNERs
-        if (profile.role === 'SHOP_OWNER' && !profile.shop_id && !profile.barbershop_id && barbershops?.[0]) {
+        if (profile.role === 'SHOP_OWNER' && !profile.barbershop_id && !profile.barbershop_id && barbershops?.[0]) {
 
           await supabase
             .from('profiles')
             .update({ 
-              shop_id: barbershops[0].id,
+              barbershop_id: barbershops[0].id,
               barbershop_id: barbershops[0].id
             })
             .eq('id', user.id)

@@ -390,31 +390,8 @@ async def get_campaign_responses(
             detail=f"Failed to retrieve campaign responses: {str(e)}"
         )
 
-@router.post("/campaigns/test")
-async def send_test_campaign(
-    test_data: TestCampaignRequest,
-    user_data: Dict = Depends(get_current_user_barbershop)
-):
-    """Send a test campaign to specified email/phone"""
-    try:
-        result = await campaign_service.send_test_campaign(
-            campaign_definition_id=test_data.campaign_definition_id,
-            barbershop_id=user_data['barbershop_id'],
-            test_email=test_data.test_email,
-            test_phone=test_data.test_phone,
-            channel=test_data.channel
-        )
-        
-        return {
-            "success": True,
-            "message": "Test campaign sent successfully",
-            "data": result
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to send test campaign: {str(e)}"
-        )
+# Test endpoint removed for production security
+# Original test campaign endpoint has been disabled for security compliance
 
 # Campaign Analytics endpoints
 @router.get("/campaigns/analytics/overview")

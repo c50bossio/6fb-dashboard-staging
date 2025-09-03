@@ -63,7 +63,7 @@ async def get_real_dashboard_stats(barbershop_id: str) -> DashboardStats:
         transactions = transactions_response.data if transactions_response.data else []
         
         # Query customers
-        customers_response = supabase.table('customers').select('*').eq('shop_id', barbershop_id).execute()
+        customers_response = supabase.table('customers').select('*').eq('barbershop_id', barbershop_id).execute()
         customers = customers_response.data if customers_response.data else []
         
         # Calculate metrics
@@ -73,7 +73,7 @@ async def get_real_dashboard_stats(barbershop_id: str) -> DashboardStats:
         
         # Today's metrics
         today = datetime.utcnow().date()
-        today_appointments = [a for a in appointments if datetime.fromisoformat(a.get('start_time', '').replace('Z', '+00:00')).date() == today]
+        today_appointments = [a for a in appointments if datetime.fromisoformat(a.get('date', a.get('scheduled_at', '')).replace('Z', '+00:00')).date() == today]
         today_transactions = [t for t in transactions if datetime.fromisoformat(t.get('created_at', '').replace('Z', '+00:00')).date() == today]
         
         appointments_today = len(today_appointments)
@@ -107,8 +107,8 @@ async def get_real_recent_bookings(barbershop_id: str, count: int = 10) -> List[
     try:
         # Query recent appointments with customer and service info
         appointments_response = supabase.table('appointments').select(
-            'id, start_time, status, service_name, service_price, customers(name)'
-        ).eq('barbershop_id', barbershop_id).order('start_time', desc=True).limit(count).execute()
+            'id, date, scheduled_at, status, service_name, service_price, customers(name)'
+        ).eq('barbershop_id', barbershop_id).order('date', desc=True).limit(count).execute()
         
         appointments = appointments_response.data if appointments_response.data else []
         
@@ -120,7 +120,7 @@ async def get_real_recent_bookings(barbershop_id: str, count: int = 10) -> List[
                 id=apt.get('id', ''),
                 customer_name=customer_name,
                 service=apt.get('service_name', 'Unknown Service'),
-                appointment_time=datetime.fromisoformat(apt.get('start_time', '').replace('Z', '+00:00')),
+                appointment_time=datetime.fromisoformat(apt.get('date', apt.get('scheduled_at', '')).replace('Z', '+00:00')),
                 status=apt.get('status', 'pending'),
                 price=float(apt.get('service_price', 0))
             )
@@ -166,8 +166,8 @@ async def get_real_business_metrics(barbershop_id: str) -> BusinessMetrics:
             
             month_appointments = [
                 a for a in appointments 
-                if datetime.fromisoformat(a.get('start_time', '').replace('Z', '+00:00')).month == target_month
-                and datetime.fromisoformat(a.get('start_time', '').replace('Z', '+00:00')).year == target_year
+                if datetime.fromisoformat(a.get('date', a.get('scheduled_at', '')).replace('Z', '+00:00')).month == target_month
+                and datetime.fromisoformat(a.get('date', a.get('scheduled_at', '')).replace('Z', '+00:00')).year == target_year
             ]
             
             revenue[month] = sum(float(t.get('total_amount', 0)) for t in month_transactions)
@@ -242,13 +242,13 @@ async def get_comprehensive_analytics(barbershop_id: str, period_days: int = 30)
         start_date = end_date - timedelta(days=period_days)
         
         # Get all relevant data
-        appointments_response = supabase.table('appointments').select('*').eq('barbershop_id', barbershop_id).gte('start_time', start_date.isoformat()).execute()
+        appointments_response = supabase.table('appointments').select('*').eq('barbershop_id', barbershop_id).gte('date', start_date.date().isoformat()).execute()
         appointments = appointments_response.data if appointments_response.data else []
         
         transactions_response = supabase.table('transactions').select('*').eq('barbershop_id', barbershop_id).gte('created_at', start_date.isoformat()).execute()
         transactions = transactions_response.data if transactions_response.data else []
         
-        customers_response = supabase.table('customers').select('*').eq('shop_id', barbershop_id).execute()
+        customers_response = supabase.table('customers').select('*').eq('barbershop_id', barbershop_id).execute()
         customers = customers_response.data if customers_response.data else []
         
         # Calculate analytics

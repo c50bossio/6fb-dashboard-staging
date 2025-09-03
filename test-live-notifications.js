@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import NotificationService from './lib/notifications/notification-service.js'
 
 console.log('🔥 Testing LIVE notification system with real credentials...')
@@ -7,8 +10,8 @@ console.log('🔥 Testing LIVE notification system with real credentials...')
 // Real test data for live system
 const testData = {
   customerName: 'Christopher Bossio',
-  customerEmail: 'christopher.bossio@outlook.com', // Real email for testing
-  customerPhone: '+18135483884', // Real phone for testing
+  customerEmail: 'c50bossio@gmail.com', // Your specified email for testing
+  customerPhone: '+13525568981', // Your specified phone for testing
   serviceName: 'Executive Cut & Style',
   appointmentDate: '2025-08-29',
   appointmentTime: '2:00 PM', 

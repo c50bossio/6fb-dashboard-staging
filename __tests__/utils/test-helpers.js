@@ -434,7 +434,7 @@ export const DataHelpers = {
       id: `test-appointment-${Date.now()}`,
       client_id: 'test-client-id',
       barber_id: 'test-barber-id',
-      shop_id: 'test-shop-id',
+      barbershop_id: 'test-shop-id',
       service_id: 'test-service-id',
       scheduled_time: TimeHelpers.futureDate(1).toISOString(),
       status: 'scheduled',
@@ -449,7 +449,7 @@ export const DataHelpers = {
   createTestService(overrides = {}) {
     return {
       id: `test-service-${Date.now()}`,
-      shop_id: 'test-shop-id',
+      barbershop_id: 'test-shop-id',
       name: 'Test Haircut',
       price: 35.00,
       duration: 30,

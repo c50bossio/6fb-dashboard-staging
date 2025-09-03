@@ -29,8 +29,7 @@ import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { cn } from '@/lib/utils'
 
 export default function BookingRulesPage() {
-  const { user, profile } = useAuth()
-  const _supabase = createClient()
+  const { user, profile, supabase } = useAuth()
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -38,6 +37,15 @@ export default function BookingRulesPage() {
   const [barbershopId, setbarbershopId] = useState(null)
   const [bookingRules, setBookingRules] = useState({})
   const [originalRules, setOriginalRules] = useState({})
+  
+  // Recovery settings state
+  const [recoverySettings, setRecoverySettings] = useState({
+    requireFeePayment: true,
+    requireManagerApproval: true,
+    requireDeposit: false,
+    firstOffenseWaitPeriod: 'immediate',
+    repeatOffenseWaitPeriod: '7days'
+  })
   
   // Tab navigation state
   const [activeTab, setActiveTab] = useState('policies')
@@ -289,6 +297,11 @@ export default function BookingRulesPage() {
       const rules = settings?.booking_rules || {}
       setBookingRules(rules)
       setOriginalRules(rules)
+      
+      // Load recovery settings if they exist
+      if (rules.recovery) {
+        setRecoverySettings(rules.recovery)
+      }
     } catch (error) {
       console.error('Error loading booking rules:', error)
       setNotification({
@@ -319,7 +332,7 @@ export default function BookingRulesPage() {
         const { error } = await supabase
           .from('business_settings')
           .update({
-            booking_rules: bookingRules,
+            booking_rules: { ...bookingRules, recovery: recoverySettings },
             updated_at: new Date().toISOString()
           })
           .eq('user_id', user.id)
@@ -331,7 +344,7 @@ export default function BookingRulesPage() {
           .from('business_settings')
           .insert({
             user_id: user.id,
-            booking_rules: bookingRules,
+            booking_rules: { ...bookingRules, recovery: recoverySettings },
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
@@ -339,7 +352,7 @@ export default function BookingRulesPage() {
         if (error) throw error
       }
       
-      setOriginalRules(bookingRules)
+      setOriginalRules({ ...bookingRules, recovery: recoverySettings })
       setNotification({
         type: 'success',
         message: 'Booking rules saved successfully'
@@ -357,12 +370,17 @@ export default function BookingRulesPage() {
 
   const handleReset = () => {
     setBookingRules(originalRules)
+    // Reset recovery settings to original values
+    if (originalRules.recovery) {
+      setRecoverySettings(originalRules.recovery)
+    }
     setNotification(null)
   }
 
   const hasChanges = useMemo(() => {
-    return JSON.stringify(bookingRules) !== JSON.stringify(originalRules)
-  }, [bookingRules, originalRules])
+    const currentState = { ...bookingRules, recovery: recoverySettings }
+    return JSON.stringify(currentState) !== JSON.stringify(originalRules)
+  }, [bookingRules, recoverySettings, originalRules])
 
   // Memoized update function to prevent infinite loops
   const updateBookingRules = useCallback((newData) => {
@@ -539,6 +557,7 @@ export default function BookingRulesPage() {
                 data={bookingRules}
                 updateData={updateBookingRules}
                 onComplete={() => {}}
+                hideSaveButton={true}
               />
             </OnboardingProvider>
           )}
@@ -697,17 +716,50 @@ export default function BookingRulesPage() {
                 <div className="border border-gray-200 rounded-lg p-4">
                   <h4 className="font-medium text-gray-900 mb-3">Recovery Requirements</h4>
                   <div className="space-y-3">
-                    <label className="flex items-center">
-                      <input type="checkbox" className="rounded border-gray-300 text-olive-600 focus:ring-olive-500" defaultChecked />
-                      <span className="ml-2 text-sm text-gray-700">Require fee payment</span>
+                    <label className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
+                        checked={recoverySettings.requireFeePayment}
+                        onChange={(e) => setRecoverySettings(prev => ({ ...prev, requireFeePayment: e.target.checked }))}
+                      />
+                      <span className="text-sm text-gray-700">Require fee payment</span>
+                      <div className="group relative">
+                        <InformationCircleIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                        <div className="absolute left-0 bottom-6 hidden group-hover:block bg-gray-900 text-white text-xs rounded p-2 w-64 z-10">
+                          Clients must pay outstanding no-show fees before being unblocked. This ensures accountability and compensates for lost revenue.
+                        </div>
+                      </div>
                     </label>
-                    <label className="flex items-center">
-                      <input type="checkbox" className="rounded border-gray-300 text-olive-600 focus:ring-olive-500" defaultChecked />
-                      <span className="ml-2 text-sm text-gray-700">Require manager approval</span>
+                    <label className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
+                        checked={recoverySettings.requireManagerApproval}
+                        onChange={(e) => setRecoverySettings(prev => ({ ...prev, requireManagerApproval: e.target.checked }))}
+                      />
+                      <span className="text-sm text-gray-700">Require manager approval</span>
+                      <div className="group relative">
+                        <InformationCircleIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                        <div className="absolute left-0 bottom-6 hidden group-hover:block bg-gray-900 text-white text-xs rounded p-2 w-64 z-10">
+                          A manager must manually review and approve the client's unblocking request. Adds oversight to the recovery process.
+                        </div>
+                      </div>
                     </label>
-                    <label className="flex items-center">
-                      <input type="checkbox" className="rounded border-gray-300 text-olive-600 focus:ring-olive-500" />
-                      <span className="ml-2 text-sm text-gray-700">Require deposit for future bookings</span>
+                    <label className="flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
+                        checked={recoverySettings.requireDeposit}
+                        onChange={(e) => setRecoverySettings(prev => ({ ...prev, requireDeposit: e.target.checked }))}
+                      />
+                      <span className="text-sm text-gray-700">Require deposit for future bookings</span>
+                      <div className="group relative">
+                        <InformationCircleIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                        <div className="absolute left-0 bottom-6 hidden group-hover:block bg-gray-900 text-white text-xs rounded p-2 w-64 z-10">
+                          Client must pay a refundable deposit for their next appointment as insurance against future no-shows.
+                        </div>
+                      </div>
                     </label>
                   </div>
                 </div>
@@ -716,25 +768,49 @@ export default function BookingRulesPage() {
                   <h4 className="font-medium text-gray-900 mb-3">Waiting Periods</h4>
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        First offense recovery
-                      </label>
-                      <select className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-                        <option>Immediate</option>
-                        <option>24 hours</option>
-                        <option>3 days</option>
-                        <option>7 days</option>
+                      <div className="flex items-center gap-2 mb-1">
+                        <label className="block text-sm font-medium text-gray-700">
+                          First offense recovery
+                        </label>
+                        <div className="group relative">
+                          <InformationCircleIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                          <div className="absolute left-0 bottom-6 hidden group-hover:block bg-gray-900 text-white text-xs rounded p-2 w-64 z-10">
+                            Waiting period after first policy violation. 'Immediate' allows instant recovery once requirements are met.
+                          </div>
+                        </div>
+                      </div>
+                      <select 
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                        value={recoverySettings.firstOffenseWaitPeriod}
+                        onChange={(e) => setRecoverySettings(prev => ({ ...prev, firstOffenseWaitPeriod: e.target.value }))}
+                      >
+                        <option value="immediate">Immediate</option>
+                        <option value="24hours">24 hours</option>
+                        <option value="3days">3 days</option>
+                        <option value="7days">7 days</option>
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Repeat offense recovery
-                      </label>
-                      <select className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-                        <option>7 days</option>
-                        <option>14 days</option>
-                        <option>30 days</option>
-                        <option>90 days</option>
+                      <div className="flex items-center gap-2 mb-1">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Repeat offense recovery
+                        </label>
+                        <div className="group relative">
+                          <InformationCircleIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                          <div className="absolute left-0 bottom-6 hidden group-hover:block bg-gray-900 text-white text-xs rounded p-2 w-64 z-10">
+                            Extended waiting period for clients with multiple violations. Longer periods discourage repeat offenses.
+                          </div>
+                        </div>
+                      </div>
+                      <select 
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                        value={recoverySettings.repeatOffenseWaitPeriod}
+                        onChange={(e) => setRecoverySettings(prev => ({ ...prev, repeatOffenseWaitPeriod: e.target.value }))}
+                      >
+                        <option value="7days">7 days</option>
+                        <option value="14days">14 days</option>
+                        <option value="30days">30 days</option>
+                        <option value="90days">90 days</option>
                       </select>
                     </div>
                   </div>

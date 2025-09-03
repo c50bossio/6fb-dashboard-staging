@@ -45,14 +45,14 @@ export async function GET(request) {
       .eq('id', user.id)
       .single()
 
-    if (profileError || !profile?.shop_id) {
+    if (profileError || !profile?.barbershop_id) {
       return NextResponse.json(
         { error: 'Barbershop association required' },
         { status: 403 }
       )
     }
 
-    const barbershopId = profile.shop_id
+    const barbershopId = profile.barbershop_id
 
     // Parse and validate query parameters
     const filters = {
@@ -247,7 +247,7 @@ export async function POST(request) {
       .from('commission_payout_records')
       .select('id, barbershop_id, status')
       .eq('id', payout_record_id)
-      .eq('barbershop_id', profile.shop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .single()
 
     if (payoutError || !payoutRecord) {

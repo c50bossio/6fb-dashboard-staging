@@ -105,8 +105,8 @@ async function checkTimeSlotAvailability(supabase, bookingData) {
   
   // Check for conflicts - using consistent field names
   const { data: conflicts, error } = await supabase
-    .from('bookings')
-    .select('id, start_time, duration_minutes, customer_name, status')
+    .from('appointments')
+    .select('id, start_time, duration_minutes, status')
     .eq('barbershop_id', bookingData.barbershop_id)
     .in('status', ['confirmed', 'checked_in'])
 
@@ -277,21 +277,21 @@ export async function POST(request) {
       recurring_pattern: null
     }
 
-    // Insert booking (separate query as per CLAUDE.md guidance)
-    const { data: booking, error: bookingError } = await supabase
-      .from('bookings')
+    // Insert appointment (separate query as per CLAUDE.md guidance)
+    const { data: appointment, error: appointmentError } = await supabase
+      .from('appointments')
       .insert([bookingInsert])
       .select('*')
       .single()
 
-    if (bookingError) {
-      console.error('Enhanced booking creation error:', bookingError)
-      console.error('Booking data attempted:', bookingInsert)
+    if (appointmentError) {
+      console.error('Enhanced appointment creation error:', appointmentError)
+      console.error('Appointment data attempted:', bookingInsert)
       return NextResponse.json({
         success: false,
-        error: 'Failed to create booking',
-        message: 'Unable to save booking to database',
-        details: bookingError.message
+        error: 'Failed to create appointment',
+        message: 'Unable to save appointment to database',
+        details: appointmentError.message
       }, { status: 500 })
     }
 
@@ -303,36 +303,36 @@ export async function POST(request) {
       .single()
 
     // Merge data in JavaScript
-    booking.barbershop = barbershopDetails
+    appointment.barbershop = barbershopDetails
 
     // Send enhanced notifications (async, don't wait)
-    sendEnhancedNotifications(booking, barbershop).catch(console.error)
+    sendEnhancedNotifications(appointment, barbershopDetails).catch(console.error)
 
-    // Log successful booking
-    console.log(`✅ Enhanced public booking created: ${booking.id} for ${booking.customer_name} at ${booking.start_time}`)
+    // Log successful appointment
+    console.log(`✅ Enhanced public appointment created: ${appointment.id} at ${appointment.start_time}`)
 
     // Return enhanced success response
     return NextResponse.json({
       success: true,
-      booking: {
-        id: booking.id,
-        confirmation_number: booking.id,
-        service_name: booking.service_name,
-        scheduled_at: booking.start_time,
-        duration_minutes: booking.duration_minutes,
-        total_amount: booking.price,
-        customer_name: booking.customer_name,
-        customer_email: booking.customer_email,
+      appointment: {
+        id: appointment.id,
+        confirmation_number: appointment.id,
+        service_name: appointment.service_name,
+        scheduled_at: appointment.start_time,
+        duration_minutes: appointment.duration_minutes,
+        total_amount: appointment.price,
+        customer_name: appointment.customer_name,
+        customer_email: appointment.customer_email,
         add_ons: bookingData.addOns,
         barbershop: {
-          name: booking.barbershop?.name,
-          address: booking.barbershop?.address,
-          phone: booking.barbershop?.phone
+          name: appointment.barbershop?.name,
+          address: appointment.barbershop?.address,
+          phone: appointment.barbershop?.phone
         }
       },
       notifications: {
-        email: booking.email_opt_in ? 'sent' : 'skipped',
-        sms: booking.sms_opt_in ? 'sent' : 'skipped'
+        email: appointment.email_opt_in ? 'sent' : 'skipped',
+        sms: appointment.sms_opt_in ? 'sent' : 'skipped'
       },
       message: 'Booking confirmed successfully! Check your email for details.'
     })

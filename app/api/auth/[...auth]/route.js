@@ -491,7 +491,7 @@ async function ensureUserProfile(supabase, user) {
       trial_end_date: null,
       
       // Shop association fields (will be set during onboarding)
-      shop_id: null,
+      barbershop_id: null,
       barbershop_id: null,
       
       // Onboarding tracking

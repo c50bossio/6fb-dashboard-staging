@@ -26,7 +26,7 @@ export async function GET(request) {
     // Get user profile with role
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, shop_id, barbershop_id')
+      .select('role, barbershop_id, barbershop_id')
       .eq('id', user.id)
       .single()
     
@@ -155,7 +155,7 @@ export async function GET(request) {
       }
       
       // Also check shop_id in profile
-      if (locations.length === 0 && profile.shop_id) {
+      if (locations.length === 0 && profile.barbershop_id) {
         const { data: barbershop } = await supabase
           .from('barbershops')
           .select(`
@@ -169,7 +169,7 @@ export async function GET(request) {
             email,
             is_active
           `)
-          .eq('id', profile.shop_id)
+          .eq('id', profile.barbershop_id)
           .single()
         
         if (barbershop) {

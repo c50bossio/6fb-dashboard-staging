@@ -629,7 +629,7 @@ class CalendarIntegrationService {
             success: false, 
             error: error.message,
             appointmentData: {
-              customerName: appointment.customers?.name || 'Unknown',
+              customerName: appointment.customers?.full_name || 'Unknown',
               serviceName: appointment.service_name || 'Unknown Service',
               startDateTime: appointment.appointment_date
             }

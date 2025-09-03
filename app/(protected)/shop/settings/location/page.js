@@ -7,11 +7,23 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ArrowPathIcon,
-  MapIcon
+  MapIcon,
+  PhoneIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
+import { 
+  US_STATES, 
+  CANADIAN_PROVINCES, 
+  COUNTRIES, 
+  formatPhoneNumber, 
+  validatePostalCode, 
+  getStateOptions, 
+  getStateLabel, 
+  getPostalCodeLabel 
+} from '@/lib/constants/locations'
+import LocalBusinessSchema from '@/components/seo/LocalBusinessSchema'
 
 export default function LocationSettingsPage() {
   const { user: _user } = useAuth()
@@ -24,13 +36,16 @@ export default function LocationSettingsPage() {
   const [barbershopId, setbarbershopId] = useState(null)
   
   const [formData, setFormData] = useState({
+    // NAP (Name, Address, Phone) - Critical for SEO
+    phone: '',
+    
     // Physical Address
     address: '',
     address_line_2: '',
     city: '',
     state: '',
     zip_code: '',
-    country: 'USA',
+    country: 'US', // Use ISO codes
     
     // Map Coordinates
     latitude: null,
@@ -83,10 +98,10 @@ export default function LocationSettingsPage() {
       setLoading(true)
       
       // Get user's barbershop
-      const { data: profile } = await supabase
+      const { data: profile } = await _supabase
         .from('profiles')
         .select('barbershop_id')
-        .eq('id', user.id)
+        .eq('id', _user.id)
         .single()
       
       if (!profile?.barbershop_id) {
@@ -101,7 +116,7 @@ export default function LocationSettingsPage() {
       setbarbershopId(profile.barbershop_id)
       
       // Load barbershop location data
-      const { data: barbershop, error } = await supabase
+      const { data: barbershop, error } = await _supabase
         .from('barbershops')
         .select('*')
         .eq('id', profile.barbershop_id)
@@ -110,26 +125,39 @@ export default function LocationSettingsPage() {
       if (error) throw error
       
       if (barbershop) {
+        // Convert legacy country names to ISO codes
+        let countryCode = barbershop.country || 'US'
+        if (countryCode === 'USA') countryCode = 'US'
+        if (countryCode === 'United States') countryCode = 'US'
+        if (countryCode === 'Canada') countryCode = 'CA'
+        if (countryCode === 'United Kingdom') countryCode = 'GB'
+        if (countryCode === 'Mexico') countryCode = 'MX'
+
         const locationData = {
-          // Fields that exist in database
+          // NAP fields that exist in database
+          phone: barbershop.phone || '',
           address: barbershop.address || '',
           city: barbershop.city || '',
           state: barbershop.state || '',
           zip_code: barbershop.zip_code || '',
-          country: barbershop.country || 'USA',
+          country: countryCode,
           latitude: barbershop.latitude || null,
           longitude: barbershop.longitude || null,
           timezone: barbershop.timezone || 'America/New_York',
           
+          // Service Area fields (now in database)
+          mobile_services: barbershop.mobile_services || false,
+          
+          // Accessibility & Amenities fields (now in database)
+          parking_available: barbershop.parking_available || false,
+          wheelchair_accessible: barbershop.wheelchair_accessible || false,
+          public_transit_nearby: barbershop.public_transit_nearby || false,
+          landmark_description: barbershop.landmark_description || '',
+          
           // Fields not in database yet - default values for UI
           address_line_2: '', // Not in DB
           service_radius: 0, // Not in DB
-          mobile_services: false, // Not in DB
           service_areas: [], // Not in DB
-          parking_available: false, // Not in DB
-          wheelchair_accessible: false, // Not in DB
-          public_transit_nearby: false, // Not in DB
-          landmark_description: '', // Not in DB
           location_name: 'Main Location', // Not in DB
           location_type: 'primary' // Not in DB
         }
@@ -211,29 +239,82 @@ export default function LocationSettingsPage() {
     setSaving(true)
     setNotification(null)
     
+    // NAP validation before saving
+    const validationErrors = []
+    
+    if (!formData.phone?.trim()) {
+      validationErrors.push('Phone number is required')
+    }
+    
+    if (!formData.address?.trim()) {
+      validationErrors.push('Street address is required')
+    }
+    
+    if (!formData.city?.trim()) {
+      validationErrors.push('City is required')
+    }
+    
+    if (['US', 'CA'].includes(formData.country) && !formData.state?.trim()) {
+      validationErrors.push(`${getStateLabel(formData.country)} is required`)
+    }
+    
+    if (formData.zip_code && !validatePostalCode(formData.zip_code, formData.country)) {
+      validationErrors.push(`Please enter a valid ${getPostalCodeLabel(formData.country)}`)
+    }
+    
+    if (validationErrors.length > 0) {
+      setNotification({
+        type: 'error',
+        message: validationErrors.join(', ')
+      })
+      setSaving(false)
+      return
+    }
+    
     try {
-      // Only update fields that exist in the database
-      const { error } = await supabase
+      // Prepare update object with fields that exist in the database
+      const updateData = {
+        // NAP fields critical for SEO
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.zip_code,
+        country: formData.country,
+        timezone: formData.timezone,
+        
+        // Service Area fields
+        mobile_services: formData.mobile_services,
+        
+        // Accessibility & Amenities fields
+        parking_available: formData.parking_available,
+        wheelchair_accessible: formData.wheelchair_accessible,
+        public_transit_nearby: formData.public_transit_nearby,
+        landmark_description: formData.landmark_description,
+        
+        updated_at: new Date().toISOString()
+      }
+      
+      // Only include geographic data if they have values
+      // This prevents errors if columns don't exist yet
+      if (formData.latitude !== null && formData.latitude !== undefined) {
+        updateData.latitude = formData.latitude
+      }
+      if (formData.longitude !== null && formData.longitude !== undefined) {
+        updateData.longitude = formData.longitude
+      }
+      
+      console.log('Updating barbershop with data:', updateData)
+      
+      const { error } = await _supabase
         .from('barbershops')
-        .update({
-          address: formData.address,
-          // address_line_2 doesn't exist in DB - keeping in UI but not saving
-          city: formData.city,
-          state: formData.state,
-          zip_code: formData.zip_code,
-          country: formData.country,
-          latitude: formData.latitude,
-          longitude: formData.longitude,
-          timezone: formData.timezone,
-          // These fields don't exist in the database yet:
-          // service_radius, mobile_services, service_areas,
-          // parking_available, wheelchair_accessible, public_transit_nearby,
-          // landmark_description, location_name, location_type
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', barbershopId)
       
-      if (error) throw error
+      if (error) {
+        console.error('Supabase update error details:', error)
+        throw error
+      }
       
       setOriginalData(formData)
       setHasChanges(false)
@@ -243,9 +324,30 @@ export default function LocationSettingsPage() {
       })
     } catch (error) {
       console.error('Error saving location settings:', error)
+      
+      // Show detailed error message to help with debugging
+      let errorMessage = 'Failed to save location settings'
+      
+      if (error.message) {
+        errorMessage = error.message
+      } else if (error.details) {
+        errorMessage = error.details
+      } else if (error.hint) {
+        errorMessage = error.hint
+      }
+      
+      // Common error scenarios
+      if (error.code === 'PGRST116') {
+        errorMessage = 'Barbershop not found. Please contact support.'
+      } else if (error.code === '42703') {
+        errorMessage = 'Database column missing. Please run the migration first.'
+      } else if (error.message?.includes('permission denied')) {
+        errorMessage = 'Permission denied. Please check your account access.'
+      }
+      
       setNotification({
         type: 'error',
-        message: 'Failed to save location settings'
+        message: errorMessage
       })
     } finally {
       setSaving(false)
@@ -258,6 +360,26 @@ export default function LocationSettingsPage() {
     setNotification(null)
   }
 
+  // Handle phone number formatting for NAP compliance
+  const handlePhoneChange = (value) => {
+    const formatted = formatPhoneNumber(value)
+    setFormData({...formData, phone: formatted})
+  }
+
+  // Handle country change - reset state when country changes
+  const handleCountryChange = (countryCode) => {
+    setFormData({
+      ...formData, 
+      country: countryCode,
+      state: '' // Reset state when country changes
+    })
+  }
+
+  // Get current state options based on selected country
+  const stateOptions = getStateOptions(formData.country)
+  const stateLabel = getStateLabel(formData.country)
+  const postalCodeLabel = getPostalCodeLabel(formData.country)
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -268,10 +390,23 @@ export default function LocationSettingsPage() {
 
   return (
     <div className="max-w-4xl">
+      {/* SEO Schema Markup */}
+      <LocalBusinessSchema businessData={{
+        name: originalData?.name, // Business name from barbershop
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.zip_code,
+        country: formData.country,
+        latitude: formData.latitude,
+        longitude: formData.longitude
+      }} />
+      
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Location Settings</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Manage your barbershop's physical location and service areas
+          Manage your barbershop's NAP (Name, Address, Phone) and location details
         </p>
       </div>
 
@@ -304,7 +439,25 @@ export default function LocationSettingsPage() {
           <div className="px-4 py-6 sm:p-8">
             <div className="flex items-center mb-6">
               <BuildingStorefrontIcon className="h-6 w-6 text-gray-400 mr-2" />
-              <h2 className="text-lg font-semibold text-gray-900">Physical Address</h2>
+              <h2 className="text-lg font-semibold text-gray-900">NAP Information</h2>
+              <span className="ml-2 text-sm text-gray-500">(Name, Address, Phone - Critical for SEO)</span>
+            </div>
+            
+            {/* Phone Number Field - Critical for NAP */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700">
+                <PhoneIcon className="h-4 w-4 inline mr-1" />
+                Phone Number *
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => handlePhoneChange(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
+                placeholder="(555) 123-4567"
+                autoComplete="tel"
+              />
+              <p className="mt-1 text-sm text-gray-500">Primary contact number for your business</p>
             </div>
             
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -348,25 +501,45 @@ export default function LocationSettingsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  State
+                  {stateLabel}
                 </label>
-                <input
-                  type="text"
-                  value={formData.state}
-                  onChange={(e) => setFormData({...formData, state: e.target.value})}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
-                />
+                {stateOptions.length > 0 ? (
+                  <select
+                    value={formData.state}
+                    onChange={(e) => setFormData({...formData, state: e.target.value})}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
+                    autoComplete="address-level1"
+                  >
+                    <option value="">Select {stateLabel}</option>
+                    {stateOptions.map(option => (
+                      <option key={option.code} value={option.code}>
+                        {option.name}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={formData.state}
+                    onChange={(e) => setFormData({...formData, state: e.target.value})}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
+                    placeholder={stateLabel}
+                    autoComplete="address-level1"
+                  />
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  ZIP Code
+                  {postalCodeLabel}
                 </label>
                 <input
                   type="text"
                   value={formData.zip_code}
                   onChange={(e) => setFormData({...formData, zip_code: e.target.value})}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
+                  placeholder={formData.country === 'US' ? '12345' : formData.country === 'CA' ? 'A1A 1A1' : 'Postal Code'}
+                  autoComplete="postal-code"
                 />
               </div>
 
@@ -376,13 +549,15 @@ export default function LocationSettingsPage() {
                 </label>
                 <select
                   value={formData.country}
-                  onChange={(e) => setFormData({...formData, country: e.target.value})}
+                  onChange={(e) => handleCountryChange(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
+                  autoComplete="country"
                 >
-                  <option value="USA">United States</option>
-                  <option value="Canada">Canada</option>
-                  <option value="Mexico">Mexico</option>
-                  <option value="UK">United Kingdom</option>
+                  {COUNTRIES.map(country => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

@@ -31,12 +31,12 @@ export async function GET() {
     let barbershopData = null;
 
     // 1. Direct shop_id in profile (individual barber subscription)
-    if (profile.shop_id) {
-      barbershopId = profile.shop_id;
+    if (profile.barbershop_id) {
+      barbershopId = profile.barbershop_id;
       const { data: shopData } = await supabase
         .from('barbershops')
         .select('*')
-        .eq('id', profile.shop_id)
+        .eq('id', profile.barbershop_id)
         .single();
       barbershopData = shopData;
     }

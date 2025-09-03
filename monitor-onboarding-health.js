@@ -185,12 +185,12 @@ async function checkDataIntegrity() {
     // Check for profiles without barbershops (shop owners)
     const { data: shopOwners } = await supabase
       .from('profiles')
-      .select('id, email, shop_id, barbershop_id')
+      .select('id, email, barbershop_id, barbershop_id')
       .eq('role', 'SHOP_OWNER')
       .eq('onboarding_completed', true)
     
     if (shopOwners) {
-      const missingShops = shopOwners.filter(p => !p.shop_id && !p.barbershop_id)
+      const missingShops = shopOwners.filter(p => !p.barbershop_id && !p.barbershop_id)
       if (missingShops.length > 0) {
         issues.push(`${missingShops.length} shop owners without barbershop associations`)
         

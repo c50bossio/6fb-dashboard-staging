@@ -10,6 +10,7 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import RevenueTracker from './RevenueTracker'
 
 export default function UnifiedExecutiveSummary({ data }) {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -288,6 +289,15 @@ export default function UnifiedExecutiveSummary({ data }) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Real-Time Revenue Tracking */}
+        <div className="mt-6">
+          <RevenueTracker 
+            barbershopId={data?.barbershop_id} 
+            compact={false}
+            autoRefresh={true}
+          />
         </div>
       </div>
     </div>

@@ -1,0 +1,17 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# NUCLEAR MIGRATION ENFORCEMENT
+echo "🚨 CHECKING FOR BANNED 'shop_id' USAGE..."
+
+# Check for shop_id in staged files
+if git diff --cached --name-only | xargs grep -l "shop_id" 2>/dev/null; then
+    echo "❌ MIGRATION VIOLATION: 'shop_id' found in staged files!"
+    echo "   Use 'barbershop_id' instead. Nuclear migration in progress."
+    echo "   Files containing shop_id:"
+    git diff --cached --name-only | xargs grep -l "shop_id" 2>/dev/null
+    exit 1
+fi
+
+echo "✅ No shop_id violations found"
+npm run lint

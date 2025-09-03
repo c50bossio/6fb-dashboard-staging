@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 export default function PredictiveAnalyticsPanel({ data }) {
   const [predictions, setPredictions] = useState(null)
@@ -16,16 +16,27 @@ export default function PredictiveAnalyticsPanel({ data }) {
       setPredictions(data.predictions)
       setLastUpdated(new Date())
       setLoading(false)
-    } else {
+    } else if (!loading) {
       loadPredictions()
     }
     
-    const interval = setInterval(loadPredictions, 10 * 60 * 1000)
+    // Reduced frequency: refresh every 30 minutes instead of 10
+    const interval = setInterval(() => {
+      if (!loading && !generating) {
+        loadPredictions()
+      }
+    }, 30 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [data, selectedForecastType, selectedTimeHorizon])
+  }, [data, selectedForecastType, selectedTimeHorizon, loadPredictions, loading, generating])
 
-  const loadPredictions = async () => {
+  const loadPredictions = useCallback(async () => {
+    // Prevent multiple concurrent calls
+    if (loading || generating) {
+      return
+    }
+    
     try {
+      setLoading(true)
       setError(null)
       
       // Don't use demo data - require real barbershop context
@@ -37,14 +48,14 @@ export default function PredictiveAnalyticsPanel({ data }) {
       }
       
       const barbershopId = data?.barbershopId || data?.barbershop_id
-      const response = await fetch(`/api/analytics/predictive?barbershop_id=${barbershopId}`)
+      const response = await fetch(`/api/ai/predictive?type=comprehensive&barbershop_id=${barbershopId}`)
       const result = await response.json()
 
-      if (result.success && result.data?.historical_records > 0) {
-        setPredictions(result.data)
+      if (result.success && result.predictions) {
+        setPredictions(result.predictions)
         setLastUpdated(new Date())
-      } else if (result.fallback || result.data?.insufficient_data) {
-        setError('Insufficient booking data for predictions. Start recording bookings to see forecasts.')
+      } else if (result.insufficient_data) {
+        setError(result.friendly_message || 'Insufficient booking data for predictions. Start recording bookings to see forecasts.')
         setPredictions(null)
       } else {
         setError(result.error || 'Failed to load predictions')
@@ -57,9 +68,13 @@ export default function PredictiveAnalyticsPanel({ data }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [data, loading, generating])
 
   const generateNewPredictions = async () => {
+    if (loading || generating) {
+      return
+    }
+    
     setGenerating(true)
     try {
       // Validate real barbershop data exists
@@ -67,17 +82,7 @@ export default function PredictiveAnalyticsPanel({ data }) {
         throw new Error('Barbershop configuration required')
       }
 
-      const barbershopId = data?.barbershopId || data?.barbershop_id
-      
-      // Check if we have sufficient data before attempting generation
-      const response = await fetch(`/api/analytics/predictive?barbershop_id=${barbershopId}`)
-      const result = await response.json()
-      
-      if (!result.success || result.data?.insufficient_data || result.data?.historical_records < 5) {
-        throw new Error('Insufficient booking history. Need at least 5 completed bookings to generate predictions.')
-      }
-
-      // If we have data, reload the existing predictions
+      // Load predictions (this will handle all validation and data checking)
       await loadPredictions()
       
     } catch (err) {

@@ -21,7 +21,7 @@ async function testDeleteBlock() {
     .from('bookings')
     .select('*')
     .eq('status', 'blocked')
-    .eq('shop_id', '1ca6138d-eae8-46ed-abff-5d6e52fbd21b')
+    .eq('barbershop_id', '1ca6138d-eae8-46ed-abff-5d6e52fbd21b')
     .gte('start_time', startOfDay.toISOString())
     .lte('start_time', endOfDay.toISOString());
     
@@ -115,7 +115,7 @@ async function testDeleteBlock() {
     .from('bookings')
     .select('id')
     .eq('status', 'blocked')
-    .eq('shop_id', '1ca6138d-eae8-46ed-abff-5d6e52fbd21b')
+    .eq('barbershop_id', '1ca6138d-eae8-46ed-abff-5d6e52fbd21b')
     .gte('start_time', startOfDay.toISOString())
     .lte('start_time', endOfDay.toISOString());
     

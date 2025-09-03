@@ -102,7 +102,7 @@ describe('Payroll Export System - Comprehensive Tests', () => {
         commission_rate: 0.40,
         booth_rent: 150.00,
         tier_level: 'STANDARD',
-        shop_id: 'test-shop-id',
+        barbershop_id: 'test-shop-id',
         active: true,
       },
       {
@@ -115,7 +115,7 @@ describe('Payroll Export System - Comprehensive Tests', () => {
         commission_rate: 0.45,
         booth_rent: 200.00,
         tier_level: 'PREMIUM',
-        shop_id: 'test-shop-id',
+        barbershop_id: 'test-shop-id',
         active: true,
       }
     ]
@@ -704,7 +704,7 @@ describe('Payroll Export System - Comprehensive Tests', () => {
       const exportData = {
         export_id: 'test-export-id',
         user_id: 'test-user-id',
-        shop_id: 'test-shop-id',
+        barbershop_id: 'test-shop-id',
         export_type: 'manual',
         format: 'pdf',
         date_range_start: '2024-01-01',
@@ -735,7 +735,7 @@ describe('Payroll Export System - Comprehensive Tests', () => {
         id: 'schedule-1',
         name: 'Monthly Payroll Report',
         user_id: 'test-user-id',
-        shop_id: 'test-shop-id',
+        barbershop_id: 'test-shop-id',
         schedule_type: 'monthly',
         cron_expression: '0 0 1 * *',
         export_config: {
@@ -824,7 +824,7 @@ describe('Payroll Export System - Comprehensive Tests', () => {
       const result = await mockSupabaseClient
         .from('profiles')
         .select('*')
-        .eq('shop_id', 'test-shop-id')
+        .eq('barbershop_id', 'test-shop-id')
 
       expect(result.data).toHaveLength(2)
       expect(result.data[0].role).toBe('BARBER')
@@ -851,7 +851,7 @@ describe('Payroll Export System - Comprehensive Tests', () => {
       const result = await mockSupabaseClient
         .from('appointments')
         .select('*')
-        .eq('shop_id', 'test-shop-id')
+        .eq('barbershop_id', 'test-shop-id')
         .gte('date', '2024-01-01')
         .lte('date', '2024-01-31')
 
@@ -861,7 +861,7 @@ describe('Payroll Export System - Comprehensive Tests', () => {
     })
 
     test('respects user permissions and shop isolation', async () => {
-      const testProfile = createTestProfile({ shop_id: 'different-shop-id' })
+      const testProfile = createTestProfile({ barbershop_id: 'different-shop-id' })
       
       mockSupabaseClient.from.mockReturnValue({
         select: jest.fn().mockReturnValue({
@@ -875,7 +875,7 @@ describe('Payroll Export System - Comprehensive Tests', () => {
       const result = await mockSupabaseClient
         .from('profiles')
         .select('*')
-        .eq('shop_id', 'different-shop-id')
+        .eq('barbershop_id', 'different-shop-id')
 
       expect(result.data).toHaveLength(0) // Proper isolation
     })

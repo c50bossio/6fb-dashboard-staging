@@ -47,7 +47,7 @@ async function populateTestAppointments() {
     const { error: deleteError } = await supabase
       .from('bookings')
       .delete()
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', shopId)
       .like('customer_name', '%Test%')
     
     if (deleteError && deleteError.code !== 'PGRST116') { // PGRST116 = no rows found
@@ -80,7 +80,7 @@ async function populateTestAppointments() {
         const status = statuses[Math.floor(Math.random() * statuses.length)]
         
         appointments.push({
-          shop_id: shopId,
+          barbershop_id: shopId,
           barber_id: barberId,
           service_id: serviceId,
           customer_id: 'e91dd39c-21e6-41ea-8ac3-c908e6fb88f2', // Default test customer ID

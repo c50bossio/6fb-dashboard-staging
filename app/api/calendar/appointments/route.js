@@ -27,7 +27,7 @@ export async function GET(request) {
     }
 
     // Determine barbershop ID
-    let barbershopId = profile.shop_id || profile.barbershop_id
+    let barbershopId = profile.barbershop_id || profile.barbershop_id
     
     // Skip barbershop_staff query to avoid 406 errors
     // Staff associations should be managed through profiles table
@@ -118,8 +118,51 @@ export async function GET(request) {
       })
     }
 
-    // Get barber details for the appointments
-    const barberIds = [...new Set(bookings?.map(b => b.barber_id).filter(Boolean))]
+    // Query walk-in appointments from the appointments table
+    let walkInQuery = supabase
+      .from('appointments')
+      .select(`
+        id,
+        date,
+        time,
+        status,
+        barber_id,
+        barbershop_id,
+        service_id,
+        customer_id,
+        notes,
+        created_at,
+        updated_at,
+        customers (
+          id,
+          full_name,
+          phone,
+          email
+        )
+      `)
+      .gte('date', startDate.toISOString().split('T')[0])
+      .lt('date', endDate.toISOString().split('T')[0])
+      .in('status', ['WALK_IN_WAITING', 'IN_SERVICE']) // Include both waiting and in-service
+      .order('created_at', { ascending: true })
+
+    // Apply barbershop filter to walk-ins
+    if (targetbarbershopIds.length === 1) {
+      walkInQuery = walkInQuery.eq('barbershop_id', targetbarbershopIds[0])
+    } else if (targetbarbershopIds.length > 1) {
+      walkInQuery = walkInQuery.in('barbershop_id', targetbarbershopIds)
+    }
+
+    const { data: walkIns, error: walkInsError } = await walkInQuery
+
+    if (walkInsError) {
+      console.error('Error fetching walk-ins:', walkInsError)
+      // Don't fail completely if walk-ins fail, just log and continue
+    }
+
+    // Get barber details for both bookings and walk-ins
+    const bookingBarberIds = bookings?.map(b => b.barber_id).filter(Boolean) || []
+    const walkInBarberIds = walkIns?.map(w => w.barber_id).filter(Boolean) || []
+    const barberIds = [...new Set([...bookingBarberIds, ...walkInBarberIds])]
     let barberMap = {}
     
     if (barberIds.length > 0) {
@@ -131,6 +174,24 @@ export async function GET(request) {
       if (barbers) {
         barberMap = barbers.reduce((acc, barber) => {
           acc[barber.id] = barber.full_name
+          return acc
+        }, {})
+      }
+    }
+
+    // Get service details for walk-ins
+    const walkInServiceIds = walkIns?.map(w => w.service_id).filter(Boolean) || []
+    let serviceMap = {}
+    
+    if (walkInServiceIds.length > 0) {
+      const { data: services } = await supabase
+        .from('services')
+        .select('id, name, duration_minutes, price')
+        .in('id', walkInServiceIds)
+      
+      if (services) {
+        serviceMap = services.reduce((acc, service) => {
+          acc[service.id] = service
           return acc
         }, {})
       }
@@ -193,10 +254,77 @@ export async function GET(request) {
       }
     })
 
+    // Transform walk-in appointments to calendar format
+    const walkInAppointments = (walkIns || []).map(walkIn => {
+      // Parse time to create full datetime
+      const [hours, minutes] = (walkIn.time || '09:00').split(':')
+      const startDateTime = new Date(walkIn.date)
+      startDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
+      
+      // Get service details
+      const service = serviceMap[walkIn.service_id]
+      const serviceName = service?.name || 'Walk-in Service'
+      const duration = service?.duration_minutes || 30
+      
+      // Calculate end time based on duration
+      const endDateTime = new Date(startDateTime)
+      endDateTime.setMinutes(endDateTime.getMinutes() + duration)
+      
+      // Walk-in specific colors - orange/amber theme
+      let backgroundColor = '#f59e0b' // Amber for waiting
+      let borderColor = '#d97706'
+      const textColor = '#ffffff'
+      
+      if (walkIn.status === 'IN_SERVICE') {
+        backgroundColor = '#3b82f6' // Blue for in-service
+        borderColor = '#2563eb'
+      }
+
+      // Calculate queue position for display
+      const queuePosition = walkIns.findIndex(w => w.id === walkIn.id) + 1
+      const customerName = walkIn.customers?.full_name || 'Walk-in Customer'
+      
+      const title = walkIn.status === 'WALK_IN_WAITING' 
+        ? `🚶 #${queuePosition} ${customerName} - ${serviceName}`
+        : `🔄 ${customerName} - ${serviceName}`
+
+      return {
+        id: `walkin_${walkIn.id}`, // Prefix to distinguish from regular appointments
+        title,
+        start: startDateTime.toISOString(),
+        end: endDateTime.toISOString(),
+        backgroundColor,
+        borderColor,
+        textColor,
+        classNames: ['walk-in-appointment'],
+        extendedProps: {
+          customer: customerName,
+          email: walkIn.customers?.email || '',
+          phone: walkIn.customers?.phone || '',
+          service: serviceName,
+          price: service?.price || 0,
+          duration: duration,
+          status: walkIn.status,
+          notes: walkIn.notes,
+          barberId: walkIn.barber_id,
+          barberName: barberMap[walkIn.barber_id] || 'Available',
+          barbershopId: walkIn.barbershop_id,
+          isWalkIn: true,
+          queuePosition: walkIn.status === 'WALK_IN_WAITING' ? queuePosition : null,
+          createdAt: walkIn.created_at
+        }
+      }
+    })
+
+    // Combine regular appointments and walk-ins
+    const allAppointments = [...appointments, ...walkInAppointments]
+
     // Performance and debugging metrics
     const performanceEnd = Date.now()
     const performanceMetrics = {
-      totalRecords: appointments.length,
+      totalRecords: allAppointments.length,
+      regularAppointments: appointments.length,
+      walkInAppointments: walkInAppointments.length,
       dateRange: {
         start: startDate.toISOString(),
         end: endDate.toISOString(),
@@ -207,10 +335,11 @@ export async function GET(request) {
     }
     
     console.log(`[Calendar API] Performance metrics:`, performanceMetrics)
+    console.log(`[Calendar API] Integrated ${walkInAppointments.length} walk-in appointments with ${appointments.length} regular appointments`)
 
     return NextResponse.json({
-      appointments,
-      count: appointments.length,
+      appointments: allAppointments,
+      count: allAppointments.length,
       barbershopId,
       meta: {
         dateRange: {

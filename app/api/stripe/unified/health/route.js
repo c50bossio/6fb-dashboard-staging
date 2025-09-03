@@ -14,11 +14,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
 
     if (!barbershopId) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id is required' },
+        { error: 'barbershop_id is required' },
         { status: 400 }
       )
     }
@@ -36,7 +36,7 @@ export async function GET(request) {
 
     return NextResponse.json({
       success: true,
-      barberbarbershop_id: barbershopId,
+      barbershop_id: barbershopId,
       overall_health: healthCheck.overall_health,
       status: healthCheck.status,
       checks: healthCheck.checks,
@@ -90,9 +90,9 @@ async function performComprehensiveHealthCheck(supabase, barbershopId) {
 
     // 2. Connect account check
     const { data: connectAccount, error: connectError } = await supabase
-      .from('stripe_connected_accounts')
+      .from('stripe_accounts')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     if (connectError || !connectAccount) {
@@ -102,7 +102,7 @@ async function performComprehensiveHealthCheck(supabase, barbershopId) {
     } else {
       // Verify account with Stripe API
       try {
-        const stripeAccount = await stripe.accounts.retrieve(connectAccount.stripe_account_id)
+        const stripeAccount = await stripe.accounts.retrieve(connectAccount.account_id)
         
         const accountHealth = {
           exists: true,
@@ -152,7 +152,7 @@ async function performComprehensiveHealthCheck(supabase, barbershopId) {
     const { data: terminalConfig } = await supabase
       .from('stripe_terminal_config')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .single()
 
     if (!terminalConfig) {
@@ -177,7 +177,7 @@ async function performComprehensiveHealthCheck(supabase, barbershopId) {
     const { data: financialArrangements } = await supabase
       .from('financial_arrangements')
       .select('*')
-      .eq('barberbarbershop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .not('stripe_account_id', 'is', null)
 
     if (!financialArrangements || financialArrangements.length === 0) {
@@ -215,7 +215,7 @@ async function calculateStatusFromHealth(checks, connectAccount) {
     overall_status: 'unknown',
     connect_account: {
       exists: checks.connect_account.status !== 'not_configured',
-      account_id: connectAccount?.stripe_account_id || null,
+      account_id: connectAccount?.account_id || null,
       charges_enabled: false,
       payouts_enabled: false,
       details_submitted: false,

@@ -15,15 +15,15 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const { 
-      barberbarbershop_id, 
+      barbershop_id, 
       email, 
       business_type = 'individual',
       return_url
     } = body
 
-    if (!barberbarbershop_id || !email) {
+    if (!barbershop_id || !email) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id and email are required' },
+        { error: 'barbershop_id and email are required' },
         { status: 400 }
       )
     }
@@ -40,7 +40,7 @@ export async function POST(request) {
     const { data: barbershop, error: shopError } = await supabase
       .from('barbershops')
       .select('id, name, owner_id, address, city, state, zip_code')
-      .eq('id', barberbarbershop_id)
+      .eq('id', barbershop_id)
       .single()
 
     if (shopError || !barbershop) {
@@ -53,12 +53,12 @@ export async function POST(request) {
     // Verify user has permission to create Connect account
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, barbershop_id, barberbarbershop_id, role')
+      .select('id, barbershop_id, barbershop_id, role')
       .eq('id', session.user.id)
       .single()
 
-    const hasPermission = profile?.barbershop_id === barberbarbershop_id || 
-                         profile?.barbershop_id === barberbarbershop_id ||
+    const hasPermission = profile?.barbershop_id === barbershop_id || 
+                         profile?.barbershop_id === barbershop_id ||
                          profile?.role === 'SUPER_ADMIN' ||
                          barbershop.owner_id === session.user.id
 
@@ -68,12 +68,12 @@ export async function POST(request) {
 
     // Check if Connect account already exists
     const { data: existingAccount } = await supabase
-      .from('stripe_connected_accounts')
-      .select('stripe_account_id')
-      .eq('barberbarbershop_id', barberbarbershop_id)
+      .from('stripe_accounts')
+      .select('account_id')
+      .eq('barbershop_id', barbershop_id)
       .single()
 
-    if (existingAccount?.stripe_account_id) {
+    if (existingAccount?.account_id) {
       return NextResponse.json(
         { error: 'Stripe Connect account already exists for this barbershop' },
         { status: 409 }
@@ -88,10 +88,10 @@ export async function POST(request) {
       business_profile: {
         name: barbershop.name,
         mcc: '7230', // Barber shops MCC
-        url: `https://bookedbarber.com/shop/${barberbarbershop_id}`
+        url: `https://bookedbarber.com/shop/${barbershop_id}`
       },
       metadata: {
-        barberbarbershop_id: barberbarbershop_id,
+        barbershop_id: barbershop_id,
         created_by: session.user.id,
         platform: 'bookedbarber'
       }
@@ -107,21 +107,17 @@ export async function POST(request) {
 
     // Store Connect account information in database
     const { data: savedAccount, error: saveError } = await supabase
-      .from('stripe_connected_accounts')
+      .from('stripe_accounts')
       .upsert({
-        barberbarbershop_id: barberbarbershop_id,
-        stripe_account_id: connectAccount.id,
+        barbershop_id: barbershop_id,
+        account_id: connectAccount.id,
         charges_enabled: false,
         payouts_enabled: false,
         details_submitted: false,
-        requirements_due: [],
+        onboarding_completed: false,
         created_by: session.user.id,
-        setup_progress: {
-          account_created: true,
-          onboarding_started: true,
-          onboarding_completed: false
-        },
-        last_updated: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .select()
       .single()
@@ -141,7 +137,7 @@ export async function POST(request) {
       success: true,
       account_id: connectAccount.id,
       onboarding_url: accountLink.url,
-      barberbarbershop_id: barberbarbershop_id,
+      barbershop_id: barbershop_id,
       message: 'Stripe Connect account created successfully'
     })
 

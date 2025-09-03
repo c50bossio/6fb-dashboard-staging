@@ -24,7 +24,7 @@ async function verifySettingsDataConsistency() {
     }
 
     // Get barbershop ID from profile
-    const barbershopId = profile.shop_id || profile.barbershop_id;
+    const barbershopId = profile.barbershop_id || profile.barbershop_id;
     
     if (!barbershopId) {
       // Check if user owns a barbershop

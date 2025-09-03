@@ -43,7 +43,7 @@ export default function BarberDashboard() {
       setError(null)
       
       // Get barbershop context from profile
-      const barbershopId = profile?.shop_id || profile?.barbershop_id
+      const barbershopId = profile?.barbershop_id || profile?.barbershop_id
       const barberId = user?.id
       
       if (!barberId) {

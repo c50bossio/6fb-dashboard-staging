@@ -8,9 +8,8 @@ import Navigation from '../../components/Navigation'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 import { DashboardPerspectiveProvider } from '../../contexts/DashboardPerspectiveContext'
-import { GlobalDashboardProvider } from '../../contexts/GlobalDashboardContext'
 import { NavigationProvider, useNavigation } from '../../contexts/NavigationContext'
-import { TenantProvider } from '../../contexts/TenantContext'
+import { UnifiedContextProvider } from '../../contexts/UnifiedContextProvider'
 // import { Toaster } from 'react-hot-toast'
 
 
@@ -81,16 +80,14 @@ function ProtectedLayoutContent({ children }) {
 
 export default function ProtectedLayout({ children }) {
   return (
-    <TenantProvider>
-      <ProtectedRoute>
-        <NavigationProvider>
-          <GlobalDashboardProvider>
-            <DashboardPerspectiveProvider>
-              <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
-            </DashboardPerspectiveProvider>
-          </GlobalDashboardProvider>
-        </NavigationProvider>
-      </ProtectedRoute>
-    </TenantProvider>
+    <ProtectedRoute>
+      <NavigationProvider>
+        <UnifiedContextProvider>
+          <DashboardPerspectiveProvider>
+            <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
+          </DashboardPerspectiveProvider>
+        </UnifiedContextProvider>
+      </NavigationProvider>
+    </ProtectedRoute>
   )
 }

@@ -80,7 +80,7 @@ export default function ProgressiveAccountCreation({
 
     try {
       // Create account with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await _supabase.auth.signUp({
         email: customerInfo.email,
         password: password,
         options: {

@@ -605,7 +605,7 @@ test.describe('API Security', () => {
       },
       {
         endpoint: '/api/appointments/list',
-        params: { 'shop_id': '1', 'shop_id': '999' } // Duplicate parameter
+        params: { 'barbershop_id': '1', 'barbershop_id': '999' } // Duplicate parameter
       }
     ];
     

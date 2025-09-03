@@ -36,11 +36,31 @@ export async function GET(request) {
             barbershopId 
           });
         } catch (aiError) {
-          throw new Error('Insufficient barbershop data for predictions');
+          return {
+            insufficient_data: true,
+            friendly_message: "Let's get some bookings to unlock AI insights! Your dashboard will show powerful analytics once you have a few appointments.",
+            requirements: {
+              minimum_bookings: 5,
+              minimum_revenue_history: '7 days',
+              barbershop_setup_required: true
+            }
+          };
         }
       });
 
       const cacheStats = getCacheStats();
+      
+      // Handle insufficient data case with user-friendly response
+      if (predictions.insufficient_data) {
+        return NextResponse.json({
+          success: false,
+          insufficient_data: true,
+          friendly_message: predictions.friendly_message,
+          requirements: predictions.requirements,
+          cacheStats,
+          timestamp: new Date().toISOString()
+        }, { status: 200 }) // Return 200 to indicate this is expected behavior
+      }
       
       return NextResponse.json({
         success: true,

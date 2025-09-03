@@ -13,7 +13,7 @@ import {
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 
-import GlobalNavigation from '@/components/GlobalNavigation'
+// Removed GlobalNavigation import - using protected layout navigation
 import ProtectedRoute from '@/components/ProtectedRoute'
 import ReviewsList from '@/components/reviews/ReviewsList'
 import ReviewStats from '@/components/reviews/ReviewStats'
@@ -182,7 +182,7 @@ export default function EnterpriseReviewsPage() {
 
   return (
     <ProtectedRoute requiredRole="ENTERPRISE_OWNER">
-      <GlobalNavigation />
+      {/* Navigation now handled by protected layout */}
       <div className="min-h-screen bg-gray-50">
         <div className="lg:ml-80 transition-all duration-300 ease-in-out pt-16 lg:pt-0">
           <div className="py-8">

@@ -56,12 +56,12 @@ export async function GET(request) {
         email: shop.email,
         created_at: shop.created_at
       }))
-    } else if (profile?.shop_id) {
+    } else if (profile?.barbershop_id) {
       // Fallback: Single shop owner - get their shop
       const { data: barbershops, error: shopError } = await supabase
         .from('barbershops')
         .select('id, name, address, city, state, phone, email, created_at, location_status')
-        .eq('id', profile.shop_id)
+        .eq('id', profile.barbershop_id)
         .order('name')
 
       if (shopError) {

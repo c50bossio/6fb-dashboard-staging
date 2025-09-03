@@ -46,7 +46,7 @@ export async function GET(request) {
 
     // CRITICAL FIX: Use separate queries to avoid PostgREST syntax failures
     let query = supabase
-      .from('bookings')
+      .from('appointments')
       .select('*')
       .order('scheduled_at', { ascending: true })
       .range(offset, offset + limit - 1)
@@ -70,7 +70,7 @@ export async function GET(request) {
       query = query.eq('status', status.toUpperCase())
     }
 
-    const { data: bookings, error } = await query
+    const { data: appointments, error } = await query
 
     if (error) {
       dbLogger.error('Database query failed in appointments GET', error, {
@@ -80,22 +80,22 @@ export async function GET(request) {
         client_id
       })
       return NextResponse.json({ 
-        error: 'Failed to fetch bookings',
+        error: 'Failed to fetch appointments',
         details: error.message 
       }, { status: 500 })
     }
 
     // CRITICAL FIX: Fetch related data separately to ensure reliability
-    if (bookings && bookings.length > 0) {
-      const clientIds = [...new Set(bookings.map(b => b.client_id).filter(Boolean))]
-      const barberIds = [...new Set(bookings.map(b => b.barber_id).filter(Boolean))]
-      const serviceIds = [...new Set(bookings.map(b => b.service_id).filter(Boolean))]
-      const barbershopIds = [...new Set(bookings.map(b => b.barbershop_id).filter(Boolean))]
+    if (appointments && appointments.length > 0) {
+      const clientIds = [...new Set(appointments.map(a => a.customer_id).filter(Boolean))]
+      const barberIds = [...new Set(appointments.map(a => a.barber_id).filter(Boolean))]
+      const serviceIds = [...new Set(appointments.map(a => a.service_id).filter(Boolean))]
+      const barbershopIds = [...new Set(appointments.map(a => a.barbershop_id).filter(Boolean))]
 
       // Fetch related data in parallel
       const [clientsData, barbersData, servicesData, barbershopsData] = await Promise.all([
-        clientIds.length > 0 ? supabase.from('users').select('id, name, email, phone').in('id', clientIds) : { data: [] },
-        barberIds.length > 0 ? supabase.from('users').select('id, name, email').in('id', barberIds) : { data: [] },
+        clientIds.length > 0 ? supabase.from('customers').select('id, full_name, email, phone').in('id', clientIds) : { data: [] },
+        barberIds.length > 0 ? supabase.from('profiles').select('id, full_name, email').in('id', barberIds) : { data: [] },
         serviceIds.length > 0 ? supabase.from('services').select('id, name, description, duration_minutes, price, category').in('id', serviceIds) : { data: [] },
         barbershopIds.length > 0 ? supabase.from('barbershops').select('id, name, address, phone').in('id', barbershopIds) : { data: [] }
       ])
@@ -106,17 +106,17 @@ export async function GET(request) {
       const servicesMap = new Map((servicesData.data || []).map(s => [s.id, s]))
       const barbershopsMap = new Map((barbershopsData.data || []).map(bs => [bs.id, bs]))
 
-      // Merge related data with bookings
-      bookings.forEach(booking => {
-        booking.client = clientsMap.get(booking.client_id) || null
-        booking.barber = barbersMap.get(booking.barber_id) || null
-        booking.service = servicesMap.get(booking.service_id) || null
-        booking.barbershop = barbershopsMap.get(booking.barbershop_id) || null
+      // Merge related data with appointments
+      appointments.forEach(appointment => {
+        appointment.customer = clientsMap.get(appointment.customer_id) || null
+        appointment.barber = barbersMap.get(appointment.barber_id) || null
+        appointment.service = servicesMap.get(appointment.service_id) || null
+        appointment.barbershop = barbershopsMap.get(appointment.barbershop_id) || null
       })
     }
 
     let countQuery = supabase
-      .from('bookings')
+      .from('appointments')
       .select('*', { count: 'exact', head: true })
 
     if (barbershop_id) countQuery = countQuery.eq('barbershop_id', barbershop_id)
@@ -129,7 +129,7 @@ export async function GET(request) {
     const { count, error: countError } = await countQuery
 
     if (countError) {
-      dbLogger.error('Error getting bookings count', countError, {
+      dbLogger.error('Error getting appointments count', countError, {
         context: 'appointments_count',
         barbershop_id,
         barber_id,
@@ -138,7 +138,7 @@ export async function GET(request) {
     }
 
     return NextResponse.json({
-      bookings,
+      appointments,
       pagination: {
         page,
         limit,
@@ -177,6 +177,33 @@ export async function POST(request) {
 
     const appointmentData = validationResult.data
 
+    // VALIDATION: Check if barber can take appointments
+    const { data: barberProfile, error: barberError } = await supabase
+      .from('profiles')
+      .select('can_take_appointments, is_active, role, full_name')
+      .eq('id', appointmentData.barber_id)
+      .single()
+
+    if (barberError || !barberProfile) {
+      return NextResponse.json({ 
+        error: 'Barber not found' 
+      }, { status: 404 })
+    }
+
+    if (!barberProfile.can_take_appointments) {
+      return NextResponse.json({ 
+        error: `${barberProfile.full_name || 'This staff member'} cannot take appointments. Please select a different service provider.`,
+        details: 'Staff member has appointment capability disabled'
+      }, { status: 403 })
+    }
+
+    if (!barberProfile.is_active) {
+      return NextResponse.json({ 
+        error: `${barberProfile.full_name || 'This staff member'} is currently inactive and cannot take appointments.`,
+        details: 'Staff member is inactive'
+      }, { status: 403 })
+    }
+
     // CRITICAL FIX: Handle customer creation for walk-ins and new clients
     let finalClientId = appointmentData.client_id
 
@@ -208,12 +235,11 @@ export async function POST(request) {
       } else if (appointmentData.client_name) {
         // Create new customer
         const { data: newCustomer, error: customerError } = await supabase
-          .from('users')
+          .from('customers')
           .insert({
             name: appointmentData.client_name,
             email: appointmentData.client_email,
             phone: appointmentData.client_phone,
-            role: 'client',
             created_at: new Date().toISOString()
           })
           .select('id')
@@ -238,7 +264,7 @@ export async function POST(request) {
     const total_amount = appointmentData.service_price + (appointmentData.tip_amount || 0)
 
     const conflictCheck = await supabase
-      .from('bookings')
+      .from('appointments')
       .select('id, scheduled_at, duration_minutes')
       .eq('barber_id', appointmentData.barber_id)
       .eq('status', 'CONFIRMED')
@@ -270,10 +296,10 @@ export async function POST(request) {
       }, { status: 409 })
     }
 
-    // CRITICAL FIX: Use proper client_id and avoid PostgREST syntax issues
-    const bookingToInsert = {
+    // CRITICAL FIX: Use proper customer_id and avoid PostgREST syntax issues
+    const appointmentToInsert = {
       barbershop_id: appointmentData.barbershop_id,
-      client_id: finalClientId,
+      customer_id: finalClientId,
       barber_id: appointmentData.barber_id,
       service_id: appointmentData.service_id,
       scheduled_at: appointmentData.scheduled_at,
@@ -281,17 +307,13 @@ export async function POST(request) {
       service_price: appointmentData.service_price,
       tip_amount: appointmentData.tip_amount || 0,
       total_amount,
-      client_notes: appointmentData.client_notes,
-      recurrence_rule: appointmentData.recurrence_rule,
-      is_walk_in: appointmentData.is_walk_in,
-      status: 'CONFIRMED', // CRITICAL: Start as CONFIRMED for immediate business use
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      notes: appointmentData.client_notes,
+      status: 'CONFIRMED' // CRITICAL: Start as CONFIRMED for immediate business use
     }
 
     const { data: appointment, error } = await supabase
-      .from('bookings')
-      .insert(bookingToInsert)
+      .from('appointments')
+      .insert(appointmentToInsert)
       .select('*')
       .single()
 
@@ -307,8 +329,8 @@ export async function POST(request) {
     // CRITICAL FIX: Fetch related data separately for reliable response
     if (appointment) {
       const [clientData, barberData, serviceData, barbershopData] = await Promise.all([
-        finalClientId ? supabase.from('users').select('id, name, email, phone').eq('id', finalClientId).single() : { data: null },
-        supabase.from('users').select('id, name, email').eq('id', appointment.barber_id).single(),
+        finalClientId ? supabase.from('customers').select('id, full_name, email, phone').eq('id', finalClientId).single() : { data: null },
+        supabase.from('profiles').select('id, full_name, email').eq('id', appointment.barber_id).single(),
         supabase.from('services').select('id, name, description, duration_minutes, price, category').eq('id', appointment.service_id).single(),
         supabase.from('barbershops').select('id, name, address, phone').eq('id', appointment.barbershop_id).single()
       ])

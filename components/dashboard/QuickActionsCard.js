@@ -20,6 +20,20 @@ import Link from 'next/link'
 export default function QuickActionsCard({ profile }) {
   const quickActions = [
     {
+      title: 'Check-In Customer',
+      description: 'Mark customer as arrived',
+      icon: UserGroupIcon,
+      href: '/dashboard/checkin',
+      color: 'green'
+    },
+    {
+      title: 'Walk-In Queue',
+      description: 'Manage walk-in customers',
+      icon: UserGroupIcon,
+      href: '/dashboard/walkins',
+      color: 'blue'
+    },
+    {
       title: 'Import Customers',
       description: 'Add customers from CSV',
       icon: DocumentArrowUpIcon,
@@ -100,9 +114,9 @@ export default function QuickActionsCard({ profile }) {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-        {quickActions.map((action) => (
+        {quickActions.map((action, index) => (
           <Link
-            key={action.href}
+            key={`${action.title}-${index}`}
             href={action.href}
             className={`
               group relative flex flex-col items-center p-4 rounded-lg border transition-all duration-200

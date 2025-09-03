@@ -15,44 +15,52 @@ import {
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function SettingsDashboard() {
   const router = useRouter()
-  const { user: _user } = useAuth()
+  const { user } = useAuth()
+  const { activeContext, currentLocationId, currentLocation } = useGlobalDashboard()
   const [shopData, setShopData] = useState(null)
   const [loading, setLoading] = useState(true)
-  // Removed completion status tracking - now handled by OnboardingOrchestrator
   const [recentChanges, setRecentChanges] = useState([])
 
   useEffect(() => {
     loadDashboardData()
-  }, [user])
+  }, [user, currentLocationId])
 
   const loadDashboardData = async () => {
     if (!user) return
 
     try {
-      const _supabase = createClient()
+      const supabase = createClient()
       
-      // Load shop data
-      const { data: shop } = await supabase
+      // Load shop data - context-aware
+      let shopQuery = supabase
         .from('barbershops')
         .select('*')
-        .eq('owner_id', user.id)
-        .single()
+        
+      if (currentLocationId) {
+        // If we have a specific location context, load that location
+        shopQuery = shopQuery.eq('id', currentLocationId)
+      } else {
+        // Otherwise, load user's default location
+        shopQuery = shopQuery.eq('owner_id', user.id)
+      }
+      
+      const { data: shop } = await shopQuery.single()
 
       if (shop) {
         setShopData(shop)
-        
-        // Shop data loaded - completion tracking now handled by OnboardingOrchestrator
       }
 
-      // Mock recent changes (in production, this would come from an audit log)
+      // Context-aware recent changes (in production, this would come from an audit log)
+      const locationName = currentLocation || shop?.name || 'Your Location'
       setRecentChanges([
-        { id: 1, setting: 'Business Hours', time: '2 hours ago', user: 'You' },
-        { id: 2, setting: 'Commission Rates', time: 'Yesterday', user: 'You' },
-        { id: 3, setting: 'Staff Permissions', time: '3 days ago', user: 'You' }
+        { id: 1, setting: 'Business Hours', time: '2 hours ago', user: 'You', location: locationName },
+        { id: 2, setting: 'Commission Rates', time: 'Yesterday', user: 'You', location: locationName },
+        { id: 3, setting: 'Staff Permissions', time: '3 days ago', user: 'You', location: locationName }
       ])
 
     } catch (error) {
@@ -150,12 +158,26 @@ export default function SettingsDashboard() {
     )
   }
 
+  const contextualTitle = activeContext && currentLocation 
+    ? `Settings Overview - ${currentLocation}` 
+    : 'Settings Overview'
+    
+  const contextualDescription = activeContext && currentLocation
+    ? `Manage configuration and preferences for ${currentLocation}`
+    : 'Manage your barbershop configuration and preferences'
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Settings Overview</h1>
-        <p className="text-gray-600 mt-2">Manage your barbershop configuration and preferences</p>
+        <h1 className="text-3xl font-bold text-gray-900">{contextualTitle}</h1>
+        <p className="text-gray-600 mt-2">{contextualDescription}</p>
+        {activeContext && (
+          <div className="mt-2 text-sm text-blue-600">
+            Current view: {activeContext.contextType.charAt(0).toUpperCase() + activeContext.contextType.slice(1)} • 
+            {' '}{activeContext.permissions?.length || 0} permissions available
+          </div>
+        )}
       </div>
 
       {/* Setup progress tracking removed - now handled by unified OnboardingOrchestrator */}
@@ -231,7 +253,12 @@ export default function SettingsDashboard() {
               <div key={change.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                 <div>
                   <p className="font-medium text-gray-900">{change.setting}</p>
-                  <p className="text-sm text-gray-600">Modified by {change.user}</p>
+                  <p className="text-sm text-gray-600">
+                    Modified by {change.user}
+                    {change.location && (
+                      <span className="text-gray-500"> • {change.location}</span>
+                    )}
+                  </p>
                 </div>
                 <span className="text-sm text-gray-500">{change.time}</span>
               </div>

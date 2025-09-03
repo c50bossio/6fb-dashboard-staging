@@ -28,7 +28,7 @@ async function seedProductData() {
     const { data: existingProducts } = await supabase
       .from('products')
       .select('*')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', shopId)
     
     if (!existingProducts || existingProducts.length === 0) {
 
@@ -66,7 +66,7 @@ async function seedProductData() {
         const { data, error } = await supabase
           .from('products')
           .insert({
-            shop_id: shopId,
+            barbershop_id: shopId,
             ...product
           })
           .select()
@@ -85,7 +85,7 @@ async function seedProductData() {
     const { data: products } = await supabase
       .from('products')
       .select('*')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', shopId)
     
     if (!products || products.length === 0) {
       

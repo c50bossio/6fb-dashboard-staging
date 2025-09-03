@@ -8,7 +8,7 @@
 import { Input as ShadcnInput } from '@/components/ui/Input'
 import { Label as ShadcnLabel } from '@/components/ui/label'
 import { Select as ShadcnSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea as ShadcnTextarea } from '@/components/ui/textarea'
+import { Textarea as ShadcnTextarea } from '@/components/ui/Textarea'
 import { cn } from '@/lib/utils'
 
 export const Input = ({ className, ...props }) => {

@@ -14,7 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
-import GlobalNavigation from '../../../components/GlobalNavigation'
+
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 

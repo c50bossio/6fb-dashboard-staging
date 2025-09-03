@@ -125,7 +125,7 @@ export async function POST(request) {
           .eq('id', user.id)
           
         if (updateError) {
-          console.warn('⚠️ Failed to update profile with shop_id:', updateError)
+          console.warn('⚠️ Failed to update profile with barbershop_id:', updateError)
         } else {
           
         }

@@ -28,7 +28,7 @@ async function testBarberAutoSelection() {
     const { data: bookingWithBarber } = await supabase
       .from('bookings')
       .select('*')
-      .eq('shop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
       .like('notes', '%Assigned to:%')
       .limit(1)
       .single();

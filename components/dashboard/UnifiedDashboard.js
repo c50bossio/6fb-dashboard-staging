@@ -110,55 +110,24 @@ const modeConfigs = {
 }
 
 export default function UnifiedDashboard({ user, profile }) {
-  const unifiedDashboardStart = performance.now()
-  console.log('🏠 Dashboard: UnifiedDashboard component mounting...')
-  console.log('⏱️ Timing: UnifiedDashboard start at', new Date().toISOString())
-  
   const searchParams = useSearchParams()
   const router = useRouter()
   const modeParam = searchParams.get('mode')
   
-  console.log('🏠 Dashboard: UnifiedDashboard props received:', {
-    hasUser: !!user,
-    userEmail: user?.email,
-    hasProfile: !!profile,
-    profileRole: profile?.role,
-    profileShopId: profile?.shop_id,
-    profilebarbershopId: profile?.barbershop_id,
-    modeParam
-  })
+  // Use props as primary source, businessContext as fallback only
+  const effectiveUser = user
+  const effectiveProfile = profile
   
-  // React Query hooks replacing GlobalDashboardContext
-  const { businessContext, user: contextUser, profile: contextProfile, barbershopId, isLoading: contextLoading } = useBusinessContext()
+  // Only use businessContext for barbershop ID resolution if not available in profile
+  const { businessContext, isLoading: contextLoading } = useBusinessContext()
   const currentShopId = useCurrentShopId()
-  
-  const effectiveUser = contextUser || user
-  const effectiveProfile = contextProfile || profile
 
   
-  // Use getTenant() to resolve shop ID
-  const [effectiveShopId, setEffectiveShopId] = useState(currentShopId)
-  
-  useEffect(() => {
-    const resolveShopId = async () => {
-      if (currentShopId) {
-        setEffectiveShopId(currentShopId)
-        return
-      }
-      
-      if (effectiveProfile?.id) {
-        try {
-          const { barbershopId, source, metadata } = await getTenant(effectiveProfile.id, { supabase: businessContext?.supabase })
-          setEffectiveShopId(barbershopId)
-        } catch (error) {
-          console.error('🏪 BookedBarber: Error getting barbershop ID:', error)
-          setEffectiveShopId(null)
-        }
-      }
-    }
-    
-    resolveShopId()
-  }, [currentShopId, effectiveProfile?.id, businessContext?.supabase])
+  // Consolidated shop ID resolution - single source of truth
+  const effectiveShopId = useMemo(() => {
+    // Priority order: profile.barbershop_id -> currentShopId -> fallback
+    return effectiveProfile?.barbershop_id || currentShopId || null
+  }, [effectiveProfile?.barbershop_id, currentShopId])
   
   // Dashboard data hooks
   const { 
@@ -224,25 +193,6 @@ export default function UnifiedDashboard({ user, profile }) {
 
   // Loading state combines context and shop data loading
   const isLoading = contextLoading || shopDataLoading
-  
-  console.log('🏠 Dashboard: Overall loading state analysis:', {
-    contextLoading,
-    shopDataLoading,
-    isLoading,
-    hasEffectiveShopId: !!effectiveShopId,
-    hasDashboardData: !!dashboardData
-  })
-
-  // Check for infinite loading loops
-  if (isLoading && !contextLoading && shopDataLoading && effectiveShopId) {
-    console.warn('🏠 Dashboard: Potential infinite loading - shop data loading with valid barbershopId')
-    console.warn('🏪 BookedBarber: Shop data may be stuck loading, check useShopDashboard hook')
-  }
-
-  if (isLoading && contextLoading && !shopDataLoading) {
-    console.warn('🏠 Dashboard: Context still loading - this may indicate business context issues')
-    console.warn('🏪 BookedBarber: Check useBusinessContext hook for delays')
-  }
 
   // Compute dashboard data from React Query results
   const dashboardData = useMemo(() => {
@@ -331,15 +281,35 @@ export default function UnifiedDashboard({ user, profile }) {
   // Handle errors and onboarding
   useEffect(() => {
     if (shopDataError) {
-      // Only log errors in production, not in dev mode
-      if (process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH !== 'true') {
-        console.error('🏠 Dashboard: Shop data error detected:', shopDataError)
+      // Handle different error types with appropriate messaging
+      if (shopDataError.type === 'insufficient_data') {
+        setErrorState({
+          type: 'insufficient_data',
+          message: shopDataError.message,
+          isWelcome: true,
+          title: 'Ready to unlock insights? 📊',
+          subtitle: 'Your analytics dashboard grows with your business',
+          nextSteps: [
+            'Book your first few appointments',
+            'Complete customer profiles',
+            'Track service performance'
+          ],
+          ctaText: 'View Booking Calendar',
+          ctaAction: () => router.push('/dashboard/bookings')
+        })
+      } else if (shopDataError.type === 'partial_error') {
+        // Don't show error state for partial errors, just log for debugging
+        console.warn('🏪 Dashboard: Partial data loading issue:', shopDataError.originalError)
+        setErrorState(null) // Continue with available data
+      } else {
+        // Only show technical errors for actual system failures
+        console.error('🏠 Dashboard: Technical error detected:', shopDataError.originalError)
+        setErrorState({
+          type: 'technical_error',
+          message: shopDataError.message || 'Failed to load barbershop data. Please try again.',
+          isWelcome: false
+        })
       }
-      setErrorState({
-        type: 'technical_error',
-        message: 'Failed to load barbershop data. Please try again.',
-        isWelcome: false
-      })
     } else if (!effectiveShopId && effectiveProfile?.role === 'SHOP_OWNER' && !contextLoading) {
       setErrorState({
         type: 'onboarding_needed',
@@ -382,43 +352,69 @@ export default function UnifiedDashboard({ user, profile }) {
   }, [currentMode, effectiveShopId])
 
   const ModeSelector = () => (
-    <div className="bg-white dark:bg-charcoal-700 rounded-xl shadow-sm border border-gray-200 dark:border-charcoal-600 p-2 flex flex-wrap gap-2">
-      {Object.entries(DASHBOARD_MODES).map(([key, value]) => {
-        const config = modeConfigs[value]
-        const Icon = currentMode === value ? config.solidIcon : config.icon
-        const isActive = currentMode === value
-        
-        return (
-          <button
-            key={key}
-            onClick={() => handleModeChange(value)}
-            onMouseEnter={value === DASHBOARD_MODES.EXECUTIVE ? handleExecutiveModeHover : undefined}
-            className={`
-              flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
-              transition-all duration-200 
-              ${isActive 
-                ? `${colorClasses[config.color]} text-white shadow-lg scale-105` 
-                : `bg-gray-50 dark:bg-charcoal-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-charcoal-500`
-              }
-            `}
-          >
-            <Icon className="h-5 w-5" />
-            <span className="hidden sm:inline">{config.label}</span>
-          </button>
-        )
-      })}
+    <div className="bg-white dark:bg-charcoal-700 rounded-xl shadow-sm border border-gray-200 dark:border-charcoal-600 p-2">
+      {/* Mobile: Dropdown selector */}
+      <div className="block sm:hidden">
+        <select
+          value={currentMode}
+          onChange={(e) => handleModeChange(e.target.value)}
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {Object.entries(DASHBOARD_MODES).map(([key, value]) => (
+            <option key={key} value={value}>
+              {modeConfigs[value].label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Desktop: Button selector */}
+      <div className="hidden sm:flex flex-wrap gap-2">
+        {Object.entries(DASHBOARD_MODES).map(([key, value]) => {
+          const config = modeConfigs[value]
+          const Icon = currentMode === value ? config.solidIcon : config.icon
+          const isActive = currentMode === value
+          
+          return (
+            <button
+              key={key}
+              onClick={() => handleModeChange(value)}
+              onMouseEnter={value === DASHBOARD_MODES.EXECUTIVE ? handleExecutiveModeHover : undefined}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
+                transition-all duration-200 
+                ${isActive 
+                  ? `${colorClasses[config.color]} text-white shadow-lg scale-105` 
+                  : `bg-gray-50 dark:bg-charcoal-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-charcoal-500`
+                }
+              `}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="hidden md:inline">{config.label}</span>
+            </button>
+          )
+        })}
+      </div>
       
-      {/* Refresh button */}
-      <button
-        onClick={handleRefresh}
-        disabled={isLoading}
-        className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-charcoal-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-charcoal-500 transition-colors"
-      >
-        <ArrowPathIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-        <span className="text-xs hidden lg:inline">
-          {isLoading ? 'Refreshing...' : `Last: ${lastRefresh.toLocaleTimeString()}`}
-        </span>
-      </button>
+      {/* Refresh button - always visible */}
+      <div className="mt-2 sm:mt-0 sm:ml-auto sm:inline-block">
+        <button
+          onClick={handleRefresh}
+          disabled={isLoading}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-charcoal-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-charcoal-500 transition-colors text-sm"
+        >
+          <ArrowPathIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          <span className="sm:hidden">
+            {isLoading ? 'Refreshing...' : 'Refresh'}
+          </span>
+          <span className="hidden sm:inline lg:hidden">
+            {isLoading ? 'Refreshing...' : 'Refresh'}
+          </span>
+          <span className="hidden lg:inline text-xs">
+            {isLoading ? 'Refreshing...' : `Last: ${lastRefresh.toLocaleTimeString()}`}
+          </span>
+        </button>
+      </div>
     </div>
   )
 
@@ -633,18 +629,25 @@ export default function UnifiedDashboard({ user, profile }) {
       
       {/* Header with Mode Selector and Performance Indicator */}
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Main Dashboard</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">{modeConfigs[currentMode].description}</p>
+        <div className="flex flex-col gap-4">
+          {/* Title and description */}
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Main Dashboard</h2>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mt-1">{modeConfigs[currentMode].description}</p>
           </div>
-          <ModeSelector />
+          
+          {/* Mode Selector - full width on mobile */}
+          <div className="w-full">
+            <ModeSelector />
+          </div>
         </div>
         
         {/* Shareable Booking Link - Only show for shop owners and above, after onboarding */}
         {(profile?.role === 'SHOP_OWNER' || profile?.role === 'ENTERPRISE_OWNER' || profile?.role === 'SUPER_ADMIN') && 
          profile?.onboarding_completed && (
-          <ShareableBookingLink />
+          <div className="w-full">
+            <ShareableBookingLink />
+          </div>
         )}
       </div>
       
@@ -695,6 +698,11 @@ return !isOwnerView && selectedPerspective && (
                         </span>
                       )}
                     </div>
+                    {errorState.subtitle && (
+                      <p className="text-brand-600 dark:text-brand-400 mb-2 text-sm font-medium">
+                        {errorState.subtitle}
+                      </p>
+                    )}
                     <p className="text-brand-700 dark:text-brand-300 mb-4 leading-relaxed">
                       {typeof errorState === 'string' ? errorState : errorState.message}
                     </p>
@@ -721,11 +729,11 @@ return !isOwnerView && selectedPerspective && (
                     
                     <div className="flex flex-wrap gap-3">
                       <button
-                        onClick={launchOnboarding}
+                        onClick={errorState.ctaAction || launchOnboarding}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-all duration-200 shadow-sm"
                       >
                         <PlayIcon className="h-4 w-4 mr-2" />
-                        Complete Setup
+                        {errorState.ctaText || 'Complete Setup'}
                       </button>
                       
                       {effectiveProfile?.role === 'SHOP_OWNER' && (

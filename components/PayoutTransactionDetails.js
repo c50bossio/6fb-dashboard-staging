@@ -49,7 +49,7 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/Separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Textarea } from '@/components/ui/textarea'
+import { Textarea } from '@/components/ui/Textarea'
 import PayoutStatusIndicator from './PayoutStatusIndicator'
 
 /**

@@ -16,6 +16,8 @@ import {
   ChatBubbleLeftIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
+import TodaysSchedule from './TodaysSchedule'
+import WalkInQueueWidget from './WalkInQueueWidget'
 
 export default function ActionCenter({ data }) {
   const [activeTask, setActiveTask] = useState(null)
@@ -152,10 +154,13 @@ export default function ActionCenter({ data }) {
 
   return (
     <div className="space-y-6">
+      {/* Today's Schedule - Priority view for daily operations */}
+      <TodaysSchedule barbershopId={barbershopId} data={data} />
+
       {/* Current Activity - Only show if there's actual business activity */}
       {hasCurrentActivity() && (
         <div className="bg-gradient-to-r from-green-50 to-olive-50 border border-green-200 rounded-xl p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
             <div className="flex items-center gap-3">
               <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
               <div>
@@ -163,10 +168,14 @@ export default function ActionCenter({ data }) {
                 <p className="text-sm text-gray-600 mt-1">{getRealtimeStatus()}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-3 sm:gap-4 text-sm">
               <div className="flex items-center gap-2">
                 <ClockIcon className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600">Next available: {realtime.next_available || '11:30 AM'}</span>
+                <span className="text-gray-600">
+                  <span className="hidden sm:inline">Next available: </span>
+                  <span className="sm:hidden">Next: </span>
+                  {realtime.next_available || '11:30 AM'}
+                </span>
               </div>
               <button className="p-2 rounded-lg bg-white text-gray-600 hover:bg-gray-50 transition-colors">
                 <ArrowPathIcon className="h-5 w-5" />
@@ -267,26 +276,22 @@ export default function ActionCenter({ data }) {
       )}
 
       {/* Quick Actions Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <QuickActionButton
-          icon={CalendarDaysIcon}
-          label="New Walk-in"
-          color="blue"
-          onClick={() => window.location.href = '/dashboard/bookings'}
-        />
-        <QuickActionButton
-          icon={PhoneIcon}
-          label="Call Queue"
+          icon={CheckCircleIcon}
+          label="Check-In Customer"
           color="green"
-          badge="3"
-          onClick={() => {
-            // Navigate to call queue management
-            window.location.href = '/dashboard/call-queue'
-          }}
+          onClick={() => window.location.href = '/dashboard/check-in'}
         />
         <QuickActionButton
           icon={UserGroupIcon}
-          label="Customer List"
+          label="Walk-In Queue"
+          color="blue"
+          onClick={() => window.location.href = '/dashboard/checkin'}
+        />
+        <QuickActionButton
+          icon={PhoneIcon}
+          label="Call Customer"
           color="purple"
           onClick={() => window.location.href = '/dashboard/customers'}
         />
@@ -297,6 +302,9 @@ export default function ActionCenter({ data }) {
           onClick={() => window.location.href = '/dashboard/calendar'}
         />
       </div>
+
+      {/* Walk-In Queue */}
+      <WalkInQueueWidget barbershopId={barbershopId} />
 
       {/* Appointment Queue */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -484,36 +492,38 @@ const AlertCard = ({ alert }) => {
 const QuickActionButton = ({ icon: Icon, label, color, badge, onClick }) => (
   <button
     onClick={onClick}
-    className={`relative p-4 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all hover:border-${color}-300`}
+    className={`relative p-3 sm:p-4 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all hover:border-${color}-300`}
   >
     {badge && (
-      <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center">
+      <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center">
         {badge}
       </div>
     )}
-    <div className={`p-3 bg-${color}-50 rounded-lg mb-3 inline-block`}>
-      <Icon className={`h-6 w-6 text-${color}-500`} />
+    <div className={`p-2 sm:p-3 bg-${color}-50 rounded-lg mb-2 sm:mb-3 inline-block`}>
+      <Icon className={`h-5 w-5 sm:h-6 sm:w-6 text-${color}-500`} />
     </div>
-    <div className="text-sm font-medium text-gray-900">{label}</div>
+    <div className="text-xs sm:text-sm font-medium text-gray-900 leading-tight">{label}</div>
   </button>
 )
 
 const AppointmentCard = ({ appointment }) => (
   <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-    <div className="flex items-center gap-3">
-      <div className="text-sm font-bold text-gray-600 w-16">
+    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+      <div className="text-sm font-bold text-gray-600 w-12 sm:w-16 flex-shrink-0">
         {appointment.time || '10:30 AM'}
       </div>
-      <div>
-        <p className="text-sm font-medium text-gray-900">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-gray-900 truncate">
           {appointment.customer_name || 'Customer'}
         </p>
-        <p className="text-xs text-gray-500">
-          {appointment.service_name || "Unknown Service"} with {appointment.barber_name || 'Barber'}
+        <p className="text-xs text-gray-500 truncate">
+          <span className="hidden sm:inline">{appointment.service_name || "Unknown Service"} with </span>
+          <span className="sm:hidden">{appointment.service_name || "Service"} • </span>
+          {appointment.barber_name || 'Barber'}
         </p>
       </div>
     </div>
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-shrink-0">
       <span className={`w-2 h-2 rounded-full ${
         appointment.status === 'confirmed' ? 'bg-green-500' : 
         appointment.status === 'pending' ? 'bg-amber-500' : 

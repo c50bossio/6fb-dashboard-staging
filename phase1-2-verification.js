@@ -157,7 +157,7 @@ async function testAPIEndpoints() {
         
         // Check if file contains barbershop_id references
         const content = await fs.readFile(join(__dirname, route), 'utf-8')
-        if (content.includes('shop_id=eq.') || content.includes("'shop_id'")) {
+        if (content.includes('shop_id=eq.') || content.includes("'barbershop_id'")) {
           logTest(`${route} migration`, 'fail', 'Still contains shop_id references')
         } else if (content.includes('barbershop_id')) {
           logTest(`${route} migration`, 'pass', 'Uses barbershop_id correctly')
@@ -222,7 +222,7 @@ async function testDataConsistency() {
     const { data: profilesWithShopId, error: shopIdError } = await supabase
       .from('profiles')
       .select('id')
-      .not('shop_id', 'is', null)
+      .not('barbershop_id', 'is', null)
       .limit(5)
     
     if (!shopIdError && profilesWithShopId && profilesWithShopId.length > 0) {

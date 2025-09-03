@@ -161,7 +161,7 @@ async function fixDatabaseSchema() {
     try {
       const { data, error } = await supabase
         .from('appointments')
-        .select('id, shop_id, barbershop_id, customer_id')
+        .select('id, barbershop_id, barbershop_id, customer_id')
         .limit(1)
         
       if (error && error.message.includes('shop_id does not exist')) {

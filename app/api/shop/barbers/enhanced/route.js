@@ -127,7 +127,7 @@ export async function GET(request) {
         .select('*', { count: 'exact', head: true })
         .eq('barber_id', barber.user_id)
         .eq('barbershop_id', shop.id)
-        .gte('appointment_date', now.toISOString())
+        .gte('start_time', now.toISOString())
         .eq('status', 'confirmed')
       
       // Get today's schedule

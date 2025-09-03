@@ -242,7 +242,7 @@ export default function PlatformTailoredImport({ onComplete, initialData = {}, p
     
     try {
       // Get barbershopId with fallback for onboarding
-      const barbershopId = profile?.shop_id || 
+      const barbershopId = profile?.barbershop_id || 
                           profile?.barbershop_id || 
                           initialData?.barbershopId || 
                           'onboarding-temp-' + Date.now()

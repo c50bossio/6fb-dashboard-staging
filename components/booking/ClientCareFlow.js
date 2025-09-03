@@ -53,7 +53,7 @@ export default function ClientCareFlow({
   isOpen = false,
   isManager = false
 }) {
-  const { user, profile } = useAuth()
+  const { user, profile, supabase } = useAuth()
   
   // Care flow state
   const [currentStep, setCurrentStep] = useState(clientData ? 'understanding' : 'client_selection')
@@ -157,7 +157,7 @@ export default function ClientCareFlow({
 
     try {
       // Use getTenant() to get barbershop ID
-      const { barbershopId } = await getTenant(profile.id, { supabase: useAuth().supabase })
+      const { barbershopId } = await getTenant(profile.id, { supabase })
       
       if (!barbershopId) {
         setError('No barbershop associated with your account')

@@ -67,7 +67,7 @@ async function checkDatabase() {
     console.log("\n👤 Profiles:")
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, shop_id, barbershop_id')
+      .select('id, email, barbershop_id, barbershop_id')
       .limit(5)
       
     if (profilesError) {
@@ -75,7 +75,7 @@ async function checkDatabase() {
     } else {
       console.log(`Found ${profiles?.length || 0} profiles:`)
       profiles?.forEach(profile => {
-        console.log(`  - ${profile.id}: ${profile.email} (shop: ${profile.shop_id || profile.barbershop_id || 'none'})`)
+        console.log(`  - ${profile.id}: ${profile.email} (shop: ${profile.barbershop_id || profile.barbershop_id || 'none'})`)
       })
     }
 
@@ -83,7 +83,7 @@ async function checkDatabase() {
     console.log("\n✂️ Services:")
     const { data: services, error: servicesError } = await supabase
       .from('services')
-      .select('id, name, shop_id, barbershop_id, price')
+      .select('id, name, barbershop_id, barbershop_id, price')
       .limit(10)
       
     if (servicesError) {
@@ -91,7 +91,7 @@ async function checkDatabase() {
     } else {
       console.log(`Found ${services?.length || 0} services:`)
       services?.forEach(service => {
-        console.log(`  - ${service.id}: ${service.name} ($${service.price}) (shop: ${service.shop_id || service.barbershop_id})`)
+        console.log(`  - ${service.id}: ${service.name} ($${service.price}) (shop: ${service.barbershop_id || service.barbershop_id})`)
       })
     }
     

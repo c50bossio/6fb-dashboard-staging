@@ -493,7 +493,7 @@ async function updateUserProfiles() {
             const { error: updateError } = await supabase
               .from('profiles')
               .update({
-                shop_id: membership.organization_id,
+                barbershop_id: membership.organization_id,
                 barbershop_id: membership.organization_id, // Compatibility
                 updated_at: new Date().toISOString()
               })

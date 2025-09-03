@@ -8,7 +8,8 @@ import {
   ArrowPathIcon,
   InformationCircleIcon,
   ArrowTopRightOnSquareIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
@@ -23,6 +24,7 @@ export default function TaxSettingsPage() {
   const [hasChanges, setHasChanges] = useState(false)
   const [notification, setNotification] = useState(null)
   const [barbershopId, setbarbershopId] = useState(null)
+  const [infoExpanded, setInfoExpanded] = useState(false)
   
   const [formData, setFormData] = useState({
     // Stripe Tax Integration
@@ -75,10 +77,10 @@ export default function TaxSettingsPage() {
       setLoading(true)
       
       // Get user's barbershop
-      const { data: profile } = await supabase
+      const { data: profile } = await _supabase
         .from('profiles')
         .select('barbershop_id')
-        .eq('id', user.id)
+        .eq('id', _user.id)
         .single()
       
       if (!profile?.barbershop_id) {
@@ -93,10 +95,10 @@ export default function TaxSettingsPage() {
       setbarbershopId(profile.barbershop_id)
       
       // Load tax settings from business_settings
-      const { data: settings, error } = await supabase
+      const { data: settings, error } = await _supabase
         .from('business_settings')
         .select('tax_settings')
-        .eq('user_id', user.id)
+        .eq('user_id', _user.id)
         .single()
       
       if (settings?.tax_settings) {
@@ -134,10 +136,10 @@ export default function TaxSettingsPage() {
     
     try {
       // Check if business_settings exists
-      const { data: existing } = await supabase
+      const { data: existing } = await _supabase
         .from('business_settings')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', _user.id)
         .single()
       
       const taxSettings = {
@@ -147,19 +149,19 @@ export default function TaxSettingsPage() {
       
       if (existing) {
         // Update existing settings
-        await supabase
+        await _supabase
           .from('business_settings')
           .update({
             tax_settings: taxSettings,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', user.id)
+          .eq('user_id', _user.id)
       } else {
         // Create new settings
-        await supabase
+        await _supabase
           .from('business_settings')
           .insert({
-            user_id: user.id,
+            user_id: _user.id,
             tax_settings: taxSettings
           })
       }
@@ -286,6 +288,111 @@ export default function TaxSettingsPage() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* How Stripe Tax Works - Information Section (Collapsible) */}
+        <div className="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+          <button
+            type="button"
+            onClick={() => setInfoExpanded(!infoExpanded)}
+            className="w-full px-4 py-6 sm:px-8 sm:py-6 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center">
+              <InformationCircleIcon className="h-6 w-6 text-blue-500 mr-2" />
+              <h2 className="text-lg font-semibold text-gray-900">How Stripe Tax Works for Your Business</h2>
+            </div>
+            <ChevronDownIcon 
+              className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${
+                infoExpanded ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+          
+          {infoExpanded && (
+            <div className="px-4 pb-6 sm:px-8 sm:pb-8 space-y-6 border-t border-gray-100">
+              {/* Service Tax Explanation */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="text-base font-semibold text-blue-900 mb-3">📍 Location-Based Tax Calculation</h3>
+                <div className="space-y-3 text-sm text-blue-800">
+                  <p>
+                    <strong>Stripe Tax automatically knows your local tax laws:</strong>
+                  </p>
+                  <ul className="list-disc ml-6 space-y-2">
+                    <li><strong>States that don't tax services</strong> (like CA, PA, FL) → <span className="font-semibold text-green-700">$0.00 tax added</span></li>
+                    <li><strong>States that do tax services</strong> (like CT, HI, NM) → <span className="font-semibold text-blue-700">Correct tax rate applied</span></li>
+                    <li><strong>Mixed transactions</strong> → Hair products taxed, services may not be (depends on location)</li>
+                    <li><strong>Always up-to-date</strong> → Tax rates and rules updated automatically</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Examples Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-800 mb-2">💇‍♂️ California Example</h4>
+                  <div className="text-sm text-green-700 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Haircut:</span>
+                      <span>$50.00</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>Tax (services not taxed):</span>
+                      <span>$0.00</span>
+                    </div>
+                    <div className="border-t border-green-300 pt-1 flex justify-between font-semibold">
+                      <span>Total:</span>
+                      <span>$50.00</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-orange-800 mb-2">💇‍♂️ New Mexico Example</h4>
+                  <div className="text-sm text-orange-700 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Haircut:</span>
+                      <span>$50.00</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>Tax (8.125% rate):</span>
+                      <span>$4.06</span>
+                    </div>
+                    <div className="border-t border-orange-300 pt-1 flex justify-between font-semibold">
+                      <span>Total:</span>
+                      <span>$54.06</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stripe Connect Integration */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-800 mb-2">🔗 Works with Your Stripe Connect Setup</h4>
+                <div className="text-sm text-gray-700 space-y-2">
+                  <p>Since your barbershop uses Stripe Connect:</p>
+                  <ul className="list-disc ml-6 space-y-1">
+                    <li><strong>Each barbershop</strong> manages their own tax registrations in Stripe</li>
+                    <li><strong>Tax is collected</strong> and included in your barbershop's payouts</li>
+                    <li><strong>Platform fees</strong> are calculated separately from tax</li>
+                    <li><strong>Compliance is automatic</strong> - Stripe handles filing where available</li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Important Notes */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h4 className="font-semibold text-yellow-800 mb-2">⚠️ Important Setup Notes</h4>
+                <div className="text-sm text-yellow-700 space-y-2">
+                  <ul className="list-disc ml-6 space-y-1">
+                    <li><strong>Tax registration required:</strong> You must register for tax collection in your state through Stripe</li>
+                    <li><strong>Product tax codes:</strong> Set appropriate tax codes for services vs products in Stripe Dashboard</li>
+                    <li><strong>Manual rates below:</strong> Only used when Stripe Tax is disabled or for cash transactions</li>
+                    <li><strong>Legal compliance:</strong> Consult with a tax professional for complex situations</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Business Information */}

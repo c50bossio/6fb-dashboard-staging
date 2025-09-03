@@ -67,10 +67,11 @@ export const config = {
   // Application
   app: {
     name: process.env.NEXT_PUBLIC_APP_NAME || '6FB AI Agent System',
-    url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999',
+    url: process.env.NEXT_PUBLIC_APP_URL || (isDevelopment ? 'http://localhost:9999' : 'https://bookedbarber.com'),
     domain: process.env.NEXT_PUBLIC_DOMAIN || 'bookedbarber.com',
     port: parseInt(process.env.PORT || '9999', 10),
-    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+    // Use relative paths for API calls - no external backend needed
+    apiUrl: process.env.NEXT_PUBLIC_API_URL || ''
   },
 
   // Supabase
@@ -171,7 +172,7 @@ export const config = {
       encrypted: true
     },
     websocket: {
-      url: process.env.WEBSOCKET_URL || 'ws://localhost:8001/ws',
+      url: process.env.WEBSOCKET_URL || (isDevelopment ? 'ws://localhost:9999/api/ws' : 'wss://bookedbarber.com/api/ws'),
       reconnectInterval: parseInt(process.env.WS_RECONNECT_INTERVAL || '5000', 10)
     }
   },

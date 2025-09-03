@@ -105,7 +105,7 @@ export default function ShareableBookingLink() {
         return
       }
 
-      const barbershopId = profile?.barbershop_id || profile?.shop_id
+      const barbershopId = profile?.barbershop_id || profile?.barbershop_id
       
       if (!barbershopId) {
         setError('No barbershop associated with your account')

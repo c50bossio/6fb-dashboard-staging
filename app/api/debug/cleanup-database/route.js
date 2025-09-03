@@ -29,7 +29,7 @@ export async function POST() {
         // First remove any related data (appointments, staff, etc.)
         await supabase.from('appointments').delete().eq('barbershop_id', barbershopId)
         await supabase.from('barbershop_staff').delete().eq('barbershop_id', barbershopId)
-        await supabase.from('services').delete().eq('barbershop_id', barbershopId)
+        await supabase.from('services').delete().eq('shop_id', barbershopId)
         
         // Then remove the barbershop itself
         const { error } = await supabase
@@ -61,7 +61,7 @@ export async function POST() {
       for (const profile of profiles || []) {
         if (['SHOP_OWNER', 'BARBER', 'ENTERPRISE_OWNER'].includes(profile.role)) {
           // If they don't have a barbershop_id or have a test barbershop_id, update to Tomb45
-          const needsUpdate = !profile.shop_id || testbarbershopIds.includes(profile.shop_id)
+          const needsUpdate = !profile.barbershop_id || testbarbershopIds.includes(profile.barbershop_id)
           
           if (needsUpdate) {
             const { error } = await supabase

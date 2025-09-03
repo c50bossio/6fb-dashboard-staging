@@ -14,6 +14,8 @@ export const staffKeys = {
   byShop: (barbershopId) => ['staff', 'shop', barbershopId],
   active: (barbershopId) => ['staff', 'shop', barbershopId, 'active'],
   inactive: (barbershopId) => ['staff', 'shop', barbershopId, 'inactive'],
+  canTakeAppointments: (barbershopId) => ['staff', 'shop', barbershopId, 'can_take_appointments'],
+  appointmentProviders: (barbershopId) => ['staff', 'shop', barbershopId, 'appointment_providers'],
 }
 
 /**
@@ -24,7 +26,20 @@ export function useStaff(barbershopId, options = {}) {
 
   return useQuery({
     queryKey: staffKeys.byShop(barbershopId),
-    queryFn: () => createClient().getStaff(barbershopId, options),
+    queryFn: async () => {
+      if (!barbershopId) {
+        throw new Error('Barbershop ID is required')
+      }
+
+      const response = await fetch(`/api/staff?barbershop_id=${barbershopId}`)
+      if (!response.ok) {
+        const error = await response.text()
+        throw new Error(`Failed to fetch staff: ${response.status} ${error}`)
+      }
+      
+      const data = await response.json()
+      return data.staff || []
+    },
     enabled: enabled && !!barbershopId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
@@ -37,11 +52,66 @@ export function useStaff(barbershopId, options = {}) {
 export function useActiveStaff(barbershopId) {
   return useQuery({
     queryKey: staffKeys.active(barbershopId),
-    queryFn: () => createClient().getStaff(barbershopId, { isActive: true }),
+    queryFn: async () => {
+      if (!barbershopId) {
+        throw new Error('Barbershop ID is required')
+      }
+
+      const response = await fetch(`/api/staff?barbershop_id=${barbershopId}`)
+      if (!response.ok) {
+        const error = await response.text()
+        throw new Error(`Failed to fetch staff: ${response.status} ${error}`)
+      }
+      
+      const data = await response.json()
+      const allStaff = data.staff || []
+      
+      // Filter only active staff
+      return allStaff.filter(staff => staff.is_active === true)
+    },
     enabled: !!barbershopId,
     staleTime: 5 * 60 * 1000,
-    select: (data) => data?.filter(staff => staff.is_active === true) || []
   })
+}
+
+/**
+ * Get staff members who can take appointments (for booking dropdowns)
+ */
+export function useAppointmentProviders(barbershopId) {
+  return useQuery({
+    queryKey: staffKeys.appointmentProviders(barbershopId),
+    queryFn: async () => {
+      if (!barbershopId) {
+        throw new Error('Barbershop ID is required')
+      }
+
+      const response = await fetch(`/api/staff?barbershop_id=${barbershopId}`)
+      if (!response.ok) {
+        const error = await response.text()
+        throw new Error(`Failed to fetch staff: ${response.status} ${error}`)
+      }
+      
+      const data = await response.json()
+      const allStaff = data.staff || []
+      
+      // Filter staff who can take appointments and are active and visible for booking
+      return allStaff.filter(staff => 
+        staff.is_active === true && 
+        staff.can_take_appointments === true &&
+        staff.is_visible_for_booking !== false
+      )
+    },
+    enabled: !!barbershopId,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+/**
+ * Get staff members who can take appointments (backward compatible with existing booking logic)
+ */
+export function useAvailableBarbers(barbershopId) {
+  // Alias for appointment providers to maintain compatibility
+  return useAppointmentProviders(barbershopId)
 }
 
 /**
@@ -51,17 +121,48 @@ export function useStaffMember(staffId) {
   return useQuery({
     queryKey: ['staff', 'member', staffId],
     queryFn: async () => {
-      const client = createClient().client || createClient()
-      if (!client) throw new Error('Supabase client not available')
+      if (!staffId) throw new Error('Staff ID is required')
       
+      const client = createClient()
       const { data, error } = await client
-        .from('barbershop_staff')
-        .select('*, profiles(*)')
+        .from('profiles')
+        .select(`
+          *,
+          can_take_appointments,
+          is_visible_for_booking,
+          service_provider_since
+        `)
         .eq('id', staffId)
         .single()
       
-      if (error) throw error
-      return data
+      if (error) {
+        if (error.code === 'PGRST116') {
+          throw new Error('Staff member not found')
+        }
+        throw error
+      }
+      
+      // Transform to staff format for compatibility with role-based defaults
+      const defaultCanTakeAppointments = data.can_take_appointments ?? (
+        data.role === 'BARBER' ? true : 
+        data.role === 'ENTERPRISE_OWNER' ? true :
+        data.role === 'SHOP_OWNER' ? true :
+        data.role === 'MANAGER' ? false :
+        false // STAFF role defaults to false
+      )
+      
+      return {
+        id: data.id,
+        user_id: data.id,
+        barbershop_id: data.barbershop_id,
+        role: data.role,
+        is_active: data.is_active ?? true,
+        can_take_appointments: defaultCanTakeAppointments,
+        is_visible_for_booking: data.is_visible_for_booking ?? true,
+        service_provider_since: data.service_provider_since || data.created_at,
+        profile: data,
+        ...data
+      }
     },
     enabled: !!staffId,
     staleTime: 5 * 60 * 1000,
@@ -70,12 +171,28 @@ export function useStaffMember(staffId) {
 
 /**
  * Create staff member mutation
+ * TODO: Implement proper API endpoint for staff creation
  */
 export function useCreateStaffMember() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (staffData) => createClient().createStaffMember(staffData),
+    mutationFn: async (staffData) => {
+      // For now, use direct profile creation since staff are stored in profiles table
+      const client = createClient()
+      const { data, error } = await client
+        .from('profiles')
+        .insert([{
+          ...staffData,
+          role: staffData.role || 'BARBER',
+          is_active: true,
+        }])
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: (newStaff) => {
       toast.success('Staff member added successfully')
       
@@ -98,14 +215,34 @@ export function useUpdateStaffMember() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ staffId, updates }) => 
-      createClient().updateStaffMember(staffId, updates),
+    mutationFn: async ({ staffId, updates }) => {
+      // Update profile directly since staff are stored in profiles table
+      const client = createClient()
+      const { data, error } = await client
+        .from('profiles')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', staffId)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: (updatedStaff) => {
       toast.success('Staff member updated successfully')
       
-      // Invalidate staff queries
+      // Invalidate all relevant staff queries
       queryClient.invalidateQueries({ 
         queryKey: staffKeys.byShop(updatedStaff.barbershop_id) 
+      })
+      queryClient.invalidateQueries({ 
+        queryKey: staffKeys.active(updatedStaff.barbershop_id) 
+      })
+      queryClient.invalidateQueries({ 
+        queryKey: staffKeys.appointmentProviders(updatedStaff.barbershop_id) 
       })
       
       // Update specific staff member cache
@@ -121,14 +258,71 @@ export function useUpdateStaffMember() {
 }
 
 /**
+ * Toggle appointment capability for staff member
+ */
+export function useToggleAppointmentCapability() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ staffId, canTakeAppointments }) => {
+      const client = createClient()
+      const { data, error } = await client
+        .from('profiles')
+        .update({
+          can_take_appointments: canTakeAppointments,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', staffId)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
+    onSuccess: (updatedStaff) => {
+      const action = updatedStaff.can_take_appointments ? 'enabled' : 'disabled'
+      toast.success(`Appointment capability ${action} for ${updatedStaff.full_name || 'staff member'}`)
+      
+      // Invalidate all relevant staff queries - especially appointment providers
+      queryClient.invalidateQueries({ 
+        queryKey: staffKeys.byShop(updatedStaff.barbershop_id) 
+      })
+      queryClient.invalidateQueries({ 
+        queryKey: staffKeys.appointmentProviders(updatedStaff.barbershop_id) 
+      })
+      
+      // Update specific staff member cache
+      queryClient.invalidateQueries({ 
+        queryKey: ['staff', 'member', updatedStaff.id] 
+      })
+    },
+    onError: (error) => {
+      console.error('Failed to toggle appointment capability:', error)
+      toast.error('Failed to update appointment capability')
+    }
+  })
+}
+
+/**
  * Deactivate staff member mutation
  */
 export function useDeactivateStaffMember() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (staffId) => 
-      createClient().updateStaffMember(staffId, { is_active: false }),
+    mutationFn: async (staffId) => {
+      // Deactivate by updating profile
+      const client = createClient()
+      const { data, error } = await client
+        .from('profiles')
+        .update({ is_active: false })
+        .eq('id', staffId)
+        .select()
+        .single()
+      
+      if (error) throw error
+      return data
+    },
     onSuccess: (deactivatedStaff) => {
       toast.success('Staff member deactivated')
       
@@ -227,7 +421,7 @@ export function useStaffWithRealtime(barbershopId, options = {}) {
 }
 
 /**
- * Get staff members as options for select components
+ * Get staff members as options for select components (all active staff)
  */
 export function useStaffOptions(barbershopId) {
   const { data: staff, ...rest } = useActiveStaff(barbershopId)
@@ -240,4 +434,27 @@ export function useStaffOptions(barbershopId) {
       staff: member
     })) || []
   }
+}
+
+/**
+ * Get staff members who can take appointments as options for booking select components
+ */
+export function useAppointmentProviderOptions(barbershopId) {
+  const { data: staff, ...rest } = useAppointmentProviders(barbershopId)
+
+  return {
+    ...rest,
+    data: staff?.map(member => ({
+      value: member.user_id,
+      label: member.profile?.full_name || member.profile?.email || 'Unknown',
+      staff: member
+    })) || []
+  }
+}
+
+/**
+ * Backward compatible alias for booking components
+ */
+export function useBarberOptions(barbershopId) {
+  return useAppointmentProviderOptions(barbershopId)
 }

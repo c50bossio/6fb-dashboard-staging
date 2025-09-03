@@ -43,7 +43,7 @@ export async function POST(request) {
     // Get barbershop details for Stripe Connect
     const { data: barbershop, error: barbershopError } = await supabase
       .from('barbershops')
-      .select('stripe_account_id, name, address, phone')
+      .select('stripe_account_id, name, address, phone, owner_id')
       .eq('id', barbershopId)
       .single()
 
@@ -61,36 +61,64 @@ export async function POST(request) {
       )
     }
 
+    // Get tax settings for the barbershop owner
+    const { data: businessSettings } = await supabase
+      .from('business_settings')
+      .select('tax_settings')
+      .eq('user_id', barbershop.owner_id)
+      .single()
+    
+    const taxSettings = businessSettings?.tax_settings || {}
+    const isStripeTaxEnabled = taxSettings.stripe_tax_enabled === true
+
     // Calculate totals
     const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    const tax = cartItems.reduce((sum, item) => {
-      const itemTax = (item.price * item.quantity * (item.tax_rate || 0)) / 100
-      return sum + itemTax
-    }, 0)
+    
+    // If Stripe Tax is enabled, let Stripe calculate tax automatically
+    // Otherwise, use manual tax rate or item-specific rates
+    let tax = 0
+    if (!isStripeTaxEnabled) {
+      const manualTaxRate = taxSettings.manual_tax_rate || 0
+      tax = cartItems.reduce((sum, item) => {
+        const taxRate = item.tax_rate || manualTaxRate
+        const itemTax = (item.price * item.quantity * taxRate) / 100
+        return sum + itemTax
+      }, 0)
+    }
+    
     const total = subtotal + tax
 
     // Convert to cents for Stripe
     const totalCents = Math.round(total * 100)
 
     // Create line items for Stripe
-    const lineItems = await Promise.all(cartItems.map(async item => ({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: item.name,
-          description: item.description || '',
-          images: item.image_url ? [item.image_url] : [],
-          metadata: {
-            sku: item.sku || '',
-            barcode: item.barcode || ''
-          }
+    const lineItems = cartItems.map(item => {
+      const lineItem = {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: item.name,
+            description: item.description || '',
+            images: item.image_url ? [item.image_url] : [],
+            metadata: {
+              sku: item.sku || '',
+              barcode: item.barcode || ''
+            }
+          },
+          unit_amount: Math.round(item.price * 100),
+          tax_behavior: isStripeTaxEnabled ? 'exclusive' : 'inclusive'
         },
-        unit_amount: Math.round(item.price * 100),
-        tax_behavior: 'exclusive'
-      },
-      quantity: item.quantity,
-      tax_rates: item.tax_rate ? [await getOrCreateTaxRate(item.tax_rate)] : []
-    })))
+        quantity: item.quantity
+      }
+
+      // Only add tax_rates if Stripe Tax is NOT enabled and we have manual rates
+      if (!isStripeTaxEnabled && item.tax_rate) {
+        // For manual tax, we'll include it in the price since Stripe Tax is off
+        // The tax calculation above already includes this in the total
+      }
+
+      return lineItem
+    })
 
     // Calculate application fee (2.9% + 30 cents, capped at reasonable amount)
     const platformFeePercent = 2.9
@@ -101,7 +129,7 @@ export async function POST(request) {
     )
 
     // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig = {
       payment_method_types: ['card', 'apple_pay', 'google_pay'],
       line_items: lineItems,
       mode: 'payment',
@@ -146,7 +174,16 @@ export async function POST(request) {
       phone_number_collection: {
         enabled: true
       }
-    }, {
+    }
+
+    // Add automatic tax if enabled
+    if (isStripeTaxEnabled) {
+      sessionConfig.automatic_tax = {
+        enabled: true
+      }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig, {
       stripeAccount: barbershop.stripe_account_id
     })
 

@@ -56,7 +56,7 @@ export default function EditLocationModal({ isOpen, onClose, location }) {
       }
       
       // Update barbershop location
-      const { error: updateError } = await supabase
+      const { error: updateError } = await _supabase
         .from('barbershops')
         .update({
           name: formData.name,

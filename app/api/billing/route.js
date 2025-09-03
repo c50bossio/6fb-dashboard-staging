@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -164,7 +170,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json()
-    const { action, tenant_id, plan, customer_email } = body
+    const { action, tenant_id, plan, customer_email, user_id } = body
 
     switch (action) {
       case 'start_trial':
@@ -197,6 +203,19 @@ export async function POST(request) {
 
         const selectedPlan = PRICING_PLANS[plan]
 
+        // Get tax settings for the user if user_id provided
+        let isStripeTaxEnabled = false
+        if (user_id) {
+          const { data: businessSettings } = await supabase
+            .from('business_settings')
+            .select('tax_settings')
+            .eq('user_id', user_id)
+            .single()
+          
+          const taxSettings = businessSettings?.tax_settings || {}
+          isStripeTaxEnabled = taxSettings.stripe_tax_enabled === true
+        }
+
         if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('your_stripe')) {
           return NextResponse.json({
             success: true,
@@ -206,7 +225,7 @@ export async function POST(request) {
           })
         }
 
-        const session = await stripe.checkout.sessions.create({
+        const sessionConfig = {
           mode: 'subscription',
           payment_method_types: ['card'],
           customer_email,
@@ -239,7 +258,16 @@ export async function POST(request) {
           
           allow_promotion_codes: true,
           billing_address_collection: 'required',
-        })
+        }
+
+        // Add automatic tax if enabled
+        if (isStripeTaxEnabled) {
+          sessionConfig.automatic_tax = {
+            enabled: true
+          }
+        }
+
+        const session = await stripe.checkout.sessions.create(sessionConfig)
 
         return NextResponse.json({
           success: true,

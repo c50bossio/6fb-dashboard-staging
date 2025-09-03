@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
-import GlobalNavigation from '@/components/GlobalNavigation'
+// Removed GlobalNavigation import - using protected layout navigation
 import ProtectedRoute from '@/components/ProtectedRoute'
 import ReviewsList from '@/components/reviews/ReviewsList'
 import ReviewStats from '@/components/reviews/ReviewStats'
@@ -88,7 +88,7 @@ export default function LocationReviewsPage() {
 
   return (
     <ProtectedRoute>
-      <GlobalNavigation />
+      {/* Navigation now handled by protected layout */}
       <div className="min-h-screen bg-gray-50">
         {/* Main Content */}
         <div className="lg:ml-80 transition-all duration-300 ease-in-out pt-16 lg:pt-0">

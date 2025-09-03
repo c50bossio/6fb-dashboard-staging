@@ -124,7 +124,7 @@ async function modifyThisOnly(appointment, occurrenceDate, changes, timezone) {
 
     if (changes.start_time || changes.end_time) {
       const newAppointmentData = {
-        shop_id: appointment.shop_id,
+        barbershop_id: appointment.barbershop_id,
         barber_id: changes.barber_id || appointment.barber_id,
         customer_id: appointment.customer_id,
         service_id: changes.service_id || appointment.service_id,
@@ -215,7 +215,7 @@ async function modifyThisAndFuture(appointment, occurrenceDate, changes, timezon
     const newRRule = createRRuleFromDate(newPattern, newStartTime, timezone);
 
     const newAppointmentData = {
-      shop_id: appointment.shop_id,
+      barbershop_id: appointment.barbershop_id,
       barber_id: changes.barber_id || appointment.barber_id,
       customer_id: appointment.customer_id,
       service_id: changes.service_id || appointment.service_id,

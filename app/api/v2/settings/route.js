@@ -69,7 +69,7 @@ export async function GET(request) {
         .eq('id', user.id)
         .single()
       
-      targetOrgId = profile?.shop_id || profile?.barbershop_id
+      targetOrgId = profile?.barbershop_id || profile?.barbershop_id
     }
 
     // Verify user has access to this organization
@@ -205,7 +205,7 @@ export async function PUT(request) {
         .eq('id', user.id)
         .single()
       
-      targetOrgId = profile?.shop_id || profile?.barbershop_id
+      targetOrgId = profile?.barbershop_id || profile?.barbershop_id
     }
 
     // Verify permissions

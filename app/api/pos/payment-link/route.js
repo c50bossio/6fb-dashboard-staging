@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { 
   PaymentResponseFormatters,
   handlePOSError,
@@ -18,6 +19,11 @@ const stripe = process.env.STRIPE_SECRET_KEY
       apiVersion: '2023-10-16',
     })
   : null
+
+const supabaseService = createServiceClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
 
 export async function POST(request) {
   try {
@@ -78,7 +84,7 @@ export async function POST(request) {
       .eq('id', session.user.id)
       .single()
 
-    const userShopId = profile?.shop_id || 
+    const userShopId = profile?.barbershop_id || 
       (profile?.barbershop_staff && profile.barbershop_staff.length > 0 
         ? profile.barbershop_staff[0].barbershop_id 
         : null)
@@ -90,7 +96,20 @@ export async function POST(request) {
       )
     }
 
-    // Get barbershop's Stripe Connect account
+    // Get barbershop details and Stripe Connect account
+    const { data: barbershop } = await supabase
+      .from('barbershops')
+      .select('owner_id, name')
+      .eq('id', barbershopId)
+      .single()
+
+    if (!barbershop) {
+      return NextResponse.json(
+        { error: 'Barbershop not found' },
+        { status: 404 }
+      )
+    }
+
     const { data: stripeAccount } = await supabase
       .from('stripe_connected_accounts')
       .select('stripe_account_id, charges_enabled, payouts_enabled')
@@ -103,6 +122,21 @@ export async function POST(request) {
         { error: 'Stripe Connect account not properly configured for this barbershop' },
         { status: 400 }
       )
+    }
+
+    // Get barbershop owner's tax settings
+    let isStripeTaxEnabled = false
+    try {
+      const { data: businessSettings } = await supabaseService
+        .from('business_settings')
+        .select('tax_settings')
+        .eq('user_id', barbershop.owner_id)
+        .single()
+      
+      const taxSettings = businessSettings?.tax_settings || {}
+      isStripeTaxEnabled = taxSettings.stripe_tax_enabled === true
+    } catch (error) {
+      console.log('No tax settings found for barbershop owner, using default (tax disabled)')
     }
 
     // Calculate totals
@@ -124,6 +158,7 @@ export async function POST(request) {
             }
           },
           unit_amount: Math.round(item.price * 100), // Convert to cents
+          tax_behavior: isStripeTaxEnabled ? 'exclusive' : 'inclusive'
         },
         quantity: item.quantity,
       }
@@ -141,7 +176,7 @@ export async function POST(request) {
     expiresAt.setHours(expiresAt.getHours() + expiresInHours)
 
     // Create Stripe Payment Link
-    const paymentLink = await stripe.paymentLinks.create({
+    const paymentLinkConfig = {
       line_items: lineItems,
       after_completion: {
         type: 'redirect',
@@ -174,7 +209,16 @@ export async function POST(request) {
         source: 'pos_system',
         cart_item_count: cartItems.length.toString()
       }
-    }, {
+    }
+
+    // Add automatic tax if enabled
+    if (isStripeTaxEnabled) {
+      paymentLinkConfig.automatic_tax = {
+        enabled: true
+      }
+    }
+
+    const paymentLink = await stripe.paymentLinks.create(paymentLinkConfig, {
       stripeAccount: stripeAccount.stripe_account_id
     })
 

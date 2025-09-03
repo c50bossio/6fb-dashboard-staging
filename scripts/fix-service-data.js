@@ -40,7 +40,7 @@ async function analyzeServiceData() {
     const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
       .select('id, service_id, customer_id, start_time, end_time, status')
-      .eq('shop_id', 'demo-shop-001')
+      .eq('barbershop_id', 'demo-shop-001')
       .eq('is_test', true)
     
     if (bookingsError) {

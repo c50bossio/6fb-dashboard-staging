@@ -4,12 +4,51 @@ import {
   ClockIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  PencilIcon,
+  TrashIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
+import SpecialHoursModal from '@/components/shop/SpecialHoursModal'
+
+// Helper function to get default hours structure
+const getDefaultHours = () => ({
+  monday: { open: '09:00', close: '18:00', closed: false },
+  tuesday: { open: '09:00', close: '18:00', closed: false },
+  wednesday: { open: '09:00', close: '18:00', closed: false },
+  thursday: { open: '09:00', close: '18:00', closed: false },
+  friday: { open: '09:00', close: '19:00', closed: false },
+  saturday: { open: '10:00', close: '17:00', closed: false },
+  sunday: { open: '00:00', close: '00:00', closed: true }
+})
+
+// Helper function to validate and merge hours data from database
+const validateAndMergeHours = (dbHours) => {
+  const defaults = getDefaultHours()
+  
+  // If no data or invalid data, return defaults
+  if (!dbHours || typeof dbHours !== 'object') {
+    return defaults
+  }
+  
+  // Merge with defaults to ensure all days exist with proper structure
+  const merged = { ...defaults }
+  Object.keys(defaults).forEach(day => {
+    if (dbHours[day] && typeof dbHours[day] === 'object') {
+      merged[day] = {
+        open: dbHours[day].open || defaults[day].open,
+        close: dbHours[day].close || defaults[day].close,
+        closed: dbHours[day].closed !== undefined ? dbHours[day].closed : defaults[day].closed
+      }
+    }
+  })
+  
+  return merged
+}
 
 export default function BusinessHoursPage() {
   const { user: _user } = useAuth()
@@ -20,21 +59,20 @@ export default function BusinessHoursPage() {
   const [hasChanges, setHasChanges] = useState(false)
   const [notification, setNotification] = useState(null)
   
-  const [hours, setHours] = useState({
-    monday: { open: '09:00', close: '18:00', closed: false },
-    tuesday: { open: '09:00', close: '18:00', closed: false },
-    wednesday: { open: '09:00', close: '18:00', closed: false },
-    thursday: { open: '09:00', close: '18:00', closed: false },
-    friday: { open: '09:00', close: '19:00', closed: false },
-    saturday: { open: '10:00', close: '17:00', closed: false },
-    sunday: { open: '00:00', close: '00:00', closed: true }
-  })
+  const [hours, setHours] = useState(getDefaultHours())
 
   const [originalHours, setOriginalHours] = useState(null)
   const [specialDates, setSpecialDates] = useState([])
+  
+  // Special hours modal state
+  const [showSpecialHoursModal, setShowSpecialHoursModal] = useState(false)
+  const [editingSpecialHours, setEditingSpecialHours] = useState(null)
+  const [loadingSpecialHours, setLoadingSpecialHours] = useState(false)
+  const [specialHoursAvailable, setSpecialHoursAvailable] = useState(false)
 
   useEffect(() => {
     loadBusinessHours()
+    loadSpecialHours()
   }, [_user])
 
   useEffect(() => {
@@ -54,15 +92,21 @@ export default function BusinessHoursPage() {
     try {
       setLoading(true)
       
-      const { data: shop, error } = await supabase
+      const { data: shop, error } = await _supabase
         .from('barbershops')
         .select('business_hours')
         .eq('owner_id', _user.id)
         .single()
       
       if (shop && shop.business_hours) {
-        setHours(shop.business_hours)
-        setOriginalHours(shop.business_hours)
+        const validatedHours = validateAndMergeHours(shop.business_hours)
+        setHours(validatedHours)
+        setOriginalHours(validatedHours)
+      } else {
+        // No data from DB, use defaults
+        const defaultHours = getDefaultHours()
+        setHours(defaultHours)
+        setOriginalHours(defaultHours)
       }
     } catch (error) {
       console.error('Error loading hours:', error)
@@ -77,13 +121,13 @@ export default function BusinessHoursPage() {
     setNotification(null)
     
     try {
-      const { error } = await supabase
+      const { error } = await _supabase
         .from('barbershops')
         .update({
           business_hours: hours,
           updated_at: new Date().toISOString()
         })
-        .eq('owner_id', user?.id)
+        .eq('owner_id', _user?.id)
       
       if (error) throw error
       
@@ -99,19 +143,26 @@ export default function BusinessHoursPage() {
   }
 
   const handleDiscard = () => {
-    setHours(originalHours)
+    setHours(originalHours || getDefaultHours())
     setHasChanges(false)
     showNotification('info', 'Changes discarded')
   }
 
   const updateHours = (day, field, value) => {
-    setHours(prev => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        [field]: value
+    setHours(prev => {
+      // Ensure day exists with default structure if missing
+      if (!prev[day]) {
+        prev[day] = { open: '09:00', close: '18:00', closed: false }
       }
-    }))
+      
+      return {
+        ...prev,
+        [day]: {
+          ...prev[day],
+          [field]: value
+        }
+      }
+    })
   }
 
   const applyToWeekdays = () => {
@@ -143,6 +194,199 @@ export default function BusinessHoursPage() {
   const showNotification = (type, message) => {
     setNotification({ type, message })
     setTimeout(() => setNotification(null), 5000)
+  }
+
+  const loadSpecialHours = async () => {
+    if (!_user) return
+    
+    try {
+      setLoadingSpecialHours(true)
+      
+      // First, get the user's shop ID
+      const { data: profile, error: profileError } = await _supabase
+        .from('profiles')
+        .select('shop_id, barbershop_id')
+        .eq('id', _user.id)
+        .single()
+      
+      if (profileError) {
+        console.error('Error loading profile:', profileError)
+        setSpecialHoursAvailable(false)
+        return
+      }
+      
+      const shopId = profile.shop_id || profile.barbershop_id
+      if (!shopId) {
+        setSpecialHoursAvailable(false)
+        return
+      }
+      
+      // Load special hours from schedule_exceptions table
+      const { data: exceptions, error } = await _supabase
+        .from('schedule_exceptions')
+        .select('*')
+        .eq('barbershop_id', shopId)
+        .gte('date', new Date().toISOString().split('T')[0]) // Only future dates
+        .order('date', { ascending: true })
+      
+      if (error) {
+        // Check if the error is due to missing table/relation
+        if (error.message && error.message.includes('relation') && error.message.includes('does not exist')) {
+          console.log('Schedule exceptions table not yet created in database - special hours feature disabled')
+          setSpecialHoursAvailable(false)
+          setSpecialDates([])
+          return
+        }
+        
+        // For other errors (RLS, permissions, etc.), show error
+        console.error('Error loading special hours:', error)
+        console.error('Error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        showNotification('error', `Failed to load special hours: ${error.message}`)
+        setSpecialHoursAvailable(false)
+        return
+      }
+      
+      // Success - table exists and we got data
+      setSpecialHoursAvailable(true)
+      setSpecialDates(exceptions || [])
+    } catch (error) {
+      console.error('Error loading special hours:', error)
+      // Don't show notification for system errors - just disable the feature
+      setSpecialHoursAvailable(false)
+      setSpecialDates([])
+    } finally {
+      setLoadingSpecialHours(false)
+    }
+  }
+
+  // Special hours management functions
+  const handleAddSpecialHours = () => {
+    setEditingSpecialHours(null)
+    setShowSpecialHoursModal(true)
+  }
+
+  const handleEditSpecialHours = (specialHour) => {
+    setEditingSpecialHours(specialHour)
+    setShowSpecialHoursModal(true)
+  }
+
+  const handleDeleteSpecialHours = async (specialHourId) => {
+    if (!confirm('Are you sure you want to delete this special hour?')) return
+    
+    try {
+      const { error } = await _supabase
+        .from('schedule_exceptions')
+        .delete()
+        .eq('id', specialHourId)
+      
+      if (error) throw error
+      
+      // Reload special hours
+      loadSpecialHours()
+      showNotification('success', 'Special hours deleted successfully')
+    } catch (error) {
+      console.error('Error deleting special hours:', error)
+      showNotification('error', 'Failed to delete special hours')
+    }
+  }
+
+  const handleSaveSpecialHours = async (specialHourData, editingId = null) => {
+    try {
+      // Get the user's shop ID
+      const { data: profile } = await _supabase
+        .from('profiles')
+        .select('shop_id, barbershop_id')
+        .eq('id', _user.id)
+        .single()
+      
+      const shopId = profile.shop_id || profile.barbershop_id
+      if (!shopId) {
+        throw new Error('No shop ID found')
+      }
+      
+      const dataToSave = {
+        ...specialHourData,
+        barbershop_id: shopId,
+        barber_id: null // This is for shop-wide special hours
+      }
+      
+      let error
+      if (editingId) {
+        // Update existing
+        const result = await _supabase
+          .from('schedule_exceptions')
+          .update(dataToSave)
+          .eq('id', editingId)
+        error = result.error
+      } else {
+        // Create new
+        const result = await _supabase
+          .from('schedule_exceptions')
+          .insert([dataToSave])
+        error = result.error
+      }
+      
+      if (error) throw error
+      
+      // Reload special hours
+      loadSpecialHours()
+      showNotification('success', `Special hours ${editingId ? 'updated' : 'added'} successfully`)
+    } catch (error) {
+      console.error('Error saving special hours:', error)
+      console.error('Full error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        data: dataToSave
+      })
+      showNotification('error', `Failed to ${editingId ? 'update' : 'add'} special hours: ${error.message}`)
+      throw error
+    }
+  }
+
+  const formatSpecialHourDisplay = (specialHour) => {
+    // Parse date as local date to avoid timezone shift
+    const date = new Date(specialHour.date + 'T12:00:00').toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+    
+    let timeDisplay = ''
+    if (specialHour.all_day) {
+      timeDisplay = specialHour.type === 'holiday' || specialHour.type === 'time_off' ? 'Closed' : 'All Day'
+    } else if (specialHour.start_time && specialHour.end_time) {
+      const formatTime = (timeStr) => {
+        const [hours, minutes] = timeStr.split(':')
+        const hour12 = ((parseInt(hours) + 11) % 12) + 1
+        const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM'
+        return `${hour12}:${minutes} ${ampm}`
+      }
+      timeDisplay = `${formatTime(specialHour.start_time)} - ${formatTime(specialHour.end_time)}`
+    } else {
+      timeDisplay = 'Closed'
+    }
+    
+    return { date, timeDisplay }
+  }
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'holiday':
+        return '🎉'
+      case 'time_off':
+        return '🏖️'
+      case 'special_hours':
+      default:
+        return '⏰'
+    }
   }
 
   if (loading) {
@@ -294,65 +538,163 @@ export default function BusinessHoursPage() {
         {/* Hours Table */}
         <div className="p-6">
           <div className="space-y-4">
-            {days.map(({ key, label }) => (
-              <div key={key} className="flex items-center space-x-4 py-3 border-b last:border-0">
-                <div className="w-32">
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
+            {days.map(({ key, label }) => {
+              // Defensive check: Ensure day hours exist with defaults
+              const dayHours = hours[key] || { open: '09:00', close: '18:00', closed: false }
+              
+              return (
+                <div key={key} className="flex items-center space-x-4 py-3 border-b last:border-0">
+                  <div className="w-32">
+                    <span className="text-sm font-medium text-gray-700">{label}</span>
+                  </div>
+                  
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={!dayHours.closed}
+                      onChange={(e) => updateHours(key, 'closed', !e.target.checked)}
+                      className="h-4 w-4 text-olive-600 rounded focus:ring-olive-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">Open</span>
+                  </label>
+                  
+                  {!dayHours.closed ? (
+                    <>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="time"
+                          value={dayHours.open}
+                          onChange={(e) => updateHours(key, 'open', e.target.value)}
+                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        />
+                        <span className="text-gray-500">to</span>
+                        <input
+                          type="time"
+                          value={dayHours.close}
+                          onChange={(e) => updateHours(key, 'close', e.target.value)}
+                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-sm text-gray-500 italic">Closed</span>
+                  )}
                 </div>
-                
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={!hours[key].closed}
-                    onChange={(e) => updateHours(key, 'closed', !e.target.checked)}
-                    className="h-4 w-4 text-olive-600 rounded focus:ring-olive-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-600">Open</span>
-                </label>
-                
-                {!hours[key].closed ? (
-                  <>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="time"
-                        value={hours[key].open}
-                        onChange={(e) => updateHours(key, 'open', e.target.value)}
-                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
-                      />
-                      <span className="text-gray-500">to</span>
-                      <input
-                        type="time"
-                        value={hours[key].close}
-                        onChange={(e) => updateHours(key, 'close', e.target.value)}
-                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <span className="text-sm text-gray-500 italic">Closed</span>
-                )}
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>
 
-      {/* Special Hours Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Special Hours & Holidays</h2>
-          <p className="text-sm text-gray-600">Set custom hours for specific dates</p>
-        </div>
-        <div className="p-6">
-          <div className="text-center py-8">
-            <ClockIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600 mb-4">No special hours configured</p>
-            <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
-              Add Special Hours
-            </button>
+      {/* Special Hours Section - Only show if feature is available */}
+      {specialHoursAvailable && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Special Hours & Holidays</h2>
+                <p className="text-sm text-gray-600">Set custom hours for specific dates</p>
+              </div>
+              <button
+                onClick={handleAddSpecialHours}
+                className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
+              >
+                <CalendarDaysIcon className="h-4 w-4 mr-2" />
+                Add Special Hours
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            {loadingSpecialHours ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600"></div>
+              </div>
+            ) : specialDates.length === 0 ? (
+              <div className="text-center py-8">
+                <ClockIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-600 mb-4">No special hours configured</p>
+                <p className="text-sm text-gray-500">Add holidays, special hours, or time off dates</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {specialDates.map((specialHour) => {
+                  const { date, timeDisplay } = formatSpecialHourDisplay(specialHour)
+                  return (
+                    <div key={specialHour.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">{getTypeIcon(specialHour.type)}</span>
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <p className="font-medium text-gray-900">{date}</p>
+                            <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full capitalize">
+                              {specialHour.type.replace('_', ' ')}
+                            </span>
+                            {/* Show recurring indicator */}
+                            {specialHour.is_recurring && (
+                              <span className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded-full font-medium flex items-center space-x-1" title="Recurring annually">
+                                <span>🔄</span>
+                                <span>Annual</span>
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600">{timeDisplay}</p>
+                          {specialHour.reason && (
+                            <p className="text-sm text-olive-600 font-medium">{specialHour.reason}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleEditSpecialHours(specialHour)}
+                          className="p-2 text-gray-400 hover:text-olive-600 transition-colors"
+                          title="Edit"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSpecialHours(specialHour.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Delete"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Special Hours Feature Not Available Notice */}
+      {!specialHoursAvailable && !loadingSpecialHours && (
+        <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
+          <div className="flex items-start">
+            <InformationCircleIcon className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" />
+            <div>
+              <h3 className="text-sm font-medium text-blue-900 mb-1">Special Hours & Holidays Feature</h3>
+              <p className="text-sm text-blue-800 mb-3">
+                This feature allows you to set custom hours for holidays, special events, or time off. 
+                It requires additional database setup to be fully functional.
+              </p>
+              <p className="text-xs text-blue-700">
+                <strong>For setup:</strong> Run the Supabase migration or contact your administrator to enable this feature.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Special Hours Modal */}
+      <SpecialHoursModal
+        isOpen={showSpecialHoursModal}
+        onClose={() => setShowSpecialHoursModal(false)}
+        onSave={handleSaveSpecialHours}
+        editingHours={editingSpecialHours}
+      />
 
       {/* Tips */}
       <div className="mt-6 p-4 bg-olive-50 rounded-lg">

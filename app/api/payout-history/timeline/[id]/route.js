@@ -39,7 +39,7 @@ export async function GET(request, { params }) {
       .eq('id', user.id)
       .single()
 
-    if (profileError || !profile?.shop_id) {
+    if (profileError || !profile?.barbershop_id) {
       return NextResponse.json(
         { error: 'Barbershop association required' },
         { status: 403 }
@@ -51,7 +51,7 @@ export async function GET(request, { params }) {
       .from('commission_payout_records')
       .select('id, barbershop_id, barber_id')
       .eq('id', payoutId)
-      .eq('barbershop_id', profile.shop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .single()
 
     if (payoutError || !payout) {
@@ -114,7 +114,7 @@ export async function GET(request, { params }) {
       },
       metadata: {
         processing_time_ms: processingTime,
-        barbershop_id: profile.shop_id,
+        barbershop_id: profile.barbershop_id,
         generated_at: new Date().toISOString(),
         user_role: profile.role
       }

@@ -48,10 +48,14 @@ export async function middleware(request) {
   
   // Protected routes that require authentication
   const protectedRoutes = ['/dashboard', '/(protected)']
+  
+  // Specific enterprise routes that should be protected (not public enterprise portals)
+  const protectedEnterpriseRoutes = ['/enterprise/locations', '/enterprise/organization', '/enterprise/settings']
+  
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route.replace('(protected)', '')) || 
     pathname.includes('/(protected)/')
-  )
+  ) || protectedEnterpriseRoutes.some(route => pathname.startsWith(route))
   
   // Allow OAuth callbacks to proceed without authentication check
   if (isAuthCallback) {

@@ -44,11 +44,11 @@ export async function GET(request) {
       .eq('id', user.id)
       .single()
     
-    if (profileError || (!profile?.barbershop_id && !profile?.shop_id)) {
+    if (profileError || (!profile?.barbershop_id && !profile?.barbershop_id)) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barbershopId = profile.barbershop_id || profile.shop_id
+    const barbershopId = profile.barbershop_id || profile.barbershop_id
 
     // Check cache first for improved performance
     const cachedResults = await getCachedResults(barbershopId, priority, daysSinceVisit, includeNoShows)
@@ -334,7 +334,7 @@ export async function POST(request) {
       .eq('id', user.id)
       .single()
     
-    const barbershopId = profile?.barbershop_id || profile?.shop_id
+    const barbershopId = profile?.barbershop_id || profile?.barbershop_id
     
     // Log the client care action
     const { error: logError } = await supabase

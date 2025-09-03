@@ -15,6 +15,7 @@ import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 // import { TestAuthProvider as SupabaseAuthProvider } from './TestAuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
+import BookedBarberNotification from './ui/BookedBarberNotification'
 import AuthTest from './AuthTest'
 
 // Lazy load non-critical providers
@@ -135,6 +136,7 @@ export default function ClientWrapper({ children }) {
         <ServiceWorkerProvider>
           <CombinedProviders>
             {children}
+            <BookedBarberNotification />
           </CombinedProviders>
         </ServiceWorkerProvider>
       </AppErrorBoundary>

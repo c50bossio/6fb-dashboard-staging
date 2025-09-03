@@ -97,7 +97,7 @@ describe('GlobalDashboardContext', () => {
     it('should provide shop owner permissions for SHOP_OWNER role', () => {
       useAuth.mockReturnValue({
         user: { id: 'user-1' },
-        profile: { id: 'user-1', shop_id: 'shop-1' },
+        profile: { id: 'user-1', barbershop_id: 'shop-1' },
         userRole: 'SHOP_OWNER'
       })
       

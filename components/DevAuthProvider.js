@@ -2,14 +2,20 @@
 
 import { createContext, useContext, useState, useEffect } from 'react'
 
-const AuthContext = createContext({})
+const DevAuthContext = createContext({})
 
-export const useAuth = () => {
-  const context = useContext(AuthContext)
+export const useDevAuth = () => {
+  const context = useContext(DevAuthContext)
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error('useDevAuth must be used within a DevAuthProvider')
   }
   return context
+}
+
+// Legacy compatibility - only use if no real auth provider is available
+export const useAuth = () => {
+  console.warn('🚨 Using DevAuthProvider - this should only happen in development mode')
+  return useDevAuth()
 }
 
 /**
@@ -18,20 +24,19 @@ export const useAuth = () => {
  */
 export function DevAuthProvider({ children }) {
   const [user] = useState({
-    id: 'dev-user-123',
+    id: '123e4567-e89b-12d3-a456-426614174000',
     email: 'dev@6fb.local',
     user_metadata: { full_name: 'Development User' }
   })
   
   const [profile] = useState({
-    id: 'dev-user-123',
+    id: '123e4567-e89b-12d3-a456-426614174000',
     email: 'dev@6fb.local',
     full_name: 'Development User',
     subscription_tier: 'pro',
     subscription_status: 'active',
     role: 'BARBER',
-    barbershop_id: 'dev-shop-123',
-    barbershop_id: 'dev-shop-123'
+    barbershop_id: 'b1234567-89ab-cdef-0123-456789abcdef'
   })
   
   const [loading, setLoading] = useState(true)
@@ -89,7 +94,7 @@ export function DevAuthProvider({ children }) {
     }
   }
   
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <DevAuthContext.Provider value={value}>{children}</DevAuthContext.Provider>
 }
 
 export default DevAuthProvider

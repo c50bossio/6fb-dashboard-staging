@@ -3,51 +3,44 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const body = await request.json()
+    
+    console.log('🔍 Location creation attempt:', { body })
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
+    console.log('🔍 Auth check:', { user: user?.id, authError: authError?.message })
+    
     if (authError || !user) {
+      console.log('❌ Authentication failed:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     // Get user's profile to check permissions
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, role, barbershop_id, barbershop_id, organization_id')
+      .select('id, role, barbershop_id, organization_id')
       .eq('id', user.id)
       .single()
 
+    console.log('🔍 Profile check:', { profile, profileError: profileError?.message })
+
     if (!profile) {
+      console.log('❌ Profile not found for user:', user.id)
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
     const userRole = profile.role || 'CLIENT'
+    console.log('🔍 User role:', userRole)
     
     // Check if user has permission to create locations
-    if (!['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole)) {
-      // Return upgrade prompt instead of just an error
+    // Allow SHOP_OWNER to create locations for their business
+    if (!['ENTERPRISE_OWNER', 'SUPER_ADMIN', 'SHOP_OWNER'].includes(userRole)) {
       return NextResponse.json({ 
-        error: 'Enterprise subscription required',
-        requiresUpgrade: true,
-        upgradeInfo: {
-          title: '🚀 Unlock Multi-Location Management with Enterprise',
-          message: 'Managing multiple locations requires an Enterprise subscription.',
-          benefits: [
-            '✅ Unlimited location management',
-            '✅ Centralized reporting across all shops',
-            '✅ Bulk staff management across locations',
-            '✅ Advanced analytics and insights',
-            '✅ Custom branding per location',
-            '✅ Priority support and training'
-          ],
-          ctaText: 'Upgrade to Enterprise',
-          ctaLink: '/dashboard/settings/billing?plan=enterprise',
-          alternativeText: 'Learn More',
-          alternativeLink: '/pricing#enterprise'
-        }
+        error: 'Insufficient permissions to create locations',
+        message: 'You need to be a shop owner or have enterprise permissions to create locations.'
       }, { status: 403 })
     }
 
@@ -67,11 +60,13 @@ export async function POST(request) {
       phone: phone?.trim() || null,
       email: email?.trim() || null,
       owner_id: user.id,
-      organization_id: profile.organization_id,
-      location_status: 'active',
+      organization_id: profile.organization_id || null, // Allow null for individual shop owners
+      is_active: true, // Use is_active instead of location_status
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
+
+    console.log('🔍 Attempting to create location with data:', locationData)
 
     // Create the location
     const { data: newLocation, error: createError } = await supabase
@@ -80,9 +75,15 @@ export async function POST(request) {
       .select()
       .single()
 
+    console.log('🔍 Database result:', { newLocation, createError })
+
     if (createError) {
-      console.error('Error creating location:', createError)
-      return NextResponse.json({ error: 'Failed to create location' }, { status: 500 })
+      console.error('❌ Error creating location:', createError)
+      return NextResponse.json({ 
+        error: 'Failed to create location', 
+        details: createError.message,
+        hint: createError.hint 
+      }, { status: 500 })
     }
 
     // Format response to match expected structure

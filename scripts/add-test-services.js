@@ -17,7 +17,7 @@ const barbershopId = null /* hardcoded ID removed for production */
 // Sample services for a barbershop
 const services = [
   {
-    shop_id: barbershopId,
+    barbershop_id: barbershopId,
     name: 'Classic Haircut',
     description: 'Traditional barbershop haircut with hot towel finish',
     duration_minutes: 30,
@@ -26,7 +26,7 @@ const services = [
     is_active: true
   },
   {
-    shop_id: barbershopId,
+    barbershop_id: barbershopId,
     name: 'Fade Cut',
     description: 'Modern fade haircut with precision blending',
     duration_minutes: 45,
@@ -35,7 +35,7 @@ const services = [
     is_active: true
   },
   {
-    shop_id: barbershopId,
+    barbershop_id: barbershopId,
     name: 'Beard Trim',
     description: 'Professional beard shaping and grooming',
     duration_minutes: 20,
@@ -44,7 +44,7 @@ const services = [
     is_active: true
   },
   {
-    shop_id: barbershopId,
+    barbershop_id: barbershopId,
     name: 'Hot Shave',
     description: 'Classic straight razor shave with hot towels',
     duration_minutes: 30,
@@ -53,7 +53,7 @@ const services = [
     is_active: true
   },
   {
-    shop_id: barbershopId,
+    barbershop_id: barbershopId,
     name: 'Hair & Beard Combo',
     description: 'Complete haircut and beard grooming package',
     duration_minutes: 60,
@@ -62,7 +62,7 @@ const services = [
     is_active: true
   },
   {
-    shop_id: barbershopId,
+    barbershop_id: barbershopId,
     name: 'Kids Cut',
     description: 'Haircut for children 12 and under',
     duration_minutes: 20,
@@ -79,7 +79,7 @@ async function addServices() {
     const { data: existingServices, error: checkError } = await supabase
       .from('services')
       .select('id, name')
-      .eq('shop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
     
     if (checkError) {
       console.error('Error checking existing services:', checkError)

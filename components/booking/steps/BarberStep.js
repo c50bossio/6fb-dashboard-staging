@@ -38,8 +38,15 @@ export default function BarberStep({ bookingData, onNext, onBack }) {
       }
       
       if (data && data.staff && data.staff.length > 0) {
+        // Filter staff by appointment capabilities (in case API didn't filter properly)
+        const availableStaff = data.staff.filter(staff => {
+          return staff.can_take_appointments !== false && 
+                 staff.is_visible_for_booking !== false &&
+                 staff.is_active !== false
+        })
+        
         // Transform staff data to match barber component expectations
-        const transformedBarbers = data.staff.map(staff => ({
+        const transformedBarbers = availableStaff.map(staff => ({
           id: staff.user_id || staff.id,
           name: staff.display_name || staff.full_name || staff.name,
           title: staff.title || (staff.role === 'OWNER' ? 'Owner/Master Barber' : 'Barber'),

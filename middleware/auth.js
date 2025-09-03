@@ -84,7 +84,7 @@ export async function verifyAuth(request) {
         id: session.user.id,
         email: session.user.email,
         role: profile.role,
-        shop_id: profile.shop_id
+        barbershop_id: profile.barbershop_id
       },
       session
     }
@@ -154,7 +154,7 @@ export function withAuth(handler, options = {}) {
       )
     }
     
-    if (requireShop && !authResult.user.shop_id) {
+    if (requireShop && !authResult.user.barbershop_id) {
       return NextResponse.json(
         { error: 'Shop association required' },
         { status: 403 }

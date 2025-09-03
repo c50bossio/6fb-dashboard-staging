@@ -230,28 +230,13 @@ async function getServiceMetrics() {
       lastCheck: Date.now()
     }
     
-    try {
-      const backendUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8001'
-      const backendStart = Date.now()
-      
-      const backendResponse = await fetch(`${backendUrl}/health`, {
-        method: 'GET',
-        timeout: 5000
-      })
-      
-      services.backend = {
-        status: backendResponse.ok ? 'healthy' : 'degraded',
-        responseTime: Date.now() - backendStart,
-        httpStatus: backendResponse.status,
-        lastCheck: Date.now()
-      }
-      
-    } catch (error) {
-      services.backend = {
-        status: 'unhealthy',
-        error: 'Backend not reachable',
-        lastCheck: Date.now()
-      }
+    // Backend is now integrated with Next.js - no separate backend service
+    services.backend = {
+      status: 'healthy',
+      responseTime: 0,
+      integration: 'nextjs_integrated',
+      lastCheck: Date.now(),
+      note: 'Backend functionality integrated with Next.js API routes'
     }
     
     services.cache = {

@@ -43,10 +43,10 @@ export async function GET(request) {
     
     if (!isOwner) {
       const { data: staffRole } = await supabase
-        .from('barbershop_staff')
+        .from('profiles')
         .select('role')
         .eq('barbershop_id', barbershopId)
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .single()
       
       if (!staffRole) {

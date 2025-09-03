@@ -46,7 +46,7 @@ export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
   const [availableSlots, setAvailableSlots] = useState([])
   const [loading, setLoading] = useState(false)
   const [bookingComplete, setBookingComplete] = useState(false)
-  const [bookingId, setBookingId] = useState(null)
+  const [appointmentId, setAppointmentId] = useState(null)
   
   // Returning visitor recognition
   const [returningVisitor, setReturningVisitor] = useState(false)
@@ -197,7 +197,7 @@ export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
         }
         Cookies.set('booking_visitor', JSON.stringify(visitorData), { expires: 90 })
         
-        setBookingId(result.booking.id)
+        setAppointmentId(result.appointment.id)
         setBookingComplete(true)
       }
     } catch (error) {

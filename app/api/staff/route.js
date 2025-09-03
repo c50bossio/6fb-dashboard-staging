@@ -376,9 +376,9 @@ if (!supabase) {
     }
     
     // Legacy support during migration period
-    if (profile.shop_id) {
+    if (profile.barbershop_id) {
       // // Debug log removed for production
-return profile.shop_id
+return profile.barbershop_id
     }
     
     // // Debug log removed for production
@@ -412,24 +412,20 @@ if (!supabase) {
       throw new Error('Barbershop ID is required')
     }
 
-    // Skip barbershop_staff table query to avoid 406 errors
-    // Instead, get all profiles associated with this barbershop
-    // For now, return empty array to avoid 406 errors
-    const staff = []
-    
-    // // Debug log removed for production
-    if (!staff || staff.length === 0) {
-      console.warn('⚠️ fetchStaffWithProfiles: Returning empty staff to avoid 406 errors')
-      return []
+    // Get all profiles associated with this barbershop directly
+    // This avoids 406 errors from barbershop_staff table queries
+    // Now includes the new appointment capability columns
+    if (process.env.NODE_ENV === 'development') {
+      console.log('👥 fetchStaffWithProfiles: Querying profiles for barbershop:', barbershopId)
     }
 
-    // Step 2: Get profiles for all staff members
-    const userIds = staff.map(s => s.user_id)
-    // // Debug log removed for production
-const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('*')
-      .in('id', userIds)
+    const { data: profiles, error: profilesError } = await retryDatabaseOperation(async () => {
+      return await supabase
+        .from('profiles')
+        .select('*')
+        .eq('barbershop_id', barbershopId)
+        .in('role', ['BARBER', 'SHOP_OWNER', 'MANAGER', 'STAFF', 'ENTERPRISE_OWNER'])
+    })
 
     if (profilesError) {
       console.error('❌ fetchStaffWithProfiles: Error fetching staff profiles:', {
@@ -441,41 +437,72 @@ const { data: profiles, error: profilesError } = await supabase
       throw new Error(`Profile fetch failed: ${profilesError.message}`)
     }
 
-    // // Debug log removed for production
-// Step 3: Merge staff data with profiles
-    // // Debug log removed for production
-const staffWithProfiles = staff.map(staffMember => {
-      const profile = profiles?.find(p => p.id === staffMember.user_id) || {}
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`👥 fetchStaffWithProfiles: Found ${profiles?.length || 0} staff profiles`)
+    }
+
+    if (!profiles || profiles.length === 0) {
+      return []
+    }
+
+    // Transform profiles to staff format expected by the frontend
+    const staffWithProfiles = profiles.map(profile => {
+      // Set role-based defaults for appointment capabilities
+      const defaultCanTakeAppointments = profile.can_take_appointments ?? (
+        profile.role === 'BARBER' ? true : 
+        profile.role === 'ENTERPRISE_OWNER' ? true :
+        profile.role === 'SHOP_OWNER' ? true :
+        profile.role === 'MANAGER' ? false :
+        false // STAFF role defaults to false
+      )
       
-      const mergedRecord = {
-        id: staffMember.id,
-        user_id: staffMember.user_id,
-        barbershop_id: staffMember.barbershop_id,
-        role: staffMember.role,
-        is_active: staffMember.is_active,
-        created_at: staffMember.created_at,
-        updated_at: staffMember.updated_at,
+      return {
+        // Staff record fields
+        id: profile.id, // Use profile.id as staff id
+        user_id: profile.id,
+        barbershop_id: barbershopId,
+        role: profile.role,
+        is_active: profile.is_active ?? true,
+        created_at: profile.created_at,
+        updated_at: profile.updated_at,
+        
+        // Appointment capability fields
+        can_take_appointments: defaultCanTakeAppointments,
+        is_visible_for_booking: profile.is_visible_for_booking ?? true,
+        service_provider_since: profile.service_provider_since || profile.created_at,
+        
         // Profile information
         email: profile.email || '',
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
-        full_name: profile.full_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Staff Member',
+        full_name: profile.full_name || 
+          `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 
+          profile.email || 'Staff Member',
         phone: profile.phone || '',
         avatar_url: profile.avatar_url || null,
+        
         // Staff-specific fields
-        title: staffMember.role === 'OWNER' ? 'Owner' : 'Barber',
+        title: profile.role === 'SHOP_OWNER' ? 'Owner' : 
+               profile.role === 'ENTERPRISE_OWNER' ? 'Enterprise Owner' :
+               profile.role === 'MANAGER' ? 'Manager' : 'Barber',
         specialties: profile.specialties || [],
         bio: profile.bio || '',
         experience_years: profile.experience_years || 0,
-        hourly_rate: staffMember.hourly_rate || null,
-        commission_rate: staffMember.commission_rate || null
+        commission_rate: profile.commission_rate || null,
+        
+        // Direct profile reference for compatibility
+        profile: profile,
+        
+        // Additional fields for staff management
+        display_name: profile.full_name || profile.email || 'Staff Member',
+        metadata: profile.metadata || {}
       }
-      
-      console.log(`Staff profile merged successfully`)
-      return mergedRecord
     })
 
-    console.log(`Returning ${staffWithProfiles.length} staff members with profiles`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ fetchStaffWithProfiles: Returning ${staffWithProfiles.length} staff members`)
+    }
+    
     return staffWithProfiles
   } catch (error) {
     console.error('💥 fetchStaffWithProfiles: Unexpected error:', error)

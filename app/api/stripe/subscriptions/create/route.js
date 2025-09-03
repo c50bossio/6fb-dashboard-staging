@@ -52,12 +52,22 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    // Get or create Stripe customer
+    // Get or create Stripe customer and tax settings
     const { data: profile } = await supabase
       .from('profiles')
       .select('stripe_customer_id, email, full_name')
       .eq('id', user.id)
       .single();
+
+    // Get tax settings for the user
+    const { data: businessSettings } = await supabase
+      .from('business_settings')
+      .select('tax_settings')
+      .eq('user_id', user.id)
+      .single();
+    
+    const taxSettings = businessSettings?.tax_settings || {};
+    const isStripeTaxEnabled = taxSettings.stripe_tax_enabled === true;
 
     let customerId = profile?.stripe_customer_id;
 
@@ -111,7 +121,7 @@ export async function POST(request) {
     }
 
     // Create checkout session for new subscription
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig = {
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{
@@ -136,7 +146,16 @@ export async function POST(request) {
         trial_period_days: planType === 'starter' ? 14 : 7
       },
       allow_promotion_codes: true
-    });
+    };
+
+    // Add automatic tax if enabled
+    if (isStripeTaxEnabled) {
+      sessionConfig.automatic_tax = {
+        enabled: true
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return NextResponse.json({
       success: true,

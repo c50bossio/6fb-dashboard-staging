@@ -69,75 +69,8 @@ from routers.auth import get_current_user
 NOTIFICATION_HISTORY = []
 NOTIFICATION_QUEUE_ITEMS = {}
 
-@router.post("/test")
-async def test_notification(
-    notification: NotificationRequest,
-    current_user: dict = Depends(get_current_user)
-):
-    """Test notification sending"""
-    if not NOTIFICATION_SERVICES_AVAILABLE:
-        return {
-            "status": "simulated",
-            "message": "Notification services not available - simulated send",
-            "recipient": notification.recipient,
-            "type": notification.type
-        }
-    
-    try:
-        with memory_manager.memory_context("test_notification"):
-            if notification.type == "email":
-                result = await notification_service.send_email(
-                    to=notification.recipient,
-                    subject=notification.subject or "Test Notification",
-                    message=notification.message
-                )
-            elif notification.type == "sms":
-                result = await notification_service.send_sms(
-                    to=notification.recipient,
-                    message=notification.message
-                )
-            elif notification.type == "push":
-                result = await notification_service.send_push(
-                    to=notification.recipient,
-                    title=notification.subject or "Test Notification",
-                    message=notification.message
-                )
-            else:
-                raise HTTPException(status_code=400, detail=f"Unsupported notification type: {notification.type}")
-            
-            # Log to database and history
-            notification_record = {
-                "id": str(uuid.uuid4()),
-                "recipient": notification.recipient,
-                "message": notification.message,
-                "subject": notification.subject,
-                "type": notification.type,
-                "status": "sent" if result.get("success") else "failed",
-                "sent_at": datetime.utcnow(),
-                "user_id": current_user.get("user_id"),
-                "barbershop_id": current_user.get("barbershop_id")
-            }
-            
-            # Store in database if available
-            if supabase_client:
-                try:
-                    supabase_client.table('notification_history').insert({
-                        **notification_record,
-                        "sent_at": notification_record["sent_at"].isoformat()
-                    }).execute()
-                except Exception as e:
-                    print(f"Failed to save notification to database: {e}")
-            
-            # Also store in memory for backward compatibility
-            NOTIFICATION_HISTORY.append(notification_record)
-            
-            return {
-                "status": "sent" if result.get("success") else "failed",
-                "result": result,
-                "notification_id": NOTIFICATION_HISTORY[-1]["id"]
-            }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send test notification: {str(e)}")
+# Test endpoint removed for production security
+# Original test notification endpoint has been disabled for security compliance
 
 @router.post("/send")
 async def send_notification(

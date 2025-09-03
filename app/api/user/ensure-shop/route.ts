@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check existing shop associations - following CLAUDE.md shop ID resolution pattern
-    let barbershopId = profile.shop_id || profile.barbershop_id
+    let barbershopId = profile.barbershop_id || profile.barbershop_id
 
     // If no direct barbershop_id, check barbershop_staff table (for employees)
     if (!barbershopId) {
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       barbershop_id: barbershopId,
-      created: !profile.shop_id && !profile.barbershop_id
+      created: !profile.barbershop_id && !profile.barbershop_id
     })
 
   } catch (error) {

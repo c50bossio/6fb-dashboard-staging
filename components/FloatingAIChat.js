@@ -213,7 +213,7 @@ export default function FloatingAIChat() {
       try {
         const { data: profileData, error: profileError } = await _supabase
           .from('profiles')
-          .select('id, role, shop_id, barbershop_id, email')
+          .select('id, role, barbershop_id, barbershop_id, email')
           .eq('id', _user.id)
           .maybeSingle()
         
@@ -221,7 +221,7 @@ export default function FloatingAIChat() {
           console.warn('Profile query warning:', profileError.message)
         }
         
-        const shopId = profileData?.shop_id || profileData?.barbershop_id
+        const shopId = profileData?.barbershop_id || profileData?.barbershop_id
         
         if (shopId) {
           

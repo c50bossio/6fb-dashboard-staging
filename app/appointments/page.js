@@ -16,7 +16,8 @@ import { useState, useEffect, useCallback } from 'react'
 
 import AppointmentModal from '../../components/calendar/AppointmentModal'
 import EnhancedProfessionalCalendar from '../../components/calendar/EnhancedProfessionalCalendar'
-import GlobalNavigation from '../../components/GlobalNavigation'
+// Removed GlobalNavigation - this page is likely orphaned
+// Consider moving to /app/(protected)/dashboard/bookings if needed
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
@@ -117,7 +118,7 @@ export default function AppointmentsPage() {
 
   return (
     <ProtectedRoute>
-      <GlobalNavigation />
+      {/* Note: This page is orphaned and likely should be migrated to protected layout */}
       <div className="min-h-screen bg-gray-50">
         {/* Main Content - adjusting for sidebar */}
         <div className="lg:ml-80 transition-all duration-300 ease-in-out pt-16 lg:pt-0">

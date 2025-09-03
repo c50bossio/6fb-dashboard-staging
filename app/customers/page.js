@@ -25,7 +25,7 @@ import {
   CustomerProfileEnhanced, 
   ChurnRiskMonitor 
 } from '../../components/customers'
-import GlobalNavigation from '../../components/GlobalNavigation'
+// Removed GlobalNavigation import - page likely orphaned
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { useAuth } from '../../components/SupabaseAuthProvider'
 
@@ -244,7 +244,7 @@ export default function CustomersPage() {
 
   return (
     <ProtectedRoute>
-      <GlobalNavigation />
+      {/* GlobalNavigation removed - page likely orphaned */}
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Tab Navigation */}

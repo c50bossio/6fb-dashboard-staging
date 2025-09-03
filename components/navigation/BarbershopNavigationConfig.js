@@ -43,6 +43,12 @@ export const BARBERSHOP_NAVIGATION = [
         badge: 'Live'
       },
       {
+        name: 'Check-In & Queue',
+        href: '/dashboard/check-in',
+        icon: UserGroupIcon,
+        badge: 'Live'
+      },
+      {
         name: 'Book Appointment',
         href: '/dashboard/bookings-mobile',
         icon: PhoneIcon
@@ -51,11 +57,6 @@ export const BARBERSHOP_NAVIGATION = [
         name: 'Recurring Clients',
         href: '/dashboard/bookings-recurring',
         icon: ClockIcon
-      },
-      {
-        name: 'Walk-ins',
-        href: '/dashboard/walk-ins',
-        icon: UserGroupIcon
       },
       {
         name: 'Calendar Sync',
@@ -226,11 +227,11 @@ export const QUICK_ACTIONS = [
     description: 'Quick booking for walk-in customer'
   },
   {
-    name: 'Check-in Customer',
-    href: '/dashboard/checkin',
+    name: 'Check-In & Queue',
+    href: '/dashboard/check-in',
     icon: UserGroupIcon,
     color: 'bg-green-600 hover:bg-green-700',
-    description: 'Mark customer as arrived'
+    description: 'Check-in customers and manage walk-in queue'
   },
   {
     name: 'Process Sale',

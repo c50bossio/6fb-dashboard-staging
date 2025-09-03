@@ -82,7 +82,7 @@ export async function GET(request) {
           business: {
             complete: false,
             data: null,
-            missing: ['Create your barbershop profile - add business name, address, and contact information']
+            missing: ['Create your barbershop profile - add business name, email, and description in General Settings, then add address in Location Settings']
           },
           services: {
             complete: false,
@@ -123,13 +123,21 @@ export async function GET(request) {
 
     const barbershopId = barbershop.id
 
-    // Check actual data completion - data-driven approach like competitors
+    // Check actual data completion - unified NAP approach
+    // Complete address = street address + city + state (for US/CA)
+    const hasCompleteAddress = !!(barbershop.address && barbershop.city && 
+      (barbershop.state || !['US', 'CA', 'USA', 'Canada'].includes(barbershop.country)))
+    
     const status = {
       business: {
-        complete: !!(barbershop.name && barbershop.address && barbershop.phone),
+        complete: !!(barbershop.name && hasCompleteAddress && barbershop.phone),
         data: {
           name: barbershop.name,
           address: barbershop.address,
+          city: barbershop.city,
+          state: barbershop.state,
+          zip_code: barbershop.zip_code,
+          country: barbershop.country,
           phone: barbershop.phone,
           email: barbershop.email
         },
@@ -144,10 +152,26 @@ export async function GET(request) {
       branding: { complete: false, data: null, missing: [] }
     }
 
-    // Add missing fields for business
-    if (!barbershop.name) status.business.missing.push('Business name')
-    if (!barbershop.address) status.business.missing.push('Address')  
-    if (!barbershop.phone) status.business.missing.push('Phone number')
+    // Add missing fields for business info - split between general and location
+    const businessMissing = []
+    const locationMissing = []
+    
+    if (!barbershop.name) businessMissing.push('Business name (General Settings)')
+    if (!barbershop.email) businessMissing.push('Email address (General Settings)')
+    
+    if (!barbershop.address) locationMissing.push('Street address (Location Settings)')
+    if (!barbershop.city) locationMissing.push('City (Location Settings)')
+    if (['US', 'CA', 'USA', 'Canada'].includes(barbershop.country) && !barbershop.state) {
+      const stateLabel = barbershop.country === 'CA' || barbershop.country === 'Canada' ? 'Province' : 'State'
+      locationMissing.push(`${stateLabel} (Location Settings)`)
+    }
+    if (!barbershop.phone) locationMissing.push('Phone number (Location Settings)')
+    
+    // Combine missing items with helpful context
+    const allMissing = [...businessMissing, ...locationMissing]
+    if (allMissing.length > 0) {
+      status.business.missing = allMissing
+    }
 
     // Check services
     const { data: services } = await supabase

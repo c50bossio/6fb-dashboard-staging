@@ -22,7 +22,7 @@ export async function POST(request) {
       .eq('id', user.id)
       .single()
 
-    let barbershopId = profile?.shop_id || profile?.barbershop_id
+    let barbershopId = profile?.barbershop_id || profile?.barbershop_id
 
     if (!barbershopId) {
       // Try barbershop_staff table

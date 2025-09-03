@@ -7,16 +7,23 @@ import {
   UsersIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
-  _ExclamationCircleIcon,
+  ExclamationCircleIcon,
   ArrowTopRightOnSquareIcon,
   ArrowRightIcon,
-  ClockIcon
+  ClockIcon,
+  InformationCircleIcon,
+  DevicePhoneMobileIcon,
+  HeartIcon
 } from '@heroicons/react/24/outline'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import unifiedStripeManager from '@/lib/stripe/UnifiedStripeManager'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { getTenant } from '@/lib/tenant-resolver-client'
+import PaymentModelSelector from '@/components/payment/PaymentModelSelector'
+import BarberPaymentSetup from '@/components/payment/BarberPaymentSetup'
+import MobilePaymentManager from '@/components/payment/MobilePaymentManager'
+import AccessibilityPaymentSetup from '@/components/payment/AccessibilityPaymentSetup'
 
 export default function FinancialSetupEnhanced({ onComplete, initialData = {}, subscriptionTier = 'shop' }) {
   const [currentSection, setCurrentSection] = useState('payment')
@@ -31,8 +38,16 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
   const [payoutSettings, setPayoutSettings] = useState(null)
   const [barbershopId, setbarbershopId] = useState(null)
   
-  const _supabase = createClient()
+  // Payment model detection
+  const [barbershop, setBarbershop] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const [userRole, setUserRole] = useState(null)
+  const [isOwner, setIsOwner] = useState(false)
+  const [paymentModel, setPaymentModel] = useState('commission')
+  
+  const supabase = createClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
   
   const [formData, setFormData] = useState({
     stripeConnected: initialData.stripeConnected || false,
@@ -82,10 +97,21 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
   const sections = [
     { id: 'payment', label: 'Payment Setup', icon: CreditCardIcon },
     { id: 'banking', label: 'Bank Account', icon: BuildingLibraryIcon },
+    { id: 'mobile', label: 'Mobile Payments', icon: DevicePhoneMobileIcon },
+    { id: 'accessibility', label: 'Accessibility', icon: HeartIcon },
     { id: 'payout', label: 'Payout Model', icon: UsersIcon },
     { id: 'pricing', label: 'Service Pricing', icon: CurrencyDollarIcon },
     { id: 'business', label: 'Business Details', icon: BuildingLibraryIcon }
   ]
+
+  // Handle URL parameters to set initial section
+  useEffect(() => {
+    const step = searchParams.get('step')
+    if (step === 'financial') {
+      console.log('🔄 [Financial Setup] Setting section to banking based on URL parameter')
+      setCurrentSection('banking')
+    }
+  }, [searchParams])
 
   // Initialize barbershop ID and load unified Stripe status
   useEffect(() => {
@@ -97,11 +123,19 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, shop_id, barbershop_id, role')
           .eq('id', user.id)
           .single()
 
         if (!profile) return
+        
+        // Store profile data
+        setProfile(profile)
+        setUserRole(profile.role)
+        
+        // Check if user is owner (has shop_id)
+        const userIsOwner = !!profile.shop_id
+        setIsOwner(userIsOwner)
 
         let barbershopId
         try {
@@ -115,6 +149,18 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
         if (!barbershopId) return
 
         setbarbershopId(barbershopId)
+        
+        // Load barbershop details to get payment model
+        const { data: barbershopData } = await supabase
+          .from('barbershops')
+          .select('*')
+          .eq('id', barbershopId)
+          .single()
+        
+        if (barbershopData) {
+          setBarbershop(barbershopData)
+          setPaymentModel(barbershopData.payment_model || 'commission')
+        }
 
         // Get unified Stripe status
         const status = await unifiedStripeManager.getUnifiedStatus(barbershopId)
@@ -126,30 +172,53 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
 
         // Handle Stripe redirect completion
         const urlParams = new URLSearchParams(window.location.search)
-        const paymentComplete = urlParams.get('payment_setup_complete') === 'true'
+        const onboardingComplete = urlParams.get('onboarding') === 'complete'
+        const refreshRequest = urlParams.get('refresh') === 'true'
         
-        if (paymentComplete && status.overall_status === 'completed') {
-          setSuccess('Payment setup successfully completed!')
-          setTimeout(() => {
-            if (onComplete) {
-              onComplete({
-                ...formData,
-                stripeConnected: true,
-                stripeAccountId: status.connect_account.account_id
-              })
+        if (onboardingComplete) {
+          setSuccess('Verifying your payment setup...')
+          
+          // Give Stripe a moment to process the onboarding
+          setTimeout(async () => {
+            const freshStatus = await unifiedStripeManager.getUnifiedStatus(barbershopId, true)
+            setStripeStatus(freshStatus)
+            
+            if (freshStatus.overall_status === 'completed') {
+              setSuccess('Payment setup successfully completed!')
+              setFormData(prev => ({ ...prev, stripeConnected: true }))
+              
+              // Clean up URL
+              window.history.replaceState({}, '', window.location.pathname)
+              
+              if (onComplete) {
+                setTimeout(() => {
+                  onComplete({
+                    ...formData,
+                    stripeConnected: true,
+                    stripeAccountId: freshStatus.connect_account.account_id
+                  })
+                }, 2000)
+              }
+            } else if (freshStatus.connect_account.onboarding_completed === false) {
+              setError('Payment setup is incomplete. Please complete all required information.')
             }
           }, 2000)
+          
+        } else if (refreshRequest) {
+          // Handle refresh URL (expired link) - start onboarding again
+          setError('Your onboarding session expired. Please try again.')
+          
         } else if (status.overall_status === 'completed') {
-          setFormData(prev => ({ ...prev, stripeConnected: true }))
-          setSuccess('Payment account already connected!')
+          setFormData(prev => ({ ...prev, stripeConnected: true }));
+          setSuccess('Payment account already connected!');
         }
 
       } catch (err) {
-        console.error('Error initializing Stripe status:', err)
+        console.error('Error initializing Stripe status:', err);
       }
-    }
+    };
     
-    initializeStripeStatus()
+    initializeStripeStatus();
   }, [])
   
   // Poll for unified Stripe status updates during onboarding
@@ -375,6 +444,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
     })
   }
 
+
   const canProceed = () => {
     switch (currentSection) {
       case 'payment':
@@ -415,8 +485,111 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
     }
   }
 
+  // Handle different payment models and user roles
+  if (!barbershop) {
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading payment setup...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If barbershop doesn't have a payment model set, show selector first
+  if (!barbershop.payment_model && isOwner) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-2">Choose Your Payment Model</h2>
+          <p className="text-gray-600">
+            Select how payments will be processed at {barbershop.name}
+          </p>
+        </div>
+        <PaymentModelSelector 
+          currentModel={barbershop.payment_model}
+          onModelSelect={async (model) => {
+            // Save the selected model to database
+            const { error } = await supabase
+              .from('barbershops')
+              .update({ payment_model: model.id })
+              .eq('id', barbershopId)
+            
+            if (!error) {
+              setPaymentModel(model.id)
+              setBarbershop({ ...barbershop, payment_model: model.id })
+            }
+          }}
+        />
+      </div>
+    )
+  }
+
+  // For booth rental model and non-owner barbers
+  if (paymentModel === 'booth_rental' && !isOwner) {
+    const { data: { user } } = supabase.auth.getUser()
+    return (
+      <div className="max-w-4xl mx-auto">
+        <BarberPaymentSetup 
+          barbershopId={barbershopId}
+          barberId={user?.id}
+        />
+      </div>
+    )
+  }
+
+  // For employees in commission model
+  if (paymentModel === 'commission' && !isOwner) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex gap-3">
+            <InformationCircleIcon className="h-6 w-6 text-blue-600 flex-shrink-0" />
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-2">
+                Payment Processing Managed by Shop
+              </h3>
+              <p className="text-blue-800 mb-3">
+                {barbershop.name} uses a commission-based payment model. 
+                All payments are processed through the shop's account.
+              </p>
+              <p className="text-sm text-blue-700">
+                Your earnings are calculated based on your commission rate and will be paid out according to the shop's payout schedule.
+                Contact your shop owner for details about your financial arrangement.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Default view for shop owners setting up centralized payment
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Model Indicator */}
+      {isOwner && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Payment Model</p>
+              <p className="font-semibold">
+                {paymentModel === 'commission' && 'Commission-Based (Centralized)'}
+                {paymentModel === 'booth_rental' && 'Booth Rental (Independent)'}
+                {paymentModel === 'hybrid' && 'Hybrid Model'}
+              </p>
+            </div>
+            <button
+              onClick={() => setBarbershop({ ...barbershop, payment_model: null })}
+              className="text-sm text-blue-600 hover:text-blue-700"
+            >
+              Change Model
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Section Navigation */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
@@ -537,7 +710,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
                   ))}
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  Daily deposits arrive 2 business days after payment. Weekly deposits arrive every Friday.
+                  Daily deposits arrive 2 business days after payment (T+2). This industry-standard delay ensures secure payment processing, protects against fraud, and allows time to handle any disputes. Weekly deposits arrive every Friday.
                 </p>
               </div>
 
@@ -549,8 +722,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
                   {[
                     { id: 'card', label: 'Credit/Debit Cards' },
                     { id: 'cash', label: 'Cash' },
-                    { id: 'digital', label: 'Digital Wallets' },
-                    { id: 'check', label: 'Checks' }
+                    { id: 'digital', label: 'Apple Pay / Google Pay' }
                   ].map((method) => (
                     <button
                       key={method.id}
@@ -571,7 +743,7 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
         </div>
       )}
 
-      {/* Banking Setup Section - SIMPLIFIED */}
+      {/* Banking Setup Section - WITH EMBEDDED COMPONENTS */}
       {currentSection === 'banking' && (
         <div className="space-y-6 animate-fadeIn">
           <div>
@@ -702,6 +874,26 @@ export default function FinancialSetupEnhanced({ onComplete, initialData = {}, s
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Mobile Payment Section */}
+      {currentSection === 'mobile' && (
+        <div className="space-y-6 animate-fadeIn">
+          <MobilePaymentManager 
+            barberId={userRole && userRole !== 'SHOP_OWNER' ? profile?.id : null}
+            barbershopId={barbershopId} 
+          />
+        </div>
+      )}
+
+      {/* Accessibility Payment Section */}
+      {currentSection === 'accessibility' && (
+        <div className="space-y-6 animate-fadeIn">
+          <AccessibilityPaymentSetup 
+            barbershopId={barbershopId}
+            userRole={userRole}
+          />
         </div>
       )}
 

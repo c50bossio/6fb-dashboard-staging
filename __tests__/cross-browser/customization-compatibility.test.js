@@ -13,17 +13,17 @@ const testProfiles = {
   barber: {
     role: 'BARBER',
     full_name: 'John Smith',
-    shop_id: 'test-shop-1'
+    barbershop_id: 'test-shop-1'
   },
   shop_owner: {
     role: 'SHOP_OWNER',
     full_name: 'Sarah Johnson',
-    shop_id: 'test-shop-2'
+    barbershop_id: 'test-shop-2'
   },
   enterprise_owner: {
     role: 'ENTERPRISE_OWNER',
     full_name: 'Michael Brown',
-    shop_id: 'test-shop-3'
+    barbershop_id: 'test-shop-3'
   }
 }
 

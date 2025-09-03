@@ -326,7 +326,7 @@ export async function POST(request) {
     if (barbershopId) {
       // Update both fields to ensure compatibility
       profileUpdateData.barbershop_id = barbershopId
-      profileUpdateData.shop_id = barbershopId
+      profileUpdateData.barbershop_id = barbershopId
     }
     
     // First, check current profile state

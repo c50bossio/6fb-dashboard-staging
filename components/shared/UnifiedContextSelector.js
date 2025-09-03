@@ -9,52 +9,51 @@ import {
   CalendarDaysIcon,
   CheckIcon,
   ClockIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  MapPinIcon
 } from '@heroicons/react/24/outline'
 import { Fragment, useState } from 'react'
-import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
+import { useUnifiedContext, UNIFIED_CONTEXT_LEVELS } from '../../contexts/UnifiedContextProvider'
 
 export default function UnifiedContextSelector({ 
-  showQuickActions = true,
-  quickActions = null,
   className = "",
-  size = "default" // "compact" | "default" | "large"
+  size = "default", // "compact" | "default" | "large"
+  showBreadcrumb = false
 }) {
   const { 
-    activeContext,
+    context,
     availableContexts,
-    contextLoading,
-    switchContext,
-    getPageDefaults
-  } = useGlobalDashboard()
+    loading,
+    setContext
+  } = useUnifiedContext()
   
   const [searchTerm, setSearchTerm] = useState('')
   
   // Filter contexts by search term
-  const filteredContexts = availableContexts.filter(context =>
-    context.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    context.locationAddress?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredContexts = availableContexts.filter(contextItem =>
+    contextItem.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contextItem.metadata?.locationName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contextItem.metadata?.organizationName?.toLowerCase().includes(searchTerm.toLowerCase())
   )
   
-  // Group contexts by location for better organization
-  const groupedContexts = filteredContexts.reduce((groups, context) => {
-    const locationKey = context.locationName
-    if (!groups[locationKey]) {
-      groups[locationKey] = []
+  // Group contexts by level for better organization
+  const groupedContexts = filteredContexts.reduce((groups, contextItem) => {
+    const levelKey = contextItem.level
+    if (!groups[levelKey]) {
+      groups[levelKey] = []
     }
-    groups[locationKey].push(context)
+    groups[levelKey].push(contextItem)
     return groups
   }, {})
   
-  // Get icon for context type
-  const getContextIcon = (contextType) => {
+  // Get icon for context level
+  const getContextIcon = (contextLevel) => {
     const iconMap = {
-      'executive': ChartBarIcon,
-      'manager': BuildingOfficeIcon,
-      'personal': UserIcon,
-      'booking': CalendarDaysIcon
+      [UNIFIED_CONTEXT_LEVELS.ORGANIZATION]: BuildingOfficeIcon,
+      [UNIFIED_CONTEXT_LEVELS.LOCATION]: MapPinIcon,
+      [UNIFIED_CONTEXT_LEVELS.RESOURCE]: UserIcon
     }
-    return iconMap[contextType] || CalendarDaysIcon
+    return iconMap[contextLevel] || CalendarDaysIcon
   }
   
   // Size variants
@@ -64,24 +63,38 @@ export default function UnifiedContextSelector({
     large: "text-base px-5 py-3"
   }
   
-  const currentDisplayName = activeContext?.displayName || 'Select Context'
-  const CurrentIcon = activeContext ? getContextIcon(activeContext.contextType) : CalendarDaysIcon
+  const currentDisplayName = context?.displayName || 'Select Context'
+  const CurrentIcon = context ? getContextIcon(context.level) : CalendarDaysIcon
+  
+  // Get level display name
+  const getLevelDisplayName = (level) => {
+    switch (level) {
+      case UNIFIED_CONTEXT_LEVELS.ORGANIZATION:
+        return 'Organizations'
+      case UNIFIED_CONTEXT_LEVELS.LOCATION:
+        return 'Locations'
+      case UNIFIED_CONTEXT_LEVELS.RESOURCE:
+        return 'Resources'
+      default:
+        return 'Contexts'
+    }
+  }
   
   return (
-    <div className={`flex items-center space-x-3 ${className}`}>
+    <div className={`${className}`}>
       {/* Main Context Selector */}
-      <Menu as="div" className="relative inline-block text-left">
+      <Menu as="div" className="relative inline-block text-left w-full">
         <div>
           <Menu.Button 
-            className={`inline-flex w-full justify-between items-center rounded-lg bg-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-olive-500 transition-colors ${sizeClasses[size]} ${contextLoading ? 'opacity-50 cursor-wait' : ''}`}
-            disabled={contextLoading}
+            className={`inline-flex w-full justify-between items-center rounded-lg bg-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-olive-500 transition-colors ${sizeClasses[size]} ${loading ? 'opacity-50 cursor-wait' : ''}`}
+            disabled={loading}
           >
             <div className="flex items-center space-x-2 flex-1 min-w-0">
               <CurrentIcon className="h-4 w-4 text-gray-500 flex-shrink-0" />
               <span className="font-medium text-gray-900 truncate">
                 {currentDisplayName}
               </span>
-              {contextLoading && (
+              {loading && (
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-olive-600 ml-2"></div>
               )}
             </div>
@@ -116,64 +129,86 @@ export default function UnifiedContextSelector({
                 </div>
               )}
               
-              {/* Context Groups */}
+              {/* Context Groups by Level */}
               <div className="max-h-80 overflow-y-auto">
-                {Object.entries(groupedContexts).map(([locationName, contexts], locationIdx) => (
-                  <div key={locationName}>
-                    {locationIdx > 0 && <div className="border-t border-gray-100 my-1" />}
-                    
-                    {/* Location Header */}
-                    {Object.keys(groupedContexts).length > 1 && (
+                {[UNIFIED_CONTEXT_LEVELS.ORGANIZATION, UNIFIED_CONTEXT_LEVELS.LOCATION, UNIFIED_CONTEXT_LEVELS.RESOURCE].map((level, levelIdx) => {
+                  const contextsForLevel = groupedContexts[level]
+                  if (!contextsForLevel || contextsForLevel.length === 0) return null
+                  
+                  return (
+                    <div key={level}>
+                      {levelIdx > 0 && <div className="border-t border-gray-100 my-1" />}
+                      
+                      {/* Level Header */}
                       <div className="px-3 py-2 bg-gray-50">
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          📍 {locationName}
+                          {getLevelDisplayName(level)}
                         </p>
                       </div>
-                    )}
-                    
-                    {/* Context Options for this location */}
-                    {contexts.map((context) => {
-                      const ContextIcon = getContextIcon(context.contextType)
-                      const isActive = activeContext?.id === context.id
                       
-                      return (
-                        <Menu.Item key={context.id}>
-                          {({ active }) => (
-                            <button
-                              onClick={() => switchContext(context)}
-                              disabled={contextLoading}
-                              className={`
-                                ${active ? 'bg-olive-50 text-olive-900' : 'text-gray-700'}
-                                ${isActive ? 'bg-olive-100 text-olive-900' : ''}
-                                ${contextLoading ? 'opacity-50 cursor-wait' : ''}
-                                group flex items-center w-full px-3 py-2 text-sm hover:bg-olive-50 transition-colors
-                              `}
-                            >
-                              <ContextIcon className="mr-3 h-4 w-4 text-gray-500 group-hover:text-olive-500" />
-                              <div className="flex-1 text-left">
-                                <div className="font-medium">
-                                  {context.contextType === 'executive' && '📊 '}
-                                  {context.contextType === 'manager' && '🏪 '}
-                                  {context.contextType === 'personal' && '👤 '}
-                                  {context.contextType === 'booking' && '📅 '}
-                                  {context.displayName.split(' - ')[1] || context.displayName}
-                                </div>
-                                {context.locationAddress && (
-                                  <div className="text-xs text-gray-500">
-                                    {context.locationAddress}
+                      {/* Context Options for this level */}
+                      {contextsForLevel.map((contextItem) => {
+                        const ContextIcon = getContextIcon(contextItem.level)
+                        const isActive = context && 
+                          context.level === contextItem.level &&
+                          context.organizationId === contextItem.organizationId &&
+                          context.locationId === contextItem.locationId &&
+                          context.resourceId === contextItem.resourceId
+                        
+                        return (
+                          <Menu.Item key={`${contextItem.level}-${contextItem.organizationId || 'none'}-${contextItem.locationId || 'none'}-${contextItem.resourceId || 'none'}`}>
+                            {({ active }) => (
+                              <button
+                                onClick={() => setContext(contextItem)}
+                                disabled={loading}
+                                className={`
+                                  ${active ? 'bg-olive-50 text-olive-900' : 'text-gray-700'}
+                                  ${isActive ? 'bg-olive-100 text-olive-900 border-l-2 border-olive-500' : ''}
+                                  ${loading ? 'opacity-50 cursor-wait' : ''}
+                                  group flex items-center w-full py-2 text-sm hover:bg-olive-50 transition-colors
+                                  ${contextItem.level === UNIFIED_CONTEXT_LEVELS.ORGANIZATION ? 'pl-3' : ''}
+                                  ${contextItem.level === UNIFIED_CONTEXT_LEVELS.LOCATION ? 'pl-6' : ''}
+                                  ${contextItem.level === UNIFIED_CONTEXT_LEVELS.RESOURCE ? 'pl-9' : ''}
+                                `}
+                              >
+                                <ContextIcon className="mr-3 h-4 w-4 text-gray-500 group-hover:text-olive-500 flex-shrink-0" />
+                                <div className="flex-1 text-left min-w-0">
+                                  <div className={`truncate ${contextItem.level === UNIFIED_CONTEXT_LEVELS.ORGANIZATION ? 'font-semibold' : 'font-medium'}`}>
+                                    {contextItem.level === UNIFIED_CONTEXT_LEVELS.ORGANIZATION && '🏢 '}
+                                    {contextItem.level === UNIFIED_CONTEXT_LEVELS.LOCATION && '📍 '}
+                                    {contextItem.level === UNIFIED_CONTEXT_LEVELS.RESOURCE && '👤 '}
+                                    {contextItem.displayName}
                                   </div>
+                                  
+                                  {/* Show parent context for nested levels */}
+                                  {contextItem.level === UNIFIED_CONTEXT_LEVELS.LOCATION && contextItem.metadata?.organizationName && (
+                                    <div className="text-xs text-gray-500 truncate">
+                                      under {contextItem.metadata.organizationName}
+                                    </div>
+                                  )}
+                                  {contextItem.level === UNIFIED_CONTEXT_LEVELS.RESOURCE && contextItem.metadata?.locationName && (
+                                    <div className="text-xs text-gray-500 truncate">
+                                      at {contextItem.metadata.locationName}
+                                    </div>
+                                  )}
+                                  
+                                  {contextItem.metadata?.fallback && (
+                                    <div className="text-xs text-amber-600">
+                                      (Setup in progress)
+                                    </div>
+                                  )}
+                                </div>
+                                {isActive && (
+                                  <CheckIcon className="ml-2 h-4 w-4 text-olive-600 flex-shrink-0" />
                                 )}
-                              </div>
-                              {isActive && (
-                                <CheckIcon className="ml-2 h-4 w-4 text-olive-600" />
-                              )}
-                            </button>
-                          )}
-                        </Menu.Item>
-                      )
-                    })}
-                  </div>
-                ))}
+                              </button>
+                            )}
+                          </Menu.Item>
+                        )
+                      })}
+                    </div>
+                  )
+                })}
                 
                 {filteredContexts.length === 0 && (
                   <div className="px-3 py-4 text-center text-gray-500">
@@ -195,79 +230,10 @@ export default function UnifiedContextSelector({
         </Transition>
       </Menu>
       
-      {/* Quick Actions */}
-      {showQuickActions && activeContext && (
-        <div className="hidden md:flex items-center space-x-2">
-          {(quickActions || getPageDefaults('calendar')?.quickActions || []).slice(0, 3).map((action, index) => (
-            <button
-              key={index}
-              className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-olive-500 transition-colors"
-            >
-              {action === 'Today' && <ClockIcon className="w-3 h-3 mr-1" />}
-              {action}
-            </button>
-          ))}
-          
-          {/* More Options */}
-          <Menu as="div" className="relative inline-block">
-            <Menu.Button className="inline-flex items-center px-2 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 focus:outline-none">
-              <span className="sr-only">More options</span>
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-              </svg>
-            </Menu.Button>
-            
-            <Transition
-              as={Fragment}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-95"
-              enterTo="transform opacity-100 scale-100"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100"
-              leaveTo="transform opacity-0 scale-95"
-            >
-              <Menu.Items className="absolute right-0 z-50 mt-1 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                <div className="py-1">
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className={`${active ? 'bg-gray-50' : ''} flex w-full items-center px-4 py-2 text-sm text-gray-700`}
-                      >
-                        🔍 Advanced Search & Filters
-                      </button>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className={`${active ? 'bg-gray-50' : ''} flex w-full items-center px-4 py-2 text-sm text-gray-700`}
-                      >
-                        📊 Custom Reports
-                      </button>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className={`${active ? 'bg-gray-50' : ''} flex w-full items-center px-4 py-2 text-sm text-gray-700`}
-                      >
-                        📤 Export Data
-                      </button>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <button
-                        className={`${active ? 'bg-gray-50' : ''} flex w-full items-center px-4 py-2 text-sm text-gray-700`}
-                      >
-                        ⚙️ Page Settings
-                      </button>
-                    )}
-                  </Menu.Item>
-                </div>
-              </Menu.Items>
-            </Transition>
-          </Menu>
+      {/* Optional Breadcrumb */}
+      {showBreadcrumb && context && (
+        <div className="mt-2">
+          <ContextBreadcrumb context={context} />
         </div>
       )}
     </div>
@@ -295,18 +261,71 @@ export function ContextSelectorSkeleton({ size = "default" }) {
   )
 }
 
+// Context breadcrumb component to show hierarchy path
+export function ContextBreadcrumb({ context, className = "" }) {
+  if (!context) return null
+  
+  const getBreadcrumbPath = () => {
+    const parts = []
+    
+    if (context.metadata?.organizationName) {
+      parts.push({
+        label: context.metadata.organizationName,
+        icon: '🏢',
+        level: 'organization'
+      })
+    }
+    
+    if (context.metadata?.locationName && context.level !== UNIFIED_CONTEXT_LEVELS.ORGANIZATION) {
+      parts.push({
+        label: context.metadata.locationName,
+        icon: '📍',
+        level: 'location'
+      })
+    }
+    
+    if (context.level === UNIFIED_CONTEXT_LEVELS.RESOURCE) {
+      parts.push({
+        label: context.displayName,
+        icon: '👤',
+        level: 'resource'
+      })
+    }
+    
+    return parts
+  }
+  
+  const breadcrumbs = getBreadcrumbPath()
+  
+  if (breadcrumbs.length === 0) return null
+  
+  return (
+    <div className={`text-xs text-gray-600 ${className}`}>
+      {breadcrumbs.map((crumb, index) => (
+        <span key={index}>
+          {index > 0 && <span className="mx-1 text-gray-400">→</span>}
+          <span className="inline-flex items-center">
+            <span className="mr-1">{crumb.icon}</span>
+            <span className="font-medium">{crumb.label}</span>
+          </span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 // Context indicator for mobile
 export function MobileContextIndicator() {
-  const { activeContext } = useGlobalDashboard()
+  const { context } = useUnifiedContext()
   
-  if (!activeContext) return null
+  if (!context) return null
   
   return (
     <div className="md:hidden px-4 py-2 bg-olive-50 border-b border-olive-100">
       <div className="flex items-center space-x-2">
         <div className="w-2 h-2 bg-olive-500 rounded-full"></div>
         <span className="text-sm font-medium text-olive-800 truncate">
-          {activeContext.displayName}
+          {context.displayName}
         </span>
       </div>
     </div>

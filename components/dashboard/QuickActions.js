@@ -49,6 +49,15 @@ export default function QuickActions({ profile }) {
       badgeVariant: 'solid-purple'
     },
     {
+      title: 'Check-In Customer',
+      description: 'Mark customer as arrived for their appointment',
+      href: '/dashboard/checkin',
+      icon: UserGroupIcon,
+      color: 'green',
+      badge: 'Quick Action',
+      badgeVariant: 'success'
+    },
+    {
       title: 'View Analytics',
       description: 'Check your business performance and insights',
       href: '/dashboard?mode=analytics',
@@ -63,7 +72,7 @@ export default function QuickActions({ profile }) {
       href: '/dashboard/bookings',
       icon: CalendarDaysIcon,
       color: 'green',
-      badge: '12 Today',
+      badge: 'Today',
       badgeVariant: 'success'
     }
   ]

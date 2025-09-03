@@ -48,6 +48,22 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
     user: dict
 
+class OrganizationCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    website: Optional[str] = None
+    headquarters_address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+
+class OrganizationUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    website: Optional[str] = None
+    headquarters_address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+
 # Authentication dependency
 async def get_current_user(authorization: Optional[str] = Header(None)):
     """Verify JWT token and return current user"""
@@ -100,6 +116,56 @@ async def health():
             "error": str(e),
             "timestamp": datetime.now().isoformat()
         }
+
+@app.get("/api/v1/ai/predictive")
+async def get_predictive_analytics(
+    user_id: str,
+    forecast_type: str = "comprehensive", 
+    time_horizon: str = "weekly",
+    barbershop_id: str = "default"
+):
+    """Get predictive analytics forecasts - Mock endpoint for frontend compatibility"""
+    try:
+        # Mock predictive analytics data for now to prevent 404 errors
+        mock_analytics = {
+            "user_id": user_id,
+            "barbershop_id": barbershop_id,
+            "forecast_type": forecast_type,
+            "time_horizon": time_horizon,
+            "predictions": {
+                "revenue_forecast": {
+                    "next_week": 2500,
+                    "next_month": 10000,
+                    "confidence": 0.85
+                },
+                "booking_trends": {
+                    "growth_rate": 0.15,
+                    "peak_hours": ["10:00", "14:00", "16:00"]
+                },
+                "customer_insights": {
+                    "retention_rate": 0.78,
+                    "new_customers": 25,
+                    "returning_customers": 75
+                }
+            },
+            "recommendations": [
+                "Consider adding more availability during peak hours",
+                "Focus on customer retention programs",
+                "Optimize pricing for high-demand services"
+            ],
+            "generated_at": datetime.now().isoformat()
+        }
+        
+        return {
+            "success": True,
+            "data": mock_analytics,
+            "message": "Mock predictive analytics data"
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Predictive analytics error: {str(e)}"
+        )
 
 @app.post("/api/v1/auth/signup", response_model=TokenResponse)
 async def signup(user_data: UserSignup):
@@ -217,6 +283,172 @@ async def get_me(current_user=Depends(get_current_user)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get user profile: {str(e)}"
+        )
+
+# ==========================================
+# ORGANIZATION MANAGEMENT ENDPOINTS
+# ==========================================
+
+@app.post("/api/organizations")
+async def create_organization(
+    org_data: OrganizationCreate,
+    current_user=Depends(get_current_user)
+):
+    """Create a new organization"""
+    try:
+        # Prepare organization data
+        organization = {
+            "name": org_data.name,
+            "description": org_data.description,
+            "website": org_data.website,
+            "headquarters_address": org_data.headquarters_address,
+            "phone": org_data.phone,
+            "email": org_data.email,
+            "owner_id": current_user.user.id,
+            "is_active": True,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+        
+        # Insert into Supabase
+        result = supabase.table("organizations").insert(organization).execute()
+        
+        if result.data:
+            return {
+                "success": True,
+                "message": "Organization created successfully",
+                "data": result.data[0]
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to create organization"
+            )
+            
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create organization: {str(e)}"
+        )
+
+@app.get("/api/organizations")
+async def get_organizations(current_user=Depends(get_current_user)):
+    """Get all organizations for the current user"""
+    try:
+        # Get organizations where user is owner
+        result = supabase.table("organizations").select("*").eq("owner_id", current_user.user.id).eq("is_active", True).execute()
+        
+        return {
+            "success": True,
+            "data": result.data or []
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get organizations: {str(e)}"
+        )
+
+@app.get("/api/organizations/{org_id}")
+async def get_organization(org_id: str, current_user=Depends(get_current_user)):
+    """Get a specific organization"""
+    try:
+        # Get organization and verify ownership
+        result = supabase.table("organizations").select("*").eq("id", org_id).eq("owner_id", current_user.user.id).single().execute()
+        
+        if result.data:
+            return {
+                "success": True,
+                "data": result.data
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Organization not found"
+            )
+            
+    except Exception as e:
+        if "not found" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Organization not found"
+            )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get organization: {str(e)}"
+        )
+
+@app.put("/api/organizations/{org_id}")
+async def update_organization(
+    org_id: str,
+    org_data: OrganizationUpdate,
+    current_user=Depends(get_current_user)
+):
+    """Update an organization"""
+    try:
+        # Verify ownership first
+        existing = supabase.table("organizations").select("*").eq("id", org_id).eq("owner_id", current_user.user.id).single().execute()
+        
+        if not existing.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Organization not found"
+            )
+        
+        # Prepare update data (only non-None fields)
+        update_data = {k: v for k, v in org_data.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.now().isoformat()
+        
+        # Update in Supabase
+        result = supabase.table("organizations").update(update_data).eq("id", org_id).execute()
+        
+        if result.data:
+            return {
+                "success": True,
+                "message": "Organization updated successfully",
+                "data": result.data[0]
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update organization"
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update organization: {str(e)}"
+        )
+
+@app.delete("/api/organizations/{org_id}")
+async def delete_organization(org_id: str, current_user=Depends(get_current_user)):
+    """Delete an organization (soft delete)"""
+    try:
+        # Verify ownership and update to inactive
+        result = supabase.table("organizations").update({
+            "is_active": False,
+            "updated_at": datetime.now().isoformat()
+        }).eq("id", org_id).eq("owner_id", current_user.user.id).execute()
+        
+        if result.data:
+            return {
+                "success": True,
+                "message": "Organization deleted successfully"
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Organization not found"
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete organization: {str(e)}"
         )
 
 # ==========================================

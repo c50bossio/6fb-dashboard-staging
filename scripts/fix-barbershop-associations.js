@@ -125,18 +125,18 @@ async function fixBarbershopAssociations() {
           // Try to find a barber record by email
           const { data: barberRecord } = await supabase
             .from('barbers')
-            .select('shop_id, name')
+            .select('barbershop_id, name')
             .eq('email', user.email)
             .maybeSingle()
           
-          if (barberRecord && barberRecord.shop_id) {
+          if (barberRecord && barberRecord.barbershop_id) {
             // Create staff link
             
             await supabase
               .from('barbershop_staff')
               .upsert({
                 user_id: user.id,
-                barbershop_id: barberRecord.shop_id,
+                barbershop_id: barberRecord.barbershop_id,
                 role: 'BARBER',
                 is_active: true,
                 hire_date: new Date().toISOString().split('T')[0]

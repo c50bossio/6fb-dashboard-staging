@@ -77,7 +77,7 @@ const MockAuthProvider = ({ children, user = null, profile = null }) => {
     profile: profile || {
       id: 'test-profile-id',
       role: 'SHOP_OWNER',
-      shop_id: 'test-shop-id',
+      barbershop_id: 'test-shop-id',
       full_name: 'Test User',
     },
     loading: false,
@@ -102,7 +102,7 @@ export const createTestProfile = (overrides = {}) => ({
   id: 'test-profile-id',
   user_id: 'test-user-id',
   role: 'SHOP_OWNER',
-  shop_id: 'test-shop-id',
+  barbershop_id: 'test-shop-id',
   full_name: 'Test User',
   phone: '+1234567890',
   bio: 'Test bio',

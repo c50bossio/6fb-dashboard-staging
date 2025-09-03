@@ -101,24 +101,10 @@ export default function ServiceWorkerProvider({ children }) {
   }, [])
 
   function showInstallPromotion(prompt) {
-    toast({
-      title: "Install App",
-      description: "Install 6FB Agent for a better experience",
-      action: (
-        <button
-          onClick={async () => {
-            prompt.prompt()
-            const { outcome } = await prompt.userChoice
-            if (outcome === 'accepted') {
-            }
-          }}
-          className="text-sm font-medium underline"
-        >
-          Install
-        </button>
-      ),
-      duration: 15000
-    })
+    // PWA install prompt disabled as requested by user
+    // This prevents the "Install App" notification from appearing
+    console.log('[ServiceWorkerProvider] PWA install prompt suppressed')
+    return
   }
 
   return (

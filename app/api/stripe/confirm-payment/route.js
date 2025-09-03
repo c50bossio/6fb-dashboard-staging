@@ -2,17 +2,19 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 
+// Email service implemented below - see sendBookingConfirmationEmail function
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16',
 })
 
 export async function POST(request) {
   try {
-    const { paymentIntentId, bookingId } = await request.json()
+    const { paymentIntentId, appointmentId } = await request.json()
     
-    if (!paymentIntentId || !bookingId) {
+    if (!paymentIntentId || !appointmentId) {
       return NextResponse.json(
-        { error: 'Missing payment intent ID or booking ID' },
+        { error: 'Missing payment intent ID or appointment ID' },
         { status: 400 }
       )
     }
@@ -53,36 +55,24 @@ export async function POST(request) {
       }
     }
 
-    // Get current booking to preserve existing notes
-    const { data: currentBooking } = await supabase
-      .from('bookings')
-      .select('notes')
-      .eq('id', bookingId)
-      .single()
-
-    // Combine existing notes with payment metadata
-    let updatedNotes = currentBooking?.notes || ''
-    if (updatedNotes.trim()) {
-      updatedNotes += '\n\n'
-    }
-    updatedNotes += `PAYMENT_METADATA: ${JSON.stringify(paymentMetadata)}`
-
-    // Update booking with payment information
-    const { data: booking, error: bookingError } = await supabase
-      .from('bookings')
+    // Update appointment with proper payment fields (no longer storing in notes)
+    const { data: appointment, error: appointmentError } = await supabase
+      .from('appointments')
       .update({
-        status: 'confirmed',
-        notes: updatedNotes,
+        payment_intent_id: paymentIntentId,
+        payment_status: 'completed',
+        amount_paid_cents: Math.round(paymentAmount * 100), // Convert to cents
+        status: 'CONFIRMED',
         updated_at: new Date().toISOString()
       })
-      .eq('id', bookingId)
+      .eq('id', appointmentId)
       .select()
       .single()
 
-    if (bookingError) {
-      console.error('Error updating booking:', bookingError)
+    if (appointmentError) {
+      console.error('Error updating appointment:', appointmentError)
       return NextResponse.json(
-        { error: 'Failed to update booking status' },
+        { error: 'Failed to update appointment status' },
         { status: 500 }
       )
     }
@@ -90,7 +80,7 @@ export async function POST(request) {
     // Send confirmation email (we'll implement this in the next step)
     try {
       await sendBookingConfirmationEmail({
-        booking,
+        appointment,
         customerEmail: metadata.customer_email,
         customerName: metadata.customer_name,
         amountPaid: paymentAmount,
@@ -104,9 +94,9 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      booking: {
-        id: booking.id,
-        status: booking.status,
+      appointment: {
+        id: appointment.id,
+        status: appointment.status,
         paymentStatus: 'completed',
         amountPaid: paymentAmount,
         remainingAmount: remainingAmount,

@@ -8,18 +8,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useContext } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-// Try to import auth context - will work in dev mode
-let AuthContext
-try {
-  AuthContext = require('react').createContext({})
-  // In development, look for DevAuthProvider context
-  if (typeof window !== 'undefined') {
-    const authProviders = ['SupabaseAuthProvider', 'DevAuthProvider']
-    // This will be resolved by the auth provider context
-  }
-} catch (e) {
-  // Fallback if no auth context available
-}
+// Import auth context
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 // Adapter functions
 const getCurrentUser = async (authUser = null) => {
@@ -34,7 +24,7 @@ const getCurrentUser = async (authUser = null) => {
   // If no user from Supabase and we're in development, return mock dev user
   if (!user && process.env.NODE_ENV === 'development') {
     return {
-      id: 'dev-user-123',
+      id: '123e4567-e89b-12d3-a456-426614174000',
       email: 'dev@6fb.local',
       user_metadata: { full_name: 'Development User' }
     }
@@ -59,11 +49,24 @@ export function useBusinessContext() {
   const businessContextStart = performance.now()
   
   const queryClient = useQueryClient()
+  
+  // Get auth context from SupabaseAuthProvider
+  const authContext = useAuth()
+  const authUser = authContext?.user
+  
+  // Only log in debug mode to reduce console noise
+  if (process.env.NEXT_PUBLIC_DEBUG_BUSINESS_CONTEXT === 'true') {
+    console.log('🔍 useBusinessContext auth context:', {
+      hasAuthUser: !!authUser,
+      authUserId: authUser?.id,
+      authEmail: authUser?.email
+    })
+  }
 
   // Get current authenticated user
   const userQuery = useQuery({
     queryKey: businessContextKeys.currentUser,
-    queryFn: getCurrentUser,
+    queryFn: () => getCurrentUser(authUser),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,
   })
@@ -76,34 +79,61 @@ export function useBusinessContext() {
     queryFn: async () => {
       if (!userId) return null
       
-      const client = getSupabaseClient()
-      if (!client) throw new Error('Supabase client not available')
+      if (process.env.NEXT_PUBLIC_DEBUG_BUSINESS_CONTEXT === 'true') {
+        console.log('🔍 Profile API query starting for userId:', userId)
+      }
       
-      const { data, error } = await client
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-      
-      if (error) {
-        // In development, if the profile doesn't exist, return mock profile
-        if (process.env.NODE_ENV === 'development' && userId === 'dev-user-123') {
-          return {
-            id: 'dev-user-123',
-            email: 'dev@6fb.local',
-            full_name: 'Development User',
-            subscription_tier: 'pro',
-            subscription_status: 'active',
-            role: 'SHOP_OWNER',
-            barbershop_id: 'dev-shop-123'
+      try {
+        // Use our new API endpoint instead of direct Supabase query
+        const response = await fetch(`/api/profile/${userId}`)
+        
+        if (!response.ok) {
+          if (process.env.NEXT_PUBLIC_DEBUG_BUSINESS_CONTEXT === 'true') {
+            console.log('⚠️ Profile API response not ok:', response.status, response.statusText)
           }
+          
+          // No hardcoded fallbacks - let 404 errors propagate properly
+          
+          // In development, provide mock profile for dev user
+          if (response.status === 404 && process.env.NODE_ENV === 'development' && userId === '123e4567-e89b-12d3-a456-426614174000') {
+            return {
+              id: '123e4567-e89b-12d3-a456-426614174000',
+              email: 'dev@6fb.local',
+              full_name: 'Development User',
+              subscription_tier: 'pro',
+              subscription_status: 'active',
+              role: 'SHOP_OWNER',
+              barbershop_id: 'b1234567-89ab-cdef-0123-456789abcdef'
+            }
+          }
+          
+          throw new Error(`Profile API error: ${response.status}`)
         }
+        
+        const result = await response.json()
+        if (process.env.NEXT_PUBLIC_DEBUG_BUSINESS_CONTEXT === 'true') {
+          console.log('✅ Profile API query successful:', {
+            userId,
+            hasProfile: !!result.profile,
+            role: result.profile?.role,
+            barbershop_id: result.profile?.barbershop_id
+          })
+        }
+        
+        return result.profile
+        
+      } catch (error) {
+        if (process.env.NEXT_PUBLIC_DEBUG_BUSINESS_CONTEXT === 'true') {
+          console.error('💥 Profile API query failed:', error)
+        }
+        
+        // No hardcoded fallbacks - let errors propagate properly
+        
         throw error
       }
-      return data
     },
     enabled: !!userId,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 15 * 60 * 1000, // 15 minutes (profile data changes infrequently)
   })
 
   // Get user's shop ID and role
@@ -139,7 +169,7 @@ export function useBusinessContext() {
         } else {
           // Check if user is staff based on their profile role
           // Skip barbershop_staff table query to avoid 406 errors
-          if (process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true' && userId === 'dev-user-123') {
+          if (process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true' && userId === '123e4567-e89b-12d3-a456-426614174000') {
             role = 'SHOP_OWNER'
             permissions = ['manage_shop', 'manage_staff', 'view_analytics', 'manage_appointments']
           } else {
@@ -148,7 +178,11 @@ export function useBusinessContext() {
             role = profile?.role || 'BARBER'
             
             // Set permissions based on role
-            if (role === 'BARBER' || role === 'STAFF') {
+            if (role === 'ENTERPRISE_OWNER' || role === 'SUPER_ADMIN') {
+              permissions = ['manage_shop', 'manage_staff', 'view_analytics', 'manage_appointments']
+            } else if (role === 'SHOP_OWNER') {
+              permissions = ['manage_shop', 'manage_staff', 'view_analytics', 'manage_appointments']
+            } else if (role === 'BARBER' || role === 'STAFF') {
               permissions = ['manage_appointments', 'view_customers']
             } else if (role === 'MANAGER') {
               permissions = ['manage_appointments', 'view_customers', 'view_analytics']
@@ -171,7 +205,7 @@ export function useBusinessContext() {
       return result
     },
     enabled: !!userId && !!profileQuery.data,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 15 * 60 * 1000, // 15 minutes (profile data changes infrequently)
   })
 
   // Update service context when user changes
@@ -259,6 +293,12 @@ export function useBusinessContext() {
     permissions: businessContext?.permissions || [],
     isOwner: businessContext?.isOwner || false,
     isStaff: businessContext?.isStaff || false,
+    
+    // Permission functions - expose at top level for component destructuring
+    canManageStaff: businessContext?.canManageStaff() || false,
+    canManageShop: businessContext?.canManageShop() || false,
+    canViewAnalytics: businessContext?.canViewAnalytics() || false,
+    canManageAppointments: businessContext?.canManageAppointments() || false,
     
     // Actions
     refresh,

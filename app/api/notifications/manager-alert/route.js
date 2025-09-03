@@ -75,7 +75,7 @@ export async function POST(request) {
     if (client_id) {
       const { data: client } = await supabase
         .from('customers')
-        .select('name, email, phone, created_at')
+        .select('full_name, email, phone, created_at')
         .eq('id', client_id)
         .single()
       clientInfo = client
@@ -231,7 +231,7 @@ export async function GET(request) {
       .from('manager_alerts')
       .select(`
         *,
-        customers(name, email),
+        customers(full_name, email),
         profiles:triggered_by(full_name)
       `)
       .eq('barbershop_id', barbershopId)
@@ -468,11 +468,11 @@ async function sendSMSNotification({ manager, alert, clientInfo, barbershopId })
  */
 function generateEmailSubject(alert, clientInfo) {
   const subjects = {
-    payment_failure: `Payment Collection Failed - ${clientInfo?.name || 'Client'}`,
-    high_risk_booking: `High Risk Booking Alert - ${clientInfo?.name || 'Client'}`,
-    repeated_no_shows: `Repeated No-Shows Alert - ${clientInfo?.name || 'Client'}`,
-    recovery_denial: `Client Recovery Denied - ${clientInfo?.name || 'Client'}`,
-    strike_threshold: `Strike Threshold Reached - ${clientInfo?.name || 'Client'}`
+    payment_failure: `Payment Collection Failed - ${clientInfo?.full_name || 'Client'}`,
+    high_risk_booking: `High Risk Booking Alert - ${clientInfo?.full_name || 'Client'}`,
+    repeated_no_shows: `Repeated No-Shows Alert - ${clientInfo?.full_name || 'Client'}`,
+    recovery_denial: `Client Recovery Denied - ${clientInfo?.full_name || 'Client'}`,
+    strike_threshold: `Strike Threshold Reached - ${clientInfo?.full_name || 'Client'}`
   }
   return subjects[alert.alert_type] || `Manager Alert - ${alert.alert_type}`
 }
@@ -489,7 +489,7 @@ function generateNotificationTitle(alert, clientInfo) {
 }
 
 function generateNotificationMessage(alert, clientInfo) {
-  const clientName = clientInfo?.name || 'Client'
+  const clientName = clientInfo?.full_name || 'Client'
   
   const messages = {
     payment_failure: `Failed to collect payment from ${clientName}. Manual intervention may be required.`,
@@ -503,7 +503,7 @@ function generateNotificationMessage(alert, clientInfo) {
 }
 
 function generateSMSMessage(alert, clientInfo) {
-  const clientName = clientInfo?.name || 'Client'
+  const clientName = clientInfo?.full_name || 'Client'
   return `BookedBarber Alert: ${alert.alert_type} for ${clientName}. Check dashboard for details.`
 }
 

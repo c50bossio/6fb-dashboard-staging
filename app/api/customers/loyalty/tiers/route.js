@@ -698,7 +698,7 @@ async function getCustomerAnalytics(customerId, barbershopId) {
     // Get basic customer stats from appointments and transactions
     const { data: appointments, error: apptError } = await supabase
       .from('appointments')
-      .select('total_amount, status, appointment_date')
+      .select('total_amount, status, start_time')
       .eq('customer_id', customerId)
       .eq('status', 'completed');
 
@@ -719,7 +719,7 @@ async function getCustomerAnalytics(customerId, barbershopId) {
     // Calculate days since last visit
     let lastVisitDaysAgo = null;
     if (appointments && appointments.length > 0) {
-      const lastVisit = new Date(Math.max(...appointments.map(apt => new Date(apt.appointment_date))));
+      const lastVisit = new Date(Math.max(...appointments.map(apt => new Date(apt.date || apt.scheduled_at))));
       lastVisitDaysAgo = Math.floor((new Date() - lastVisit) / (1000 * 60 * 60 * 24));
     }
 

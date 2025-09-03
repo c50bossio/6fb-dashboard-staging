@@ -1,19 +1,25 @@
-import React from 'react'
+import * as React from "react"
+import { cn } from "@/lib/utils"
 
-export function Separator({ className = '', orientation = 'horizontal', ...props }) {
-  const orientationClasses = {
-    horizontal: 'h-px w-full',
-    vertical: 'w-px h-full'
-  }
+const Separator = React.forwardRef(({
+  className,
+  orientation = "horizontal",
+  decorative = true,
+  ...props
+}, ref) => (
+  <div
+    ref={ref}
+    role={decorative ? "none" : "separator"}
+    aria-orientation={orientation}
+    className={cn(
+      "shrink-0 bg-border",
+      orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
+      className
+    )}
+    {...props}
+  />
+))
 
-  return (
-    <div
-      className={`bg-gray-200 ${orientationClasses[orientation]} ${className}`}
-      role="separator"
-      aria-orientation={orientation}
-      {...props}
-    />
-  )
-}
+Separator.displayName = "Separator"
 
-export default Separator
+export { Separator }

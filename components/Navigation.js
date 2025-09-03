@@ -67,6 +67,13 @@ const coreOperations = [
     badge: 'Core'
   },
   { 
+    name: 'Check-In & Queue', 
+    href: '/dashboard/check-in', 
+    icon: UserGroupIcon,
+    description: 'Check-in customers and manage walk-in queue',
+    badge: 'Live'
+  },
+  { 
     name: 'Point of Sale', 
     href: '/pos', 
     icon: BanknotesIcon,
@@ -146,10 +153,10 @@ const shopManagement = [
     badge: 'Team'
   },
   { 
-    name: 'Financial Overview', 
-    href: '/shop/financial', 
+    name: 'Finance Center', 
+    href: '/finance', 
     icon: CurrencyDollarIcon,
-    description: 'Commission settings and financial arrangements'
+    description: 'Revenue, payroll, compensation, and payment management'
   },
   { 
     name: 'Product Management', 
@@ -209,6 +216,12 @@ const enterpriseOperations = [
     href: '/enterprise/locations', 
     icon: BuildingStorefrontIcon,
     description: 'Manage all barbershop locations and settings'
+  },
+  { 
+    name: 'Organization Settings', 
+    href: '/enterprise/organization/settings', 
+    icon: Cog6ToothIcon,
+    description: 'Edit organization details and configuration'
   },
   { 
     name: 'Cross-Shop Analytics', 

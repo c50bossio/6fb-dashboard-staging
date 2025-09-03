@@ -32,7 +32,7 @@ async function testBlockedTime() {
     console.log(`Found ${bookings?.length || 0} blocked time slots:`)
     bookings?.forEach(booking => {
       console.log(`  - ID: ${booking.id}`)
-      console.log(`    Shop: ${booking.shop_id}`)
+      console.log(`    Shop: ${booking.barbershop_id}`)
       console.log(`    Start: ${booking.start_time}`)
       console.log(`    End: ${booking.end_time}`)
       console.log(`    Notes: ${booking.notes}`)
@@ -64,7 +64,7 @@ async function testBlockedTime() {
   const { data: shopBookings, error: shopError } = await supabase
     .from('bookings')
     .select('id, status, start_time, notes')
-    .eq('shop_id', testShopId)
+    .eq('barbershop_id', testShopId)
     .order('start_time', { ascending: false })
     .limit(10)
   

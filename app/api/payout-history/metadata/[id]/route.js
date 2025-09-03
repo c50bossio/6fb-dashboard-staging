@@ -40,7 +40,7 @@ export async function GET(request, { params }) {
       .eq('id', user.id)
       .single()
 
-    if (profileError || !profile?.shop_id) {
+    if (profileError || !profile?.barbershop_id) {
       return NextResponse.json(
         { error: 'Barbershop association required' },
         { status: 403 }
@@ -52,7 +52,7 @@ export async function GET(request, { params }) {
       .from('commission_payout_records')
       .select('id, barbershop_id, barber_id, amount, status')
       .eq('id', payoutId)
-      .eq('barbershop_id', profile.shop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .single()
 
     if (payoutError || !payout) {
@@ -119,7 +119,7 @@ export async function GET(request, { params }) {
       },
       metadata: {
         processing_time_ms: processingTime,
-        barbershop_id: profile.shop_id,
+        barbershop_id: profile.barbershop_id,
         generated_at: new Date().toISOString(),
         user_role: profile.role
       }
@@ -167,7 +167,7 @@ export async function PATCH(request, { params }) {
       .eq('id', user.id)
       .single()
 
-    if (profileError || !profile?.shop_id) {
+    if (profileError || !profile?.barbershop_id) {
       return NextResponse.json(
         { error: 'Barbershop association required' },
         { status: 403 }
@@ -187,7 +187,7 @@ export async function PATCH(request, { params }) {
       .from('commission_payout_records')
       .select('id, barbershop_id')
       .eq('id', payoutId)
-      .eq('barbershop_id', profile.shop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .single()
 
     if (payoutError || !payout) {
@@ -231,7 +231,7 @@ export async function PATCH(request, { params }) {
       .from('payout_transaction_metadata')
       .upsert({
         payout_record_id: payoutId,
-        barbershop_id: profile.shop_id,
+        barbershop_id: profile.barbershop_id,
         ...updateData
       }, {
         onConflict: 'payout_record_id'
@@ -251,7 +251,7 @@ export async function PATCH(request, { params }) {
     await supabase
       .from('payout_audit_trail')
       .insert({
-        barbershop_id: profile.shop_id,
+        barbershop_id: profile.barbershop_id,
         action_type: 'metadata_updated',
         entity_type: 'metadata',
         entity_id: updatedMetadata.id,

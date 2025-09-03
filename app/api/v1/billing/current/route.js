@@ -33,9 +33,31 @@ export async function GET(request) {
     }
 
     const userId = session.user.id
-
-    // Get current usage and billing data
-    const currentUsage = await UsageTracker.getCurrentUsage(userId)
+    const { searchParams } = new URL(request.url)
+    
+    // Context-aware parameters
+    const context = searchParams.get('context') // 'organization', 'location', 'resource'
+    const organizationId = searchParams.get('organizationId')
+    
+    // Get current usage and billing data (context-aware if organization level)
+    let currentUsage
+    if (context === 'organization' && organizationId) {
+      // For organization context, aggregate usage across all organization members
+      const { data: orgMembers } = await supabase
+        .from('organization_members')
+        .select('user_id')
+        .eq('organization_id', organizationId)
+      
+      if (orgMembers?.length > 0) {
+        // Get usage for all organization members (simplified for now)
+        currentUsage = await UsageTracker.getCurrentUsage(userId) // Primary account holder
+        // TODO: Aggregate usage across all org members when organization billing is fully implemented
+      } else {
+        currentUsage = await UsageTracker.getCurrentUsage(userId)
+      }
+    } else {
+      currentUsage = await UsageTracker.getCurrentUsage(userId)
+    }
     
     if (!currentUsage) {
       return NextResponse.json({ error: 'Unable to fetch billing data' }, { status: 500 })
@@ -76,7 +98,23 @@ export async function GET(request) {
         subscriptionFee: currentUsage.totals.subscriptionFee,
         total: currentUsage.totals.cost + currentUsage.totals.subscriptionFee
       },
-      alerts: await UsageTracker.checkUsageLimits(userId)
+      alerts: await UsageTracker.checkUsageLimits(userId),
+      
+      // Context metadata
+      context: {
+        type: context || 'individual',
+        scope: context === 'organization' ? 'Organization billing' : 'Individual billing'
+      }
+    }
+
+    // Add organization-specific billing data if applicable
+    if (context === 'organization' && organizationId) {
+      response.organization = {
+        id: organizationId,
+        billingModel: 'enterprise', // TODO: Get from organization settings
+        memberCount: 1, // TODO: Get actual member count
+        totalUsage: currentUsage.totals // TODO: Aggregate across org members
+      }
     }
 
     return NextResponse.json(response)

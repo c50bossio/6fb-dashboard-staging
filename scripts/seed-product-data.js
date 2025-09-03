@@ -28,7 +28,7 @@ async function seedProductData() {
     const { data: existingProducts } = await supabase
       .from('products')
       .select('id')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', shopId)
     
     if (!existingProducts || existingProducts.length === 0) {
 
@@ -66,7 +66,7 @@ async function seedProductData() {
         const { error } = await supabase
           .from('products')
           .insert({
-            shop_id: shopId,
+            barbershop_id: shopId,
             ...product,
             reorder_point: product.min_stock * 2,
             supplier: 'Premium Beauty Supplies Co.',
@@ -85,7 +85,7 @@ async function seedProductData() {
     const { data: products } = await supabase
       .from('products')
       .select('*')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', shopId)
     
     if (!products || products.length === 0) {
       
@@ -110,7 +110,7 @@ async function seedProductData() {
         const paymentMethods = ['cash', 'card', 'online', 'mobile']
         
         salesData.push({
-          shop_id: shopId,
+          barbershop_id: shopId,
           product_id: product.id,
           quantity,
           unit_price: product.price,
@@ -141,7 +141,7 @@ async function seedProductData() {
     const { data: salesSummary } = await supabase
       .from('product_sales')
       .select('*')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', shopId)
     
     if (salesSummary) {
       const totalRevenue = salesSummary.reduce((sum, sale) => sum + parseFloat(sale.total_amount || 0), 0)

@@ -656,7 +656,7 @@ function extractFollowUpQuestions(response) {
 async function fetchAnalyticsContext(userId, businessContext) {
   try {
     
-    const analyticsUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/analytics/predictive?advanced=true`
+    const analyticsUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/ai/predictive?type=comprehensive&advanced=true`
     
     let analyticsData = {}
     

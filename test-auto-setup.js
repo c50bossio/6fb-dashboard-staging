@@ -91,10 +91,10 @@ async function testAutoSetup(email, plan) {
       if (existingShops && existingShops.length > 0) {
 
         // Update profile with shop_id if missing
-        if (!profile.shop_id) {
+        if (!profile.barbershop_id) {
           await supabase
             .from('profiles')
-            .update({ shop_id: existingShops[0].id })
+            .update({ barbershop_id: existingShops[0].id })
             .eq('id', userId)
           
         }
@@ -127,7 +127,7 @@ async function testAutoSetup(email, plan) {
         // Update profile with shop_id
         await supabase
           .from('profiles')
-          .update({ shop_id: barbershop.id })
+          .update({ barbershop_id: barbershop.id })
           .eq('id', userId)
 
       }

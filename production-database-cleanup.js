@@ -101,7 +101,7 @@ async function auditDatabase() {
     
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, email, full_name, role, shop_id, onboarding_completed')
+      .select('id, email, full_name, role, barbershop_id, onboarding_completed')
       .order('created_at', { ascending: false })
     
     if (profilesError) {

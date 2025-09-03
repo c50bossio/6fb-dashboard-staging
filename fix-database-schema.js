@@ -2,7 +2,7 @@
 
 /**
  * Database Schema Fix Script
- * Applies the appointments.shop_id fix to resolve PostgreSQL errors
+ * Applies the appointments.barbershop_id fix to resolve PostgreSQL errors
  */
 
 import fs from 'fs';
@@ -97,7 +97,7 @@ async function fixDatabaseSchema() {
       console.warn('⚠️  Could not verify schema - this might be normal');
     } else {
       const columnNames = columns.map(c => c.column_name);
-      const hasShopId = columnNames.includes('shop_id');
+      const hasShopId = columnNames.includes('barbershop_id');
       const hasBarbershopId = columnNames.includes('barbershop_id');
       
       console.log(`📊 Appointments table columns:`, columnNames);
@@ -133,7 +133,7 @@ async function applySchemaFixDirect() {
   try {
     const { error } = await supabase
       .from('appointments')
-      .select('shop_id')
+      .select('barbershop_id')
       .limit(1);
 
     if (error && error.code === '42703') {

@@ -12,8 +12,10 @@ import { OnboardingProvider } from '@/contexts/OnboardingContext'
 import BookingRulesSetup from './BookingRulesSetup'
 import OnboardingProgressIndicator from './OnboardingProgressIndicator'
 import StaffSetup from './StaffSetup'
+import CompensationSetup from './CompensationSetup'
 
 const ONBOARDING_STEPS = [
+  { key: 'compensation_setup', label: 'Compensation Setup', component: CompensationSetup },
   { key: 'staff_setup', label: 'Staff Setup', component: StaffSetup },
   { key: 'booking_rules', label: 'Booking Rules', component: BookingRulesSetup },
   // Add more steps as needed

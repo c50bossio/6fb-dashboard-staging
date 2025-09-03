@@ -9,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shop_id')
+    const shopId = searchParams.get('barbershop_id')
     const barberId = searchParams.get('barber_id')
     
     // Shop ID is required
@@ -43,7 +43,7 @@ export async function GET(request) {
           color
         )
       `)
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', shopId)
       .eq('is_recurring', true)
       .not('recurring_pattern', 'is', null)
     
@@ -102,9 +102,9 @@ export async function POST(request) {
     const body = await request.json()
     
     // Validate required fields
-    if (!body.shop_id || !body.barber_id || !body.recurrence_rule) {
+    if (!body.barbershop_id || !body.barber_id || !body.recurrence_rule) {
       return NextResponse.json({
-        error: 'Missing required fields: shop_id, barber_id, and recurrence_rule are required'
+        error: 'Missing required fields: barbershop_id, barber_id, and recurrence_rule are required'
       }, { status: 400 })
     }
     
@@ -133,7 +133,7 @@ export async function POST(request) {
     
     // Create the booking
     const bookingData = {
-      shop_id: body.shop_id,
+      barbershop_id: body.barbershop_id,
       barber_id: body.barber_id,
       customer_id: body.customer_id,
       service_id: body.service_id,

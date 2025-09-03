@@ -18,7 +18,7 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { useState, useEffect } from 'react'
 
-import GlobalNavigation from '../../../components/GlobalNavigation'
+
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import ReviewCardEnhanced from '../../../components/reviews/ReviewCardEnhanced'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
@@ -52,7 +52,7 @@ export default function ReviewsPage() {
         setIsLoading(true)
         setError(null)
         
-        const barbershopId = profile?.shop_id || profile?.barbershop_id
+        const barbershopId = profile?.barbershop_id || profile?.barbershop_id
         
         if (!barbershopId) {
           setError('No barbershop associated with your account. Please contact support.')

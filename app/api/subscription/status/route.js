@@ -53,7 +53,7 @@ export async function GET(request) {
         subscription_status: 'active',
         role: 'SHOP_OWNER',
         barbershop_id: 'b1234567-89ab-cdef-0123-456789abcdef', // Valid UUID format
-        shop_id: 'b1234567-89ab-cdef-0123-456789abcdef', // Valid UUID format
+        barbershop_id: 'b1234567-89ab-cdef-0123-456789abcdef', // Valid UUID format
         created_at: new Date().toISOString()
       }
       userError = null

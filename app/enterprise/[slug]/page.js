@@ -1,6 +1,23 @@
 import { notFound } from 'next/navigation'
 import EnterprisePortal from './EnterprisePortal'
 
+// Client component for protected route redirects
+function ProtectedEnterpriseRedirect({ slug }) {
+  if (typeof window !== 'undefined') {
+    window.location.href = `/login?next=/enterprise/${slug}`
+    return null
+  }
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-xl font-semibold mb-4">Redirecting to Login...</h1>
+        <p>This enterprise section requires authentication.</p>
+      </div>
+    </div>
+  )
+}
+
 // Generate metadata for SEO
 export async function generateMetadata({ params }) {
   try {
@@ -48,6 +65,12 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function EnterprisePortalPage({ params }) {
+  // Handle protected enterprise routes by returning a client redirect component
+  const protectedSlugs = ['locations', 'organization', 'settings', 'dashboard']
+  if (protectedSlugs.includes(params.slug)) {
+    return <ProtectedEnterpriseRedirect slug={params.slug} />
+  }
+
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/enterprise/${params.slug}/public`,

@@ -92,7 +92,8 @@ class MemoryManager:
         logger.info("🗑️ Forcing garbage collection due to memory pressure")
         
         collected = 0
-        for generation in range(gc.get_count()):
+        # Collect garbage for all generations (0, 1, 2)
+        for generation in range(3):
             collected += gc.collect(generation)
         
         # Also clear internal caches

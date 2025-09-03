@@ -2,10 +2,20 @@
 
 import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/outline'
 import { usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import LocationSelector from '@/components/navigation/LocationSelector'
 
 export default function SettingsBreadcrumb() {
   const pathname = usePathname()
   const router = useRouter()
+  const [selectedLocation, setSelectedLocation] = useState(null)
+  const { activeContext } = useGlobalDashboard()
+  const { profile } = useAuth()
+
+  const userRole = profile?.role || 'CLIENT'
+  const showLocationSelector = ['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole)
 
   // Parse the current path to create breadcrumb items
   const getBreadcrumbs = () => {
@@ -44,28 +54,55 @@ export default function SettingsBreadcrumb() {
   const breadcrumbs = getBreadcrumbs()
 
   return (
-    <nav className="flex items-center space-x-2 text-sm mb-4">
-      {breadcrumbs.map((crumb, index) => (
-        <div key={crumb.path} className="flex items-center">
-          {index > 0 && (
-            <ChevronRightIcon className="h-4 w-4 text-gray-400 mx-2" />
-          )}
-          {crumb.isLast ? (
-            <span className="text-gray-900 font-medium flex items-center">
-              {crumb.icon && <crumb.icon className="h-4 w-4 mr-1" />}
-              {crumb.name}
-            </span>
-          ) : (
-            <button
-              onClick={() => router.push(crumb.path)}
-              className="text-gray-600 hover:text-olive-600 transition-colors flex items-center"
-            >
-              {crumb.icon && <crumb.icon className="h-4 w-4 mr-1" />}
-              {crumb.name}
-            </button>
-          )}
+    <div className="mb-4">
+      <div className="flex items-center justify-between">
+        {/* Breadcrumb Navigation */}
+        <nav className="flex items-center space-x-2 text-sm">
+          {breadcrumbs.map((crumb, index) => (
+            <div key={crumb.path} className="flex items-center">
+              {index > 0 && (
+                <ChevronRightIcon className="h-4 w-4 text-gray-400 mx-2" />
+              )}
+              {crumb.isLast ? (
+                <span className="text-gray-900 font-medium flex items-center">
+                  {crumb.icon && <crumb.icon className="h-4 w-4 mr-1" />}
+                  {crumb.name}
+                </span>
+              ) : (
+                <button
+                  onClick={() => router.push(crumb.path)}
+                  className="text-gray-600 hover:text-olive-600 transition-colors flex items-center"
+                >
+                  {crumb.icon && <crumb.icon className="h-4 w-4 mr-1" />}
+                  {crumb.name}
+                </button>
+              )}
+            </div>
+          ))}
+        </nav>
+
+        {/* Location Selector */}
+        {showLocationSelector && (
+          <div className="flex items-center space-x-4">
+            <LocationSelector
+              selectedLocation={selectedLocation}
+              onLocationSelect={setSelectedLocation}
+              showContextOptions={true}
+              compact={true}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Context Info Bar */}
+      {activeContext && showLocationSelector && (
+        <div className="mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-md text-sm">
+          <span className="text-blue-700">
+            Settings for <span className="font-medium">{activeContext.locationName}</span>
+            {' '}• {activeContext.contextType.charAt(0).toUpperCase() + activeContext.contextType.slice(1)} View
+          </span>
         </div>
-      ))}
-    </nav>
+      )}
+    </div>
   )
 }

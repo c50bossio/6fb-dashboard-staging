@@ -85,7 +85,7 @@ export async function POST(request) {
     }
     
     // Get barbershop ID from profile
-    const barbershopId = profile.barbershop_id || profile.shop_id
+    const barbershopId = profile.barbershop_id || profile.barbershop_id
     if (!barbershopId) {
       return NextResponse.json(
         { 
@@ -179,7 +179,7 @@ export async function GET(request) {
       })
     }
     
-    const barbershopId = profile.barbershop_id || profile.shop_id
+    const barbershopId = profile.barbershop_id || profile.barbershop_id
     if (!barbershopId) {
       return NextResponse.json({
         connected: false,

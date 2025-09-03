@@ -38,8 +38,8 @@ export function useAppointments(barbershopId, options = {}) {
       status
     }),
     enabled: enabled && !!barbershopId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes (reduced refetch frequency)
+    gcTime: 10 * 60 * 1000, // 10 minutes (longer cache retention)
   })
 }
 
@@ -100,8 +100,8 @@ export function useCreateAppointment() {
     onMutate: async (appointmentData) => {
       const barbershopId = appointmentData.barbershop_id
       const queryKey = appointmentKeys.byDateRange(barbershopId, 
-        appointmentData.appointment_date?.split('T')[0],
-        appointmentData.appointment_date?.split('T')[0]
+        appointmentData.start_time?.split('T')[0],
+        appointmentData.start_time?.split('T')[0]
       )
 
       // Cancel outgoing refetches
@@ -220,7 +220,7 @@ export function useRealtimeAppointments(barbershopId) {
         const { eventType, new: newRecord, old: oldRecord } = payload
         
         // Get appointment date for targeted cache updates
-        const appointmentDate = (newRecord || oldRecord)?.appointment_date?.split('T')[0]
+        const appointmentDate = (newRecord || oldRecord)?.start_time?.split('T')[0]
         
         if (appointmentDate) {
           const specificQueryKey = appointmentKeys.byDateRange(barbershopId, appointmentDate, appointmentDate)

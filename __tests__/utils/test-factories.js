@@ -183,7 +183,7 @@ export class ShopFactory extends BaseFactory {
 
   static createWithServices(serviceCount = 5, overrides = {}) {
     const shop = this.create(overrides);
-    shop.services = ServiceFactory.createBatch(serviceCount, { shop_id: shop.id });
+    shop.services = ServiceFactory.createBatch(serviceCount, { barbershop_id: shop.id });
     return shop;
   }
 
@@ -211,7 +211,7 @@ export class ServiceFactory extends BaseFactory {
     
     const defaults = {
       id: this.generateId('service'),
-      shop_id: this.generateId('shop'),
+      barbershop_id: this.generateId('shop'),
       name: serviceType.name,
       description: faker.lorem.sentence(),
       price: faker.number.float({ 
@@ -245,21 +245,21 @@ export class ServiceFactory extends BaseFactory {
   static createPopularServices(shopId) {
     return [
       this.create({
-        shop_id: shopId,
+        barbershop_id: shopId,
         name: 'Classic Haircut',
         price: 35.00,
         duration: 30,
         popularity_score: 0.95
       }),
       this.create({
-        shop_id: shopId,
+        barbershop_id: shopId,
         name: 'Beard Trim & Style',
         price: 25.00,
         duration: 20,
         popularity_score: 0.80
       }),
       this.create({
-        shop_id: shopId,
+        barbershop_id: shopId,
         name: 'Full Service Package',
         price: 55.00,
         duration: 50,
@@ -278,7 +278,7 @@ export class AppointmentFactory extends BaseFactory {
       id: this.generateId('appt'),
       client_id: this.generateId('user'),
       barber_id: this.generateId('user'),
-      shop_id: this.generateId('shop'),
+      barbershop_id: this.generateId('shop'),
       service_id: this.generateId('service'),
       scheduled_time: scheduledTime,
       estimated_duration: duration,
@@ -360,7 +360,7 @@ export class AppointmentFactory extends BaseFactory {
       appointments.push(this.create({
         client_id: clientId,
         barber_id: barberId,
-        shop_id: shopId,
+        barbershop_id: shopId,
         service_id: serviceId,
         scheduled_time: appointmentDate,
         status: week < 2 ? 'completed' : 'scheduled'
@@ -386,7 +386,7 @@ export class AnalyticsFactory extends BaseFactory {
         transactions: faker.number.int({ min: 5, max: 35 }),
         average_ticket: faker.number.float({ min: 25, max: 80, multipleOf: 0.25 }),
         tips: faker.number.float({ min: 20, max: 200, multipleOf: 5 }),
-        shop_id: shopId
+        barbershop_id: shopId
       });
     }
     
@@ -395,7 +395,7 @@ export class AnalyticsFactory extends BaseFactory {
 
   static createCustomerMetrics(shopId) {
     return {
-      shop_id: shopId,
+      barbershop_id: shopId,
       period: 'monthly',
       total_customers: faker.number.int({ min: 50, max: 500 }),
       new_customers: faker.number.int({ min: 10, max: 100 }),
@@ -411,7 +411,7 @@ export class AnalyticsFactory extends BaseFactory {
   static createBarberPerformance(barberId, shopId) {
     return {
       barber_id: barberId,
-      shop_id: shopId,
+      barbershop_id: shopId,
       period: 'monthly',
       total_appointments: faker.number.int({ min: 30, max: 200 }),
       completed_appointments: faker.number.int({ min: 25, max: 190 }),
@@ -530,7 +530,7 @@ export class ReviewFactory extends BaseFactory {
       appointment_id: this.generateId('appt'),
       client_id: this.generateId('user'),
       barber_id: this.generateId('user'),
-      shop_id: this.generateId('shop'),
+      barbershop_id: this.generateId('shop'),
       rating: faker.number.int({ min: 1, max: 5 }),
       title: faker.helpers.maybe(() => faker.lorem.words(3), { probability: 0.7 }),
       content: faker.lorem.paragraph(),
@@ -667,7 +667,7 @@ export class PaymentFactory extends BaseFactory {
       id: this.generateId('pay'),
       appointment_id: this.generateId('appt'),
       client_id: this.generateId('user'),
-      shop_id: this.generateId('shop'),
+      barbershop_id: this.generateId('shop'),
       amount: faker.number.float({ min: 15, max: 150, multipleOf: 0.25 }),
       tip_amount: faker.number.float({ min: 0, max: 30, multipleOf: 0.25 }),
       tax_amount: faker.number.float({ min: 1, max: 15, multipleOf: 0.01 }),
@@ -813,7 +813,7 @@ export class DatabaseMock {
 
     this.data.services = [];
     this.data.shops.forEach(shop => {
-      this.data.services.push(...ServiceFactory.createBatch(8, { shop_id: shop.id }));
+      this.data.services.push(...ServiceFactory.createBatch(8, { barbershop_id: shop.id }));
     });
 
     this.data.appointments = [];
@@ -825,13 +825,13 @@ export class DatabaseMock {
       const barber = faker.helpers.arrayElement(barbers);
       const shop = faker.helpers.arrayElement(this.data.shops);
       const service = faker.helpers.arrayElement(
-        this.data.services.filter(s => s.shop_id === shop.id)
+        this.data.services.filter(s => s.barbershop_id === shop.id)
       );
       
       this.data.appointments.push(AppointmentFactory.create({
         client_id: client.id,
         barber_id: barber.id,
-        shop_id: shop.id,
+        barbershop_id: shop.id,
         service_id: service.id
       }));
     }
@@ -842,7 +842,7 @@ export class DatabaseMock {
         appointment_id: appointment.id,
         client_id: appointment.client_id,
         barber_id: appointment.barber_id,
-        shop_id: appointment.shop_id
+        barbershop_id: appointment.barbershop_id
       });
     });
 
@@ -850,7 +850,7 @@ export class DatabaseMock {
       return PaymentFactory.create({
         appointment_id: appointment.id,
         client_id: appointment.client_id,
-        shop_id: appointment.shop_id
+        barbershop_id: appointment.barbershop_id
       });
     });
 
@@ -942,7 +942,7 @@ export function createTestScenario(scenario = 'basic') {
     case 'full_shop':
       const owner = UserFactory.createShopOwner();
       const shop = ShopFactory.create({ owner_id: owner.id });
-      const services = ServiceFactory.createBatch(5, { shop_id: shop.id });
+      const services = ServiceFactory.createBatch(5, { barbershop_id: shop.id });
       const barbers = UserFactory.createBatch(3, 'BARBER');
       const clients = UserFactory.createBatch(10, 'CLIENT');
       

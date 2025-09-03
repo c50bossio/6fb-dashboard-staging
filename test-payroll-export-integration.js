@@ -194,7 +194,7 @@ class PayrollExportIntegrationTest {
           email: 'payroll.test@example.com',
           full_name: 'Payroll Test Manager',
           role: 'SHOP_OWNER',
-          shop_id: shop.id,
+          barbershop_id: shop.id,
           phone: '+1234567890'
         })
         .select()
@@ -214,7 +214,7 @@ class PayrollExportIntegrationTest {
           email: 'john.barber@test.com',
           full_name: 'John Test Barber',
           role: 'BARBER',
-          shop_id: shop.id,
+          barbershop_id: shop.id,
           hire_date: '2024-01-15',
           hourly_rate: 25.00,
           commission_rate: 0.40,
@@ -227,7 +227,7 @@ class PayrollExportIntegrationTest {
           email: 'jane.stylist@test.com', 
           full_name: 'Jane Test Stylist',
           role: 'BARBER',
-          shop_id: shop.id,
+          barbershop_id: shop.id,
           hire_date: '2024-02-01',
           hourly_rate: 30.00,
           commission_rate: 0.45,
@@ -269,7 +269,7 @@ class PayrollExportIntegrationTest {
           start_time: '10:00',
           end_time: '11:00',
           status: 'COMPLETED',
-          shop_id: shop.id,
+          barbershop_id: shop.id,
           payment_status: 'PAID',
           service_commission: (45.00 + (i * 5)) * 0.40,
           product_commission: 15.00,

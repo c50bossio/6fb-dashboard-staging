@@ -66,7 +66,7 @@ export async function POST(request) {
 
     return NextResponse.json({
       success: true,
-      test_barberbarbershop_id: testBarberbarbershopId,
+      test_barbershop_id: testBarberbarbershopId,
       method_tests: methodTestResults,
       timestamp: new Date().toISOString()
     })

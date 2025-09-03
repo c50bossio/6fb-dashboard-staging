@@ -137,8 +137,8 @@ function BarberProfilePageContent({ activeTab }) {
   const loadBarbershopId = async () => {
     try {
       // First try from user profile
-      if (userProfile?.shop_id) {
-        setBarbershopId(userProfile.shop_id)
+      if (userProfile?.barbershop_id) {
+        setBarbershopId(userProfile.barbershop_id)
         return
       }
       if (userProfile?.barbershop_id) {

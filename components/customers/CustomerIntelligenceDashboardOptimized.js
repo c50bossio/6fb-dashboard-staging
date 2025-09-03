@@ -176,7 +176,7 @@ export default function CustomerIntelligenceDashboard() {
   
   // Get barbershop ID (using same pattern as original)
   const getbarbershopId = useCallback(() => {
-    return profile?.barbershop_id || profile?.shop_id || profile?.barbershopId
+    return profile?.barbershop_id || profile?.barbershop_id || profile?.barbershopId
   }, [profile])
 
   // Fetch customer count with abort control

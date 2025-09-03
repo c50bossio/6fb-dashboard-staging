@@ -127,8 +127,8 @@ async function generatePerformanceMetrics(supabase, barberId, barbershopId, peri
       .select('*')
       .eq('barber_id', barberId)
       .eq('barbershop_id', barbershopId)
-      .gte('appointment_date', startDate.toISOString())
-      .lte('appointment_date', endDate.toISOString())
+      .gte('start_time', startDate.toISOString())
+      .lte('start_time', endDate.toISOString())
     
     // Calculate metrics
     const completed = appointments?.filter(a => a.status === 'completed') || []

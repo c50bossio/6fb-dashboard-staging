@@ -29,7 +29,7 @@ export async function POST(request) {
       .eq('id', user.id)
       .single()
     
-    const userbarbershopId = profile?.shop_id || profile?.barbershop_id
+    const userbarbershopId = profile?.barbershop_id || profile?.barbershop_id
     if (userbarbershopId !== barbershop_id) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -85,7 +85,7 @@ export async function GET(request) {
       .eq('id', user.id)
       .single()
     
-    const userbarbershopId = profile?.shop_id || profile?.barbershop_id
+    const userbarbershopId = profile?.barbershop_id || profile?.barbershop_id
     if (userbarbershopId !== barbershop_id) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }

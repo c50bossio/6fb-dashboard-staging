@@ -120,7 +120,7 @@ const rateLimiters = {
 
   emailCampaign: new RateLimiter({
     type: 'email',
-    getIdentifier: (req) => req.body?.shop_id || req.query?.shop_id || 'unknown',
+    getIdentifier: (req) => req.body?.barbershop_id || req.query?.barbershop_id || 'unknown',
     getLimit: () => Math.floor(config.rateLimits.email.perShop / 60), // Convert hourly to per-minute
     onLimitExceeded: (req, res, info) => {
       return res.status(429).json({
@@ -135,7 +135,7 @@ const rateLimiters = {
 
   smsCampaign: new RateLimiter({
     type: 'sms',
-    getIdentifier: (req) => req.body?.shop_id || req.query?.shop_id || 'unknown',
+    getIdentifier: (req) => req.body?.barbershop_id || req.query?.barbershop_id || 'unknown',
     getLimit: () => Math.floor(config.rateLimits.sms.perShop / 60), // Convert hourly to per-minute
     onLimitExceeded: (req, res, info) => {
       return res.status(429).json({
@@ -150,7 +150,7 @@ const rateLimiters = {
 
   campaignBurst: new RateLimiter({
     type: 'burst',
-    getIdentifier: (req) => req.body?.shop_id || req.query?.shop_id || 'unknown',
+    getIdentifier: (req) => req.body?.barbershop_id || req.query?.barbershop_id || 'unknown',
     getLimit: () => 5, // Max 5 campaigns per minute regardless of type
     onLimitExceeded: (req, res) => {
       return res.status(429).json({
@@ -246,7 +246,7 @@ const checkSpendingLimit = async (req, res, next) => {
     return next ? next() : undefined;
   }
 
-  const shopId = req.body?.shop_id || req.query?.shop_id;
+  const shopId = req.body?.barbershop_id || req.query?.barbershop_id;
   const accountType = req.body?.account_type || 'shop';
   const estimatedCost = req.body?.estimated_cost || 0;
 

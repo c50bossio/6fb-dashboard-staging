@@ -123,7 +123,7 @@ async function testBarbershopSetup() {
     const { data: services, error: servicesError } = await supabase
       .from('services')
       .select('*')
-      .eq('shop_id', barbershop.id)
+      .eq('barbershop_id', barbershop.id)
       .limit(3)
     
     if (servicesError || !services.length) {

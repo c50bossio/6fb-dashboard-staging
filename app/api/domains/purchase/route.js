@@ -140,7 +140,18 @@ async function createDomainCheckout({ userId, domain, pricing, registrationYears
   
   const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
   
-  const session = await stripe.checkout.sessions.create({
+  // Get tax settings for the user
+  const supabase = await createServerSupabaseClient()
+  const { data: businessSettings } = await supabase
+    .from('business_settings')
+    .select('tax_settings')
+    .eq('user_id', userId)
+    .single()
+  
+  const taxSettings = businessSettings?.tax_settings || {}
+  const isStripeTaxEnabled = taxSettings.stripe_tax_enabled === true
+  
+  const sessionConfig = {
     payment_method_types: ['card'],
     line_items: [
       {
@@ -156,7 +167,8 @@ async function createDomainCheckout({ userId, domain, pricing, registrationYears
               autoRenew
             }
           },
-          unit_amount: Math.round(pricing.total * 100) // Convert to cents
+          unit_amount: Math.round((isStripeTaxEnabled ? pricing.domainCost : pricing.total) * 100), // Convert to cents, exclude manual tax if Stripe Tax enabled
+          tax_behavior: isStripeTaxEnabled ? 'exclusive' : 'inclusive'
         },
         quantity: 1
       }
@@ -169,7 +181,16 @@ async function createDomainCheckout({ userId, domain, pricing, registrationYears
       domain,
       type: 'domain_purchase'
     }
-  })
+  }
+
+  // Add automatic tax if enabled
+  if (isStripeTaxEnabled) {
+    sessionConfig.automatic_tax = {
+      enabled: true
+    }
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionConfig)
   
   return session
 }

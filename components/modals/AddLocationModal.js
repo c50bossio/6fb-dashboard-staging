@@ -6,9 +6,10 @@ import { Fragment, useState } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useGlobalDashboard } from '../../contexts/GlobalDashboardContext'
 import { useAuth } from '../SupabaseAuthProvider'
+import { toast } from '@/hooks/use-toast'
 
-export default function AddLocationModal({ isOpen, onClose }) {
-  const { user: _user } = useAuth()
+export default function AddLocationModal({ isOpen, onClose, onLocationCreated }) {
+  const { user } = useAuth()
   const { refreshLocations } = useGlobalDashboard()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -18,13 +19,11 @@ export default function AddLocationModal({ isOpen, onClose }) {
     address: '',
     city: '',
     state: '',
-    zip: '',
+    zipCode: '',
     phone: '',
     email: '',
     description: ''
   })
-  
-  const _supabase = createClient()
   
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -37,48 +36,82 @@ export default function AddLocationModal({ isOpen, onClose }) {
         throw new Error('Name, city, and state are required')
       }
       
-      // Create new barbershop location
-      const { data, error: insertError } = await supabase
-        .from('barbershops')
-        .insert({
-          name: formData.name,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zip: formData.zip,
-          phone: formData.phone,
-          email: formData.email,
-          description: formData.description,
-          owner_id: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+      // Call the enterprise locations API
+      const response = await fetch('/api/enterprise/locations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'createLocation',
+          data: formData
         })
-        .select()
-        .single()
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        console.error('Location creation failed:', result)
+        
+        // Provide specific error messages based on the response
+        let errorMessage = result.error || 'Failed to create location'
+        
+        if (result.details) {
+          errorMessage += `: ${result.details}`
+        }
+        
+        if (response.status === 403) {
+          errorMessage = 'You do not have permission to create locations. Please contact your administrator.'
+        } else if (response.status === 400) {
+          errorMessage = result.error || 'Please check that all required fields are filled correctly.'
+        } else if (response.status === 500) {
+          errorMessage = 'There was a server error while creating the location. Please try again or contact support.'
+        }
+        
+        throw new Error(errorMessage)
+      }
+
+      console.log(`[Location Create] ✅ Successfully created: ${formData.name}`)
       
-      if (insertError) throw insertError
-      
+      // Show success toast
+      toast({
+        title: 'Location Created Successfully!',
+        description: `"${formData.name}" has been added to your locations.`,
+        variant: 'success',
+        duration: 4000
+      })
+
       // Create default services for the new location
-      const defaultServices = [
-        { name: 'Haircut', duration: 30, price: 35, description: 'Standard haircut' },
-        { name: 'Beard Trim', duration: 15, price: 20, description: 'Beard trimming and shaping' },
-        { name: 'Hair & Beard', duration: 45, price: 50, description: 'Haircut and beard trim combo' },
-        { name: 'Kids Cut', duration: 20, price: 25, description: 'Children\'s haircut' }
-      ]
-      
-      const servicesData = defaultServices.map(service => ({
-        barbershop_id: data.id,
-        name: service.name,
-        duration: service.duration,
-        price: service.price,
-        description: service.description,
-        is_active: true
-      }))
-      
-      await supabase.from('services').insert(servicesData)
+      if (result.location) {
+        const defaultServices = [
+          { name: 'Haircut', duration: 30, price: 35, description: 'Standard haircut' },
+          { name: 'Beard Trim', duration: 15, price: 20, description: 'Beard trimming and shaping' },
+          { name: 'Hair & Beard', duration: 45, price: 50, description: 'Haircut and beard trim combo' },
+          { name: 'Kids Cut', duration: 20, price: 25, description: 'Children\'s haircut' }
+        ]
+        
+        const supabase = createClient()
+        const servicesData = defaultServices.map(service => ({
+          barbershop_id: result.location.id,
+          name: service.name,
+          duration: service.duration,
+          price: service.price,
+          description: service.description,
+          is_active: true
+        }))
+        
+        await supabase.from('services').insert(servicesData)
+      }
       
       // Refresh locations in global context
-      await refreshLocations()
+      if (refreshLocations) {
+        await refreshLocations()
+      }
+
+      // Notify parent component
+      if (onLocationCreated && result.location) {
+        onLocationCreated(result.location)
+      }
       
       // Reset form and close modal
       setFormData({
@@ -86,7 +119,7 @@ export default function AddLocationModal({ isOpen, onClose }) {
         address: '',
         city: '',
         state: '',
-        zip: '',
+        zipCode: '',
         phone: '',
         email: '',
         description: ''
@@ -95,6 +128,16 @@ export default function AddLocationModal({ isOpen, onClose }) {
       onClose()
     } catch (err) {
       console.error('Error creating location:', err)
+      
+      // Show error toast
+      toast({
+        title: 'Failed to Create Location',
+        description: err.message || 'An unexpected error occurred while creating the location.',
+        variant: 'destructive',
+        duration: 6000
+      })
+      
+      // Keep the error state for form display
       setError(err.message || 'Failed to create location')
     } finally {
       setLoading(false)
@@ -215,14 +258,14 @@ export default function AddLocationModal({ isOpen, onClose }) {
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label htmlFor="zip" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700">
                             ZIP Code
                           </label>
                           <input
                             type="text"
-                            id="zip"
-                            value={formData.zip}
-                            onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
+                            id="zipCode"
+                            value={formData.zipCode}
+                            onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 sm:text-sm"
                           />
                         </div>
@@ -271,9 +314,15 @@ export default function AddLocationModal({ isOpen, onClose }) {
                         <button
                           type="submit"
                           disabled={loading}
-                          className="inline-flex w-full justify-center rounded-md bg-olive-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-olive-500 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="inline-flex w-full justify-center items-center rounded-md bg-olive-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-olive-500 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {loading ? 'Creating...' : 'Create Location'}
+                          {loading && (
+                            <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          )}
+                          {loading ? 'Creating Location...' : 'Create Location'}
                         </button>
                         <button
                           type="button"

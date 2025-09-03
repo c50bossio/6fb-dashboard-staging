@@ -391,8 +391,8 @@ user = {
       .or(`id.eq.${user.id},email.eq.${user.email}`)
       .single()
     
-    if (profile && (profile.shop_id || profile.barbershop_id)) {
-      const barbershopId = profile.shop_id || profile.barbershop_id
+    if (profile && (profile.barbershop_id || profile.barbershop_id)) {
+      const barbershopId = profile.barbershop_id || profile.barbershop_id
       const { data: profileShop } = await supabase
         .from('barbershops')
         .select('id, name')
@@ -461,7 +461,7 @@ user = {
         userId: user.id,
         userEmail: user.email,
         profileId: profile?.id,
-        profileShopId: profile?.shop_id,
+        profileShopId: profile?.barbershop_id,
         profilebarbershopId: profile?.barbershop_id,
         overrideAttempted: !!overridebarbershopId
       })
@@ -473,7 +473,7 @@ user = {
             userId: user.id,
             userEmail: user.email,
             profileFound: !!profile,
-            barbershopId: profile?.shop_id,
+            barbershopId: profile?.barbershop_id,
             barbershopId: profile?.barbershop_id,
             overrideAttempted: !!overridebarbershopId
           } : undefined

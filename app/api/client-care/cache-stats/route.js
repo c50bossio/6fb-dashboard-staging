@@ -93,7 +93,7 @@ export async function GET(request) {
       performance_assessment: performanceAssessment,
       monitoring: {
         timestamp: new Date().toISOString(),
-        barbershop_id: profile.barbershop_id || profile.shop_id,
+        barbershop_id: profile.barbershop_id || profile.barbershop_id,
         checked_by: user.email
       },
       recommendations: {

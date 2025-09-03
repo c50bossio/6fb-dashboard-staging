@@ -27,7 +27,7 @@ export async function GET(request) {
     const startDate = searchParams.get('start_date')
     const endDate = searchParams.get('end_date')
     const barberId = searchParams.get('barber_id')
-    const shopId = searchParams.get('shop_id')
+    const shopId = searchParams.get('barbershop_id')
     
     let query = supabase.from('bookings').select('*')
     
@@ -38,7 +38,7 @@ export async function GET(request) {
         error: 'shop_id parameter is required'
       }, { status: 400 })
     }
-    query = query.eq('shop_id', shopId)
+    query = query.eq('barbershop_id', shopId)
     
     if (startDate) {
       query = query.gte('start_time', startDate)
@@ -237,7 +237,7 @@ export async function POST(request) {
         name: body.client_name || body.customer_name,
         email: body.client_email || body.customer_email,
         phone: body.client_phone || body.customer_phone,
-        shop_id: body.shop_id || body.barbershop_id,
+        barbershop_id: body.barbershop_id || body.barbershop_id,
         notification_preferences: body.notification_preferences || {
           sms: true,
           email: true,
@@ -260,7 +260,7 @@ export async function POST(request) {
       }
     }
     
-    const shopId = body.shop_id || body.barbershop_id
+    const shopId = body.barbershop_id || body.barbershop_id
     if (!shopId) {
       return NextResponse.json({
         success: false,
@@ -269,7 +269,7 @@ export async function POST(request) {
     }
     
     const bookingData = {
-      shop_id: shopId,
+      barbershop_id: shopId,
       barber_id: body.barber_id,
       customer_id: customerId,
       service_id: isBlockedTime ? null : body.service_id,

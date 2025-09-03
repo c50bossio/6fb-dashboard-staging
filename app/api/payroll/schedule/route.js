@@ -79,7 +79,7 @@ export async function POST(request) {
       .eq('id', user.id)
       .single()
 
-    const barbershopId = profile?.shop_id || profile?.barbershop_id
+    const barbershopId = profile?.barbershop_id || profile?.barbershop_id
     if (!barbershopId) {
       return NextResponse.json(
         { error: 'No barbershop association found' },
@@ -175,7 +175,7 @@ export async function GET(request) {
       .eq('id', user.id)
       .single()
 
-    const barbershopId = profile?.shop_id || profile?.barbershop_id
+    const barbershopId = profile?.barbershop_id || profile?.barbershop_id
     if (!barbershopId) {
       return NextResponse.json(
         { error: 'No barbershop association found' },
@@ -348,7 +348,7 @@ export async function PUT(request) {
       .eq('id', user.id)
       .single()
 
-    const barbershopId = profile?.shop_id || profile?.barbershop_id
+    const barbershopId = profile?.barbershop_id || profile?.barbershop_id
 
     // Verify ownership
     const { data: existingSchedule } = await supabase
@@ -455,7 +455,7 @@ export async function DELETE(request) {
       .eq('id', user.id)
       .single()
 
-    const barbershopId = profile?.shop_id || profile?.barbershop_id
+    const barbershopId = profile?.barbershop_id || profile?.barbershop_id
 
     // Verify ownership and delete
     const { data: deletedSchedule, error } = await supabase

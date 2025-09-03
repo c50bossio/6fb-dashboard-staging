@@ -58,7 +58,7 @@ async function testOAuthFlow() {
         console.log('   User ID:', profileResponse.id);
         console.log('   Email:', profileResponse.email);
         console.log('   Role:', profileResponse.role);
-        console.log('   Shop ID:', profileResponse.shop_id || 'Not assigned (needs onboarding)');
+        console.log('   Shop ID:', profileResponse.barbershop_id || 'Not assigned (needs onboarding)');
       }
       
       // Step 4: Check for onboarding prompt

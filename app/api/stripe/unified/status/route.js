@@ -10,18 +10,18 @@ import { checkBarbershopAccess } from '../../../../../lib/tenant-resolver.js'
  * Replaces multiple status endpoints across different components
  * 
  * Query Parameters:
- * - barberbarbershop_id: Required barbershop ID
+ * - barbershop_id: Required barbershop ID
  * - force_refresh: Optional, bypass cache
  */
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barberbarbershop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     const forceRefresh = searchParams.get('force_refresh') === 'true'
 
     if (!barbershopId) {
       return NextResponse.json(
-        { error: 'barberbarbershop_id is required' },
+        { error: 'barbershop_id is required' },
         { status: 400 }
       )
     }
@@ -54,12 +54,20 @@ export async function GET(request) {
     }
 
     // Get comprehensive Stripe status
-    const status = await getUnifiedStripeStatus(supabase, barbershopId)
+    const { status, connectAccount } = await getUnifiedStripeStatus(supabase, barbershopId)
 
     return NextResponse.json({
       success: true,
-      barberbarbershop_id: barbershopId,
+      barbershop_id: barbershopId,
       status: status,
+      // Include simplified stripe account data that matches UnifiedFinanceHub expectations
+      stripe_account: connectAccount ? {
+        account_id: connectAccount.account_id,
+        onboarding_completed: connectAccount.onboarding_completed,
+        charges_enabled: connectAccount.charges_enabled,
+        payouts_enabled: connectAccount.payouts_enabled,
+        details_submitted: connectAccount.details_submitted
+      } : null,
       cached: !forceRefresh,
       timestamp: new Date().toISOString()
     })
@@ -78,28 +86,42 @@ export async function GET(request) {
  * Consolidates status checking logic from multiple components
  */
 async function getUnifiedStripeStatus(supabase, barbershopId) {
-  // Get Stripe Connect account information
+  // Get Stripe Connect account information from the correct table
   const { data: connectAccount, error: connectError } = await supabase
-    .from('stripe_connected_accounts')
+    .from('stripe_accounts')
     .select(`
-      *,
-      barbershops(name, owner_id)
+      account_id,
+      onboarding_completed,
+      charges_enabled,
+      payouts_enabled,
+      details_submitted,
+      barbershop_id,
+      created_by,
+      created_at,
+      updated_at
     `)
-    .eq('barberbarbershop_id', barbershopId)
+    .eq('barbershop_id', barbershopId)
+    .single()
+
+  // Get barbershop information separately for context
+  const { data: barbershop } = await supabase
+    .from('barbershops')
+    .select('name, owner_id')
+    .eq('id', barbershopId)
     .single()
 
   // Get terminal configuration if it exists
   const { data: terminalConfig } = await supabase
     .from('stripe_terminal_config')
     .select('*')
-    .eq('barberbarbershop_id', barbershopId)
+    .eq('barbershop_id', barbershopId)
     .single()
 
   // Get financial arrangements using Stripe Connect
   const { data: financialArrangements } = await supabase
     .from('financial_arrangements')
     .select('barber_id, stripe_account_id, stripe_onboarding_complete')
-    .eq('barberbarbershop_id', barbershopId)
+    .eq('barbershop_id', barbershopId)
     .not('stripe_account_id', 'is', null)
 
   // Calculate unified status
@@ -107,12 +129,12 @@ async function getUnifiedStripeStatus(supabase, barbershopId) {
     overall_status: 'not_started',
     connect_account: {
       exists: !!connectAccount && !connectError,
-      account_id: connectAccount?.stripe_account_id || null,
+      account_id: connectAccount?.account_id || null,
       charges_enabled: connectAccount?.charges_enabled || false,
       payouts_enabled: connectAccount?.payouts_enabled || false,
       details_submitted: connectAccount?.details_submitted || false,
-      requirements_due: connectAccount?.requirements_due || [],
-      onboarding_completed: false
+      onboarding_completed: connectAccount?.onboarding_completed || false,
+      barbershop_name: barbershop?.name || null
     },
     terminal_setup: {
       configured: !!terminalConfig?.terminal_configured,
@@ -155,22 +177,15 @@ async function getUnifiedStripeStatus(supabase, barbershopId) {
 
   // Calculate Connect setup progress
   let connectProgress = 0
-  if (connectAccount.stripe_account_id) connectProgress += 25
+  if (connectAccount.account_id) connectProgress += 25
   if (connectAccount.details_submitted) connectProgress += 25
   if (connectAccount.charges_enabled) connectProgress += 25
   if (connectAccount.payouts_enabled) connectProgress += 25
 
   status.setup_progress.connect_setup = connectProgress
-  status.connect_account.onboarding_completed = connectProgress === 100
-
-  // Add warnings for Connect issues
-  if (connectAccount.requirements_due?.length > 0) {
-    status.warnings.push({
-      type: 'requirements_due',
-      message: `${connectAccount.requirements_due.length} requirements need attention`,
-      details: connectAccount.requirements_due
-    })
-  }
+  
+  // Use the actual onboarding_completed field from the database
+  status.connect_account.onboarding_completed = connectAccount.onboarding_completed || false
 
   // Calculate Terminal setup progress
   let terminalProgress = 0
@@ -217,7 +232,7 @@ async function getUnifiedStripeStatus(supabase, barbershopId) {
   // Generate next steps
   status.next_steps = generateNextSteps(status)
 
-  return status
+  return { status, connectAccount }
 }
 
 /**

@@ -6,7 +6,7 @@ const testBlockingEndpoint = async () => {
     start_time: "10:00", // HH:MM format
     end_time: "11:00", // HH:MM format
     reason: "Test block - debugging",
-    shop_id: "test-shop-id",
+    barbershop_id: "test-shop-id",
     barbershop_id: "test-shop-id"
   };
 

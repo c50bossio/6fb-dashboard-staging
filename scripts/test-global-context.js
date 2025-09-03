@@ -88,7 +88,7 @@ async function testMultiLocationAggregation() {
       const { data: customers } = await supabase
         .from('customers')
         .select('id, shop_id')
-        .in('shop_id', shopIds);
+        .in('barbershop_id', shopIds);
 
     } else {
       

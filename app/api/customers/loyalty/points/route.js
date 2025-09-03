@@ -75,8 +75,8 @@ export async function GET(request) {
     let barbershopId = null;
     
     // Check both barbershop_id and barbershop_id fields (naming inconsistency in database)
-    if (profile.shop_id) {
-      barbershopId = profile.shop_id;
+    if (profile.barbershop_id) {
+      barbershopId = profile.barbershop_id;
     } else if (profile.barbershop_id) {
       barbershopId = profile.barbershop_id;
     } else {
@@ -282,8 +282,8 @@ export async function POST(request) {
     let barbershopId = null;
     
     // Check both barbershop_id and barbershop_id fields (naming inconsistency in database)
-    if (profile.shop_id) {
-      barbershopId = profile.shop_id;
+    if (profile.barbershop_id) {
+      barbershopId = profile.barbershop_id;
     } else if (profile.barbershop_id) {
       barbershopId = profile.barbershop_id;
     } else {

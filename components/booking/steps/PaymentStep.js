@@ -221,7 +221,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
               },
               body: JSON.stringify({
                 paymentIntentId: paymentIntent.id,
-                bookingId: bookingData.id || 'pending'
+                appointmentId: bookingData.id || 'pending'
               })
             })
             
@@ -260,7 +260,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       
       // Log error for analytics
       logPaymentError(err, {
-        bookingId: bookingData.id,
+        appointmentId: bookingData.id,
         barbershopId: bookingData.barbershopId,
         amount: paymentAmount,
         retryCount

@@ -64,7 +64,7 @@ export async function GET(request) {
         fullName: nameData.fullName,    // camelCase version
         display_name: displayName,
         role: profile.role,
-        shop_id: profile.shop_id,
+        barbershop_id: profile.barbershop_id,
         barbershop_id: profile.barbershop_id,
         resolved_barbershop_id: barbershopId,
         is_active_barber: isActiveBarber

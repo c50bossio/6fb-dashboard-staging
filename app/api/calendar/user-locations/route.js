@@ -29,8 +29,8 @@ export async function GET() {
     let locations = []
 
     // If user has direct shop access
-    if (profile.shop_id || profile.barbershop_id) {
-      const barbershopId = profile.shop_id || profile.barbershop_id
+    if (profile.barbershop_id || profile.barbershop_id) {
+      const barbershopId = profile.barbershop_id || profile.barbershop_id
       
       const { data: barbershop } = await supabase
         .from('barbershops')

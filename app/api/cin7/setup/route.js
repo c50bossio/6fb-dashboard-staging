@@ -70,8 +70,8 @@ export async function POST(request) {
       .or(`(id.eq.${user.id}),(email.eq.${user.email})`)
       .single()
     
-    if (profile && (profile.shop_id || profile.barbershop_id)) {
-      const barbershopId = profile.shop_id || profile.barbershop_id
+    if (profile && (profile.barbershop_id || profile.barbershop_id)) {
+      const barbershopId = profile.barbershop_id || profile.barbershop_id
       const { data: profileShop } = await supabase
         .from('barbershops')
         .select('id, name')
@@ -125,7 +125,7 @@ export async function POST(request) {
         userId: user.id,
         userEmail: user.email,
         profileId: profile?.id,
-        profileShopId: profile?.shop_id,
+        profileShopId: profile?.barbershop_id,
         profilebarbershopId: profile?.barbershop_id
       })
       
@@ -136,7 +136,7 @@ export async function POST(request) {
       if (!profile) {
         errorMessage = 'User profile not found'
         helpText = 'Please ensure you are logged in and have completed account setup'
-      } else if (!profile.shop_id && !profile.barbershop_id) {
+      } else if (!profile.barbershop_id && !profile.barbershop_id) {
         errorMessage = 'No barbershop associated with your profile'
         helpText = 'Please complete the onboarding process to create or join a barbershop first'
       } else {
@@ -157,7 +157,7 @@ export async function POST(request) {
           userId: user.id,
           userEmail: user.email,
           profileFound: !!profile,
-          barbershopId: profile?.shop_id,
+          barbershopId: profile?.barbershop_id,
           barbershopId: profile?.barbershop_id,
           devBypass: devBypass
         } : undefined

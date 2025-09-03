@@ -84,11 +84,11 @@ async function comprehensiveCleanup() {
       const { data: deletedProfiles, error: profileError } = await supabase
         .from('profiles')
         .delete()
-        .in('shop_id', allTestShopIds)
+        .in('barbershop_id', allTestShopIds)
         .select()
 
       if (profileError) {
-        console.error('   ❌ Error deleting profiles by shop_id:', profileError.message)
+        console.error('   ❌ Error deleting profiles by barbershop_id:', profileError.message)
       } else {
         const profileCount = deletedProfiles?.length || 0
         totalDeleted += profileCount

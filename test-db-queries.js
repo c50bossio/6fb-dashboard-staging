@@ -50,7 +50,7 @@ async function testQueries() {
     const { data: servicesData, error: servicesError } = await supabase
       .from('services')
       .select('*')
-      .eq('shop_id', TEST_BARBERSHOP_ID);
+      .eq('barbershop_id', TEST_BARBERSHOP_ID);
     
     if (servicesError) {
       console.error('❌ Services query failed:', servicesError.message);

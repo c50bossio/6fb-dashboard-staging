@@ -42,11 +42,11 @@ export async function GET() {
       }))
     } 
     // Fallback for single-shop enterprise owners
-    else if (profile?.shop_id) {
+    else if (profile?.barbershop_id) {
       const { data: barbershops } = await supabase
         .from('barbershops')
         .select('id, name, address, city, state, phone, email, created_at, location_status')
-        .eq('id', profile.shop_id)
+        .eq('id', profile.barbershop_id)
         .order('name')
       
       shops = (barbershops || []).map(shop => ({

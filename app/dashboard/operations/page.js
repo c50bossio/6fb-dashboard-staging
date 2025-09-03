@@ -22,7 +22,7 @@ import {
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 
-import GlobalNavigation from '../../../components/GlobalNavigation'
+
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 

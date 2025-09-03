@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+
+const supabaseService = createServiceClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
 
 const PLAN_CONFIGS = {
   barber: {
@@ -91,7 +97,22 @@ export async function GET(request) {
     
     const priceId = await getOrCreateTestPrice(plan, billing, planConfig.amount, stripe)
     
-    const session = await stripe.checkout.sessions.create({
+    // Get user's tax settings
+    let isStripeTaxEnabled = false
+    try {
+      const { data: businessSettings } = await supabaseService
+        .from('business_settings')
+        .select('tax_settings')
+        .eq('user_id', user.id)
+        .single()
+      
+      const taxSettings = businessSettings?.tax_settings || {}
+      isStripeTaxEnabled = taxSettings.stripe_tax_enabled === true
+    } catch (error) {
+      console.log('No tax settings found for user, using default (tax disabled)')
+    }
+    
+    const sessionConfig = {
       mode: 'subscription',
       payment_method_types: ['card'],
       customer_email: user.email,
@@ -114,7 +135,16 @@ export async function GET(request) {
           billing
         }
       }
-    })
+    }
+    
+    // Add automatic tax if enabled
+    if (isStripeTaxEnabled) {
+      sessionConfig.automatic_tax = {
+        enabled: true
+      }
+    }
+    
+    const session = await stripe.checkout.sessions.create(sessionConfig)
     
     
     return NextResponse.redirect(session.url)

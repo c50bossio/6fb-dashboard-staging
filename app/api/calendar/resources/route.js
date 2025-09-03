@@ -31,7 +31,7 @@ export async function GET(request) {
     }
 
     // Determine barbershop ID
-    let barbershopId = profile.shop_id || profile.barbershop_id
+    let barbershopId = profile.barbershop_id || profile.barbershop_id
     
     // If no direct shop, check if user is staff
     if (!barbershopId) {

@@ -32,7 +32,7 @@ async function verify100Percent() {
   // 2. Test full CRUD cycle
   
   const testService = {
-    shop_id: '1ca6138d-eae8-46ed-abff-5d6e52fbd21b',
+    barbershop_id: '1ca6138d-eae8-46ed-abff-5d6e52fbd21b',
     name: 'Verification Test Service ' + Date.now(),
     description: 'Testing all features work',
     category: 'haircut',

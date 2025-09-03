@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -8,18 +7,19 @@ import { createClient } from '@/lib/supabase/server'
  */
 export async function GET(request) {
   try {
-    const session = await getServerSession()
-    if (!session?.user) {
+    const supabase = await createClient()
+    
+    // Get current user using Supabase auth
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const supabase = await createClient()
     
     // Get user's barbershop
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('barbershop_id, role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
     
     if (profileError || !profile?.barbershop_id) {
@@ -81,19 +81,20 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const session = await getServerSession()
-    if (!session?.user) {
+    const supabase = await createClient()
+    
+    // Get current user using Supabase auth
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const supabase = await createClient()
     const policyData = await request.json()
     
     // Get user's barbershop and check authorization
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('barbershop_id, role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
     
     if (profileError || !profile?.barbershop_id) {
@@ -123,7 +124,7 @@ export async function POST(request) {
           ...policyData,
           barbershop_id: profile.barbershop_id,
           updated_at: new Date().toISOString(),
-          created_by: session.user.id
+          created_by: user.id
         })
         .eq('id', existingPolicy.id)
         .select()
@@ -138,7 +139,7 @@ export async function POST(request) {
         .insert({
           ...policyData,
           barbershop_id: profile.barbershop_id,
-          created_by: session.user.id,
+          created_by: user.id,
           is_active: true
         })
         .select()
@@ -152,7 +153,7 @@ export async function POST(request) {
     await supabase
       .from('activity_logs')
       .insert({
-        user_id: session.user.id,
+        user_id: user.id,
         action: existingPolicy ? 'update_no_show_policy' : 'create_no_show_policy',
         details: {
           barbershop_id: profile.barbershop_id,
@@ -182,18 +183,19 @@ export async function POST(request) {
  */
 export async function DELETE(request) {
   try {
-    const session = await getServerSession()
-    if (!session?.user) {
+    const supabase = await createClient()
+    
+    // Get current user using Supabase auth
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const supabase = await createClient()
     
     // Get user's barbershop and check authorization
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('barbershop_id, role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single()
     
     if (profileError || !profile?.barbershop_id) {
@@ -222,7 +224,7 @@ export async function DELETE(request) {
     await supabase
       .from('activity_logs')
       .insert({
-        user_id: session.user.id,
+        user_id: user.id,
         action: 'deactivate_no_show_policy',
         details: {
           barbershop_id: profile.barbershop_id

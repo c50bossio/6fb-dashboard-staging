@@ -22,7 +22,7 @@ async function testDirectStaffCreation() {
       return;
     }
     
-    const barbershopId = owner.shop_id || owner.barbershop_id;
+    const barbershopId = owner.barbershop_id || owner.barbershop_id;
 
     // Create staff data
     const testEmail = 'teststaff' + Date.now() + '@test.com';
@@ -58,7 +58,7 @@ async function testDirectStaffCreation() {
         last_name: 'Staff Member',
         phone: '555-TEST',
         role: 'BARBER',
-        shop_id: barbershopId,
+        barbershop_id: barbershopId,
         barbershop_id: barbershopId
       })
       .select()

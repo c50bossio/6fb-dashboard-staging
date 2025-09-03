@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { canAccessLocation } from '@/lib/utils/enterprise-access'
 
 // GET - Fetch single location details
 export async function GET(request, { params }) {
@@ -32,24 +33,28 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Location not found' }, { status: 404 })
     }
     
-    // Check permissions - user must own the location or be an admin
-    const isOwner = location.owner_id === user.id
-    const isAdmin = profile?.role && ['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)
+    // Use smart enterprise access control logic
+    const accessResult = await canAccessLocation(user.id, id, profile?.role)
     
-    if (!isOwner && !isAdmin) {
-      // Check if user is staff at this location
-      const { data: staffRecord } = await supabase
-        .from('barbershop_staff')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('barbershop_id', id)
-        .eq('is_active', true)
-        .single()
-      
-      if (!staffRecord) {
-        return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
-      }
+    if (!accessResult.canAccess) {
+      console.error('[Location API GET] Access denied:', {
+        locationId: id,
+        userId: user.id,
+        userRole: profile?.role,
+        reason: accessResult.reason,
+        checks: accessResult.checks
+      })
+      return NextResponse.json({ 
+        error: 'Insufficient permissions',
+        details: accessResult.reason 
+      }, { status: 403 })
     }
+    
+    console.log('[Location API GET] Access granted:', {
+      locationId: id,
+      userId: user.id,
+      accessMethod: accessResult.reason
+    })
     
     // Get additional location data
     const [staffResponse, servicesResponse, customersResponse] = await Promise.all([
@@ -102,10 +107,10 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Get user's profile to check permissions
+    // Get user's profile with all fields needed for smart access control
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, shop_id, barbershop_id, organization_id')
       .eq('id', user.id)
       .single()
     
@@ -120,13 +125,43 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Location not found' }, { status: 404 })
     }
     
-    // Check permissions - user must own the location or be an admin
-    const isOwner = location.owner_id === user.id
-    const isAdmin = profile?.role && ['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)
+    // 🔥 CRITICAL FIX: Use smart enterprise access control logic (fixes Tomb45 Channelside edit issue)
+    const accessResult = await canAccessLocation(user.id, id, profile?.role)
     
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    if (!accessResult.canAccess) {
+      console.error('[Location API PATCH] ❌ Access denied for location edit:', {
+        locationId: id,
+        locationName: 'Tomb45 Channelside', // This is the specific location causing issues
+        userId: user.id,
+        userRole: profile?.role,
+        userShopId: profile?.shop_id || profile?.barbershop_id,
+        userOrgId: profile?.organization_id,
+        reason: accessResult.reason,
+        checks: accessResult.checks,
+        locationOwnerId: location.owner_id
+      })
+      return NextResponse.json({ 
+        error: 'Access denied for this location',
+        details: accessResult.reason || 'You do not have permission to edit this location.',
+        debugInfo: {
+          accessChecks: accessResult.checks,
+          userContext: {
+            role: profile?.role,
+            shopId: profile?.shop_id || profile?.barbershop_id,
+            orgId: profile?.organization_id
+          }
+        }
+      }, { status: 403 })
     }
+    
+    console.log('[Location API PATCH] ✅ Access granted for location edit:', {
+      locationId: id,
+      locationName: 'Tomb45 Channelside',
+      userId: user.id,
+      accessMethod: accessResult.reason,
+      userShopId: profile?.shop_id || profile?.barbershop_id,
+      locationOwnerId: location.owner_id
+    })
     
     // Validate required fields
     if (body.name && !body.name.trim()) {
@@ -201,10 +236,10 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Get user's profile to check permissions
+    // Get user's profile with all fields needed for smart access control
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, shop_id, barbershop_id, organization_id')
       .eq('id', user.id)
       .single()
     
@@ -219,13 +254,30 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: 'Location not found' }, { status: 404 })
     }
     
-    // Check permissions - user must own the location or be an admin
-    const isOwner = location.owner_id === user.id
-    const isAdmin = profile?.role && ['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)
+    // Use smart enterprise access control logic for DELETE operations
+    const accessResult = await canAccessLocation(user.id, id, profile?.role)
     
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+    if (!accessResult.canAccess) {
+      console.error('[Location API DELETE] Access denied for location deletion:', {
+        locationId: id,
+        userId: user.id,
+        userRole: profile?.role,
+        reason: accessResult.reason,
+        checks: accessResult.checks,
+        locationOwnerId: location.owner_id
+      })
+      return NextResponse.json({ 
+        error: 'Insufficient permissions',
+        details: accessResult.reason 
+      }, { status: 403 })
     }
+    
+    console.log('[Location API DELETE] Access granted for location deletion:', {
+      locationId: id,
+      userId: user.id,
+      accessMethod: accessResult.reason,
+      hardDelete
+    })
     
     // Check for active appointments before deletion
     const { count: activeAppointments } = await supabase
@@ -249,7 +301,7 @@ export async function DELETE(request, { params }) {
       // First, clean up related data
       await Promise.all([
         supabase.from('barbershop_staff').delete().eq('barbershop_id', id),
-        supabase.from('services').delete().eq('barbershop_id', id),
+        supabase.from('services').delete().eq('shop_id', id),
         supabase.from('appointments').delete().eq('barbershop_id', id),
         supabase.from('customers').delete().eq('barbershop_id', id)
       ])

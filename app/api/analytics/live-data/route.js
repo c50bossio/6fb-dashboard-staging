@@ -158,7 +158,7 @@ async function getSupabaseAnalyticsData(barbershopIds, barberIds, format, metric
     }
     
     // Support single or multiple barbershop IDs
-    const barbershopIds = Array.isArray(barbershopIds) ? barbershopIds : [barbershopIds];
+    const shopIds = Array.isArray(barbershopIds) ? barbershopIds : [barbershopIds];
     
     // Query all relevant tables for comprehensive analytics (supporting multiple locations)
     const [
@@ -167,12 +167,12 @@ async function getSupabaseAnalyticsData(barbershopIds, barberIds, format, metric
       transactionsResult,
       servicesResult
     ] = await Promise.all([
-      supabase.from('customers').select('*').in('barbershop_id', barbershopIds),
+      supabase.from('customers').select('*').in('barbershop_id', shopIds),
       barberIds.length > 0 
-        ? supabase.from('appointments').select('*').in('barbershop_id', barbershopIds).in('barber_id', barberIds)
-        : supabase.from('appointments').select('*').in('barbershop_id', barbershopIds),
-      supabase.from('transactions').select('*').in('barbershop_id', barbershopIds),
-      supabase.from('services').select('*').in('barbershop_id', barbershopIds)
+        ? supabase.from('appointments').select('*').in('barbershop_id', shopIds).in('barber_id', barberIds)
+        : supabase.from('appointments').select('*').in('barbershop_id', shopIds),
+      supabase.from('transactions').select('*').in('barbershop_id', shopIds),
+      supabase.from('services').select('*').in('barbershop_id', shopIds)
     ]);
 
     const customers = customersResult.data || [];
@@ -462,8 +462,8 @@ function calculateBusiestDays(appointments) {
     const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     
     appointments.forEach(apt => {
-      if (apt.appointment_date) {
-        const date = new Date(apt.appointment_date)
+      if (apt.start_time) {
+        const date = new Date(apt.start_time)
         const dayOfWeek = dayNames[date.getDay()]
         dayCounts[dayOfWeek] = (dayCounts[dayOfWeek] || 0) + 1
       }

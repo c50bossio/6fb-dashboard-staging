@@ -61,9 +61,9 @@ class SupabaseAPIProxy:
             this_month_start = today.replace(day=1)
             
             # Filter data by time periods
-            today_appointments = [a for a in appointments if self._parse_date(a.get('start_time')).date() == today]
-            week_appointments = [a for a in appointments if self._parse_date(a.get('start_time')).date() >= this_week_start]
-            month_appointments = [a for a in appointments if self._parse_date(a.get('start_time')).date() >= this_month_start]
+            today_appointments = [a for a in appointments if self._parse_date(a.get('date', a.get('scheduled_at'))).date() == today]
+            week_appointments = [a for a in appointments if self._parse_date(a.get('date', a.get('scheduled_at'))).date() >= this_week_start]
+            month_appointments = [a for a in appointments if self._parse_date(a.get('date', a.get('scheduled_at'))).date() >= this_month_start]
             
             today_transactions = [t for t in transactions if self._parse_date(t.get('created_at')).date() == today]
             week_transactions = [t for t in transactions if self._parse_date(t.get('created_at')).date() >= this_week_start]
@@ -172,9 +172,9 @@ class SupabaseAPIProxy:
                 
                 # Get last visit
                 last_appointment = max(customer_appointments, 
-                                     key=lambda x: self._parse_date(x.get('start_time')), 
+                                     key=lambda x: self._parse_date(x.get('date', x.get('scheduled_at'))), 
                                      default=None) if customer_appointments else None
-                last_visit = last_appointment.get('start_time') if last_appointment else customer.get('created_at')
+                last_visit = last_appointment.get('date', last_appointment.get('scheduled_at')) if last_appointment else customer.get('created_at')
                 
                 # Get preferred barber (most frequent)
                 barber_counts = {}

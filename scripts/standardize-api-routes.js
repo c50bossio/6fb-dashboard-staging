@@ -28,12 +28,12 @@ const PRIORITY_ROUTES = [
 const PATTERNS = [
   {
     // Pattern 1: Basic shop_id || barbershop_id pattern
-    find: /(\s+)(?:const|let)\s+(\w+)\s*=\s*profile\.shop_id\s*\|\|\s*profile\.barbershop_id/g,
+    find: /(\s+)(?:const|let)\s+(\w+)\s*=\s*profile\.barbershop_id\s*\|\|\s*profile\.barbershop_id/g,
     replace: '$1// Get barbershop ID using unified tenant resolver\n$1const { barbershopId } = await getTenant(profile.id, { supabase })\n$1const $2 = barbershopId'
   },
   {
     // Pattern 2: More complex shop resolution patterns
-    find: /(\s+)(?:let|const)\s+(\w+)\s*=\s*profile\.shop_id\s*\|\|\s*profile\.barbershop_id[\s\S]*?(?=\n\s*(?:if|const|let|\/\/|\}|return))/g,
+    find: /(\s+)(?:let|const)\s+(\w+)\s*=\s*profile\.barbershop_id\s*\|\|\s*profile\.barbershop_id[\s\S]*?(?=\n\s*(?:if|const|let|\/\/|\}|return))/g,
     replace: '$1// Get barbershop ID using unified tenant resolver\n$1const { barbershopId } = await getTenant(profile.id, { supabase })\n$1const $2 = barbershopId'
   },
   {
@@ -58,7 +58,7 @@ function updateApiRoute(filePath) {
   let modified = false
 
   // Add import if not present and file contains shop_id or barbershop_id patterns
-  if ((content.includes('shop_id') || content.includes('barbershop_id')) && 
+  if ((content.includes('barbershop_id') || content.includes('barbershop_id')) && 
       !content.includes('getTenant')) {
     
     // Find the last import statement
