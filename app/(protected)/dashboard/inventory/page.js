@@ -10,9 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function InventoryPage() {
   const { user, profile } = useAuth()
-  const [barbershopId, setbarbershopId] = useState<string | null>(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (user) {
