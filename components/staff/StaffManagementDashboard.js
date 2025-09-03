@@ -31,8 +31,8 @@ import AddStaffModal from './AddStaffModal'
 import StaffAvailabilityEditor from './StaffAvailabilityEditor'
 import StaffDetailModal from './StaffDetailModal'
 import StaffPerformanceView from './StaffPerformanceView'
-import RoleDebugger from '../debug/RoleDebugger'
-import BarberOverrideDialog from '@/components/compensation/BarberOverrideDialog'
+import RoleDebugger from '../debug/RoleDebugger.js'
+import BarberOverrideDialog from '@/components/compensation/BarberOverrideDialog.jsx'
 
 // React Query hooks
 
