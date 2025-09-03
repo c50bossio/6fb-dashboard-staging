@@ -205,7 +205,7 @@ export default function InventoryPage() {
 }
 
 // Marketplace Browser Component
-function MarketplaceBrowser({ barbershopId }: { barbershopId: string }) {
+function MarketplaceBrowser({ barbershopId }) {
   const [enrolled, setEnrolled] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -290,7 +290,7 @@ function MarketplaceBrowser({ barbershopId }: { barbershopId: string }) {
 }
 
 // Orders History Component
-function OrdersHistory({ barbershopId }: { barbershopId: string }) {
+function OrdersHistory({ barbershopId }) {
   return (
     <div className="space-y-6">
       <Card>
