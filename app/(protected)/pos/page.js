@@ -8,9 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function POSPage() {
   const { user, profile } = useAuth()
-  const [barbershopId, setbarbershopId] = useState<string | null>(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (user) {
