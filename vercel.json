@@ -15,19 +15,29 @@
   },
   "functions": {
     "app/api/**/*.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024
     },
     "app/api/ai/**/*.js": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "memory": 1024
     },
     "app/api/admin/**/*.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024
     },
     "app/api/payments/autopay/process/route.js": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "memory": 1024
     },
     "app/api/payments/booth-rent/collect/route.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "memory": 1024
+    }
+  },
+  "build": {
+    "env": {
+      "NODE_OPTIONS": "--max-old-space-size=4096"
     }
   },
   "crons": [

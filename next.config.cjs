@@ -45,6 +45,8 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     scrollRestoration: true,
+    // Reduce build memory usage
+    optimizePackageImports: ['@heroicons/react', 'lucide-react', 'react-icons'],
     outputFileTracingExcludes: {
       '*': [
         'node_modules/@sentry/cli',
@@ -61,6 +63,12 @@ const nextConfig = {
         'node_modules/@testing-library',
         'node_modules/jest',
         'node_modules/webpack-bundle-analyzer',
+        '__tests__/**',
+        'tests/**',
+        '*.test.js',
+        '*.spec.js',
+        '*.py',
+        '*.md',
       ],
     },
   },
@@ -122,7 +130,7 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
   },
   
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': __dirname,
@@ -137,6 +145,26 @@ const nextConfig = {
       net: false,
       tls: false,
     }
+    
+    // Optimize bundle size for production
+    if (!isServer && process.env.NODE_ENV === 'production') {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+          },
+        },
+      }
+    }
+    
+    // Reduce memory usage during build
+    config.infrastructureLogging = { level: 'error' }
     
     return config
   },
