@@ -8,38 +8,11 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 
-interface CartItem {
-  id: string
-  name: string
-  description?: string
-  price: number
-  quantity: number
-  sku?: string
-  image_url?: string
-}
-
-interface PaymentSession {
-  id: string
-  barbershop_id: string
-  cart_items: CartItem[]
-  total_amount: number
-  subtotal: number
-  tax_amount: number
-  status: 'pending' | 'completed' | 'expired' | 'cancelled'
-  stripe_session_url: string
-  expires_at: string
-  barbershop?: {
-    name: string
-    address?: string
-    phone?: string
-  }
-}
-
 export default function QRPaymentPage() {
   const params = useParams()
   const searchParams = useSearchParams()
-  const sessionId = params.sessionId as string
-  const [paymentSession, setPaymentSession] = useState<PaymentSession | null>(null)
+  const sessionId = params.sessionId
+  const [paymentSession, setPaymentSession] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [redirecting, setRedirecting] = useState(false)
@@ -116,7 +89,7 @@ export default function QRPaymentPage() {
     }, 500)
   }
 
-  const formatTime = (dateString: string) => {
+  const formatTime = (dateString) => {
     try {
       const date = new Date(dateString)
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -125,7 +98,7 @@ export default function QRPaymentPage() {
     }
   }
 
-  const getTimeRemaining = (expiresAt: string) => {
+  const getTimeRemaining = (expiresAt) => {
     try {
       const now = new Date()
       const expires = new Date(expiresAt)
