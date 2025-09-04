@@ -253,24 +253,24 @@ class CLVCalculator {
 
     // Weight historical vs predictive based on customer maturity
     const transactionCount = transactions.length
-    let historicalWeight, predictiveWeight
+    let weightConfig = { historicalWeight: 0, predictiveWeight: 0 }
 
     if (transactionCount >= 10) {
       // Mature customer - weight more towards historical
-      historicalWeight = 0.7
-      predictiveWeight = 0.3
+      weightConfig.historicalWeight = 0.7
+      weightConfig.predictiveWeight = 0.3
     } else if (transactionCount >= 5) {
       // Moderate customer - balanced approach
-      historicalWeight = 0.5
-      predictiveWeight = 0.5
+      weightConfig.historicalWeight = 0.5
+      weightConfig.predictiveWeight = 0.5
     } else {
       // New customer - weight more towards predictive
-      historicalWeight = 0.3
-      predictiveWeight = 0.7
+      weightConfig.historicalWeight = 0.3
+      weightConfig.predictiveWeight = 0.7
     }
 
-    const combinedCLV = (historical.historical_clv * historicalWeight) + 
-                       (predictive.predictive_clv * predictiveWeight)
+    const combinedCLV = (historical.historical_clv * weightConfig.historicalWeight) + 
+                       (predictive.predictive_clv * weightConfig.predictiveWeight)
 
     return {
       combined_clv: Math.round(combinedCLV * 100) / 100,

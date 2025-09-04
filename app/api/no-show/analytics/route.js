@@ -24,18 +24,18 @@ export async function GET(request) {
     const barberId = searchParams.get('barber_id')
     
     // Validate and parse dates
-    let startDate, endDate
+    let dateRange = { startDate: null, endDate: null }
     try {
-      startDate = startDateParam ? new Date(startDateParam).toISOString() : subDays(new Date(), 30).toISOString()
-      endDate = endDateParam ? new Date(endDateParam).toISOString() : new Date().toISOString()
+      dateRange.startDate = startDateParam ? new Date(startDateParam).toISOString() : subDays(new Date(), 30).toISOString()
+      dateRange.endDate = endDateParam ? new Date(endDateParam).toISOString() : new Date().toISOString()
       
       // Validate date range
-      if (new Date(startDate) > new Date(endDate)) {
+      if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
         return NextResponse.json({ error: 'Start date cannot be after end date' }, { status: 400 })
       }
       
       // Prevent excessively large date ranges (more than 2 years)
-      const daysDifference = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)
+      const daysDifference = (new Date(dateRange.endDate) - new Date(dateRange.startDate)) / (1000 * 60 * 60 * 24)
       if (daysDifference > 730) {
         return NextResponse.json({ error: 'Date range cannot exceed 2 years' }, { status: 400 })
       }
@@ -84,8 +84,8 @@ export async function GET(request) {
       .from('no_show_incidents')
       .select('*')
       .eq('barbershop_id', barbershopId)
-      .gte('incident_date', startDate)
-      .lte('incident_date', endDate)
+      .gte('incident_date', dateRange.startDate)
+      .lte('incident_date', dateRange.endDate)
     
     if (barberId) {
       incidentsQuery = incidentsQuery.eq('barber_id', barberId)
