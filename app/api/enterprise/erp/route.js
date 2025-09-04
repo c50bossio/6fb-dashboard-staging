@@ -22,7 +22,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const organizationId = searchParams.get('organizationId')
-    const module = searchParams.get('module') || 'all'
+    const moduleType = searchParams.get('module') || 'all'
     const timeRange = searchParams.get('timeRange') || 'month'
     const includeForecasting = searchParams.get('includeForecasting') !== 'false'
     const includeReports = searchParams.get('includeReports') !== 'false'
@@ -71,7 +71,7 @@ export async function GET(request) {
     }
 
     // Inventory Management Module
-    if (module === 'all' || module === 'inventory') {
+    if (moduleType === 'all' || moduleType === 'inventory') {
       erpData.inventory_management = await generateInventoryManagement(
         organizationId,
         locationIds,
@@ -82,7 +82,7 @@ export async function GET(request) {
     }
 
     // Financial Management Module
-    if (module === 'all' || module === 'finance') {
+    if (moduleType === 'all' || moduleType === 'finance') {
       erpData.financial_management = await generateFinancialManagement(
         organizationId,
         locationIds,
@@ -93,7 +93,7 @@ export async function GET(request) {
     }
 
     // Vendor Management Module
-    if (module === 'all' || module === 'vendor') {
+    if (moduleType === 'all' || moduleType === 'vendor') {
       erpData.vendor_management = await generateVendorManagement(
         organizationId,
         locationIds,
@@ -103,7 +103,7 @@ export async function GET(request) {
     }
 
     // Compliance Management Module
-    if (module === 'all' || module === 'compliance') {
+    if (moduleType === 'all' || moduleType === 'compliance') {
       erpData.compliance_management = await generateComplianceManagement(
         organizationId,
         locationIds,

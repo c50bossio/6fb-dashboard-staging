@@ -9,6 +9,7 @@ import {
   EnvelopeIcon,
   CalendarIcon,
   StarIcon,
+  StarIcon as StarIconSolid,
   PencilSquareIcon,
   TrashIcon,
   ChartBarIcon,

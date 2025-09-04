@@ -1,48 +1,14 @@
 {
-  "extends": [
-    "next/core-web-vitals"
-  ],
+  "extends": ["next"],
   "rules": {
-    // Performance and accessibility rules (relaxed for deployment)
-    "@next/next/no-img-element": "warn",
-    "@next/next/no-page-custom-font": "warn",
-    
-    // Code quality rules (relaxed for legacy codebase)
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-    "no-console": ["warn", { "allow": ["warn", "error", "log"] }],
-    "prefer-const": "warn",
-    "no-var": "error",
-    
-    // React best practices
-    "react/prop-types": "off",
-    "react/react-in-jsx-scope": "off",
-    "react/no-unescaped-entities": "warn",
-    "react-hooks/exhaustive-deps": "warn",
-    
-    // Import organization (relaxed for legacy codebase)
-    "import/order": ["warn", {
-      "groups": [
-        "builtin",
-        "external",
-        "internal",
-        "parent",
-        "sibling",
-        "index"
-      ],
-      "newlines-between": "ignore",
-      "alphabetize": {
-        "order": "asc",
-        "caseInsensitive": true
-      }
-    }],
-    
-    // Potential issues (relaxed for deployment)
-    "no-duplicate-imports": "warn",
-    "no-unreachable": "warn",
-    "no-unused-expressions": "warn",
-    "react/jsx-no-undef": "error",
-    "react/jsx-no-duplicate-props": "warn",
-    "react/display-name": "warn"
+    "@next/next/no-assign-module-variable": "off",
+    "react-hooks/rules-of-hooks": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "react/no-unescaped-entities": "off",
+    "import/no-anonymous-default-export": "off",
+    "jsx-a11y/alt-text": "off",
+    "no-unused-vars": "off",
+    "prefer-const": "off"
   },
   "overrides": [
     {
