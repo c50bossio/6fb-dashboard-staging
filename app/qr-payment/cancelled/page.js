@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/card'
 
 export default function QRPaymentCancelledPage() {
+  // Force refresh - deployment cache fix
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [paymentDetails, setPaymentDetails] = useState(null)
