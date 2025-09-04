@@ -137,8 +137,8 @@ export async function POST(request) {
   }
 }
 
-// GET /api/customization/analytics/six-figure-metrics
-export async function GET_SixFigureMetrics(request) {
+// This function is used internally, not exported as a route
+async function getSixFigureMetrics(request) {
   try {
     const { searchParams } = new URL(request.url)
     const dateRange = searchParams.get('date_range') || '30d'

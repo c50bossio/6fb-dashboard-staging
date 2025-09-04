@@ -156,7 +156,7 @@ export async function POST(request) {
 }
 
 // POST /api/customization/bulk-operations/update-settings
-export async function POST_UpdateSettings(request) {
+async function updateSettings(request) {
   try {
     const body = await request.json()
     const { settings, locationIds, options = {} } = body
@@ -234,7 +234,7 @@ export async function POST_UpdateSettings(request) {
 }
 
 // GET /api/customization/bulk-operations/locations
-export async function GET_Locations(request) {
+async function getLocations(request) {
   try {
     const { searchParams } = new URL(request.url)
     const includeMetrics = searchParams.get('include_metrics') === 'true'
@@ -306,7 +306,7 @@ export async function GET_Locations(request) {
 }
 
 // GET /api/customization/bulk-operations/status/[operationId]
-export async function GET_OperationStatus(request, { params }) {
+async function getOperationStatus(request, { params }) {
   try {
     const operationId = params.operationId
     

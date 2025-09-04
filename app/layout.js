@@ -19,10 +19,12 @@ export const metadata = {
   },
   other: {
     'mobile-web-app-capable': 'yes',
-    'cache-bust': Date.now().toString(),
+    'cache-bust': 'TDZ-FIX-2025-09-04-21-55-' + Date.now().toString(),
     'pragma': 'no-cache',
     'cache-control': 'no-cache, no-store, must-revalidate',
     'expires': '0',
+    'x-deployment-id': 'TDZ-VIOLATIONS-FIX-' + Date.now(),
+    'x-cache-version': 'v2.0-' + Date.now(),
   },
 }
 

@@ -227,7 +227,7 @@ function collectMetrics() {
   return output;
 }
 
-export function incrementMetric(metricName, labels = {}) {
+function incrementMetric(metricName, labels = {}) {
   if (metricName === 'http_requests_total') {
     const key = `${labels.method}_${labels.code}`;
     const current = metrics.http_requests_total.get(key) || 0;
@@ -241,7 +241,7 @@ export function incrementMetric(metricName, labels = {}) {
   }
 }
 
-export function setGaugeMetric(metricName, value) {
+function setGaugeMetric(metricName, value) {
   if (metricName === 'user_sessions_active') {
     metrics.user_sessions_active = value;
   } else if (metricName === 'booking_conversion_rate') {

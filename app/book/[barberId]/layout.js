@@ -1,6 +1,7 @@
 import { generateBarberMetadata, generateStructuredData } from '../../../lib/seo-utils'
 
-export async function generateMetadata({ params, searchParams }) {
+export async function generateMetadata(props) {
+  const { params, searchParams } = props
   try {
     const Barber = {
       id: params.barberId,

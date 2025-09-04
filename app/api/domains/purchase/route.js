@@ -195,7 +195,7 @@ async function createDomainCheckout({ userId, domain, pricing, registrationYears
   return session
 }
 
-export async function handleDomainPurchaseSuccess(sessionId) {
+async function handleDomainPurchaseSuccess(sessionId) {
   const supabase = await createServerSupabaseClient()
   
   const { data: purchase } = await supabase
