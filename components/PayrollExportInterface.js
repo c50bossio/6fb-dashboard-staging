@@ -113,25 +113,25 @@ export default function PayrollExportInterface({ staffData = [], onExportGenerat
    */
   const handleDatePreset = (preset) => {
     const now = new Date()
-    let startDate, endDate
+    let dateRange = { startDate: null, endDate: null }
 
     switch (preset) {
       case 'current-month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+        dateRange.startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+        dateRange.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
         break
       case 'last-month':
-        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-        endDate = new Date(now.getFullYear(), now.getMonth(), 0)
+        dateRange.startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        dateRange.endDate = new Date(now.getFullYear(), now.getMonth(), 0)
         break
       case 'current-quarter':
         const quarterStart = Math.floor(now.getMonth() / 3) * 3
-        startDate = new Date(now.getFullYear(), quarterStart, 1)
-        endDate = new Date(now.getFullYear(), quarterStart + 3, 0)
+        dateRange.startDate = new Date(now.getFullYear(), quarterStart, 1)
+        dateRange.endDate = new Date(now.getFullYear(), quarterStart + 3, 0)
         break
       case 'ytd':
-        startDate = new Date(now.getFullYear(), 0, 1)
-        endDate = now
+        dateRange.startDate = new Date(now.getFullYear(), 0, 1)
+        dateRange.endDate = now
         break
       case 'custom':
         // Don't change dates for custom
@@ -144,8 +144,8 @@ export default function PayrollExportInterface({ staffData = [], onExportGenerat
       ...prev,
       dateRange: {
         preset,
-        startDate: startDate.toISOString().split('T')[0],
-        endDate: endDate.toISOString().split('T')[0]
+        startDate: dateRange.startDate.toISOString().split('T')[0],
+        endDate: dateRange.endDate.toISOString().split('T')[0]
       }
     }))
   }

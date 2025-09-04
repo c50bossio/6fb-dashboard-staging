@@ -374,30 +374,30 @@ export default function AnalyticsPanel({ data }) {
                           key={index}
                           onClick={() => {
                             const today = new Date()
-                            let startDate, endDate
+                            let dateRange = { startDate: null, endDate: null }
                             
                             if (preset.days) {
-                              startDate = new Date(today)
-                              startDate.setDate(today.getDate() - preset.days)
-                              endDate = today
+                              dateRange.startDate = new Date(today)
+                              dateRange.startDate.setDate(today.getDate() - preset.days)
+                              dateRange.endDate = today
                             } else if (preset.type === 'current_month') {
-                              startDate = new Date(today.getFullYear(), today.getMonth(), 1)
-                              endDate = today
+                              dateRange.startDate = new Date(today.getFullYear(), today.getMonth(), 1)
+                              dateRange.endDate = today
                             } else if (preset.type === 'last_month') {
-                              startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-                              endDate = new Date(today.getFullYear(), today.getMonth(), 0)
+                              dateRange.startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+                              dateRange.endDate = new Date(today.getFullYear(), today.getMonth(), 0)
                             } else if (preset.type === 'current_quarter') {
                               const quarter = Math.floor(today.getMonth() / 3)
-                              startDate = new Date(today.getFullYear(), quarter * 3, 1)
-                              endDate = today
+                              dateRange.startDate = new Date(today.getFullYear(), quarter * 3, 1)
+                              dateRange.endDate = today
                             } else if (preset.type === 'last_quarter') {
                               const quarter = Math.floor(today.getMonth() / 3)
-                              startDate = new Date(today.getFullYear(), (quarter - 1) * 3, 1)
-                              endDate = new Date(today.getFullYear(), quarter * 3, 0)
+                              dateRange.startDate = new Date(today.getFullYear(), (quarter - 1) * 3, 1)
+                              dateRange.endDate = new Date(today.getFullYear(), quarter * 3, 0)
                             }
                             
-                            setCustomStartDate(startDate.toISOString().split('T')[0])
-                            setCustomEndDate(endDate.toISOString().split('T')[0])
+                            setCustomStartDate(dateRange.startDate.toISOString().split('T')[0])
+                            setCustomEndDate(dateRange.endDate.toISOString().split('T')[0])
                           }}
                           className="px-3 py-2 text-xs text-gray-600 bg-gray-50 rounded-lg hover:bg-olive-50 hover:text-olive-600 transition-colors duration-150"
                         >
