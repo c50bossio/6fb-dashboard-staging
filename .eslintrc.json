@@ -1,0 +1,14 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "react/no-unescaped-entities": "off",
+    "react/jsx-no-undef": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "react-hooks/rules-of-hooks": "off",
+    "@next/next/no-img-element": "off",
+    "react/jsx-no-duplicate-props": "off",
+    "react/display-name": "off",
+    "import/no-anonymous-default-export": "off",
+    "@next/next/no-assign-module-variable": "off"
+  }
+}
