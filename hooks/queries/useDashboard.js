@@ -100,36 +100,36 @@ export function useRevenueMetrics(barbershopId, period = 'month') {
     queryKey: queryKeys.metrics.revenue(barbershopId, period),
     queryFn: async () => {
       const now = new Date()
-      let startDate, endDate
+      let dateRange = { startDate: null, endDate: null }
       
       switch (period) {
         case 'day':
-          startDate = new Date(now.setHours(0, 0, 0, 0))
-          endDate = new Date(now.setHours(23, 59, 59, 999))
+          dateRange.startDate = new Date(now.setHours(0, 0, 0, 0))
+          dateRange.endDate = new Date(now.setHours(23, 59, 59, 999))
           break
         case 'week':
           const weekStart = new Date(now)
           weekStart.setDate(now.getDate() - now.getDay())
           weekStart.setHours(0, 0, 0, 0)
-          startDate = weekStart
-          endDate = new Date()
+          dateRange.startDate = weekStart
+          dateRange.endDate = new Date()
           break
         case 'month':
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-          endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+          dateRange.startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+          dateRange.endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
           break
         case 'year':
-          startDate = new Date(now.getFullYear(), 0, 1)
-          endDate = new Date(now.getFullYear(), 11, 31)
+          dateRange.startDate = new Date(now.getFullYear(), 0, 1)
+          dateRange.endDate = new Date(now.getFullYear(), 11, 31)
           break
         default:
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-          endDate = new Date()
+          dateRange.startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+          dateRange.endDate = new Date()
       }
       
       return createServiceRoleClient().getDashboardMetrics(barbershopId, {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
+        startDate: dateRange.startDate.toISOString(),
+        endDate: dateRange.endDate.toISOString(),
       })
     },
     enabled: !!barbershopId,

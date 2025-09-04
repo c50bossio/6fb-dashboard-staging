@@ -572,38 +572,38 @@ export function GlobalDashboardProvider({ children }) {
     // Process appointments into calendar events
     const calendarEvents = (contextData.appointments || []).map(apt => {
       // Handle different date/time formats
-      let startTime, endTime;
+      let timeData = { startTime: null, endTime: null };
       
       if (apt.date && apt.time) {
         // Schema with separate date and time columns
-        startTime = `${apt.date}T${apt.time}`;
-        const start = new Date(startTime);
+        timeData.startTime = `${apt.date}T${apt.time}`;
+        const start = new Date(timeData.startTime);
         const end = new Date(start.getTime() + (apt.duration_minutes || 60) * 60000);
-        endTime = end.toISOString();
+        timeData.endTime = end.toISOString();
       } else if (apt.scheduled_at) {
         // Schema with scheduled_at timestamp
-        startTime = apt.scheduled_at;
-        const start = new Date(startTime);
+        timeData.startTime = apt.scheduled_at;
+        const start = new Date(timeData.startTime);
         const end = new Date(start.getTime() + (apt.duration_minutes || 60) * 60000);
-        endTime = end.toISOString();
+        timeData.endTime = end.toISOString();
       } else if (apt.date) {
         // Schema with just date column - assume it includes time
-        startTime = apt.date;
-        const start = new Date(startTime);
+        timeData.startTime = apt.date;
+        const start = new Date(timeData.startTime);
         const end = new Date(start.getTime() + (apt.duration_minutes || 60) * 60000);
-        endTime = end.toISOString();
+        timeData.endTime = end.toISOString();
       } else {
         // Fallback - use current time as placeholder
         console.warn('Appointment missing date/time fields:', apt);
-        startTime = new Date().toISOString();
-        endTime = new Date(Date.now() + 60 * 60000).toISOString();
+        timeData.startTime = new Date().toISOString();
+        timeData.endTime = new Date(Date.now() + 60 * 60000).toISOString();
       }
       
       return {
       id: apt.id,
       title: `${apt.customers?.name || 'Customer'} - ${apt.services?.name || 'Service'}`,
-      start: startTime,
-      end: endTime,
+      start: timeData.startTime,
+      end: timeData.endTime,
       resourceId: apt.barber_id,
       backgroundColor: generateBarberColor(apt.barber_id),
       borderColor: generateBarberColor(apt.barber_id),

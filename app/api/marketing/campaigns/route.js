@@ -5,13 +5,17 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydih
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-let sendGridService, twilioSMSService, stripeService;
+let marketingServices = {
+    sendGridService: null,
+    twilioSMSService: null,
+    stripeService: null
+};
 
 try {
     const services = require('../../../../services/service-loader');
-    sendGridService = services.sendGridService;
-    twilioSMSService = services.twilioSMSService;
-    stripeService = services.stripeService;
+    marketingServices.sendGridService = services.sendGridService;
+    marketingServices.twilioSMSService = services.twilioSMSService;
+    marketingServices.stripeService = services.stripeService;
     if (process.env.NODE_ENV === 'development') {
     }
 } catch (error) {
@@ -202,14 +206,14 @@ export async function POST(request) {
 
         let result;
         
-        if (type === 'email' && sendGridService) {
-            result = await sendGridService.sendWhiteLabelCampaign(
+        if (type === 'email' && marketingServices.sendGridService) {
+            result = await marketingServices.sendGridService.sendWhiteLabelCampaign(
                 campaign,
                 shop,
                 recipients
             );
-        } else if (type === 'sms' && twilioSMSService) {
-            result = await twilioSMSService.sendWhiteLabelSMSCampaign(
+        } else if (type === 'sms' && marketingServices.twilioSMSService) {
+            result = await marketingServices.twilioSMSService.sendWhiteLabelSMSCampaign(
                 campaign,
                 shop,
                 recipients
@@ -229,8 +233,8 @@ export async function POST(request) {
             };
         }
 
-        if (stripeService && result.cost) {
-            const billingResult = await stripeService.chargeCampaign(
+        if (marketingServices.stripeService && result.cost) {
+            const billingResult = await marketingServices.stripeService.chargeCampaign(
                 billing_account,
                 result.cost.total * 100, // Convert to cents
                 `${type.toUpperCase()} Campaign: ${campaign.name}`

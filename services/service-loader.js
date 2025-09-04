@@ -30,34 +30,38 @@ if (missingVars.length > 0) {
   console.error('\n📝 Please configure these in your .env file for production use')
 }
 
-// Load production services
-let sendGridService, twilioSMSService, stripeService
+// Load production services - use single object to prevent TDZ violations
+let services = {
+  sendGridService: null,
+  twilioSMSService: null,
+  stripeService: null
+}
 
 try {
   // Load SendGrid service
   try {
-    sendGridService = require('./sendgrid-service-production')
+    services.sendGridService = require('./sendgrid-service-production')
   } catch (e) {
     console.error('❌ Failed to load SendGrid service:', e.message)
-    sendGridService = null
+    services.sendGridService = null
   }
   
   // Load Twilio service
   try {
     const twilioModule = require('./twilio-service')
-    twilioSMSService = twilioModule.twilioSMSService
+    services.twilioSMSService = twilioModule.twilioSMSService
   } catch (e) {
     console.error('❌ Failed to load Twilio service:', e.message)
-    twilioSMSService = null
+    services.twilioSMSService = null
   }
   
   // Load Stripe service
   try {
     const stripeModule = require('./stripe-service')
-    stripeService = stripeModule.stripeService
+    services.stripeService = stripeModule.stripeService
   } catch (e) {
     console.error('❌ Failed to load Stripe service:', e.message)
-    stripeService = null
+    services.stripeService = null
   }
   
 } catch (error) {
@@ -70,20 +74,20 @@ try {
 }
 
 // Warn if any services are not available
-if (!sendGridService) {
+if (!services.sendGridService) {
   console.warn('⚠️ SendGrid service not available - email notifications will not work')
 }
-if (!twilioSMSService) {
+if (!services.twilioSMSService) {
   console.warn('⚠️ Twilio service not available - SMS notifications will not work')
 }
-if (!stripeService) {
+if (!services.stripeService) {
   console.warn('⚠️ Stripe service not available - payments will not work')
 }
 
 module.exports = {
-  sendGridService,
-  twilioSMSService,
-  stripeService,
+  sendGridService: services.sendGridService,
+  twilioSMSService: services.twilioSMSService,
+  stripeService: services.stripeService,
   isDevelopment,
   useMockServices: false // Always false in production
 }
