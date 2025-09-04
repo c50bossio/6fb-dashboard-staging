@@ -8,15 +8,34 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
-// Initialize services
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+// Environment variable validation helper
+function validateEnvironmentVariables() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const openaiKey = process.env.OPENAI_API_KEY
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL environment variable is required')
+  }
+  if (!supabaseKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required')
+  }
+  if (!openaiKey) {
+    throw new Error('OPENAI_API_KEY environment variable is required')
+  }
+
+  return { supabaseUrl, supabaseKey, openaiKey }
+}
+
+// Initialize clients function
+function initializeClients() {
+  const { supabaseUrl, supabaseKey, openaiKey } = validateEnvironmentVariables()
+  
+  const supabase = createClient(supabaseUrl, supabaseKey)
+  const openai = new OpenAI({ apiKey: openaiKey })
+  
+  return { supabase, openai }
+}
 
 class FinancialAgent {
   constructor() {
@@ -479,6 +498,7 @@ class FinancialAgent {
       const formattedReport = await this.formatFinancialReport(reportSections, format)
       
       // Store report
+      const { supabase } = initializeClients()
       await supabase
         .from('financial_reports')
         .insert({
@@ -557,6 +577,7 @@ class FinancialAgent {
 
   // Helper functions
   async getHistoricalRevenue(organizationId) {
+    const { supabase } = initializeClients()
     const { data } = await supabase
       .from('revenue_history')
       .select('*')
@@ -645,6 +666,7 @@ class FinancialAgent {
   }
 
   async generateRevenueRecommendations(forecasts, drivers, context) {
+    const { openai } = initializeClients()
     const prompt = `
       Based on revenue forecasts and drivers for a barbershop:
       Forecasts: ${JSON.stringify(forecasts)}
@@ -673,6 +695,7 @@ class FinancialAgent {
   }
 
   async getCostData(organizationId, period) {
+    const { supabase } = initializeClients()
     const { data } = await supabase
       .from('costs')
       .select('*')
@@ -763,6 +786,7 @@ class FinancialAgent {
   }
 
   async getCurrentPricing(organizationId) {
+    const { supabase } = initializeClients()
     const { data } = await supabase
       .from('services')
       .select('*')
@@ -826,6 +850,7 @@ class FinancialAgent {
   }
 
   async handleGeneralQuery(request) {
+    const { openai } = initializeClients()
     const prompt = `
       As a financial AI agent for a barbershop, help with:
       ${JSON.stringify(request)}

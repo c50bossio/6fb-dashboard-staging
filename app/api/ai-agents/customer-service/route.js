@@ -2,14 +2,34 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+// Environment variable validation helper
+function validateEnvironmentVariables() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const openaiKey = process.env.OPENAI_API_KEY
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL environment variable is required')
+  }
+  if (!supabaseKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is required')
+  }
+  if (!openaiKey) {
+    throw new Error('OPENAI_API_KEY environment variable is required')
+  }
+
+  return { supabaseUrl, supabaseKey, openaiKey }
+}
+
+// Initialize clients function
+function initializeClients() {
+  const { supabaseUrl, supabaseKey, openaiKey } = validateEnvironmentVariables()
+  
+  const supabase = createClient(supabaseUrl, supabaseKey)
+  const openai = new OpenAI({ apiKey: openaiKey })
+  
+  return { supabase, openai }
+}
 
 /**
  * Customer Service AI Agent
@@ -34,6 +54,7 @@ class CustomerServiceAgent {
 
   async processIntent(message, context) {
     try {
+      const { openai } = initializeClients()
       const completion = await openai.chat.completions.create({
         model: "gpt-4-turbo-preview",
         messages: [
@@ -169,6 +190,7 @@ class CustomerServiceAgent {
   }
 
   async bookAppointment(args, customerId, barbershopId) {
+    const { supabase } = initializeClients()
     const { service_id, date, time, barber_id, notes } = args
 
     // Check availability first
@@ -219,6 +241,7 @@ class CustomerServiceAgent {
   }
 
   async rescheduleAppointment(args, customerId) {
+    const { supabase } = initializeClients()
     const { appointment_id, new_date, new_time } = args
 
     // Verify ownership
@@ -260,6 +283,7 @@ class CustomerServiceAgent {
   }
 
   async cancelAppointment(args, customerId) {
+    const { supabase } = initializeClients()
     const { appointment_id, reason } = args
 
     const { error } = await supabase
@@ -286,6 +310,7 @@ class CustomerServiceAgent {
   }
 
   async getAvailableSlots(args, barbershopId) {
+    const { supabase } = initializeClients()
     const { date, service_id, barber_id } = args
 
     // Get business hours
@@ -329,6 +354,7 @@ class CustomerServiceAgent {
   }
 
   async getServiceInfo(args, barbershopId) {
+    const { supabase } = initializeClients()
     const { service_name } = args
 
     const { data: services } = await supabase
@@ -359,6 +385,7 @@ class CustomerServiceAgent {
   }
 
   async processPayment(args, customerId) {
+    const { supabase } = initializeClients()
     const { appointment_id, payment_method, amount } = args
 
     // This would integrate with Stripe or other payment processor
@@ -393,6 +420,7 @@ class CustomerServiceAgent {
 // Context Management
 class CustomerContextManager {
   async getContext(customerId, barbershopId) {
+    const { supabase } = initializeClients()
     // Get customer profile
     const { data: customer } = await supabase
       .from('customers')
@@ -606,7 +634,8 @@ export async function POST(request) {
     }
 
     // Log interaction for analytics
-    await supabase
+    const { supabase: logSupabase } = initializeClients()
+    await logSupabase
       .from('agent_interactions')
       .insert({
         agent_type: 'customer_service',
