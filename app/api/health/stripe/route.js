@@ -2,6 +2,22 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { apiLogger, paymentLogger } from '@/lib/logger'
 
+// CORS headers for production
+const corsHeaders = {
+  'Access-Control-Allow-Origin': 'https://bookedbarber.com',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Credentials': 'true',
+}
+
+// OPTIONS - Handle preflight requests
+export async function OPTIONS(request) {
+  return new Response(null, {
+    status: 200,
+    headers: corsHeaders
+  })
+}
+
 // Initialize Stripe with error handling
 let stripe = null
 let stripeError = null

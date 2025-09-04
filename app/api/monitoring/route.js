@@ -1,6 +1,30 @@
 import { NextResponse } from 'next/server'
 import optimizedSupabase, { batchQueries } from '../../../lib/performance/optimized-supabase.js'
 
+// CORS headers for production
+const corsHeaders = {
+  'Access-Control-Allow-Origin': 'https://bookedbarber.com',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+  'Access-Control-Allow-Credentials': 'true',
+}
+
+// OPTIONS - Handle preflight requests
+export async function OPTIONS(request) {
+  return new Response(null, {
+    status: 200,
+    headers: corsHeaders
+  })
+}
+
+// Helper function to add CORS headers to responses
+function addCorsHeaders(response) {
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value)
+  })
+  return response
+}
+
 // GET - Retrieve monitoring data and system health
 export async function GET(request) {
   try {
@@ -62,7 +86,7 @@ export async function GET(request) {
           console.warn('Error monitoring table not available:', err.message)
         }
 
-        return NextResponse.json({
+        return addCorsHeaders(NextResponse.json({
           status: health?.status || 'operational',
           timestamp: health?.timestamp || new Date().toISOString(),
           metrics: {
@@ -80,7 +104,7 @@ export async function GET(request) {
             health_table: health ? 'available' : 'unavailable',
             error_table: errorCount !== null ? 'available' : 'unavailable'
           }
-        })
+        }))
       }
 
       case 'metrics': {
