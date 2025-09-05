@@ -88,7 +88,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
       // Load barber configurations
       const barbersResult = await financialService.getShopArrangements(barbershopId)
       if (barbersResult && typeof barbersResult === 'object' && 'error' in barbersResult && barbersResult.error) {
-        throw new Error(barbersResult.error)
+        throw new Error(String(barbersResult.error))
       }
       
       // Transform arrangements to barber configs
