@@ -237,16 +237,21 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
       </div>
 
       {/* Configuration Tabs */}
+      {/* @ts-ignore - Tabs component lacks TypeScript definitions */}
       <Tabs defaultValue="categories" className="space-y-4">
+        {/* @ts-ignore - TabsList lacks TypeScript definitions */}
         <TabsList>
+          {/* @ts-ignore - TabsTrigger lacks TypeScript definitions */}
           <TabsTrigger value="categories" className="flex items-center space-x-2">
             <Package className="h-4 w-4" />
             <span>Product Categories</span>
           </TabsTrigger>
+          {/* @ts-ignore - TabsTrigger lacks TypeScript definitions */}
           <TabsTrigger value="barbers" className="flex items-center space-x-2">
             <TrendingUp className="h-4 w-4" />
             <span>Barber Overrides</span>
           </TabsTrigger>
+          {/* @ts-ignore - TabsTrigger lacks TypeScript definitions */}
           <TabsTrigger value="integration" className="flex items-center space-x-2">
             <Settings className="h-4 w-4" />
             <span>Tier Integration</span>
@@ -254,6 +259,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </TabsList>
 
         {/* Product Categories Tab */}
+        {/* @ts-ignore - TabsContent lacks TypeScript definitions */}
         <TabsContent value="categories">
           {showCategoryForm && (
             <Card>
@@ -507,6 +513,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </TabsContent>
 
         {/* Barber Overrides Tab */}
+        {/* @ts-ignore - TabsContent lacks TypeScript definitions */}
         <TabsContent value="barbers">
           <Alert>
             <AlertCircle className="h-4 w-4" />
@@ -565,6 +572,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </TabsContent>
 
         {/* Tier Integration Tab */}
+        {/* @ts-ignore - TabsContent lacks TypeScript definitions */}
         <TabsContent value="integration">
           <Card>
             <CardHeader>
