@@ -5,7 +5,7 @@
 
 import { AlertCircle, RefreshCw } from 'lucide-react'
 import React from 'react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert.tsx'
 
 class ComponentErrorBoundary extends React.Component {
   constructor(props) {

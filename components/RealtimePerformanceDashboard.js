@@ -18,7 +18,7 @@ import {
   Signal
 } from 'lucide-react'
 import React from 'react'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert.tsx'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRealtimePerformance, useConnectionStatus, usePerformanceBenchmark } from '@/hooks/useRealtimePerformance'
