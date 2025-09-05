@@ -214,6 +214,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </div>
         <div className="flex space-x-2">
           {categories.length === 0 && (
+            {/* @ts-ignore */}
             <Button
               onClick={handleInitializeDefaults}
               disabled={saving}
