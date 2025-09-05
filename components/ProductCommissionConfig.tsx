@@ -92,16 +92,17 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
       }
       
       // Transform arrangements to barber configs
-      const barberConfigs = (barbersResult && typeof barbersResult === 'object' && 'data' in barbersResult ? barbersResult.data : [])
-        ?.filter(arr => arr.product_commission_rate !== null || Object.keys(arr.product_category_overrides || {}).length > 0)
-        ?.map(arr => ({
+      const resultData = barbersResult && typeof barbersResult === 'object' && 'data' in barbersResult ? barbersResult.data : []
+      const barberConfigs = Array.isArray(resultData) ? resultData
+        .filter(arr => arr.product_commission_rate !== null || Object.keys(arr.product_category_overrides || {}).length > 0)
+        .map(arr => ({
           barberId: arr.barber_id,
           barberName: arr.barber_name || 'Unknown Barber',
           product_commission_rate: arr.product_commission_rate || 0,
           product_category_overrides: arr.product_category_overrides || {},
           products_count_for_tiers: arr.products_count_for_tiers ?? true,
           product_tier_weight: arr.product_tier_weight || 0.5
-        })) || []
+        })) : []
 
       setBarbers(barberConfigs)
 
