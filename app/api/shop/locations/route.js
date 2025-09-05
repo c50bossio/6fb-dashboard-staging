@@ -8,8 +8,13 @@ export async function GET(request) {
     const authResult = await requireBusinessAccess(request)
     
     // If authResult is a NextResponse (error), return it
-    if (authResult instanceof NextResponse || authResult.status) {
+    if (authResult instanceof NextResponse) {
       return authResult
+    }
+    
+    // Ensure we have valid auth data before proceeding
+    if (!authResult || !authResult.user || !authResult.profile) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
     
     const { user, profile, businessAccess } = authResult
