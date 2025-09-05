@@ -213,9 +213,8 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
           <p className="text-gray-600">Configure commission rates and settings for product sales</p>
         </div>
         <div className="flex space-x-2">
-          {/* @ts-ignore */}
           {categories.length === 0 && (
-            <Button
+            <(Button as any)
               onClick={handleInitializeDefaults}
               disabled={saving}
               variant="outline"
@@ -223,7 +222,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
             >
               <Settings className="h-4 w-4" />
               <span>Initialize Defaults</span>
-            </Button>
+            </(Button as any)>
           )}
           <Button
             onClick={() => setShowCategoryForm(true)}
