@@ -74,7 +74,8 @@ export async function GET() {
 }
 
 // Wrap PUT/PATCH requests with profile validation middleware
-export const PUT = withProfileValidation(async function PUT(request) {
+// @ts-ignore - TypeScript strict mode conflict with middleware wrapper  
+export const PUT = withProfileValidation(async function PUT(request, context) {
   try {
     const supabase = await createClient()
     
