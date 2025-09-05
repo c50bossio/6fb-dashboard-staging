@@ -27,7 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { Alert, AlertDescription } from '@/components/ui/alert.tsx'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Building2,
   User,

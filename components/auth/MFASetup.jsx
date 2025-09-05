@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import { Alert, AlertDescription } from '@/components/ui/alert.tsx'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 

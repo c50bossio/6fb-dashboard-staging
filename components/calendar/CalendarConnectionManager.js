@@ -7,7 +7,7 @@
 
 import { Calendar, RefreshCw, Trash2, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import { useState } from 'react'
-import { Alert, AlertDescription } from '@/components/ui/alert.tsx'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'

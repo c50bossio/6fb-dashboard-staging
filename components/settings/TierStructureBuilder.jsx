@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Trash2, Plus, Move, Info } from 'lucide-react'
-import { Alert, AlertDescription } from '@/components/ui/alert.tsx'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import financialService from '@/lib/financial-service'
 
 const DEFAULT_TIERS = [

@@ -2,7 +2,7 @@
 
 import { Check, Lock, DollarSign, Building, Calculator, CreditCard, Info, TrendingUp, MessageSquare, Mail } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { Alert, AlertDescription } from '@/components/ui/alert.tsx'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
