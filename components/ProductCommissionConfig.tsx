@@ -276,25 +276,23 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                   <div className="space-y-2">
                     {/* @ts-ignore */}
                     <Label htmlFor="category_name">Category Name*</Label>
-                    {/* @ts-ignore */}
-                    <Input
-                      id="category_name"
-                      value={categoryForm.category_name}
-                      onChange={(e) => setCategoryForm({...categoryForm, category_name: e.target.value})}
-                      placeholder="hair_care"
-                      disabled={!!editingCategory}
-                    />
+                    {React.createElement(Input as any, {
+                      id: "category_name",
+                      value: categoryForm.category_name,
+                      onChange: (e: any) => setCategoryForm({...categoryForm, category_name: e.target.value}),
+                      placeholder: "hair_care",
+                      disabled: !!editingCategory
+                    })}
                   </div>
                   <div className="space-y-2">
                     {/* @ts-ignore */}
                     <Label htmlFor="display_name">Display Name*</Label>
-                    {/* @ts-ignore */}
-                    <Input
-                      id="display_name"
-                      value={categoryForm.category_display_name}
-                      onChange={(e) => setCategoryForm({...categoryForm, category_display_name: e.target.value})}
-                      placeholder="Hair Care Products"
-                    />
+                    {React.createElement(Input as any, {
+                      id: "display_name",
+                      value: categoryForm.category_display_name,
+                      onChange: (e: any) => setCategoryForm({...categoryForm, category_display_name: e.target.value}),
+                      placeholder: "Hair Care Products"
+                    })}
                   </div>
                 </div>
 
@@ -315,16 +313,15 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     {/* @ts-ignore */}
                     <Label htmlFor="default_rate">Default Commission Rate*</Label>
                     <div className="relative">
-                      {/* @ts-ignore */}
-                      <Input
-                        id="default_rate"
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={categoryForm.default_commission_rate}
-                        onChange={(e) => setCategoryForm({...categoryForm, default_commission_rate: parseFloat(e.target.value)})}
-                      />
+                      {React.createElement(Input as any, {
+                        id: "default_rate",
+                        type: "number",
+                        min: "0",
+                        max: "1",
+                        step: "0.01",
+                        value: categoryForm.default_commission_rate,
+                        onChange: (e: any) => setCategoryForm({...categoryForm, default_commission_rate: parseFloat(e.target.value)})
+                      })}
                       <span className="absolute right-3 top-2.5 text-sm text-gray-500">
                         {((categoryForm.default_commission_rate || 0) * 100).toFixed(1)}%
                       </span>
@@ -334,16 +331,15 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     {/* @ts-ignore */}
                     <Label htmlFor="min_rate">Min Rate</Label>
                     <div className="relative">
-                      {/* @ts-ignore */}
-                      <Input
-                        id="min_rate"
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={categoryForm.min_commission_rate}
-                        onChange={(e) => setCategoryForm({...categoryForm, min_commission_rate: parseFloat(e.target.value)})}
-                      />
+                      {React.createElement(Input as any, {
+                        id: "min_rate",
+                        type: "number",
+                        min: "0",
+                        max: "1",
+                        step: "0.01",
+                        value: categoryForm.min_commission_rate,
+                        onChange: (e: any) => setCategoryForm({...categoryForm, min_commission_rate: parseFloat(e.target.value)})
+                      })}
                       <span className="absolute right-3 top-2.5 text-sm text-gray-500">
                         {((categoryForm.min_commission_rate || 0) * 100).toFixed(1)}%
                       </span>
@@ -353,16 +349,15 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     {/* @ts-ignore */}
                     <Label htmlFor="max_rate">Max Rate</Label>
                     <div className="relative">
-                      {/* @ts-ignore */}
-                      <Input
-                        id="max_rate"
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={categoryForm.max_commission_rate}
-                        onChange={(e) => setCategoryForm({...categoryForm, max_commission_rate: parseFloat(e.target.value)})}
-                      />
+                      {React.createElement(Input as any, {
+                        id: "max_rate",
+                        type: "number",
+                        min: "0",
+                        max: "1",
+                        step: "0.01",
+                        value: categoryForm.max_commission_rate,
+                        onChange: (e: any) => setCategoryForm({...categoryForm, max_commission_rate: parseFloat(e.target.value)})
+                      })}
                       <span className="absolute right-3 top-2.5 text-sm text-gray-500">
                         {((categoryForm.max_commission_rate || 0) * 100).toFixed(1)}%
                       </span>
@@ -390,16 +385,15 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     <div className="space-y-2">
                       {/* @ts-ignore */}
                       <Label htmlFor="tier_weight">Tier Weight Multiplier</Label>
-                      {/* @ts-ignore */}
-                      <Input
-                        id="tier_weight"
-                        type="number"
-                        min="0"
-                        max="2"
-                        step="0.1"
-                        value={categoryForm.tier_weight_multiplier}
-                        onChange={(e) => setCategoryForm({...categoryForm, tier_weight_multiplier: parseFloat(e.target.value)})}
-                      />
+                      {React.createElement(Input as any, {
+                        id: "tier_weight",
+                        type: "number",
+                        min: "0",
+                        max: "2",
+                        step: "0.1",
+                        value: categoryForm.tier_weight_multiplier,
+                        onChange: (e: any) => setCategoryForm({...categoryForm, tier_weight_multiplier: parseFloat(e.target.value)})
+                      })}
                       <p className="text-xs text-gray-500">
                         1.0 = Full weight, 0.5 = Half weight in tier calculations
                       </p>
