@@ -213,16 +213,14 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
           <p className="text-gray-600">Configure commission rates and settings for product sales</p>
         </div>
         <div className="flex space-x-2">
-          {categories.length === 0 && (
-            {React.createElement(Button as any, {
-              onClick: handleInitializeDefaults,
-              disabled: saving,
-              variant: "outline",
-              className: "flex items-center space-x-2"
-            }, 
-              React.createElement(Settings, { className: "h-4 w-4" }),
-              React.createElement("span", null, "Initialize Defaults")
-            )}
+          {categories.length === 0 && React.createElement(Button as any, {
+            onClick: handleInitializeDefaults,
+            disabled: saving,
+            variant: "outline",
+            className: "flex items-center space-x-2"
+          }, 
+            React.createElement(Settings, { className: "h-4 w-4" }),
+            React.createElement("span", null, "Initialize Defaults")
           )}
           {React.createElement(Button as any, {
             onClick: () => setShowCategoryForm(true),
