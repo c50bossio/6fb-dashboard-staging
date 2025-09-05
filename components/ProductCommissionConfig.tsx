@@ -214,25 +214,23 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </div>
         <div className="flex space-x-2">
           {categories.length === 0 && (
-            // @ts-ignore
-            <Button
-              onClick={handleInitializeDefaults}
-              disabled={saving}
-              variant="outline"
-              className="flex items-center space-x-2"
-            >
-              <Settings className="h-4 w-4" />
-              <span>Initialize Defaults</span>
-            </Button>
+            {React.createElement(Button as any, {
+              onClick: handleInitializeDefaults,
+              disabled: saving,
+              variant: "outline",
+              className: "flex items-center space-x-2"
+            }, 
+              React.createElement(Settings, { className: "h-4 w-4" }),
+              React.createElement("span", null, "Initialize Defaults")
+            )}
           )}
-          {/* @ts-ignore */}
-          <Button
-            onClick={() => setShowCategoryForm(true)}
-            className="flex items-center space-x-2"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Category</span>
-          </Button>
+          {React.createElement(Button as any, {
+            onClick: () => setShowCategoryForm(true),
+            className: "flex items-center space-x-2"
+          },
+            React.createElement(Plus, { className: "h-4 w-4" }),
+            React.createElement("span", null, "Add Category")
+          )}
         </div>
       </div>
 
@@ -274,8 +272,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    {/* @ts-ignore */}
-                    <Label htmlFor="category_name">Category Name*</Label>
+                    {React.createElement(Label as any, { htmlFor: "category_name" }, "Category Name*")}
                     {React.createElement(Input as any, {
                       id: "category_name",
                       value: categoryForm.category_name,
@@ -285,8 +282,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     })}
                   </div>
                   <div className="space-y-2">
-                    {/* @ts-ignore */}
-                    <Label htmlFor="display_name">Display Name*</Label>
+                    {React.createElement(Label as any, { htmlFor: "display_name" }, "Display Name*")}
                     {React.createElement(Input as any, {
                       id: "display_name",
                       value: categoryForm.category_display_name,
@@ -297,21 +293,18 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  {/* @ts-ignore */}
-                  <Label htmlFor="description">Description</Label>
-                  {/* @ts-ignore */}
-                  <Textarea
-                    id="description"
-                    value={categoryForm.category_description}
-                    onChange={(e) => setCategoryForm({...categoryForm, category_description: e.target.value})}
-                    placeholder="Shampoos, conditioners, hair treatments"
-                  />
+                  {React.createElement(Label as any, { htmlFor: "description" }, "Description")}
+                  {React.createElement(Textarea as any, {
+                    id: "description",
+                    value: categoryForm.category_description,
+                    onChange: (e: any) => setCategoryForm({...categoryForm, category_description: e.target.value}),
+                    placeholder: "Shampoos, conditioners, hair treatments"
+                  })}
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    {/* @ts-ignore */}
-                    <Label htmlFor="default_rate">Default Commission Rate*</Label>
+                    {React.createElement(Label as any, { htmlFor: "default_rate" }, "Default Commission Rate*")}
                     <div className="relative">
                       {React.createElement(Input as any, {
                         id: "default_rate",
@@ -328,8 +321,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     </div>
                   </div>
                   <div className="space-y-2">
-                    {/* @ts-ignore */}
-                    <Label htmlFor="min_rate">Min Rate</Label>
+                    {React.createElement(Label as any, { htmlFor: "min_rate" }, "Min Rate")}
                     <div className="relative">
                       {React.createElement(Input as any, {
                         id: "min_rate",
@@ -346,8 +338,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     </div>
                   </div>
                   <div className="space-y-2">
-                    {/* @ts-ignore */}
-                    <Label htmlFor="max_rate">Max Rate</Label>
+                    {React.createElement(Label as any, { htmlFor: "max_rate" }, "Max Rate")}
                     <div className="relative">
                       {React.createElement(Input as any, {
                         id: "max_rate",
@@ -368,23 +359,20 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      {/* @ts-ignore */}
-                      <Label>Tier Integration</Label>
+                      {React.createElement(Label as any, {}, "Tier Integration")}
                       <p className="text-sm text-gray-600">
                         Allow sales to contribute to tier progression
                       </p>
                     </div>
-                    {/* @ts-ignore */}
-                    <Switch
-                      checked={categoryForm.allows_tier_integration}
-                      onCheckedChange={(checked) => setCategoryForm({...categoryForm, allows_tier_integration: checked})}
-                    />
+                    {React.createElement(Switch as any, {
+                      checked: categoryForm.allows_tier_integration,
+                      onCheckedChange: (checked: boolean) => setCategoryForm({...categoryForm, allows_tier_integration: checked})
+                    })}
                   </div>
 
                   {categoryForm.allows_tier_integration && (
                     <div className="space-y-2">
-                      {/* @ts-ignore */}
-                      <Label htmlFor="tier_weight">Tier Weight Multiplier</Label>
+                      {React.createElement(Label as any, { htmlFor: "tier_weight" }, "Tier Weight Multiplier")}
                       {React.createElement(Input as any, {
                         id: "tier_weight",
                         type: "number",
@@ -403,41 +391,37 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    {/* @ts-ignore */}
-                    <Label>Active</Label>
+                    {React.createElement(Label as any, {}, "Active")}
                     <p className="text-sm text-gray-600">
                       Enable this category for commission calculations
                     </p>
                   </div>
-                  {/* @ts-ignore */}
-                  <Switch
-                    checked={categoryForm.is_active}
-                    onCheckedChange={(checked) => setCategoryForm({...categoryForm, is_active: checked})}
-                  />
+                  {React.createElement(Switch as any, {
+                    checked: categoryForm.is_active,
+                    onCheckedChange: (checked: boolean) => setCategoryForm({...categoryForm, is_active: checked})
+                  })}
                 </div>
 
                 <div className="flex space-x-2">
-                  {/* @ts-ignore */}
-                  <Button
-                    onClick={handleSaveCategory}
-                    disabled={saving}
-                    className="flex items-center space-x-2"
-                  >
-                    <Save className="h-4 w-4" />
-                    <span>{saving ? 'Saving...' : 'Save Category'}</span>
-                  </Button>
-                  {/* @ts-ignore */}
-                  <Button
-                    variant="outline"
-                    onClick={() => {
+                  {React.createElement(Button as any, {
+                    onClick: handleSaveCategory,
+                    disabled: saving,
+                    className: "flex items-center space-x-2"
+                  },
+                    React.createElement(Save, { className: "h-4 w-4" }),
+                    React.createElement("span", null, saving ? 'Saving...' : 'Save Category')
+                  )}
+                  {React.createElement(Button as any, {
+                    variant: "outline",
+                    onClick: () => {
                       setShowCategoryForm(false)
                       setEditingCategory(null)
                       resetCategoryForm()
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                    <span>Cancel</span>
-                  </Button>
+                    }
+                  },
+                    React.createElement(X, { className: "h-4 w-4" }),
+                    React.createElement("span", null, "Cancel")
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -453,15 +437,14 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                   <p className="text-gray-600 mb-4">
                     Create product categories to configure commission rates for different types of products.
                   </p>
-                  {/* @ts-ignore */}
-                  <Button
-                    onClick={handleInitializeDefaults}
-                    disabled={saving}
-                    className="flex items-center space-x-2"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Initialize Default Categories</span>
-                  </Button>
+                  {React.createElement(Button as any, {
+                    onClick: handleInitializeDefaults,
+                    disabled: saving,
+                    className: "flex items-center space-x-2"
+                  },
+                    React.createElement(Settings, { className: "h-4 w-4" }),
+                    React.createElement("span", null, "Initialize Default Categories")
+                  )}
                 </CardContent>
               </Card>
             ) : (
@@ -507,15 +490,14 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                         </div>
                       </div>
                       
-                      {/* @ts-ignore */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditCategory(category)}
-                        className="ml-4"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                      {React.createElement(Button as any, {
+                        variant: "outline",
+                        size: "sm",
+                        onClick: () => handleEditCategory(category),
+                        className: "ml-4"
+                      },
+                        React.createElement(Edit, { className: "h-4 w-4" })
+                      )}
                     </div>
                   </CardContent>
                 </Card>
