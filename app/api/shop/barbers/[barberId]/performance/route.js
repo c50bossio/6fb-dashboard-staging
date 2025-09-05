@@ -12,8 +12,8 @@ export async function GET(request, { params }) {
     const barberId = params.barberId
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || 'monthly' // daily, weekly, monthly, quarterly
-    const dateRange.startDate = searchParams.get('start_date')
-    const dateRange.endDate = searchParams.get('end_date')
+    const startDateParam = searchParams.get('start_date')
+    const endDateParam = searchParams.get('end_date')
     
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -40,8 +40,8 @@ export async function GET(request, { params }) {
       .eq('period_type', period)
       .order('period_start', { ascending: false })
     
-    if (dateRange.startDate) query = query.gte('period_start', dateRange.startDate)
-    if (dateRange.endDate) query = query.lte('period_end', dateRange.endDate)
+    if (startDateParam) query = query.gte('period_start', startDateParam)
+    if (endDateParam) query = query.lte('period_end', endDateParam)
     
     const { data: performance, error } = await query.limit(12) // Last 12 periods
     
