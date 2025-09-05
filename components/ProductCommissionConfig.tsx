@@ -213,8 +213,8 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
           <p className="text-gray-600">Configure commission rates and settings for product sales</p>
         </div>
         <div className="flex space-x-2">
+          {/* @ts-ignore */}
           {categories.length === 0 && (
-            {/* @ts-ignore */}
             <Button
               onClick={handleInitializeDefaults}
               disabled={saving}
