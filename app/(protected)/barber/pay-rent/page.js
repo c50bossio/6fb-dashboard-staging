@@ -14,7 +14,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/card'
-import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
+import { createClient } from '@/lib/supabase/client'
 import { formatCurrency } from '@/lib/utils'
 
 /**
