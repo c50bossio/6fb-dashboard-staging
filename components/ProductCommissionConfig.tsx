@@ -214,7 +214,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </div>
         <div className="flex space-x-2">
           {categories.length === 0 && (
-            // @ts-ignore - Button component lacks TypeScript definitions
+            // @ts-ignore
             <Button
               onClick={handleInitializeDefaults}
               disabled={saving}
@@ -225,7 +225,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
               <span>Initialize Defaults</span>
             </Button>
           )}
-          {/* @ts-ignore - Button component lacks TypeScript definitions */}
+          {/* @ts-ignore */}
           <Button
             onClick={() => setShowCategoryForm(true)}
             className="flex items-center space-x-2"
@@ -237,21 +237,21 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
       </div>
 
       {/* Configuration Tabs */}
-      {/* @ts-ignore - Tabs component lacks TypeScript definitions */}
+      {/* @ts-ignore component lacks TypeScript definitions */}
       <Tabs defaultValue="categories" className="space-y-4">
-        {/* @ts-ignore - TabsList lacks TypeScript definitions */}
+        {/* @ts-ignoreList lacks TypeScript definitions */}
         <TabsList>
-          {/* @ts-ignore - TabsTrigger lacks TypeScript definitions */}
+          {/* @ts-ignoreTrigger lacks TypeScript definitions */}
           <TabsTrigger value="categories" className="flex items-center space-x-2">
             <Package className="h-4 w-4" />
             <span>Product Categories</span>
           </TabsTrigger>
-          {/* @ts-ignore - TabsTrigger lacks TypeScript definitions */}
+          {/* @ts-ignoreTrigger lacks TypeScript definitions */}
           <TabsTrigger value="barbers" className="flex items-center space-x-2">
             <TrendingUp className="h-4 w-4" />
             <span>Barber Overrides</span>
           </TabsTrigger>
-          {/* @ts-ignore - TabsTrigger lacks TypeScript definitions */}
+          {/* @ts-ignoreTrigger lacks TypeScript definitions */}
           <TabsTrigger value="integration" className="flex items-center space-x-2">
             <Settings className="h-4 w-4" />
             <span>Tier Integration</span>
@@ -259,7 +259,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </TabsList>
 
         {/* Product Categories Tab */}
-        {/* @ts-ignore - TabsContent lacks TypeScript definitions */}
+        {/* @ts-ignoreContent lacks TypeScript definitions */}
         <TabsContent value="categories">
           {showCategoryForm && (
             <Card>
@@ -274,9 +274,9 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    {/* @ts-ignore - Label component lacks TypeScript definitions */}
+                    {/* @ts-ignore */}
                     <Label htmlFor="category_name">Category Name*</Label>
-                    {/* @ts-ignore - Input component lacks TypeScript definitions */}
+                    {/* @ts-ignore */}
                     <Input
                       id="category_name"
                       value={categoryForm.category_name}
@@ -286,9 +286,9 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     />
                   </div>
                   <div className="space-y-2">
-                    {/* @ts-ignore - Label component lacks TypeScript definitions */}
+                    {/* @ts-ignore */}
                     <Label htmlFor="display_name">Display Name*</Label>
-                    {/* @ts-ignore - Input component lacks TypeScript definitions */}
+                    {/* @ts-ignore */}
                     <Input
                       id="display_name"
                       value={categoryForm.category_display_name}
@@ -299,9 +299,9 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                 </div>
 
                 <div className="space-y-2">
-                  {/* @ts-ignore - Label component lacks TypeScript definitions */}
+                  {/* @ts-ignore */}
                   <Label htmlFor="description">Description</Label>
-                  {/* @ts-ignore - Textarea component lacks TypeScript definitions */}
+                  {/* @ts-ignore */}
                   <Textarea
                     id="description"
                     value={categoryForm.category_description}
@@ -312,10 +312,10 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
 
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    {/* @ts-ignore - Label component lacks TypeScript definitions */}
+                    {/* @ts-ignore */}
                     <Label htmlFor="default_rate">Default Commission Rate*</Label>
                     <div className="relative">
-                      {/* @ts-ignore - Input component lacks TypeScript definitions */}
+                      {/* @ts-ignore */}
                       <Input
                         id="default_rate"
                         type="number"
@@ -331,10 +331,10 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     </div>
                   </div>
                   <div className="space-y-2">
-                    {/* @ts-ignore - Label component lacks TypeScript definitions */}
+                    {/* @ts-ignore */}
                     <Label htmlFor="min_rate">Min Rate</Label>
                     <div className="relative">
-                      {/* @ts-ignore - Input component lacks TypeScript definitions */}
+                      {/* @ts-ignore */}
                       <Input
                         id="min_rate"
                         type="number"
@@ -350,10 +350,10 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     </div>
                   </div>
                   <div className="space-y-2">
-                    {/* @ts-ignore - Label component lacks TypeScript definitions */}
+                    {/* @ts-ignore */}
                     <Label htmlFor="max_rate">Max Rate</Label>
                     <div className="relative">
-                      {/* @ts-ignore - Input component lacks TypeScript definitions */}
+                      {/* @ts-ignore */}
                       <Input
                         id="max_rate"
                         type="number"
@@ -373,13 +373,13 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      {/* @ts-ignore - Label component lacks TypeScript definitions */}
+                      {/* @ts-ignore */}
                       <Label>Tier Integration</Label>
                       <p className="text-sm text-gray-600">
                         Allow sales to contribute to tier progression
                       </p>
                     </div>
-                    {/* @ts-ignore - Switch component lacks TypeScript definitions */}
+                    {/* @ts-ignore */}
                     <Switch
                       checked={categoryForm.allows_tier_integration}
                       onCheckedChange={(checked) => setCategoryForm({...categoryForm, allows_tier_integration: checked})}
@@ -388,9 +388,9 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
 
                   {categoryForm.allows_tier_integration && (
                     <div className="space-y-2">
-                      {/* @ts-ignore - Label component lacks TypeScript definitions */}
+                      {/* @ts-ignore */}
                       <Label htmlFor="tier_weight">Tier Weight Multiplier</Label>
-                      {/* @ts-ignore - Input component lacks TypeScript definitions */}
+                      {/* @ts-ignore */}
                       <Input
                         id="tier_weight"
                         type="number"
@@ -409,13 +409,13 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    {/* @ts-ignore - Label component lacks TypeScript definitions */}
+                    {/* @ts-ignore */}
                     <Label>Active</Label>
                     <p className="text-sm text-gray-600">
                       Enable this category for commission calculations
                     </p>
                   </div>
-                  {/* @ts-ignore - Switch component lacks TypeScript definitions */}
+                  {/* @ts-ignore */}
                   <Switch
                     checked={categoryForm.is_active}
                     onCheckedChange={(checked) => setCategoryForm({...categoryForm, is_active: checked})}
@@ -423,7 +423,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                 </div>
 
                 <div className="flex space-x-2">
-                  {/* @ts-ignore - Button component lacks TypeScript definitions */}
+                  {/* @ts-ignore */}
                   <Button
                     onClick={handleSaveCategory}
                     disabled={saving}
@@ -432,7 +432,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                     <Save className="h-4 w-4" />
                     <span>{saving ? 'Saving...' : 'Save Category'}</span>
                   </Button>
-                  {/* @ts-ignore - Button component lacks TypeScript definitions */}
+                  {/* @ts-ignore */}
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -459,7 +459,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                   <p className="text-gray-600 mb-4">
                     Create product categories to configure commission rates for different types of products.
                   </p>
-                  {/* @ts-ignore - Button component lacks TypeScript definitions */}
+                  {/* @ts-ignore */}
                   <Button
                     onClick={handleInitializeDefaults}
                     disabled={saving}
@@ -513,7 +513,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                         </div>
                       </div>
                       
-                      {/* @ts-ignore - Button component lacks TypeScript definitions */}
+                      {/* @ts-ignore */}
                       <Button
                         variant="outline"
                         size="sm"
@@ -531,7 +531,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </TabsContent>
 
         {/* Barber Overrides Tab */}
-        {/* @ts-ignore - TabsContent lacks TypeScript definitions */}
+        {/* @ts-ignoreContent lacks TypeScript definitions */}
         <TabsContent value="barbers">
           <Alert>
             <AlertCircle className="h-4 w-4" />
@@ -590,7 +590,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </TabsContent>
 
         {/* Tier Integration Tab */}
-        {/* @ts-ignore - TabsContent lacks TypeScript definitions */}
+        {/* @ts-ignoreContent lacks TypeScript definitions */}
         <TabsContent value="integration">
           <Card>
             <CardHeader>
