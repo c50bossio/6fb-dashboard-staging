@@ -49,16 +49,16 @@ export async function GET(request) {
     const barbershopIdParam = searchParams.get('barbershop_id')
     
     // Use FullCalendar date range if provided, otherwise default to today + 30 days for performance
-    let startDate, endDate
+    let dateRange = { startDate: null, endDate: null }
     if (start && end) {
-      startDate = new Date(start)
-      endDate = new Date(end)
+      dateRange.startDate = new Date(start)
+      dateRange.endDate = new Date(end)
       console.log(`[Calendar API] Using FullCalendar date range: ${start} to ${end}`)
     } else {
       // Fallback: today + 30 days ahead for reasonable data fetch
-      startDate = new Date()
+      dateRange.startDate = new Date()
       startDate.setHours(0, 0, 0, 0)
-      endDate = new Date(startDate)
+      dateRange.endDate = new Date(dateRange.startDate)
       endDate.setDate(endDate.getDate() + 30)
       console.log(`[Calendar API] Using default date range: ${startDate.toISOString()} to ${endDate.toISOString()}`)
     }
@@ -328,7 +328,7 @@ export async function GET(request) {
       dateRange: {
         start: startDate.toISOString(),
         end: endDate.toISOString(),
-        daysSpan: Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
+        daysSpan: Math.ceil((endDate - dateRange.startDate) / (1000 * 60 * 60 * 24))
       },
       barbershops: targetbarbershopIds,
       queryOptimization: start && end ? 'FullCalendar date range used' : 'Default 30-day range used'

@@ -55,25 +55,25 @@ export async function GET(request) {
     }
     
     const today = new Date()
-    let startDate, endDate
+    let dateRange = { startDate: null, endDate: null }
     
     switch (period) {
       case 'day':
-        startDate = new Date(today.setHours(0, 0, 0, 0))
-        endDate = new Date(today.setHours(23, 59, 59, 999))
+        dateRange.startDate = new Date(today.setHours(0, 0, 0, 0))
+        dateRange.endDate = new Date(today.setHours(23, 59, 59, 999))
         break
       case 'week':
-        startDate = new Date(today)
+        dateRange.startDate = new Date(today)
         startDate.setDate(today.getDate() - 7)
-        endDate = new Date()
+        dateRange.endDate = new Date()
         break
       case 'year':
-        startDate = new Date(today.getFullYear(), 0, 1)
-        endDate = new Date(today.getFullYear(), 11, 31)
+        dateRange.startDate = new Date(today.getFullYear(), 0, 1)
+        dateRange.endDate = new Date(today.getFullYear(), 11, 31)
         break
       default: // month
-        startDate = new Date(today.getFullYear(), today.getMonth(), 1)
-        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+        dateRange.startDate = new Date(today.getFullYear(), today.getMonth(), 1)
+        dateRange.endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0)
     }
     
     let query = supabase
@@ -130,10 +130,10 @@ export async function GET(request) {
         })
       }
     } else {
-      const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24))
+      const days = Math.ceil((endDate - dateRange.startDate) / (1000 * 60 * 60 * 24))
       
       for (let i = 0; i < days; i++) {
-        const dayStart = new Date(startDate)
+        const dayStart = new Date(dateRange.startDate)
         dayStart.setDate(startDate.getDate() + i)
         dayStart.setHours(0, 0, 0, 0)
         
@@ -210,8 +210,8 @@ export async function GET(request) {
     const totalCommissions = barberBreakdown.reduce((sum, b) => sum + b.commission_earned, 0)
     const totalTips = transactions?.filter(t => t.type === 'tip').reduce((sum, t) => sum + (t.amount || 0), 0) || 0
     
-    const previousStartDate = new Date(startDate)
-    const previousEndDate = new Date(endDate)
+    const previousStartDate = new Date(dateRange.startDate)
+    const previousEndDate = new Date(dateRange.endDate)
     
     if (period === 'day') {
       previousStartDate.setDate(previousStartDate.getDate() - 1)

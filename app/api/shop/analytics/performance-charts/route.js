@@ -160,7 +160,7 @@ function generateDatePeriods(startDate, endDate, granularity) {
   
   while (current <= endDate) {
     const periodStart = new Date(current)
-    let periodEnd, label, key
+    let periodData = { periodEnd: null, label: '', key: '' }
     
     switch (granularity) {
       case 'weekly':

@@ -166,26 +166,26 @@ export async function GET(request) {
         ];
         
         const refund_scenarios = scenarios.map(scenario => {
-            let refund_amount, refund_percentage;
+            let refundCalc = { refund_amount: 0, refund_percentage: 0 };
             
             if (scenario.hours === 0) {
-                refund_amount = Math.max(0, service_price - policy.no_show_fee);
-                refund_percentage = Math.round((refund_amount / service_price) * 100);
+                refundCalc.refund_amount = Math.max(0, service_price - policy.no_show_fee);
+                refundCalc.refund_percentage = Math.round((refundCalc.refund_amount / service_price) * 100);
             } else if (scenario.hours >= policy.full_refund_hours) {
-                refund_amount = service_price - policy.cancellation_fee;
-                refund_percentage = Math.round((refund_amount / service_price) * 100);
+                refundCalc.refund_amount = service_price - policy.cancellation_fee;
+                refundCalc.refund_percentage = Math.round((refundCalc.refund_amount / service_price) * 100);
             } else if (scenario.hours >= policy.partial_refund_hours) {
-                refund_amount = (service_price * policy.partial_refund_percentage / 100) - policy.cancellation_fee;
-                refund_percentage = policy.partial_refund_percentage;
+                refundCalc.refund_amount = (service_price * policy.partial_refund_percentage / 100) - policy.cancellation_fee;
+                refundCalc.refund_percentage = policy.partial_refund_percentage;
             } else {
-                refund_amount = 0;
-                refund_percentage = 0;
+                refundCalc.refund_amount = 0;
+                refundCalc.refund_percentage = 0;
             }
             
             return {
                 hours_before: scenario.hours,
-                refund_amount: Math.max(0, refund_amount),
-                refund_percentage: refund_percentage,
+                refund_amount: Math.max(0, refundCalc.refund_amount),
+                refund_percentage: refundCalc.refund_percentage,
                 cancellation_fee: scenario.hours === 0 ? policy.no_show_fee : 
                                 scenario.hours >= policy.full_refund_hours ? policy.cancellation_fee :
                                 scenario.hours >= policy.partial_refund_hours ? policy.cancellation_fee : service_price,
@@ -208,58 +208,58 @@ export async function GET(request) {
                 const hours_until = (scheduledAt - now) / (1000 * 60 * 60);
                 const booking_amount = booking.total_amount || service_price;
                 
-                let refund_amount, cancellation_fee, reason;
+                let refundDetails = { refund_amount: 0, cancellation_fee: 0, reason: '' };
                 
                 if (hours_until >= policy.full_refund_hours) {
-                    refund_amount = booking_amount - policy.cancellation_fee;
-                    cancellation_fee = policy.cancellation_fee;
-                    reason = `Full refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
+                    refundDetails.refund_amount = booking_amount - policy.cancellation_fee;
+                    refundDetails.cancellation_fee = policy.cancellation_fee;
+                    refundDetails.reason = `Full refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
                 } else if (hours_until >= policy.partial_refund_hours) {
-                    refund_amount = (booking_amount * policy.partial_refund_percentage / 100) - policy.cancellation_fee;
-                    cancellation_fee = policy.cancellation_fee;
-                    reason = `${policy.partial_refund_percentage}% refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
+                    refundDetails.refund_amount = (booking_amount * policy.partial_refund_percentage / 100) - policy.cancellation_fee;
+                    refundDetails.cancellation_fee = policy.cancellation_fee;
+                    refundDetails.reason = `${policy.partial_refund_percentage}% refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
                 } else {
-                    refund_amount = 0;
-                    cancellation_fee = booking_amount;
-                    reason = `No refund (cancelled ${hours_until.toFixed(1)}h in advance, policy requires ${policy.partial_refund_hours}h)`;
+                    refundDetails.refund_amount = 0;
+                    refundDetails.cancellation_fee = booking_amount;
+                    refundDetails.reason = `No refund (cancelled ${hours_until.toFixed(1)}h in advance, policy requires ${policy.partial_refund_hours}h)`;
                 }
                 
                 current_refund = {
                     hours_until_appointment: parseFloat(hours_until.toFixed(1)),
                     original_amount: booking_amount,
-                    refund_amount: Math.max(0, refund_amount),
-                    cancellation_fee: cancellation_fee,
-                    net_loss: booking_amount - Math.max(0, refund_amount),
-                    reason: reason,
+                    refund_amount: Math.max(0, refundDetails.refund_amount),
+                    cancellation_fee: refundDetails.cancellation_fee,
+                    net_loss: booking_amount - Math.max(0, refundDetails.refund_amount),
+                    reason: refundDetails.reason,
                     policy_applied: policy.policy_type
                 };
             }
         } else if (simulate_hours > 0) {
             const hours_until = simulate_hours;
             
-            let refund_amount, cancellation_fee, reason;
+            let simulationResult = { refund_amount: 0, cancellation_fee: 0, reason: '' };
             
             if (hours_until >= policy.full_refund_hours) {
-                refund_amount = service_price - policy.cancellation_fee;
-                cancellation_fee = policy.cancellation_fee;
-                reason = `Full refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
+                simulationResult.refund_amount = service_price - policy.cancellation_fee;
+                simulationResult.cancellation_fee = policy.cancellation_fee;
+                simulationResult.reason = `Full refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
             } else if (hours_until >= policy.partial_refund_hours) {
-                refund_amount = (service_price * policy.partial_refund_percentage / 100) - policy.cancellation_fee;
-                cancellation_fee = policy.cancellation_fee;
-                reason = `${policy.partial_refund_percentage}% refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
+                simulationResult.refund_amount = (service_price * policy.partial_refund_percentage / 100) - policy.cancellation_fee;
+                simulationResult.cancellation_fee = policy.cancellation_fee;
+                simulationResult.reason = `${policy.partial_refund_percentage}% refund (cancelled ${hours_until.toFixed(1)}h in advance)`;
             } else {
-                refund_amount = 0;
-                cancellation_fee = service_price;
-                reason = `No refund (cancelled ${hours_until.toFixed(1)}h in advance, policy requires ${policy.partial_refund_hours}h)`;
+                simulationResult.refund_amount = 0;
+                simulationResult.cancellation_fee = service_price;
+                simulationResult.reason = `No refund (cancelled ${hours_until.toFixed(1)}h in advance, policy requires ${policy.partial_refund_hours}h)`;
             }
             
             current_refund = {
                 hours_until_appointment: parseFloat(hours_until.toFixed(1)),
                 original_amount: service_price,
-                refund_amount: Math.max(0, refund_amount),
-                cancellation_fee: cancellation_fee,
-                net_loss: service_price - Math.max(0, refund_amount),
-                reason: reason,
+                refund_amount: Math.max(0, simulationResult.refund_amount),
+                cancellation_fee: simulationResult.cancellation_fee,
+                net_loss: service_price - Math.max(0, simulationResult.refund_amount),
+                reason: simulationResult.reason,
                 policy_applied: policy.policy_type
             };
         }

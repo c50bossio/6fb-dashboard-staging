@@ -12,8 +12,8 @@ export async function GET(request, { params }) {
     const barberId = params.barberId
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || 'monthly' // daily, weekly, monthly, quarterly
-    const startDate = searchParams.get('start_date')
-    const endDate = searchParams.get('end_date')
+    const dateRange.startDate = searchParams.get('start_date')
+    const dateRange.endDate = searchParams.get('end_date')
     
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
@@ -40,8 +40,8 @@ export async function GET(request, { params }) {
       .eq('period_type', period)
       .order('period_start', { ascending: false })
     
-    if (startDate) query = query.gte('period_start', startDate)
-    if (endDate) query = query.lte('period_end', endDate)
+    if (dateRange.startDate) query = query.gte('period_start', dateRange.startDate)
+    if (dateRange.endDate) query = query.lte('period_end', dateRange.endDate)
     
     const { data: performance, error } = await query.limit(12) // Last 12 periods
     
@@ -104,21 +104,21 @@ async function generatePerformanceMetrics(supabase, barberId, barbershopId, peri
   
   // Generate last 6 periods based on type
   for (let i = 0; i < 6; i++) {
-    let startDate, endDate
+    let dateRange = { startDate: null, endDate: null }
     
     if (period === 'monthly') {
-      startDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      endDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
+      dateRange.startDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      dateRange.endDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
     } else if (period === 'weekly') {
       const weekStart = new Date(now)
       weekStart.setDate(now.getDate() - (now.getDay() + 7 * i))
-      startDate = weekStart
-      endDate = new Date(weekStart)
+      dateRange.startDate = weekStart
+      dateRange.endDate = new Date(weekStart)
       endDate.setDate(weekStart.getDate() + 6)
     } else { // daily
-      startDate = new Date(now)
+      dateRange.startDate = new Date(now)
       startDate.setDate(now.getDate() - i)
-      endDate = new Date(startDate)
+      dateRange.endDate = new Date(dateRange.startDate)
     }
     
     // Get appointments for this period
