@@ -92,7 +92,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
       }
       
       // Transform arrangements to barber configs
-      const barberConfigs = barbersResult.data
+      const barberConfigs = (barbersResult && typeof barbersResult === 'object' && 'data' in barbersResult ? barbersResult.data : [])
         ?.filter(arr => arr.product_commission_rate !== null || Object.keys(arr.product_category_overrides || {}).length > 0)
         ?.map(arr => ({
           barberId: arr.barber_id,
