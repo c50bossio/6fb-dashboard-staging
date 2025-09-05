@@ -1,6 +1,6 @@
 {
   "name": "6fb-ai-agent-system",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Enterprise barbershop platform with AI agents",
   "main": "index.js",
   "scripts": {
