@@ -214,7 +214,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         </div>
         <div className="flex space-x-2">
           {categories.length === 0 && (
-            <(Button as any)
+            <Button
               onClick={handleInitializeDefaults}
               disabled={saving}
               variant="outline"
@@ -222,7 +222,7 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
             >
               <Settings className="h-4 w-4" />
               <span>Initialize Defaults</span>
-            </(Button as any)>
+            </Button>
           )}
           <Button
             onClick={() => setShowCategoryForm(true)}
