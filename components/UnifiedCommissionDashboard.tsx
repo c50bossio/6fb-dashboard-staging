@@ -158,7 +158,7 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
         const { data: tierStatus } = await financialService.getBarberTierStatus(barberId, barbershopId)
         
         // Get barber profile info
-        const { data: profile } = await supabase
+        const { data: profile } = await _supabase
           .from('profiles')
           .select('id, first_name, last_name, full_name')
           .eq('id', barberId)
