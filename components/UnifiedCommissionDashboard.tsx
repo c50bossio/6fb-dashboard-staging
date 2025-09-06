@@ -505,13 +505,13 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
 
       {/* Main Dashboard Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="barbers">Barber Performance</TabsTrigger>
-          <TabsTrigger value="products">Product Sales</TabsTrigger>
-          <TabsTrigger value="tiers">Tier Progress</TabsTrigger>
-          <TabsTrigger value="individual">Individual Details</TabsTrigger>
-        </TabsList>
+        {React.createElement(TabsList as any, { className: "grid w-full grid-cols-5" },
+          React.createElement(TabsTrigger as any, { value: "overview" }, "Overview"),
+          React.createElement(TabsTrigger as any, { value: "barbers" }, "Barber Performance"),
+          React.createElement(TabsTrigger as any, { value: "products" }, "Product Sales"),
+          React.createElement(TabsTrigger as any, { value: "tiers" }, "Tier Progress"),
+          React.createElement(TabsTrigger as any, { value: "individual" }, "Individual Details")
+        )}
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
