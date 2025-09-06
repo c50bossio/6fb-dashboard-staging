@@ -7,7 +7,6 @@
  */
 
 import React from 'react'
-import { errorHandler } from '../lib/error-handler'
 
 class AuthErrorBoundary extends React.Component {
   constructor(props) {
@@ -29,14 +28,15 @@ class AuthErrorBoundary extends React.Component {
     // Log the error with auth context
     console.error('🔐 AuthErrorBoundary caught an error:', error, errorInfo)
     
-    // Report to error handler with auth context
-    if (errorHandler && typeof errorHandler.handleError === 'function') {
-      errorHandler.handleError(error, 'auth_boundary', {
-        componentStack: errorInfo.componentStack,
-        errorBoundary: true,
-        retryCount: this.state.retryCount
-      })
-    }
+    // Simple error logging without circular dependencies
+    console.error('🔐 Auth Error Details:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      errorBoundary: true,
+      retryCount: this.state.retryCount,
+      context: 'auth_boundary'
+    })
 
     this.setState({
       error,
