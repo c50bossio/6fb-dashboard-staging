@@ -507,13 +507,12 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
         {/* Barber Overrides Tab */}
         {/* @ts-ignoreContent lacks TypeScript definitions */}
         <TabsContent value="barbers">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              Barber-specific product commission overrides will be configured through the Financial Arrangements interface. 
-              This section shows current configurations.
-            </AlertDescription>
-          </Alert>
+          {React.createElement(Alert as any, {},
+            React.createElement(AlertCircle, { className: "h-4 w-4" }),
+            React.createElement(AlertDescription as any, {},
+              "Barber-specific product commission overrides will be configured through the Financial Arrangements interface. This section shows current configurations."
+            )
+          )}
           
           <div className="grid gap-4 mt-4">
             {barbers.length === 0 ? (
