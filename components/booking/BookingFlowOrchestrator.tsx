@@ -608,6 +608,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
         barberId={componentProps.preselectedBarber}
         serviceId={componentProps.preselectedService}
         selectedDate={new Date()}
+        onSlotsUpdate={() => {}}
       >
         {component}
       </RealtimeAvailabilityChecker>
