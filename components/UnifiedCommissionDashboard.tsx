@@ -393,17 +393,18 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
           
           {showBarberFilter && (
             <Select value={selectedBarber} onValueChange={setSelectedBarber}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Barbers" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Barbers</SelectItem>
-                {barberData.map(barber => (
-                  <SelectItem key={barber.barberId} value={barber.barberId}>
-                    {barber.barberName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+              {React.createElement(SelectTrigger as any, { className: "w-[180px]" },
+                React.createElement(SelectValue as any, { placeholder: "All Barbers" })
+              )}
+              {React.createElement(SelectContent as any, {},
+                React.createElement(SelectItem as any, { value: "all", key: "all" }, "All Barbers"),
+                ...barberData.map(barber => 
+                  React.createElement(SelectItem as any, { 
+                    key: barber.barberId, 
+                    value: barber.barberId 
+                  }, barber.barberName)
+                )
+              )}
             </Select>
           )}
           
