@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
-import { authLogger, apiLogger } from '@/lib/logger'
+// Simple console-based logging to prevent circular dependencies during auth initialization
+const authLogger = {
+  error: (...args) => console.error('[AUTH]', ...args),
+  warn: (...args) => console.warn('[AUTH]', ...args), 
+  info: (...args) => console.info('[AUTH]', ...args)
+}
+
+const apiLogger = {
+  error: (...args) => console.error('[API]', ...args),
+  warn: (...args) => console.warn('[API]', ...args),
+  info: (...args) => console.info('[API]', ...args)
+}
 
 export async function GET(request) {
   try {

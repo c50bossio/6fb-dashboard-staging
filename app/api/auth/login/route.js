@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
-import { authLogger } from '@/lib/logger'
+// Simple console-based logging to prevent circular dependencies during auth initialization
+const authLogger = {
+  error: (...args) => console.error('[AUTH]', ...args),
+  warn: (...args) => console.warn('[AUTH]', ...args), 
+  info: (...args) => console.info('[AUTH]', ...args)
+}
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

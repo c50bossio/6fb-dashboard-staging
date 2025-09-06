@@ -5,7 +5,18 @@ import { getUserbarbershopId } from '@/lib/barbershop-helper'
 import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
 import { hasPermission } from '@/lib/permissions'
 import { isTier } from '@/lib/subscription-tiers'
-import { authLogger, dbLogger } from '@/lib/logger'
+// Simple console-based logging to prevent circular dependencies during auth initialization
+const authLogger = {
+  error: (...args) => console.error('[AUTH]', ...args),
+  warn: (...args) => console.warn('[AUTH]', ...args), 
+  info: (...args) => console.info('[AUTH]', ...args)
+}
+
+const dbLogger = {
+  error: (...args) => console.error('[DB]', ...args),
+  warn: (...args) => console.warn('[DB]', ...args),
+  info: (...args) => console.info('[DB]', ...args)
+}
 export const runtime = 'nodejs'
 
 export async function GET(request) {
