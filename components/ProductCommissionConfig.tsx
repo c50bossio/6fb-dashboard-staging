@@ -629,13 +629,13 @@ const ProductCommissionConfig: React.FC<ProductCommissionConfigProps> = ({
                 </div>
               </div>
 
-              <Alert>
-                <TrendingUp className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Tip:</strong> Set lower tier weights for products (0.3-0.7x) to maintain service-focused tier progression 
-                  while still rewarding product sales performance.
-                </AlertDescription>
-              </Alert>
+              {React.createElement(Alert as any, {},
+                React.createElement(TrendingUp, { className: "h-4 w-4" }),
+                React.createElement(AlertDescription as any, {},
+                  React.createElement("strong", null, "Tip:"),
+                  " Set lower tier weights for products (0.3-0.7x) to maintain service-focused tier progression while still rewarding product sales performance."
+                )
+              )}
             </CardContent>
           </Card>
         </TabsContent>
