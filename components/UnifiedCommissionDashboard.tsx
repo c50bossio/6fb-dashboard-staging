@@ -514,7 +514,7 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
         )}
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        {React.createElement(TabsContent as any, { value: "overview", className: "space-y-6" },
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -603,10 +603,10 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        )}
 
         {/* Barber Performance Tab */}
-        <TabsContent value="barbers" className="space-y-6">
+        {React.createElement(TabsContent as any, { value: "barbers", className: "space-y-6" },
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -654,10 +654,10 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+        )}
 
         {/* Product Sales Tab */}
-        <TabsContent value="products" className="space-y-6">
+        {React.createElement(TabsContent as any, { value: "products", className: "space-y-6" },
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -703,10 +703,10 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
+        )}
 
         {/* Tier Progress Tab */}
-        <TabsContent value="tiers" className="space-y-6">
+        {React.createElement(TabsContent as any, { value: "tiers", className: "space-y-6" },
           <Card>
             <CardHeader>
               <CardTitle>Tier System Impact</CardTitle>
@@ -777,10 +777,10 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        )}
 
         {/* Individual Details Tab */}
-        <TabsContent value="individual" className="space-y-6">
+        {React.createElement(TabsContent as any, { value: "individual", className: "space-y-6" },
           {barberData.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {(selectedBarber === 'all' ? barberData : barberData.filter(b => b.barberId === selectedBarber))
@@ -900,7 +900,7 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </CardContent>
             </Card>
           )}
-        </TabsContent>
+        )}
       </Tabs>
     </div>
   )
