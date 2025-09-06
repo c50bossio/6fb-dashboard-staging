@@ -93,6 +93,10 @@ interface BarberCommissionData {
   serviceRevenue: number
   productRevenue: number
   combinedRevenue: number
+  currentPeriodRevenue: number
+  projectedRevenue: number
+  totalTransactions: number
+  averageTransactionValue: number
 }
 
 interface UnifiedCommissionDashboardProps {
@@ -393,25 +397,24 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
           
           {showBarberFilter && (
             <Select value={selectedBarber} onValueChange={setSelectedBarber}>
-              {React.createElement(SelectTrigger as any, { className: "w-[180px]" },
-                React.createElement(SelectValue as any, { placeholder: "All Barbers" })
-              )}
-              {React.createElement(SelectContent as any, {},
-                React.createElement(SelectItem as any, { value: "all", key: "all" }, "All Barbers"),
-                ...barberData.map(barber => 
-                  React.createElement(SelectItem as any, { 
-                    key: barber.barberId, 
-                    value: barber.barberId 
-                  }, barber.barberName)
-                )
-              )}
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Barbers" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Barbers</SelectItem>
+                {barberData.map(barber => (
+                  <SelectItem key={barber.barberId} value={barber.barberId}>
+                    {barber.barberName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           )}
           
-          {React.createElement(Button as any, { variant: "outline", size: "sm" },
-            React.createElement(Download, { className: "h-4 w-4 mr-2" }),
-            "Export"
-          )}
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
         </div>
       </div>
 
@@ -505,16 +508,16 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
 
       {/* Main Dashboard Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        {React.createElement(TabsList as any, { className: "grid w-full grid-cols-5" },
-          React.createElement(TabsTrigger as any, { value: "overview" }, "Overview"),
-          React.createElement(TabsTrigger as any, { value: "barbers" }, "Barber Performance"),
-          React.createElement(TabsTrigger as any, { value: "products" }, "Product Sales"),
-          React.createElement(TabsTrigger as any, { value: "tiers" }, "Tier Progress"),
-          React.createElement(TabsTrigger as any, { value: "individual" }, "Individual Details")
-        )}
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="barbers">Barber Performance</TabsTrigger>
+          <TabsTrigger value="products">Product Sales</TabsTrigger>
+          <TabsTrigger value="tiers">Tier Progress</TabsTrigger>
+          <TabsTrigger value="individual">Individual Details</TabsTrigger>
+        </TabsList>
 
         {/* Overview Tab */}
-        {React.createElement(TabsContent as any, { value: "overview", className: "space-y-6" },
+        <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -603,10 +606,10 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </div>
             </CardContent>
           </Card>
-        )}
+        </TabsContent>
 
         {/* Barber Performance Tab */}
-        {React.createElement(TabsContent as any, { value: "barbers", className: "space-y-6" },
+        <TabsContent value="barbers" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -654,10 +657,10 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </CardContent>
             </Card>
           </div>
-        )}
+        </TabsContent>
 
         {/* Product Sales Tab */}
-        {React.createElement(TabsContent as any, { value: "products", className: "space-y-6" },
+        <TabsContent value="products" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -703,10 +706,10 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </CardContent>
             </Card>
           </div>
-        )}
+        </TabsContent>
 
         {/* Tier Progress Tab */}
-        {React.createElement(TabsContent as any, { value: "tiers", className: "space-y-6" },
+        <TabsContent value="tiers" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Tier System Impact</CardTitle>
@@ -777,10 +780,10 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </div>
             </CardContent>
           </Card>
-        )}
+        </TabsContent>
 
         {/* Individual Details Tab */}
-        {React.createElement(TabsContent as any, { value: "individual", className: "space-y-6" },
+        <TabsContent value="individual" className="space-y-6">
           {barberData.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {(selectedBarber === 'all' ? barberData : barberData.filter(b => b.barberId === selectedBarber))
@@ -900,7 +903,7 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
               </CardContent>
             </Card>
           )}
-        )}
+        </TabsContent>
       </Tabs>
     </div>
   )
