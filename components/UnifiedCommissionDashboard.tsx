@@ -408,10 +408,10 @@ const UnifiedCommissionDashboard: React.FC<UnifiedCommissionDashboardProps> = ({
             </Select>
           )}
           
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          {React.createElement(Button as any, { variant: "outline", size: "sm" },
+            React.createElement(Download, { className: "h-4 w-4 mr-2" }),
+            "Export"
+          )}
         </div>
       </div>
 
