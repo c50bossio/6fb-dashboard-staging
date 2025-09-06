@@ -469,7 +469,7 @@ const BookingFlowOrchestrator: React.FC<BookingFlowOrchestratorProps> = ({
         const optimalComponent = determineOptimalComponent(detectedDevice, loadedFlags, urlParams)
         
         // Prepare component props with intelligent defaults
-        const props = {
+        const props: any = {
           barbershopId,
           barbershopSlug,
           preselectedBarber: urlParams.barberId || preselectedBarber,
