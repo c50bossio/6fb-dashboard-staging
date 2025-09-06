@@ -67,16 +67,8 @@ const nextConfig = {
 
   // Webpack configuration for legacy browser support
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Optimize for production
-    if (!dev && !isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'react/jsx-runtime.js': 'preact/compat/jsx-runtime',
-        react: 'preact/compat',
-        'react-dom/test-utils': 'preact/test-utils',
-        'react-dom': 'preact/compat',
-      }
-    }
+    // Remove Preact aliasing - causes React 18 hook compatibility issues
+    // Keeping React for better compatibility with modern features
 
     // Bundle analyzer in development
     if (dev) {
