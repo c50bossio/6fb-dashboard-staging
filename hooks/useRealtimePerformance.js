@@ -5,10 +5,15 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { useState, useEffect, useCallback } from 'react'
-import { logger } from '@/lib/logger'
+// Simple console logging to prevent circular dependencies
+const logger = {
+  error: (...args) => console.error('[REALTIME_PERFORMANCE]', ...args),
+  warn: (...args) => console.warn('[REALTIME_PERFORMANCE]', ...args),
+  info: (...args) => console.info('[REALTIME_PERFORMANCE]', ...args)
+}
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-const performanceLogger = logger.child('realtime-performance')
+const performanceLogger = logger
 
 /**
  * Monitor real-time subscription performance

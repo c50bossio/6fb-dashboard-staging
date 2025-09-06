@@ -2,7 +2,18 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { trackAIUsage } from '@/lib/usage-middleware'
-import { apiLogger, analyticsLogger } from '@/lib/logger'
+// Simple console logging to prevent circular dependencies
+const apiLogger = {
+  error: (...args) => console.error('[API]', ...args),
+  warn: (...args) => console.warn('[API]', ...args),
+  info: (...args) => console.info('[API]', ...args)
+}
+
+const analyticsLogger = {
+  error: (...args) => console.error('[ANALYTICS]', ...args),
+  warn: (...args) => console.warn('[ANALYTICS]', ...args),
+  info: (...args) => console.info('[ANALYTICS]', ...args)
+}
 
 export const runtime = 'nodejs'
 

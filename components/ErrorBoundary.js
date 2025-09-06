@@ -6,9 +6,14 @@
 
 import * as Sentry from '@sentry/nextjs'
 import React from 'react'
-import { logger } from '@/lib/logger'
+// Simple console logging to prevent circular dependencies
+const logger = {
+  error: (...args) => console.error('[ERROR_BOUNDARY]', ...args),
+  warn: (...args) => console.warn('[ERROR_BOUNDARY]', ...args),
+  info: (...args) => console.info('[ERROR_BOUNDARY]', ...args)
+}
 
-const errorLogger = logger.child('error-boundary')
+const errorLogger = logger
 
 /**
  * Error Fallback Component

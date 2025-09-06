@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { dbLogger, apiLogger } from '@/lib/logger'
+// Simple console logging to prevent circular dependencies
+const dbLogger = {
+  error: (...args) => console.error('[DB]', ...args),
+  warn: (...args) => console.warn('[DB]', ...args),
+  info: (...args) => console.info('[DB]', ...args)
+}
+
+const apiLogger = {
+  error: (...args) => console.error('[API]', ...args),
+  warn: (...args) => console.warn('[API]', ...args),
+  info: (...args) => console.info('[API]', ...args)
+}
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
