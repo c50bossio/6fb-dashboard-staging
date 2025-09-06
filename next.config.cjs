@@ -1,0 +1,259 @@
+const path = require('path')
+
+const __dirname = path.resolve()
+
+const nextConfig = {
+  reactStrictMode: true,
+  eslint: {
+    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: true, // Force disable
+    dirs: [],
+  },
+  
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  
+  // Enable SWC minification for faster builds
+  swcMinify: true,
+  
+  // Optimize production builds
+  productionBrowserSourceMaps: false,
+  
+  // Generate unique build ID for cache busting
+  generateBuildId: async () => {
+    // Use timestamp for unique build ID
+    const buildId = Date.now().toString();
+    
+    return buildId;
+  },
+  
+  // Expose build ID to client for cache validation
+  env: {
+    NEXT_PUBLIC_BUILD_ID: Date.now().toString(),
+    NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
+    // Explicitly expose Supabase environment variables
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  },
+  
+  // Skip static generation for test pages in production
+  ...(process.env.NODE_ENV === 'production' && {
+    skipMiddlewareUrlNormalize: true,
+    skipTrailingSlashRedirect: true,
+  }),
+
+  // Experimental features for optimizing bundle
+  experimental: {
+    optimizeCss: true,
+    scrollRestoration: true,
+    // Reduce build memory usage
+    optimizePackageImports: ['@heroicons/react', 'lucide-react', 'react-icons'],
+    outputFileTracingExcludes: {
+      '*': [
+        'node_modules/@sentry/cli',
+        'node_modules/puppeteer',
+        'node_modules/@playwright',
+        'node_modules/playwright',
+        'node_modules/@fullcalendar',
+        'node_modules/canvas-confetti',
+        'node_modules/html2canvas',
+        'node_modules/jspdf',
+        'node_modules/chart.js',
+        'node_modules/recharts',
+        'node_modules/@faker-js',
+        'node_modules/@testing-library',
+        'node_modules/jest',
+        'node_modules/webpack-bundle-analyzer',
+        '__tests__/**',
+        'tests/**',
+        '*.test.js',
+        '*.spec.js',
+        '*.py',
+        '*.md',
+      ],
+    },
+  },
+
+  // Configure output for deployment 
+  output: 'standalone',
+  
+  // Dynamic rendering configuration for production
+  ...(process.env.NODE_ENV === 'production' && {
+    // Configure static generation behavior
+    trailingSlash: false,
+  }),
+  
+  // Redirect all test routes in production
+  ...(process.env.NODE_ENV === 'production' && {
+    redirects: async () => [
+      {
+        source: '/test:path*',
+        destination: '/dashboard',
+        permanent: false,
+      },
+      {
+        source: '/simple-test',
+        destination: '/dashboard', 
+        permanent: false,
+      },
+      {
+        source: '/debug:path*',
+        destination: '/dashboard',
+        permanent: false,
+      },
+    ],
+  }),
+  
+  // Module optimization
+  modularizeImports: {
+    '@heroicons/react': {
+      transform: '@heroicons/react/24/outline/{{member}}'
+    },
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{member}}'
+    },
+    'react-icons': {
+      transform: 'react-icons/{{member}}'
+    }
+  },
+  
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+      },
+    ],
+    formats: ['image/avif', 'image/webp'],
+  },
+  
+  webpack: (config, { isServer }) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': __dirname,
+    }
+    // Ensure .js extensions are resolved
+    config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
+    
+    // Minimal webpack fallbacks - let lazy loading handle the rest
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    }
+    
+    // Optimize bundle size for production
+    if (!isServer && process.env.NODE_ENV === 'production') {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+          },
+        },
+      }
+    }
+    
+    // Reduce memory usage during build
+    config.infrastructureLogging = { level: 'error' }
+    
+    return config
+  },
+  
+  async headers() {
+    return [
+      {
+        source: '/book/:barberId/embed',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'ALLOWALL',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors *;",
+          },
+        ],
+      },
+      // Add cache control headers for static assets
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, immutable, max-age=31536000',
+          },
+        ],
+      },
+      // Use stale-while-revalidate for HTML pages
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 's-maxage=1, stale-while-revalidate=59',
+          },
+        ],
+      },
+    ];
+  },
+
+  async redirects() {
+    return [
+      // Redirect old payment setup pages to unified settings
+      {
+        source: '/shop/settings/payment-setup',
+        destination: '/dashboard/settings?tab=integrations',
+        permanent: true,
+      },
+      {
+        source: '/shop/settings/payment',
+        destination: '/dashboard/settings?tab=integrations',
+        permanent: true,
+      },
+      {
+        source: '/shop/settings/processing',
+        destination: '/dashboard/settings?tab=integrations',
+        permanent: true,
+      },
+      // Redirect old generic payments page to billing dashboard
+      {
+        source: '/payments',
+        destination: '/dashboard/billing',
+        permanent: true,
+      },
+      {
+        source: '/billing-demo',
+        destination: '/dashboard/billing',
+        permanent: true,
+      },
+    ];
+  },
+
+  async rewrites() {
+    const isDev = process.env.NODE_ENV === 'development';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || (isDev 
+      ? 'http://127.0.0.1:8001' 
+      : 'https://6fb-ai-backend-staging.onrender.com');
+      
+    return [
+      {
+        source: '/fastapi/:path*',
+        destination: `${apiUrl}/:path*`,
+      },
+    ];
+  },
+};
+
+module.exports = nextConfig;
