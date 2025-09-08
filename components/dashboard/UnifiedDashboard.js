@@ -30,6 +30,9 @@ import ExecutiveLoadingState from './ExecutiveLoadingState'
 
 // Use API calls instead of direct database imports (client component)
 
+// Demo barbershop ID constant - matches Supabase UUID
+const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+
 // Dashboard modes for different user needs
 const DASHBOARD_MODES = {
   EXECUTIVE: 'executive',
@@ -95,7 +98,7 @@ export default function UnifiedDashboard({ user }) {
   // Load dashboard data based on current mode - API CALLS ONLY
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
     // Get barbershop ID from user or use demo
-    const barbershopId = user?.barbershop_id || 'demo-shop-001'
+    const barbershopId = user?.barbershop_id || DEMO_BARBERSHOP_ID
     
     // CACHE DISABLED: Always fetch fresh data for consistency between Executive/Analytics modes
     // Previously cached data was causing inconsistencies with Analytics panel
@@ -230,7 +233,7 @@ export default function UnifiedDashboard({ user }) {
   const handleExecutiveModeHover = useCallback(() => {
     if (currentMode !== DASHBOARD_MODES.EXECUTIVE) {
       // Prefetch analytics data for executive mode
-      const barbershopId = user?.barbershop_id || 'demo-shop-001'
+      const barbershopId = user?.barbershop_id || DEMO_BARBERSHOP_ID
       fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
         .then(response => response.json())
         .then(result => {
@@ -244,7 +247,7 @@ export default function UnifiedDashboard({ user }) {
 
   // Mode selector component
   const ModeSelector = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2 flex flex-wrap gap-2">
+    <div className="card-modern rounded-xl p-2 flex flex-wrap gap-2">
       {Object.entries(DASHBOARD_MODES).map(([key, value]) => {
         const config = modeConfigs[value]
         const Icon = currentMode === value ? config.solidIcon : config.icon
@@ -257,10 +260,10 @@ export default function UnifiedDashboard({ user }) {
             onMouseEnter={value === DASHBOARD_MODES.EXECUTIVE ? handleExecutiveModeHover : undefined}
             className={`
               flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
-              transition-all duration-200 
+              transition-all duration-300 
               ${isActive 
-                ? `bg-${config.color}-500 text-white shadow-lg scale-105` 
-                : `bg-gray-50 text-gray-700 hover:bg-gray-100`
+                ? `gradient-gold-header text-white shadow-gold-glow scale-105 text-shadow-subtle` 
+                : `bg-gray-50/70 text-gray-700 hover:bg-brand-50/50 hover:text-brand-700 hover:shadow-modern`
               }
             `}
           >
@@ -306,20 +309,20 @@ export default function UnifiedDashboard({ user }) {
         return (
           <div className="space-y-6">
             {/* AI Business Insights Header */}
-            <div className="bg-gradient-to-r from-gold-500 to-indigo-600 rounded-xl p-6 text-white">
+            <div className="gradient-gold-header rounded-xl p-6 text-white shadow-gold-glow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold mb-1">AI Business Insights</h3>
-                  <p className="text-gold-100">Intelligent recommendations to grow your business</p>
+                  <h3 className="text-lg font-semibold mb-1 text-shadow-subtle">AI Business Insights</h3>
+                  <p className="text-white/90">Intelligent recommendations to grow your business</p>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-center">
                     <div className="text-3xl font-bold">{aiAgents.total || 6}</div>
-                    <div className="text-sm text-gold-100">AI Coaches</div>
+                    <div className="text-sm text-white/80">AI Coaches</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold">{aiAgents.active || 4}</div>
-                    <div className="text-sm text-gold-100">Working for You</div>
+                    <div className="text-sm text-white/80">Working for You</div>
                   </div>
                 </div>
               </div>

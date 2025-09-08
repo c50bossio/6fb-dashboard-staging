@@ -92,19 +92,19 @@ export default function UnifiedExecutiveSummary({ data }) {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div className="card-modern overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-500 to-gold-600 text-white px-6 py-4">
+      <div className="gradient-gold-header text-white px-6 py-4 shadow-gold-glow">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold">Executive Overview</h2>
-            <p className="text-indigo-100 text-sm mt-1">
+            <p className="text-white/90 text-sm mt-1">
               {greeting} • {formatDate(currentTime)}
             </p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-            <div className="text-sm text-indigo-100">Local Time</div>
+            <div className="text-2xl font-bold text-shadow-subtle">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div className="text-sm text-white/80">Local Time</div>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function UnifiedExecutiveSummary({ data }) {
             </h3>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
                   <CurrencyDollarIcon className="h-5 w-5 text-olive-600" />
                   {formatChange(12.5)}
@@ -132,7 +132,7 @@ export default function UnifiedExecutiveSummary({ data }) {
                 <div className="text-sm text-gray-600">Revenue</div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
                   <UserGroupIcon className="h-5 w-5 text-olive-600" />
                   {formatChange(8.3)}
@@ -143,7 +143,7 @@ export default function UnifiedExecutiveSummary({ data }) {
                 <div className="text-sm text-gray-600">Customers</div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
                   <CalendarDaysIcon className="h-5 w-5 text-green-600" />
                   {formatChange(15)}
@@ -154,7 +154,7 @@ export default function UnifiedExecutiveSummary({ data }) {
                 <div className="text-sm text-gray-600">Appointments</div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
                   <StarIcon className="h-5 w-5 text-amber-800" />
                   {formatChange(0.2, '+')}
@@ -175,28 +175,28 @@ export default function UnifiedExecutiveSummary({ data }) {
             </h3>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-olive-50 rounded-lg p-4">
+              <div className="metric-card-gold">
                 <div className="text-2xl font-bold text-gray-900">
                   ${todayMetrics.revenue}
                 </div>
                 <div className="text-sm text-gray-600">Today's Revenue</div>
               </div>
 
-              <div className="bg-gold-50 rounded-lg p-4">
+              <div className="metric-card-gold">
                 <div className="text-2xl font-bold text-gray-900">
                   {todayMetrics.bookings}
                 </div>
                 <div className="text-sm text-gray-600">Bookings</div>
               </div>
 
-              <div className="bg-green-50 rounded-lg p-4">
+              <div className="metric-card">
                 <div className="text-2xl font-bold text-gray-900">
                   {todayMetrics.capacity}%
                 </div>
                 <div className="text-sm text-gray-600">Capacity</div>
               </div>
 
-              <div className="bg-orange-50 rounded-lg p-4">
+              <div className="metric-card">
                 <div className="text-2xl font-bold text-gray-900">
                   {todayMetrics.nextAppointment}
                 </div>
