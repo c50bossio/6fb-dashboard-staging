@@ -1,0 +1,663 @@
+{
+  "timestamp": "2025-09-10T12:07:19.589Z",
+  "total_tests": 25,
+  "passed": 16,
+  "failed": 9,
+  "errors": [
+    {
+      "test": "master_coach agent chat response",
+      "error": "Request failed with status code 422"
+    },
+    {
+      "test": "financial agent chat response",
+      "error": "Request failed with status code 422"
+    },
+    {
+      "test": "marketing agent chat response",
+      "error": "Request failed with status code 422"
+    },
+    {
+      "test": "technical_operations agent chat response",
+      "error": "Request failed with status code 422"
+    },
+    {
+      "test": "customer_success agent chat response",
+      "error": "Request failed with status code 422"
+    },
+    {
+      "test": "Unified Chat API endpoint",
+      "error": "Request failed with status code 404"
+    },
+    {
+      "test": "Analytics returns structured data (not mock)",
+      "error": "Data structure suggests mock data"
+    }
+  ],
+  "details": {
+    "fastapi_health": {
+      "success": true,
+      "data": {
+        "success": true,
+        "message": "Health check completed",
+        "timestamp": "2025-09-10T08:07:24.580122",
+        "overall_status": "healthy",
+        "services": [
+          {
+            "service_name": "orchestrator",
+            "status": "healthy",
+            "last_check": "2025-09-10T08:07:20.457273",
+            "response_time": null,
+            "details": {
+              "status": "healthy",
+              "primary_llm": "healthy",
+              "fallback_llm": "unhealthy",
+              "services_available": true,
+              "orchestrator_info": {
+                "orchestrator": {
+                  "status": "active",
+                  "version": "1.0.0",
+                  "uptime": "active",
+                  "services_available": true
+                },
+                "available_agents": [
+                  "business_intelligence",
+                  "technical_ops",
+                  "customer_success",
+                  "marketing",
+                  "financial",
+                  "master_coach"
+                ],
+                "workflow_nodes": [
+                  "analyze_request",
+                  "route_to_agent",
+                  "execute_task",
+                  "synthesize_response",
+                  "cache_results"
+                ],
+                "memory_backend": "MemorySaver"
+              },
+              "timestamp": "2025-09-10T08:07:20.457265"
+            }
+          },
+          {
+            "service_name": "knowledge_service",
+            "status": "healthy",
+            "last_check": "2025-09-10T08:07:20.460112",
+            "response_time": null,
+            "details": {
+              "total_documents": 25,
+              "documents_by_type": {
+                "barbershop_operations": 3,
+                "business_strategy": 3,
+                "customer_service": 4,
+                "financial_management": 4,
+                "industry_best_practices": 1,
+                "marketing_strategies": 3,
+                "product_inventory": 1,
+                "regulatory_compliance": 1,
+                "staff_management": 1,
+                "technical_operations": 4
+              },
+              "recent_additions_7d": 25,
+              "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+              "cache_enabled": true,
+              "last_updated": "2025-09-10T08:07:20.460106"
+            }
+          },
+          {
+            "service_name": "agent_master_coach",
+            "status": "healthy",
+            "last_check": "2025-09-10T08:07:21.285888",
+            "response_time": null,
+            "details": {
+              "healthy": true,
+              "agent_name": "Master Coach Agent",
+              "status": "idle",
+              "last_activity": "2025-09-10T07:45:18.188968",
+              "checks": {
+                "primary_llm": true,
+                "cache": true,
+                "structured_output": true,
+                "knowledge_service": true
+              }
+            }
+          },
+          {
+            "service_name": "agent_technical_operations",
+            "status": "healthy",
+            "last_check": "2025-09-10T08:07:21.518948",
+            "response_time": null,
+            "details": {
+              "healthy": true,
+              "agent_name": "Technical Operations Agent",
+              "status": "idle",
+              "last_activity": "2025-09-10T07:44:31.579876",
+              "checks": {
+                "primary_llm": true,
+                "cache": true,
+                "structured_output": true,
+                "knowledge_service": true
+              }
+            }
+          },
+          {
+            "service_name": "agent_customer_success",
+            "status": "healthy",
+            "last_check": "2025-09-10T08:07:22.185986",
+            "response_time": null,
+            "details": {
+              "healthy": true,
+              "agent_name": "Customer Success Agent",
+              "status": "idle",
+              "last_activity": "2025-09-10T07:44:59.606087",
+              "checks": {
+                "primary_llm": true,
+                "cache": true,
+                "structured_output": true,
+                "knowledge_service": true
+              }
+            }
+          },
+          {
+            "service_name": "agent_marketing",
+            "status": "healthy",
+            "last_check": "2025-09-10T08:07:22.594277",
+            "response_time": null,
+            "details": {
+              "healthy": true,
+              "agent_name": "Marketing Agent",
+              "status": "idle",
+              "last_activity": "2025-09-10T07:47:55.672108",
+              "checks": {
+                "primary_llm": true,
+                "cache": true,
+                "structured_output": true,
+                "knowledge_service": true
+              }
+            }
+          },
+          {
+            "service_name": "agent_financial",
+            "status": "healthy",
+            "last_check": "2025-09-10T08:07:24.580067",
+            "response_time": null,
+            "details": {
+              "healthy": true,
+              "agent_name": "Financial Agent",
+              "status": "idle",
+              "last_activity": "2025-09-10T07:43:22.758058",
+              "checks": {
+                "primary_llm": true,
+                "cache": true,
+                "structured_output": true,
+                "knowledge_service": true
+              }
+            }
+          }
+        ],
+        "system_info": {
+          "uptime": 29877.560063123703,
+          "total_requests": 7,
+          "error_count": 0,
+          "active_agents": 5
+        }
+      },
+      "status": 200
+    },
+    "fastapi_status": {
+      "success": true,
+      "data": {
+        "total_requests": 7,
+        "total_agents": 5,
+        "uptime_seconds": 29877.566071987152,
+        "knowledge_documents": 25,
+        "cache_hit_rate": 0,
+        "average_response_time": 0,
+        "agents": [
+          {
+            "agent_type": "master_coach",
+            "total_requests": 2,
+            "successful_requests": 2,
+            "failed_requests": 0,
+            "average_response_time": 0,
+            "average_confidence": 0.5,
+            "total_tokens_used": 0,
+            "last_activity": "2025-09-10T07:45:18.188968",
+            "status": "idle"
+          },
+          {
+            "agent_type": "technical_operations",
+            "total_requests": 1,
+            "successful_requests": 1,
+            "failed_requests": 0,
+            "average_response_time": 0,
+            "average_confidence": 0.5,
+            "total_tokens_used": 0,
+            "last_activity": "2025-09-10T07:44:31.579876",
+            "status": "idle"
+          },
+          {
+            "agent_type": "customer_success",
+            "total_requests": 1,
+            "successful_requests": 1,
+            "failed_requests": 0,
+            "average_response_time": 0,
+            "average_confidence": 0.5,
+            "total_tokens_used": 0,
+            "last_activity": "2025-09-10T07:44:59.606087",
+            "status": "idle"
+          },
+          {
+            "agent_type": "marketing",
+            "total_requests": 2,
+            "successful_requests": 2,
+            "failed_requests": 0,
+            "average_response_time": 0,
+            "average_confidence": 0.5,
+            "total_tokens_used": 0,
+            "last_activity": "2025-09-10T07:47:55.672108",
+            "status": "idle"
+          },
+          {
+            "agent_type": "financial",
+            "total_requests": 1,
+            "successful_requests": 1,
+            "failed_requests": 0,
+            "average_response_time": 0,
+            "average_confidence": 0.5,
+            "total_tokens_used": 0,
+            "last_activity": "2025-09-10T07:43:22.758058",
+            "status": "idle"
+          }
+        ]
+      },
+      "status": 200
+    },
+    "frontend_health": {
+      "success": true,
+      "data": {
+        "status": "partial",
+        "timestamp": "2025-09-10T12:07:25.643Z",
+        "services": {
+          "supabase": {
+            "status": "healthy"
+          },
+          "stripe": {
+            "status": "configured",
+            "test_mode": false
+          },
+          "openai": {
+            "status": "configured"
+          },
+          "anthropic": {
+            "status": "configured"
+          },
+          "pusher": {
+            "status": "not_configured"
+          },
+          "sentry": {
+            "status": "not_configured"
+          },
+          "novu": {
+            "status": "not_configured"
+          },
+          "edgeConfig": {
+            "status": "not_configured"
+          }
+        },
+        "version": "1.0.0",
+        "environment": "development",
+        "deployment": {
+          "url": "localhost",
+          "region": "local",
+          "git_commit": "unknown"
+        },
+        "system": {
+          "node_version": "v20.19.4",
+          "platform": "darwin",
+          "uptime": 3014,
+          "memory": {
+            "used": 984,
+            "total": 1039,
+            "unit": "MB"
+          },
+          "response_time_ms": 455
+        }
+      },
+      "status": 200
+    },
+    "agent_master_coach": {
+      "success": false,
+      "response_length": 0,
+      "error": "Request failed with status code 422"
+    },
+    "agent_financial": {
+      "success": false,
+      "response_length": 0,
+      "error": "Request failed with status code 422"
+    },
+    "agent_marketing": {
+      "success": false,
+      "response_length": 0,
+      "error": "Request failed with status code 422"
+    },
+    "agent_technical_operations": {
+      "success": false,
+      "response_length": 0,
+      "error": "Request failed with status code 422"
+    },
+    "agent_customer_success": {
+      "success": false,
+      "response_length": 0,
+      "error": "Request failed with status code 422"
+    },
+    "unified_chat": {
+      "success": false,
+      "error": "Request failed with status code 404",
+      "status": 404,
+      "data": {
+        "detail": "Not Found"
+      }
+    },
+    "database_analytics": {
+      "success": true,
+      "data": {
+        "success": true,
+        "data": {
+          "total_revenue": 0,
+          "monthly_revenue": 0,
+          "daily_revenue": 0,
+          "weekly_revenue": 0,
+          "service_revenue": 0,
+          "tip_revenue": 0,
+          "revenue_growth": 0,
+          "total_appointments": 0,
+          "completed_appointments": 0,
+          "cancelled_appointments": 0,
+          "no_show_appointments": 0,
+          "pending_appointments": 0,
+          "confirmed_appointments": 0,
+          "appointment_completion_rate": 0,
+          "average_appointments_per_day": 0,
+          "total_customers": 0,
+          "new_customers_this_month": 0,
+          "returning_customers": 0,
+          "customer_retention_rate": 0,
+          "average_customer_lifetime_value": 0,
+          "total_barbers": 6,
+          "active_barbers": 6,
+          "top_performing_barber": null,
+          "average_service_duration": 45,
+          "peak_booking_hours": [],
+          "most_popular_services": [],
+          "busiest_days": [],
+          "occupancy_rate": 0,
+          "average_service_price": 0,
+          "payment_success_rate": 0,
+          "outstanding_payments": 0,
+          "last_updated": "2025-09-10T12:07:26.615Z",
+          "data_freshness": "supabase_real"
+        },
+        "meta": {
+          "barbershop_id": "demo",
+          "force_refresh": false,
+          "data_source": "supabase",
+          "cache_info": {
+            "hit": false,
+            "queryTime": 337,
+            "cached": true
+          },
+          "cache_stats": {
+            "hitRate": "0%",
+            "size": 1,
+            "maxSize": 100
+          },
+          "timestamp": "2025-09-10T12:07:26.616Z",
+          "performance": {
+            "cached": false,
+            "queryTime": 337,
+            "age": null
+          }
+        }
+      },
+      "status": 200
+    },
+    "shop_data": {
+      "success": true,
+      "data": {
+        "success": true,
+        "shopInfo": {
+          "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "owner_id": null,
+          "name": "Demo Barbershop",
+          "description": null,
+          "address": null,
+          "city": null,
+          "state": null,
+          "zip_code": null,
+          "country": "USA",
+          "phone": null,
+          "email": null,
+          "website": null,
+          "business_hours": {},
+          "settings": {},
+          "is_active": true,
+          "created_at": "2025-09-08T17:11:53.736+00:00",
+          "updated_at": "2025-09-08T17:11:53.737+00:00",
+          "latitude": null,
+          "longitude": null,
+          "timezone": "America/New_York",
+          "mobile_services": false,
+          "parking_available": false,
+          "wheelchair_accessible": false,
+          "public_transit_nearby": false,
+          "landmark_description": null,
+          "payment_model": "commission",
+          "allows_independent_payments": false,
+          "booth_rental_config": {
+            "rent_collection_method": "manual",
+            "requires_shop_booking_system": true,
+            "allows_direct_client_payments": false
+          },
+          "mobile_payment_config": {
+            "enabled": false,
+            "accepted_methods": [
+              "card",
+              "cash",
+              "digital_wallet"
+            ],
+            "mobile_surcharge": 0,
+            "mobile_radius_miles": 25,
+            "requires_prepayment": false
+          },
+          "accessibility_payment_config": {
+            "offers_invoice_billing": false,
+            "offers_payment_assistance": false,
+            "accepts_disability_vouchers": false,
+            "has_accessible_payment_terminal": false
+          },
+          "organization_id": null,
+          "booking_settings": {}
+        },
+        "barbers": [
+          {
+            "id": "1",
+            "role": "BARBER",
+            "is_active": true,
+            "users": {
+              "id": "1",
+              "email": "marcus@elitecuts.com",
+              "full_name": "Marcus Johnson",
+              "avatar_url": null
+            },
+            "bookings_today": 3,
+            "revenue_today": 529
+          },
+          {
+            "id": "2",
+            "role": "BARBER",
+            "is_active": true,
+            "users": {
+              "id": "2",
+              "email": "david@elitecuts.com",
+              "full_name": "David Rodriguez",
+              "avatar_url": null
+            },
+            "bookings_today": 2,
+            "revenue_today": 238
+          },
+          {
+            "id": "3",
+            "role": "BARBER",
+            "is_active": true,
+            "users": {
+              "id": "3",
+              "email": "james@elitecuts.com",
+              "full_name": "James Wilson",
+              "avatar_url": null
+            },
+            "bookings_today": 3,
+            "revenue_today": 365
+          }
+        ],
+        "metrics": {
+          "totalRevenue": 145680,
+          "monthlyRevenue": 18750,
+          "todayRevenue": 0,
+          "weeklyRevenue": 0,
+          "revenueChange": 12.5,
+          "totalBookings": 0,
+          "todayBookings": 0,
+          "weeklyBookings": 0,
+          "monthlyBookings": 0,
+          "bookingsChange": 8.3,
+          "activeBarbers": 3,
+          "totalStaff": 4,
+          "barbersWorking": 0,
+          "totalClients": 0,
+          "newClientsThisMonth": 0,
+          "returningClients": 0,
+          "clientRetentionRate": 0,
+          "avgRating": 4.8,
+          "totalReviews": 0,
+          "newReviewsThisWeek": 4,
+          "ratingTrend": 0.2,
+          "appointmentsCompleted": 0,
+          "appointmentsUpcoming": 0,
+          "appointmentsCancelled": 1,
+          "serviceRevenue": 0,
+          "productRevenue": 0,
+          "tipRevenue": 0,
+          "totalCommissions": 0,
+          "pendingPayouts": 0,
+          "completedPayouts": 0,
+          "averageServiceTime": 42,
+          "chairUtilization": 72.5,
+          "averageTicketValue": 85.5,
+          "trends": {
+            "revenue": {
+              "value": 12.5,
+              "direction": "up"
+            },
+            "bookings": {
+              "value": 8.3,
+              "direction": "up"
+            },
+            "newClients": {
+              "value": 15.7,
+              "direction": "up"
+            },
+            "rating": {
+              "value": 2.1,
+              "direction": "up"
+            }
+          },
+          "alerts": [],
+          "currentTime": "2025-09-10T04:00:00.000Z",
+          "isOpen": false,
+          "nextAppointment": "Tomorrow 9:00 AM - Check schedule",
+          "lastUpdate": "2025-09-10T04:00:00.000Z",
+          "dataSource": "database_global"
+        },
+        "timestamp": "2025-09-10T12:07:27.846Z",
+        "source": "database_with_demo_fallback"
+      },
+      "status": 200
+    },
+    "page__dashboard": {
+      "success": true,
+      "status": 200
+    },
+    "page__dashboard_mode_executive": {
+      "success": true,
+      "status": 200
+    },
+    "page__dashboard_mode_analytics": {
+      "success": true,
+      "status": 200
+    },
+    "page__dashboard_mode_inventory": {
+      "success": true,
+      "status": 200
+    },
+    "page__dashboard_ai_command_center": {
+      "success": true,
+      "status": 200
+    },
+    "page__dashboard_settings": {
+      "success": true,
+      "status": 200
+    },
+    "page__dashboard_calendar": {
+      "success": true,
+      "status": 200
+    },
+    "page__dashboard_bookings": {
+      "success": true,
+      "status": 200
+    },
+    "removed__api_ai_enhanced_chat": {
+      "success": false,
+      "error": "Request failed with status code 404",
+      "status": 404,
+      "data": {
+        "detail": "Not Found"
+      }
+    },
+    "removed__api_ai_command_center": {
+      "success": false,
+      "error": "Request failed with status code 404",
+      "status": 404,
+      "data": {
+        "detail": "Not Found"
+      }
+    },
+    "removed__api_ai_agent_selector": {
+      "success": false,
+      "error": "Request failed with status code 404",
+      "status": 404,
+      "data": {
+        "detail": "Not Found"
+      }
+    },
+    "frontend_fastapi_connection": {
+      "success": true,
+      "data": {
+        "success": true,
+        "message": "Knowledge search completed successfully",
+        "timestamp": "2025-09-10T08:07:34.533251",
+        "query": "test integration",
+        "results": [],
+        "total_results": 0,
+        "search_time": 0.10299491882324219
+      },
+      "status": 200
+    },
+    "performance": {
+      "concurrent_requests": 2,
+      "successful_responses": 0,
+      "total_time_ms": 3,
+      "average_time_ms": 1.5
+    }
+  }
+}

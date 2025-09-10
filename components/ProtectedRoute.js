@@ -11,9 +11,18 @@ export default function ProtectedRoute({ children }) {
   const router = useRouter()
   const [isClient, setIsClient] = useState(false)
 
+  // All hooks must be called before any conditional returns
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  // Handle redirect in useEffect to avoid setState during render
+  useEffect(() => {
+    if (!loading && !user && isClient) {
+      console.log('🔐 ProtectedRoute: No user found, redirecting to login...')
+      router.push('/login')
+    }
+  }, [loading, user, router, isClient])
 
   // Always show loading state during SSR to ensure consistent HTML structure
   if (!isClient) {
@@ -46,14 +55,6 @@ export default function ProtectedRoute({ children }) {
       </div>
     )
   }
-
-  // Handle redirect in useEffect to avoid setState during render
-  useEffect(() => {
-    if (!loading && !user) {
-      console.log('🔐 ProtectedRoute: No user found, redirecting to login...')
-      router.push('/login')
-    }
-  }, [loading, user, router])
 
   if (!user) {
     return (

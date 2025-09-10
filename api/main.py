@@ -26,6 +26,7 @@ from .schemas import (
     KnowledgeQuery, KnowledgeResponse,
     HealthResponse, SystemStats, UsageAnalytics,
     BatchRequest, BatchResponse,
+    UnifiedChatRequest, UnifiedChatResponse,
     AgentType, TaskPriority, RequestType
 )
 
@@ -436,6 +437,63 @@ async def chat_with_agent(
     except Exception as e:
         logger.error(f"Chat with agent {agent_type} failed: {e}")
         return await handle_agent_error(e, agent_type.value)
+
+
+@app.post("/ai/unified-chat", response_model=UnifiedChatResponse)
+async def unified_chat(
+    request: UnifiedChatRequest,
+    background_tasks: BackgroundTasks
+):
+    """Unified chat endpoint that routes to appropriate agent"""
+    try:
+        request_id = str(uuid.uuid4())
+        start_time = time.time()
+        
+        # Determine which agent to use
+        agent_type = request.agent or AgentType.MASTER_COACH  # Default to master coach
+        
+        # Get the specified agent
+        agent = get_agent(agent_type)
+        
+        # Update analytics
+        background_tasks.add_task(update_analytics, {
+            "agent_type": agent_type.value,
+            "user_id": request.user_id,
+            "request_type": "unified_chat"
+        })
+        
+        # Execute agent request
+        result = await agent.execute(
+            message=request.message,
+            context=request.context or {},
+            structured_output_model=None
+        )
+        
+        execution_time = time.time() - start_time
+        
+        if result.success:
+            return UnifiedChatResponse(
+                message="Unified chat response generated successfully",
+                agent_used=agent_type,
+                response=str(result.result),
+                confidence=result.confidence,
+                execution_time=execution_time,
+                request_id=request_id
+            )
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Agent execution failed: {result.error}"
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unified chat failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unified chat processing failed: {str(e)}"
+        )
 
 
 @app.post("/orchestrator/process", response_model=OrchestratorResponse)

@@ -86,6 +86,27 @@ class AgentResponse(BaseResponse):
     request_id: str = Field(description="Unique request identifier")
 
 
+class UnifiedChatRequest(BaseModel):
+    """Unified chat request that routes to appropriate agent"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    message: str = Field(min_length=1, max_length=2000, description="User message/query")
+    agent: Optional[AgentType] = Field(default=None, description="Specific agent to use (optional)")
+    context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context")
+    user_id: Optional[str] = Field(default=None, description="User identifier")
+    session_id: Optional[str] = Field(default=None, description="Session identifier")
+
+
+class UnifiedChatResponse(BaseResponse):
+    """Response from unified chat endpoint"""
+    success: bool = Field(default=True, description="Always true for successful responses")
+    agent_used: AgentType = Field(description="Agent that processed the request")
+    response: str = Field(description="Chat response content")
+    confidence: float = Field(ge=0.0, le=1.0, description="Confidence score")
+    execution_time: float = Field(ge=0.0, description="Execution time in seconds")
+    request_id: str = Field(description="Unique request identifier")
+
+
 # ===== ANALYTICS MODELS =====
 
 class AgentStats(BaseModel):
