@@ -715,3 +715,103 @@
     transform: scale(0.8);
   }
 }
+
+/* MOBILE OPTIMIZATION STYLES */
+
+/* Hide scrollbars for cleaner mobile appearance */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Touch-friendly interactions */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+/* Improve touch scrolling on iOS */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Safe area padding for mobile devices */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Mobile-first button sizing */
+@media (max-width: 768px) {
+  .btn-mobile {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Larger tap targets for mobile */
+  button, .btn, [role="button"] {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Prevent zoom on input focus */
+  input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+/* Mobile swipe indicators */
+.swipe-indicator {
+  @apply w-6 h-1 bg-olive-600 rounded-full;
+}
+
+.swipe-indicator-inactive {
+  @apply w-4 h-1 bg-gray-300 rounded-full opacity-50;
+}
+
+/* Mobile card optimizations */
+.mobile-card {
+  @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+  transition: all 0.2s ease-in-out;
+}
+
+.mobile-card:active {
+  @apply bg-gray-50 scale-[0.98];
+}
+
+/* Prevent text selection on mobile interactive elements */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Mobile-optimized grid layouts */
+.mobile-grid-2 {
+  @apply grid grid-cols-2 gap-2;
+}
+
+.mobile-grid-3 {
+  @apply grid grid-cols-3 gap-2;
+}
+
+/* Mobile sticky positioning */
+.mobile-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* iOS style bottom safe area */
+.ios-bottom-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}

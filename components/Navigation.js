@@ -73,7 +73,7 @@ const coreOperations = [
   },
   { 
     name: 'Customer Management', 
-    href: '/dashboard/customers', 
+    href: '/dashboard/customers-enhanced', 
     icon: UserGroupIcon,
     description: 'Client profiles, history, and relationship management'
   }
@@ -156,14 +156,20 @@ const shopManagement = [
     description: 'Commission settings and financial arrangements'
   },
   { 
-    name: 'Product Inventory', 
-    href: '/shop/products', 
-    icon: CubeIcon,
-    description: 'Manage product inventory'
+    name: 'Inventory & POS', 
+    href: '/dashboard/inventory', 
+    icon: BuildingStorefrontIcon,
+    description: 'Manage inventory, marketplace, and point of sale',
+    badge: 'CIN7'
+  },
+  { 
+    name: 'Point of Sale', 
+    href: '/dashboard/pos', 
+    icon: CreditCardIcon,
+    description: 'Process product sales and commissions'
   }
   // Coming Soon:
   // - Staff Management (manage all barbers)
-  // - Point of Sale (process sales)
   // - Advanced Reports (detailed analytics)
 ]
 

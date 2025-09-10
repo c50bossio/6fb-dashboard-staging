@@ -4,6 +4,9 @@ export const dynamic = 'force-dynamic'
 import { createClient } from '@/lib/supabase/server'
 export const runtime = 'edge'
 
+// Demo barbershop ID constant - matches Supabase UUID
+const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+
 // GET /api/barbers - Fetch barbers/staff
 export async function GET(request) {
   try {
@@ -20,7 +23,7 @@ export async function GET(request) {
     const active_only = searchParams.get('active_only') !== 'false'
 
     // For demo/development, return mock data when database tables don't exist
-    const Barbers = [
+    const mockBarbers = [
       {
         id: 'barber-001',
         name: 'John Smith',
@@ -28,7 +31,7 @@ export async function GET(request) {
         phone: '555-0101',
         avatar_url: null,
         role: 'BARBER',
-        barbershop_id: barbershop_id || 'demo-shop-001',
+        barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
         specialties: ['Haircut', 'Beard Trim', 'Shave'],
         is_active: true,
         rating: 4.8,
@@ -49,7 +52,7 @@ export async function GET(request) {
         phone: '555-0102',
         avatar_url: null,
         role: 'BARBER',
-        barbershop_id: barbershop_id || 'demo-shop-001',
+        barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
         specialties: ['Fade', 'Design', 'Color'],
         is_active: true,
         rating: 4.9,
@@ -70,7 +73,7 @@ export async function GET(request) {
         phone: '555-0103',
         avatar_url: null,
         role: 'BARBER',
-        barbershop_id: barbershop_id || 'demo-shop-001',
+        barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
         specialties: ['Style', 'Coloring', 'Extensions'],
         is_active: true,
         rating: 5.0,

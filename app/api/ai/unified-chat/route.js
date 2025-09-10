@@ -22,19 +22,92 @@ export async function POST(request) {
   try {
     const { 
       messages, 
+      message, // Support both formats
       provider = 'openai', 
       model, 
       stream = true, 
       includeBusinessContext = false,
-      barbershopId = 'default' 
+      barbershopId = 'default',
+      sessionId,
+      businessContext,
+      storeConversation = false
     } = await request.json()
 
-    if (!messages || messages.length === 0) {
+    // Support both message formats (single message or messages array)
+    let processedMessages = messages
+    if (!messages && message) {
+      processedMessages = [{ role: 'user', content: message }]
+    }
+    
+    if (!processedMessages || processedMessages.length === 0) {
       return NextResponse.json({ error: 'Messages are required' }, { status: 400 })
     }
 
+    // Generate session ID if not provided
+    const currentSessionId = sessionId || generateSessionId()
+
+    // Get conversation context from memory
+    let conversationContext = null
+    if (currentSessionId) {
+      try {
+        const memoryResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/memory`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'get_context',
+            sessionId: currentSessionId,
+            data: { contextType: 'recent', limit: 5 }
+          })
+        })
+        if (memoryResponse.ok) {
+          const memoryData = await memoryResponse.json()
+          if (memoryData.success) {
+            conversationContext = memoryData.context
+          }
+        }
+      } catch (memoryError) {
+        console.warn('Memory retrieval failed:', memoryError.message)
+      }
+    }
+
+    // Try Python AI orchestrator first for enhanced responses
+    if (provider === 'enhanced' || includeBusinessContext) {
+      try {
+        const pythonResponse = await callPythonAIOrchestrator(
+          processedMessages[processedMessages.length - 1].content,
+          currentSessionId,
+          businessContext || {},
+          conversationContext
+        )
+        
+        if (pythonResponse.success) {
+          // Store conversation if requested
+          if (storeConversation) {
+            await storeConversationInMemory(
+              currentSessionId,
+              processedMessages[processedMessages.length - 1].content,
+              pythonResponse.response,
+              businessContext
+            )
+          }
+          
+          return NextResponse.json({
+            content: pythonResponse.response,
+            provider: pythonResponse.provider,
+            sessionId: currentSessionId,
+            confidence: pythonResponse.confidence,
+            messageType: pythonResponse.message_type,
+            analyticsEnhanced: pythonResponse.analytics_enhanced,
+            agentDetails: pythonResponse.agent_details
+          })
+        }
+      } catch (error) {
+        console.warn('Python AI orchestrator failed, falling back to direct providers:', error)
+      }
+    }
+
     // Add business context if requested
-    let enhancedMessages = [...messages]
+    let enhancedMessages = [...processedMessages]
     if (includeBusinessContext) {
       try {
         const businessPrompt = await aiBusinessContext.getAISystemPrompt(barbershopId)
@@ -66,6 +139,10 @@ export async function POST(request) {
       case 'gemini':
       case 'google':
         return handleGemini(enhancedMessages, model, stream)
+      
+      case 'enhanced':
+        // Already handled above with Python AI orchestrator
+        return NextResponse.json({ error: 'Enhanced provider failed, please try again' }, { status: 500 })
       
       default:
         return NextResponse.json({ error: `Unknown provider: ${provider}` }, { status: 400 })
@@ -222,4 +299,88 @@ async function handleGemini(messages, model = 'gemini-1.5-flash', stream) {
       { status: 500 }
     )
   }
+}
+
+// Helper function to call Python AI Orchestrator
+async function callPythonAIOrchestrator(message, sessionId, businessContext, conversationContext) {
+  try {
+    const pythonServiceUrl = process.env.PYTHON_BACKEND_URL || 'http://backend:8000'
+    const response = await fetch(`${pythonServiceUrl}/ai/enhanced-chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: message.trim(),
+        session_id: sessionId,
+        business_context: businessContext,
+        conversation_context: conversationContext
+      }),
+      timeout: 30000,
+    })
+    
+    if (response.ok) {
+      return await response.json()
+    } else {
+      throw new Error(`Python AI service responded with ${response.status}`)
+    }
+  } catch (error) {
+    console.error('Python AI orchestrator error:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Helper function to store conversation in memory
+async function storeConversationInMemory(sessionId, message, response, businessContext) {
+  try {
+    await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/memory`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'store_message',
+        sessionId,
+        data: {
+          message: message.trim(),
+          response: response,
+          messageType: classifyMessage(message),
+          agent: 'AI Assistant',
+          businessContext: businessContext
+        }
+      })
+    })
+  } catch (memoryError) {
+    console.warn('Failed to store conversation in memory:', memoryError.message)
+  }
+}
+
+// Helper function to classify message type
+function classifyMessage(message) {
+  const messageLower = message.toLowerCase()
+  
+  if (/\b(revenue|profit|analytics|performance|metrics|kpi|growth|sales|business)\b/.test(messageLower)) {
+    return 'business_analysis'
+  }
+  
+  if (/\b(customer|client|service|complaint|feedback|satisfaction|retention|review)\b/.test(messageLower)) {
+    return 'customer_service'
+  }
+  
+  if (/\b(schedule|appointment|booking|calendar|time|availability|slot|busy|free)\b/.test(messageLower)) {
+    return 'scheduling'
+  }
+  
+  if (/\b(money|cost|price|payment|expense|budget|financial|income|profit|loss)\b/.test(messageLower)) {
+    return 'financial'
+  }
+  
+  if (/\b(marketing|promotion|social media|advertising|brand|instagram|facebook|attract)\b/.test(messageLower)) {
+    return 'marketing'
+  }
+  
+  return 'general'
+}
+
+// Helper function to generate session ID
+function generateSessionId() {
+  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }

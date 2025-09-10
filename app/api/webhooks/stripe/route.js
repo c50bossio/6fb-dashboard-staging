@@ -1,6 +1,7 @@
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { createClient } from '../../../../lib/supabase/server'
 
 export const runtime = 'nodejs'
 
@@ -39,42 +40,89 @@ export async function POST(request) {
 
     console.log('Stripe webhook received:', event.type)
 
+    // Initialize Supabase client
+    const supabase = createClient()
+
     // Handle the event
     switch (event.type) {
+      // Payment Intent events (for booking payments)
+      case 'payment_intent.succeeded':
+        await handlePaymentIntentSucceeded(supabase, event.data.object)
+        break
+
+      case 'payment_intent.payment_failed':
+        await handlePaymentIntentFailed(supabase, event.data.object)
+        break
+
+      case 'payment_intent.canceled':
+        await handlePaymentIntentCanceled(supabase, event.data.object)
+        break
+
+      case 'payment_intent.requires_action':
+        await handlePaymentIntentRequiresAction(supabase, event.data.object)
+        break
+
+      // Charge events (for payment tracking)
+      case 'charge.succeeded':
+        await handleChargeSucceeded(supabase, event.data.object)
+        break
+
+      case 'charge.failed':
+        await handleChargeFailed(supabase, event.data.object)
+        break
+
+      case 'charge.refunded':
+        await handleChargeRefunded(supabase, event.data.object)
+        break
+
+      // Transfer events (for commission payouts)
+      case 'transfer.created':
+        await handleTransferCreated(supabase, event.data.object)
+        break
+
+      case 'transfer.paid':
+        await handleTransferPaid(supabase, event.data.object)
+        break
+
+      case 'transfer.failed':
+        await handleTransferFailed(supabase, event.data.object)
+        break
+
+      // Subscription events (for VIP memberships)
       case 'customer.subscription.created':
-        await handleSubscriptionCreated(event.data.object)
+        await handleSubscriptionCreated(supabase, event.data.object)
         break
 
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object)
+        await handleSubscriptionUpdated(supabase, event.data.object)
         break
 
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object)
+        await handleSubscriptionDeleted(supabase, event.data.object)
         break
 
       case 'invoice.payment_succeeded':
-        await handlePaymentSucceeded(event.data.object)
+        await handleInvoicePaymentSucceeded(supabase, event.data.object)
         break
 
       case 'invoice.payment_failed':
-        await handlePaymentFailed(event.data.object)
+        await handleInvoicePaymentFailed(supabase, event.data.object)
         break
 
       case 'customer.subscription.trial_will_end':
-        await handleTrialWillEnd(event.data.object)
+        await handleTrialWillEnd(supabase, event.data.object)
         break
 
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(event.data.object)
+        await handleCheckoutCompleted(supabase, event.data.object)
         break
 
       case 'customer.created':
-        await handleCustomerCreated(event.data.object)
+        await handleCustomerCreated(supabase, event.data.object)
         break
 
       case 'invoice.created':
-        await handleInvoiceCreated(event.data.object)
+        await handleInvoiceCreated(supabase, event.data.object)
         break
 
       default:
@@ -92,7 +140,307 @@ export async function POST(request) {
   }
 }
 
-async function handleSubscriptionCreated(subscription) {
+// ============================================
+// PAYMENT INTENT HANDLERS (Booking Payments)
+// ============================================
+
+async function handlePaymentIntentSucceeded(supabase, paymentIntent) {
+  try {
+    console.log('Processing payment_intent.succeeded:', paymentIntent.id)
+
+    // Update payment record in database
+    const { data: payment, error: paymentError } = await supabase
+      .from('payments')
+      .update({
+        status: 'completed',
+        stripe_charge_id: paymentIntent.latest_charge,
+        payment_completed_at: new Date().toISOString(),
+        amount_received: paymentIntent.amount_received,
+        receipt_url: paymentIntent.receipt_email,
+        metadata: {
+          ...JSON.parse(JSON.stringify(paymentIntent.metadata || {})),
+          stripe_payment_intent: {
+            id: paymentIntent.id,
+            status: paymentIntent.status,
+            amount_received: paymentIntent.amount_received,
+            created: paymentIntent.created
+          }
+        },
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_payment_intent_id', paymentIntent.id)
+      .select()
+      .single()
+
+    if (paymentError) {
+      console.error('Failed to update payment record:', paymentError)
+      return
+    }
+
+    if (payment) {
+      // Update associated booking status
+      if (payment.booking_id) {
+        await supabase
+          .from('appointments')
+          .update({
+            payment_status: 'completed',
+            status: 'CONFIRMED',
+            confirmed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', payment.booking_id)
+      }
+
+      // Process commission distribution
+      if (payment.commission_barber && payment.barber_id) {
+        await processCommissionDistribution(supabase, payment)
+      }
+
+      // Send confirmation notifications
+      await sendBookingConfirmationNotifications(supabase, payment)
+
+      // Update business metrics
+      await updateBusinessMetrics(supabase, payment, 'payment_succeeded')
+
+      console.log('Payment processing completed successfully:', paymentIntent.id)
+    }
+
+  } catch (error) {
+    console.error('Error handling payment_intent.succeeded:', error)
+    await logWebhookError(supabase, 'payment_intent.succeeded', paymentIntent.id, error)
+  }
+}
+
+async function handlePaymentIntentFailed(supabase, paymentIntent) {
+  try {
+    console.log('Processing payment_intent.payment_failed:', paymentIntent.id)
+
+    const { data: payment } = await supabase
+      .from('payments')
+      .update({
+        status: 'failed',
+        failure_code: paymentIntent.last_payment_error?.code,
+        failure_message: paymentIntent.last_payment_error?.message,
+        failure_decline_code: paymentIntent.last_payment_error?.decline_code,
+        failed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_payment_intent_id', paymentIntent.id)
+      .select()
+      .single()
+
+    if (payment?.booking_id) {
+      // Update booking to pending payment
+      await supabase
+        .from('appointments')
+        .update({
+          payment_status: 'failed',
+          status: 'PENDING',
+          payment_failure_reason: paymentIntent.last_payment_error?.message,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', payment.booking_id)
+    }
+
+    // Send payment failure notifications
+    await sendPaymentFailureNotifications(supabase, payment, paymentIntent.last_payment_error)
+
+    // Update metrics
+    await updateBusinessMetrics(supabase, payment, 'payment_failed')
+
+  } catch (error) {
+    console.error('Error handling payment_intent.payment_failed:', error)
+  }
+}
+
+async function handlePaymentIntentCanceled(supabase, paymentIntent) {
+  try {
+    console.log('Processing payment_intent.canceled:', paymentIntent.id)
+
+    await supabase
+      .from('payments')
+      .update({
+        status: 'cancelled',
+        cancelled_at: new Date().toISOString(),
+        cancellation_reason: paymentIntent.cancellation_reason,
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_payment_intent_id', paymentIntent.id)
+
+  } catch (error) {
+    console.error('Error handling payment_intent.canceled:', error)
+  }
+}
+
+async function handlePaymentIntentRequiresAction(supabase, paymentIntent) {
+  try {
+    console.log('Processing payment_intent.requires_action:', paymentIntent.id)
+
+    await supabase
+      .from('payments')
+      .update({
+        status: 'requires_action',
+        requires_action: true,
+        next_action_type: paymentIntent.next_action?.type,
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_payment_intent_id', paymentIntent.id)
+
+  } catch (error) {
+    console.error('Error handling payment_intent.requires_action:', error)
+  }
+}
+
+// ============================================
+// CHARGE HANDLERS (Payment Tracking)
+// ============================================
+
+async function handleChargeSucceeded(supabase, charge) {
+  try {
+    console.log('Processing charge.succeeded:', charge.id)
+
+    // Update payment record with charge details
+    await supabase
+      .from('payments')
+      .update({
+        stripe_charge_id: charge.id,
+        payment_method_details: charge.payment_method_details,
+        receipt_url: charge.receipt_url,
+        outcome: charge.outcome,
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_payment_intent_id', charge.payment_intent)
+
+  } catch (error) {
+    console.error('Error handling charge.succeeded:', error)
+  }
+}
+
+async function handleChargeFailed(supabase, charge) {
+  try {
+    console.log('Processing charge.failed:', charge.id)
+
+    await supabase
+      .from('payments')
+      .update({
+        stripe_charge_id: charge.id,
+        failure_code: charge.failure_code,
+        failure_message: charge.failure_message,
+        outcome: charge.outcome,
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_payment_intent_id', charge.payment_intent)
+
+  } catch (error) {
+    console.error('Error handling charge.failed:', error)
+  }
+}
+
+async function handleChargeRefunded(supabase, charge) {
+  try {
+    console.log('Processing charge.refunded:', charge.id)
+
+    const refund = charge.refunds.data[0] // Get the latest refund
+
+    await supabase
+      .from('payments')
+      .update({
+        status: charge.amount_refunded === charge.amount ? 'refunded' : 'partially_refunded',
+        refund_amount: charge.amount_refunded,
+        refund_id: refund?.id,
+        refund_reason: refund?.reason,
+        refunded_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_payment_intent_id', charge.payment_intent)
+
+  } catch (error) {
+    console.error('Error handling charge.refunded:', error)
+  }
+}
+
+// ============================================
+// TRANSFER HANDLERS (Commission Payouts)
+// ============================================
+
+async function handleTransferCreated(supabase, transfer) {
+  try {
+    console.log('Processing transfer.created:', transfer.id)
+
+    await supabase
+      .from('payout_activities')
+      .update({
+        stripe_transfer_status: 'created',
+        transfer_created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_transfer_id', transfer.id)
+
+  } catch (error) {
+    console.error('Error handling transfer.created:', error)
+  }
+}
+
+async function handleTransferPaid(supabase, transfer) {
+  try {
+    console.log('Processing transfer.paid:', transfer.id)
+
+    const { data: payout } = await supabase
+      .from('payout_activities')
+      .update({
+        stripe_transfer_status: 'paid',
+        transfer_paid_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_transfer_id', transfer.id)
+      .select()
+      .single()
+
+    if (payout) {
+      // Update related payment records
+      if (payout.metadata?.payment_ids) {
+        await supabase
+          .from('payments')
+          .update({
+            payout_status: 'paid',
+            payout_date: new Date().toISOString()
+          })
+          .in('id', payout.metadata.payment_ids)
+      }
+
+      // Send payout confirmation to barber
+      await sendPayoutConfirmationNotification(supabase, payout, transfer)
+    }
+
+  } catch (error) {
+    console.error('Error handling transfer.paid:', error)
+  }
+}
+
+async function handleTransferFailed(supabase, transfer) {
+  try {
+    console.log('Processing transfer.failed:', transfer.id)
+
+    await supabase
+      .from('payout_activities')
+      .update({
+        stripe_transfer_status: 'failed',
+        transfer_failure_reason: transfer.failure_message,
+        transfer_failed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('stripe_transfer_id', transfer.id)
+
+  } catch (error) {
+    console.error('Error handling transfer.failed:', error)
+  }
+}
+
+// ============================================
+// SUBSCRIPTION HANDLERS (VIP Memberships)
+// ============================================
+
+async function handleSubscriptionCreated(supabase, subscription) {
   console.log('Subscription created:', subscription.id)
   
   const tenantId = subscription.metadata?.tenant_id
@@ -136,7 +484,7 @@ async function handleSubscriptionCreated(subscription) {
   }
 }
 
-async function handleSubscriptionUpdated(subscription) {
+async function handleSubscriptionUpdated(supabase, subscription) {
   console.log('Subscription updated:', subscription.id)
   
   const tenantId = subscription.metadata?.tenant_id
@@ -182,7 +530,7 @@ async function handleSubscriptionUpdated(subscription) {
   }
 }
 
-async function handleSubscriptionDeleted(subscription) {
+async function handleSubscriptionDeleted(supabase, subscription) {
   console.log('Subscription deleted:', subscription.id)
   
   const tenantId = subscription.metadata?.tenant_id
@@ -216,7 +564,7 @@ async function handleSubscriptionDeleted(subscription) {
   }
 }
 
-async function handlePaymentSucceeded(invoice) {
+async function handleInvoicePaymentSucceeded(supabase, invoice) {
   console.log('Payment succeeded:', invoice.id)
   
   const subscriptionId = invoice.subscription
@@ -257,7 +605,7 @@ async function handlePaymentSucceeded(invoice) {
   }
 }
 
-async function handlePaymentFailed(invoice) {
+async function handleInvoicePaymentFailed(supabase, invoice) {
   console.log('Payment failed:', invoice.id)
   
   const tenantId = invoice.subscription_details?.metadata?.tenant_id
@@ -298,7 +646,7 @@ async function handlePaymentFailed(invoice) {
   }
 }
 
-async function handleTrialWillEnd(subscription) {
+async function handleTrialWillEnd(supabase, subscription) {
   console.log('Trial will end:', subscription.id)
   
   const tenantId = subscription.metadata?.tenant_id
@@ -324,7 +672,7 @@ async function handleTrialWillEnd(subscription) {
   }
 }
 
-async function handleCheckoutCompleted(session) {
+async function handleCheckoutCompleted(supabase, session) {
   console.log('Checkout completed:', session.id)
   
   const tenantId = session.metadata?.tenant_id
@@ -366,7 +714,7 @@ async function handleCheckoutCompleted(session) {
   }
 }
 
-async function handleCustomerCreated(customer) {
+async function handleCustomerCreated(supabase, customer) {
   console.log('Customer created:', customer.id)
   
   try {
@@ -378,7 +726,7 @@ async function handleCustomerCreated(customer) {
   }
 }
 
-async function handleInvoiceCreated(invoice) {
+async function handleInvoiceCreated(supabase, invoice) {
   console.log('Invoice created:', invoice.id)
   
   const tenantId = invoice.subscription_details?.metadata?.tenant_id
@@ -431,4 +779,168 @@ async function sendSubscriptionEmail(tenantId, emailType, data) {
   console.log(`EMAIL [${emailType}]: ${message}`)
   
   return true
+}
+
+// ============================================
+// BARBERSHOP-SPECIFIC HELPER FUNCTIONS
+// ============================================
+
+async function processCommissionDistribution(supabase, payment) {
+  try {
+    // Create commission payout record
+    await supabase
+      .from('commission_payouts')
+      .insert({
+        payment_id: payment.id,
+        barber_id: payment.barber_id,
+        shop_id: payment.shop_id,
+        amount: payment.commission_barber,
+        commission_rate: payment.commission_barber / payment.amount,
+        status: 'pending',
+        earned_date: new Date().toISOString(),
+        created_at: new Date().toISOString()
+      })
+
+    // Update barber's total commissions
+    await supabase.rpc('update_barber_commission_total', {
+      p_barber_id: payment.barber_id,
+      p_amount: payment.commission_barber / 100 // Convert to dollars
+    })
+
+  } catch (error) {
+    console.error('Failed to process commission distribution:', error)
+  }
+}
+
+async function sendBookingConfirmationNotifications(supabase, payment) {
+  try {
+    // Get booking details for notifications
+    const { data: booking } = await supabase
+      .from('appointments')
+      .select(`
+        *,
+        users:barber_id (name, email),
+        services (name, duration_minutes)
+      `)
+      .eq('id', payment.booking_id)
+      .single()
+
+    if (booking) {
+      // Send SMS/Email confirmations
+      console.log('Sending booking confirmation notifications:', {
+        customer: payment.customer_name,
+        service: booking.services?.name,
+        barber: booking.users?.name,
+        scheduled_at: booking.scheduled_at,
+        amount: payment.amount / 100
+      })
+
+      // TODO: Integrate with notification service
+      // await notificationService.sendBookingConfirmation(booking, payment)
+    }
+
+  } catch (error) {
+    console.error('Failed to send booking confirmation:', error)
+  }
+}
+
+async function sendPaymentFailureNotifications(supabase, payment, error) {
+  try {
+    console.log('Sending payment failure notifications:', {
+      payment_id: payment?.id,
+      customer: payment?.customer_name,
+      error_code: error?.code,
+      error_message: error?.message
+    })
+
+    // TODO: Integrate with notification service for payment failures
+    // await notificationService.sendPaymentFailure(payment, error)
+
+  } catch (notificationError) {
+    console.error('Failed to send payment failure notification:', notificationError)
+  }
+}
+
+async function sendPayoutConfirmationNotification(supabase, payout, transfer) {
+  try {
+    // Get barber details
+    const { data: barber } = await supabase
+      .from('users')
+      .select('name, email')
+      .eq('id', payout.barber_id)
+      .single()
+
+    if (barber) {
+      console.log('Sending payout confirmation:', {
+        barber_name: barber.name,
+        amount: transfer.amount / 100,
+        transfer_id: transfer.id,
+        payout_date: new Date().toISOString()
+      })
+
+      // TODO: Send payout confirmation email/SMS to barber
+      // await notificationService.sendPayoutConfirmation(barber, payout, transfer)
+    }
+
+  } catch (error) {
+    console.error('Failed to send payout confirmation:', error)
+  }
+}
+
+async function updateBusinessMetrics(supabase, payment, eventType) {
+  try {
+    const today = new Date().toISOString().split('T')[0]
+    
+    if (eventType === 'payment_succeeded') {
+      // Update daily metrics
+      await supabase
+        .from('daily_business_metrics')
+        .upsert({
+          date: today,
+          shop_id: payment.shop_id,
+          total_revenue: supabase.raw('COALESCE(total_revenue, 0) + ?', [payment.amount / 100]),
+          completed_bookings: supabase.raw('COALESCE(completed_bookings, 0) + 1'),
+          commission_earned: supabase.raw('COALESCE(commission_earned, 0) + ?', [payment.commission_barber / 100]),
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'date,shop_id'
+        })
+
+      // Update barber performance metrics
+      if (payment.barber_id) {
+        await supabase
+          .from('barber_performance_metrics')
+          .upsert({
+            date: today,
+            barber_id: payment.barber_id,
+            shop_id: payment.shop_id,
+            services_completed: supabase.raw('COALESCE(services_completed, 0) + 1'),
+            revenue_generated: supabase.raw('COALESCE(revenue_generated, 0) + ?', [payment.amount / 100]),
+            commission_earned: supabase.raw('COALESCE(commission_earned, 0) + ?', [payment.commission_barber / 100]),
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'date,barber_id'
+          })
+      }
+    }
+
+  } catch (error) {
+    console.error('Failed to update business metrics:', error)
+  }
+}
+
+async function logWebhookError(supabase, eventType, eventId, error) {
+  try {
+    await supabase
+      .from('webhook_error_logs')
+      .insert({
+        event_type: eventType,
+        stripe_event_id: eventId,
+        error_message: error.message,
+        error_stack: error.stack,
+        created_at: new Date().toISOString()
+      })
+  } catch (logError) {
+    console.error('Failed to log webhook error:', logError)
+  }
 }

@@ -118,15 +118,7 @@ export async function GET(request) {
     health.services.pusher = { status: 'error', message: error.message }
   }
 
-  // Check PostHog
-  try {
-    health.services.posthog = {
-      status: process.env.NEXT_PUBLIC_POSTHOG_KEY ? 'configured' : 'not_configured',
-      host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com'
-    }
-  } catch (error) {
-    health.services.posthog = { status: 'error', message: error.message }
-  }
+  // PostHog removed
 
   // Check Sentry
   try {

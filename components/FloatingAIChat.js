@@ -1,5 +1,6 @@
 'use client'
 
+import React, { useState, useRef, useEffect } from 'react'
 import { 
   SparklesIcon, 
   XMarkIcon, 
@@ -8,11 +9,10 @@ import {
   ArrowsPointingOutIcon,
   MicrophoneIcon
 } from '@heroicons/react/24/outline'
-import { useState, useRef, useEffect } from 'react'
 import { useAuth } from './SupabaseAuthProvider'
 import { createClient } from '../lib/supabase/client'
 
-export default function FloatingAIChat() {
+const FloatingAIChat = React.memo(function FloatingAIChat() {
   const { user } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [message, setMessage] = useState('')
@@ -435,15 +435,18 @@ export default function FloatingAIChat() {
       const startTime = Date.now()
       
       // Call the AI chat API with persistent session
-      const response = await fetch('/api/ai/analytics-enhanced-chat', {
+      const response = await fetch('/api/ai/unified-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           message: currentMessage,
-          session_id: sessionId,
-          business_context: businessContext && contextLoaded ? {
+          provider: 'enhanced', // Use enhanced mode for Python backend integration
+          sessionId: sessionId,
+          includeBusinessContext: true,
+          storeConversation: true,
+          businessContext: businessContext && contextLoaded ? {
             // Enhanced comprehensive business context
             shop: businessContext.shop,
             analytics: businessContext.analytics,
@@ -854,4 +857,6 @@ export default function FloatingAIChat() {
       )}
     </>
   )
-}
+})
+
+export default FloatingAIChat

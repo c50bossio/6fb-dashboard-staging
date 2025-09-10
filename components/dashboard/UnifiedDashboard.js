@@ -9,14 +9,16 @@ import {
   SparklesIcon,
   ArrowPathIcon,
   Squares2X2Icon,
-  PresentationChartLineIcon
+  PresentationChartLineIcon,
+  CubeIcon
 } from '@heroicons/react/24/outline'
 import { 
   ChartBarIcon as ChartBarSolid,
   CpuChipIcon as CpuChipSolid,
   ClipboardDocumentListIcon as ClipboardSolid,
   SparklesIcon as SparklesSolid,
-  PresentationChartLineIcon as PresentationChartSolid
+  PresentationChartLineIcon as PresentationChartSolid,
+  CubeIcon as CubeSolid
 } from '@heroicons/react/24/solid'
 
 // Import existing components we'll integrate
@@ -27,6 +29,9 @@ import ActionCenter from './ActionCenter'
 import UnifiedExecutiveSummary from './UnifiedExecutiveSummary'
 import SmartAlertsPanel from './SmartAlertsPanel'
 import ExecutiveLoadingState from './ExecutiveLoadingState'
+import InventoryPanel from './InventoryPanel'
+// OnboardingChecklist now handled globally via GlobalOnboardingProvider
+// import OnboardingChecklist from '../onboarding/OnboardingChecklist'
 
 // Use API calls instead of direct database imports (client component)
 
@@ -39,7 +44,8 @@ const DASHBOARD_MODES = {
   AI_INSIGHTS: 'ai_insights', 
   ANALYTICS: 'analytics',
   PREDICTIVE: 'predictive',
-  OPERATIONS: 'operations'
+  OPERATIONS: 'operations',
+  INVENTORY: 'inventory'
 }
 
 // Mode configurations
@@ -78,6 +84,14 @@ const modeConfigs = {
     solidIcon: ClipboardSolid,
     color: 'green',
     description: 'Day-to-day management'
+  },
+  [DASHBOARD_MODES.INVENTORY]: {
+    label: 'Inventory & POS',
+    icon: CubeIcon,
+    solidIcon: CubeSolid,
+    color: 'olive',
+    description: 'Product management & point of sale',
+    badge: 'CIN7'
   }
 }
 
@@ -94,6 +108,9 @@ export default function UnifiedDashboard({ user }) {
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [cachedData, setCachedData] = useState(null)
   const [cacheTimestamp, setCacheTimestamp] = useState(null)
+  // Onboarding checklist now handled globally via GlobalOnboardingProvider
+  // const [checklistData, setChecklistData] = useState(null)
+  // const [checklistCompletedItems, setChecklistCompletedItems] = useState([])
 
   // Load dashboard data based on current mode - API CALLS ONLY
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
@@ -103,6 +120,7 @@ export default function UnifiedDashboard({ user }) {
     // CACHE DISABLED: Always fetch fresh data for consistency between Executive/Analytics modes
     // Previously cached data was causing inconsistencies with Analytics panel
     
+    console.log('Starting dashboard data load...', { currentMode, barbershopId, user })
     setIsLoading(true)
     try {
       console.log(`Loading dashboard data for mode: ${currentMode}`)
@@ -154,6 +172,7 @@ export default function UnifiedDashboard({ user }) {
             analytics_data: apiData
           }
           setDashboardData(transformedData)
+          console.log('Dashboard data loaded successfully:', transformedData)
           // Cache removed for data consistency between Executive/Analytics modes
         } else {
           console.warn('Analytics API error:', result)
@@ -192,6 +211,9 @@ export default function UnifiedDashboard({ user }) {
     }
   }, [currentMode, user])
 
+  // Onboarding checklist data loading now handled globally
+  // const loadChecklistData = useCallback(async () => { ... }, [])
+
   // Handle URL parameter for mode with executive as default
   useEffect(() => {
     if (modeParam && Object.values(DASHBOARD_MODES).includes(modeParam)) {
@@ -214,13 +236,17 @@ export default function UnifiedDashboard({ user }) {
   // Load data on mount and mode change
   useEffect(() => {
     loadDashboardData()
+    // loadChecklistData() // Now handled globally
     
     // Set up auto-refresh every 30 seconds for operations mode
     if (currentMode === DASHBOARD_MODES.OPERATIONS) {
-      const interval = setInterval(loadDashboardData, 30000)
+      const interval = setInterval(() => {
+        loadDashboardData()
+        // loadChecklistData() // Now handled globally
+      }, 30000)
       return () => clearInterval(interval)
     }
-  }, [currentMode, loadDashboardData])
+  }, [currentMode, user]) // Add user dependency, but not loadDashboardData to avoid infinite loop
 
   const handleModeChange = (mode) => {
     setCurrentMode(mode)
@@ -341,6 +367,9 @@ export default function UnifiedDashboard({ user }) {
       case DASHBOARD_MODES.OPERATIONS:
         return <ActionCenter data={dashboardData} />
         
+      case DASHBOARD_MODES.INVENTORY:
+        return <InventoryPanel />
+        
       default:
         return null
     }
@@ -366,10 +395,11 @@ export default function UnifiedDashboard({ user }) {
           {isLoading && !dashboardData ? (
             <ExecutiveLoadingState />
           ) : dashboardData ? (
-            <>
+            <div className="space-y-6">
+              {/* Executive Summary - Full width now that onboarding is global */}
               <UnifiedExecutiveSummary data={dashboardData} />
               <SmartAlertsPanel barbershop_id={user?.barbershop_id || 'demo'} />
-            </>
+            </div>
           ) : null}
         </>
       )}

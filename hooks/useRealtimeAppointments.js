@@ -624,7 +624,7 @@ export function useRealtimeAppointments(barbershopId) {
         channelStatus: 'CLOSED'
       }))
     }
-  }, [barbershopId])
+  }, [barbershopId, supabase])
 
   // Debug log periodically and on updates
   useEffect(() => {
@@ -637,7 +637,7 @@ export function useRealtimeAppointments(barbershopId) {
     }, 30000)
     
     return () => clearInterval(interval)
-  }, [isConnected, appointments.length])
+  }, [isConnected, appointments.length, diagnostics.eventCounts])
   
   // Log when appointments change
   useEffect(() => {
@@ -646,7 +646,7 @@ export function useRealtimeAppointments(barbershopId) {
       timestamp: new Date().toISOString(),
       lastUpdate: lastUpdate
     })
-  }, [appointments])
+  }, [appointments, lastUpdate])
 
   return { 
     appointments, 

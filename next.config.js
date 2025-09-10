@@ -1,5 +1,8 @@
+const path = require('path');
+const { withBundleAnalyzer } = require('./lib/performance/bundleAnalyzer.js');
+
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig = withBundleAnalyzer({
   reactStrictMode: true,
   eslint: {
     // Temporarily ignore ESLint during builds for deployment
@@ -17,7 +20,24 @@ const nextConfig = {
   // Remove experimental runtime config - will configure per route instead
   
   images: {
-    domains: ['localhost', '127.0.0.1'],
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+      },
+      {
+        protocol: 'https',
+        hostname: '127.0.0.1',
+      },
+    ],
     formats: ['image/avif', 'image/webp'],
   },
   
@@ -25,7 +45,7 @@ const nextConfig = {
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': __dirname,
+      '@': path.resolve(__dirname, '.'),
     }
     return config
   },
@@ -62,6 +82,25 @@ const nextConfig = {
       },
     ];
   },
-};
+  
+  // Performance optimizations
+  compiler: {
+    // Remove console logs in production
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
+  },
+  
+  // Experimental features for better performance
+  experimental: {
+    // Enable runtime optimizations
+    optimizeCss: true,
+    optimizeServerReact: true,
+    
+    // Enable modern bundling
+    esmExternals: true,
+    
+    // Optimize large page data
+    largePageDataBytes: 128 * 1000, // 128kb
+  },
+});
 
 module.exports = nextConfig;

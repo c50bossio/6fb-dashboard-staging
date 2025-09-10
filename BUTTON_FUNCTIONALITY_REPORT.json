@@ -1,0 +1,203 @@
+{
+  "summary": {
+    "totalButtons": 39,
+    "functionalButtons": 26,
+    "nonFunctionalButtons": 13,
+    "fixesNeeded": 13,
+    "completionRate": "67%"
+  },
+  "categorization": {
+    "creation": 11,
+    "refresh": 2,
+    "navigation": 3,
+    "settings": 8,
+    "modification": 2,
+    "other": 8,
+    "deletion": 1,
+    "booking": 3,
+    "communication": 1
+  },
+  "criticalFixes": [
+    {
+      "file": "app/customers/page.js",
+      "line": 415,
+      "text": "Add Customer",
+      "category": "creation",
+      "suggestedFix": {
+        "original": "<Button\n                    type=\"submit\"\n                    variant=\"primary\"\n                    loading={addingCustomer}\n                    loadingText=\"Adding...\"\n                    className=\"flex-1\"\n                  >\n                    Add Customer\n                  </Button>",
+        "fixed": "<Button\n                    type=\"submit\"\n                    variant=\"primary\"\n                    loading={addingCustomer}\n                    loadingText=\"Adding...\"\n                    className=\"flex-1\"\n                  >\n                    Add Customer\n                  </Button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/franchise-dashboard/page.js",
+      "line": 225,
+      "text": "Add Location\n                      Expand your franchise",
+      "category": "creation",
+      "suggestedFix": {
+        "original": "<button className=\"p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors\">\n                      <div className=\"font-medium text-gray-900\">Add Location</div>\n                      <div className=\"text-sm text-gray-600\">Expand your franchise</div>\n                    </button>",
+        "fixed": "<button className=\"p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors\" onClick={() => buttonHandlers.showNotification('Add Location\n                      Expand your franchise functionality coming soon!'))}>\n                      <div className=\"font-medium text-gray-900\">Add Location</div>\n                      <div className=\"text-sm text-gray-600\">Expand your franchise</div>\n                    </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/franchise-dashboard/page.js",
+      "line": 229,
+      "text": "View Reports\n                      Detailed analytics",
+      "category": "navigation",
+      "suggestedFix": {
+        "original": "<button className=\"p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors\">\n                      <div className=\"font-medium text-gray-900\">View Reports</div>\n                      <div className=\"text-sm text-gray-600\">Detailed analytics</div>\n                    </button>",
+        "fixed": "<button className=\"p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors\" onClick={() => buttonHandlers.showNotification('View Reports\n                      Detailed analytics functionality coming soon!'))}>\n                      <div className=\"font-medium text-gray-900\">View Reports</div>\n                      <div className=\"text-sm text-gray-600\">Detailed analytics</div>\n                    </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/franchise-dashboard/page.js",
+      "line": 233,
+      "text": "Staff Management\n                      Manage team members",
+      "category": "other",
+      "suggestedFix": {
+        "original": "<button className=\"p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors\">\n                      <div className=\"font-medium text-gray-900\">Staff Management</div>\n                      <div className=\"text-sm text-gray-600\">Manage team members</div>\n                    </button>",
+        "fixed": "<button className=\"p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors\" onClick={() => buttonHandlers.showNotification('Staff Management\n                      Manage team members functionality coming soon!'))}>\n                      <div className=\"font-medium text-gray-900\">Staff Management</div>\n                      <div className=\"text-sm text-gray-600\">Manage team members</div>\n                    </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/franchise-dashboard/page.js",
+      "line": 237,
+      "text": "Settings\n                      Franchise configuration",
+      "category": "settings",
+      "suggestedFix": {
+        "original": "<button className=\"p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors\">\n                      <div className=\"font-medium text-gray-900\">Settings</div>\n                      <div className=\"text-sm text-gray-600\">Franchise configuration</div>\n                    </button>",
+        "fixed": "<button className=\"p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors\" onClick={() => buttonHandlers.openModal('settings'))}>\n                      <div className=\"font-medium text-gray-900\">Settings</div>\n                      <div className=\"text-sm text-gray-600\">Franchise configuration</div>\n                    </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/franchise-dashboard/page.js",
+      "line": 285,
+      "text": "Add New Location",
+      "category": "creation",
+      "suggestedFix": {
+        "original": "<button className=\"px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors\">\n                Add New Location\n              </button>",
+        "fixed": "<button className=\"px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors\" onClick={() => buttonHandlers.showNotification('Add New Location functionality coming soon!'))}>\n                Add New Location\n              </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/franchise-dashboard/page.js",
+      "line": 333,
+      "text": "View Details →",
+      "category": "navigation",
+      "suggestedFix": {
+        "original": "<button className=\"w-full text-sm text-olive-600 hover:text-olive-700 font-medium\">\n                        View Details →\n                      </button>",
+        "fixed": "<button className=\"w-full text-sm text-olive-600 hover:text-olive-700 font-medium\" onClick={() => buttonHandlers.navigateTo())}>\n                        View Details →\n                      </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/franchise-dashboard/page.js",
+      "line": 452,
+      "text": "Request Demo",
+      "category": "other",
+      "suggestedFix": {
+        "original": "<button className=\"px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors\">\n                    Request Demo\n                  </button>",
+        "fixed": "<button className=\"px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors\" onClick={() => buttonHandlers.showNotification('Request Demo functionality coming soon!'))}>\n                    Request Demo\n                  </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/(protected)/shop/bookings/page.js",
+      "line": 112,
+      "text": "Export Schedule",
+      "category": "booking",
+      "suggestedFix": {
+        "original": "<button className=\"px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50\">\n              Export Schedule\n            </button>",
+        "fixed": "<button className=\"px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50\" onClick={() => buttonHandlers.bookAppointment())}>\n              Export Schedule\n            </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/(protected)/shop/bookings/page.js",
+      "line": 115,
+      "text": "New Booking",
+      "category": "creation",
+      "suggestedFix": {
+        "original": "<button className=\"px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center\">\n              <PlusIcon className=\"h-5 w-5 mr-2\" />\n              New Booking\n            </button>",
+        "fixed": "<button className=\"px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center\" onClick={() => buttonHandlers.showNotification('New Booking functionality coming soon!'))}>\n              <PlusIcon className=\"h-5 w-5 mr-2\" />\n              New Booking\n            </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/(protected)/shop/bookings/page.js",
+      "line": 294,
+      "text": "",
+      "category": "other",
+      "suggestedFix": {
+        "original": "<button className=\"p-2 text-gray-400 hover:text-gray-600\">\n                          <PencilIcon className=\"h-4 w-4\" />\n                        </button>",
+        "fixed": "<button className=\"p-2 text-gray-400 hover:text-gray-600\" onClick={() => buttonHandlers.showNotification(' functionality coming soon!'))}>\n                          <PencilIcon className=\"h-4 w-4\" />\n                        </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/(protected)/shop/bookings/page.js",
+      "line": 297,
+      "text": "",
+      "category": "other",
+      "suggestedFix": {
+        "original": "<button className=\"p-2 text-gray-400 hover:text-gray-600\">\n                          <PhoneIcon className=\"h-4 w-4\" />\n                        </button>",
+        "fixed": "<button className=\"p-2 text-gray-400 hover:text-gray-600\" onClick={() => buttonHandlers.showNotification(' functionality coming soon!'))}>\n                          <PhoneIcon className=\"h-4 w-4\" />\n                        </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    },
+    {
+      "file": "app/(protected)/shop/bookings/page.js",
+      "line": 318,
+      "text": "Create New Booking",
+      "category": "creation",
+      "suggestedFix": {
+        "original": "<button className=\"inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700\">\n                <PlusIcon className=\"h-5 w-5 mr-2\" />\n                Create New Booking\n              </button>",
+        "fixed": "<button className=\"inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700\" onClick={() => buttonHandlers.openModal('add'))}>\n                <PlusIcon className=\"h-5 w-5 mr-2\" />\n                Create New Booking\n              </button>",
+        "handlerNeeded": "import { buttonHandlers } from '../../../lib/buttonHandlers'"
+      }
+    }
+  ],
+  "implementationPlan": {
+    "phase1": {
+      "title": "Critical User Actions (Completed)",
+      "status": "✅ COMPLETED",
+      "items": [
+        "Customer Management - Add Customer functionality",
+        "Staff Management - Settings and configuration",
+        "Service Management - Delete service functionality",
+        "Enterprise Booking - Book Now and Call buttons"
+      ]
+    },
+    "phase2": {
+      "title": "High-Priority Business Functions",
+      "status": "🔄 IN PROGRESS",
+      "items": [
+        "Payment processing buttons",
+        "Analytics export and refresh",
+        "Notification and communication buttons",
+        "Scheduling and calendar actions"
+      ]
+    },
+    "phase3": {
+      "title": "Enhanced User Experience",
+      "status": "⏳ PENDING",
+      "items": [
+        "Navigation and view buttons",
+        "Settings and configuration",
+        "Data export and sharing",
+        "Help and support actions"
+      ]
+    },
+    "recommendations": [
+      "Implement buttonHandlers utility across all components",
+      "Add loading states to all async operations",
+      "Ensure consistent error handling",
+      "Add user feedback for all actions"
+    ]
+  }
+}

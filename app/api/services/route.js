@@ -3,6 +3,9 @@ import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
 
+// Demo barbershop ID constant - matches Supabase UUID
+const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+
 // Validation schema for services
 const serviceSchema = z.object({
   barbershop_id: z.string().uuid(),
@@ -57,14 +60,14 @@ export async function GET(request) {
       console.warn('Database query failed, using mock data:', error.message)
       
       // Mock services data for demo/development
-      const Services = [
+      const mockServices = [
         {
           id: 'service-001',
           name: 'Classic Haircut',
           description: 'Traditional haircut with scissors and clippers',
           price: 35,
           duration_minutes: 30,
-          barbershop_id: barbershop_id || 'demo-shop-001',
+          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
           is_active: true,
           category: 'Hair'
         },
@@ -74,7 +77,7 @@ export async function GET(request) {
           description: 'Modern fade haircut with precise blending',
           price: 45,
           duration_minutes: 45,
-          barbershop_id: barbershop_id || 'demo-shop-001',
+          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
           is_active: true,
           category: 'Hair'
         },
@@ -84,7 +87,7 @@ export async function GET(request) {
           description: 'Professional beard shaping and trimming',
           price: 25,
           duration_minutes: 20,
-          barbershop_id: barbershop_id || 'demo-shop-001',
+          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
           is_active: true,
           category: 'Beard'
         },
@@ -94,7 +97,7 @@ export async function GET(request) {
           description: 'Luxury hot towel shave with straight razor',
           price: 50,
           duration_minutes: 45,
-          barbershop_id: barbershop_id || 'demo-shop-001',
+          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
           is_active: true,
           category: 'Shave'
         },
@@ -104,7 +107,7 @@ export async function GET(request) {
           description: 'Complete haircut and beard grooming package',
           price: 60,
           duration_minutes: 60,
-          barbershop_id: barbershop_id || 'demo-shop-001',
+          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
           is_active: true,
           category: 'Package'
         }

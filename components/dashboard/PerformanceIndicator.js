@@ -5,6 +5,9 @@
 
 'use client';
 
+// Demo barbershop ID constant - matches Supabase UUID
+const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+
 import { useState, useEffect } from 'react';
 import {
   BoltIcon,
@@ -35,7 +38,7 @@ export default function PerformanceIndicator({ className = '' }) {
 
       // Test API response time
       const startTime = Date.now();
-      const apiResponse = await fetch('/api/analytics/live-data?barbershop_id=demo-shop-001');
+      const apiResponse = await fetch(`/api/analytics/live-data?barbershop_id=${DEMO_BARBERSHOP_ID}`);
       const apiResponseTime = Date.now() - startTime;
       const apiData = await apiResponse.json();
 

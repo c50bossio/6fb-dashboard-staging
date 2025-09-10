@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 export const runtime = 'edge'
 
+// Demo barbershop ID constant - matches Supabase UUID
+const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -10,7 +13,7 @@ const supabase = createClient(
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const barbershopId = searchParams.get('barbershop_id') || 'demo-shop-001'
+    const barbershopId = searchParams.get('barbershop_id') || DEMO_BARBERSHOP_ID
     const limit = parseInt(searchParams.get('limit')) || 50
     const offset = parseInt(searchParams.get('offset')) || 0
     const search = searchParams.get('search')
@@ -80,7 +83,7 @@ export async function POST(request) {
   try {
     const body = await request.json()
     const {
-      barbershop_id = 'demo-shop-001',
+      barbershop_id = DEMO_BARBERSHOP_ID,
       name,
       phone,
       email,

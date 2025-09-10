@@ -85,7 +85,7 @@ This prevents half-done features and ensures every implementation provides immed
 - **Containerization**: Docker Compose with frontend:9999, backend:8001
 - **Testing**: Triple-tool approach (Playwright + Puppeteer MCP + Computer Use AI)
 - **Error Tracking**: Sentry integration
-- **Analytics**: PostHog with session recording
+- **Analytics**: Vercel Analytics with performance monitoring
 - **Feature Flags**: Vercel Edge Config
 - **Rate Limiting**: Middleware-based API protection with fallback to in-memory storage
 - **Security**: GDPR compliance services and comprehensive audit logging
@@ -287,7 +287,7 @@ const schema = await supabaseQuery.getTableSchema('agents')
 ```
 components/
 ├── ai/              # AI chat and agent components
-├── analytics/       # PostHog and analytics components  
+├── analytics/       # Custom analytics and reporting components  
 ├── calendar/        # FullCalendar booking components
 ├── chat/           # Real-time chat components
 ├── dashboard/       # Dashboard components (header, metrics, actions)
@@ -337,8 +337,6 @@ NEXT_PUBLIC_PUSHER_CLUSTER=
 ```bash
 # Error Tracking & Analytics
 NEXT_PUBLIC_SENTRY_DSN=
-NEXT_PUBLIC_POSTHOG_KEY=
-NEXT_PUBLIC_POSTHOG_HOST=
 
 # Internal Notification System
 # (No external API keys required - handled internally)
@@ -427,7 +425,7 @@ vercel         # Preview/staging
 - **Health Endpoint**: `/api/health` with detailed service status
 - **Service Dependencies**: Automatic health checks for all integrated services
 - **Error Tracking**: Sentry integration for production error monitoring
-- **Performance Monitoring**: PostHog analytics and Core Web Vitals
+- **Performance Monitoring**: Vercel Analytics and Core Web Vitals
 
 ## Development Guidelines
 
@@ -529,7 +527,7 @@ vercel         # Preview/staging
 ### Production Considerations
 - **Monitoring**: Comprehensive health checks at `/api/health`
 - **Error Tracking**: Sentry integration for production error monitoring
-- **Performance**: PostHog analytics with Core Web Vitals tracking
+- **Performance**: Vercel Analytics with Core Web Vitals tracking
 - **Infrastructure**: Kubernetes configs in `/infrastructure/kubernetes/`
 - **Security**: GDPR compliance services and security audit logging
 

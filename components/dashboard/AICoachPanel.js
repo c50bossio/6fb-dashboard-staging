@@ -86,12 +86,13 @@ export default function AICoachPanel({ data }) {
     
     try {
       // Fetch specific insights from the selected AI coach
-      const response = await fetch('/api/ai/chat', {
+      const response = await fetch('/api/ai/unified-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          agent: coach.id,
-          prompt: `Provide business insight for ${coach.name}`
+          message: `Provide business insight for ${coach.name}`,
+          provider: 'enhanced',
+          includeBusinessContext: true
         })
       })
       

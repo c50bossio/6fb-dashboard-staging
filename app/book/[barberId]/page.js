@@ -110,47 +110,74 @@ function BookingPageContent() {
     try {
       setLoading(true)
       
-      // Database data
-      const Barber = {
+      // Load barber data and services from APIs
+      const [barberResponse, servicesResponse] = await Promise.all([
+        fetch(`/api/bookings/availability?barberId=${params.barberId}&date=${new Date().toISOString().split('T')[0]}&duration=60`),
+        fetch(`/api/bookings/services?barberId=${params.barberId}`)
+      ])
+
+      if (barberResponse.ok) {
+        const barberData = await barberResponse.json()
+        if (barberData.barber) {
+          setBarberData(barberData.barber)
+        }
+      } else {
+        // Fallback to mock data if API fails
+        setBarberData({
+          id: params.barberId,
+          name: 'Marcus Johnson',
+          title: 'Master Barber',
+          image: '/barbers/marcus.jpg',
+          rating: 4.9,
+          reviewCount: 156,
+          bio: 'Professional barber with over 10 years of experience specializing in fades, beard sculpting, and modern men\'s cuts.',
+          location: {
+            name: '6FB Downtown',
+            address: '123 Main St, Downtown, NY 10001',
+            phone: '(555) 123-4567'
+          },
+          specialties: ['Fades', 'Beard Sculpting', 'Hot Towel Shaves', 'Classic Cuts']
+        })
+      }
+
+      if (servicesResponse.ok) {
+        const servicesData = await servicesResponse.json()
+        if (servicesData.success && servicesData.services) {
+          setAvailableServices(servicesData.services)
+        }
+      } else {
+        // Fallback to mock services if API fails
+        setAvailableServices([
+          { id: 1, name: 'Classic Cut', duration: 30, price: 35, description: 'Traditional scissor cut and style', category: 'Haircuts' },
+          { id: 2, name: 'Fade Cut', duration: 45, price: 45, description: 'Modern fade with scissor work on top', category: 'Haircuts' },
+          { id: 3, name: 'Buzz Cut', duration: 15, price: 25, description: 'Clean, uniform length all around', category: 'Haircuts' },
+          { id: 4, name: 'Beard Trim', duration: 20, price: 20, description: 'Precision beard trimming and shaping', category: 'Beard Services' },
+          { id: 5, name: 'Beard Sculpting', duration: 30, price: 35, description: 'Detailed beard design and sculpting', category: 'Beard Services' },
+          { id: 6, name: 'Hot Towel Shave', duration: 45, price: 50, description: 'Traditional straight razor shave with hot towel', category: 'Premium Services' },
+          { id: 7, name: 'Hair Wash & Style', duration: 25, price: 30, description: 'Professional wash and styling', category: 'Add-ons' },
+          { id: 8, name: 'Eyebrow Trim', duration: 10, price: 15, description: 'Eyebrow trimming and shaping', category: 'Add-ons' }
+        ])
+      }
+    } catch (error) {
+      console.error('Failed to load barber data:', error)
+      // Use fallback data on error
+      setBarberData({
         id: params.barberId,
         name: 'Marcus Johnson',
         title: 'Master Barber',
         image: '/barbers/marcus.jpg',
         rating: 4.9,
         reviewCount: 156,
-        bio: 'Professional barber with over 10 years of experience specializing in fades, beard sculpting, and modern men\'s cuts.',
+        bio: 'Professional barber with over 10 years of experience.',
         location: {
           name: '6FB Downtown',
           address: '123 Main St, Downtown, NY 10001',
           phone: '(555) 123-4567'
-        },
-        specialties: ['Fades', 'Beard Sculpting', 'Hot Towel Shaves', 'Classic Cuts'],
-        availability: {
-          monday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          tuesday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          wednesday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          thursday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          friday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          saturday: ['09:00', '10:00', '11:00', '14:00', '15:00'],
-          sunday: ['10:00', '11:00', '12:00', '14:00', '15:00']
         }
-      }
-
-      const Services = [
-        { id: 1, name: 'Classic Cut', duration: 30, price: 35, description: 'Traditional scissor cut and style', category: 'Haircuts' },
-        { id: 2, name: 'Fade Cut', duration: 45, price: 45, description: 'Modern fade with scissor work on top', category: 'Haircuts' },
-        { id: 3, name: 'Buzz Cut', duration: 15, price: 25, description: 'Clean, uniform length all around', category: 'Haircuts' },
-        { id: 4, name: 'Beard Trim', duration: 20, price: 20, description: 'Precision beard trimming and shaping', category: 'Beard Services' },
-        { id: 5, name: 'Beard Sculpting', duration: 30, price: 35, description: 'Detailed beard design and sculpting', category: 'Beard Services' },
-        { id: 6, name: 'Hot Towel Shave', duration: 45, price: 50, description: 'Traditional straight razor shave with hot towel', category: 'Premium Services' },
-        { id: 7, name: 'Hair Wash & Style', duration: 25, price: 30, description: 'Professional wash and styling', category: 'Add-ons' },
-        { id: 8, name: 'Eyebrow Trim', duration: 10, price: 15, description: 'Eyebrow trimming and shaping', category: 'Add-ons' }
-      ]
-
-      setBarberData(mockBarber)
-      setAvailableServices(mockServices)
-    } catch (error) {
-      console.error('Failed to load barber data:', error)
+      })
+      setAvailableServices([
+        { id: 1, name: 'Classic Cut', duration: 30, price: 35, description: 'Traditional scissor cut and style', category: 'Haircuts' }
+      ])
     } finally {
       setLoading(false)
     }
@@ -184,39 +211,50 @@ function BookingPageContent() {
     return urlTimeSlots
   }
 
-  const generateAvailableSlots = () => {
-    // Generate next 7 days of availability
+  const generateAvailableSlots = async () => {
+    // Generate next 7 days of availability using real API
     const slots = []
     const today = new Date()
+    const totalDuration = calculateTotalDuration()
     
     for (let i = 0; i < 7; i++) {
       const date = new Date(today)
       date.setDate(date.getDate() + i)
+      const dateString = date.toISOString().split('T')[0]
       
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
-      const daySlots = barberData?.availability[dayName] || []
-      
-      const filteredSlots = urlTimeSlots.length > 0 
-        ? daySlots.filter(time => {
-            const hour = parseInt(time.split(':')[0])
-            return urlTimeSlots.some(slot => {
-              if (slot === 'morning') return hour >= 9 && hour < 12
-              if (slot === 'afternoon') return hour >= 12 && hour < 17
-              if (slot === 'evening') return hour >= 17 && hour < 20
-              if (slot === 'weekend') return date.getDay() === 0 || date.getDay() === 6
-              if (slot === 'weekdays') return date.getDay() >= 1 && date.getDay() <= 5
-              return true
+      try {
+        const response = await fetch(`/api/bookings/availability?barberId=${params.barberId}&date=${dateString}&duration=${totalDuration}`)
+        if (response.ok) {
+          const availabilityData = await response.json()
+          
+          let availableSlots = availabilityData.availableSlots || []
+          
+          // Filter by time preferences if provided in URL
+          if (urlTimeSlots.length > 0) {
+            availableSlots = availableSlots.filter(slot => {
+              const hour = parseInt(slot.time.split(':')[0])
+              return urlTimeSlots.some(timeSlot => {
+                if (timeSlot === 'morning') return hour >= 9 && hour < 12
+                if (timeSlot === 'afternoon') return hour >= 12 && hour < 17
+                if (timeSlot === 'evening') return hour >= 17 && hour < 20
+                if (timeSlot === 'weekend') return date.getDay() === 0 || date.getDay() === 6
+                if (timeSlot === 'weekdays') return date.getDay() >= 1 && date.getDay() <= 5
+                return true
+              })
             })
-          })
-        : daySlots
+          }
 
-      if (filteredSlots.length > 0) {
-        slots.push({
-          date: date.toISOString().split('T')[0],
-          dayName: date.toLocaleDateString('en-US', { weekday: 'long' }),
-          dayMonth: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          times: filteredSlots
-        })
+          if (availableSlots.length > 0) {
+            slots.push({
+              date: dateString,
+              dayName: date.toLocaleDateString('en-US', { weekday: 'long' }),
+              dayMonth: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              times: availableSlots.map(slot => slot.time)
+            })
+          }
+        }
+      } catch (error) {
+        console.error(`Failed to fetch availability for ${dateString}:`, error)
       }
     }
     
@@ -226,43 +264,56 @@ function BookingPageContent() {
   const handleBooking = async () => {
     setLoading(true)
     try {
-      // Create booking
+      // Get barbershop ID (we'll need to add this to the API response)
+      const barbershopId = 'default-barbershop' // This should come from the barber data
+      
+      // For multiple services, we'll create a booking with the first service and the total duration/price
+      const primaryService = selectedServices[0]
+      
       const bookingData = {
-        barberId: params.barberId,
-        services: selectedServices,
-        dateTime: selectedDateTime,
-        customer: customerInfo,
-        totalDuration: calculateTotalDuration(),
-        totalPrice: calculateTotalPrice(),
+        barbershop_id: barbershopId,
+        barber_id: params.barberId,
+        service_id: primaryService.id,
+        scheduled_at: selectedDateTime,
+        duration_minutes: calculateTotalDuration(),
+        service_price: calculateTotalPrice(),
+        tip_amount: 0,
+        client_name: customerInfo.name,
+        client_phone: customerInfo.phone,
+        client_email: customerInfo.email,
+        client_notes: customerInfo.notes,
+        payment_method: 'cash', // Default to cash, can be updated later
+        is_walk_in: false,
+        // Additional metadata for multiple services
+        all_services: selectedServices.map(s => ({ id: s.id, name: s.name, price: s.price, duration: s.duration })),
         source: 'booking_link',
-        linkId: searchParams?.get('linkId'), // Include link ID for attribution
-        smsConsent: customerInfo.smsConsent // Include SMS consent preference
+        link_id: searchParams?.get('linkId'),
+        sms_consent: customerInfo.smsConsent
       }
 
-      // In production, this would call the booking API
       const response = await fetch('/api/bookings/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData)
       })
 
-      if (response.ok) {
-        const booking = await response.json()
-        
+      const result = await response.json()
+
+      if (response.ok && result.success) {
         // Track conversion if this came from a booking link
         const linkId = searchParams?.get('linkId')
         if (linkId) {
           const sessionId = sessionStorage.getItem('booking_session_id')
           
           // Track conversion analytics
-          await fetch('/api/analytics/track', {
+          fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               linkId: linkId,
               eventType: 'conversion',
               sessionId: sessionId,
-              bookingId: booking.id,
+              bookingId: result.booking.id,
               conversionValue: calculateTotalPrice(),
               utmSource: searchParams?.get('utm_source'),
               utmMedium: searchParams?.get('utm_medium'),
@@ -273,13 +324,16 @@ function BookingPageContent() {
           })
         }
         
-        router.push(`/bookings/${booking.id}/success`)
+        // Show success message or redirect
+        alert(`Booking confirmed! Booking ID: ${result.booking.id}`)
+        // You can redirect to a success page or show a success modal
+        // router.push(`/bookings/${result.booking.id}/success`)
       } else {
-        throw new Error('Booking failed')
+        throw new Error(result.error || 'Booking failed')
       }
     } catch (error) {
       console.error('Booking failed:', error)
-      alert('Booking failed. Please try again.')
+      alert(`Booking failed: ${error.message}. Please try again.`)
     } finally {
       setLoading(false)
     }
@@ -307,9 +361,17 @@ function BookingPageContent() {
            customerInfo.phone.trim()
   }
 
-  const availableSlots = useMemo(() => {
-    return generateAvailableSlots()
-  }, [urlTimeSlots, barberData])
+  const [availableSlots, setAvailableSlots] = useState([])
+  
+  useEffect(() => {
+    const loadAvailableSlots = async () => {
+      if (!barberData) return
+      const slots = await generateAvailableSlots()
+      setAvailableSlots(slots)
+    }
+    
+    loadAvailableSlots()
+  }, [urlTimeSlots, barberData, selectedServices])
 
   if (loading && !barberData) {
     return (

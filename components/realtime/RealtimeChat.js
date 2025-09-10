@@ -72,7 +72,7 @@ export default function RealtimeChat({ className = '' }) {
     
     try {
       // Send message to enhanced AI chat API
-      const response = await fetch('/api/ai/enhanced-chat', {
+      const response = await fetch('/api/ai/unified-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

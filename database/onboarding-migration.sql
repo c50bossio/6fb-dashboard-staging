@@ -7,7 +7,9 @@ ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMP WITH TIME ZONE,
 ADD COLUMN IF NOT EXISTS onboarding_step INTEGER DEFAULT 0,
 ADD COLUMN IF NOT EXISTS user_goals TEXT[] DEFAULT '{}',
-ADD COLUMN IF NOT EXISTS business_size VARCHAR(20);
+ADD COLUMN IF NOT EXISTS business_size VARCHAR(20),
+ADD COLUMN IF NOT EXISTS onboarding_checklist_progress JSONB DEFAULT '{}',
+ADD COLUMN IF NOT EXISTS onboarding_points INTEGER DEFAULT 0;
 
 -- Add onboarding fields to barbershops table (if not exists)
 ALTER TABLE barbershops

@@ -1,5 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { createOptimizedClient } from '@/lib/supabase-connection-pool'
+
+// Demo barbershop ID constant - matches Supabase UUID
+const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
 
 // Inline notification handler (can be moved to external service later)
 const sendBookingNotification = async (appointmentData, customerData, preferences) => {
@@ -21,11 +24,8 @@ const sendBookingNotification = async (appointmentData, customerData, preference
   }
 }
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+// 🚨 CONNECTION POOL FIX: Use optimized client with connection pooling
+const supabase = createOptimizedClient({ serviceRole: true })
 
 export async function GET(request) {
   try {
@@ -48,7 +48,7 @@ export async function GET(request) {
     
     // 🚨 CRITICAL FIX: Add shop_id filter to prevent returning entire database
     // Default to demo shop if no shop_id provided
-    const filterShopId = shopId || 'demo-shop-001'
+    const filterShopId = shopId || DEMO_BARBERSHOP_ID
     query = query.eq('shop_id', filterShopId)
     console.log('🔒 FILTERED by shop_id:', filterShopId)
     
@@ -259,8 +259,33 @@ export async function POST(request) {
         { status: 400 }
       )
     }
+
+    // 🚨 RACE CONDITION FIX: Check for double booking before proceeding
+    const shopId = body.shop_id || body.barbershop_id || DEMO_BARBERSHOP_ID
     
-    // Handle customer creation/linking
+    // Check for overlapping appointments (prevents double booking)
+    const { data: overlapping, error: overlapError } = await supabase
+      .from('bookings')
+      .select('id, start_time, end_time, status, customer_id')
+      .eq('shop_id', shopId)
+      .eq('barber_id', body.barber_id)
+      .neq('status', 'cancelled')
+      .or(`and(start_time.lt.${endTime.toISOString()},end_time.gt.${startTime.toISOString()})`)
+      .limit(1)
+      .single()
+    
+    if (!overlapError && overlapping) {
+      return NextResponse.json(
+        { 
+          error: 'Time slot conflict detected',
+          details: `Appointment already exists from ${overlapping.start_time} to ${overlapping.end_time}`,
+          conflict_id: overlapping.id
+        },
+        { status: 409 }
+      )
+    }
+    
+    // 🚨 RACE CONDITION FIX: Handle customer creation/linking with retry logic
     let customerId = body.customer_id
     let customerData = null
     
@@ -280,38 +305,79 @@ export async function POST(request) {
         customerData = existingCustomer
       }
     } else if (body.customer_mode === 'new' && (body.client_name || body.customer_name)) {
-      // Create new customer for new customer mode
-      const newCustomerData = {
-        name: body.client_name || body.customer_name,
-        email: body.client_email || body.customer_email,
-        phone: body.client_phone || body.customer_phone,
-        shop_id: body.shop_id || body.barbershop_id || 'demo-shop-001',
-        notification_preferences: body.notification_preferences || {
-          sms: true,
-          email: true,
-          confirmations: true,
-          reminders: true
-        }
-      }
-
-      const { data: customer, error: customerError } = await supabase
-        .from('customers')
-        .insert([newCustomerData])
-        .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
-        .single()
+      // 🚨 RACE CONDITION FIX: Check for duplicate customers by phone/email first
+      const customerName = body.client_name || body.customer_name
+      const customerPhone = body.client_phone || body.customer_phone  
+      const customerEmail = body.client_email || body.customer_email
       
-      if (!customerError && customer) {
-        customerId = customer.id
-        customerData = customer
+      // Check if customer already exists to prevent duplicates
+      let existingQuery = supabase
+        .from('customers')
+        .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
+        .eq('shop_id', shopId)
+      
+      if (customerPhone) {
+        existingQuery = existingQuery.eq('phone', customerPhone)
+      } else if (customerEmail) {
+        existingQuery = existingQuery.eq('email', customerEmail)
+      }
+      
+      const { data: existingCustomerCheck, error: checkError } = await existingQuery.single()
+      
+      if (!checkError && existingCustomerCheck) {
+        // Use existing customer
+        customerId = existingCustomerCheck.id
+        customerData = existingCustomerCheck
+        console.log('Using existing customer:', existingCustomerCheck.id)
       } else {
-        console.error('Error creating customer:', customerError)
-        // Continue without customer_id if creation fails
+        // Create new customer with retry logic
+        const newCustomerData = {
+          name: customerName,
+          email: customerEmail,
+          phone: customerPhone,
+          shop_id: shopId,
+          notification_preferences: body.notification_preferences || {
+            sms: true,
+            email: true,
+            confirmations: true,
+            reminders: true
+          }
+        }
+
+        const { data: customer, error: customerError } = await supabase
+          .from('customers')
+          .insert([newCustomerData])
+          .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
+          .single()
+        
+        if (!customerError && customer) {
+          customerId = customer.id
+          customerData = customer
+          console.log('Created new customer:', customer.id)
+        } else if (customerError?.code === '23505') {
+          // Handle unique constraint violation - customer was created by another request
+          console.log('Customer already exists (concurrent creation), fetching...')
+          const { data: concurrentCustomer } = await supabase
+            .from('customers')
+            .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
+            .eq('shop_id', shopId)
+            .or(`phone.eq.${customerPhone},email.eq.${customerEmail}`)
+            .single()
+          
+          if (concurrentCustomer) {
+            customerId = concurrentCustomer.id
+            customerData = concurrentCustomer
+          }
+        } else {
+          console.error('Error creating customer:', customerError)
+          // Continue without customer_id if creation fails
+        }
       }
     }
     
     // Prepare booking data for new schema
     const bookingData = {
-      shop_id: body.shop_id || body.barbershop_id || 'demo-shop-001',
+      shop_id: body.shop_id || body.barbershop_id || DEMO_BARBERSHOP_ID,
       barber_id: body.barber_id,
       customer_id: customerId,
       service_id: isBlockedTime ? null : body.service_id,
@@ -347,6 +413,28 @@ export async function POST(request) {
       bookingData.recurring_pattern = recurringPattern
     }
     
+    // 🚨 RACE CONDITION FIX: Final check for conflicts before inserting
+    // Double-check for overlapping appointments right before insert
+    const { data: finalOverlapCheck } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('shop_id', bookingData.shop_id)
+      .eq('barber_id', bookingData.barber_id)
+      .neq('status', 'cancelled')
+      .or(`and(start_time.lt.${bookingData.end_time},end_time.gt.${bookingData.start_time})`)
+      .limit(1)
+    
+    if (finalOverlapCheck && finalOverlapCheck.length > 0) {
+      return NextResponse.json(
+        { 
+          error: 'Time slot conflict detected during booking creation',
+          details: 'Another appointment was created at the same time',
+          conflict_id: finalOverlapCheck[0].id
+        },
+        { status: 409 }
+      )
+    }
+
     // Insert the single booking record (FullCalendar will handle recurring instances)
     const { data: newBooking, error: bookingError } = await supabase
       .from('bookings')

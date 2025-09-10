@@ -1,19 +1,49 @@
 /**
- * Service Worker for 6FB AI Agent System
- * Handles offline functionality, caching, and background sync
+ * Performance-Optimized Service Worker for 6FB AI Agent System
+ * Enhanced with Core Web Vitals optimization, intelligent caching, and offline support
  */
 
-const CACHE_NAME = 'v1.0.0';
-const urlsToCache = [
+const CACHE_VERSION = '1.0.0'
+const CACHE_NAME = `6fb-booking-${CACHE_VERSION}`
+const RUNTIME_CACHE = `6fb-runtime-${CACHE_VERSION}`
+const API_CACHE = `6fb-api-${CACHE_VERSION}`
+const IMAGE_CACHE = `6fb-images-${CACHE_VERSION}`
+
+// Critical resources for immediate caching
+const CRITICAL_CACHE_URLS = [
   '/',
+  '/booking',
   '/offline',
   '/manifest.json',
-  '/favicon.ico'
-];
+  '/favicon.ico',
+  // Add critical CSS and JS chunks
+  '/_next/static/css/',
+  '/_next/static/chunks/main',
+  '/_next/static/chunks/webpack',
+]
 
-// Dynamic cache for API responses
-const API_CACHE = 'api-cache-v1';
-const API_CACHE_MAX_AGE = 5 * 60 * 1000; // 5 minutes
+// Cache configuration
+const CACHE_CONFIG = {
+  // Max cache entries to prevent storage bloat
+  maxEntries: {
+    pages: 50,
+    images: 100,
+    api: 200,
+    static: 500
+  },
+  
+  // Cache TTL settings (milliseconds)
+  ttl: {
+    api: 5 * 60 * 1000,        // 5 minutes for API
+    pages: 24 * 60 * 60 * 1000, // 24 hours for pages
+    images: 7 * 24 * 60 * 60 * 1000, // 7 days for images
+    static: 30 * 24 * 60 * 60 * 1000  // 30 days for static assets
+  },
+  
+  // Performance monitoring
+  enablePerformanceTracking: true,
+  trackLongTasks: true,
+}
 
 // Install event - cache essential files
 self.addEventListener('install', (event) => {

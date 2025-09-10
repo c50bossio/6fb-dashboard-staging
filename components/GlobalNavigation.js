@@ -24,7 +24,7 @@ import { useAuth } from './SupabaseAuthProvider'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'Appointments', href: '/appointments', icon: CalendarIcon },
+  { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
   { name: 'Customers', href: '/customers', icon: UsersIcon },
   { name: 'Staff', href: '/staff', icon: UserCircleIcon },
   { name: 'Payments', href: '/payments', icon: BanknotesIcon },

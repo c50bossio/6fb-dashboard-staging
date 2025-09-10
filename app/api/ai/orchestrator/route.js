@@ -21,7 +21,7 @@ export async function POST(request) {
     // Use demo user in development if no real user
     const effectiveUser = user || { id: 'demo-user', email: 'demo@barbershop.com' }
 
-    const { message, sessionId, businessContext } = await request.json()
+    const { message, sessionId, businessContext, selectedAgent } = await request.json()
 
     if (!message || !message.trim()) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
@@ -32,7 +32,7 @@ export async function POST(request) {
 
     try {
       // Call Python AI Orchestrator Service
-      const orchestratorResponse = await callPythonAIOrchestrator(message, currentSession, businessContext)
+      const orchestratorResponse = await callPythonAIOrchestrator(message, currentSession, businessContext, selectedAgent)
       
       // Store conversation in Supabase (skip in demo mode)
       if (user) {
@@ -93,66 +93,171 @@ export async function POST(request) {
   }
 }
 
-async function callPythonAIOrchestrator(message, sessionId, businessContext = {}) {
-  const fastAPIUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8001'
+async function callPythonAIOrchestrator(message, sessionId, businessContext = {}, selectedAgent = null) {
+  const fastAPIUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8002'
   
   try {
-    // Enhanced orchestrator with RAG-powered agents and executable actions
-    const response = await fetch(`${fastAPIUrl}/api/v1/ai/enhanced-chat`, {
+    // Use explicitly selected agent or auto-route based on message content
+    const agentToUse = selectedAgent || routeMessageToAgent(message)
+    
+    // Call the specific FastAPI agent directly
+    const response = await fetch(`${fastAPIUrl}/agents/${agentToUse}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        message,
-        session_id: sessionId,
-        business_context: {
+        agent_type: agentToUse,
+        message: message,
+        context: {
           ...businessContext,
-          // Enhanced business context
           business_name: businessContext.business_name || 'Elite Cuts Barbershop',
           user_preferences: businessContext.user_preferences || {},
           conversation_history: businessContext.conversation_history || [],
           requested_actions: detectExecutableActions(message),
-          agent_routing_preferences: businessContext.agent_routing || 'auto'
+          agent_routing_preferences: businessContext.agent_routing || 'auto',
+          session_id: sessionId
         },
-        features: {
-          rag_enhanced: true,
-          executable_actions: true,
-          multi_agent_collaboration: true,
-          knowledge_powered_recommendations: true
-        }
+        priority: 'medium',
+        request_type: 'analysis',
+        structured_output: false,
+        include_knowledge: true,
+        user_id: businessContext.user_id || 'anonymous',
+        session_id: sessionId
       }),
-      timeout: 30000 // Increased timeout for complex agent coordination
+      timeout: 30000
     })
 
     if (!response.ok) {
-      throw new Error(`FastAPI responded with status: ${response.status}`)
+      throw new Error(`FastAPI agent responded with status: ${response.status}`)
     }
 
     const data = await response.json()
     
     if (!data.success) {
-      throw new Error(data.error || 'AI Orchestrator failed')
+      throw new Error(data.message || 'Agent request failed')
     }
 
+    // Transform FastAPI response to match frontend expectations
     return {
-      ...data,
-      // Enhanced response format
-      agent_name: data.agent_name || 'AI Agent',
-      agent_personality: data.agent_personality || 'strategic_mindset',
-      recommendations: data.recommendations || [],
-      action_items: data.action_items || [],
-      follow_up_questions: data.follow_up_questions || [],
-      executed_actions: data.executed_actions || [],
-      knowledge_enhanced: data.knowledge_enhanced || false,
-      confidence: data.confidence || 0.8
+      success: true,
+      response: typeof data.result === 'string' ? data.result : JSON.stringify(data.result),
+      agent_name: getAgentDisplayName(agentToUse),
+      agent_personality: getAgentPersonality(agentToUse),
+      confidence: data.confidence || 0.8,
+      recommendations: extractRecommendations(data.result),
+      action_items: extractActionItems(data.result),
+      follow_up_questions: [],
+      executed_actions: [],
+      knowledge_enhanced: data.knowledge_used > 0,
+      provider: 'fastapi_agents',
+      timestamp: new Date().toISOString(),
+      execution_time: data.execution_time,
+      tokens_used: data.tokens_used,
+      request_id: data.request_id
     }
     
   } catch (error) {
-    console.error('Failed to call Python AI Orchestrator:', error)
-    throw new Error(`AI Orchestrator unavailable: ${error.message}`)
+    console.error('Failed to call FastAPI Agent:', error)
+    throw new Error(`AI Agent unavailable: ${error.message}`)
   }
+}
+
+// Intelligent agent routing function
+function routeMessageToAgent(message) {
+  const messageLower = message.toLowerCase()
+  
+  // Financial keywords -> Financial Agent
+  if (['revenue', 'money', 'profit', 'pricing', 'cost', 'budget', 'financial', 'income', 'expense', 'roi', 'investment'].some(keyword => messageLower.includes(keyword))) {
+    return 'financial'
+  }
+  
+  // Marketing keywords -> Marketing Agent
+  if (['marketing', 'customers', 'social', 'instagram', 'promotion', 'campaign', 'ads', 'advertising', 'branding', 'social media', 'acquisition'].some(keyword => messageLower.includes(keyword))) {
+    return 'marketing'
+  }
+  
+  // Operations keywords -> Technical Operations Agent
+  if (['schedule', 'staff', 'operations', 'efficiency', 'appointment', 'booking', 'workflow', 'process', 'system', 'time management'].some(keyword => messageLower.includes(keyword))) {
+    return 'technical_operations'
+  }
+  
+  // Customer service keywords -> Customer Success Agent
+  if (['customer', 'client', 'service', 'satisfaction', 'retention', 'loyalty', 'feedback', 'review', 'experience', 'support'].some(keyword => messageLower.includes(keyword))) {
+    return 'customer_success'
+  }
+  
+  // Default to Master Coach for strategic/general questions
+  return 'master_coach'
+}
+
+// Get display name for agent
+function getAgentDisplayName(agentType) {
+  const agentNames = {
+    'master_coach': 'Marcus - Master Coach',
+    'financial': 'Marcus - Financial Coach', 
+    'marketing': 'Sophia - Marketing Expert',
+    'technical_operations': 'David - Operations Manager',
+    'customer_success': 'Sarah - Customer Relations'
+  }
+  return agentNames[agentType] || 'AI Agent'
+}
+
+// Get agent personality for UI
+function getAgentPersonality(agentType) {
+  const personalities = {
+    'master_coach': 'strategic_mindset',
+    'financial': 'financial_coach',
+    'marketing': 'marketing_expert', 
+    'technical_operations': 'operations_manager',
+    'customer_success': 'customer_relations'
+  }
+  return personalities[agentType] || 'strategic_mindset'
+}
+
+// Extract recommendations from agent response
+function extractRecommendations(result) {
+  if (typeof result !== 'string') return []
+  
+  const recommendations = []
+  const lines = result.split('\n')
+  
+  for (const line of lines) {
+    // Look for bullet points, numbered lists, or recommendation sections
+    if (line.match(/^[\-\*\d+\.]\s+/) || line.toLowerCase().includes('recommend')) {
+      const clean = line.replace(/^[\-\*\d+\.]\s*/, '').trim()
+      if (clean.length > 10 && clean.length < 200) {
+        recommendations.push(clean)
+      }
+    }
+  }
+  
+  return recommendations.slice(0, 5) // Limit to 5 recommendations
+}
+
+// Extract action items from agent response  
+function extractActionItems(result) {
+  if (typeof result !== 'string') return []
+  
+  const actionItems = []
+  const lines = result.split('\n')
+  
+  for (const line of lines) {
+    // Look for action-oriented language
+    if (line.match(/\b(implement|create|develop|establish|set up|start|begin|launch)\b/i)) {
+      const clean = line.replace(/^[\-\*\d+\.]\s*/, '').trim()
+      if (clean.length > 15 && clean.length < 150) {
+        actionItems.push({
+          task: clean,
+          priority: 'medium',
+          type: 'general_action'
+        })
+      }
+    }
+  }
+  
+  return actionItems.slice(0, 3) // Limit to 3 action items
 }
 
 // Helper function to detect executable actions

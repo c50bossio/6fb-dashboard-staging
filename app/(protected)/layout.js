@@ -1,11 +1,11 @@
 'use client'
 
-import FloatingAIChat from '../../components/FloatingAIChat'
-import Navigation from '../../components/Navigation'
-import DashboardHeader from '../../components/DashboardHeader'
-import ProtectedRoute from '../../components/ProtectedRoute'
-import { TenantProvider } from '../../contexts/TenantContext'
-import { NavigationProvider, useNavigation } from '../../contexts/NavigationContext'
+import FloatingAIChat from '@/components/FloatingAIChat'
+import Navigation from '@/components/Navigation'
+import DashboardHeader from '@/components/DashboardHeader'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import { TenantProvider } from '@/contexts/TenantContext'
+import { NavigationProvider, useNavigation } from '@/contexts/NavigationContext'
 
 function ProtectedLayoutContent({ children }) {
   const { isCollapsed } = useNavigation()

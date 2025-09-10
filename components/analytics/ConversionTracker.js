@@ -10,7 +10,6 @@ import { useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { metricsTracker } from '@/lib/metrics-tracker'
 import { useAuth } from '@/components/SupabaseAuthProvider'
-import posthog from 'posthog-js'
 
 export function ConversionTracker({ 
   children,
@@ -54,10 +53,7 @@ export function ConversionTracker({
     // Track with metrics tracker
     metricsTracker.track('page_viewed', pageViewData)
 
-    // Track with PostHog if available
-    if (typeof window !== 'undefined' && window.posthog) {
-      posthog.capture('page_viewed', pageViewData)
-    }
+    // PostHog tracking removed
 
     // Page-specific tracking
     switch (page) {
@@ -141,14 +137,7 @@ export function ConversionTracker({
           viewport_height: windowHeight
         })
 
-        // Track with PostHog
-        if (typeof window !== 'undefined' && window.posthog) {
-          posthog.capture(`scroll_depth_${milestone}`, {
-            page: page,
-            scroll_depth: milestone,
-            time_to_scroll: timeOnPage
-          })
-        }
+        // PostHog tracking removed
       }
     })
   }, [autoTrackScrollDepth, trackingEnabled, page])
@@ -170,14 +159,7 @@ export function ConversionTracker({
           page_url: window.location.href
         })
 
-        // Track with PostHog
-        if (typeof window !== 'undefined' && window.posthog) {
-          posthog.capture(`time_on_page_${seconds}s`, {
-            page: page,
-            time_spent: seconds,
-            scroll_depth: scrollDepth
-          })
-        }
+        // PostHog tracking removed
       }, seconds * 1000)
     )
 
@@ -205,10 +187,7 @@ export function ConversionTracker({
 
           metricsTracker.track('element_viewed', trackingData)
 
-          // Track with PostHog
-          if (typeof window !== 'undefined' && window.posthog) {
-            posthog.capture('element_viewed', trackingData)
-          }
+          // PostHog tracking removed
 
           // Unobserve after tracking to avoid duplicate events
           visibilityObserver.current?.unobserve(element)

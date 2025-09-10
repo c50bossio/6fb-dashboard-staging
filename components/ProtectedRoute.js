@@ -13,31 +13,7 @@ export default function ProtectedRoute({ children }) {
 
   useEffect(() => {
     setIsClient(true)
-    
-    // Development mode bypass for calendar and analytics testing
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    const isCalendarPage = window.location.pathname.includes('/calendar')
-    const isAnalyticsPage = window.location.pathname.includes('/analytics')
-    const isShopPage = window.location.pathname.includes('/shop')
-    const isBarberPage = window.location.pathname.includes('/barber')
-    const isSeoPage = window.location.pathname.includes('/seo')
-    const isDashboardPage = window.location.pathname.includes('/dashboard')
-    
-    // Check for dev session or development mode bypass
-    const devAuth = document.cookie.includes('dev_auth=true')
-    const devSession = localStorage.getItem('dev_session')
-    // TEMPORARY: Direct bypass for barber pages, SEO dashboard, and main dashboard in development
-    const enableDevBypass = isBarberPage || isSeoPage || isDashboardPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
-    
-    if (devAuth || devSession || enableDevBypass) {
-      console.log('🔓 Dev session active - bypassing auth check')
-      return
-    }
-    
-    if (!loading && !user) {
-      router.push('/login')
-    }
-  }, [loading, user, router])
+  }, [])
 
   // Always show loading state during SSR to ensure consistent HTML structure
   if (!isClient) {
@@ -53,27 +29,12 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
-  // Development mode bypass for calendar and analytics testing
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  const isCalendarPage = window.location.pathname.includes('/calendar')
-  const isAnalyticsPage = window.location.pathname.includes('/analytics')
-  const isShopPage = window.location.pathname.includes('/shop')
-  const isBarberPage = window.location.pathname.includes('/barber')
-  const isSeoPage = window.location.pathname.includes('/seo')
-  const isDashboardPage = window.location.pathname.includes('/dashboard')
-  // TEMPORARY: Direct bypass for barber pages, SEO dashboard, and main dashboard during development
-  const enableDevBypass = isBarberPage || isSeoPage || isDashboardPage || (isDevelopment && (isCalendarPage || isAnalyticsPage || isShopPage))
-
-  // Check for dev session or development bypass
-  const devAuth = document.cookie.includes('dev_auth=true')
-  const devSession = localStorage.getItem('dev_session')
-  
-  if (devAuth || devSession || enableDevBypass) {
-    console.log('🔓 DEV MODE: Bypassing protected route for calendar/analytics testing')
-    return <>{children}</>
-  }
+  // Authentication is now required in all environments
+  console.log('🔐 ProtectedRoute: Checking authentication for:', window.location.pathname)
+  console.log('🔐 ProtectedRoute state:', { loading, user: !!user, userEmail: user?.email })
 
   if (loading) {
+    console.log('🔐 ProtectedRoute: Still loading auth...')
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex items-center justify-center min-h-screen">
@@ -86,18 +47,28 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
+  // Handle redirect in useEffect to avoid setState during render
+  useEffect(() => {
+    if (!loading && !user) {
+      console.log('🔐 ProtectedRoute: No user found, redirecting to login...')
+      router.push('/login')
+    }
+  }, [loading, user, router])
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <LoadingSpinner size="large" />
-            <p className="mt-4 text-gray-600">Authenticating...</p>
+            <p className="mt-4 text-gray-600">Redirecting to login...</p>
           </div>
         </div>
       </div>
     )
   }
+
+  console.log('🔐 ProtectedRoute: User authenticated, rendering children')
 
   return <>{children}</>
 }

@@ -14,79 +14,122 @@ import { useState, useEffect } from 'react'
 
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { useAuth } from '../../components/SupabaseAuthProvider'
-
-// Mock payment data
-const Payments = [
-  {
-    id: 1,
-    customer_name: "John Smith",
-    service: "Haircut + Beard Trim",
-    amount: 35.00,
-    tip: 7.00,
-    total: 42.00,
-    payment_method: "Credit Card",
-    status: "completed",
-    date: "2025-08-06T10:30:00",
-    barber: "Marcus Johnson",
-    commission: 28.00,
-    platform_fee: 2.10
-  },
-  {
-    id: 2,
-    customer_name: "Mike Davis",
-    service: "Classic Haircut",
-    amount: 25.00,
-    tip: 5.00,
-    total: 30.00,
-    payment_method: "Cash",
-    status: "completed",
-    date: "2025-08-06T14:30:00",
-    barber: "David Wilson",
-    commission: 20.00,
-    platform_fee: 1.50
-  },
-  {
-    id: 3,
-    customer_name: "Alex Rodriguez",
-    service: "Premium Package",
-    amount: 45.00,
-    tip: 10.00,
-    total: 55.00,
-    payment_method: "Credit Card",
-    status: "pending",
-    date: "2025-08-07T11:00:00",
-    barber: "Marcus Johnson",
-    commission: 36.00,
-    platform_fee: 2.75
-  }
-]
-
-const Stats = {
-  today: {
-    total_revenue: 127.00,
-    total_tips: 22.00,
-    transactions: 3,
-    avg_transaction: 42.33
-  },
-  this_week: {
-    total_revenue: 1250.00,
-    total_tips: 187.50,
-    transactions: 32,
-    avg_transaction: 39.06
-  },
-  commission_owed: {
-    marcus: 156.80,
-    david: 98.50,
-    sophia: 67.20
-  }
-}
+import { createClient } from '../../lib/supabase/browser-client'
+import LoadingSpinner, { TableLoadingSkeleton, CardLoadingSkeleton } from '../../components/LoadingSpinner'
 
 export default function PaymentsPage() {
   const { user, profile } = useAuth()
-  const [payments, setPayments] = useState(Payments)
-  const [stats, setStats] = useState(Stats)
+  const [payments, setPayments] = useState([])
+  const [stats, setStats] = useState({
+    today: { total_revenue: 0, total_tips: 0, transactions: 0, avg_transaction: 0 },
+    this_week: { total_revenue: 0, total_tips: 0, transactions: 0, avg_transaction: 0 },
+    commission_owed: {}
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [filter, setFilter] = useState('all')
   const [dateRange, setDateRange] = useState('today')
+
+  // Fetch payments and stats from Supabase
+  useEffect(() => {
+    const fetchPaymentsAndStats = async () => {
+      try {
+        setLoading(true)
+        const supabase = createClient()
+        
+        // Fetch payments with related data
+        const { data: paymentsData, error: paymentsError } = await supabase
+          .from('payments')
+          .select(`
+            *,
+            customer:customers(name),
+            barber:staff(name),
+            service:services(name)
+          `)
+          .order('transaction_date', { ascending: false })
+          .limit(50) // Limit for performance
+        
+        if (paymentsError) {
+          console.error('Error fetching payments:', paymentsError)
+          throw paymentsError
+        }
+
+        // Transform payments data
+        const transformedPayments = paymentsData?.map(payment => ({
+          ...payment,
+          customer_name: payment.customer?.name || payment.customer_name,
+          service: payment.service?.name || payment.service_name,
+          barber: payment.barber?.name || payment.barber_name,
+          date: payment.transaction_date,
+          payment_method: payment.payment_method === 'credit_card' ? 'Credit Card' : 
+                           payment.payment_method === 'debit_card' ? 'Debit Card' : 
+                           payment.payment_method === 'cash' ? 'Cash' : payment.payment_method
+        })) || []
+
+        setPayments(transformedPayments)
+
+        // Fetch today's stats
+        const today = new Date().toISOString().split('T')[0]
+        const { data: todayStats } = await supabase
+          .from('daily_payment_summary')
+          .select('*')
+          .eq('payment_date', today)
+          .single()
+
+        // Fetch this week's stats
+        const weekAgo = new Date()
+        weekAgo.setDate(weekAgo.getDate() - 7)
+        const { data: weekStats } = await supabase
+          .from('payments')
+          .select('total, tip')
+          .eq('status', 'completed')
+          .gte('transaction_date', weekAgo.toISOString())
+
+        // Fetch commission data
+        const { data: commissionData } = await supabase
+          .from('barber_commission_summary')
+          .select('*')
+
+        // Calculate stats
+        const todayStatsProcessed = {
+          total_revenue: todayStats?.total_revenue || 0,
+          total_tips: todayStats?.total_tips || 0,
+          transactions: todayStats?.completed_transactions || 0,
+          avg_transaction: todayStats?.avg_transaction_amount || 0
+        }
+
+        const weekStatsProcessed = {
+          total_revenue: weekStats?.reduce((sum, p) => sum + Number(p.total), 0) || 0,
+          total_tips: weekStats?.reduce((sum, p) => sum + Number(p.tip), 0) || 0,
+          transactions: weekStats?.length || 0,
+          avg_transaction: weekStats?.length ? 
+            (weekStats.reduce((sum, p) => sum + Number(p.total), 0) / weekStats.length) : 0
+        }
+
+        const commissionOwed = {}
+        commissionData?.forEach(barber => {
+          commissionOwed[barber.barber_name?.toLowerCase().split(' ')[0]] = barber.total_commissions_earned
+        })
+
+        setStats({
+          today: todayStatsProcessed,
+          this_week: weekStatsProcessed,
+          commission_owed: commissionOwed
+        })
+
+        setError(null)
+      } catch (err) {
+        console.error('Failed to fetch payments:', err)
+        setError(err.message || 'Failed to load payments')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user) {
+      fetchPaymentsAndStats()
+    }
+  }, [user])
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -153,6 +196,19 @@ export default function PaymentsPage() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <CardLoadingSkeleton key={i} />
+              ))
+            ) : error ? (
+              <div className="col-span-full bg-red-50 border border-red-200 rounded-lg p-6">
+                <div className="text-center">
+                  <h3 className="text-sm font-medium text-red-800">Error Loading Stats</h3>
+                  <p className="mt-1 text-sm text-red-600">{error}</p>
+                </div>
+              </div>
+            ) : (
+              <>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -220,6 +276,8 @@ export default function PaymentsPage() {
                 </div>
               </div>
             </div>
+              </>
+            )}
           </div>
 
           {/* Commission Summary */}
@@ -299,7 +357,55 @@ export default function PaymentsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredPayments.map((payment) => (
+                  {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2 mt-2"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-20"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-24"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-20"></div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : error ? (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-12 text-center">
+                        <div className="text-red-400">
+                          <h3 className="text-sm font-medium text-red-800">Error Loading Payments</h3>
+                          <p className="mt-1 text-sm text-red-600">{error}</p>
+                          <button 
+                            onClick={() => window.location.reload()} 
+                            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredPayments.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-12 text-center">
+                        <div className="text-gray-400">
+                          <h3 className="text-sm font-medium text-gray-900">No payments found</h3>
+                          <p className="mt-1 text-sm text-gray-500">No payment transactions match your current filters.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredPayments.map((payment) => (
                     <tr key={payment.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>

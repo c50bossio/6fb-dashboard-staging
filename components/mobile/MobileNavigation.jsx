@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { href: '/dashboard', icon: HomeIcon, label: 'Home' },
   { href: '/dashboard/calendar', icon: CalendarIcon, label: 'Calendar' },
-  { href: '/dashboard/customers', icon: UserGroupIcon, label: 'Customers' },
+  { href: '/dashboard/customers-enhanced', icon: UserGroupIcon, label: 'Customers' },
   { href: '/dashboard/analytics', icon: ChartBarIcon, label: 'Analytics' },
   { href: '/dashboard/chat', icon: ChatBubbleLeftRightIcon, label: 'AI Chat' }
 ]

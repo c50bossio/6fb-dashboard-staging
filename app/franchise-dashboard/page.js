@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown, MapPin, Users, Calendar, DollarSign, Star, Ba
 import { useState, useEffect } from 'react'
 
 import { Alert, AlertDescription, Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui'
+import { buttonHandlers } from '../lib/buttonHandlers'
 
 export default function FranchiseDashboard() {
   const [franchiseData, setFranchiseData] = useState(null)
@@ -222,19 +223,31 @@ export default function FranchiseDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
-                    <button className="p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors">
+                    <button 
+                      onClick={() => buttonHandlers.showNotification('Add Location functionality coming soon!')}
+                      className="p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors"
+                    >
                       <div className="font-medium text-gray-900">Add Location</div>
                       <div className="text-sm text-gray-600">Expand your franchise</div>
                     </button>
-                    <button className="p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors">
+                    <button 
+                      onClick={() => buttonHandlers.navigateTo('/reports')}
+                      className="p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors"
+                    >
                       <div className="font-medium text-gray-900">View Reports</div>
                       <div className="text-sm text-gray-600">Detailed analytics</div>
                     </button>
-                    <button className="p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors">
+                    <button 
+                      onClick={() => buttonHandlers.navigateTo('/dashboard/staff')}
+                      className="p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors"
+                    >
                       <div className="font-medium text-gray-900">Staff Management</div>
                       <div className="text-sm text-gray-600">Manage team members</div>
                     </button>
-                    <button className="p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors">
+                    <button 
+                      onClick={() => buttonHandlers.openModal('settings')}
+                      className="p-4 text-left border rounded-lg hover:bg-gray-50 transition-colors"
+                    >
                       <div className="font-medium text-gray-900">Settings</div>
                       <div className="text-sm text-gray-600">Franchise configuration</div>
                     </button>
@@ -282,7 +295,10 @@ export default function FranchiseDashboard() {
           <TabsContent value="locations" className="space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Location Management</h3>
-              <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors">
+              <button 
+                onClick={() => buttonHandlers.showNotification('Add New Location functionality coming soon!')}
+                className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
+              >
                 Add New Location
               </button>
             </div>
@@ -449,7 +465,10 @@ export default function FranchiseDashboard() {
                   <p className="text-gray-600 mb-4">
                     Detailed charts, reports, and AI-powered insights will be available here.
                   </p>
-                  <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors">
+                  <button 
+                    onClick={() => buttonHandlers.showNotification('Demo request submitted! We\'ll contact you soon.')}
+                    className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
+                  >
                     Request Demo
                   </button>
                 </div>

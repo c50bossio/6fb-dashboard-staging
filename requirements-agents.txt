@@ -1,0 +1,51 @@
+# AI Agent System Dependencies - Production Ready
+# Core LangChain ecosystem - compatible versions
+langchain>=0.2.0
+langgraph>=0.2.0
+langsmith>=0.1.17
+langchain-openai>=0.1.0
+langchain-anthropic>=0.1.0
+langchain-community>=0.2.0
+
+# Structured outputs and validation
+instructor==1.6.0
+pydantic==2.9.0
+
+# Caching and database
+redis==5.2.0
+chromadb==0.5.0
+faiss-cpu==1.8.0
+
+# Multi-agent frameworks
+autogen-agentchat==0.2.40
+crewai==0.55.2
+
+# Vector embeddings and search
+sentence-transformers==3.0.0
+tiktoken==0.7.0
+
+# Observability and monitoring
+opentelemetry-api==1.26.0
+opentelemetry-sdk==1.26.0
+opentelemetry-instrumentation-fastapi==0.47b0
+opentelemetry-instrumentation-redis==0.47b0
+
+# Performance and utilities
+asyncio-pool==0.6.0
+tenacity==9.0.0
+backoff==2.2.1
+
+# Document processing for RAG
+unstructured==0.15.0
+pypdf==4.3.0
+python-docx==1.1.2
+
+# Task queues
+celery[redis]==5.3.7
+bull==4.16.5
+
+# Development and testing
+pytest==8.3.2
+pytest-asyncio==0.24.0
+pytest-mock==3.14.0
+factory-boy==3.3.1

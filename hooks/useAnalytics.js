@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback } from 'react'
-import { trackEvent, EVENTS, isFeatureEnabled, setUserProperties } from '@/lib/posthog/client'
+// PostHog removed - use stubbed analytics
+import { analytics } from '@/lib/analytics'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export function useAnalytics() {
@@ -9,13 +10,9 @@ export function useAnalytics() {
 
   // Track booking events
   const trackBooking = useCallback((action, bookingData) => {
-    const eventMap = {
-      created: EVENTS.BOOKING_CREATED,
-      cancelled: EVENTS.BOOKING_CANCELLED,
-      completed: EVENTS.BOOKING_COMPLETED,
-    }
-
-    trackEvent(eventMap[action], {
+    const eventName = `booking_${action}`
+    
+    analytics.track(eventName, {
       booking_id: bookingData.id,
       service_name: bookingData.serviceName,
       service_price: bookingData.price,
@@ -28,13 +25,9 @@ export function useAnalytics() {
 
   // Track payment events
   const trackPayment = useCallback((action, paymentData) => {
-    const eventMap = {
-      initiated: EVENTS.PAYMENT_INITIATED,
-      completed: EVENTS.PAYMENT_COMPLETED,
-      failed: EVENTS.PAYMENT_FAILED,
-    }
-
-    trackEvent(eventMap[action], {
+    const eventName = `payment_${action}`
+    
+    analytics.track(eventName, {
       payment_id: paymentData.id,
       amount: paymentData.amount,
       currency: paymentData.currency,
@@ -44,8 +37,7 @@ export function useAnalytics() {
 
     // Track revenue for completed payments
     if (action === 'completed') {
-      trackEvent('revenue', {
-        revenue: paymentData.amount,
+      analytics.trackRevenue(paymentData.amount, {
         currency: paymentData.currency,
       })
     }
@@ -53,12 +45,9 @@ export function useAnalytics() {
 
   // Track chat interactions
   const trackChat = useCallback((action, chatData = {}) => {
-    const eventMap = {
-      message_sent: EVENTS.CHAT_MESSAGE_SENT,
-      model_changed: EVENTS.CHAT_MODEL_CHANGED,
-    }
-
-    trackEvent(eventMap[action], {
+    const eventName = `chat_${action}`
+    
+    analytics.track(eventName, {
       ...chatData,
       user_id: user?.id,
     })
@@ -66,7 +55,7 @@ export function useAnalytics() {
 
   // Track feature usage
   const trackFeature = useCallback((featureName, properties = {}) => {
-    trackEvent(EVENTS.FEATURE_USED, {
+    analytics.track('feature_used', {
       feature_name: featureName,
       ...properties,
       user_id: user?.id,
@@ -76,16 +65,16 @@ export function useAnalytics() {
   // Track user properties
   const updateUserProfile = useCallback((properties) => {
     if (user?.id) {
-      setUserProperties({
+      analytics.setUserProperties({
         ...properties,
         last_seen: new Date().toISOString(),
       })
     }
   }, [user])
 
-  // Check feature flags
+  // Check feature flags (always return false since we don't have feature flags)
   const checkFeatureFlag = useCallback((flagName) => {
-    return isFeatureEnabled(flagName)
+    return false
   }, [])
 
   return {

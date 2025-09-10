@@ -126,8 +126,9 @@ const Logo = ({
           height={config.height}
           priority={priority}
           className="object-contain"
+          style={{ width: 'auto', height: 'auto' }}
           onError={() => setImageError(true)}
-          onLoadingComplete={() => setImageError(false)}
+          onLoad={() => setImageError(false)}
         />
         
       </div>

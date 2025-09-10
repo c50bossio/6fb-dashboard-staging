@@ -80,7 +80,7 @@ export function DashboardProvider({ children }) {
       console.log('💬 Sending message to enhanced AI chat:', message);
       
       // Call our enhanced chat API through Next.js API route
-      const response = await fetch('/api/ai/enhanced-chat', {
+      const response = await fetch('/api/ai/unified-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -76,13 +76,13 @@ export const BARBERSHOP_NAVIGATION = [
   {
     id: 'customers',
     name: 'Customers',
-    href: '/dashboard/customers',
+    href: '/dashboard/customers-enhanced',
     icon: UserGroupIcon,
     description: 'Client profiles & history',
     children: [
       {
         name: 'All Customers',
-        href: '/dashboard/customers',
+        href: '/dashboard/customers-enhanced',
         icon: UserGroupIcon
       },
       {

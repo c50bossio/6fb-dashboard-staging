@@ -22,6 +22,11 @@ import jwt
 from contextlib import contextmanager
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Load environment variables
+from dotenv import load_dotenv
+load_dotenv('.env.local')
+
 from services.notification_service import notification_service
 from services.notification_queue import notification_queue
 
@@ -58,6 +63,15 @@ from services.database_connection_pool import (
     PoolStrategy,
     db_connection_manager
 )
+
+# Import Supabase service for production database
+try:
+    from services.supabase_service import supabase_service, get_db_health, get_connection_stats
+    SUPABASE_SERVICE_AVAILABLE = True
+    print("✅ Supabase service loaded successfully")
+except ImportError as e:
+    SUPABASE_SERVICE_AVAILABLE = False
+    print(f"⚠️ Supabase service not available: {e}")
 
 # PHASE 3: Import Supabase API proxy for data consistency
 try:
@@ -137,6 +151,14 @@ app = FastAPI(
     description="AI-powered barbershop management system",
     version="2.0.0"
 )
+
+# Import and register booking endpoints
+try:
+    from api.booking_endpoints import router as booking_router
+    app.include_router(booking_router)
+    print("✅ Booking API endpoints registered at /api/booking/*")
+except ImportError as e:
+    print(f"⚠️ Booking endpoints not available: {e}")
 
 # Metrics middleware to track all requests
 @app.middleware("http")
@@ -222,45 +244,29 @@ def get_database_config():
     supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
     
     if supabase_url and supabase_key:
-        print(f"🔄 PHASE 2: Configuring FastAPI to use Supabase data via API proxy")
+        print(f"🔄 PRODUCTION: Configuring FastAPI to use Supabase directly")
         print(f"🔗 Supabase URL: {supabase_url}")
-        print(f"📡 Strategy: FastAPI → Next.js API → Supabase (proven working path)")
+        print(f"📡 Strategy: FastAPI → Supabase (direct connection)")
         
         return {
-            "type": "api_proxy",
+            "type": "supabase",
             "supabase_url": supabase_url,
-            "supabase_key": supabase_key,
-            "frontend_api_base": os.getenv('DOCKER_ENVIRONMENT') and 'http://frontend:9999' or 'http://localhost:9999'
+            "supabase_key": supabase_key
         }
     else:
-        # Fallback to SQLite for development
-        print("⚠️ Supabase credentials not found, using SQLite fallback")
-        return {
-            "type": "sqlite", 
-            "path": DATABASE_PATH
-        }
+        # No fallback - require Supabase for production
+        print("❌ Supabase credentials required for production")
+        raise Exception("Missing Supabase credentials: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY")
 
 # Get database configuration
 db_config = get_database_config()
 
-# Initialize connection pool based on configuration
-os.makedirs(os.path.dirname(DATABASE_PATH), exist_ok=True)  # Ensure directory exists for SQLite fallback
-
-if db_config["type"] == "api_proxy":
-    # Use API proxy pattern: FastAPI calls Next.js APIs that connect to Supabase
-    db_pool = None  # Use HTTP client for API calls instead of database pool
-    print("✅ API proxy configuration loaded - will use Next.js → Supabase path")
-    print("📡 FastAPI will call Next.js APIs for consistent data access")
-else:
-    # Use SQLite for development fallback
-    db_pool = initialize_connection_pool(
-        database_type="sqlite",
-        database_path=db_config["path"],
-        min_connections=5,      # Pre-create 5 connections
-        max_connections=50,     # Scale up to 50 connections (4x improvement)
-        strategy=PoolStrategy.ADAPTIVE     # Use adaptive pooling for optimal performance
-    )
-    print("✅ SQLite database connection pool initialized for development")
+# PRODUCTION: Supabase configuration
+if db_config["type"] == "supabase":
+    # No connection pool needed - Supabase client handles connections
+    db_pool = None
+    print("✅ Supabase configuration loaded - direct client connection")
+    print("📡 FastAPI will connect directly to Supabase PostgreSQL")
 
 # Initialize Prometheus metrics
 http_requests_total = Counter(
@@ -533,52 +539,23 @@ async def startup_event():
     """Initialize database on startup"""
     global db_pool
     
-    # PHASE 2: Configure API proxy or database connection
-    if db_config["type"] == "api_proxy":
-        try:
-            print("🔄 PHASE 2: Testing Next.js API connectivity for Supabase proxy...")
+    # PRODUCTION: Use Supabase directly
+    if db_config["type"] == "supabase":
+        if SUPABASE_SERVICE_AVAILABLE:
+            print("🔄 PRODUCTION: Initializing Supabase connection...")
             
-            # Test connection to Next.js APIs that connect to Supabase
-            import httpx
-            frontend_url = db_config["frontend_api_base"]
-            
-            async with httpx.AsyncClient() as client:
-                # Test the analytics API (we know this works from Phase 1)
-                response = await client.get(f"{frontend_url}/api/analytics/live-data")
-                if response.status_code == 200:
-                    data = response.json()
-                    customers = data.get('data', {}).get('total_customers', 0)
-                    revenue = data.get('data', {}).get('total_revenue', 0)
-                    
-                    print(f"✅ PHASE 2: Next.js → Supabase connection verified!")
-                    print(f"📊 Test query: {customers} customers, ${revenue} revenue")
-                    print(f"🔗 FastAPI will proxy through: {frontend_url}/api/*")
-                else:
-                    raise Exception(f"API test failed with status {response.status_code}")
-            
-        except Exception as e:
-            print(f"❌ PHASE 2: API proxy test failed: {e}")
-            print("🔄 Falling back to SQLite for this session...")
-            
-            # Fallback to SQLite if API proxy fails
-            db_pool = initialize_connection_pool(
-                database_type="sqlite",
-                database_path=DATABASE_PATH,
-                min_connections=5,
-                max_connections=50,
-                strategy=PoolStrategy.ADAPTIVE
-            )
-            print("✅ SQLite fallback connection pool initialized")
-            
-            # Update config to reflect fallback
-            db_config["type"] = "sqlite"
-    
-    # Initialize database schema (only for SQLite)
-    if db_config["type"] == "sqlite":
-        init_db()  # Only for SQLite - Supabase handles schema via migrations
-        print("✅ SQLite database schema initialized")
-    else:
-        print("✅ Using existing Supabase data via Next.js API proxy")
+            # Test Supabase connection
+            health = await supabase_service.health_check()
+            if health["status"] == "healthy":
+                print(f"✅ PRODUCTION: Supabase connection verified!")
+                print(f"🔗 Provider: {health.get('provider', 'supabase')}")
+                print(f"📊 Type: {health.get('type', 'postgresql')}")
+            else:
+                print(f"❌ PRODUCTION: Supabase connection failed: {health.get('error', 'Unknown error')}")
+                raise Exception("Supabase connection required for production")
+        else:
+            print("❌ PRODUCTION: Supabase service not available")
+            raise Exception("Supabase service required for production")
     
     # Start notification queue processing
     asyncio.create_task(notification_queue.start_worker())
@@ -602,26 +579,28 @@ async def root():
 @app.get("/health")
 async def health():
     """Health check endpoint"""
-    # Update database connection metrics
-    stats = get_pool_stats()
-    database_connections_active.set(stats.get('active_connections', 0))
-    database_connections_idle.set(stats.get('idle_connections', 0))
-    database_connections_max.set(stats.get('max_connections', 0))
-    
-    # PHASE 2: Add database/API proxy status
-    database_status = "unknown"
-    if db_config["type"] == "api_proxy":
-        database_status = "supabase_via_api_proxy"
-    elif db_config["type"] == "sqlite":
-        database_status = "sqlite_local"
-    
-    return {
-        "status": "healthy", 
-        "service": "6fb-ai-backend", 
-        "version": "2.0.0",
-        "database_type": database_status,
-        "phase_2_active": db_config["type"] == "api_proxy"
-    }
+    # PRODUCTION: Use Supabase health check
+    if db_config["type"] == "supabase" and SUPABASE_SERVICE_AVAILABLE:
+        db_health = await supabase_service.health_check()
+        db_stats = supabase_service.get_stats()
+        
+        return {
+            "status": "healthy", 
+            "service": "6fb-ai-backend", 
+            "version": "3.0.0",
+            "database": db_health,
+            "database_stats": db_stats,
+            "timestamp": datetime.now().isoformat()
+        }
+    else:
+        # Fallback health check
+        return {
+            "status": "partial",
+            "service": "6fb-ai-backend",
+            "version": "3.0.0", 
+            "database": {"status": "unavailable"},
+            "timestamp": datetime.now().isoformat()
+        }
 
 @app.get("/phase2-test")
 async def phase2_test():
@@ -1067,28 +1046,19 @@ async def get_provider_models(provider: str):
 @app.get("/api/v1/database/health")
 async def database_health():
     """Database health check"""
-    try:
-        with get_db() as conn:
-            conn.execute("SELECT 1")
-            return {"status": "healthy", "type": "sqlite", "connection": "active"}
-    except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+    if db_config["type"] == "supabase" and SUPABASE_SERVICE_AVAILABLE:
+        return await supabase_service.health_check()
+    else:
+        return {"status": "unavailable", "error": "Supabase service not configured"}
 
 @app.get("/api/v1/database/stats")
 async def database_stats():
     """Database statistics"""
-    with get_db() as conn:
-        # Get table statistics
-        tables = ["users", "chat_history", "agents", "shop_profiles"]
-        stats = {}
-        for table in tables:
-            try:
-                cursor = conn.execute(f"SELECT COUNT(*) FROM {table}")
-                stats[table] = cursor.fetchone()[0]
-            except:
-                stats[table] = 0
-        
-        return {"tables": stats, "size_mb": 0.5, "last_backup": "2024-01-15"}
+    if db_config["type"] == "supabase" and SUPABASE_SERVICE_AVAILABLE:
+        # Get stats from Supabase service
+        return supabase_service.get_stats()
+    else:
+        return {"error": "Supabase service not configured"}
 
 @app.get("/api/v1/database/info")
 async def database_info():
@@ -3582,8 +3552,9 @@ if ALERT_SERVICE_AVAILABLE:
 
 # Import and setup AI Performance Monitoring System
 try:
-    from services.ai_performance_endpoints import setup_performance_routes
-    app = setup_performance_routes(app)
+    # from services.ai_performance_endpoints import setup_performance_routes
+    # app = setup_performance_routes(app)
+    print("⚠️ AI performance monitoring disabled for startup")
     print("✅ AI Performance Monitoring System integrated at /ai/performance/*")
     AI_PERFORMANCE_MONITORING_AVAILABLE = True
 except ImportError as e:

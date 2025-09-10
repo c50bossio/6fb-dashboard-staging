@@ -6,6 +6,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cacheQuery, invalidateCache, getCacheStats } from '../../../../lib/analytics-cache.js';
+
+// Define demo barbershop ID constant
+const DEMO_BARBERSHOP_ID = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'; // Elite Cuts Barbershop
+
 export const runtime = 'edge'
 
 export async function GET(request) {
@@ -56,7 +60,7 @@ export async function GET(request) {
     // Enhanced with intelligent caching for performance optimization
     const cacheType = 'live-analytics';
     const cacheParams = { 
-      barbershopId: barbershopId || 'demo-shop-001', 
+      barbershopId: barbershopId || DEMO_BARBERSHOP_ID, 
       format, 
       metric, 
       periodType,
@@ -159,22 +163,36 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
   try {
     console.log('🔄 Using Supabase approach for analytics data consistency');
     
-    // Import Supabase client (same as Dashboard Metrics API)
-    const { createClient } = await import('../../../../lib/supabase/server');
-    const supabase = createClient();
+    // Import Supabase client with service role for full access
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
     
-    // Use same query approach as Dashboard Metrics API getUserEngagementMetrics
-    const shopId = barbershopId || 'demo-shop-001';
+    // Use proper UUID for demo barbershop - using Elite Cuts which has real data
+    const shopId = barbershopId || '1ca6138d-eae8-46ed-abff-5d6e52fbd21b';
     
     const { data: customers, error: customersError } = await supabase
       .from('customers')
-      .select('total_spent, total_visits, created_at, last_visit_at, shop_id')
-      .eq('shop_id', shopId);
+      .select('total_spent, total_visits, created_at, barbershop_id')
+      .eq('barbershop_id', shopId);
     
     const { data: services, error: servicesError } = await supabase
       .from('services')
       .select('price')
-      .eq('shop_id', shopId);
+      .eq('barbershop_id', shopId);
+
+    const { data: appointments, error: appointmentsError } = await supabase
+      .from('appointments')
+      .select('total_amount, status, created_at, barbershop_id')
+      .eq('barbershop_id', shopId);
+
+    // Debug logging
+    console.log('🔍 Debug - shopId:', shopId);
+    console.log('🔍 Debug - customers data:', customers);
+    console.log('🔍 Debug - appointments data:', appointments);
+    console.log('🔍 Debug - services data:', services);
 
     if (customersError) {
       console.error('Customers query error:', customersError);
@@ -182,17 +200,35 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
     if (servicesError) {
       console.error('Services query error:', servicesError);
     }
+    if (appointmentsError) {
+      console.error('Appointments query error:', appointmentsError);
+    }
 
-    // Calculate metrics using same logic as Dashboard Metrics API
+    // Calculate metrics using actual database data
     const totalCustomers = customers?.length || 0;
-    const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0;
-    const totalAppointments = customers?.reduce((sum, c) => sum + (c.total_visits || 0), 0) || 0;
-    const avgServicePrice = services?.reduce((sum, s) => sum + (s.price || 0), 0) / Math.max(1, services?.length || 1) || 0;
+    
+    // Use appointment data for more accurate revenue calculation
+    const appointmentRevenue = appointments?.reduce((sum, a) => sum + (parseFloat(a.total_amount) || 0), 0) || 0;
+    const customerRevenue = customers?.reduce((sum, c) => sum + (parseFloat(c.total_spent) || 0), 0) || 0;
+    const totalRevenue = appointmentRevenue > 0 ? appointmentRevenue : customerRevenue;
+    
+    // Use appointment count for more accurate metrics
+    const totalAppointments = appointments?.length || customers?.reduce((sum, c) => sum + (c.total_visits || 0), 0) || 0;
+    
+    // Calculate appointment status breakdown
+    const completedAppointments = appointments?.filter(a => a.status === 'completed' || a.status === 'COMPLETED')?.length || 0;
+    const cancelledAppointments = appointments?.filter(a => a.status === 'cancelled' || a.status === 'CANCELLED')?.length || 0;
+    const pendingAppointments = appointments?.filter(a => a.status === 'pending' || a.status === 'PENDING')?.length || 0;
+    
+    const avgServicePrice = services?.reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0) / Math.max(1, services?.length || 1) || 0;
     
     console.log('📊 Supabase analytics data:', {
       customers: totalCustomers,
       revenue: totalRevenue,
-      appointments: totalAppointments
+      appointments: totalAppointments,
+      completed: completedAppointments,
+      cancelled: cancelledAppointments,
+      pending: pendingAppointments
     });
     
     // Format data to match analytics API structure
@@ -202,16 +238,16 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       daily_revenue: Math.round(totalRevenue / 30),
       weekly_revenue: Math.round(totalRevenue / 4),
       service_revenue: totalRevenue,
-      tip_revenue: 0,
-      revenue_growth: 0,
+      tip_revenue: 0, // Could be calculated from appointments if tip_amount exists
+      revenue_growth: 0, // Would need historical data
       
       total_appointments: totalAppointments,
-      completed_appointments: totalAppointments,
-      cancelled_appointments: 0,
-      no_show_appointments: 0,
-      pending_appointments: 0,
-      confirmed_appointments: totalAppointments,
-      appointment_completion_rate: totalAppointments > 0 ? 100 : 0,
+      completed_appointments: completedAppointments,
+      cancelled_appointments: cancelledAppointments,
+      no_show_appointments: 0, // Would need to check for no_show status
+      pending_appointments: pendingAppointments,
+      confirmed_appointments: totalAppointments - cancelledAppointments - pendingAppointments,
+      appointment_completion_rate: totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0,
       average_appointments_per_day: Math.round(totalAppointments / 30),
       
       total_customers: totalCustomers,
@@ -279,7 +315,7 @@ async function getRealDatabaseAnalytics(barbershopId, format, metric) {
     const { getBusinessMetrics, getDashboardModeData } = await import('../../../../lib/dashboard-data');
     
     // Use demo shop if no ID provided
-    const shopId = barbershopId || 'demo-shop-001';
+    const shopId = barbershopId || DEMO_BARBERSHOP_ID;
     
     // Get real metrics from database
     const [businessMetrics, dashboardData] = await Promise.all([

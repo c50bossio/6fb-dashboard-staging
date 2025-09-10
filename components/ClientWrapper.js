@@ -5,6 +5,7 @@ import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 import { ToastProvider } from './ToastContainer'
 import { AccessibilityProvider, SkipToContent } from './ui/AccessibilityProvider'
 import ServiceWorkerProvider from './ServiceWorkerProvider'
+import GlobalOnboardingWrapper from './onboarding/GlobalOnboardingWrapper'
 
 export default function ClientWrapper({ children }) {
   return (
@@ -15,7 +16,9 @@ export default function ClientWrapper({ children }) {
           <AccessibilityProvider>
             <ToastProvider>
               <SupabaseAuthProvider>
-                {children}
+                <GlobalOnboardingWrapper>
+                  {children}
+                </GlobalOnboardingWrapper>
               </SupabaseAuthProvider>
             </ToastProvider>
           </AccessibilityProvider>

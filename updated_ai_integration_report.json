@@ -1,0 +1,150 @@
+{
+  "timestamp": "2025-08-27T20:02:32.707382",
+  "version": "Updated Integration - December 2024",
+  "models_tested": [
+    "Gemini 2.5 Flash-Lite",
+    "GPT-4o-mini",
+    "o3"
+  ],
+  "summary": {
+    "total": 4,
+    "passed": 3,
+    "failed": 0,
+    "warnings": 1,
+    "duration_seconds": 29.784444
+  },
+  "results": [
+    {
+      "test": "Cost-Optimized Model Routing",
+      "status": "PARTIAL",
+      "passed": 2,
+      "total": 3,
+      "details": [
+        {
+          "case": "Simple booking query (should use Gemini 2.5 Flash-Lite)",
+          "status": "PASSED",
+          "model": "gemini-2.5-flash-lite",
+          "estimated_cost": 1e-06,
+          "cost_in_expected_range": true,
+          "reasoning": "Selected gemini-2.5-flash-lite for booking task (score: 2)"
+        },
+        {
+          "case": "Service inquiry (should use Gemini 2.5 Flash-Lite)",
+          "status": "PASSED",
+          "model": "gemini-2.5-flash-lite",
+          "estimated_cost": 2e-06,
+          "cost_in_expected_range": true,
+          "reasoning": "Selected gemini-2.5-flash-lite for services task (score: 2)"
+        },
+        {
+          "case": "Business analytics (should use better model)",
+          "status": "WARNING",
+          "model": "gemini-2.5-flash",
+          "estimated_cost": 2.5e-05,
+          "cost_in_expected_range": false,
+          "reasoning": "Selected gemini-2.5-flash for analytics task (score: 3)"
+        }
+      ]
+    },
+    {
+      "test": "Model Cost Comparison",
+      "status": "PASSED",
+      "cost_comparisons": [
+        {
+          "pattern": "Typical Barbershop (100 daily messages)",
+          "monthly_messages": 3000,
+          "monthly_tokens": 300000,
+          "gemini_cost": 0.011999999999999999,
+          "openai_cost": 0.12000000000000001,
+          "savings": 0.10800000000000001,
+          "savings_percent": 90.0
+        },
+        {
+          "pattern": "Busy Barbershop (500 daily messages)",
+          "monthly_messages": 15000,
+          "monthly_tokens": 1125000,
+          "gemini_cost": 0.04499999999999999,
+          "openai_cost": 0.45,
+          "savings": 0.405,
+          "savings_percent": 90.0
+        },
+        {
+          "pattern": "Small Salon (50 daily messages)",
+          "monthly_messages": 1500,
+          "monthly_tokens": 187500,
+          "gemini_cost": 0.007499999999999999,
+          "openai_cost": 0.075,
+          "savings": 0.0675,
+          "savings_percent": 90.00000000000001
+        }
+      ],
+      "total_potential_savings": 0.5805,
+      "average_savings_percent": 90.0
+    },
+    {
+      "test": "Updated CrewAI Agent System",
+      "status": "PASSED",
+      "total_agents": 6,
+      "cost_optimized_agents": 4,
+      "optimization_percentage": 66.66666666666666,
+      "agent_models": {
+        "Booking Assistant": "gpt-4o-mini",
+        "Expert Stylist": "gpt-4o-mini",
+        "Inventory Manager": "gpt-4o-mini",
+        "Analytics Expert": "gpt-4o",
+        "Customer Service": "gpt-4o-mini",
+        "Manager": "gpt-4o"
+      }
+    },
+    {
+      "test": "Environment Setup Verification",
+      "status": "PASSED",
+      "environment_variables": {
+        "OPENAI_API_KEY": {
+          "present": true,
+          "is_placeholder": false,
+          "required": true
+        },
+        "GOOGLE_GENERATIVE_AI_API_KEY": {
+          "present": true,
+          "is_placeholder": false,
+          "required": true
+        },
+        "NEXT_PUBLIC_SUPABASE_URL": {
+          "present": true,
+          "is_placeholder": false,
+          "required": true
+        },
+        "ANTHROPIC_API_KEY": {
+          "present": true,
+          "is_placeholder": true,
+          "required": false
+        },
+        "GOOGLE_AI_API_KEY": {
+          "present": true,
+          "is_placeholder": true,
+          "required": false
+        }
+      },
+      "has_working_ai_key": true,
+      "recommendation": "Add real API keys to test actual model responses"
+    }
+  ],
+  "next_steps": [
+    {
+      "priority": "LOW",
+      "action": "Monitor usage patterns",
+      "details": "Great optimization! Monitor actual usage to maintain 90.0% cost savings"
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Debug model routing",
+      "details": "Some model routing tests failed - check API connectivity and model availability"
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Test with production data",
+      "details": "Test the system with actual barbershop data and user queries"
+    }
+  ]
+}

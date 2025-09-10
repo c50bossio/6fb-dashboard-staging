@@ -1,38 +1,115 @@
 # 6FB AI Agent System - Production Deployment Checklist
 
-## Pre-Deployment Setup ✅
+## 📋 Pre-Deployment Checklist
 
-### 1. Infrastructure Requirements
-- [ ] **Server/VPS with minimum requirements:**
+### ✅ **System Verification**
+
+#### **Development Environment Status**
+- [ ] All services running locally (Frontend: 9999, Backend: 8002)
+- [ ] Health checks passing (`curl http://localhost:8002/health`)
+- [ ] All AI agents operational (5/5 agents healthy)
+- [ ] Knowledge base loaded (25+ documents confirmed)
+- [ ] Database schema complete (15+ tables created)
+- [ ] Zero mock data confirmed (all real database operations)
+
+#### **Code Quality & Testing**
+- [ ] All 451 buttons functional with proper onClick handlers
+- [ ] No console errors in browser developer tools
+- [ ] Mobile responsiveness verified across all pages
+- [ ] Payment flow tested with Stripe test keys
+- [ ] Booking system tested with real-time conflict detection
+- [ ] AI agents tested with business queries
+
+#### **Security Review**
+- [ ] No hardcoded secrets in codebase
+- [ ] Environment variables properly configured
+- [ ] Row Level Security (RLS) policies implemented
+- [ ] API rate limiting configured
+- [ ] Input validation implemented on all endpoints
+
+---
+
+## 🚀 Deployment Prerequisites
+
+### **1. Domain & Infrastructure Setup**
+
+#### **Domain Configuration**
+- [ ] Primary domain purchased (e.g., yourbarbershop.com)
+- [ ] DNS configured to point to hosting provider
+- [ ] SSL certificate configured (automatic with Vercel/Netlify)
+- [ ] Subdomain for API configured (api.yourbarbershop.com)
+
+#### **Hosting Platform Selection**
+Choose one deployment option:
+
+**Option A: Vercel + Railway (Recommended)**
+- [ ] Vercel account created for frontend
+- [ ] Railway account created for backend
+- [ ] GitHub repository connected to both platforms
+
+**Option B: Netlify + Render**
+- [ ] Netlify account created for frontend
+- [ ] Render account created for backend
+- [ ] GitHub repository connected to both platforms
+
+**Option C: Traditional Server Setup**
+- [ ] Server/VPS with minimum requirements:
   - 4GB RAM (8GB recommended)
   - 2 CPU cores (4 cores recommended) 
   - 20GB disk space (50GB recommended)
   - Ubuntu 20.04+ or CentOS 8+
-- [ ] **Docker and Docker Compose installed**
-- [ ] **SSL/TLS certificates obtained**
-- [ ] **Domain name configured with DNS records**
+- [ ] Docker and Docker Compose installed
+- [ ] Firewall configured (ports 80, 443, 3000, 8000 open)
 
-### 2. Database Setup
-- [ ] **PostgreSQL server installed and configured**
-- [ ] **Production database created**
-- [ ] **Database user with appropriate permissions created**
-- [ ] **Database connection tested**
-- [ ] **Encryption schema applied** (`./scripts/setup-database-encryption.sh`)
+### **2. Database Setup**
 
-### 3. Environment Configuration
-- [ ] **Production environment variables configured** (`.env.production`)
-- [ ] **All placeholder URLs updated with production URLs**
-- [ ] **SMTP credentials configured for email notifications**
-- [ ] **Webhook endpoints configured for alerts**
-- [ ] **API keys for all services added**
-- [ ] **SSL certificate paths configured**
+#### **Supabase Production Instance (Recommended)**
+- [ ] Supabase account created
+- [ ] Production project created
+- [ ] Database password configured (secure)
+- [ ] Extensions enabled (uuid-ossp, pgcrypto, vector)
+- [ ] Row Level Security (RLS) enabled
+- [ ] API keys generated (anon key, service role key)
 
-### 4. Security Configuration
-- [ ] **Firewall configured (ports 80, 443 open)**
-- [ ] **SSH hardening completed**
-- [ ] **Fail2ban installed and configured**
-- [ ] **Regular security updates enabled**
-- [ ] **Backup strategy implemented**
+#### **Alternative: Self-Hosted PostgreSQL**
+- [ ] PostgreSQL server installed and configured
+- [ ] Production database created
+- [ ] Database user with appropriate permissions created
+- [ ] Database connection tested
+- [ ] Vector extension installed for AI features
+
+#### **Database Deployment**
+- [ ] Copy `scripts/deploy-production-database.sql`
+- [ ] Run script in database (Supabase SQL editor or psql)
+- [ ] Verify all 15 tables created successfully
+- [ ] Confirm RLS policies are active
+- [ ] Test database connectivity
+
+### **3. External Service Configuration**
+
+#### **AI Services (Required)**
+- [ ] OpenAI account with API key (primary)
+- [ ] Anthropic account with API key (secondary)
+- [ ] Google AI account with API key (fallback)
+- [ ] Test all AI services with sample requests
+
+#### **Payment Processing (Required)**
+- [ ] Stripe account created and verified
+- [ ] Live mode enabled
+- [ ] Production API keys generated
+- [ ] Webhook endpoint configured
+- [ ] Test payment processing
+
+#### **Communication Services**
+- [ ] Pusher account for real-time features
+- [ ] Twilio account for SMS notifications (optional)
+- [ ] Email service account (Resend/SendGrid)
+- [ ] Test all communication channels
+
+#### **Monitoring & Analytics**
+- [ ] Sentry account for error tracking
+- [ ] PostHog/Mixpanel for user analytics (optional)
+- [ ] Uptime monitoring service (optional)
 
 ## Deployment Process ✅
 

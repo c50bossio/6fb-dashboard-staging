@@ -162,14 +162,44 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       if (paymentMethod === 'online') {
         // Process online payment
         if (useNewCard) {
-          // Create payment intent and confirm with Stripe
-          // In production, this would call your backend API
+          // Use the enhanced booking payment functions
+          const { createBookingPaymentIntent, processBookingPayment } = await import('../../../lib/stripe-client')
           
-          // For demo, simulate payment processing
-          await new Promise(resolve => setTimeout(resolve, 2000))
-          
-          paymentData.paymentIntentId = 'pi_mock_' + Date.now()
-          paymentData.paymentStatus = 'succeeded'
+          // Create payment intent with enhanced API
+          const paymentIntentData = await createBookingPaymentIntent({
+            booking_id: bookingData.booking_id || `temp_${Date.now()}`,
+            service_id: bookingData.service?.id || bookingData.serviceDetails?.id,
+            barber_id: bookingData.barber?.id || bookingData.barberDetails?.id,
+            shop_id: bookingData.location?.id || bookingData.locationDetails?.id,
+            amount: paymentAmount,
+            payment_type: shopSettings.depositRequired ? 'deposit' : 'full_payment',
+            customer_email: customerInfo.email,
+            customer_name: customerInfo.name,
+            save_payment_method: false,
+            automatic_confirmation: true
+          })
+
+          // If Stripe is properly configured, confirm the payment
+          if (stripe && elements && paymentIntentData.client_secret && !paymentIntentData.mock_response) {
+            const cardElement = elements.getElement(CardElement)
+            
+            const paymentIntent = await processBookingPayment({
+              stripe,
+              elements,
+              paymentIntentClientSecret: paymentIntentData.client_secret,
+              customerInfo,
+              cardElement
+            })
+
+            paymentData.paymentIntentId = paymentIntent.id
+            paymentData.paymentStatus = paymentIntent.status
+            paymentData.amountPaid = paymentIntent.amount / 100 // Convert from cents
+          } else {
+            // Mock mode or Stripe not configured
+            paymentData.paymentIntentId = paymentIntentData.payment_intent_id || paymentIntentData.mock_response?.payment_intent_id
+            paymentData.paymentStatus = 'succeeded'
+            paymentData.mockPayment = true
+          }
         } else {
           // Use saved card
           paymentData.cardId = selectedCard
@@ -184,6 +214,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       onNext(paymentData)
       
     } catch (err) {
+      console.error('Payment processing error:', err)
       setError(err.message || 'Payment processing failed')
       setProcessing(false)
     }

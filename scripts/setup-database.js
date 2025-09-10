@@ -44,10 +44,10 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function setupDatabase() {
   try {
-    console.log('🚀 Setting up calendar database tables...\n')
+    console.log('🚀 Setting up complete 6FB AI Agent System database...\n')
     
-    // Read the SQL file
-    const sqlPath = join(__dirname, '../database/setup-calendar-tables.sql')
+    // Read the production SQL file
+    const sqlPath = join(__dirname, '../database/supabase-production-setup.sql')
     const sql = readFileSync(sqlPath, 'utf8')
     
     // Split SQL into individual statements (basic splitting by semicolon)
@@ -139,7 +139,7 @@ async function checkExistingTables() {
     
     // Try to query some basic table info
     const tables = [
-      'barbershops', 'barbers', 'services', 'clients', 'appointments'
+      'profiles', 'barbershops', 'services', 'appointments', 'customers', 'barber_availability', 'transactions', 'ai_insights'
     ]
     
     for (const table of tables) {

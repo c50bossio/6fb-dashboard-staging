@@ -1,8 +1,9 @@
 'use client'
 
+import React from 'react'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 
-export default function Button({
+const Button = React.memo(function Button({
   children,
   variant = 'primary',
   size = 'md',
@@ -54,18 +55,20 @@ export default function Button({
       {loading ? loadingText : children}
     </button>
   )
-}
+})
 
-export function ButtonGroup({ children, className = '' }) {
+export default Button
+
+export const ButtonGroup = React.memo(function ButtonGroup({ children, className = '' }) {
   return (
     <div className={`flex flex-col sm:flex-row gap-4 ${className}`}>
       {children}
     </div>
   )
-}
+})
 
 // Specialized CTA Button with enhanced loading states
-export function CTAButton({ 
+export const CTAButton = React.memo(function CTAButton({ 
   children, 
   loading = false, 
   success = false,
@@ -101,4 +104,4 @@ export function CTAButton({
       {children}
     </Button>
   )
-}
+})

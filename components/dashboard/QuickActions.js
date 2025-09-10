@@ -60,7 +60,7 @@ export default function QuickActions({ profile }) {
     {
       title: 'Customer Management',
       description: 'View and manage your customer database',
-      href: '/dashboard/customers',
+      href: '/dashboard/customers-enhanced',
       icon: UserGroupIcon,
       color: 'orange'
     },
@@ -92,7 +92,7 @@ export default function QuickActions({ profile }) {
     {
       title: 'Import Customers',
       description: 'Upload your existing customer list',
-      href: '/dashboard/customers',
+      href: '/dashboard/customers-enhanced',
       icon: PlusIcon,
       color: 'blue'
     },

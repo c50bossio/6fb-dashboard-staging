@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { ClockIcon, CurrencyDollarIcon, SparklesIcon, PlusIcon } from '@heroicons/react/24/outline'
+import bookingAPI from '@/lib/booking-api'
+import { ServiceSkeleton } from '../LoadingSkeletons'
 
 export default function ServiceStep({ bookingData, onNext, onBack }) {
   const [services, setServices] = useState([])
@@ -9,153 +11,68 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
   const [selectedAddOns, setSelectedAddOns] = useState(bookingData.addOns || [])
   const [loading, setLoading] = useState(true)
   const [showAddOns, setShowAddOns] = useState(false)
+  const [error, setError] = useState(null)
   
   useEffect(() => {
-    loadServices()
-  }, [bookingData.barber])
+    if (bookingData.location) {
+      loadServices()
+    }
+  }, [bookingData.barber, bookingData.location])
   
   const loadServices = async () => {
     try {
-      // Get barber-specific services with their custom durations and prices
-      const barberServices = bookingData.barberDetails?.services || []
+      setLoading(true)
+      setError(null)
       
-      // If "Any Barber" is selected, show standard services
-      const standardServices = [
-        {
-          id: 'srv_1',
-          name: 'Classic Haircut',
-          description: 'Traditional haircut with clean lines and professional finish',
-          category: 'Haircuts',
-          basePrice: 35,
-          baseDuration: 30,
-          price: 35,
-          duration: 30,
-          popular: true,
-          image: '/images/service-haircut.jpg'
-        },
-        {
-          id: 'srv_2',
-          name: 'Fade & Design',
-          description: 'Precision fade with optional hair design or patterns',
-          category: 'Haircuts',
-          basePrice: 45,
-          baseDuration: 45,
-          price: 45,
-          duration: 45,
-          popular: true,
-          image: '/images/service-fade.jpg'
-        },
-        {
-          id: 'srv_3',
-          name: 'Beard Trim',
-          description: 'Professional beard shaping and grooming',
-          category: 'Beard Services',
-          basePrice: 20,
-          baseDuration: 20,
-          price: 20,
-          duration: 20,
-          image: '/images/service-beard.jpg'
-        },
-        {
-          id: 'srv_4',
-          name: 'Full Service',
-          description: 'Complete grooming package: haircut, beard trim, and hot towel',
-          category: 'Packages',
-          basePrice: 65,
-          baseDuration: 60,
-          price: 65,
-          duration: 60,
-          popular: true,
-          premium: true,
-          image: '/images/service-full.jpg'
-        },
-        {
-          id: 'srv_5',
-          name: 'Color Service',
-          description: 'Professional hair coloring and highlights',
-          category: 'Special Services',
-          basePrice: 85,
-          baseDuration: 90,
-          price: 85,
-          duration: 90,
-          image: '/images/service-color.jpg'
-        },
-        {
-          id: 'srv_7',
-          name: 'Kids Cut',
-          description: 'Gentle haircut service for children under 12',
-          category: 'Haircuts',
-          basePrice: 20,
-          baseDuration: 20,
-          price: 20,
-          duration: 20,
-          image: '/images/service-kids.jpg'
-        }
-      ]
+      // Fetch real services from API
+      const servicesData = await bookingAPI.getServices(
+        bookingData.location, 
+        bookingData.barber === 'barber_any' ? null : bookingData.barber
+      )
       
-      // If specific barber selected, use their services with custom durations
-      let finalServices = standardServices
+      // Transform API data to match component format
+      const formattedServices = servicesData.map((service, index) => ({
+        id: service.id || `srv_${index + 1}`,
+        name: service.name || `Service ${index + 1}`,
+        description: service.description || 'Professional service',
+        category: service.category || 'General',
+        basePrice: service.base_price || service.price || 35,
+        baseDuration: service.base_duration || service.duration || 30,
+        price: service.price || 35,
+        duration: service.duration || 30,
+        popular: service.is_popular || index < 3,
+        premium: service.is_premium || false,
+        image: service.image_url || null,
+        barberAdjusted: false,
+        priceDiff: 0,
+        durationDiff: 0
+      }))
       
-      if (barberServices.length > 0 && !bookingData.barberDetails?.isAnyBarber) {
-        finalServices = standardServices.map(service => {
+      // If specific barber selected and they have custom service durations/prices
+      let finalServices = formattedServices
+      
+      if (bookingData.barber && bookingData.barber !== 'barber_any' && bookingData.barberDetails?.services) {
+        const barberServices = bookingData.barberDetails.services
+        
+        finalServices = formattedServices.map(service => {
           const barberService = barberServices.find(bs => bs.id === service.id)
           if (barberService) {
             return {
               ...service,
-              duration: barberService.duration,
-              price: barberService.price,
+              duration: barberService.duration || service.duration,
+              price: barberService.price || service.price,
               barberAdjusted: true,
-              priceDiff: barberService.price - service.basePrice,
-              durationDiff: barberService.duration - service.baseDuration
+              priceDiff: (barberService.price || service.price) - service.basePrice,
+              durationDiff: (barberService.duration || service.duration) - service.baseDuration
             }
           }
           return service
-        }).filter(service => barberServices.some(bs => bs.id === service.id))
+        })
       }
       
-      // Add-on services
-      const addOnServices = [
-        {
-          id: 'addon_1',
-          name: 'Hot Towel Treatment',
-          description: 'Relaxing hot towel service',
-          price: 10,
-          duration: 5,
-          icon: '♨️'
-        },
-        {
-          id: 'addon_2',
-          name: 'Hair Wash',
-          description: 'Shampoo and conditioning',
-          price: 10,
-          duration: 10,
-          icon: '🚿'
-        },
-        {
-          id: 'addon_3',
-          name: 'Scalp Massage',
-          description: '5-minute relaxing scalp massage',
-          price: 15,
-          duration: 5,
-          icon: '💆‍♂️'
-        },
-        {
-          id: 'addon_4',
-          name: 'Line Up Touch-up',
-          description: 'Perfect edge and line work',
-          price: 8,
-          duration: 5,
-          icon: '✂️'
-        },
-        {
-          id: 'addon_5',
-          name: 'Product Styling',
-          description: 'Premium product application and styling',
-          price: 12,
-          duration: 5,
-          icon: '💈'
-        }
-      ]
+      // TODO: Fetch add-on services from API
+      // For now, we'll use empty array until add-ons API is implemented
+      const addOnServices = []
       
       setServices(finalServices)
       
@@ -165,6 +82,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
       setLoading(false)
     } catch (error) {
       console.error('Error loading services:', error)
+      setError('Failed to load services. Please try again.')
       setLoading(false)
     }
   }
@@ -242,13 +160,7 @@ export default function ServiceStep({ bookingData, onNext, onBack }) {
       
       {/* Services by Category */}
       {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="animate-pulse">
-              <div className="bg-gray-200 rounded-lg h-24"></div>
-            </div>
-          ))}
-        </div>
+        <ServiceSkeleton />
       ) : (
         <div className="space-y-6 max-h-[400px] overflow-y-auto">
           {Object.entries(groupedServices).map(([category, categoryServices]) => (

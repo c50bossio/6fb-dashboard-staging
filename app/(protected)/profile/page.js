@@ -20,7 +20,7 @@ import { useAuth } from '../../../components/SupabaseAuthProvider'
 import Link from 'next/link'
 
 export default function ProfilePage() {
-  const { user, profile, updateProfile } = useAuth()
+  const { user, profile, updateProfile, loading } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
     full_name: '',
@@ -31,18 +31,23 @@ export default function ProfilePage() {
     role: ''
   })
   const [saveStatus, setSaveStatus] = useState(null) // null, 'saving', 'saved', 'error'
+  const [dataLoaded, setDataLoaded] = useState(false)
 
   useEffect(() => {
-    // Initialize profile data
-    setProfileData({
-      full_name: profile?.full_name || user?.user_metadata?.full_name || 'Dev User',
-      email: user?.email || 'dev@localhost.com',
-      phone: profile?.phone || '+1 (555) 123-4567',
-      bio: profile?.bio || 'Passionate about delivering exceptional barbershop experiences.',
-      location: profile?.location || 'San Francisco, CA',
-      role: profile?.role || user?.user_metadata?.role || 'Shop Owner'
-    })
-  }, [user, profile])
+    // Only set profile data when we have real user data
+    if (!loading && user) {
+      console.log('Profile page: Setting profile data', { user: user.email, profile: profile?.full_name })
+      setProfileData({
+        full_name: profile?.full_name || user?.user_metadata?.full_name || '',
+        email: user?.email || '',
+        phone: profile?.phone || '',
+        bio: profile?.bio || '',
+        location: profile?.location || '',
+        role: profile?.role || user?.user_metadata?.role || ''
+      })
+      setDataLoaded(true)
+    }
+  }, [user, profile, loading])
 
   const handleSave = async () => {
     try {
@@ -61,14 +66,14 @@ export default function ProfilePage() {
   }
 
   const handleCancel = () => {
-    // Reset to original data
+    // Reset to original data (no fallbacks)
     setProfileData({
-      full_name: profile?.full_name || user?.user_metadata?.full_name || 'Dev User',
-      email: user?.email || 'dev@localhost.com',
-      phone: profile?.phone || '+1 (555) 123-4567',
-      bio: profile?.bio || 'Passionate about delivering exceptional barbershop experiences.',
-      location: profile?.location || 'San Francisco, CA',
-      role: profile?.role || user?.user_metadata?.role || 'Shop Owner'
+      full_name: profile?.full_name || user?.user_metadata?.full_name || '',
+      email: user?.email || '',
+      phone: profile?.phone || '',
+      bio: profile?.bio || '',
+      location: profile?.location || '',
+      role: profile?.role || user?.user_metadata?.role || ''
     })
     setIsEditing(false)
     setSaveStatus(null)
@@ -88,6 +93,34 @@ export default function ProfilePage() {
     { label: 'Revenue This Month', value: '$3,240', change: '+8%', trend: 'up' },
     { label: 'Active Clients', value: '89', change: '+5', trend: 'up' },
   ]
+
+  // Show loading state until we have real data
+  if (loading || !dataLoaded) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading your profile...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state if no user data
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto" />
+            <p className="mt-4 text-gray-600">Unable to load profile data. Please try refreshing the page.</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

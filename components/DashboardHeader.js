@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { useAuth } from './SupabaseAuthProvider'
 import ViewSwitcher from './ViewSwitcher'
 import { 
@@ -18,7 +19,7 @@ import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function DashboardHeader() {
+const DashboardHeader = React.memo(function DashboardHeader() {
   const { user, profile, signOut } = useAuth()
   const router = useRouter()
   const [timeOfDay, setTimeOfDay] = useState('')
@@ -74,7 +75,35 @@ export default function DashboardHeader() {
   }, [activeDropdown])
 
   const getUserName = () => {
-    return profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
+    // Try profile first, then user metadata, then email prefix, then fallback
+    if (profile?.full_name && profile.full_name !== 'User' && profile.full_name.trim() !== '') {
+      return profile.full_name
+    }
+    
+    // Try first + last name from profile
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'User'
+    }
+    
+    // Try user metadata from OAuth
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name
+    }
+    
+    if (user?.user_metadata?.name) {
+      return user.user_metadata.name
+    }
+    
+    // Try email prefix as last resort
+    if (user?.email) {
+      const emailPrefix = user.email.split('@')[0]
+      // Don't use if it looks like a generic email
+      if (!emailPrefix.includes('test') && !emailPrefix.includes('demo')) {
+        return emailPrefix
+      }
+    }
+    
+    return 'User'
   }
 
   const getUserRole = () => {
@@ -285,4 +314,6 @@ export default function DashboardHeader() {
       </div>
     </header>
   )
-}
+})
+
+export default DashboardHeader

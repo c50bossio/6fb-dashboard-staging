@@ -1,0 +1,192 @@
+{
+  "metadata": {
+    "generated": "2025-08-17T18:11:50.395Z",
+    "account_id": "1fd319f3-0a8b-4314-bb82-603f47fe20e9",
+    "api_key_last_4": "5743",
+    "test_environment": {
+      "node_version": "v20.19.4",
+      "platform": "darwin",
+      "arch": "arm64"
+    }
+  },
+  "summary": {
+    "total_tests": 5,
+    "unique_responses": 1,
+    "all_tests_failed": true,
+    "authentication_broken": true
+  },
+  "tests": [
+    {
+      "test": 1,
+      "name": "Valid Credentials - Standard Format",
+      "timestamp": "2025-08-17T18:11:49.614Z",
+      "duration": "860ms",
+      "request": {
+        "method": "GET",
+        "url": "https://inventory.dearsystems.com/ExternalApi/Me",
+        "headers": {
+          "api-auth-accountid": "1fd319f3-0a8b-4314-bb82-603f47fe20e9",
+          "api-auth-applicationkey": "2fa20439-73b3-e86b-b7b2-1bd765e45743",
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      },
+      "response": {
+        "status": 403,
+        "statusMessage": "Forbidden",
+        "body": "Incorrect credentials!",
+        "headers": {
+          "date": "Sun, 17 Aug 2025 18:11:49 GMT",
+          "content-type": "text/plain; charset=utf-8",
+          "content-length": "22",
+          "connection": "keep-alive",
+          "set-cookie": [
+            "DEARAffinityCORS=1c8086f6bee5867d714c634b297a636f; Path=/; SameSite=None; Secure",
+            "DEARAffinity=1c8086f6bee5867d714c634b297a636f; Path=/"
+          ],
+          "cache-control": "no-cache",
+          "pragma": "no-cache",
+          "expires": "-1",
+          "access-control-allow-origin": "*",
+          "strict-transport-security": "max-age=31536000"
+        }
+      }
+    },
+    {
+      "test": 2,
+      "name": "Valid Credentials - V2 Endpoint",
+      "timestamp": "2025-08-17T18:11:49.763Z",
+      "duration": "147ms",
+      "request": {
+        "method": "GET",
+        "url": "https://inventory.dearsystems.com/ExternalAPI/v2/me",
+        "headers": {
+          "api-auth-accountid": "1fd319f3-0a8b-4314-bb82-603f47fe20e9",
+          "api-auth-applicationkey": "2fa20439-73b3-e86b-b7b2-1bd765e45743"
+        }
+      },
+      "response": {
+        "status": 403,
+        "statusMessage": "Forbidden",
+        "body": "Incorrect credentials!",
+        "headers": {
+          "date": "Sun, 17 Aug 2025 18:11:49 GMT",
+          "content-type": "text/plain; charset=utf-8",
+          "content-length": "22",
+          "connection": "keep-alive",
+          "set-cookie": [
+            "DEARAffinityCORS=1c8086f6bee5867d714c634b297a636f; Path=/; SameSite=None; Secure",
+            "DEARAffinity=1c8086f6bee5867d714c634b297a636f; Path=/"
+          ],
+          "cache-control": "no-cache",
+          "pragma": "no-cache",
+          "expires": "-1",
+          "access-control-allow-origin": "*",
+          "strict-transport-security": "max-age=31536000"
+        }
+      }
+    },
+    {
+      "test": 3,
+      "name": "Valid Credentials - Products Endpoint",
+      "timestamp": "2025-08-17T18:11:50.026Z",
+      "duration": "262ms",
+      "request": {
+        "method": "GET",
+        "url": "https://inventory.dearsystems.com/externalapi/products?limit=1",
+        "headers": {
+          "api-auth-accountid": "1fd319f3-0a8b-4314-bb82-603f47fe20e9",
+          "api-auth-applicationkey": "2fa20439-73b3-e86b-b7b2-1bd765e45743"
+        }
+      },
+      "response": {
+        "status": 403,
+        "statusMessage": "Forbidden",
+        "body": "Incorrect credentials!",
+        "headers": {
+          "date": "Sun, 17 Aug 2025 18:11:49 GMT",
+          "content-type": "text/plain; charset=utf-8",
+          "content-length": "22",
+          "connection": "keep-alive",
+          "set-cookie": [
+            "DEARAffinityCORS=1c8086f6bee5867d714c634b297a636f; Path=/; SameSite=None; Secure",
+            "DEARAffinity=1c8086f6bee5867d714c634b297a636f; Path=/"
+          ],
+          "cache-control": "no-cache",
+          "pragma": "no-cache",
+          "expires": "-1",
+          "access-control-allow-origin": "*",
+          "strict-transport-security": "max-age=31536000"
+        }
+      }
+    },
+    {
+      "test": 4,
+      "name": "CONTROL - Invalid Credentials",
+      "timestamp": "2025-08-17T18:11:50.207Z",
+      "duration": "180ms",
+      "request": {
+        "method": "GET",
+        "url": "https://inventory.dearsystems.com/ExternalApi/Me",
+        "headers": {
+          "api-auth-accountid": "invalid-account-id-123",
+          "api-auth-applicationkey": "invalid-api-key-456"
+        }
+      },
+      "response": {
+        "status": 403,
+        "statusMessage": "Forbidden",
+        "body": "Incorrect credentials!",
+        "headers": {
+          "date": "Sun, 17 Aug 2025 18:11:50 GMT",
+          "content-type": "text/plain; charset=utf-8",
+          "content-length": "22",
+          "connection": "keep-alive",
+          "set-cookie": [
+            "DEARAffinityCORS=1c8086f6bee5867d714c634b297a636f; Path=/; SameSite=None; Secure",
+            "DEARAffinity=1c8086f6bee5867d714c634b297a636f; Path=/"
+          ],
+          "cache-control": "no-cache",
+          "pragma": "no-cache",
+          "expires": "-1",
+          "access-control-allow-origin": "*",
+          "strict-transport-security": "max-age=31536000"
+        }
+      }
+    },
+    {
+      "test": 5,
+      "name": "CONTROL - No Auth Headers",
+      "timestamp": "2025-08-17T18:11:50.389Z",
+      "duration": "182ms",
+      "request": {
+        "method": "GET",
+        "url": "https://inventory.dearsystems.com/ExternalApi/Me",
+        "headers": {
+          "Accept": "application/json"
+        }
+      },
+      "response": {
+        "status": 403,
+        "statusMessage": "Forbidden",
+        "body": "Incorrect credentials!",
+        "headers": {
+          "date": "Sun, 17 Aug 2025 18:11:50 GMT",
+          "content-type": "text/plain; charset=utf-8",
+          "content-length": "22",
+          "connection": "keep-alive",
+          "set-cookie": [
+            "DEARAffinityCORS=1c8086f6bee5867d714c634b297a636f; Path=/; SameSite=None; Secure",
+            "DEARAffinity=1c8086f6bee5867d714c634b297a636f; Path=/"
+          ],
+          "cache-control": "no-cache",
+          "pragma": "no-cache",
+          "expires": "-1",
+          "access-control-allow-origin": "*",
+          "strict-transport-security": "max-age=31536000"
+        }
+      }
+    }
+  ],
+  "conclusion": "CRITICAL: External API authentication is not functioning. All requests return the same error regardless of credentials."
+}

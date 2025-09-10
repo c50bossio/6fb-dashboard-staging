@@ -14,6 +14,8 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import Logo, { LogoHeader } from '../components/ui/Logo'
+import VideoModal from '../components/ui/VideoModal'
+import ScheduleDemoModal from '../components/ui/ScheduleDemoModal'
 import BrandOwnershipSection from '../components/landing/BrandOwnershipSection'
 import AIAgentsShowcase from '../components/landing/AIAgentsShowcase'
 import AnalyticsPreview from '../components/landing/AnalyticsPreview'
@@ -26,6 +28,8 @@ export default function HomePage() {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [showVideoModal, setShowVideoModal] = useState(false)
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -163,6 +167,7 @@ export default function HomePage() {
                   Start Building Your Brand
                 </Link>
                 <button
+                  onClick={() => setShowVideoModal(true)}
                   className="bg-transparent border-2 border-white hover:bg-white hover:text-gray-900 text-white px-8 py-4 rounded-xl text-lg font-bold transition-all duration-300 inline-flex items-center justify-center"
                 >
                   <PlayIcon className="h-5 w-5 mr-2" />
@@ -237,7 +242,10 @@ export default function HomePage() {
                 <ArrowRightIcon className="h-5 w-5 ml-2" />
               </Link>
               
-              <button className="bg-white text-gray-900 px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300">
+              <button 
+                onClick={() => setShowScheduleModal(true)}
+                className="bg-white text-gray-900 px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300"
+              >
                 Schedule a Demo
               </button>
             </div>
@@ -359,6 +367,20 @@ export default function HomePage() {
             </div>
           </div>
         </footer>
+
+        {/* Modals */}
+        <VideoModal
+          isOpen={showVideoModal}
+          onClose={() => setShowVideoModal(false)}
+          videoUrl="/demo/6fb-demo-video.mp4"
+          title="6FB AI Agent System Demo"
+          autoplay={true}
+        />
+
+        <ScheduleDemoModal
+          isOpen={showScheduleModal}
+          onClose={() => setShowScheduleModal(false)}
+        />
       </div>
   )
 }

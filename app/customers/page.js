@@ -16,62 +16,136 @@ import { useState, useEffect } from 'react'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import GlobalNavigation from '../../components/GlobalNavigation'
 import { useAuth } from '../../components/SupabaseAuthProvider'
-
-// Mock customer data
-const Customers = [
-  {
-    id: 1,
-    name: "John Smith",
-    email: "john.smith@email.com",
-    phone: "(555) 123-4567",
-    address: "123 Main St, City, State 12345",
-    join_date: "2024-03-15",
-    total_visits: 12,
-    total_spent: "$420.00",
-    last_visit: "2025-07-28",
-    preferred_barber: "Marcus Johnson",
-    notes: "Prefers short sides, likes to chat about sports",
-    loyalty_points: 42,
-    status: "active"
-  },
-  {
-    id: 2,
-    name: "Mike Davis",
-    email: "mike.davis@email.com",
-    phone: "(555) 987-6543",
-    address: "456 Oak Ave, City, State 12345",
-    join_date: "2024-01-20",
-    total_visits: 8,
-    total_spent: "$200.00",
-    last_visit: "2025-07-15",
-    preferred_barber: "David Wilson",
-    notes: "Usually comes in every 3 weeks",
-    loyalty_points: 20,
-    status: "active"
-  },
-  {
-    id: 3,
-    name: "Alex Rodriguez",
-    email: "alex.rodriguez@email.com",
-    phone: "(555) 456-7890",
-    address: "789 Pine Rd, City, State 12345",
-    join_date: "2023-11-08",
-    total_visits: 25,
-    total_spent: "$875.00",
-    last_visit: "2025-08-02",
-    preferred_barber: "Marcus Johnson",
-    notes: "VIP customer, always books premium services",
-    loyalty_points: 87,
-    status: "vip"
-  }
-]
+import { createClient } from '../../lib/supabase/browser-client'
+import LoadingSpinner, { TableLoadingSkeleton } from '../../components/LoadingSpinner'
+import Button from '../../components/Button'
 
 export default function CustomersPage() {
   const { user, profile } = useAuth()
-  const [customers, setCustomers] = useState(Customers)
+  const [customers, setCustomers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
+  
+  // Add Customer Modal State
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [addingCustomer, setAddingCustomer] = useState(false)
+  const [addCustomerForm, setAddCustomerForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    status: 'active',
+    notes: ''
+  })
+
+  // Fetch customers from Supabase
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setLoading(true)
+        const supabase = createClient()
+        
+        const { data, error } = await supabase
+          .from('customers')
+          .select(`
+            *,
+            preferred_barber:staff(name)
+          `)
+          .is('deleted_at', null)
+          .order('last_visit', { ascending: false, nullsFirst: false })
+        
+        if (error) {
+          console.error('Error fetching customers:', error)
+          throw error
+        }
+        
+        // Transform data to match the expected format
+        const transformedCustomers = data?.map(customer => ({
+          ...customer,
+          total_spent: `$${Number(customer.total_spent || 0).toFixed(2)}`,
+          preferred_barber: customer.preferred_barber?.name || 'None assigned',
+          join_date: customer.join_date || customer.created_at?.split('T')[0]
+        })) || []
+        
+        setCustomers(transformedCustomers)
+        setError(null)
+      } catch (err) {
+        console.error('Failed to fetch customers:', err)
+        setError(err.message || 'Failed to load customers')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user) {
+      fetchCustomers()
+    }
+  }, [user])
+
+  // Add Customer Handler
+  const handleAddCustomer = async (e) => {
+    e.preventDefault()
+    
+    if (!addCustomerForm.name || !addCustomerForm.email) {
+      alert('Please fill in all required fields')
+      return
+    }
+    
+    try {
+      setAddingCustomer(true)
+      const supabase = createClient()
+      
+      const newCustomer = {
+        ...addCustomerForm,
+        shop_id: profile?.shop_id || null,
+        created_at: new Date().toISOString(),
+        join_date: new Date().toISOString().split('T')[0],
+        total_spent: 0,
+        total_visits: 0,
+        loyalty_points: 0,
+        last_visit: null,
+        preferred_barber_id: null
+      }
+      
+      const { data, error } = await supabase
+        .from('customers')
+        .insert([newCustomer])
+        .select()
+      
+      if (error) {
+        console.error('Error adding customer:', error)
+        alert(`Failed to add customer: ${error.message}`)
+        return
+      }
+      
+      // Add the new customer to the list
+      const transformedCustomer = {
+        ...data[0],
+        total_spent: `$${Number(data[0].total_spent || 0).toFixed(2)}`,
+        preferred_barber: 'None assigned'
+      }
+      
+      setCustomers(prev => [transformedCustomer, ...prev])
+      
+      // Reset form and close modal
+      setAddCustomerForm({
+        name: '',
+        email: '',
+        phone: '',
+        status: 'active',
+        notes: ''
+      })
+      setShowAddModal(false)
+      
+    } catch (err) {
+      console.error('Failed to add customer:', err)
+      alert('Failed to add customer. Please try again.')
+    } finally {
+      setAddingCustomer(false)
+    }
+  }
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -103,10 +177,14 @@ export default function CustomersPage() {
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
-                <button className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700">
+                <Button
+                  onClick={() => setShowAddModal(true)}
+                  className="inline-flex items-center"
+                  variant="primary"
+                >
                   <PlusIcon className="h-5 w-5 mr-2" />
                   Add Customer
-                </button>
+                </Button>
               </div>
             </div>
             
@@ -136,7 +214,21 @@ export default function CustomersPage() {
                 </select>
               </div>
 
-              {filteredCustomers.length > 0 ? (
+              {loading ? (
+                <TableLoadingSkeleton rows={5} />
+              ) : error ? (
+                <div className="text-center py-12">
+                  <UsersIcon className="mx-auto h-12 w-12 text-red-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">Error Loading Customers</h3>
+                  <p className="mt-1 text-sm text-gray-500">{error}</p>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-4 px-4 py-2 bg-olive-600 text-white rounded-md hover:bg-olive-700"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : filteredCustomers.length > 0 ? (
                 <div className="grid gap-4">
                   {filteredCustomers.map((customer) => (
                     <div
@@ -220,6 +312,121 @@ export default function CustomersPage() {
           </div>
         </div>
       </div>
+
+      {/* Add Customer Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">Add New Customer</h2>
+                <button
+                  onClick={() => setShowAddModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                  disabled={addingCustomer}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleAddCustomer} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={addCustomerForm.name}
+                    onChange={(e) => setAddCustomerForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                    disabled={addingCustomer}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={addCustomerForm.email}
+                    onChange={(e) => setAddCustomerForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                    disabled={addingCustomer}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    value={addCustomerForm.phone}
+                    onChange={(e) => setAddCustomerForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                    disabled={addingCustomer}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
+                  </label>
+                  <select
+                    value={addCustomerForm.status}
+                    onChange={(e) => setAddCustomerForm(prev => ({ ...prev, status: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                    disabled={addingCustomer}
+                  >
+                    <option value="active">Active</option>
+                    <option value="vip">VIP</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes
+                  </label>
+                  <textarea
+                    value={addCustomerForm.notes}
+                    onChange={(e) => setAddCustomerForm(prev => ({ ...prev, notes: e.target.value }))}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                    disabled={addingCustomer}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setShowAddModal(false)}
+                    disabled={addingCustomer}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    loading={addingCustomer}
+                    loadingText="Adding..."
+                    className="flex-1"
+                  >
+                    Add Customer
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   )
 }

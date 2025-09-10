@@ -17,77 +17,135 @@ export const useAuth = () => {
 function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
-  // Start with loading false for better UX on public pages
-  const [loading, setLoading] = useState(false)
+  // Start with loading true to ensure auth is checked before rendering
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
+    let timeoutId = null
+    
     // Check initial session
     const checkUser = async () => {
+      console.log('🔐 SupabaseAuthProvider: Starting auth check...')
+      
+      // Set a timeout to ensure loading is set to false after 5 seconds
+      timeoutId = setTimeout(() => {
+        console.warn('🔐 SupabaseAuthProvider: Auth check timeout - forcing loading to false')
+        setLoading(false)
+      }, 5000)
+      
       // Only set loading true if we're on a protected page
       const publicPaths = ['/login', '/register', '/forgot-password', '/', '/subscribe']
       const isPublicPage = typeof window !== 'undefined' && publicPaths.includes(window.location.pathname)
       
+      console.log('🔐 SupabaseAuthProvider: Current path:', window.location.pathname, 'Is public:', isPublicPage)
+      
       if (!isPublicPage) {
+        console.log('🔐 SupabaseAuthProvider: Setting loading to true for protected page')
         setLoading(true)
       }
       
       try {
+        console.log('🔐 SupabaseAuthProvider: Getting user from Supabase...')
         // Use getUser for secure authentication check
         const { data: { user }, error } = await supabase.auth.getUser()
         
+        console.log('🔐 SupabaseAuthProvider: getUser result:', { user: !!user, error: !!error, userId: user?.id })
+        
         if (error) {
-          console.error('Auth check error:', error)
+          console.error('🔐 SupabaseAuthProvider: Auth check error:', error)
           setUser(null)
           setProfile(null)
         } else if (user) {
-          console.log('User authenticated:', user.email)
+          console.log('🔐 SupabaseAuthProvider: User authenticated:', user.email, user.id)
           setUser(user)
           
-          // Fetch profile
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single()
+          // Fetch profile with retry logic - should exist due to trigger
+          let profileData = null
+          let attempts = 0
+          const maxAttempts = 3
           
-          if (profileData) {
-            setProfile(profileData)
+          while (!profileData && attempts < maxAttempts) {
+            attempts++
+            console.log(`🔐 SupabaseAuthProvider: Fetching profile, attempt ${attempts}...`)
+            const { data, error: profileError } = await supabase
+              .from('profiles')
+              .select('id, email, full_name, first_name, last_name, avatar_url, role, subscription_tier, subscription_status, created_at, updated_at')
+              .eq('id', user.id)
+              .single()
+            
+            if (data) {
+              console.log('🔐 SupabaseAuthProvider: Profile fetched successfully:', data.email)
+              profileData = data
+              setProfile(data)
+            } else if (profileError) {
+              console.warn(`🔐 SupabaseAuthProvider: Profile fetch attempt ${attempts} failed:`, profileError)
+              if (attempts < maxAttempts) {
+                // Wait before retry (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000))
+              } else {
+                console.error('🔐 SupabaseAuthProvider: Profile not found after all retries:', profileError)
+              }
+            }
           }
         } else {
-          console.log('No authenticated user')
+          console.log('🔐 SupabaseAuthProvider: No authenticated user')
           setUser(null)
           setProfile(null)
         }
       } catch (error) {
-        console.error('Error checking auth:', error)
+        console.error('🔐 SupabaseAuthProvider: Error in checkUser:', error)
         setUser(null)
         setProfile(null)
       } finally {
-        // Always set loading to false after checking
+        // Clear timeout and set loading to false
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
+        console.log('🔐 SupabaseAuthProvider: Setting loading to false in finally block')
         setLoading(false)
       }
     }
     
+    console.log('🔐 SupabaseAuthProvider: useEffect triggered, calling checkUser...')
     checkUser()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth event:', event)
+      console.log('🔐 SupabaseAuthProvider: Auth event:', event)
       
       if (event === 'SIGNED_IN' && session) {
+        console.log('🔐 SupabaseAuthProvider: User signed in', { email: session.user.email, provider: session.user.app_metadata?.provider })
         setUser(session.user)
         
-        // Fetch profile
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
+        // Fetch profile with retry logic - should exist due to trigger
+        let profileData = null
+        let attempts = 0
+        const maxAttempts = 3
         
-        if (profileData) {
-          setProfile(profileData)
+        while (!profileData && attempts < maxAttempts) {
+          attempts++
+          const { data, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, first_name, last_name, avatar_url, role, subscription_tier, subscription_status, created_at, updated_at')
+            .eq('id', session.user.id)
+            .single()
+          
+          if (data) {
+            profileData = data
+            setProfile(data)
+          } else if (profileError) {
+            console.warn(`Sign-in profile fetch attempt ${attempts} failed:`, profileError)
+            if (attempts < maxAttempts) {
+              // Wait before retry (exponential backoff)
+              await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000))
+            } else {
+              console.error('Profile not found after all retries, this should not happen with triggers:', profileError)
+              // Profile should exist due to database trigger
+              // If it doesn't, the OAuth callback or signup flow will handle creation
+            }
+          }
         }
         
         // Redirect if on login page
@@ -95,6 +153,7 @@ function SupabaseAuthProvider({ children }) {
           router.push('/dashboard')
         }
       } else if (event === 'SIGNED_OUT') {
+        console.log('🔓 SupabaseAuthProvider: User signed out')
         setUser(null)
         setProfile(null)
         
@@ -104,6 +163,7 @@ function SupabaseAuthProvider({ children }) {
           router.push('/login')
         }
       } else if (event === 'USER_UPDATED' && session) {
+        console.log('🔄 SupabaseAuthProvider: User updated', { email: session.user.email })
         setUser(session.user)
       }
       
@@ -111,9 +171,13 @@ function SupabaseAuthProvider({ children }) {
     })
 
     return () => {
+      console.log('🔐 SupabaseAuthProvider: Cleaning up subscriptions')
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
       subscription.unsubscribe()
     }
-  }, [router, supabase])
+  }, []) // Empty dependency array - only run once on mount
 
   const signUp = async ({ email, password, metadata }) => {
     const { data, error } = await supabase.auth.signUp({
@@ -126,6 +190,11 @@ function SupabaseAuthProvider({ children }) {
     })
     
     if (error) throw error
+
+    // Supabase Auth handles user creation
+    // Database trigger will create profile automatically
+    // No need for manual profile creation
+    
     return data
   }
 
@@ -152,8 +221,45 @@ function SupabaseAuthProvider({ children }) {
   }
 
   const signOut = async () => {
+    console.log('🔓 SupabaseAuthProvider: Signing out user')
     const { error } = await supabase.auth.signOut()
     if (error) throw error
+  }
+
+  const clearAllSessions = async () => {
+    console.log('🧹 SupabaseAuthProvider: Clearing all sessions and dev data')
+    try {
+      // Sign out from Supabase
+      await supabase.auth.signOut()
+      
+      // Clear local state
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
+      
+      // Clear any cached data in browser
+      if (typeof window !== 'undefined') {
+        // Clear localStorage items that might contain cached auth data
+        const keysToRemove = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && (key.includes('supabase') || key.includes('auth') || key.includes('sb-'))) {
+            keysToRemove.push(key)
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key))
+        
+        // Clear sessionStorage as well
+        sessionStorage.clear()
+        
+        console.log('🧹 Cleared browser storage keys:', keysToRemove)
+      }
+      
+      console.log('✅ All sessions and dev data cleared successfully')
+    } catch (error) {
+      console.error('❌ Error clearing sessions:', error)
+      throw error
+    }
   }
 
   const resetPassword = async (email) => {
@@ -198,6 +304,7 @@ function SupabaseAuthProvider({ children }) {
     signIn,
     signInWithGoogle,
     signOut,
+    clearAllSessions,
     resetPassword,
     updatePassword,
     updateProfile,

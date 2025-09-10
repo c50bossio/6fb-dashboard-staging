@@ -20,99 +20,68 @@ import { useState, useEffect } from 'react'
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
-
-// Mock staff data
-const Staff = [
-  {
-    id: 'marcus',
-    name: "Marcus Johnson",
-    email: "marcus.johnson@barbershop.com",
-    phone: "(555) 123-4567",
-    role: "Senior Barber",
-    hire_date: "2023-01-15",
-    commission_rate: 80,
-    hourly_rate: 25.00,
-    is_active: true,
-    specialties: ["Haircuts", "Beard Trims", "Hot Shaves"],
-    weekly_hours: 40,
-    total_appointments_week: 32,
-    total_revenue_week: 1280.00,
-    average_rating: 4.9,
-    total_reviews: 87,
-    schedule: {
-      monday: { start: "09:00", end: "17:00", available: true },
-      tuesday: { start: "09:00", end: "17:00", available: true },
-      wednesday: { start: "09:00", end: "17:00", available: true },
-      thursday: { start: "09:00", end: "17:00", available: true },
-      friday: { start: "09:00", end: "18:00", available: true },
-      saturday: { start: "08:00", end: "16:00", available: true },
-      sunday: { start: "", end: "", available: false }
-    },
-    profile_image: null
-  },
-  {
-    id: 'david',
-    name: "David Wilson",
-    email: "david.wilson@barbershop.com",
-    phone: "(555) 987-6543",
-    role: "Barber",
-    hire_date: "2023-06-20",
-    commission_rate: 75,
-    hourly_rate: 22.00,
-    is_active: true,
-    specialties: ["Haircuts", "Styling", "Color"],
-    weekly_hours: 35,
-    total_appointments_week: 28,
-    total_revenue_week: 980.00,
-    average_rating: 4.7,
-    total_reviews: 56,
-    schedule: {
-      monday: { start: "10:00", end: "18:00", available: true },
-      tuesday: { start: "10:00", end: "18:00", available: true },
-      wednesday: { start: "", end: "", available: false },
-      thursday: { start: "10:00", end: "18:00", available: true },
-      friday: { start: "10:00", end: "18:00", available: true },
-      saturday: { start: "09:00", end: "17:00", available: true },
-      sunday: { start: "10:00", end: "15:00", available: true }
-    },
-    profile_image: null
-  },
-  {
-    id: 'sophia',
-    name: "Sophia Martinez",
-    email: "sophia.martinez@barbershop.com",
-    phone: "(555) 456-7890",
-    role: "Master Barber",
-    hire_date: "2022-03-10",
-    commission_rate: 85,
-    hourly_rate: 28.00,
-    is_active: true,
-    specialties: ["Premium Cuts", "Beard Design", "Traditional Shaves"],
-    weekly_hours: 38,
-    total_appointments_week: 25,
-    total_revenue_week: 1375.00,
-    average_rating: 4.95,
-    total_reviews: 134,
-    schedule: {
-      monday: { start: "09:00", end: "17:00", available: true },
-      tuesday: { start: "09:00", end: "17:00", available: true },
-      wednesday: { start: "09:00", end: "17:00", available: true },
-      thursday: { start: "09:00", end: "17:00", available: true },
-      friday: { start: "09:00", end: "17:00", available: true },
-      saturday: { start: "08:00", end: "14:00", available: true },
-      sunday: { start: "", end: "", available: false }
-    },
-    profile_image: null
-  }
-]
+import { createClient } from '../../../lib/supabase/browser-client'
+import LoadingSpinner, { TableLoadingSkeleton, CardLoadingSkeleton } from '../../../components/LoadingSpinner'
+import Button from '../../../components/Button'
 
 export default function StaffPage() {
   const { user, profile } = useAuth()
-  const [staff, setStaff] = useState(Staff)
+  const [staff, setStaff] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedStaff, setSelectedStaff] = useState(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [settingsStaff, setSettingsStaff] = useState(null)
+
+  // Fetch staff data from Supabase
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        setLoading(true)
+        const supabase = createClient()
+        
+        const { data, error } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+        
+        if (error) {
+          console.error('Error fetching staff:', error)
+          throw error
+        }
+        
+        // Transform data to match expected format
+        const transformedStaff = data?.map(member => ({
+          ...member,
+          role: member.role?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Barber',
+          schedule: member.default_schedule || {},
+          specialties: member.specialties || []
+        })) || []
+        
+        setStaff(transformedStaff)
+        setError(null)
+      } catch (err) {
+        console.error('Failed to fetch staff:', err)
+        setError(err.message || 'Failed to load staff')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user) {
+      fetchStaff()
+    }
+  }, [user])
+
+  // Staff Settings Handler
+  const handleStaffSettings = (staffMember) => {
+    setSettingsStaff(staffMember)
+    setShowSettingsModal(true)
+  }
 
   const filteredStaff = staff.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -353,7 +322,11 @@ export default function StaffPage() {
                           >
                             View Details
                           </button>
-                          <button className="text-gray-400 hover:text-gray-600 text-sm font-medium">
+                          <button 
+                            onClick={() => handleStaffSettings(member)}
+                            className="text-gray-400 hover:text-gray-600 text-sm font-medium transition-colors"
+                            title="Staff Settings"
+                          >
                             <CogIcon className="h-4 w-4" />
                           </button>
                         </div>
@@ -401,6 +374,117 @@ export default function StaffPage() {
           </div>
         </div>
       </div>
+
+      {/* Staff Settings Modal */}
+      {showSettingsModal && settingsStaff && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Staff Settings: {settingsStaff.name}
+                </h2>
+                <button
+                  onClick={() => setShowSettingsModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    onClick={() => {
+                      alert(`Edit schedule for ${settingsStaff.name}`)
+                      setShowSettingsModal(false)
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <CalendarIcon className="h-4 w-4 mr-2" />
+                    Edit Schedule
+                  </Button>
+                  
+                  <Button
+                    onClick={() => {
+                      alert(`Manage permissions for ${settingsStaff.name}`)
+                      setShowSettingsModal(false)
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <CogIcon className="h-4 w-4 mr-2" />
+                    Permissions
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    onClick={() => {
+                      alert(`View performance metrics for ${settingsStaff.name}`)
+                      setShowSettingsModal(false)
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <StarIcon className="h-4 w-4 mr-2" />
+                    Performance
+                  </Button>
+                  
+                  <Button
+                    onClick={() => {
+                      alert(`Commission settings for ${settingsStaff.name}`)
+                      setShowSettingsModal(false)
+                    }}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <CurrencyDollarIcon className="h-4 w-4 mr-2" />
+                    Commission
+                  </Button>
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-medium text-gray-900 mb-2">Staff Status</h3>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">
+                        {settingsStaff.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                      <Button
+                        onClick={() => {
+                          const action = settingsStaff.is_active ? 'deactivate' : 'activate'
+                          if (confirm(`Are you sure you want to ${action} ${settingsStaff.name}?`)) {
+                            alert(`${settingsStaff.name} has been ${action}d`)
+                            setShowSettingsModal(false)
+                          }
+                        }}
+                        variant={settingsStaff.is_active ? "danger" : "primary"}
+                        size="sm"
+                      >
+                        {settingsStaff.is_active ? 'Deactivate' : 'Activate'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    onClick={() => setShowSettingsModal(false)}
+                    variant="secondary"
+                    className="flex-1"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedRoute>
   )
 }

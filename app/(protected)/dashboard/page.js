@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 import UnifiedDashboard from '../../../components/dashboard/UnifiedDashboard'
+import ProfileCompletionPrompt from '../../../components/ProfileCompletionPrompt'
 
 export default function BarbershopDashboard() {
   console.log('🏪 BarbershopDashboard component loading...')
@@ -20,6 +21,9 @@ export default function BarbershopDashboard() {
 
   return (
     <div>
+      {/* Profile Completion Prompt */}
+      <ProfileCompletionPrompt />
+      
       {/* Unified Dashboard Component */}
       <UnifiedDashboard user={user} />
     </div>

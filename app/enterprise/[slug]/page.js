@@ -24,6 +24,7 @@ import {
   StarIcon as StarIconSolid
 } from '@heroicons/react/24/solid'
 import Link from 'next/link'
+import Button from '../../../components/Button'
 
 export default function EnterprisePortalPage() {
   const params = useParams()
@@ -269,6 +270,23 @@ export default function EnterprisePortalPage() {
     
     loadEnterpriseData()
   }, [enterpriseSlug])
+
+  // Booking handler
+  const handleBooking = (location = null) => {
+    if (location) {
+      // Navigate to specific location booking
+      window.location.href = `/book/${location.slug}`
+    } else {
+      // Show location selector or navigate to general booking
+      window.location.href = '/book'
+    }
+  }
+
+  // Call handler
+  const handleCall = (phoneNumber = '(555) 123-CUTS') => {
+    // On mobile devices, this will open the phone dialer
+    window.location.href = `tel:${phoneNumber.replace(/[^\d]/g, '')}`
+  }
 
   // Rotate featured locations
   useEffect(() => {
@@ -670,9 +688,13 @@ export default function EnterprisePortalPage() {
                       >
                         Visit Shop
                       </Link>
-                      <button className="flex-1 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors font-medium">
+                      <Button
+                        onClick={() => handleBooking(location)}
+                        variant="outline"
+                        className="flex-1"
+                      >
                         Book Now
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -746,9 +768,15 @@ export default function EnterprisePortalPage() {
             >
               Find & Book Now
             </Link>
-            <button className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-lg transition-all text-lg">
+            <Button
+              onClick={() => handleCall('(555) 123-CUTS')}
+              variant="secondary"
+              size="lg"
+              className="px-8 py-4"
+            >
+              <PhoneIcon className="h-5 w-5 mr-2" />
               Call (555) 123-CUTS
-            </button>
+            </Button>
           </div>
         </div>
       </section>
@@ -820,9 +848,17 @@ export default function EnterprisePortalPage() {
                   >
                     Visit Shop Page
                   </Link>
-                  <button className="w-full py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors font-medium">
+                  <Button
+                    onClick={() => {
+                      handleBooking(selectedLocation)
+                      setSelectedLocation(null)
+                    }}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <CalendarDaysIcon className="h-4 w-4 mr-2" />
                     Book Appointment
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

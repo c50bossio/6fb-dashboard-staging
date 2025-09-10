@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-08-20T04:40:17.336Z",
+  "summary": {
+    "pagesAudited": 5,
+    "pagesWithIssues": 0,
+    "totalContrastFailures": 0
+  },
+  "results": [
+    {
+      "page": "Landing Page",
+      "lightMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "darkMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "error": "page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "page": "Pricing Page",
+      "lightMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "darkMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "error": "page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "page": "Login Page",
+      "lightMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "darkMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "error": "page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "page": "Register Page",
+      "lightMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "darkMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "error": "page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "page": "Test Logo Page",
+      "lightMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "darkMode": {
+        "issues": [],
+        "contrastResults": []
+      },
+      "error": "page.evaluate: SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\n    at UtilityScript.evaluate (<anonymous>:293:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    }
+  ]
+}

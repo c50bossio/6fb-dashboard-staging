@@ -52,8 +52,44 @@ CREATE INDEX IF NOT EXISTS idx_bookings_active ON bookings(start_time, customer_
 CREATE INDEX IF NOT EXISTS idx_bookings_recent ON bookings(start_time, price, customer_id) 
   WHERE start_time >= (CURRENT_DATE - INTERVAL '3 months');
 
+-- 🚨 CRITICAL MISSING INDEXES - Added for security audit
+-- These indexes fix performance bottlenecks identified in the audit
+
+-- Index for updated_at timestamp (critical for change tracking)
+CREATE INDEX IF NOT EXISTS idx_bookings_updated_at ON bookings(updated_at);
+CREATE INDEX IF NOT EXISTS idx_customers_updated_at ON customers(updated_at);
+
+-- Index for end_time to optimize scheduling conflict queries
+CREATE INDEX IF NOT EXISTS idx_bookings_end_time ON bookings(end_time);
+
+-- Critical composite index for conflict detection (prevents double booking)
+CREATE INDEX IF NOT EXISTS idx_bookings_barber_time_conflict ON bookings(barber_id, start_time, end_time, status)
+  WHERE status != 'cancelled';
+
+-- Index for shop_id + barber_id combination (multi-tenant barber queries)
+CREATE INDEX IF NOT EXISTS idx_bookings_shop_barber ON bookings(shop_id, barber_id);
+
+-- Index for filtering active appointments (dashboard queries)
+CREATE INDEX IF NOT EXISTS idx_bookings_is_active ON bookings(shop_id, status, start_time)
+  WHERE status NOT IN ('cancelled', 'completed');
+
+-- Indexes for foreign key relationships (improves JOIN performance)
+CREATE INDEX IF NOT EXISTS idx_bookings_service_id ON bookings(service_id);
+CREATE INDEX IF NOT EXISTS idx_services_shop_barber ON services(shop_id, id);
+
+-- Customer lookup optimization (phone/email search)
+CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(shop_id, phone);
+CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(shop_id, email);
+
+-- Barber availability and performance indexes
+CREATE INDEX IF NOT EXISTS idx_barbers_shop_id ON barbers(shop_id);
+CREATE INDEX IF NOT EXISTS idx_barbers_is_active ON barbers(shop_id, id) WHERE is_active = true;
+
 COMMENT ON INDEX idx_bookings_customer_id IS 'Optimizes customer-based analytics queries';
 COMMENT ON INDEX idx_bookings_start_time IS 'Optimizes time-based revenue and trend queries';  
 COMMENT ON INDEX idx_bookings_service_name IS 'Optimizes service popularity and pricing queries';
 COMMENT ON INDEX idx_bookings_date_revenue IS 'Optimizes common revenue calculation queries';
 COMMENT ON INDEX idx_bookings_recent IS 'Optimizes recent booking analytics (90% of queries)';
+COMMENT ON INDEX idx_bookings_barber_time_conflict IS 'CRITICAL: Prevents race conditions in double booking detection';
+COMMENT ON INDEX idx_customers_phone IS 'CRITICAL: Fast customer lookup by phone to prevent duplicates';
+COMMENT ON INDEX idx_customers_email IS 'CRITICAL: Fast customer lookup by email to prevent duplicates';
