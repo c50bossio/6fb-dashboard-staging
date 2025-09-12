@@ -14,11 +14,18 @@ from enum import Enum
 
 # Import RAG system for knowledge-enhanced responses
 try:
-    from ..vector_knowledge_service import VectorKnowledgeService
+    from ..vector_knowledge_service import VectorKnowledgeService, BusinessKnowledgeType, KnowledgeDocument
     from ..enhanced_business_knowledge_service import BusinessDomain
     RAG_AVAILABLE = True
 except ImportError:
     RAG_AVAILABLE = False
+    # Define fallback enum when import fails
+    class BusinessKnowledgeType(Enum):
+        FINANCIAL_MANAGEMENT = "financial_management"
+        MARKETING_STRATEGIES = "marketing_strategies"
+        BARBERSHOP_OPERATIONS = "barbershop_operations"
+        CUSTOMER_SERVICE = "customer_service"
+        GROWTH_STRATEGIES = "growth_strategies"
 
 logger = logging.getLogger(__name__)
 
@@ -125,8 +132,8 @@ class BaseAgent(ABC):
             # Search for relevant knowledge based on query and agent's expertise
             knowledge_items = await self.rag_service.search_knowledge(
                 query=query,
-                knowledge_types=self.expertise_areas,
-                limit=limit
+                knowledge_type=None,  # Search across all knowledge types for now
+                max_results=limit
             )
             
             # Extract content from knowledge items
@@ -187,7 +194,10 @@ class BaseAgent(ABC):
             # Determine knowledge type based on agent personality
             knowledge_type = self._get_knowledge_type_for_personality()
             
-            await self.rag_service.store_knowledge(
+            # Create knowledge document
+            knowledge_doc = KnowledgeDocument(
+                id=f"{self.agent_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                title=f"Agent Interaction - {self.name}",
                 content=knowledge_content,
                 knowledge_type=knowledge_type,
                 source=f"{self.agent_id}_interaction",
@@ -199,23 +209,26 @@ class BaseAgent(ABC):
                 }
             )
             
+            # Store the knowledge document
+            await self.rag_service.add_knowledge_document(knowledge_doc)
+            
             logger.info(f"📝 {self.name} stored interaction knowledge")
             
         except Exception as e:
             logger.error(f"Error storing interaction knowledge: {e}")
     
-    def _get_knowledge_type_for_personality(self) -> str:
+    def _get_knowledge_type_for_personality(self) -> BusinessKnowledgeType:
         """Get appropriate knowledge type based on agent personality"""
         personality_mapping = {
-            AgentPersonality.FINANCIAL_COACH: "revenue_patterns",
-            AgentPersonality.MARKETING_EXPERT: "marketing_intelligence", 
-            AgentPersonality.OPERATIONS_MANAGER: "operational_best_practices",
-            AgentPersonality.CUSTOMER_RELATIONS: "customer_insights",
-            AgentPersonality.GROWTH_STRATEGY: "growth_strategies",
-            AgentPersonality.STRATEGIC_MINDSET: "strategic_insights"
+            AgentPersonality.FINANCIAL_COACH: BusinessKnowledgeType.FINANCIAL_MANAGEMENT,
+            AgentPersonality.MARKETING_EXPERT: BusinessKnowledgeType.MARKETING_STRATEGIES, 
+            AgentPersonality.OPERATIONS_MANAGER: BusinessKnowledgeType.BARBERSHOP_OPERATIONS,
+            AgentPersonality.CUSTOMER_RELATIONS: BusinessKnowledgeType.CUSTOMER_SERVICE,
+            AgentPersonality.GROWTH_STRATEGY: BusinessKnowledgeType.BUSINESS_STRATEGY,
+            AgentPersonality.STRATEGIC_MINDSET: BusinessKnowledgeType.BUSINESS_STRATEGY
         }
         
-        return personality_mapping.get(self.personality, "general_business_knowledge")
+        return personality_mapping.get(self.personality, BusinessKnowledgeType.GENERAL)
     
     def add_to_conversation_history(self, message: str, response: str):
         """Add interaction to conversation history"""
