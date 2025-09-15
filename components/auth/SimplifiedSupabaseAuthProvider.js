@@ -9,12 +9,12 @@ const AuthContext = createContext({})
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
-    throw new Error('useAuth must be used within a SupabaseAuthProvider')
+    throw new Error('useAuth must be used within a SimplifiedSupabaseAuthProvider')
   }
   return context
 }
 
-function SupabaseAuthProvider({ children }) {
+function SimplifiedSupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -204,42 +204,6 @@ function SupabaseAuthProvider({ children }) {
     if (error) throw error
   }
 
-  const clearAllSessions = async () => {
-    console.log('Clearing all sessions and dev data')
-    try {
-      // Sign out from Supabase
-      await supabase.auth.signOut()
-
-      // Clear local state
-      setUser(null)
-      setProfile(null)
-      setLoading(false)
-
-      // Clear any cached data in browser
-      if (typeof window !== 'undefined') {
-        // Clear localStorage items that might contain cached auth data
-        const keysToRemove = []
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i)
-          if (key && (key.includes('supabase') || key.includes('auth') || key.includes('sb-'))) {
-            keysToRemove.push(key)
-          }
-        }
-        keysToRemove.forEach(key => localStorage.removeItem(key))
-
-        // Clear sessionStorage as well
-        sessionStorage.clear()
-
-        console.log('Cleared browser storage keys:', keysToRemove)
-      }
-
-      console.log('All sessions and dev data cleared successfully')
-    } catch (error) {
-      console.error('Error clearing sessions:', error)
-      throw error
-    }
-  }
-
   const resetPassword = async (email) => {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -304,7 +268,6 @@ function SupabaseAuthProvider({ children }) {
         signIn,
         signInWithGoogle,
         signOut,
-        clearAllSessions,
         resetPassword,
         updatePassword,
         updateProfile,
@@ -340,7 +303,6 @@ function SupabaseAuthProvider({ children }) {
     signIn,
     signInWithGoogle,
     signOut,
-    clearAllSessions,
     resetPassword,
     updatePassword,
     updateProfile,
@@ -350,4 +312,4 @@ function SupabaseAuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export { SupabaseAuthProvider }
+export { SimplifiedSupabaseAuthProvider }

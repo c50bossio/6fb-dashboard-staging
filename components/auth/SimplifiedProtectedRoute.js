@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import LoadingSpinner from './LoadingSpinner'
-import { useAuth } from './SupabaseAuthProvider'
+import LoadingSpinner from '../LoadingSpinner'
+import { useAuth } from './SimplifiedSupabaseAuthProvider'
 
-export default function ProtectedRoute({ children }) {
+export default function SimplifiedProtectedRoute({ children }) {
   const { user, loading, error, resetAndRetry } = useAuth()
   const [isClient, setIsClient] = useState(false)
 
@@ -44,7 +44,7 @@ export default function ProtectedRoute({ children }) {
             <p className="text-gray-600 mb-6">{error}</p>
             <div className="space-y-3">
               <button
-                onClick={() => resetAndRetry()}
+                onClick={resetAndRetry}
                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Try Again
@@ -62,7 +62,7 @@ export default function ProtectedRoute({ children }) {
     )
   }
 
-  // With middleware handling redirects, we just need to handle loading states
+  // Show loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -87,12 +87,12 @@ export default function ProtectedRoute({ children }) {
   const isDevelopment = process.env.NODE_ENV === 'development'
   const enableDevAuth = process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true'
 
-  if (!user && isDevelopment && enableDevAuth && !loading) {
+  if (!user && isDevelopment && enableDevAuth) {
     console.log('🔧 DEV MODE: Protected route allowing development access')
     return <>{children}</>
   }
 
-  // Middleware should have handled unauthorized access, but add fallback
+  // Middleware should handle unauthorized access, but add fallback
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50">
