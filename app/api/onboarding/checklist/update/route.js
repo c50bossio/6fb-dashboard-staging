@@ -15,6 +15,19 @@ export async function POST(request) {
       )
     }
 
+    // Validate item_id against known checklist items
+    const validItemIds = [
+      'profile', 'services', 'hours', 'photo', 'payment',
+      'booking_rules', 'customize_page', 'test_booking'
+    ]
+
+    if (!validItemIds.includes(item_id)) {
+      return NextResponse.json(
+        { success: false, error: `Invalid item_id: ${item_id}` },
+        { status: 400 }
+      )
+    }
+
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -59,7 +72,9 @@ export async function POST(request) {
       [item_id]: {
         completed,
         completed_at: completed ? new Date().toISOString() : null,
-        points: points || 0
+        points: points || 0,
+        manual_override: true,
+        last_updated: new Date().toISOString()
       }
     }
 
@@ -96,7 +111,9 @@ export async function POST(request) {
         points_change: pointsChange,
         total_points: updatedPoints,
         completion_percentage: completionPercentage,
-        updated_at: new Date().toISOString()
+        manual_override: true,
+        timestamp: new Date().toISOString(),
+        message: `Item "${item_id}" manually ${completed ? 'completed' : 'uncompleted'}`
       }
     })
 

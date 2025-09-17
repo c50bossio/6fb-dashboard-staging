@@ -15,8 +15,8 @@ const checklistItems = [
   {
     id: 'profile',
     category: 'Setup',
-    title: 'Complete your profile',
-    description: 'Add your business information and contact details',
+    title: 'Complete business information',
+    description: 'Add your business details and shop contact information',
     points: 20,
     required: true,
     link: '/dashboard/settings'
@@ -28,7 +28,7 @@ const checklistItems = [
     description: 'Set up at least 3 services with pricing',
     points: 15,
     required: true,
-    link: '/shop/settings'
+    link: '/shop/services'
   },
   {
     id: 'hours',
@@ -101,6 +101,8 @@ export default function OnboardingChecklist({
   const [showCelebration, setShowCelebration] = useState(false)
   const [checklistData, setChecklistData] = useState(null)
   const [loading, setLoading] = useState(embedMode)
+  const [pendingToggles, setPendingToggles] = useState(new Set())
+  const [error, setError] = useState(null)
   
   // Fetch checklist data in embed mode
   useEffect(() => {
@@ -166,12 +168,73 @@ export default function OnboardingChecklist({
   
   const achievement = getAchievementLevel()
   
+  // Handle manual completion toggle
+  const handleManualToggle = async (item, event) => {
+    event.stopPropagation()
+
+    // Prevent multiple simultaneous toggles for the same item
+    if (pendingToggles.has(item.id)) {
+      return
+    }
+
+    const isCompleted = embedMode ? item.completed : completedItems.includes(item.id)
+
+    // Add to pending toggles
+    setPendingToggles(prev => new Set(prev).add(item.id))
+    setError(null)
+
+    try {
+      const response = await fetch('/api/onboarding/checklist/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          item_id: item.id,
+          completed: !isCompleted,
+          points: item.points
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        // Show success feedback
+        console.log(`✅ ${result.data.message}`)
+
+        // Refresh data using existing method
+        if (embedMode) {
+          fetchChecklistStatus()
+        } else if (onProgress) {
+          // For global widget, trigger progress callback to refresh data
+          onProgress(result.data.completion_percentage)
+        }
+      } else {
+        // Handle API errors
+        const errorMessage = result.error || 'Failed to update completion status'
+        setError(errorMessage)
+        console.error('Manual toggle API error:', errorMessage)
+      }
+    } catch (error) {
+      const errorMessage = 'Network error: Unable to update completion status'
+      setError(errorMessage)
+      console.error('Manual completion toggle failed:', error)
+    } finally {
+      // Remove from pending toggles
+      setPendingToggles(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(item.id)
+        return newSet
+      })
+    }
+  }
+
   // Handle item click - update completion status and navigate
   const handleItemClick = async (item) => {
     const isCompleted = embedMode ? item.completed : completedItems.includes(item.id)
-    
+
     if (isCompleted) return // Don't do anything if already completed
-    
+
     // In embed mode, show instructions and try to communicate with parent
     if (embedMode) {
       if (window.parent !== window) {
@@ -187,11 +250,11 @@ export default function OnboardingChecklist({
       }
       return
     }
-    
+
     // Handle navigation and completion tracking for dashboard mode
     if (onItemClick) {
       onItemClick(item)
-      
+
       // Also try to mark as completed via API call if we can track completion
       try {
         const response = await fetch('/api/onboarding/checklist/update', {
@@ -205,7 +268,7 @@ export default function OnboardingChecklist({
             points: item.points
           })
         })
-        
+
         if (response.ok) {
           const result = await response.json()
           if (result.success && onProgress) {
@@ -321,26 +384,61 @@ export default function OnboardingChecklist({
               </div>
             )}
             
+            {/* Error Message */}
+            {error && (
+              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-800">{error}</p>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-xs text-red-600 hover:text-red-800 mt-1"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+
             {/* Checklist Items */}
             <div className={`space-y-2 overflow-y-auto ${compact ? 'max-h-60' : 'max-h-80'}`}>
               {items.map((item) => {
                 const isCompleted = embedMode ? item.completed : completedItems.includes(item.id)
+                const isPending = pendingToggles.has(item.id)
+                const isManualOverride = embedMode ? item.manual_override : false
+
                 return (
                   <div
                     key={item.id}
-                    onClick={() => !isCompleted && handleItemClick(item)}
+                    onClick={() => !isCompleted && !isPending && handleItemClick(item)}
                     className={`${compact ? 'p-2' : 'p-3'} rounded-lg border transition-all ${
                       isCompleted
                         ? `${theme === 'dark' ? 'bg-green-900/30 border-green-700' : 'bg-green-50 border-green-200'}`
-                        : `${theme === 'dark' ? 'bg-gray-700 border-gray-600 hover:border-gray-500' : 'bg-white border-gray-200 hover:border-olive-300'} cursor-pointer`
+                        : `${theme === 'dark' ? 'bg-gray-700 border-gray-600 hover:border-gray-500' : 'bg-white border-gray-200 hover:border-olive-300'} ${isPending ? 'cursor-wait' : 'cursor-pointer'}`
                     }`}
                   >
                     <div className="flex items-start">
                       <div className="flex-shrink-0 mt-0.5">
-                        {isCompleted ? (
-                          <CheckCircleIconSolid className="w-5 h-5 text-green-600" />
+                        {isPending ? (
+                          <div className="w-5 h-5 flex items-center justify-center">
+                            <div className="w-3 h-3 border border-gray-400 border-t-blue-500 rounded-full animate-spin"></div>
+                          </div>
+                        ) : isCompleted ? (
+                          <div className="relative">
+                            <CheckCircleIconSolid
+                              className={`w-5 h-5 cursor-pointer hover:text-green-700 transition-colors ${
+                                isManualOverride ? 'text-blue-600' : 'text-green-600'
+                              }`}
+                              title={isManualOverride ? "Manually completed - Click to mark as incomplete" : "Auto-detected - Click to mark as incomplete"}
+                              onClick={(e) => handleManualToggle(item, e)}
+                            />
+                            {isManualOverride && (
+                              <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full border border-white"></div>
+                            )}
+                          </div>
                         ) : (
-                          <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
+                          <div
+                            className="w-5 h-5 border-2 border-gray-300 rounded-full cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all"
+                            title="Click to mark as complete"
+                            onClick={(e) => handleManualToggle(item, e)}
+                          />
                         )}
                       </div>
                       <div className="ml-3 flex-1">
