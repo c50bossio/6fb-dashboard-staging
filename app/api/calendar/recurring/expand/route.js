@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 const RRuleService = require('../rrule.service');
 const TimezoneService = require('../timezone.service');
+const { parseRecurrenceRule } = require('../../../../../lib/recurring-format-parser');
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -47,14 +48,13 @@ export async function POST(request) {
 
     // Build query
     let query = supabase
-      .from('bookings')
+      .from('appointments')
       .select(`
         *,
-        barbers (id, name, color, avatar_url),
-        customers (id, name, email, phone),
-        services (id, name, duration_minutes, price, category)
+        barber:profiles!appointments_barber_id_fkey (id, full_name, avatar_url),
+        service:services (id, name, duration_minutes, price, category)
       `)
-      .eq('shop_id', shop_id)
+      .eq('barbershop_id', shop_id)
       .eq('is_test', false);
 
     // Add barber filter if specified
@@ -76,68 +76,125 @@ export async function POST(request) {
 
     // Expand each recurring appointment
     const expandedEvents = [];
-    
+    const expansionErrors = []; // Track errors for API response
+
     for (const appointment of recurringAppointments || []) {
-      if (!appointment.recurring_pattern?.rrule) {
-        console.warn(`Appointment ${appointment.id} marked as recurring but has no RRule`);
+      // Parse recurrence_rule using backward-compatible parser
+      const parseResult = parseRecurrenceRule(appointment.recurrence_rule, {
+        defaultTimezone: timezone,
+        defaultDuration: appointment.duration_minutes || 60
+      });
+
+      // Handle parse failures
+      if (!parseResult.success) {
+        const error = {
+          appointmentId: appointment.id,
+          clientName: appointment.client_name,
+          error: parseResult.error,
+          format: parseResult.format,
+          rawRule: parseResult.raw
+        };
+        expansionErrors.push(error);
+        console.error(`[EXPANSION ERROR] Appointment ${appointment.id}:`, error);
+        continue;
+      }
+
+      // Log migration warnings
+      if (parseResult.migrationNeeded) {
+        console.warn(`[MIGRATION NEEDED] Appointment ${appointment.id} using legacy format`);
+      }
+
+      // Extract parsed data
+      const recurrenceData = parseResult.data;
+
+      if (!recurrenceData.rrule) {
+        const error = {
+          appointmentId: appointment.id,
+          clientName: appointment.client_name,
+          error: 'Parsed data missing rrule field',
+          format: parseResult.format
+        };
+        expansionErrors.push(error);
+        console.error(`[EXPANSION ERROR] Appointment ${appointment.id}:`, error);
         continue;
       }
 
       try {
         // Generate occurrences for this appointment
         const occurrences = RRuleService.generateOccurrences(
-          appointment.recurring_pattern.rrule,
+          recurrenceData.rrule,
           startDate,
           endDate,
-          appointment.recurring_pattern.timezone || timezone
+          recurrenceData.timezone || timezone
         );
+
+        // Check if expansion produced any occurrences
+        if (occurrences.length === 0) {
+          const warning = {
+            appointmentId: appointment.id,
+            clientName: appointment.client_name,
+            warning: 'RRule expansion produced 0 occurrences',
+            rrule: recurrenceData.rrule,
+            dateRange: { start: startDate, end: endDate }
+          };
+          expansionErrors.push(warning);
+          console.warn(`[EXPANSION WARNING] Appointment ${appointment.id}:`, warning);
+        }
 
         // Create event object for each occurrence
         for (const occurrence of occurrences) {
           // Calculate end time based on duration
-          const duration = appointment.recurring_pattern.duration || 'PT1H';
+          const duration = recurrenceData.duration || 'PT1H';
           const durationMinutes = parseDuration(duration);
-          
+
           const { end: occurrenceEnd } = TimezoneService.calculateEndTime(
             occurrence.date,
             durationMinutes,
-            appointment.recurring_pattern.timezone || timezone
+            recurrenceData.timezone || timezone
           );
 
           expandedEvents.push({
             id: `${appointment.id}_${occurrence.date.getTime()}`, // Unique ID for each occurrence
             groupId: appointment.id, // Group ID for the series
-            title: `${appointment.customers?.name || 'Customer'} - ${appointment.services?.name || 'Unknown Service'}`,
+            title: `${appointment.client_name || 'Customer'} - ${appointment.service?.name || 'Unknown Service'}`,
             start: occurrence.isoString,
             end: occurrenceEnd,
-            backgroundColor: appointment.barbers?.color || '#546355',
-            borderColor: appointment.barbers?.color || '#546355',
+            backgroundColor: appointment.barber?.color || '#546355',
+            borderColor: appointment.barber?.color || '#546355',
             resourceId: appointment.barber_id, // For resource view
             display: 'block',
             extendedProps: {
               appointmentId: appointment.id,
               occurrenceDate: occurrence.date,
               barber_id: appointment.barber_id,
-              barber_name: appointment.barbers?.name,
-              barber_avatar: appointment.barbers?.avatar_url,
-              customer_id: appointment.customer_id,
-              customer_name: appointment.customers?.name,
-              customer_email: appointment.customers?.email,
-              customer_phone: appointment.customers?.phone,
+              barber_name: appointment.barber?.full_name,
+              barber_avatar: appointment.barber?.avatar_url,
+              client_id: appointment.client_id,
+              customer_name: appointment.client_name,
+              customer_email: appointment.client_email,
+              customer_phone: appointment.client_phone,
               service_id: appointment.service_id,
-              service_name: appointment.services?.name,
-              service_duration: appointment.services?.duration_minutes,
-              service_price: appointment.services?.price,
-              notes: appointment.notes,
+              service_name: appointment.service?.name,
+              service_duration: appointment.service?.duration_minutes,
+              service_price: appointment.service?.price,
+              notes: appointment.client_notes,
               status: appointment.status,
               is_recurring: true,
-              recurring_pattern: appointment.recurring_pattern,
+              recurring_pattern: recurrenceData,
               series_id: appointment.id
             }
           });
         }
       } catch (error) {
-        console.error(`Error expanding appointment ${appointment.id}:`, error);
+        const errorDetail = {
+          appointmentId: appointment.id,
+          clientName: appointment.client_name,
+          error: error.message,
+          stack: error.stack,
+          rrule: recurrenceData.rrule
+        };
+        expansionErrors.push(errorDetail);
+        console.error(`[EXPANSION ERROR] Appointment ${appointment.id}:`, errorDetail);
         // Continue with other appointments even if one fails
       }
     }
@@ -147,18 +204,17 @@ export async function POST(request) {
     if (include_single) {
       // Build query for single appointments
       let singleQuery = supabase
-        .from('bookings')
+        .from('appointments')
         .select(`
           *,
-          barbers (id, name, color, avatar_url),
-          customers (id, name, email, phone),
-          services (id, name, duration_minutes, price, category)
+          barber:profiles!appointments_barber_id_fkey (id, full_name, avatar_url),
+          service:services (id, name, duration_minutes, price, category)
         `)
-        .eq('shop_id', shop_id)
+        .eq('barbershop_id', shop_id)
         .eq('is_test', false)
         .eq('is_recurring', false)
-        .gte('start_time', startDate.toISOString())
-        .lte('start_time', endDate.toISOString());
+        .gte('scheduled_at', startDate.toISOString())
+        .lte('scheduled_at', endDate.toISOString());
 
       if (barber_id) {
         singleQuery = singleQuery.eq('barber_id', barber_id);
@@ -170,33 +226,39 @@ export async function POST(request) {
         console.error('Error fetching single appointments:', singleError);
       } else {
         // Format single appointments
-        singleEvents = (singleAppointments || []).map(appointment => ({
-          id: appointment.id,
-          title: `${appointment.customers?.name || 'Customer'} - ${appointment.services?.name || 'Unknown Service'}`,
-          start: appointment.start_time,
-          end: appointment.end_time,
-          backgroundColor: appointment.barbers?.color || '#546355',
-          borderColor: appointment.barbers?.color || '#546355',
-          resourceId: appointment.barber_id,
-          display: 'block',
-          extendedProps: {
-            appointmentId: appointment.id,
-            barber_id: appointment.barber_id,
-            barber_name: appointment.barbers?.name,
-            barber_avatar: appointment.barbers?.avatar_url,
-            customer_id: appointment.customer_id,
-            customer_name: appointment.customers?.name,
-            customer_email: appointment.customers?.email,
-            customer_phone: appointment.customers?.phone,
-            service_id: appointment.service_id,
-            service_name: appointment.services?.name,
-            service_duration: appointment.services?.duration_minutes,
-            service_price: appointment.services?.price,
-            notes: appointment.notes,
-            status: appointment.status,
-            is_recurring: false
-          }
-        }));
+        singleEvents = (singleAppointments || []).map(appointment => {
+          // Calculate end time from scheduled_at and duration_minutes
+          const startTime = new Date(appointment.scheduled_at);
+          const endTime = new Date(startTime.getTime() + (appointment.duration_minutes * 60 * 1000));
+
+          return {
+            id: appointment.id,
+            title: `${appointment.client_name || 'Customer'} - ${appointment.service?.name || 'Unknown Service'}`,
+            start: appointment.scheduled_at,
+            end: endTime.toISOString(),
+            backgroundColor: appointment.barber?.color || '#546355',
+            borderColor: appointment.barber?.color || '#546355',
+            resourceId: appointment.barber_id,
+            display: 'block',
+            extendedProps: {
+              appointmentId: appointment.id,
+              barber_id: appointment.barber_id,
+              barber_name: appointment.barber?.full_name,
+              barber_avatar: appointment.barber?.avatar_url,
+              client_id: appointment.client_id,
+              customer_name: appointment.client_name,
+              customer_email: appointment.client_email,
+              customer_phone: appointment.client_phone,
+              service_id: appointment.service_id,
+              service_name: appointment.service?.name,
+              service_duration: appointment.service?.duration_minutes,
+              service_price: appointment.service?.price,
+              notes: appointment.client_notes,
+              status: appointment.status,
+              is_recurring: false
+            }
+          };
+        });
       }
     }
 
@@ -205,7 +267,7 @@ export async function POST(request) {
       new Date(a.start) - new Date(b.start)
     );
 
-    // Return response
+    // Return response with error details
     return NextResponse.json({
       events: allEvents,
       meta: {
@@ -216,7 +278,9 @@ export async function POST(request) {
           start: startDate.toISOString(),
           end: endDate.toISOString()
         },
-        timezone: timezone
+        timezone: timezone,
+        expansion_errors: expansionErrors.length,
+        errors: expansionErrors.length > 0 ? expansionErrors : undefined
       }
     });
 
