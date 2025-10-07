@@ -3544,6 +3544,16 @@ except ImportError as e:
     NOTION_INTEGRATION_AVAILABLE = False
     print(f"⚠️ Notion Integration system not available: {e}")
 
+# Import and include OpenAI AgentKit router
+try:
+    from api.v1.agents.query import router as agents_router
+    app.include_router(agents_router)
+    print("✅ OpenAI AgentKit System included at /api/v1/agents/*")
+    AGENTKIT_AVAILABLE = True
+except ImportError as e:
+    AGENTKIT_AVAILABLE = False
+    print(f"⚠️ OpenAI AgentKit system not available: {e}")
+
 
 # Mount alert service if available
 if ALERT_SERVICE_AVAILABLE:
