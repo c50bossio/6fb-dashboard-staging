@@ -6,6 +6,70 @@ import { createClient } from '@/lib/supabase/server'
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
+/**
+ * Detect if a query requires real database access
+ */
+function checkIfDatabaseQuery(message) {
+  const messageLower = message.toLowerCase()
+
+  const databaseKeywords = [
+    // Revenue & Financial
+    'revenue', 'earned', 'made', 'income', 'sales', 'profit', 'commission',
+
+    // Appointments & Bookings
+    'appointments', 'bookings', 'scheduled', 'booked',
+
+    // Customers
+    'customers', 'clients', 'client list',
+
+    // Services
+    'services', 'most popular', 'top services',
+
+    // Questions requiring data
+    'how much', 'how many', 'what is my', 'show me', 'give me',
+
+    // Time periods
+    'this month', 'last week', 'today', 'yesterday', 'this year'
+  ]
+
+  return databaseKeywords.some(keyword => messageLower.includes(keyword))
+}
+
+/**
+ * Call Python AgentKit backend for database queries
+ */
+async function callAgentKitBackend(message, context) {
+  const fastApiUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8001'
+
+  try {
+    const response = await fetch(`${fastApiUrl}/api/v1/agents/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${context.user_id}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        context: {
+          barbershop_id: context.barbershop_id,
+          user_id: context.user_id
+        }
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`AgentKit backend returned ${response.status}: ${errorText}`)
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('❌ AgentKit backend error:', error)
+    throw new Error(`Failed to query AgentKit backend: ${error.message}`)
+  }
+}
+
 export async function POST(request) {
   try {
     // Check authentication (temporary bypass for testing - placeholder config detected)
@@ -34,7 +98,31 @@ export async function POST(request) {
     }
 
     try {
-      // Use Enhanced AI Orchestrator with full app integration
+      // Detect if query requires database access
+      const requiresDatabaseQuery = checkIfDatabaseQuery(message)
+
+      // Route database queries to Python AgentKit backend for real data access
+      if (requiresDatabaseQuery) {
+        console.log('🔗 Routing to AgentKit backend for database query')
+        const agentKitResponse = await callAgentKitBackend(message, {
+          user_id: effectiveUser.id,
+          barbershop_id: businessContext?.barbershop_id || 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+        })
+
+        return NextResponse.json({
+          success: true,
+          message: agentKitResponse.response,
+          agent_id: agentKitResponse.agent_used,
+          provider: 'agentkit_backend',
+          data_sources: ['database', 'supabase'],
+          tokens_used: agentKitResponse.tokens_used,
+          cost_usd: agentKitResponse.cost_usd,
+          response_time_ms: agentKitResponse.response_time_ms,
+          timestamp: agentKitResponse.metadata?.timestamp
+        })
+      }
+
+      // Use Enhanced AI Orchestrator for general queries
       const response = await aiOrchestrator.processMessage(message, {
         businessContext: businessContext || {},
         sessionId: sessionId || `session_${Date.now()}`,
