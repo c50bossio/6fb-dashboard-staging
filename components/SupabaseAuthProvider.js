@@ -1,8 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { createContext, useContext, useEffect, useState } from 'react'
-import { createClient } from "@/lib/supabase/client"
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
+import { createClient, recreateClient } from "@/lib/supabase/client"
 
 const AuthContext = createContext({})
 
@@ -20,169 +20,193 @@ function SupabaseAuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const router = useRouter()
-  const supabase = createClient()
 
-  // Simple profile fetching without complex caching
-  const fetchProfile = async (userId) => {
-    if (!userId) return null
+  // Create Supabase client once (singleton pattern in client.js ensures single instance)
+  const supabase = useMemo(() => createClient(), [])
 
+  // Profile fetch with retry logic
+  const fetchProfile = useCallback(async (userId, retries = 3) => {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single()
+
+        if (error) throw error
+        if (data) {
+          console.log(`👤 Profile loaded successfully (attempt ${attempt + 1}/${retries})`)
+          return data
+        }
+      } catch (error) {
+        console.error(`Error fetching profile (attempt ${attempt + 1}/${retries}):`, error.message)
+
+        // Wait before retry (exponential backoff)
+        if (attempt < retries - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, attempt)))
+        }
+      }
+    }
+    return null
+  }, [supabase])
+
+  // Simplified session initialization using getUser() with timeout protection
+  const initializeSession = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, first_name, last_name, avatar_url, role, subscription_tier, subscription_status, created_at, updated_at')
-        .eq('id', userId)
-        .single()
+      console.log('🔐 Initializing session with getUser()...')
 
-      if (error && error.code !== 'PGRST116') {
-        console.warn('Profile fetch failed:', error.message)
-        return null
+      // Check if there are any Supabase cookies
+      const hasSupabaseCookies = typeof document !== 'undefined' &&
+        document.cookie.split(';').some(c => c.trim().startsWith('sb-'))
+
+      // Wrap getUser() with timeout to detect hanging (stale cookie issue)
+      let getUserResult
+      try {
+        getUserResult = await Promise.race([
+          supabase.auth.getUser(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('getUser_timeout')), 5000)
+          )
+        ])
+      } catch (timeoutError) {
+        if (timeoutError.message === 'getUser_timeout') {
+          console.warn('⏰ getUser() timed out')
+
+          // If no cookies exist, user is simply not logged in (not a service error)
+          if (!hasSupabaseCookies) {
+            console.log('🔓 No session cookies found - user not logged in')
+            setUser(null)
+            setProfile(null)
+            setLoading(false)
+            return
+          }
+
+          console.warn('🧹 Stale cookies detected, clearing and retrying...')
+
+          // Clear stale cookies and recreate client
+          const freshClient = recreateClient()
+
+          // Retry once with fresh client
+          try {
+            getUserResult = await Promise.race([
+              freshClient.auth.getUser(),
+              new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('getUser_timeout_retry')), 5000)
+              )
+            ])
+            console.log('✅ Retry successful after clearing stale cookies')
+          } catch (retryError) {
+            console.error('❌ getUser() still timing out after cookie clear')
+            setError('Authentication service unavailable. Please refresh the page.')
+            setUser(null)
+            setProfile(null)
+            setLoading(false)
+            return
+          }
+        } else {
+          throw timeoutError
+        }
       }
 
-      return data
-    } catch (error) {
-      console.error('Profile fetch error:', error.message)
-      return null
-    }
-  }
-
-  // Simple auth check without debouncing or complex caching
-  const checkUser = async () => {
-    try {
-      setError(null)
-      const { data: { user }, error } = await supabase.auth.getUser()
+      const { data, error } = getUserResult
 
       if (error) {
-        console.warn('Auth check error:', error.message)
-        setError(error.message)
+        console.warn('❌ getUser error:', error.message)
+        // Not logged in is not an error state, just no user
+        if (error.message !== 'Auth session missing!') {
+          setError(error.message)
+        }
         setUser(null)
         setProfile(null)
+        setLoading(false)
         return
       }
 
+      const user = data?.user
+      console.log('🔐 User check result:', user ? `User: ${user.email}` : 'No user')
+
+      setUser(user ?? null)
+
+      // Fetch profile if user exists
+      if (user) {
+        const profileData = await fetchProfile(user.id, 3)
+        console.log('👤 Profile loaded:', profileData ? 'Success' : 'Failed')
+        setProfile(profileData)
+
+        if (!profileData) {
+          setError('Profile not found. Please contact support.')
+        }
+      } else {
+        setProfile(null)
+      }
+
+      setLoading(false)
+    } catch (err) {
+      console.error('❌ Session initialization error:', err)
+      setError('Failed to initialize session')
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
+    }
+  }, [supabase, fetchProfile])
+
+  // Reset and retry function for error recovery
+  const resetAndRetry = useCallback(async () => {
+    console.log('🔄 Resetting auth state and retrying...')
+    setError(null)
+    setLoading(true)
+    await initializeSession()
+  }, [initializeSession])
+
+  // Clear all auth state and redirect to login
+  const clearAuthAndRedirect = useCallback(() => {
+    console.log('🚨 Clearing all auth state and redirecting to login...')
+    setUser(null)
+    setProfile(null)
+    setError(null)
+    router.push('/login?error=Session expired. Please log in again.')
+  }, [router])
+
+  // Initialize auth on mount
+  useEffect(() => {
+    initializeSession()
+
+    // Listen for auth state changes (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 Auth event:', event, session?.user ? `User: ${session.user.email}` : 'No session')
+
+      const user = session?.user ?? null
       setUser(user)
 
+      // Fetch profile when user signs in or changes
       if (user) {
-        const profileData = await fetchProfile(user.id)
+        const profileData = await fetchProfile(user.id, 3)
+        console.log('👤 Profile fetched after auth change:', profileData ? 'Success' : 'Failed')
         setProfile(profileData)
       } else {
         setProfile(null)
       }
-    } catch (error) {
-      console.error('Error in checkUser:', error)
-      setError(error.message)
-      setUser(null)
-      setProfile(null)
-    } finally {
+
       setLoading(false)
-    }
-  }
-
-  // Reset and retry functionality for error recovery
-  const resetAndRetry = async () => {
-    setError(null)
-    setLoading(true)
-    await checkUser()
-  }
-
-  // Initialize auth and set up listener
-  useEffect(() => {
-    let mounted = true
-    let subscription = null
-
-    // Initial auth check
-    checkUser()
-
-    // Set up auth state change listener
-    const setupAuthListener = async () => {
-      try {
-        const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if (!mounted) return
-
-          console.log('Auth event:', event)
-
-          if (event === 'SIGNED_IN' && session) {
-            setLoading(true)
-            setUser(session.user)
-            setError(null)
-
-            const profileData = await fetchProfile(session.user.id)
-            if (mounted) {
-              setProfile(profileData)
-              setLoading(false)
-            }
-
-            // Redirect after login if on login page
-            if (typeof window !== 'undefined' && window.location.pathname === '/login') {
-              router.push('/dashboard')
-            }
-          } else if (event === 'SIGNED_OUT') {
-            setUser(null)
-            setProfile(null)
-            setError(null)
-            setLoading(false)
-
-            // Redirect to login if on protected page
-            const protectedPaths = ['/dashboard', '/profile', '/settings', '/analytics']
-            if (typeof window !== 'undefined' &&
-                protectedPaths.some(path => window.location.pathname.startsWith(path))) {
-              router.push('/login')
-            }
-          } else if (event === 'USER_UPDATED' && session) {
-            setUser(session.user)
-            setError(null)
-            // Refetch profile for updated data
-            const profileData = await fetchProfile(session.user.id)
-            if (mounted) {
-              setProfile(profileData)
-            }
-          } else if (event === 'TOKEN_REFRESHED' && session) {
-            setUser(session.user)
-            setError(null)
-          }
-        })
-
-        subscription = data.subscription
-      } catch (error) {
-        console.error('Failed to initialize auth listener:', error)
-        if (mounted) {
-          setError(error.message)
-          setLoading(false)
-        }
-      }
-    }
-
-    setupAuthListener()
-
-    // Cleanup function
-    return () => {
-      mounted = false
-      if (subscription) {
-        subscription.unsubscribe()
-      }
-    }
-  }, [supabase, router])
-
-  // Auth methods
-  const signUp = async ({ email, password, metadata }) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata,
-        emailRedirectTo: `${window.location.origin}/dashboard`
-      },
     })
 
+    return () => subscription.unsubscribe()
+  }, [supabase, initializeSession, fetchProfile])
+
+  // Auth methods
+  const signIn = async ({ email, password }) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     return data
   }
 
-  const signIn = async ({ email, password }) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+  const signUp = async ({ email, password, metadata }) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: { data: metadata }
     })
-
     if (error) throw error
     return data
   }
@@ -190,11 +214,8 @@ function SupabaseAuthProvider({ children }) {
   const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      }
+      options: { redirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard` }
     })
-
     if (error) throw error
     return data
   }
@@ -202,60 +223,7 @@ function SupabaseAuthProvider({ children }) {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
-  }
-
-  const clearAllSessions = async () => {
-    console.log('Clearing all sessions and dev data')
-    try {
-      // Sign out from Supabase
-      await supabase.auth.signOut()
-
-      // Clear local state
-      setUser(null)
-      setProfile(null)
-      setLoading(false)
-
-      // Clear any cached data in browser
-      if (typeof window !== 'undefined') {
-        // Clear localStorage items that might contain cached auth data
-        const keysToRemove = []
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i)
-          if (key && (key.includes('supabase') || key.includes('auth') || key.includes('sb-'))) {
-            keysToRemove.push(key)
-          }
-        }
-        keysToRemove.forEach(key => localStorage.removeItem(key))
-
-        // Clear sessionStorage as well
-        sessionStorage.clear()
-
-        console.log('Cleared browser storage keys:', keysToRemove)
-      }
-
-      console.log('All sessions and dev data cleared successfully')
-    } catch (error) {
-      console.error('Error clearing sessions:', error)
-      throw error
-    }
-  }
-
-  const resetPassword = async (email) => {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-
-    if (error) throw error
-    return data
-  }
-
-  const updatePassword = async (newPassword) => {
-    const { data, error } = await supabase.auth.updateUser({
-      password: newPassword
-    })
-
-    if (error) throw error
-    return data
+    router.push('/login')
   }
 
   const updateProfile = async (updates) => {
@@ -269,83 +237,23 @@ function SupabaseAuthProvider({ children }) {
       .single()
 
     if (error) throw error
-
     setProfile(data)
     return data
   }
 
-  // Development authentication bypass (simplified)
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  const enableDevAuth = process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true'
-
-  if (!user && isDevelopment && enableDevAuth && !loading) {
-    console.log('🔧 DEV MODE: Using mock authentication')
-
-    const mockUser = {
-      id: 'dev-user-123',
-      email: 'dev@test.com',
-      user_metadata: {
-        full_name: 'Development User'
-      }
-    }
-
-    return (
-      <AuthContext.Provider value={{
-        user: mockUser,
-        profile: {
-          id: 'dev-user-123',
-          email: 'dev@test.com',
-          full_name: 'Development User',
-          role: 'CLIENT'
-        },
-        loading: false,
-        error: null,
-        signUp,
-        signIn,
-        signInWithGoogle,
-        signOut,
-        clearAllSessions,
-        resetPassword,
-        updatePassword,
-        updateProfile,
-        resetAndRetry,
-      }}>
-        <div>
-          <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.98-.833-2.75 0L3.982 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-yellow-700">
-                  <strong>Development Mode:</strong> Using mock authentication. In production, proper OAuth will be required.
-                </p>
-              </div>
-            </div>
-          </div>
-          {children}
-        </div>
-      </AuthContext.Provider>
-    )
-  }
-
-  const value = {
+  const value = useMemo(() => ({
     user,
     profile,
     loading,
     error,
-    signUp,
     signIn,
+    signUp,
     signInWithGoogle,
     signOut,
-    clearAllSessions,
-    resetPassword,
-    updatePassword,
     updateProfile,
     resetAndRetry,
-  }
+    clearAuthAndRedirect,
+  }), [user, profile, loading, error, resetAndRetry, clearAuthAndRedirect])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
