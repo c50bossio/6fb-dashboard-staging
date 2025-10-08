@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
-import { createClient, recreateClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/client"
 
 const AuthContext = createContext({})
 
@@ -36,7 +36,7 @@ function SupabaseAuthProvider({ children }) {
 
         if (error) throw error
         if (data) {
-          console.log(`👤 Profile loaded successfully (attempt ${attempt + 1}/${retries})`)
+          console.log(`👤 Profile loaded successfully`)
           return data
         }
       } catch (error) {
@@ -51,148 +51,93 @@ function SupabaseAuthProvider({ children }) {
     return null
   }, [supabase])
 
-  // Simplified session initialization using getUser() with timeout protection
-  const initializeSession = useCallback(async () => {
-    try {
-      console.log('🔐 Initializing session with getUser()...')
+  // Initialize auth on mount and listen for changes
+  useEffect(() => {
+    let mounted = true
 
-      // Check if there are any Supabase cookies
-      const hasSupabaseCookies = typeof document !== 'undefined' &&
-        document.cookie.split(';').some(c => c.trim().startsWith('sb-'))
-
-      // Wrap getUser() with timeout to detect hanging (stale cookie issue)
-      let getUserResult
+    // Get initial session (fast, reads from local storage/cookies)
+    const initializeAuth = async () => {
       try {
-        getUserResult = await Promise.race([
-          supabase.auth.getUser(),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('getUser_timeout')), 5000)
-          )
-        ])
-      } catch (timeoutError) {
-        if (timeoutError.message === 'getUser_timeout') {
-          console.warn('⏰ getUser() timed out')
+        console.log('🔐 Initializing auth session...')
 
-          // If no cookies exist, user is simply not logged in (not a service error)
-          if (!hasSupabaseCookies) {
-            console.log('🔓 No session cookies found - user not logged in')
-            setUser(null)
-            setProfile(null)
-            setLoading(false)
-            return
-          }
+        // Use getSession() which reads local cookies - instant, no network request
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-          console.warn('🧹 Stale cookies detected, clearing and retrying...')
+        if (!mounted) return
 
-          // Clear stale cookies and recreate client
-          const freshClient = recreateClient()
+        if (sessionError) {
+          console.warn('⚠️ Session error:', sessionError.message)
+          setError(sessionError.message)
+          setUser(null)
+          setProfile(null)
+          setLoading(false)
+          return
+        }
 
-          // Retry once with fresh client
-          try {
-            getUserResult = await Promise.race([
-              freshClient.auth.getUser(),
-              new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('getUser_timeout_retry')), 5000)
-              )
-            ])
-            console.log('✅ Retry successful after clearing stale cookies')
-          } catch (retryError) {
-            console.error('❌ getUser() still timing out after cookie clear')
-            setError('Authentication service unavailable. Please refresh the page.')
-            setUser(null)
-            setProfile(null)
-            setLoading(false)
-            return
+        const user = session?.user ?? null
+        console.log('🔐 Session loaded:', user ? `User: ${user.email}` : 'No session')
+
+        setUser(user)
+
+        // Fetch profile if user exists
+        if (user && mounted) {
+          const profileData = await fetchProfile(user.id)
+          if (mounted) {
+            setProfile(profileData)
+            if (!profileData) {
+              setError('Profile not found. Please contact support.')
+            }
           }
         } else {
-          throw timeoutError
+          setProfile(null)
+        }
+
+        if (mounted) {
+          setLoading(false)
+        }
+      } catch (err) {
+        console.error('❌ Auth initialization error:', err)
+        if (mounted) {
+          setError('Failed to initialize session')
+          setUser(null)
+          setProfile(null)
+          setLoading(false)
         }
       }
-
-      const { data, error } = getUserResult
-
-      if (error) {
-        console.warn('❌ getUser error:', error.message)
-        // Not logged in is not an error state, just no user
-        if (error.message !== 'Auth session missing!') {
-          setError(error.message)
-        }
-        setUser(null)
-        setProfile(null)
-        setLoading(false)
-        return
-      }
-
-      const user = data?.user
-      console.log('🔐 User check result:', user ? `User: ${user.email}` : 'No user')
-
-      setUser(user ?? null)
-
-      // Fetch profile if user exists
-      if (user) {
-        const profileData = await fetchProfile(user.id, 3)
-        console.log('👤 Profile loaded:', profileData ? 'Success' : 'Failed')
-        setProfile(profileData)
-
-        if (!profileData) {
-          setError('Profile not found. Please contact support.')
-        }
-      } else {
-        setProfile(null)
-      }
-
-      setLoading(false)
-    } catch (err) {
-      console.error('❌ Session initialization error:', err)
-      setError('Failed to initialize session')
-      setUser(null)
-      setProfile(null)
-      setLoading(false)
     }
-  }, [supabase, fetchProfile])
 
-  // Reset and retry function for error recovery
-  const resetAndRetry = useCallback(async () => {
-    console.log('🔄 Resetting auth state and retrying...')
-    setError(null)
-    setLoading(true)
-    await initializeSession()
-  }, [initializeSession])
-
-  // Clear all auth state and redirect to login
-  const clearAuthAndRedirect = useCallback(() => {
-    console.log('🚨 Clearing all auth state and redirecting to login...')
-    setUser(null)
-    setProfile(null)
-    setError(null)
-    router.push('/login?error=Session expired. Please log in again.')
-  }, [router])
-
-  // Initialize auth on mount
-  useEffect(() => {
-    initializeSession()
+    initializeAuth()
 
     // Listen for auth state changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
+
       console.log('🔐 Auth event:', event, session?.user ? `User: ${session.user.email}` : 'No session')
 
       const user = session?.user ?? null
       setUser(user)
 
       // Fetch profile when user signs in or changes
-      if (user) {
-        const profileData = await fetchProfile(user.id, 3)
-        console.log('👤 Profile fetched after auth change:', profileData ? 'Success' : 'Failed')
-        setProfile(profileData)
+      if (user && mounted) {
+        const profileData = await fetchProfile(user.id)
+        if (mounted) {
+          console.log('👤 Profile fetched after auth change:', profileData ? 'Success' : 'Failed')
+          setProfile(profileData)
+        }
       } else {
         setProfile(null)
       }
 
-      setLoading(false)
+      if (mounted) {
+        setLoading(false)
+      }
     })
 
-    return () => subscription.unsubscribe()
-  }, [supabase, initializeSession, fetchProfile])
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [supabase, fetchProfile])
 
   // Auth methods
   const signIn = async ({ email, password }) => {
@@ -240,6 +185,33 @@ function SupabaseAuthProvider({ children }) {
     setProfile(data)
     return data
   }
+
+  const resetAndRetry = useCallback(async () => {
+    console.log('🔄 Resetting auth state and retrying...')
+    setError(null)
+    setLoading(true)
+
+    // Retry getting session
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user ?? null
+
+    setUser(user)
+    if (user) {
+      const profileData = await fetchProfile(user.id)
+      setProfile(profileData)
+    } else {
+      setProfile(null)
+    }
+    setLoading(false)
+  }, [supabase, fetchProfile])
+
+  const clearAuthAndRedirect = useCallback(() => {
+    console.log('🚨 Clearing all auth state and redirecting to login...')
+    setUser(null)
+    setProfile(null)
+    setError(null)
+    router.push('/login?error=Session expired. Please log in again.')
+  }, [router])
 
   const value = useMemo(() => ({
     user,
