@@ -51,64 +51,14 @@ function SupabaseAuthProvider({ children }) {
     return null
   }, [supabase])
 
-  // Initialize auth on mount and listen for changes
+  // Listen to auth state changes only (no initial async call)
   useEffect(() => {
     let mounted = true
 
-    // Get initial session (fast, reads from local storage/cookies)
-    const initializeAuth = async () => {
-      try {
-        console.log('🔐 Initializing auth session...')
-
-        // Use getSession() which reads local cookies - instant, no network request
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-
-        if (!mounted) return
-
-        if (sessionError) {
-          console.warn('⚠️ Session error:', sessionError.message)
-          setError(sessionError.message)
-          setUser(null)
-          setProfile(null)
-          setLoading(false)
-          return
-        }
-
-        const user = session?.user ?? null
-        console.log('🔐 Session loaded:', user ? `User: ${user.email}` : 'No session')
-
-        setUser(user)
-
-        // Fetch profile if user exists
-        if (user && mounted) {
-          const profileData = await fetchProfile(user.id)
-          if (mounted) {
-            setProfile(profileData)
-            if (!profileData) {
-              setError('Profile not found. Please contact support.')
-            }
-          }
-        } else {
-          setProfile(null)
-        }
-
-        if (mounted) {
-          setLoading(false)
-        }
-      } catch (err) {
-        console.error('❌ Auth initialization error:', err)
-        if (mounted) {
-          setError('Failed to initialize session')
-          setUser(null)
-          setProfile(null)
-          setLoading(false)
-        }
-      }
-    }
-
-    initializeAuth()
+    console.log('🔐 Setting up auth listener...')
 
     // Listen for auth state changes (sign in, sign out, token refresh)
+    // This listener fires IMMEDIATELY with the current session (if any)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return
 
@@ -117,17 +67,21 @@ function SupabaseAuthProvider({ children }) {
       const user = session?.user ?? null
       setUser(user)
 
-      // Fetch profile when user signs in or changes
+      // Fetch profile when user exists
       if (user && mounted) {
         const profileData = await fetchProfile(user.id)
         if (mounted) {
-          console.log('👤 Profile fetched after auth change:', profileData ? 'Success' : 'Failed')
+          console.log('👤 Profile fetched:', profileData ? 'Success' : 'Failed')
           setProfile(profileData)
+          if (!profileData) {
+            setError('Profile not found. Please contact support.')
+          }
         }
       } else {
         setProfile(null)
       }
 
+      // Stop loading once we have auth state
       if (mounted) {
         setLoading(false)
       }
@@ -187,11 +141,11 @@ function SupabaseAuthProvider({ children }) {
   }
 
   const resetAndRetry = useCallback(async () => {
-    console.log('🔄 Resetting auth state and retrying...')
+    console.log('🔄 Resetting auth state...')
     setError(null)
     setLoading(true)
 
-    // Retry getting session
+    // Force re-check by triggering a new auth state change
     const { data: { session } } = await supabase.auth.getSession()
     const user = session?.user ?? null
 
