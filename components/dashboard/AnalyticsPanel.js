@@ -244,7 +244,7 @@ export default function AnalyticsPanel({ data }) {
 
   const StatCard = ({ title, value, growth, icon: Icon, prefix = '' }) => {
     const isPositive = growth > 0
-    
+
     // Determine formatting type based on title and prefix
     const getFormattingType = () => {
       if (prefix === '$') return 'currency'
@@ -252,31 +252,31 @@ export default function AnalyticsPanel({ data }) {
       if (title.toLowerCase().includes('bookings') || title.toLowerCase().includes('customers') || title.toLowerCase().includes('appointments')) return 'count'
       return 'decimal'
     }
-    
+
     const formattedValue = formatMetricValue(value, getFormattingType())
-    
+
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-card rounded-lg shadow p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">{title}</p>
-            <p className="text-2xl font-semibold text-gray-900 mt-1">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-2xl font-semibold text-foreground mt-1">
               {prefix}{formattedValue}
             </p>
             <div className="flex items-center mt-2">
               {isPositive ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 dark:text-green-400 mr-1" />
               ) : (
-                <ArrowTrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
+                <ArrowTrendingDownIcon className="h-4 w-4 text-red-500 dark:text-red-400 mr-1" />
               )}
-              <span className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <span className={`text-sm ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {Math.abs(growth)}%
               </span>
-              <span className="text-sm text-gray-500 ml-1">vs last period</span>
+              <span className="text-sm text-muted-foreground ml-1">vs last period</span>
             </div>
           </div>
-          <div className={`p-3 rounded-full bg-olive-50`}>
-            <Icon className="h-6 w-6 text-olive-600" />
+          <div className={`p-3 rounded-full bg-olive-50 dark:bg-olive-900/20`}>
+            <Icon className="h-6 w-6 text-olive-600 dark:text-olive-400" />
           </div>
         </div>
       </div>
@@ -288,7 +288,7 @@ export default function AnalyticsPanel({ data }) {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading analytics...</p>
+          <p className="mt-4 text-muted-foreground">Loading analytics...</p>
         </div>
       </div>
     )
@@ -297,15 +297,15 @@ export default function AnalyticsPanel({ data }) {
   return (
     <div className="space-y-6">
       {/* Enhanced Time Range Selector */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Analytics Dashboard</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="text-lg font-semibold text-foreground">Analytics Dashboard</h3>
+            <p className="text-sm text-muted-foreground">
               Detailed performance metrics {analyticsData ? 'with live database data' : '(loading...)'}
               {analyticsData?.periodType && (
                 <span className="ml-2">
-                  - {analyticsData.periodType === 'ytd' ? 'Year to Date' : 
+                  - {analyticsData.periodType === 'ytd' ? 'Year to Date' :
                      analyticsData.periodType === 'previous_year' ? `${analyticsData.year} Full Year` :
                      analyticsData.periodType === 'custom' ? 'Custom Range' :
                      timeRange.replace('days', ' Days').toUpperCase()}
@@ -313,15 +313,15 @@ export default function AnalyticsPanel({ data }) {
               )}
             </p>
           </div>
-          
+
           {/* Data Source Indicator */}
           {dataSource !== 'loading' && (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               <span className={`px-2 py-1 rounded ${
-                dataSource === 'live' ? 'bg-moss-100 text-moss-800' :
-                dataSource === 'api' ? 'bg-olive-100 text-olive-700' :
-                dataSource === 'fallback' ? 'bg-amber-100 text-amber-900' :
-                'bg-gray-100 text-gray-700'
+                dataSource === 'live' ? 'bg-moss-100 dark:bg-moss-900/30 text-moss-800 dark:text-moss-200' :
+                dataSource === 'api' ? 'bg-olive-100 dark:bg-olive-900/30 text-olive-700 dark:text-olive-300' :
+                dataSource === 'fallback' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-200' :
+                'bg-muted text-muted-foreground'
               }`}>
                 {dataSource === 'live' ? 'Live Database' :
                  dataSource === 'api' ? 'API Service' :
@@ -351,7 +351,7 @@ export default function AnalyticsPanel({ data }) {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   timeRange === range.key
                     ? 'bg-olive-600 text-white shadow-md transform scale-105'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm'
+                    : 'bg-card text-foreground border border-border hover:bg-muted hover:border-muted-foreground/50 hover:shadow-sm'
                 }`}
               >
                 {range.label}
@@ -370,7 +370,7 @@ export default function AnalyticsPanel({ data }) {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
                   timeRange === 'custom' || showCustomDatePicker
                     ? 'bg-olive-600 text-white shadow-md'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm'
+                    : 'bg-card text-foreground border border-border hover:bg-muted hover:border-muted-foreground/50 hover:shadow-sm'
                 }`}
               >
                 <span>Custom</span>
@@ -386,10 +386,10 @@ export default function AnalyticsPanel({ data }) {
               
               {/* Custom Date Picker Popover */}
               {showCustomDatePicker && (
-                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 z-50 p-6 w-96 max-w-[calc(100vw-2rem)] sm:min-w-[400px]">
+                <div className="absolute right-0 top-full mt-2 bg-card rounded-xl shadow-xl border border-border z-50 p-6 w-96 max-w-[calc(100vw-2rem)] sm:min-w-[400px]">
                   {/* Quick Range Shortcuts */}
                   <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">Quick Ranges</h4>
+                    <h4 className="text-sm font-semibold text-foreground mb-3">Quick Ranges</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {[
                         { label: 'Last 30 Days', days: 30 },
@@ -404,7 +404,7 @@ export default function AnalyticsPanel({ data }) {
                           onClick={() => {
                             const today = new Date()
                             let startDate, endDate
-                            
+
                             if (preset.days) {
                               startDate = new Date(today)
                               startDate.setDate(today.getDate() - preset.days)
@@ -424,46 +424,46 @@ export default function AnalyticsPanel({ data }) {
                               startDate = new Date(today.getFullYear(), (quarter - 1) * 3, 1)
                               endDate = new Date(today.getFullYear(), quarter * 3, 0)
                             }
-                            
+
                             setCustomStartDate(startDate.toISOString().split('T')[0])
                             setCustomEndDate(endDate.toISOString().split('T')[0])
                           }}
-                          className="px-3 py-2 text-xs text-gray-600 bg-gray-50 rounded-lg hover:bg-olive-50 hover:text-olive-600 transition-colors duration-150"
+                          className="px-3 py-2 text-xs text-muted-foreground bg-muted rounded-lg hover:bg-olive-50 hover:text-olive-600 dark:hover:bg-olive-900/30 dark:hover:text-olive-400 transition-colors duration-150"
                         >
                           {preset.label}
                         </button>
                       ))}
                     </div>
                   </div>
-                  
+
                   {/* Custom Date Inputs */}
                   <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">Custom Date Range</h4>
+                    <h4 className="text-sm font-semibold text-foreground mb-3">Custom Date Range</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                        <label className="block text-sm font-medium text-foreground mb-2">Start Date</label>
                         <input
                           type="date"
                           value={customStartDate}
                           onChange={(e) => setCustomStartDate(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                          className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                        <label className="block text-sm font-medium text-foreground mb-2">End Date</label>
                         <input
                           type="date"
                           value={customEndDate}
                           onChange={(e) => setCustomEndDate(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                          className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                         />
                       </div>
                     </div>
-                    
+
                     {/* Date Range Preview */}
                     {customStartDate && customEndDate && (
-                      <div className="mt-3 p-3 bg-olive-50 rounded-lg">
-                        <div className="flex items-center space-x-2 text-sm text-olive-700">
+                      <div className="mt-3 p-3 bg-olive-50 dark:bg-olive-900/20 rounded-lg">
+                        <div className="flex items-center space-x-2 text-sm text-olive-700 dark:text-olive-300">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -475,12 +475,12 @@ export default function AnalyticsPanel({ data }) {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Action Buttons */}
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div className="flex items-center justify-between pt-4 border-t border-border">
                     <button
                       onClick={() => setShowCustomDatePicker(false)}
-                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-150"
+                      className="px-4 py-2 text-sm font-medium text-foreground bg-muted rounded-lg hover:bg-muted/80 transition-colors duration-150"
                     >
                       Cancel
                     </button>
@@ -492,7 +492,7 @@ export default function AnalyticsPanel({ data }) {
                         }
                       }}
                       disabled={!customStartDate || !customEndDate}
-                      className="px-6 py-2 bg-olive-600 text-white text-sm font-medium rounded-lg hover:bg-olive-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-150 shadow-sm"
+                      className="px-6 py-2 bg-olive-600 text-white text-sm font-medium rounded-lg hover:bg-olive-700 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors duration-150 shadow-sm"
                     >
                       Apply Range
                     </button>
@@ -507,7 +507,7 @@ export default function AnalyticsPanel({ data }) {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
                 comparisonMode
                   ? 'bg-moss-600 text-white shadow-md'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm'
+                  : 'bg-card text-foreground border border-border hover:bg-muted hover:border-muted-foreground/50 hover:shadow-sm'
               }`}
               title="Enable period comparison"
             >
@@ -556,8 +556,8 @@ export default function AnalyticsPanel({ data }) {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue & Bookings Trend */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Revenue & Bookings Trend</h3>
+        <div className="bg-card rounded-lg shadow p-6">
+          <h3 className="text-lg font-medium text-foreground mb-4">Revenue & Bookings Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -587,8 +587,8 @@ export default function AnalyticsPanel({ data }) {
         </div>
 
         {/* Service Breakdown */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Service Breakdown</h3>
+        <div className="bg-card rounded-lg shadow p-6">
+          <h3 className="text-lg font-medium text-foreground mb-4">Service Breakdown</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -611,8 +611,8 @@ export default function AnalyticsPanel({ data }) {
         </div>
 
         {/* Customer Acquisition & Retention */}
-        <div className="bg-white rounded-lg shadow p-6 lg:col-span-2">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Customer Acquisition & Retention</h3>
+        <div className="bg-card rounded-lg shadow p-6 lg:col-span-2">
+          <h3 className="text-lg font-medium text-foreground mb-4">Customer Acquisition & Retention</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={customerRetention}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -642,21 +642,21 @@ export default function AnalyticsPanel({ data }) {
       </div>
 
       {/* AI Insights */}
-      <div className="bg-gradient-to-r from-olive-50 to-gold-50 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          AI-Powered Insights 
-          {analyticsData && <span className="text-xs bg-moss-100 text-moss-900 px-2 py-1 rounded ml-2">LIVE DATA</span>}
+      <div className="bg-gradient-to-r from-olive-50 to-gold-50 dark:from-olive-900/20 dark:to-gold-900/20 rounded-lg p-6">
+        <h3 className="text-lg font-medium text-foreground mb-4">
+          AI-Powered Insights
+          {analyticsData && <span className="text-xs bg-moss-100 dark:bg-moss-900/30 text-moss-900 dark:text-moss-200 px-2 py-1 rounded ml-2">LIVE DATA</span>}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white bg-opacity-70 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 mb-2">📈 Growth Opportunity</h4>
-            <p className="text-sm text-gray-700">
+          <div className="bg-card/70 backdrop-blur-sm rounded-lg p-4 border border-border/50">
+            <h4 className="font-medium text-foreground mb-2">📈 Growth Opportunity</h4>
+            <p className="text-sm text-muted-foreground">
               Your Friday and Saturday revenue is 40% higher than weekdays. Consider extending hours or adding staff on these days to capture more business.
             </p>
           </div>
-          <div className="bg-white bg-opacity-70 rounded-lg p-4">
-            <h4 className="font-medium text-gray-900 mb-2">💡 Service Optimization</h4>
-            <p className="text-sm text-gray-700">
+          <div className="bg-card/70 backdrop-blur-sm rounded-lg p-4 border border-border/50">
+            <h4 className="font-medium text-foreground mb-2">💡 Service Optimization</h4>
+            <p className="text-sm text-muted-foreground">
               "Hair & Beard" combo services have the highest profit margin. Promote package deals to increase average ticket size.
             </p>
           </div>
