@@ -14,23 +14,23 @@ export default function StaffMigrationPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-card border-b border-gray-200 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => router.push('/admin/staff')}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100"
                 >
                   <ArrowLeftIcon className="h-5 w-5" />
                 </button>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground flex items-center">
                     <ArrowPathIcon className="h-8 w-8 mr-3 text-olive-600" />
                     Staff Migration
                   </h1>
-                  <p className="mt-2 text-sm text-gray-600">
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                     Convert existing barbers to the new URL system
                   </p>
                 </div>
@@ -66,8 +66,8 @@ export default function StaffMigrationPage() {
 
         {/* Technical Details */}
         <div className="mt-6 bg-gray-100 border border-gray-300 rounded-lg p-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">Technical Details</h3>
-          <div className="text-sm text-gray-700 space-y-2">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-card-foreground mb-2">Technical Details</h3>
+          <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
             <p>
               <strong>Slug Generation:</strong> Slugs are generated from first and last names
               using lowercase letters, numbers, and hyphens only.

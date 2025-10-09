@@ -19,7 +19,7 @@ export default function CapacityPlanningPage() {
   return (
     <ProtectedRoute>
       <GlobalNavigation />
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted">
         {/* Main Content - adjusting for sidebar */}
         <div className="lg:ml-80 transition-all duration-300 ease-in-out pt-16 lg:pt-0">
           <div className="py-8">
@@ -29,7 +29,7 @@ export default function CapacityPlanningPage() {
                 <div className="flex items-center gap-4 mb-4">
                   <Link
                     href="/dashboard/operations"
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:text-card-foreground transition-colors"
                   >
                     <ArrowLeftIcon className="h-4 w-4" />
                     <span className="text-sm">Back to Operations</span>
@@ -38,11 +38,11 @@ export default function CapacityPlanningPage() {
                 
                 <div className="md:flex md:items-center md:justify-between">
                   <div className="min-w-0 flex-1">
-                    <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground sm:text-4xl flex items-center gap-3">
                       <WrenchScrewdriverIcon className="h-10 w-10 text-olive-600" />
                       Capacity Planning
                     </h1>
-                    <p className="mt-2 text-lg text-gray-600">
+                    <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
                       AI-powered capacity optimization and demand forecasting for {profile?.barbershop_name || 'your barbershop'}
                     </p>
                   </div>
@@ -61,32 +61,32 @@ export default function CapacityPlanningPage() {
 
               {/* Feature Overview Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border p-4">
                   <div className="flex items-center gap-3 mb-2">
                     <ChartBarIcon className="h-6 w-6 text-olive-500" />
                     <h3 className="font-semibold">Demand Forecasting</h3>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     AI analyzes historical patterns to predict future demand and optimal capacity requirements.
                   </p>
                 </div>
                 
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border p-4">
                   <div className="flex items-center gap-3 mb-2">
                     <CalendarDaysIcon className="h-6 w-6 text-green-500" />
                     <h3 className="font-semibold">Schedule Optimization</h3>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     Optimize staff scheduling and resource allocation based on predicted demand patterns.
                   </p>
                 </div>
                 
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                <div className="bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border p-4">
                   <div className="flex items-center gap-3 mb-2">
                     <LightBulbIcon className="h-6 w-6 text-gold-500" />
                     <h3 className="font-semibold">Smart Recommendations</h3>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     Get actionable insights for capacity expansion, efficiency improvements, and revenue optimization.
                   </p>
                 </div>
@@ -127,34 +127,34 @@ export default function CapacityPlanningPage() {
               <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
                   href="/dashboard/analytics-enhanced"
-                  className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                  className="flex items-center gap-3 p-4 bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border hover:shadow-md transition-shadow"
                 >
                   <ChartBarIcon className="h-6 w-6 text-olive-500" />
                   <div>
                     <h3 className="font-medium">Enhanced Analytics</h3>
-                    <p className="text-sm text-gray-600">View detailed performance metrics</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">View detailed performance metrics</p>
                   </div>
                 </Link>
                 
                 <Link
                   href="/dashboard/calendar"
-                  className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                  className="flex items-center gap-3 p-4 bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border hover:shadow-md transition-shadow"
                 >
                   <CalendarDaysIcon className="h-6 w-6 text-green-500" />
                   <div>
                     <h3 className="font-medium">Calendar & Scheduling</h3>
-                    <p className="text-sm text-gray-600">Manage appointments and scheduling</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Manage appointments and scheduling</p>
                   </div>
                 </Link>
                 
                 <Link
                   href="/dashboard/ai-intelligent"
-                  className="flex items-center gap-3 p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                  className="flex items-center gap-3 p-4 bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border hover:shadow-md transition-shadow"
                 >
                   <LightBulbIcon className="h-6 w-6 text-gold-500" />
                   <div>
                     <h3 className="font-medium">AI Intelligence</h3>
-                    <p className="text-sm text-gray-600">Advanced AI insights and recommendations</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Advanced AI insights and recommendations</p>
                   </div>
                 </Link>
               </div>

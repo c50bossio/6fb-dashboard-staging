@@ -18,7 +18,7 @@ const BusinessIntelligenceDashboard = dynamic(() => import('@/components/ai/Busi
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-64">
-      <div className="text-gray-500 animate-pulse">Loading Business Intelligence...</div>
+      <div className="text-gray-500 dark:text-gray-300 animate-pulse">Loading Business Intelligence...</div>
     </div>
   ),
 })
@@ -188,36 +188,36 @@ export default function AIIntelligencePage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Business Intelligence Dashboard</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground mb-2">AI Business Intelligence Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-300">
             Real-time insights powered by 5 specialized AI agents analyzing your business data
           </p>
         </div>
 
         {/* System Status */}
         <div className="mb-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-card rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <CpuChipIcon className="h-6 w-6 text-gray-600" />
-                <h2 className="text-lg font-semibold text-gray-900">AI System Status</h2>
+                <CpuChipIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">AI System Status</h2>
               </div>
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(systemStatus)}`}>
                 {getStatusText(systemStatus)}
               </div>
             </div>
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-center p-3 bg-gray-50 dark:bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">5</div>
-                <div className="text-sm text-gray-600">Active Agents</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Active Agents</div>
               </div>
-              <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-center p-3 bg-gray-50 dark:bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-green-600">{agentStats.total_requests || 0}</div>
-                <div className="text-sm text-gray-600">Total Requests</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Total Requests</div>
               </div>
-              <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="text-center p-3 bg-gray-50 dark:bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-purple-600">{agentStats.knowledge_documents || 25}</div>
-                <div className="text-sm text-gray-600">Knowledge Documents</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Knowledge Documents</div>
               </div>
             </div>
           </div>
@@ -225,11 +225,11 @@ export default function AIIntelligencePage() {
 
         {/* AI Insights */}
         <div className="mb-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-card rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
                 <LightBulbIcon className="h-6 w-6 text-yellow-500" />
-                <h2 className="text-lg font-semibold text-gray-900">AI-Generated Business Insights</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">AI-Generated Business Insights</h2>
               </div>
               <button
                 onClick={fetchBusinessInsights}
@@ -255,7 +255,7 @@ export default function AIIntelligencePage() {
                           <span className={`text-sm font-medium text-${color}-900 capitalize`}>
                             {insight.agent.replace('_', ' ')} • {insight.category}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-gray-300">
                             {Math.round(insight.confidence * 100)}% confidence
                           </span>
                         </div>
@@ -267,14 +267,14 @@ export default function AIIntelligencePage() {
               })}
               
               {insights.length === 0 && systemStatus === 'connected' && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-300">
                   <LightBulbIcon className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>No insights generated yet. Click "Refresh Insights" to get AI recommendations.</p>
                 </div>
               )}
               
               {systemStatus === 'offline' && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-300">
                   <ExclamationTriangleIcon className="h-12 w-12 mx-auto mb-4 text-red-300" />
                   <p>AI system is offline. Please check the connection and try again.</p>
                 </div>
@@ -285,10 +285,10 @@ export default function AIIntelligencePage() {
 
         {/* Business Intelligence Charts */}
         <div className="mb-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-card rounded-lg shadow-md p-6">
             <div className="flex items-center space-x-3 mb-4">
               <TrendingUpIcon className="h-6 w-6 text-blue-500" />
-              <h2 className="text-lg font-semibold text-gray-900">Business Performance Analytics</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Business Performance Analytics</h2>
             </div>
             <BusinessIntelligenceDashboard />
           </div>
@@ -296,64 +296,64 @@ export default function AIIntelligencePage() {
 
         {/* Agent Performance */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-card rounded-lg shadow-md p-6">
             <div className="flex items-center space-x-3 mb-4">
               <UserGroupIcon className="h-6 w-6 text-green-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Customer Insights</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Customer Insights</h3>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600">Retention Rate</span>
+                <span className="text-gray-600 dark:text-gray-300">Retention Rate</span>
                 <span className="font-semibold">78%</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Satisfaction Score</span>
+                <span className="text-gray-600 dark:text-gray-300">Satisfaction Score</span>
                 <span className="font-semibold">4.6/5</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Referral Rate</span>
+                <span className="text-gray-600 dark:text-gray-300">Referral Rate</span>
                 <span className="font-semibold">23%</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-card rounded-lg shadow-md p-6">
             <div className="flex items-center space-x-3 mb-4">
               <CurrencyDollarIcon className="h-6 w-6 text-emerald-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Revenue Metrics</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Revenue Metrics</h3>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600">Avg. Ticket</span>
+                <span className="text-gray-600 dark:text-gray-300">Avg. Ticket</span>
                 <span className="font-semibold">$67</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Monthly Revenue</span>
+                <span className="text-gray-600 dark:text-gray-300">Monthly Revenue</span>
                 <span className="font-semibold">$24,500</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Profit Margin</span>
+                <span className="text-gray-600 dark:text-gray-300">Profit Margin</span>
                 <span className="font-semibold">22%</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white dark:bg-card rounded-lg shadow-md p-6">
             <div className="flex items-center space-x-3 mb-4">
               <ClockIcon className="h-6 w-6 text-purple-500" />
-              <h3 className="text-lg font-semibold text-gray-900">Operational KPIs</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Operational KPIs</h3>
             </div>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600">Capacity Utilization</span>
+                <span className="text-gray-600 dark:text-gray-300">Capacity Utilization</span>
                 <span className="font-semibold">85%</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Avg. Service Time</span>
+                <span className="text-gray-600 dark:text-gray-300">Avg. Service Time</span>
                 <span className="font-semibold">45 min</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">No-Show Rate</span>
+                <span className="text-gray-600 dark:text-gray-300">No-Show Rate</span>
                 <span className="font-semibold">3.2%</span>
               </div>
             </div>

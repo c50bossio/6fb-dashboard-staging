@@ -213,14 +213,14 @@ export default function EnterpriseWebsiteManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white dark:bg-card shadow-sm border-b border-gray-200 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <BuildingOffice2Icon className="h-6 w-6 text-olive-600" />
-              <h1 className="text-lg font-semibold text-gray-900">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">
                 Enterprise Website Management
               </h1>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -235,7 +235,7 @@ export default function EnterpriseWebsiteManagement() {
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => window.open(`/enterprise/${settings.slug}`, '_blank')}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-gray-50 dark:bg-muted"
               >
                 <EyeIcon className="h-4 w-4 mr-2" />
                 View Portal
@@ -275,7 +275,7 @@ export default function EnterpriseWebsiteManagement() {
       )}
 
       {/* Tabs */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="-mb-px flex space-x-8">
             {tabs.map((tab) => {
@@ -308,31 +308,31 @@ export default function EnterpriseWebsiteManagement() {
           <div className="space-y-6">
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Total Locations</p>
-                    <p className="text-2xl font-bold text-gray-900">{analytics.total_locations}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Total Locations</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{analytics.total_locations}</p>
                   </div>
                   <MapPinIcon className="h-8 w-8 text-olive-600" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Total Barbers</p>
-                    <p className="text-2xl font-bold text-gray-900">{analytics.total_barbers}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Total Barbers</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{analytics.total_barbers}</p>
                   </div>
                   <UsersIcon className="h-8 w-8 text-green-600" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Monthly Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Monthly Revenue</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                       ${(analytics.total_monthly_revenue / 1000).toFixed(0)}K
                     </p>
                     <p className="text-sm text-green-600 flex items-center mt-1">
@@ -344,14 +344,14 @@ export default function EnterpriseWebsiteManagement() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Website Visitors</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Website Visitors</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                       {(analytics.website_visitors_month / 1000).toFixed(0)}K
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
                       {analytics.conversion_rate}% conversion
                     </p>
                   </div>
@@ -361,13 +361,13 @@ export default function EnterpriseWebsiteManagement() {
             </div>
 
             {/* Top Performing Locations */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                 Top Performing Locations
               </h2>
               <div className="space-y-4">
                 {locations.slice(0, 3).map((location, index) => (
-                  <div key={location.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={location.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-muted rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className={`
                         h-10 w-10 rounded-full flex items-center justify-center text-white font-bold
@@ -376,15 +376,15 @@ export default function EnterpriseWebsiteManagement() {
                         {index + 1}
                       </div>
                       <div>
-                        <h3 className="font-medium text-gray-900">{location.name}</h3>
-                        <p className="text-sm text-gray-500">{location.address}</p>
+                        <h3 className="font-medium text-gray-900 dark:text-card-foreground">{location.name}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-300">{location.address}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">
+                      <p className="font-semibold text-gray-900 dark:text-card-foreground">
                         ${(location.monthly_revenue / 1000).toFixed(0)}K
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-300">
                         {location.performance.bookings_this_month} bookings
                       </p>
                     </div>
@@ -394,27 +394,27 @@ export default function EnterpriseWebsiteManagement() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                 Quick Actions
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
+                <button className="p-4 border border-gray-200 dark:border-border rounded-lg hover:bg-gray-50 dark:bg-muted text-left">
                   <PlusIcon className="h-6 w-6 text-olive-600 mb-2" />
-                  <h3 className="font-medium text-gray-900">Add New Location</h3>
-                  <p className="text-sm text-gray-500">Register a new barbershop location</p>
+                  <h3 className="font-medium text-gray-900 dark:text-card-foreground">Add New Location</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">Register a new barbershop location</p>
                 </button>
                 
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
+                <button className="p-4 border border-gray-200 dark:border-border rounded-lg hover:bg-gray-50 dark:bg-muted text-left">
                   <ChartBarIcon className="h-6 w-6 text-green-600 mb-2" />
-                  <h3 className="font-medium text-gray-900">View Reports</h3>
-                  <p className="text-sm text-gray-500">Detailed analytics and insights</p>
+                  <h3 className="font-medium text-gray-900 dark:text-card-foreground">View Reports</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">Detailed analytics and insights</p>
                 </button>
                 
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
+                <button className="p-4 border border-gray-200 dark:border-border rounded-lg hover:bg-gray-50 dark:bg-muted text-left">
                   <UsersIcon className="h-6 w-6 text-gold-600 mb-2" />
-                  <h3 className="font-medium text-gray-900">Manage Staff</h3>
-                  <p className="text-sm text-gray-500">Add or remove barbers across locations</p>
+                  <h3 className="font-medium text-gray-900 dark:text-card-foreground">Manage Staff</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">Add or remove barbers across locations</p>
                 </button>
               </div>
             </div>
@@ -424,9 +424,9 @@ export default function EnterpriseWebsiteManagement() {
         {/* Locations Tab */}
         {activeTab === 'locations' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">
                   Location Management
                 </h2>
                 <div className="flex items-center space-x-3">
@@ -447,49 +447,49 @@ export default function EnterpriseWebsiteManagement() {
 
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-muted">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Location
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Manager
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Barbers
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Performance
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Website
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-card divide-y divide-gray-200">
                     {locations.map((location) => (
-                      <tr key={location.id} className="hover:bg-gray-50">
+                      <tr key={location.id} className="hover:bg-gray-50 dark:bg-muted">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{location.name}</div>
-                            <div className="text-sm text-gray-500">{location.address}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-card-foreground">{location.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-300">{location.address}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{location.manager}</div>
+                          <div className="text-sm text-gray-900 dark:text-card-foreground">{location.manager}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{location.barbers} barbers</div>
+                          <div className="text-sm text-gray-900 dark:text-card-foreground">{location.barbers} barbers</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                               ${(location.monthly_revenue / 1000).toFixed(0)}K/mo
                             </div>
-                            <div className="text-sm text-gray-500 flex items-center">
+                            <div className="text-sm text-gray-500 dark:text-gray-300 flex items-center">
                               {location.performance.revenue_change > 0 ? (
                                 <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
                               ) : (
@@ -528,7 +528,7 @@ export default function EnterpriseWebsiteManagement() {
                             </button>
                             <button
                               onClick={() => window.open(`/shop/${location.id}`, '_blank')}
-                              className="text-gray-600 hover:text-gray-900"
+                              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:text-card-foreground"
                             >
                               View
                             </button>
@@ -559,14 +559,14 @@ export default function EnterpriseWebsiteManagement() {
         {activeTab === 'branding' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Enterprise Identity
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Enterprise Name
                     </label>
                     <input
@@ -578,7 +578,7 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Tagline
                     </label>
                     <input
@@ -590,7 +590,7 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Description
                     </label>
                     <textarea
@@ -602,7 +602,7 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Custom Domain (Optional)
                     </label>
                     <input
@@ -616,22 +616,22 @@ export default function EnterpriseWebsiteManagement() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Logo & Images
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Enterprise Logo
                     </label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 cursor-pointer">
                       <BuildingOffice2Icon className="mx-auto h-12 w-12 text-gray-400" />
-                      <p className="mt-2 text-sm text-gray-600">
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                         Click to upload or drag and drop
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-300">
                         PNG, JPG up to 10MB
                       </p>
                     </div>
@@ -641,14 +641,14 @@ export default function EnterpriseWebsiteManagement() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Brand Colors
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Primary Color
                     </label>
                     <div className="flex items-center space-x-3">
@@ -668,7 +668,7 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Secondary Color
                     </label>
                     <div className="flex items-center space-x-3">
@@ -688,7 +688,7 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Accent Color
                     </label>
                     <div className="flex items-center space-x-3">
@@ -708,21 +708,21 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
                 </div>
 
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">
+                <div className="mt-6 p-4 bg-gray-50 dark:bg-muted rounded-lg">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
                     These colors will be inherited by all locations unless they enable custom branding.
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Typography
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Heading Font
                     </label>
                     <select
@@ -738,7 +738,7 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Body Font
                     </label>
                     <select
@@ -762,14 +762,14 @@ export default function EnterpriseWebsiteManagement() {
         {activeTab === 'content' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Hero Section
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Hero Title
                     </label>
                     <input
@@ -781,7 +781,7 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Hero Subtitle
                     </label>
                     <textarea
@@ -794,14 +794,14 @@ export default function EnterpriseWebsiteManagement() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   About Section
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       About Content
                     </label>
                     <textarea
@@ -813,7 +813,7 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Mission Statement
                     </label>
                     <textarea
@@ -828,8 +828,8 @@ export default function EnterpriseWebsiteManagement() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Portal Features
                 </h2>
                 
@@ -841,7 +841,7 @@ export default function EnterpriseWebsiteManagement() {
                       onChange={(e) => setSettings({ ...settings, show_location_map: e.target.checked })}
                       className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Show interactive location map</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Show interactive location map</span>
                   </label>
 
                   <label className="flex items-center">
@@ -851,7 +851,7 @@ export default function EnterpriseWebsiteManagement() {
                       onChange={(e) => setSettings({ ...settings, show_location_directory: e.target.checked })}
                       className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Show location directory</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Show location directory</span>
                   </label>
 
                   <label className="flex items-center">
@@ -861,7 +861,7 @@ export default function EnterpriseWebsiteManagement() {
                       onChange={(e) => setSettings({ ...settings, enable_online_booking: e.target.checked })}
                       className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Enable online booking</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable online booking</span>
                   </label>
 
                   <label className="flex items-center">
@@ -871,19 +871,19 @@ export default function EnterpriseWebsiteManagement() {
                       onChange={(e) => setSettings({ ...settings, enable_shop_comparison: e.target.checked })}
                       className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Enable location comparison tool</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable location comparison tool</span>
                   </label>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   SEO Settings
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       SEO Title
                     </label>
                     <input
@@ -895,7 +895,7 @@ export default function EnterpriseWebsiteManagement() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       SEO Description
                     </label>
                     <textarea
@@ -915,69 +915,69 @@ export default function EnterpriseWebsiteManagement() {
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-sm font-medium text-gray-600 mb-2">Portal Visitors</h3>
-                <p className="text-3xl font-bold text-gray-900">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Portal Visitors</h3>
+                <p className="text-3xl font-bold text-gray-900 dark:text-card-foreground">
                   {(analytics.website_visitors_month / 1000).toFixed(1)}K
                 </p>
                 <p className="text-sm text-green-600 mt-2">+23% from last month</p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-sm font-medium text-gray-600 mb-2">Conversion Rate</h3>
-                <p className="text-3xl font-bold text-gray-900">{analytics.conversion_rate}%</p>
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Conversion Rate</h3>
+                <p className="text-3xl font-bold text-gray-900 dark:text-card-foreground">{analytics.conversion_rate}%</p>
                 <p className="text-sm text-green-600 mt-2">+2.3% improvement</p>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-sm font-medium text-gray-600 mb-2">Avg Session Duration</h3>
-                <p className="text-3xl font-bold text-gray-900">3:45</p>
-                <p className="text-sm text-gray-500 mt-2">minutes</p>
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Avg Session Duration</h3>
+                <p className="text-3xl font-bold text-gray-900 dark:text-card-foreground">3:45</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mt-2">minutes</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                 Traffic Sources
               </h2>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Organic Search</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Organic Search</span>
                   <div className="flex items-center space-x-3">
                     <div className="w-48 bg-gray-200 rounded-full h-2">
                       <div className="bg-olive-600 h-2 rounded-full" style={{ width: '45%' }}></div>
                     </div>
-                    <span className="text-sm font-medium text-gray-900">45%</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">45%</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Direct</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Direct</span>
                   <div className="flex items-center space-x-3">
                     <div className="w-48 bg-gray-200 rounded-full h-2">
                       <div className="bg-green-600 h-2 rounded-full" style={{ width: '30%' }}></div>
                     </div>
-                    <span className="text-sm font-medium text-gray-900">30%</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">30%</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Social Media</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Social Media</span>
                   <div className="flex items-center space-x-3">
                     <div className="w-48 bg-gray-200 rounded-full h-2">
                       <div className="bg-gold-600 h-2 rounded-full" style={{ width: '15%' }}></div>
                     </div>
-                    <span className="text-sm font-medium text-gray-900">15%</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">15%</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Referral</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Referral</span>
                   <div className="flex items-center space-x-3">
                     <div className="w-48 bg-gray-200 rounded-full h-2">
                       <div className="bg-yellow-600 h-2 rounded-full" style={{ width: '10%' }}></div>
                     </div>
-                    <span className="text-sm font-medium text-gray-900">10%</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">10%</span>
                   </div>
                 </div>
               </div>

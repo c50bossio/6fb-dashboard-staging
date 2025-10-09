@@ -147,12 +147,12 @@ export default function BarberProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Barber Profile Management</h1>
-          <p className="text-gray-600 mt-2">
+        <div className="bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border p-6 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground">Barber Profile Management</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">
             Customize your professional profile and landing page. Your page will be available at:
             <span className="font-mono text-amber-700 ml-2">
               barbershop.com/{profile.custom_path || 'your-name'}
@@ -177,8 +177,8 @@ export default function BarberProfilePage() {
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="border-b border-gray-200">
+        <div className="bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border mb-6">
+          <div className="border-b border-gray-200 dark:border-border">
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
               {tabs.map((tab) => (
                 <button
@@ -206,7 +206,7 @@ export default function BarberProfilePage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Custom URL Path
                     </label>
                     <input
@@ -216,11 +216,11 @@ export default function BarberProfilePage() {
                       placeholder="john-doe"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Letters, numbers, and hyphens only</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Letters, numbers, and hyphens only</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Years of Experience
                     </label>
                     <input
@@ -233,7 +233,7 @@ export default function BarberProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Professional Bio
                   </label>
                   <textarea
@@ -246,7 +246,7 @@ export default function BarberProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Specialties (comma-separated)
                   </label>
                   <input
@@ -259,7 +259,7 @@ export default function BarberProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Certifications (comma-separated)
                   </label>
                   <input
@@ -272,7 +272,7 @@ export default function BarberProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Languages Spoken (comma-separated)
                   </label>
                   <input
@@ -291,7 +291,7 @@ export default function BarberProfilePage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Primary Color
                     </label>
                     <div className="flex items-center space-x-2">
@@ -311,7 +311,7 @@ export default function BarberProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Secondary Color
                     </label>
                     <div className="flex items-center space-x-2">
@@ -331,7 +331,7 @@ export default function BarberProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Accent Color
                     </label>
                     <div className="flex items-center space-x-2">
@@ -352,7 +352,7 @@ export default function BarberProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Font Family
                   </label>
                   <select
@@ -369,7 +369,7 @@ export default function BarberProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Background Image URL
                   </label>
                   <input
@@ -382,7 +382,7 @@ export default function BarberProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Logo URL
                   </label>
                   <input
@@ -396,7 +396,7 @@ export default function BarberProfilePage() {
 
                 {/* Preview */}
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-4">Preview</h3>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Preview</h3>
                   <div 
                     className="h-32 rounded-lg p-4"
                     style={{
@@ -416,28 +416,28 @@ export default function BarberProfilePage() {
             {activeTab === 'services' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Your Services</h3>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground">Your Services</h3>
                   <button className="px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
                     Add Service
                   </button>
                 </div>
 
                 {services.length === 0 ? (
-                  <div className="text-center py-12 bg-gray-50 rounded-lg">
+                  <div className="text-center py-12 bg-gray-50 dark:bg-muted rounded-lg">
                     <CurrencyDollarIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">No services added yet</p>
-                    <p className="text-xs text-gray-500 mt-1">Add your first service to start accepting bookings</p>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">No services added yet</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Add your first service to start accepting bookings</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {services.map((service, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div key={index} className="border border-gray-200 dark:border-border rounded-lg p-4">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-medium text-gray-900">{service.name}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                            <h4 className="font-medium text-gray-900 dark:text-card-foreground">{service.name}</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{service.description}</p>
                             <div className="flex items-center space-x-4 mt-2">
-                              <span className="text-sm text-gray-500">
+                              <span className="text-sm text-gray-500 dark:text-gray-300">
                                 Duration: {service.duration_minutes} min
                               </span>
                               <span className="text-sm font-medium text-amber-700">
@@ -462,7 +462,7 @@ export default function BarberProfilePage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Advance Booking Days
                     </label>
                     <input
@@ -471,11 +471,11 @@ export default function BarberProfilePage() {
                       onChange={(e) => handleInputChange('booking_advance_days', parseInt(e.target.value) || 30)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">How far in advance clients can book</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">How far in advance clients can book</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Minimum Notice Hours
                     </label>
                     <input
@@ -484,7 +484,7 @@ export default function BarberProfilePage() {
                       onChange={(e) => handleInputChange('minimum_notice_hours', parseInt(e.target.value) || 24)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Minimum hours before appointment time</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Minimum hours before appointment time</p>
                   </div>
                 </div>
 
@@ -496,12 +496,12 @@ export default function BarberProfilePage() {
                       onChange={(e) => handleInputChange('accepts_walk_ins', e.target.checked)}
                       className="h-4 w-4 text-amber-700 focus:ring-amber-500 border-gray-300 rounded"
                     />
-                    <span className="text-sm font-medium text-gray-700">Accept Walk-ins</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Accept Walk-ins</span>
                   </label>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Cancellation Policy
                   </label>
                   <textarea
@@ -521,12 +521,12 @@ export default function BarberProfilePage() {
                       onChange={(e) => handleInputChange('deposit_required', e.target.checked)}
                       className="h-4 w-4 text-amber-700 focus:ring-amber-500 border-gray-300 rounded"
                     />
-                    <span className="text-sm font-medium text-gray-700">Require Deposit</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Require Deposit</span>
                   </label>
                   
                   {profile.deposit_required && (
                     <div className="mt-3 ml-7">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Deposit Amount
                       </label>
                       <div className="flex items-center">
@@ -547,15 +547,15 @@ export default function BarberProfilePage() {
             {/* Portfolio Tab */}
             {activeTab === 'portfolio' && (
               <div className="space-y-6">
-                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <div className="text-center py-12 bg-gray-50 dark:bg-muted rounded-lg border-2 border-dashed border-gray-300">
                   <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-600">Upload your best work</p>
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Upload your best work</p>
                   <button className="mt-4 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
                     Upload Images
                   </button>
                 </div>
                 
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-300">
                   Portfolio features coming soon. You'll be able to upload before/after photos, 
                   showcase your best work, and build a gallery that attracts new clients.
                 </p>
@@ -567,7 +567,7 @@ export default function BarberProfilePage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Display Phone Number
                     </label>
                     <input
@@ -580,7 +580,7 @@ export default function BarberProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Display Email
                     </label>
                     <input
@@ -593,11 +593,11 @@ export default function BarberProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Instagram Handle
                     </label>
                     <div className="flex items-center">
-                      <span className="text-gray-500 mr-2">@</span>
+                      <span className="text-gray-500 dark:text-gray-300 mr-2">@</span>
                       <input
                         type="text"
                         value={profile.instagram_handle}
@@ -609,11 +609,11 @@ export default function BarberProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       TikTok Handle
                     </label>
                     <div className="flex items-center">
-                      <span className="text-gray-500 mr-2">@</span>
+                      <span className="text-gray-500 dark:text-gray-300 mr-2">@</span>
                       <input
                         type="text"
                         value={profile.tiktok_handle}
@@ -625,7 +625,7 @@ export default function BarberProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Facebook URL
                     </label>
                     <input
@@ -638,7 +638,7 @@ export default function BarberProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       YouTube URL
                     </label>
                     <input
@@ -659,7 +659,7 @@ export default function BarberProfilePage() {
         <div className="flex justify-end space-x-4">
           <button
             onClick={() => window.open(`/preview/${profile.custom_path || 'preview'}`, '_blank')}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="px-6 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-muted"
           >
             Preview Page
           </button>

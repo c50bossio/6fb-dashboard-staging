@@ -85,15 +85,15 @@ export default function StaffAnalyticsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-card border-b border-gray-200 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground flex items-center">
                 <ChartBarIcon className="h-8 w-8 mr-3 text-olive-600" />
                 Staff Performance Analytics
               </h1>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                 View booking metrics and performance for your team
               </p>
             </div>
@@ -101,7 +101,7 @@ export default function StaffAnalyticsPage() {
             <button
               onClick={handleRefresh}
               disabled={isLoading}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-background disabled:opacity-50 flex items-center"
+              className="px-4 py-2 bg-white dark:bg-card border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-background disabled:opacity-50 flex items-center"
             >
               <ArrowPathIcon
                 className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}
@@ -114,12 +114,12 @@ export default function StaffAnalyticsPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         {/* Date Range Filter */}
-        <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="mb-6 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center space-x-4">
             <CalendarIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Start Date
                 </label>
                 <input
@@ -130,7 +130,7 @@ export default function StaffAnalyticsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   End Date
                 </label>
                 <input
@@ -156,7 +156,7 @@ export default function StaffAnalyticsPage() {
                   end: end.toISOString().split('T')[0],
                 })
               }}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200"
             >
               Last 7 Days
             </button>
@@ -170,7 +170,7 @@ export default function StaffAnalyticsPage() {
                   end: end.toISOString().split('T')[0],
                 })
               }}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200"
             >
               Last 30 Days
             </button>
@@ -184,7 +184,7 @@ export default function StaffAnalyticsPage() {
                   end: end.toISOString().split('T')[0],
                 })
               }}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200"
             >
               Last 90 Days
             </button>
@@ -194,21 +194,21 @@ export default function StaffAnalyticsPage() {
         {/* Summary Cards */}
         {summary && !isLoading && (
           <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <p className="text-sm text-gray-600 font-medium">Total Staff</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Total Staff</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-card-foreground mt-2">
                 {summary.total_staff}
               </p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <p className="text-sm text-gray-600 font-medium">Total Bookings</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Total Bookings</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-card-foreground mt-2">
                 {summary.total_bookings}
               </p>
             </div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <p className="text-sm text-gray-600 font-medium">Total Revenue</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Total Revenue</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-card-foreground mt-2">
                 ${summary.total_revenue.toFixed(2)}
               </p>
             </div>
@@ -237,12 +237,12 @@ export default function StaffAnalyticsPage() {
 
         {/* Analytics Cards */}
         {!isLoading && !error && analytics.length === 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-12 text-center">
             <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-2">
               No Staff Members Yet
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               Add your first barber to start tracking booking analytics
             </p>
             <button

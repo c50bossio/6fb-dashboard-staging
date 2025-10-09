@@ -38,7 +38,7 @@ const BeforeAfter = () => (
               </ul>
             </div>
             
-            <div className="bg-white border border-red-200 rounded p-3">
+            <div className="bg-white dark:bg-card border border-red-200 rounded p-3">
               <p className="text-xs font-mono text-red-700">
                 Dashboard | Appointments | Customers | Staff | Payments | Analytics | AI Agents | Advanced RAG | Admin: AI Knowledge | Settings
               </p>
@@ -77,7 +77,7 @@ const BeforeAfter = () => (
               </ul>
             </div>
             
-            <div className="bg-white border border-green-200 rounded p-3 space-y-2">
+            <div className="bg-white dark:bg-card border border-green-200 rounded p-3 space-y-2">
               <div className="text-xs font-mono text-green-700">
                 📊 Overview → Dashboard, Real-time Status
               </div>
@@ -120,12 +120,12 @@ const KeyFeatures = () => (
             <div className="h-10 w-10 bg-olive-100 rounded-lg flex items-center justify-center">
               <SparklesIcon className="h-6 w-6 text-olive-600" />
             </div>
-            <h3 className="font-semibold text-gray-900">Collapsible Sidebar</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-card-foreground">Collapsible Sidebar</h3>
           </div>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
             Expandable categories with smooth animations. Collapse to icons-only for more workspace.
           </p>
-          <ul className="text-xs text-gray-500 space-y-1">
+          <ul className="text-xs text-gray-500 dark:text-gray-300 space-y-1">
             <li>• Click categories to expand/collapse</li>
             <li>• Visual hierarchy with indentation</li>
             <li>• Active state highlighting</li>
@@ -140,12 +140,12 @@ const KeyFeatures = () => (
             <div className="h-10 w-10 bg-gold-100 rounded-lg flex items-center justify-center">
               <CpuChipIcon className="h-6 w-6 text-gold-600" />
             </div>
-            <h3 className="font-semibold text-gray-900">Tabbed Pages</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-card-foreground">Tabbed Pages</h3>
           </div>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
             Complex functionality organized into logical tabs with descriptions and features.
           </p>
-          <ul className="text-xs text-gray-500 space-y-1">
+          <ul className="text-xs text-gray-500 dark:text-gray-300 space-y-1">
             <li>• URL-synced tab states</li>
             <li>• Loading states for each tab</li>
             <li>• Mobile-friendly tab switching</li>
@@ -160,12 +160,12 @@ const KeyFeatures = () => (
             <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
               <ChartBarIcon className="h-6 w-6 text-green-600" />
             </div>
-            <h3 className="font-semibold text-gray-900">Smart Organization</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-card-foreground">Smart Organization</h3>
           </div>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
             Features grouped by purpose with progressive disclosure of advanced options.
           </p>
-          <ul className="text-xs text-gray-500 space-y-1">
+          <ul className="text-xs text-gray-500 dark:text-gray-300 space-y-1">
             <li>• Role-based navigation visibility</li>
             <li>• Breadcrumb navigation</li>
             <li>• Quick search functionality</li>
@@ -178,8 +178,8 @@ const KeyFeatures = () => (
     {/* Example Navigation Flow */}
     <Card>
       <div className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Example: Unified Booking System</h3>
-        <div className="flex items-center space-x-4 text-sm text-gray-600">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Example: Unified Booking System</h3>
+        <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-300">
           <div className="flex items-center space-x-2">
             <CalendarDaysIcon className="h-4 w-4" />
             <span>Business</span>
@@ -194,7 +194,7 @@ const KeyFeatures = () => (
             AI Enhanced | Calendar View | Simple View | Analytics | Settings
           </div>
         </div>
-        <p className="text-sm text-gray-600 mt-3">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-3">
           Instead of 8 separate booking pages, everything is organized into one unified interface with 5 logical tabs.
         </p>
       </div>
@@ -206,13 +206,13 @@ const Implementation = () => (
   <div className="space-y-6">
     <Card>
       <div className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Technical Implementation</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Technical Implementation</h3>
         
         <div className="space-y-4">
           <div>
             <h4 className="font-medium text-gray-800 mb-2">Core Components</h4>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <pre className="text-xs text-gray-700">
+            <div className="bg-gray-50 dark:bg-muted rounded-lg p-4">
+              <pre className="text-xs text-gray-700 dark:text-gray-300">
 {`components/
 ├── navigation/
 │   ├── HierarchicalSidebar.js     # Main sidebar component
@@ -229,8 +229,8 @@ const Implementation = () => (
             <h4 className="font-medium text-gray-800 mb-2">Key Features</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <h5 className="text-sm font-medium text-gray-700">Navigation</h5>
-                <ul className="text-xs text-gray-600 space-y-1">
+                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">Navigation</h5>
+                <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• State management for expanded categories</li>
                   <li>• URL-based active state detection</li>
                   <li>• Mobile-first responsive design</li>
@@ -238,8 +238,8 @@ const Implementation = () => (
                 </ul>
               </div>
               <div className="space-y-2">
-                <h5 className="text-sm font-medium text-gray-700">Tabbed Pages</h5>
-                <ul className="text-xs text-gray-600 space-y-1">
+                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">Tabbed Pages</h5>
+                <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                   <li>• URL synchronization</li>
                   <li>• Lazy loading of tab content</li>
                   <li>• Loading and error states</li>
@@ -254,7 +254,7 @@ const Implementation = () => (
 
     <Card>
       <div className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Status</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Current Status</h3>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">

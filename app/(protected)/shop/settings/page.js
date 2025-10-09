@@ -205,14 +205,14 @@ export default function ShopSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-card shadow-sm border-b">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Shop Settings</h1>
-              <p className="text-sm text-gray-600">Manage your barbershop configuration</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground">Shop Settings</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Manage your barbershop configuration</p>
             </div>
             <button
               onClick={handleSave}
@@ -226,7 +226,7 @@ export default function ShopSettings() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-card border-b">
         <div className="px-6">
           <nav className="flex space-x-8">
             {[
@@ -258,12 +258,12 @@ export default function ShopSettings() {
         <div className="max-w-4xl mx-auto">
           {/* General Info Tab */}
           {activeTab === 'general' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">General Information</h2>
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6">General Information</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Shop Name
                   </label>
                   <input
@@ -275,7 +275,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email
                   </label>
                   <input
@@ -287,7 +287,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Phone
                   </label>
                   <input
@@ -299,7 +299,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Website
                   </label>
                   <input
@@ -312,7 +312,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Description
                   </label>
                   <textarea
@@ -325,11 +325,11 @@ export default function ShopSettings() {
                 </div>
               </div>
               
-              <h3 className="text-lg font-semibold text-gray-900 mt-8 mb-4">Address</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mt-8 mb-4">Address</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Street Address
                   </label>
                   <input
@@ -341,7 +341,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     City
                   </label>
                   <input
@@ -353,7 +353,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     State
                   </label>
                   <input
@@ -366,7 +366,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     ZIP Code
                   </label>
                   <input
@@ -378,7 +378,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Country
                   </label>
                   <input
@@ -394,14 +394,14 @@ export default function ShopSettings() {
 
           {/* Business Hours Tab */}
           {activeTab === 'hours' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Business Hours</h2>
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6">Business Hours</h2>
               
               <div className="space-y-4">
                 {Object.entries(shopData.hours).map(([day, hours]) => (
                   <div key={day} className="flex items-center space-x-4 py-3 border-b">
                     <div className="w-32">
-                      <span className="text-sm font-medium text-gray-700 capitalize">{day}</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{day}</span>
                     </div>
                     
                     <input
@@ -419,7 +419,7 @@ export default function ShopSettings() {
                           onChange={(e) => updateHours(day, 'open', e.target.value)}
                           className="px-3 py-1 border border-gray-300 rounded text-sm"
                         />
-                        <span className="text-gray-500">to</span>
+                        <span className="text-gray-500 dark:text-gray-300">to</span>
                         <input
                           type="time"
                           value={hours.close}
@@ -430,7 +430,7 @@ export default function ShopSettings() {
                     )}
                     
                     {hours.closed && (
-                      <span className="text-sm text-gray-500">Closed</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-300">Closed</span>
                     )}
                   </div>
                 ))}
@@ -446,12 +446,12 @@ export default function ShopSettings() {
 
           {/* Payment & Commission Tab */}
           {activeTab === 'payment' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Payment & Commission Settings</h2>
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6">Payment & Commission Settings</h2>
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-4">Accepted Payment Methods</h3>
+                  <h3 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-4">Accepted Payment Methods</h3>
                   <div className="space-y-3">
                     <label className="flex items-center">
                       <input
@@ -463,7 +463,7 @@ export default function ShopSettings() {
                         })}
                         className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
-                      <span className="text-sm text-gray-700">Cash</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Cash</span>
                     </label>
                     
                     <label className="flex items-center">
@@ -476,7 +476,7 @@ export default function ShopSettings() {
                         })}
                         className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
-                      <span className="text-sm text-gray-700">Credit/Debit Card</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Credit/Debit Card</span>
                     </label>
                     
                     <label className="flex items-center">
@@ -489,14 +489,14 @@ export default function ShopSettings() {
                         })}
                         className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
-                      <span className="text-sm text-gray-700">Online Payment</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Online Payment</span>
                     </label>
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Tax Rate (%)
                     </label>
                     <input
@@ -512,7 +512,7 @@ export default function ShopSettings() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Cancellation Fee ($)
                     </label>
                     <input
@@ -527,7 +527,7 @@ export default function ShopSettings() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       No-Show Fee ($)
                     </label>
                     <input
@@ -543,10 +543,10 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-4">Commission Settings</h3>
+                  <h3 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-4">Commission Settings</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Service Commission (% to Barber)
                       </label>
                       <input
@@ -563,7 +563,7 @@ export default function ShopSettings() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Product Commission (% to Barber)
                       </label>
                       <input
@@ -580,7 +580,7 @@ export default function ShopSettings() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Tips Go To
                       </label>
                       <select
@@ -603,12 +603,12 @@ export default function ShopSettings() {
 
           {/* Booking Settings Tab */}
           {activeTab === 'booking' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Booking Settings</h2>
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6">Booking Settings</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Advance Booking (Days)
                   </label>
                   <input
@@ -623,7 +623,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Minimum Booking Notice (Hours)
                   </label>
                   <input
@@ -638,7 +638,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Max Bookings Per Day
                   </label>
                   <input
@@ -653,7 +653,7 @@ export default function ShopSettings() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Buffer Time Between Appointments (Minutes)
                   </label>
                   <input
@@ -679,7 +679,7 @@ export default function ShopSettings() {
                     })}
                     className="h-4 w-4 text-olive-600 rounded mr-3"
                   />
-                  <span className="text-sm text-gray-700">Auto-confirm bookings</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Auto-confirm bookings</span>
                 </label>
                 
                 <label className="flex items-center">
@@ -692,7 +692,7 @@ export default function ShopSettings() {
                     })}
                     className="h-4 w-4 text-olive-600 rounded mr-3"
                   />
-                  <span className="text-sm text-gray-700">Require phone number</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Require phone number</span>
                 </label>
                 
                 <label className="flex items-center">
@@ -705,7 +705,7 @@ export default function ShopSettings() {
                     })}
                     className="h-4 w-4 text-olive-600 rounded mr-3"
                   />
-                  <span className="text-sm text-gray-700">Require email address</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Require email address</span>
                 </label>
                 
                 <label className="flex items-center">
@@ -718,7 +718,7 @@ export default function ShopSettings() {
                     })}
                     className="h-4 w-4 text-olive-600 rounded mr-3"
                   />
-                  <span className="text-sm text-gray-700">Allow walk-in appointments</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Allow walk-in appointments</span>
                 </label>
               </div>
             </div>
@@ -726,11 +726,11 @@ export default function ShopSettings() {
 
           {/* Staff Permissions Tab */}
           {activeTab === 'staff' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Staff Permissions</h2>
-                  <p className="text-gray-600">Manage barber access and service permissions</p>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Staff Permissions</h2>
+                  <p className="text-gray-600 dark:text-gray-300">Manage barber access and service permissions</p>
                 </div>
                 <a
                   href="/shop/settings/staff"
@@ -779,24 +779,24 @@ export default function ShopSettings() {
                 </div>
               </div>
               
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-900 mb-2">Quick Actions</h3>
+              <div className="mt-6 p-4 bg-gray-50 dark:bg-muted rounded-lg">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-card-foreground mb-2">Quick Actions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Default new barber permissions:</span>
-                    <span className="font-medium text-gray-900">Basic Level</span>
+                    <span className="text-gray-600 dark:text-gray-300">Default new barber permissions:</span>
+                    <span className="font-medium text-gray-900 dark:text-card-foreground">Basic Level</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Pricing variance allowed:</span>
-                    <span className="font-medium text-gray-900">±10%</span>
+                    <span className="text-gray-600 dark:text-gray-300">Pricing variance allowed:</span>
+                    <span className="font-medium text-gray-900 dark:text-card-foreground">±10%</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Service creation permission:</span>
-                    <span className="font-medium text-gray-900">Intermediate+</span>
+                    <span className="text-gray-600 dark:text-gray-300">Service creation permission:</span>
+                    <span className="font-medium text-gray-900 dark:text-card-foreground">Intermediate+</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Analytics access:</span>
-                    <span className="font-medium text-gray-900">Advanced+</span>
+                    <span className="text-gray-600 dark:text-gray-300">Analytics access:</span>
+                    <span className="font-medium text-gray-900 dark:text-card-foreground">Advanced+</span>
                   </div>
                 </div>
               </div>
@@ -805,12 +805,12 @@ export default function ShopSettings() {
 
           {/* Notifications Tab */}
           {activeTab === 'notifications' && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Notification Settings</h2>
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6">Notification Settings</h2>
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-4">Email Notifications</h3>
+                  <h3 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-4">Email Notifications</h3>
                   <div className="space-y-3">
                     <label className="flex items-center">
                       <input
@@ -822,7 +822,7 @@ export default function ShopSettings() {
                         })}
                         className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
-                      <span className="text-sm text-gray-700">New booking notifications</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">New booking notifications</span>
                     </label>
                     
                     <label className="flex items-center">
@@ -835,7 +835,7 @@ export default function ShopSettings() {
                         })}
                         className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
-                      <span className="text-sm text-gray-700">Cancellation notifications</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Cancellation notifications</span>
                     </label>
                     
                     <label className="flex items-center">
@@ -848,7 +848,7 @@ export default function ShopSettings() {
                         })}
                         className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
-                      <span className="text-sm text-gray-700">Daily summary report</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Daily summary report</span>
                     </label>
                     
                     <label className="flex items-center">
@@ -861,13 +861,13 @@ export default function ShopSettings() {
                         })}
                         className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
-                      <span className="text-sm text-gray-700">Weekly performance report</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Weekly performance report</span>
                     </label>
                   </div>
                 </div>
                 
                 <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-4">SMS Notifications</h3>
+                  <h3 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-4">SMS Notifications</h3>
                   <div className="space-y-3">
                     <label className="flex items-center">
                       <input
@@ -879,7 +879,7 @@ export default function ShopSettings() {
                         })}
                         className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
-                      <span className="text-sm text-gray-700">New booking SMS alerts</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">New booking SMS alerts</span>
                     </label>
                     
                     <label className="flex items-center">
@@ -892,7 +892,7 @@ export default function ShopSettings() {
                         })}
                         className="h-4 w-4 text-olive-600 rounded mr-3"
                       />
-                      <span className="text-sm text-gray-700">Cancellation SMS alerts</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Cancellation SMS alerts</span>
                     </label>
                   </div>
                 </div>

@@ -99,8 +99,8 @@ export default function BarberServices() {
               <ScissorsIcon className="h-8 w-8 text-gold-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Services</h1>
-              <p className="text-gray-600">Manage your personal service offerings and pricing</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">My Services</h1>
+              <p className="text-gray-600 dark:text-gray-300">Manage your personal service offerings and pricing</p>
             </div>
           </div>
           
@@ -109,8 +109,8 @@ export default function BarberServices() {
             <div className="flex items-center space-x-2">
               <ShieldCheckIcon className={`h-6 w-6 text-${permissionLevel.color}-600`} />
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{permissionLevel.description}</p>
-                <p className="text-xs text-gray-500">Permission Level</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">{permissionLevel.description}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-300">Permission Level</p>
               </div>
             </div>
           )}
@@ -150,8 +150,8 @@ export default function BarberServices() {
               <h3 className="text-lg font-semibold text-olive-900">Your Service Permissions</h3>
               <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Service Management */}
-                <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <h4 className="font-medium text-gray-900 mb-2">Service Management</h4>
+                <div className="bg-white dark:bg-card rounded-lg p-4 shadow-sm">
+                  <h4 className="font-medium text-gray-900 dark:text-card-foreground mb-2">Service Management</h4>
                   <ul className="text-sm space-y-1">
                     <li className={permissions.can_create_services ? 'text-green-600' : 'text-gray-400'}>
                       {permissions.can_create_services ? '✓' : '✗'} Create new services
@@ -166,8 +166,8 @@ export default function BarberServices() {
                 </div>
 
                 {/* Pricing Control */}
-                <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <h4 className="font-medium text-gray-900 mb-2">Pricing Control</h4>
+                <div className="bg-white dark:bg-card rounded-lg p-4 shadow-sm">
+                  <h4 className="font-medium text-gray-900 dark:text-card-foreground mb-2">Pricing Control</h4>
                   <ul className="text-sm space-y-1">
                     <li className={permissions.can_set_pricing ? 'text-green-600' : 'text-gray-400'}>
                       {permissions.can_set_pricing ? '✓' : '✗'} Set custom pricing
@@ -184,8 +184,8 @@ export default function BarberServices() {
                 </div>
 
                 {/* Advanced Features */}
-                <div className="bg-white rounded-lg p-4 shadow-sm">
-                  <h4 className="font-medium text-gray-900 mb-2">Advanced Features</h4>
+                <div className="bg-white dark:bg-card rounded-lg p-4 shadow-sm">
+                  <h4 className="font-medium text-gray-900 dark:text-card-foreground mb-2">Advanced Features</h4>
                   <ul className="text-sm space-y-1">
                     <li className={permissions.can_upload_portfolio_images ? 'text-green-600' : 'text-gray-400'}>
                       {permissions.can_upload_portfolio_images ? '✓' : '✗'} Upload portfolio images
@@ -216,32 +216,32 @@ export default function BarberServices() {
       )}
 
       {/* Help Section */}
-      <div className="mt-8 bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">Need More Access?</h3>
-        <p className="text-gray-600 mb-4">
+      <div className="mt-8 bg-gray-50 dark:bg-muted rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-3">Need More Access?</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-4">
           If you need additional permissions to manage your services, pricing, or schedule, 
           contact your shop owner. They can grant you expanded access based on your role and experience.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Basic Level</h4>
-            <ul className="text-gray-600 space-y-1">
+            <h4 className="font-medium text-gray-900 dark:text-card-foreground mb-2">Basic Level</h4>
+            <ul className="text-gray-600 dark:text-gray-300 space-y-1">
               <li>• View schedule</li>
               <li>• Set availability</li>
               <li>• View analytics</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Intermediate Level</h4>
-            <ul className="text-gray-600 space-y-1">
+            <h4 className="font-medium text-gray-900 dark:text-card-foreground mb-2">Intermediate Level</h4>
+            <ul className="text-gray-600 dark:text-gray-300 space-y-1">
               <li>• Modify services</li>
               <li>• Limited pricing (±10%)</li>
               <li>• Client management</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Advanced Level</h4>
-            <ul className="text-gray-600 space-y-1">
+            <h4 className="font-medium text-gray-900 dark:text-card-foreground mb-2">Advanced Level</h4>
+            <ul className="text-gray-600 dark:text-gray-300 space-y-1">
               <li>• Full service control</li>
               <li>• Flexible pricing (±20%)</li>
               <li>• Promotion creation</li>

@@ -48,7 +48,7 @@ function AnalyticsBreadcrumb({ level, levelData, onNavigate }) {
   return (
     <div className="flex items-center space-x-2 mb-6 p-4 bg-gradient-to-r from-olive-50 to-gold-50 rounded-xl border border-olive-200">
       <FunnelIcon className="h-5 w-5 text-olive-600" />
-      <span className="text-sm font-medium text-gray-700">Analytics Navigation:</span>
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Analytics Navigation:</span>
       
       {levels.map((levelItem, index) => {
         const isActive = level === levelItem.id
@@ -145,7 +145,7 @@ function AIAnalyticsInsights({ level, levelData }) {
       ) : insights ? (
         <div className="space-y-4">
           <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700 mb-3">
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
               {insights.response?.substring(0, 200)}...
             </p>
             
@@ -157,7 +157,7 @@ function AIAnalyticsInsights({ level, levelData }) {
                     <span className="flex-shrink-0 w-5 h-5 bg-olive-600 text-white rounded-full flex items-center justify-center text-xs">
                       {idx + 1}
                     </span>
-                    <span className="text-gray-600">{rec}</span>
+                    <span className="text-gray-600 dark:text-gray-300">{rec}</span>
                   </div>
                 ))}
               </div>
@@ -165,7 +165,7 @@ function AIAnalyticsInsights({ level, levelData }) {
           </div>
         </div>
       ) : (
-        <div className="text-center py-4 text-gray-500">
+        <div className="text-center py-4 text-gray-500 dark:text-gray-300">
           <ChartBarIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">Loading AI insights...</p>
         </div>
@@ -246,7 +246,7 @@ function EnterpriseAnalytics({ onDrillDown }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Revenue</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Total Revenue</p>
               <p className="text-2xl font-bold text-green-600">
                 ${enterpriseData.totalRevenue.toLocaleString()}
               </p>
@@ -262,7 +262,7 @@ function EnterpriseAnalytics({ onDrillDown }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Customers</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Total Customers</p>
               <p className="text-2xl font-bold text-olive-600">{enterpriseData.totalCustomers}</p>
               <p className="text-xs text-olive-500 flex items-center mt-1">
                 <ArrowTrendingUpIcon className="h-3 w-3 mr-1" />
@@ -276,7 +276,7 @@ function EnterpriseAnalytics({ onDrillDown }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Active Locations</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Active Locations</p>
               <p className="text-2xl font-bold text-gold-600">{enterpriseData.locations.length}</p>
               <p className="text-xs text-gold-500 flex items-center mt-1">
                 <BuildingStorefrontIcon className="h-3 w-3 mr-1" />
@@ -290,7 +290,7 @@ function EnterpriseAnalytics({ onDrillDown }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Avg Rating</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Avg Rating</p>
               <p className="text-2xl font-bold text-amber-800">{enterpriseData.avgRating}</p>
               <p className="text-xs text-amber-800 flex items-center mt-1">
                 <StarIcon className="h-3 w-3 mr-1" />
@@ -305,7 +305,7 @@ function EnterpriseAnalytics({ onDrillDown }) {
       {/* Location Performance Chart */}
       <Card>
         <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <ChartBarIcon className="h-5 w-5 mr-2 text-gray-700" />
+          <ChartBarIcon className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" />
           Location Performance Overview
         </h3>
         <div className="h-80">
@@ -327,47 +327,47 @@ function EnterpriseAnalytics({ onDrillDown }) {
       {/* Location Drill-Down Table */}
       <Card>
         <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <BuildingStorefrontIcon className="h-5 w-5 mr-2 text-gray-700" />
+          <BuildingStorefrontIcon className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" />
           Location Details - Click to Analyze
         </h3>
         <div className="overflow-x-auto">
           <table className="min-w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-muted">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customers</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barbers</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Efficiency</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Location</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Revenue</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customers</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Barbers</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Rating</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Efficiency</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-card divide-y divide-gray-200">
               {enterpriseData.locations.map((location) => (
-                <tr key={location.id} className="hover:bg-gray-50">
+                <tr key={location.id} className="hover:bg-gray-50 dark:bg-muted">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <MapPinIcon className="h-5 w-5 text-gray-400 mr-3" />
-                      <span className="text-sm font-medium text-gray-900">{location.name}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">{location.name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                     ${location.revenue.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                     {location.customers}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                     {location.barbers}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <StarIcon className="h-4 w-4 text-yellow-400 mr-1" />
-                      <span className="text-sm text-gray-900">{location.rating}</span>
+                      <span className="text-sm text-gray-900 dark:text-card-foreground">{location.rating}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                     ${(location.revenue / location.barbers).toFixed(0)}/barber
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -435,7 +435,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Location Revenue</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Location Revenue</p>
               <p className="text-2xl font-bold text-green-600">
                 ${locationData.revenue.toLocaleString()}
               </p>
@@ -451,7 +451,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Active Customers</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Active Customers</p>
               <p className="text-2xl font-bold text-olive-600">{locationData.customers}</p>
               <p className="text-xs text-olive-500 flex items-center mt-1">
                 <UserGroupIcon className="h-3 w-3 mr-1" />
@@ -465,7 +465,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Team Size</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Team Size</p>
               <p className="text-2xl font-bold text-gold-600">{locationData.barbers}</p>
               <p className="text-xs text-gold-500 flex items-center mt-1">
                 <ScissorsIcon className="h-3 w-3 mr-1" />
@@ -479,7 +479,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Customer Rating</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Customer Rating</p>
               <p className="text-2xl font-bold text-amber-800">{locationData.rating}</p>
               <p className="text-xs text-amber-800 flex items-center mt-1">
                 <StarIcon className="h-3 w-3 mr-1" />
@@ -494,7 +494,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
       {/* Weekly Trends */}
       <Card>
         <h3 className="text-lg font-semibold mb-4 flex items-center">
-          <CalendarDaysIcon className="h-5 w-5 mr-2 text-gray-700" />
+          <CalendarDaysIcon className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" />
           Weekly Performance Trends
         </h3>
         <div className="h-80">
@@ -518,7 +518,7 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold flex items-center">
-            <ScissorsIcon className="h-5 w-5 mr-2 text-gray-700" />
+            <ScissorsIcon className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" />
             Individual Barber Performance
           </h3>
           <button
@@ -531,39 +531,39 @@ function LocationAnalytics({ locationData, onDrillDown, onNavigateUp }) {
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-muted">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barber</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customers</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bookings</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Efficiency</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Barber</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Revenue</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customers</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Rating</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bookings</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Efficiency</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-card divide-y divide-gray-200">
               {barberData.map((barber) => (
-                <tr key={barber.id} className="hover:bg-gray-50">
+                <tr key={barber.id} className="hover:bg-gray-50 dark:bg-muted">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <ScissorsIcon className="h-5 w-5 text-gray-400 mr-3" />
-                      <span className="text-sm font-medium text-gray-900">{barber.name}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">{barber.name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                     ${barber.revenue.toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                     {barber.customers}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <StarIcon className="h-4 w-4 text-yellow-400 mr-1" />
-                      <span className="text-sm text-gray-900">{barber.rating}</span>
+                      <span className="text-sm text-gray-900 dark:text-card-foreground">{barber.rating}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                     {barber.bookings}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -640,7 +640,7 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Monthly Revenue</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Monthly Revenue</p>
               <p className="text-2xl font-bold text-green-600">
                 ${barberData.revenue.toLocaleString()}
               </p>
@@ -656,7 +656,7 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Regular Customers</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Regular Customers</p>
               <p className="text-2xl font-bold text-olive-600">{barberData.customers}</p>
               <p className="text-xs text-olive-500 flex items-center mt-1">
                 <UserGroupIcon className="h-3 w-3 mr-1" />
@@ -670,7 +670,7 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Customer Rating</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Customer Rating</p>
               <p className="text-2xl font-bold text-amber-800">{barberData.rating}</p>
               <p className="text-xs text-amber-800 flex items-center mt-1">
                 <StarIcon className="h-3 w-3 mr-1" />
@@ -684,7 +684,7 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Efficiency Score</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Efficiency Score</p>
               <p className="text-2xl font-bold text-gold-600">{barberData.efficiency}%</p>
               <p className="text-xs text-gold-500 flex items-center mt-1">
                 <ClockIcon className="h-3 w-3 mr-1" />
@@ -700,7 +700,7 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold flex items-center">
-            <ChartBarIcon className="h-5 w-5 mr-2 text-gray-700" />
+            <ChartBarIcon className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" />
             Daily Performance - {barberData.name}
           </h3>
           <button
@@ -731,7 +731,7 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <ScissorsIcon className="h-5 w-5 mr-2 text-gray-700" />
+            <ScissorsIcon className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" />
             Service Distribution
           </h3>
           <div className="h-64">
@@ -757,7 +757,7 @@ function BarberAnalytics({ barberData, onNavigateUp }) {
 
         <Card>
           <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <StarIcon className="h-5 w-5 mr-2 text-gray-700" />
+            <StarIcon className="h-5 w-5 mr-2 text-gray-700 dark:text-gray-300" />
             Performance Insights
           </h3>
           <div className="space-y-4">
@@ -815,11 +815,11 @@ function KnowledgeEnhancedAnalytics() {
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground flex items-center">
           <ChartBarIcon className="h-8 w-8 mr-3 text-olive-600" />
           Knowledge-Enhanced Analytics
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-600 dark:text-gray-300 mt-2">
           Multi-dimensional business intelligence with AI-powered insights
         </p>
       </div>

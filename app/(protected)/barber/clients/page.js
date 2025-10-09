@@ -151,13 +151,13 @@ export default function BarberClients() {
     
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4">
-          <div className="p-6 border-b border-gray-200">
+        <div className="bg-white dark:bg-card rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4">
+          <div className="p-6 border-b border-gray-200 dark:border-border">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Client Details</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-card-foreground">Client Details</h2>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 ✕
               </button>
@@ -170,7 +170,7 @@ export default function BarberClients() {
                 <UserGroupIcon className="h-8 w-8 text-amber-700" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{client.name}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">{client.name}</h3>
                 <div className="flex items-center space-x-3 mt-1">
                   {getClientTypeBadge(client.type)}
                   <div className="flex items-center">
@@ -187,44 +187,44 @@ export default function BarberClients() {
             
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
-                <p className="text-sm text-gray-600">Email</p>
-                <p className="text-sm font-medium text-gray-900">{client.email}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Email</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">{client.email}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Phone</p>
-                <p className="text-sm font-medium text-gray-900">{client.phone}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Phone</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">{client.phone}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Appointments</p>
-                <p className="text-sm font-medium text-gray-900">{client.total_appointments}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Total Appointments</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">{client.total_appointments}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Spent</p>
-                <p className="text-sm font-medium text-gray-900">${client.total_spent}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Total Spent</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">${client.total_spent}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Favorite Service</p>
-                <p className="text-sm font-medium text-gray-900">{client.favorite_service}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Favorite Service</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">{client.favorite_service}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Loyalty Points</p>
-                <p className="text-sm font-medium text-gray-900">{client.loyalty_points} pts</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Loyalty Points</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">{client.loyalty_points} pts</p>
               </div>
             </div>
             
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <p className="text-sm font-medium text-gray-700 mb-2">Notes</p>
-              <p className="text-sm text-gray-600">{client.notes}</p>
+            <div className="bg-gray-50 dark:bg-muted rounded-lg p-4 mb-6">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Notes</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">{client.notes}</p>
             </div>
             
             <div className="flex space-x-3">
               <button className="flex-1 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
                 Book Appointment
               </button>
-              <button className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+              <button className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-muted">
                 Send Message
               </button>
-              <button className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+              <button className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:bg-muted">
                 View History
               </button>
             </div>
@@ -243,14 +243,14 @@ export default function BarberClients() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-card shadow-sm border-b">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Clients</h1>
-              <p className="text-sm text-gray-600">Manage your client relationships</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground">My Clients</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Manage your client relationships</p>
             </div>
             <button className="px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
               Add New Client
@@ -261,7 +261,7 @@ export default function BarberClients() {
 
       <div className="p-6">
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-4 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="relative flex-1 max-w-md">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -323,7 +323,7 @@ export default function BarberClients() {
           {filteredClients.map((client) => (
             <div
               key={client.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
+              className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6 hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => setSelectedClient(client)}
             >
               <div className="flex items-center justify-between mb-4">
@@ -332,7 +332,7 @@ export default function BarberClients() {
                     <UserGroupIcon className="h-5 w-5 text-amber-700" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">{client.name}</p>
+                    <p className="font-medium text-gray-900 dark:text-card-foreground">{client.name}</p>
                     <div className="flex items-center">
                       {[...Array(5)].map((_, i) => (
                         <StarIcon
@@ -347,19 +347,19 @@ export default function BarberClients() {
               </div>
               
               <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <PhoneIcon className="h-4 w-4 mr-2" />
                   {client.phone}
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <EnvelopeIcon className="h-4 w-4 mr-2" />
                   {client.email}
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <CalendarDaysIcon className="h-4 w-4 mr-2" />
                   {client.total_appointments} appointments
                 </div>
-                <div className="flex items-center text-sm text-gray-600">
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                   <CurrencyDollarIcon className="h-4 w-4 mr-2" />
                   ${client.total_spent} lifetime value
                 </div>
@@ -367,14 +367,14 @@ export default function BarberClients() {
               
               <div className="mt-4 pt-4 border-t border-gray-100">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Last visit</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="text-gray-600 dark:text-gray-300">Last visit</span>
+                  <span className="font-medium text-gray-900 dark:text-card-foreground">
                     {new Date(client.last_appointment).toLocaleDateString()}
                   </span>
                 </div>
                 {client.next_appointment && (
                   <div className="flex items-center justify-between text-sm mt-1">
-                    <span className="text-gray-600">Next visit</span>
+                    <span className="text-gray-600 dark:text-gray-300">Next visit</span>
                     <span className="font-medium text-green-600">
                       {new Date(client.next_appointment).toLocaleDateString()}
                     </span>
@@ -388,8 +388,8 @@ export default function BarberClients() {
         {filteredClients.length === 0 && (
           <div className="text-center py-12">
             <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No clients found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-card-foreground">No clients found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
               Try adjusting your search or filter criteria
             </p>
           </div>

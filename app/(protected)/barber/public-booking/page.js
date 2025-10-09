@@ -143,24 +143,24 @@ export default function PublicBookingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your public booking page...</p>
+          <p className="text-gray-600 dark:text-gray-300">Loading your public booking page...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white dark:bg-card shadow-sm border-b border-gray-200 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <GlobeAltIcon className="h-6 w-6 text-olive-600" />
-              <h1 className="text-lg font-semibold text-gray-900">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">
                 Public Booking Page
               </h1>
               <span className="px-2 py-1 bg-indigo-100 text-olive-700 text-xs font-medium rounded-full">
@@ -171,7 +171,7 @@ export default function PublicBookingPage() {
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => copyToClipboard(urls.main, 'header')}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-gray-50 dark:bg-muted"
               >
                 {copied.header ? (
                   <CheckIcon className="h-4 w-4 mr-2 text-green-600" />
@@ -194,7 +194,7 @@ export default function PublicBookingPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="-mb-px flex space-x-8">
             {tabs.map((tab) => {
@@ -226,7 +226,7 @@ export default function PublicBookingPage() {
         {activeTab === 'preview' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg overflow-hidden">
                 <div className="bg-gradient-to-r from-indigo-500 to-gold-600 px-6 py-4">
                   <h2 className="text-lg font-semibold text-white flex items-center">
                     <EyeIcon className="h-5 w-5 mr-2" />
@@ -245,7 +245,7 @@ export default function PublicBookingPage() {
                       <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
                       <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                     </div>
-                    <div className="flex-1 bg-white rounded px-3 py-1 text-sm text-gray-600 truncate">
+                    <div className="flex-1 bg-white dark:bg-card rounded px-3 py-1 text-sm text-gray-600 dark:text-gray-300 truncate">
                       {urls.main}
                     </div>
                   </div>
@@ -259,13 +259,13 @@ export default function PublicBookingPage() {
                         {previewData.name.split(' ').map(n => n[0]).join('')}
                       </span>
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-2">
                       Book with {previewData.name}
                     </h1>
-                    <p className="text-lg text-gray-600 mb-2">
+                    <p className="text-lg text-gray-600 dark:text-gray-300 mb-2">
                       {previewData.business}
                     </p>
-                    <p className="text-gray-500 mb-4">
+                    <p className="text-gray-500 dark:text-gray-300 mb-4">
                       {previewData.location}
                     </p>
                     
@@ -282,7 +282,7 @@ export default function PublicBookingPage() {
                           />
                         ))}
                       </div>
-                      <span className="ml-2 text-gray-600">
+                      <span className="ml-2 text-gray-600 dark:text-gray-300">
                         {previewData.rating} ({previewData.totalReviews} reviews)
                       </span>
                     </div>
@@ -290,25 +290,25 @@ export default function PublicBookingPage() {
 
                   {/* Services */}
                   <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                       Select a Service
                     </h3>
                     <div className="space-y-3">
                       {previewData.services.map((service) => (
                         <div
                           key={service.id}
-                          className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer transition-colors"
+                          className="flex items-center justify-between p-4 border border-gray-200 dark:border-border rounded-lg hover:border-indigo-300 hover:bg-indigo-50 cursor-pointer transition-colors"
                         >
                           <div>
-                            <h4 className="font-medium text-gray-900">
+                            <h4 className="font-medium text-gray-900 dark:text-card-foreground">
                               {service.name}
                             </h4>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-gray-300">
                               {service.duration} minutes
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-gray-900">
+                            <p className="font-semibold text-gray-900 dark:text-card-foreground">
                               ${service.price}
                             </p>
                           </div>
@@ -326,8 +326,8 @@ export default function PublicBookingPage() {
 
             {/* Side Panel - Quick Actions */}
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4 flex items-center">
                   <ShareIcon className="h-5 w-5 mr-2 text-olive-600" />
                   Quick Actions
                 </h3>
@@ -335,7 +335,7 @@ export default function PublicBookingPage() {
                 <div className="space-y-3">
                   <button
                     onClick={() => window.open(urls.main, '_blank')}
-                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-muted"
                   >
                     <GlobeAltIcon className="h-4 w-4 mr-2" />
                     View Live Page
@@ -343,7 +343,7 @@ export default function PublicBookingPage() {
                   
                   <button
                     onClick={() => copyToClipboard(urls.main, 'sidebar')}
-                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-muted"
                   >
                     {copied.sidebar ? (
                       <CheckIcon className="h-4 w-4 mr-2 text-green-600" />
@@ -364,8 +364,8 @@ export default function PublicBookingPage() {
               </div>
 
               {/* SEO Status */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4 flex items-center">
                   <PhotoIcon className="h-5 w-5 mr-2 text-green-600" />
                   SEO Status
                 </h3>
@@ -373,19 +373,19 @@ export default function PublicBookingPage() {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700">Search Engine Optimized</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Search Engine Optimized</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700">Mobile Responsive</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Mobile Responsive</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700">Schema.org Markup</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Schema.org Markup</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700">Social Media Ready</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Social Media Ready</span>
                   </div>
                 </div>
                 
@@ -404,15 +404,15 @@ export default function PublicBookingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* URL Variants */}
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4 flex items-center">
                   <LinkIcon className="h-5 w-5 mr-2 text-olive-600" />
                   Booking URLs
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Main Booking URL
                     </label>
                     <div className="flex">
@@ -420,7 +420,7 @@ export default function PublicBookingPage() {
                         type="text"
                         value={urls.main}
                         readOnly
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm text-gray-600"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 dark:bg-muted text-sm text-gray-600 dark:text-gray-300"
                       />
                       <button
                         onClick={() => copyToClipboard(urls.main, 'main')}
@@ -432,7 +432,7 @@ export default function PublicBookingPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Social Media Link
                     </label>
                     <div className="flex">
@@ -440,7 +440,7 @@ export default function PublicBookingPage() {
                         type="text"
                         value={urls.utmSocial}
                         readOnly
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm text-gray-600"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 dark:bg-muted text-sm text-gray-600 dark:text-gray-300"
                       />
                       <button
                         onClick={() => copyToClipboard(urls.utmSocial, 'social')}
@@ -452,7 +452,7 @@ export default function PublicBookingPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Email Link
                     </label>
                     <div className="flex">
@@ -460,7 +460,7 @@ export default function PublicBookingPage() {
                         type="text"
                         value={urls.utmEmail}
                         readOnly
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm text-gray-600"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50 dark:bg-muted text-sm text-gray-600 dark:text-gray-300"
                       />
                       <button
                         onClick={() => copyToClipboard(urls.utmEmail, 'email')}
@@ -476,15 +476,15 @@ export default function PublicBookingPage() {
 
             {/* QR Code Generator */}
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4 flex items-center">
                   <QrCodeIcon className="h-5 w-5 mr-2 text-olive-600" />
                   QR Code Generator
                 </h2>
                 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       QR Code Size
                     </label>
                     <div className="flex items-center space-x-4">
@@ -496,14 +496,14 @@ export default function PublicBookingPage() {
                         onChange={(e) => setQrSize(Number(e.target.value))}
                         className="flex-1"
                       />
-                      <span className="text-sm text-gray-600 min-w-[60px]">
+                      <span className="text-sm text-gray-600 dark:text-gray-300 min-w-[60px]">
                         {qrSize}px
                       </span>
                     </div>
                   </div>
 
                   <div className="text-center">
-                    <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg shadow-inner">
+                    <div className="inline-block p-4 bg-white dark:bg-card border-2 border-gray-200 dark:border-border rounded-lg shadow-inner">
                       {qrCodeUrl ? (
                         <img 
                           src={qrCodeUrl} 
@@ -550,8 +550,8 @@ export default function PublicBookingPage() {
         {activeTab === 'templates' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4 flex items-center">
                   <DevicePhoneMobileIcon className="h-5 w-5 mr-2 text-gold-600" />
                   Social Media Templates
                 </h2>
@@ -559,7 +559,7 @@ export default function PublicBookingPage() {
                 <div className="space-y-4">
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Instagram/Facebook
                       </label>
                       <button
@@ -573,13 +573,13 @@ export default function PublicBookingPage() {
                       value={shareTemplates.social.instagram}
                       readOnly
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 dark:bg-muted text-sm resize-none"
                     />
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         WhatsApp
                       </label>
                       <button
@@ -593,13 +593,13 @@ export default function PublicBookingPage() {
                       value={shareTemplates.social.whatsapp}
                       readOnly
                       rows={2}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 dark:bg-muted text-sm resize-none"
                     />
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Twitter/X
                       </label>
                       <button
@@ -613,7 +613,7 @@ export default function PublicBookingPage() {
                       value={shareTemplates.social.twitter}
                       readOnly
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 dark:bg-muted text-sm resize-none"
                     />
                   </div>
                 </div>
@@ -621,15 +621,15 @@ export default function PublicBookingPage() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4 flex items-center">
                   <EnvelopeIcon className="h-5 w-5 mr-2 text-olive-600" />
                   Email Template
                 </h2>
                 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Professional Email
                     </label>
                     <button
@@ -643,7 +643,7 @@ export default function PublicBookingPage() {
                     value={shareTemplates.business.email}
                     readOnly
                     rows={8}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 dark:bg-muted text-sm resize-none"
                   />
                 </div>
               </div>
@@ -667,8 +667,8 @@ export default function PublicBookingPage() {
         {activeTab === 'analytics' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4 flex items-center">
                   <ChartBarIcon className="h-5 w-5 mr-2 text-green-600" />
                   UTM Tracking
                 </h2>
@@ -676,38 +676,38 @@ export default function PublicBookingPage() {
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700">Source tracking (social, email, print)</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Source tracking (social, email, print)</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700">Medium identification (share, direct, qr)</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Medium identification (share, direct, qr)</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700">Campaign performance (booking)</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Campaign performance (booking)</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700">Geographic visitor data</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Geographic visitor data</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Marketing Attribution
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-sm text-gray-600">Social Media</span>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-muted rounded">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Social Media</span>
                     <span className="text-sm font-medium">utm_source=social</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-sm text-gray-600">Email Campaign</span>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-muted rounded">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Email Campaign</span>
                     <span className="text-sm font-medium">utm_source=email</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                    <span className="text-sm text-gray-600">QR Code</span>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-muted rounded">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">QR Code</span>
                     <span className="text-sm font-medium">utm_source=print</span>
                   </div>
                 </div>
@@ -715,8 +715,8 @@ export default function PublicBookingPage() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Performance Metrics
                 </h3>
                 <div className="grid grid-cols-2 gap-4">

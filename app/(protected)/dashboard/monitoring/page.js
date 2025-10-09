@@ -60,14 +60,14 @@ function MonitoringPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">AI System Monitoring</h1>
-              <p className="mt-2 text-lg text-gray-600">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">AI System Monitoring</h1>
+              <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
                 Real-time monitoring and health dashboard for AI agents and infrastructure
               </p>
             </div>
@@ -75,7 +75,7 @@ function MonitoringPage() {
             <div className="flex items-center space-x-4">
               {/* Auto Refresh Toggle */}
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700">Auto Refresh:</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Auto Refresh:</label>
                 <button
                   onClick={() => setAutoRefresh(!autoRefresh)}
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2 ${
@@ -92,7 +92,7 @@ function MonitoringPage() {
 
               {/* Refresh Interval */}
               <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium text-gray-700">Interval:</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Interval:</label>
                 <select
                   value={refreshInterval}
                   onChange={(e) => setRefreshInterval(parseInt(e.target.value))}
@@ -108,7 +108,7 @@ function MonitoringPage() {
               {/* Fullscreen Toggle */}
               <button
                 onClick={toggleFullscreen}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors"
                 title="Toggle Fullscreen"
               >
                 <EyeIcon className="h-5 w-5" />
@@ -116,7 +116,7 @@ function MonitoringPage() {
 
               {/* Settings */}
               <button
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 transition-colors"
                 title="Settings"
               >
                 <Cog6ToothIcon className="h-5 w-5" />
@@ -126,7 +126,7 @@ function MonitoringPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="border-b border-gray-200 mb-8">
+        <div className="border-b border-gray-200 dark:border-border mb-8">
           <nav className="-mb-px flex space-x-8">
             {tabs.map((tab) => {
               const IconComponent = tab.icon
@@ -178,11 +178,11 @@ function MonitoringPage() {
         </div>
 
         {/* Status Bar */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-3">
-          <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-gray-200 dark:border-border px-6 py-3">
+          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300">
             <div className="flex items-center space-x-6">
               <span>
-                Monitoring: <span className="font-medium text-gray-900">{tabs.find(t => t.id === activeTab)?.name}</span>
+                Monitoring: <span className="font-medium text-gray-900 dark:text-card-foreground">{tabs.find(t => t.id === activeTab)?.name}</span>
               </span>
               <span>
                 Auto Refresh: <span className={`font-medium ${autoRefresh ? 'text-green-600' : 'text-red-600'}`}>
@@ -191,7 +191,7 @@ function MonitoringPage() {
               </span>
               {autoRefresh && (
                 <span>
-                  Interval: <span className="font-medium text-gray-900">{refreshInterval / 1000}s</span>
+                  Interval: <span className="font-medium text-gray-900 dark:text-card-foreground">{refreshInterval / 1000}s</span>
                 </span>
               )}
             </div>

@@ -11,7 +11,7 @@ const EnhancedProfessionalCalendar = dynamic(
     loading: () => (
       <div className="flex items-center justify-center h-[600px]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
-        <p className="mt-4 text-gray-600">Loading Calendar...</p>
+        <p className="mt-4 text-gray-600 dark:text-gray-300">Loading Calendar...</p>
       </div>
     )
   }
@@ -67,16 +67,16 @@ export default function CalendarPage() {
     <div className="p-6">
       {/* Calendar Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
           Appointment Calendar
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Manage your barbershop appointments with drag-and-drop scheduling
         </p>
       </div>
 
       {/* Calendar Component */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white dark:bg-card rounded-lg shadow">
         <EnhancedProfessionalCalendar
           resources={resources}
           events={events}
@@ -89,18 +89,18 @@ export default function CalendarPage() {
       </div>
 
       {/* Instructions */}
-      <div className="mt-6 bg-olive-50 border border-olive-200 rounded-lg p-4">
+      <div className="mt-6 bg-olive-50 dark:bg-olive-900/20 border border-olive-200 dark:border-olive-800 rounded-lg p-4">
         <div className="flex items-start">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-olive-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-5 w-5 text-olive-600 dark:text-olive-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-olive-800 mb-2">
+            <h3 className="text-sm font-medium text-olive-800 dark:text-olive-200 mb-2">
               How to Use the Calendar
             </h3>
-            <ul className="text-sm text-olive-700 space-y-1 list-disc list-inside">
+            <ul className="text-sm text-olive-700 dark:text-olive-300 space-y-1 list-disc list-inside">
               <li>Click on time slots to create new appointments</li>
               <li>Click on existing appointments to view details</li>
               <li>Use the view buttons to switch between day, week, and month views</li>

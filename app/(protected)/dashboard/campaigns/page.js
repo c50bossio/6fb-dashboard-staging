@@ -321,10 +321,10 @@ export default function CampaignsPage() {
 
   if (authLoading || initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading campaigns...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading campaigns...</p>
         </div>
       </div>
     )
@@ -332,18 +332,18 @@ export default function CampaignsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted flex items-center justify-center">
         <div className="text-center">
           <ExclamationTriangleIcon className="h-12 w-12 text-amber-800 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
-          <p className="text-gray-600">You must be logged in to access campaigns.</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-card-foreground mb-2">Authentication Required</h2>
+          <p className="text-gray-600 dark:text-gray-300">You must be logged in to access campaigns.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       <div className="p-8">
         {/* Notification */}
         {notification && (
@@ -360,8 +360,8 @@ export default function CampaignsPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Campaign Management</h1>
-              <p className="text-gray-600">Create and manage your SMS and email marketing campaigns</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-2">Campaign Management</h1>
+              <p className="text-gray-600 dark:text-gray-300">Create and manage your SMS and email marketing campaigns</p>
               {marketingAccounts.length === 0 && (
                 <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                   <div className="flex items-center">
@@ -411,46 +411,46 @@ export default function CampaignsPage() {
 
         {/* Campaign Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-card p-6 rounded-lg shadow">
             <div className="flex items-center">
               <ChartBarIcon className="h-8 w-8 text-olive-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Campaigns</p>
-                <p className="text-2xl font-bold text-gray-900">{campaignStats.totalCampaigns}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Campaigns</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{campaignStats.totalCampaigns}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-card p-6 rounded-lg shadow">
             <div className="flex items-center">
               <UserGroupIcon className="h-8 w-8 text-green-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Reach</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Reach</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {campaignStats.totalReach.toLocaleString()}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-card p-6 rounded-lg shadow">
             <div className="flex items-center">
               <EnvelopeIcon className="h-8 w-8 text-gold-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Email Campaigns</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Email Campaigns</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {campaignStats.emailCampaigns}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-white dark:bg-card p-6 rounded-lg shadow">
             <div className="flex items-center">
               <PhoneIcon className="h-8 w-8 text-orange-600" />
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">SMS Campaigns</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">SMS Campaigns</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {campaignStats.smsCampaigns}
                 </p>
               </div>
@@ -459,13 +459,13 @@ export default function CampaignsPage() {
         </div>
 
         {/* Campaigns List */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white dark:bg-card rounded-lg shadow">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Campaigns</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Recent Campaigns</h3>
               <button 
                 onClick={handleExportReport}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-muted"
               >
                 Export Report
               </button>
@@ -474,47 +474,47 @@ export default function CampaignsPage() {
             {campaigns.length === 0 ? (
               <div className="text-center py-12">
                 <EnvelopeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-sm font-medium text-gray-900 mb-2">No campaigns yet</h3>
-                <p className="text-sm text-gray-500">Get started by creating your first email or SMS campaign.</p>
+                <h3 className="text-sm font-medium text-gray-900 dark:text-card-foreground mb-2">No campaigns yet</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-300">Get started by creating your first email or SMS campaign.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-muted">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Campaign
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Type
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Audience
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Performance
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Cost
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-card divide-y divide-gray-200">
                     {campaigns.map((campaign) => (
-                      <tr key={campaign.id} className="hover:bg-gray-50">
+                      <tr key={campaign.id} className="hover:bg-gray-50 dark:bg-muted">
                         <td className="px-6 py-4">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{campaign.name}</div>
-                            <div className="text-sm text-gray-500 truncate max-w-xs">
+                            <div className="text-sm font-medium text-gray-900 dark:text-card-foreground">{campaign.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-300 truncate max-w-xs">
                               {campaign.subject || campaign.message}
                             </div>
                           </div>
@@ -526,7 +526,7 @@ export default function CampaignsPage() {
                             ) : (
                               <PhoneIcon className="h-4 w-4 text-green-600 mr-2" />
                             )}
-                            <span className="text-sm text-gray-900 capitalize">{campaign.type}</span>
+                            <span className="text-sm text-gray-900 dark:text-card-foreground capitalize">{campaign.type}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -534,15 +534,15 @@ export default function CampaignsPage() {
                             {campaign.status?.replace('_', ' ')}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                           <div>
                             <div>Count: {campaign.analytics?.total_sent || campaign.audience_count || 0}</div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-500 dark:text-gray-300">
                               {campaign.audience_filters?.segment || 'all'} customers
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                           {campaign.analytics ? (
                             <div>
                               <div>Delivery: {campaign.analytics.delivery_rate || 0}%</div>
@@ -554,13 +554,13 @@ export default function CampaignsPage() {
                               )}
                             </div>
                           ) : (
-                            <span className="text-gray-500">No data</span>
+                            <span className="text-gray-500 dark:text-gray-300">No data</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                           {campaign.estimated_cost ? formatCurrency(campaign.estimated_cost) : '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                           {formatDate(campaign.created_at || campaign.scheduled_at)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -584,13 +584,13 @@ export default function CampaignsPage() {
 
       {/* Billing Section */}
       {showBillingSection && (
-        <div className="mt-8 bg-white rounded-lg shadow">
+        <div className="mt-8 bg-white dark:bg-card rounded-lg shadow">
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Billing & Payment Methods</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Billing & Payment Methods</h3>
               <button
                 onClick={() => setShowBillingSection(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 <span className="sr-only">Close</span>
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -602,26 +602,26 @@ export default function CampaignsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Billing Accounts & Payment Methods */}
               <div>
-                <h4 className="text-md font-medium text-gray-900 mb-4">Billing Accounts</h4>
+                <h4 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-4">Billing Accounts</h4>
                 {marketingAccounts.length === 0 ? (
                   <div className="text-center py-8 border border-dashed border-gray-300 rounded-lg">
                     <CreditCardIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-sm text-gray-500">No billing accounts configured</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-300">No billing accounts configured</p>
                     <p className="text-xs text-gray-400 mt-1">Set up a billing account to start sending campaigns</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {marketingAccounts.map((account) => (
-                      <div key={account.id} className="p-4 border border-gray-200 rounded-lg">
+                      <div key={account.id} className="p-4 border border-gray-200 dark:border-border rounded-lg">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h5 className="font-medium text-gray-900">{account.account_name}</h5>
-                            <p className="text-sm text-gray-500 mt-1">{account.description}</p>
+                            <h5 className="font-medium text-gray-900 dark:text-card-foreground">{account.account_name}</h5>
+                            <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">{account.description}</p>
                             <div className="mt-2 flex items-center space-x-4">
-                              <span className="text-xs text-gray-600">
+                              <span className="text-xs text-gray-600 dark:text-gray-300">
                                 Limit: {formatCurrency(account.monthly_spend_limit)}/month
                               </span>
-                              <span className="text-xs text-gray-600">
+                              <span className="text-xs text-gray-600 dark:text-gray-300">
                                 Spent: {formatCurrency(account.total_spent || 0)}
                               </span>
                             </div>
@@ -643,23 +643,23 @@ export default function CampaignsPage() {
 
                 {/* Payment Methods */}
                 <div className="mt-6">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Payment Methods</h4>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-4">Payment Methods</h4>
                   {paymentMethods.length === 0 ? (
                     <div className="text-center py-6 border border-dashed border-gray-300 rounded-lg">
                       <CreditCardIcon className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-                      <p className="text-sm text-gray-500">No payment methods</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-300">No payment methods</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {paymentMethods.map((method) => (
-                        <div key={method.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                        <div key={method.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-border rounded-lg">
                           <div className="flex items-center">
                             <CreditCardIcon className="h-5 w-5 text-gray-400 mr-3" />
                             <div>
-                              <p className="text-sm font-medium text-gray-900">
+                              <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                                 {method.card_brand} •••• {method.card_last4}
                               </p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-500 dark:text-gray-300">
                                 Expires {method.card_exp_month}/{method.card_exp_year}
                               </p>
                             </div>
@@ -678,31 +678,31 @@ export default function CampaignsPage() {
 
               {/* Recent Billing History */}
               <div>
-                <h4 className="text-md font-medium text-gray-900 mb-4">Recent Billing History</h4>
+                <h4 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-4">Recent Billing History</h4>
                 {billingHistory.length === 0 ? (
                   <div className="text-center py-8 border border-dashed border-gray-300 rounded-lg">
                     <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-sm text-gray-500">No billing history</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-300">No billing history</p>
                     <p className="text-xs text-gray-400 mt-1">Campaign charges will appear here</p>
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {billingHistory.slice(0, 10).map((transaction) => (
-                      <div key={transaction.id} className="p-3 border border-gray-200 rounded-lg">
+                      <div key={transaction.id} className="p-3 border border-gray-200 dark:border-border rounded-lg">
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                               {transaction.campaign_name}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 dark:text-gray-300">
                               {transaction.campaign_type} • {transaction.recipients_count} recipients
                             </p>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
                               {formatDate(transaction.created_at)}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                               {formatCurrency(transaction.amount_charged)}
                             </p>
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(transaction.payment_status)}`}>
@@ -717,7 +717,7 @@ export default function CampaignsPage() {
                 
                 {billingHistory.length > 10 && (
                   <div className="mt-4 text-center">
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-300">
                       Showing 10 of {billingHistory.length} transactions
                     </p>
                   </div>
@@ -731,15 +731,15 @@ export default function CampaignsPage() {
       {/* Create Campaign Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-card rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-card-foreground">
                   Create {selectedCampaignType.toUpperCase()} Campaign
                 </h3>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
                 >
                   <span className="sr-only">Close</span>
                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -755,7 +755,7 @@ export default function CampaignsPage() {
               }}>
                 {/* Billing Account Selection */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <CreditCardIcon className="h-4 w-4 inline mr-1" />
                     Billing Account *
                   </label>
@@ -772,7 +772,7 @@ export default function CampaignsPage() {
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
                     Platform costs will be charged to the selected account with markup applied.
                   </p>
                 </div>
@@ -780,7 +780,7 @@ export default function CampaignsPage() {
                 {/* Campaign Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Campaign Name
                     </label>
                     <input
@@ -792,7 +792,7 @@ export default function CampaignsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Target Audience *
                     </label>
                     <select 
@@ -820,7 +820,7 @@ export default function CampaignsPage() {
                 {/* Email-specific fields */}
                 {selectedCampaignType === 'email' && (
                   <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Subject Line *
                     </label>
                     <input
@@ -835,7 +835,7 @@ export default function CampaignsPage() {
 
                 {/* Message */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {selectedCampaignType === 'email' ? 'Email Content' : 'SMS Message'} *
                   </label>
                   <textarea
@@ -850,7 +850,7 @@ export default function CampaignsPage() {
                     required
                   />
                   {selectedCampaignType === 'sms' && (
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
                       Keep SMS messages under 160 characters to avoid additional charges.
                     </p>
                   )}
@@ -858,7 +858,7 @@ export default function CampaignsPage() {
 
                 {/* Scheduling */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <CalendarIcon className="h-4 w-4 inline mr-1" />
                     Schedule (Optional)
                   </label>
@@ -868,7 +868,7 @@ export default function CampaignsPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
                     min={new Date().toISOString().slice(0, 16)}
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
                     Leave blank to send immediately, or schedule for a future date/time.
                   </p>
                 </div>
@@ -898,7 +898,7 @@ export default function CampaignsPage() {
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 rounded-md hover:bg-gray-50 dark:bg-muted"
                   >
                     Cancel
                   </button>

@@ -235,12 +235,12 @@ export default function ShopWebsiteCustomization() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white dark:bg-card shadow-sm border-b border-gray-200 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <BuildingStorefrontIcon className="h-6 w-6 text-olive-600" />
-              <h1 className="text-lg font-semibold text-gray-900">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">
                 Shop Website Customization
               </h1>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -255,7 +255,7 @@ export default function ShopWebsiteCustomization() {
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => window.open(`/shop/${settings.slug}`, '_blank')}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-background"
+                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-background"
               >
                 <EyeIcon className="h-4 w-4 mr-2" />
                 View Live
@@ -295,7 +295,7 @@ export default function ShopWebsiteCustomization() {
       )}
 
       {/* Tab Navigation */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-card border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="-mb-px flex space-x-8 overflow-x-auto">
             {tabs.map((tab) => {
@@ -327,14 +327,14 @@ export default function ShopWebsiteCustomization() {
         {activeTab === 'general' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Basic Information
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Shop Name
                     </label>
                     <input
@@ -346,7 +346,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Tagline
                     </label>
                     <input
@@ -358,7 +358,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Description
                     </label>
                     <textarea
@@ -370,11 +370,11 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       URL Slug
                     </label>
                     <div className="flex items-center">
-                      <span className="text-gray-500 mr-2">6fb.com/shop/</span>
+                      <span className="text-gray-500 dark:text-gray-300 mr-2">6fb.com/shop/</span>
                       <input
                         type="text"
                         value={settings.slug}
@@ -386,14 +386,14 @@ export default function ShopWebsiteCustomization() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Contact Information
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Phone
                     </label>
                     <input
@@ -405,7 +405,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Email
                     </label>
                     <input
@@ -417,7 +417,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Address
                     </label>
                     <input
@@ -430,7 +430,7 @@ export default function ShopWebsiteCustomization() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         City
                       </label>
                       <input
@@ -441,7 +441,7 @@ export default function ShopWebsiteCustomization() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         State
                       </label>
                       <input
@@ -457,15 +457,15 @@ export default function ShopWebsiteCustomization() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Business Hours
                 </h2>
                 
                 <div className="space-y-3">
                   {Object.entries(settings.business_hours).map(([day, hours]) => (
                     <div key={day} className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 capitalize w-24">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize w-24">
                         {day}
                       </span>
                       
@@ -485,7 +485,7 @@ export default function ShopWebsiteCustomization() {
                               onChange={(e) => updateBusinessHours(day, 'open', e.target.value)}
                               className="px-2 py-1 border border-gray-300 rounded text-sm"
                             />
-                            <span className="text-gray-500">to</span>
+                            <span className="text-gray-500 dark:text-gray-300">to</span>
                             <input
                               type="time"
                               value={hours.close}
@@ -496,7 +496,7 @@ export default function ShopWebsiteCustomization() {
                         )}
                         
                         {hours.closed && (
-                          <span className="text-sm text-gray-500">Closed</span>
+                          <span className="text-sm text-gray-500 dark:text-gray-300">Closed</span>
                         )}
                       </div>
                     </div>
@@ -504,14 +504,14 @@ export default function ShopWebsiteCustomization() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Social Media Links
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Instagram
                     </label>
                     <input
@@ -524,7 +524,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Facebook
                     </label>
                     <input
@@ -537,7 +537,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Google Business
                     </label>
                     <input
@@ -558,37 +558,37 @@ export default function ShopWebsiteCustomization() {
         {activeTab === 'branding' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Logo & Images
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Logo
                     </label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 cursor-pointer">
                       <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                      <p className="mt-2 text-sm text-gray-600">
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                         Click to upload or drag and drop
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-300">
                         PNG, JPG up to 10MB
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Cover Image
                     </label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 cursor-pointer">
                       <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                      <p className="mt-2 text-sm text-gray-600">
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                         Click to upload or drag and drop
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-300">
                         Recommended: 1920x1080px
                       </p>
                     </div>
@@ -596,8 +596,8 @@ export default function ShopWebsiteCustomization() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Theme Template
                 </h2>
                 
@@ -620,8 +620,8 @@ export default function ShopWebsiteCustomization() {
                         className="mt-1 h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300"
                       />
                       <div className="ml-3">
-                        <p className="font-medium text-gray-900">{template.name}</p>
-                        <p className="text-sm text-gray-500">{template.description}</p>
+                        <p className="font-medium text-gray-900 dark:text-card-foreground">{template.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-300">{template.description}</p>
                       </div>
                     </label>
                   ))}
@@ -630,14 +630,14 @@ export default function ShopWebsiteCustomization() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Color Scheme
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Primary Color
                     </label>
                     <div className="flex items-center space-x-3">
@@ -657,7 +657,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Secondary Color
                     </label>
                     <div className="flex items-center space-x-3">
@@ -677,7 +677,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Accent Color
                     </label>
                     <div className="flex items-center space-x-3">
@@ -698,14 +698,14 @@ export default function ShopWebsiteCustomization() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Typography
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Heading Font
                     </label>
                     <select
@@ -720,7 +720,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Body Font
                     </label>
                     <select
@@ -743,14 +743,14 @@ export default function ShopWebsiteCustomization() {
         {activeTab === 'homepage' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Hero Section
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Hero Title
                     </label>
                     <input
@@ -762,7 +762,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Hero Subtitle
                     </label>
                     <textarea
@@ -774,7 +774,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Call to Action Text
                     </label>
                     <input
@@ -787,14 +787,14 @@ export default function ShopWebsiteCustomization() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   About Section
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Section Title
                     </label>
                     <input
@@ -806,7 +806,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       About Content
                     </label>
                     <textarea
@@ -821,14 +821,14 @@ export default function ShopWebsiteCustomization() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Services Section
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Section Title
                     </label>
                     <input
@@ -840,7 +840,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Services Description
                     </label>
                     <textarea
@@ -859,20 +859,20 @@ export default function ShopWebsiteCustomization() {
                         onChange={(e) => setSettings({ ...settings, show_pricing: e.target.checked })}
                         className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Show pricing on website</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Show pricing on website</span>
                     </label>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Team Section
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Section Title
                     </label>
                     <input
@@ -884,7 +884,7 @@ export default function ShopWebsiteCustomization() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Team Description
                     </label>
                     <textarea
@@ -903,7 +903,7 @@ export default function ShopWebsiteCustomization() {
                         onChange={(e) => setSettings({ ...settings, show_team: e.target.checked })}
                         className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Show team section</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Show team section</span>
                     </label>
 
                     <label className="flex items-center">
@@ -913,7 +913,7 @@ export default function ShopWebsiteCustomization() {
                         onChange={(e) => setSettings({ ...settings, show_portfolio: e.target.checked })}
                         className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Show portfolio gallery</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Show portfolio gallery</span>
                     </label>
 
                     <label className="flex items-center">
@@ -923,7 +923,7 @@ export default function ShopWebsiteCustomization() {
                         onChange={(e) => setSettings({ ...settings, show_testimonials: e.target.checked })}
                         className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Show testimonials</span>
+                      <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Show testimonials</span>
                     </label>
                   </div>
                 </div>
@@ -935,9 +935,9 @@ export default function ShopWebsiteCustomization() {
         {/* Barber Pages Tab */}
         {activeTab === 'barbers' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">
                   Barber Page Management
                 </h2>
                 <div className="flex items-center space-x-4">
@@ -948,7 +948,7 @@ export default function ShopWebsiteCustomization() {
                       onChange={(e) => setSettings({ ...settings, show_barber_pages: e.target.checked })}
                       className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Enable barber pages</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable barber pages</span>
                   </label>
 
                   <select
@@ -965,15 +965,15 @@ export default function ShopWebsiteCustomization() {
 
               <div className="space-y-4">
                 {settings.barber_pages.map((barber) => (
-                  <div key={barber.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={barber.id} className="border border-gray-200 dark:border-border rounded-lg p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-                          <UsersIcon className="h-6 w-6 text-gray-500" />
+                          <UsersIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">{barber.name}</h3>
-                          <p className="text-sm text-gray-500">
+                          <h3 className="font-medium text-gray-900 dark:text-card-foreground">{barber.name}</h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-300">
                             6fb.com/shop/{settings.slug}/barber/{barber.slug}
                           </p>
                         </div>
@@ -1000,7 +1000,7 @@ export default function ShopWebsiteCustomization() {
 
                           <button
                             onClick={() => window.open(`/shop/${settings.slug}/barber/${barber.slug}`, '_blank')}
-                            className="p-1 text-gray-400 hover:text-gray-600"
+                            className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-300"
                           >
                             <EyeIcon className="h-5 w-5" />
                           </button>
@@ -1038,8 +1038,8 @@ export default function ShopWebsiteCustomization() {
         {activeTab === 'booking' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Booking Settings
                 </h2>
                 
@@ -1051,11 +1051,11 @@ export default function ShopWebsiteCustomization() {
                       onChange={(e) => setSettings({ ...settings, enable_online_booking: e.target.checked })}
                       className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Enable online booking</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable online booking</span>
                   </label>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Booking Widget Position
                     </label>
                     <select
@@ -1077,16 +1077,16 @@ export default function ShopWebsiteCustomization() {
                       onChange={(e) => setSettings({ ...settings, require_deposit: e.target.checked })}
                       className="h-4 w-4 text-olive-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
-                    <span className="ml-2 text-sm text-gray-700">Require deposit for bookings</span>
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Require deposit for bookings</span>
                   </label>
 
                   {settings.require_deposit && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Deposit Amount
                       </label>
                       <div className="flex items-center">
-                        <span className="text-gray-500 mr-2">$</span>
+                        <span className="text-gray-500 dark:text-gray-300 mr-2">$</span>
                         <input
                           type="number"
                           value={settings.deposit_amount}
@@ -1101,14 +1101,14 @@ export default function ShopWebsiteCustomization() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Cancellation Policy
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Policy Text
                     </label>
                     <textarea
@@ -1128,14 +1128,14 @@ export default function ShopWebsiteCustomization() {
         {activeTab === 'seo' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   SEO Settings
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       SEO Title
                     </label>
                     <input
@@ -1144,13 +1144,13 @@ export default function ShopWebsiteCustomization() {
                       onChange={(e) => setSettings({ ...settings, seo_title: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
                       {settings.seo_title.length}/60 characters
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       SEO Description
                     </label>
                     <textarea
@@ -1159,13 +1159,13 @@ export default function ShopWebsiteCustomization() {
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
                     />
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
                       {settings.seo_description.length}/160 characters
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       SEO Keywords
                     </label>
                     <input
@@ -1181,14 +1181,14 @@ export default function ShopWebsiteCustomization() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Analytics & Tracking
                 </h2>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Google Analytics ID
                     </label>
                     <input
@@ -1208,9 +1208,9 @@ export default function ShopWebsiteCustomization() {
         {/* Preview Tab */}
         {activeTab === 'preview' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="bg-white dark:bg-card rounded-xl shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">
                   Website Preview
                 </h2>
                 <div className="flex items-center space-x-2">
@@ -1242,13 +1242,13 @@ export default function ShopWebsiteCustomization() {
                         <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
                         <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                       </div>
-                      <div className="flex-1 bg-white rounded px-3 py-1 text-sm text-gray-600 truncate">
+                      <div className="flex-1 bg-white dark:bg-card rounded px-3 py-1 text-sm text-gray-600 dark:text-gray-300 truncate">
                         6fb.com/shop/{settings.slug}
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white" style={{ minHeight: '600px' }}>
+                  <div className="bg-white dark:bg-card" style={{ minHeight: '600px' }}>
                     {/* Hero Section Preview */}
                     <div 
                       className="relative h-64 flex items-center justify-center text-white"
@@ -1275,7 +1275,7 @@ export default function ShopWebsiteCustomization() {
                       <h2 className="text-2xl font-bold mb-4" style={{ color: settings.text_color, fontFamily: settings.heading_font }}>
                         {settings.about_title}
                       </h2>
-                      <p className="text-gray-600" style={{ fontFamily: settings.body_font }}>
+                      <p className="text-gray-600 dark:text-gray-300" style={{ fontFamily: settings.body_font }}>
                         {settings.about_content}
                       </p>
                     </div>
@@ -1286,14 +1286,14 @@ export default function ShopWebsiteCustomization() {
                         <h2 className="text-2xl font-bold mb-4" style={{ color: settings.text_color, fontFamily: settings.heading_font }}>
                           {settings.services_title}
                         </h2>
-                        <p className="text-gray-600 mb-6" style={{ fontFamily: settings.body_font }}>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6" style={{ fontFamily: settings.body_font }}>
                           {settings.services_description}
                         </p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           {['Classic Cut', 'Fade', 'Beard Trim'].map((service) => (
-                            <div key={service} className="bg-white p-4 rounded-lg shadow">
+                            <div key={service} className="bg-white dark:bg-card p-4 rounded-lg shadow">
                               <h3 className="font-medium">{service}</h3>
-                              {settings.show_pricing && <p className="text-gray-500">$35</p>}
+                              {settings.show_pricing && <p className="text-gray-500 dark:text-gray-300">$35</p>}
                             </div>
                           ))}
                         </div>

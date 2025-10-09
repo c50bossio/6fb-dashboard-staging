@@ -267,13 +267,13 @@ export default function WebsiteSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Website Settings</h1>
-          <p className="text-gray-600 mt-2">Customize your barbershop's website and booking page</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Website Settings</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">Customize your barbershop's website and booking page</p>
         </div>
 
         {/* Message Display */}
@@ -334,16 +334,16 @@ export default function WebsiteSettingsPage() {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-xl shadow-lg p-8">
+            <div className="bg-white dark:bg-card rounded-xl shadow-lg p-8">
               
               {/* General Tab */}
               {activeTab === 'general' && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">General Information</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-6">General Information</h2>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Business Name *
                       </label>
                       <input
@@ -356,7 +356,7 @@ export default function WebsiteSettingsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Tagline
                       </label>
                       <input
@@ -370,7 +370,7 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Description
                     </label>
                     <textarea
@@ -384,7 +384,7 @@ export default function WebsiteSettingsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Phone Number
                       </label>
                       <input
@@ -397,7 +397,7 @@ export default function WebsiteSettingsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Email Address
                       </label>
                       <input
@@ -412,7 +412,7 @@ export default function WebsiteSettingsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Address
                       </label>
                       <input
@@ -425,7 +425,7 @@ export default function WebsiteSettingsPage() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         City
                       </label>
                       <input
@@ -439,7 +439,7 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Website URL Slug
                     </label>
                     <div className="flex">
@@ -452,12 +452,12 @@ export default function WebsiteSettingsPage() {
                       />
                       <button
                         onClick={generateSlug}
-                        className="px-4 py-3 bg-gray-100 border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-200 text-gray-700 font-medium"
+                        className="px-4 py-3 bg-gray-100 border border-l-0 border-gray-300 rounded-r-lg hover:bg-gray-200 text-gray-700 dark:text-gray-300 font-medium"
                       >
                         Generate
                       </button>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
                       Your website will be accessible at: yoursite.com/{settings.shop_slug || 'your-slug'}
                     </p>
                   </div>
@@ -469,7 +469,7 @@ export default function WebsiteSettingsPage() {
                       onChange={(e) => handleInputChange('website_enabled', e.target.checked)}
                       className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
                     />
-                    <label className="ml-2 block text-sm text-gray-900">
+                    <label className="ml-2 block text-sm text-gray-900 dark:text-card-foreground">
                       Enable public website
                     </label>
                   </div>
@@ -479,11 +479,11 @@ export default function WebsiteSettingsPage() {
               {/* Branding Tab */}
               {activeTab === 'branding' && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Branding & Theme</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-6">Branding & Theme</h2>
                   
                   {/* Logo Upload */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Logo
                     </label>
                     <div className="flex items-start space-x-4">
@@ -492,7 +492,7 @@ export default function WebsiteSettingsPage() {
                           <img
                             src={settings.logo_url}
                             alt="Logo"
-                            className="w-20 h-20 object-contain border border-gray-200 rounded-lg"
+                            className="w-20 h-20 object-contain border border-gray-200 dark:border-border rounded-lg"
                           />
                           <button
                             onClick={() => handleInputChange('logo_url', '')}
@@ -507,9 +507,9 @@ export default function WebsiteSettingsPage() {
                           type="file"
                           accept="image/*"
                           onChange={(e) => handleFileUpload(e.target.files[0], 'logo')}
-                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-olive-50 file:text-olive-700 hover:file:bg-olive-100"
+                          className="block w-full text-sm text-gray-500 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-olive-50 file:text-olive-700 hover:file:bg-olive-100"
                         />
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
                           Recommended: 200x200px, PNG or SVG
                         </p>
                       </div>
@@ -518,7 +518,7 @@ export default function WebsiteSettingsPage() {
 
                   {/* Cover Image */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Hero/Cover Image
                     </label>
                     <div className="space-y-4">
@@ -527,7 +527,7 @@ export default function WebsiteSettingsPage() {
                           <img
                             src={settings.cover_image_url}
                             alt="Cover"
-                            className="w-full h-32 object-cover border border-gray-200 rounded-lg"
+                            className="w-full h-32 object-cover border border-gray-200 dark:border-border rounded-lg"
                           />
                           <button
                             onClick={() => handleInputChange('cover_image_url', '')}
@@ -541,9 +541,9 @@ export default function WebsiteSettingsPage() {
                         type="file"
                         accept="image/*"
                         onChange={(e) => handleFileUpload(e.target.files[0], 'cover')}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-olive-50 file:text-olive-700 hover:file:bg-olive-100"
+                        className="block w-full text-sm text-gray-500 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-olive-50 file:text-olive-700 hover:file:bg-olive-100"
                       />
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-300">
                         Recommended: 1200x400px, high quality image
                       </p>
                     </div>
@@ -551,7 +551,7 @@ export default function WebsiteSettingsPage() {
 
                   {/* Theme Presets */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
                       Theme Preset
                     </label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -587,13 +587,13 @@ export default function WebsiteSettingsPage() {
 
                   {/* Custom Colors */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
                       Custom Colors
                     </label>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {Object.entries(settings.brand_colors).map(([key, value]) => (
                         <div key={key}>
-                          <label className="block text-sm text-gray-600 mb-2 capitalize">
+                          <label className="block text-sm text-gray-600 dark:text-gray-300 mb-2 capitalize">
                             {key}
                           </label>
                           <div className="flex items-center space-x-2">
@@ -620,10 +620,10 @@ export default function WebsiteSettingsPage() {
               {/* Content Tab */}
               {activeTab === 'content' && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Website Content</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-6">Website Content</h2>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Hero Title
                     </label>
                     <input
@@ -636,7 +636,7 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Hero Subtitle
                     </label>
                     <input
@@ -649,7 +649,7 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       About Section
                     </label>
                     <textarea
@@ -662,12 +662,12 @@ export default function WebsiteSettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
                       Social Media Links
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Instagram</label>
+                        <label className="block text-xs text-gray-500 dark:text-gray-300 mb-1">Instagram</label>
                         <input
                           type="url"
                           value={settings.social_links.instagram}
@@ -677,7 +677,7 @@ export default function WebsiteSettingsPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Facebook</label>
+                        <label className="block text-xs text-gray-500 dark:text-gray-300 mb-1">Facebook</label>
                         <input
                           type="url"
                           value={settings.social_links.facebook}
@@ -687,7 +687,7 @@ export default function WebsiteSettingsPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Google Business</label>
+                        <label className="block text-xs text-gray-500 dark:text-gray-300 mb-1">Google Business</label>
                         <input
                           type="url"
                           value={settings.social_links.google}
@@ -697,7 +697,7 @@ export default function WebsiteSettingsPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Twitter/X</label>
+                        <label className="block text-xs text-gray-500 dark:text-gray-300 mb-1">Twitter/X</label>
                         <input
                           type="url"
                           value={settings.social_links.twitter}
@@ -714,10 +714,10 @@ export default function WebsiteSettingsPage() {
               {/* SEO Tab */}
               {activeTab === 'seo' && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">SEO Settings</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-6">SEO Settings</h2>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       SEO Title
                     </label>
                     <input
@@ -727,13 +727,13 @@ export default function WebsiteSettingsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="Elite Cuts Barbershop | Professional Haircuts in Downtown"
                     />
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
                       Appears in search results and browser tabs (50-60 characters recommended)
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Meta Description
                     </label>
                     <textarea
@@ -743,13 +743,13 @@ export default function WebsiteSettingsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="Experience premium barbering at Elite Cuts. Professional haircuts, modern fades, beard grooming & styling. Book online today!"
                     />
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
                       Appears in search results below the title (150-160 characters recommended)
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Keywords
                     </label>
                     <input
@@ -759,7 +759,7 @@ export default function WebsiteSettingsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                       placeholder="barbershop, haircuts, fade, beard trim, grooming, downtown"
                     />
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
                       Comma-separated keywords related to your business
                     </p>
                   </div>
@@ -779,12 +779,12 @@ export default function WebsiteSettingsPage() {
               {/* Preview Tab */}
               {activeTab === 'preview' && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Live Preview</h2>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-6">Live Preview</h2>
                   
                   <div className="bg-gray-100 border border-gray-300 rounded-lg p-6">
                     <h3 className="text-lg font-semibold mb-4">Website Preview</h3>
                     <div 
-                      className="bg-white rounded-lg shadow-lg overflow-hidden"
+                      className="bg-white dark:bg-card rounded-lg shadow-lg overflow-hidden"
                       style={{ 
                         borderColor: settings.brand_colors.primary,
                         borderWidth: '2px'

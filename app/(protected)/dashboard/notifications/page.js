@@ -98,7 +98,7 @@ export default function NotificationsPage() {
       case 'pending':
         return <ClockIcon className="h-5 w-5 text-amber-800" />
       default:
-        return <ExclamationCircleIcon className="h-5 w-5 text-gray-500" />
+        return <ExclamationCircleIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
     }
   }
 
@@ -109,16 +109,16 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       <div className="p-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Notifications</h1>
-          <p className="text-gray-600">Test and monitor your notification system</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-2">Notifications</h1>
+          <p className="text-gray-600 dark:text-gray-300">Test and monitor your notification system</p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6">
+        <div className="border-b border-gray-200 dark:border-border mb-6">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('test')}
@@ -155,8 +155,8 @@ export default function NotificationsPage() {
 
         {/* Test Notifications Tab */}
         {activeTab === 'test' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Send Test Notification</h2>
+          <div className="bg-white dark:bg-card rounded-lg shadow-md p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Send Test Notification</h2>
             
             {testResult && (
               <div className={`mb-6 p-4 rounded-lg ${
@@ -177,8 +177,8 @@ export default function NotificationsPage() {
               >
                 <EnvelopeIcon className="h-8 w-8 text-olive-600" />
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900">Test Email</p>
-                  <p className="text-sm text-gray-600">Send to {user?.email}</p>
+                  <p className="font-semibold text-gray-900 dark:text-card-foreground">Test Email</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Send to {user?.email}</p>
                 </div>
               </button>
               
@@ -189,8 +189,8 @@ export default function NotificationsPage() {
               >
                 <PhoneIcon className="h-8 w-8 text-gold-600" />
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900">Test SMS</p>
-                  <p className="text-sm text-gray-600">Send to phone on file</p>
+                  <p className="font-semibold text-gray-900 dark:text-card-foreground">Test SMS</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Send to phone on file</p>
                 </div>
               </button>
             </div>
@@ -199,57 +199,57 @@ export default function NotificationsPage() {
 
         {/* History Tab */}
         {activeTab === 'history' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Notification History</h2>
+          <div className="bg-white dark:bg-card rounded-lg shadow-md p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Notification History</h2>
             
             {history.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-300">
                 <BellIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                 <p>No notifications sent yet</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 dark:bg-muted">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Type
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Recipient
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Subject
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                         Sent At
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-card divide-y divide-gray-200">
                     {history.map((notification) => (
                       <tr key={notification.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {getTypeIcon(notification.type)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-card-foreground">
                           {notification.recipient}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                           {notification.subject || '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             {getStatusIcon(notification.status)}
-                            <span className="ml-2 text-sm text-gray-900">
+                            <span className="ml-2 text-sm text-gray-900 dark:text-card-foreground">
                               {notification.status}
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                           {new Date(notification.sent_at).toLocaleString()}
                         </td>
                       </tr>
@@ -263,25 +263,25 @@ export default function NotificationsPage() {
 
         {/* Queue Status Tab */}
         {activeTab === 'queue' && queueStatus && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Queue Status</h2>
+          <div className="bg-white dark:bg-card rounded-lg shadow-md p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Queue Status</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm font-medium text-gray-500">Processing</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="bg-gray-50 dark:bg-muted p-4 rounded-lg">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Processing</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {queueStatus.processing ? 'Active' : 'Inactive'}
                 </p>
               </div>
               
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm font-medium text-gray-500">Total in Queue</p>
-                <p className="text-2xl font-bold text-gray-900">{queueStatus.total || 0}</p>
+              <div className="bg-gray-50 dark:bg-muted p-4 rounded-lg">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Total in Queue</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{queueStatus.total || 0}</p>
               </div>
               
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm font-medium text-gray-500">Next Scheduled</p>
-                <p className="text-sm font-bold text-gray-900">
+              <div className="bg-gray-50 dark:bg-muted p-4 rounded-lg">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Next Scheduled</p>
+                <p className="text-sm font-bold text-gray-900 dark:text-card-foreground">
                   {queueStatus.next_scheduled ? 
                     new Date(queueStatus.next_scheduled).toLocaleString() : 
                     'None'
@@ -292,15 +292,15 @@ export default function NotificationsPage() {
             
             {queueStatus.status_counts && (
               <div>
-                <h3 className="font-medium text-gray-900 mb-3">Queue Breakdown</h3>
+                <h3 className="font-medium text-gray-900 dark:text-card-foreground mb-3">Queue Breakdown</h3>
                 <div className="space-y-2">
                   {Object.entries(queueStatus.status_counts).map(([status, count]) => (
                     <div key={status} className="flex items-center justify-between">
                       <div className="flex items-center">
                         {getStatusIcon(status)}
-                        <span className="ml-2 text-sm text-gray-700 capitalize">{status}</span>
+                        <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 capitalize">{status}</span>
                       </div>
-                      <span className="text-sm font-medium text-gray-900">{count}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">{count}</span>
                     </div>
                   ))}
                 </div>

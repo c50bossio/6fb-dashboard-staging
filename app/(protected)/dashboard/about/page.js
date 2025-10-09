@@ -5,9 +5,9 @@ import Link from 'next/link'
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-card">
       {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white dark:bg-card/95 backdrop-blur-sm border-b border-gray-200 dark:border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -15,12 +15,12 @@ export default function AboutPage() {
                 <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-card-foreground">AI Agent System</span>
               </Link>
             </div>
             
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -49,11 +49,11 @@ export default function AboutPage() {
       </div>
 
       {/* Mission Section */}
-      <div className="section-padding bg-white">
+      <div className="section-padding bg-white dark:bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Our Mission</h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-card-foreground mb-6">Our Mission</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
               To empower barbershop owners with intelligent AI agents that automate marketing, 
               optimize customer relationships, and drive business growth—allowing them to focus 
               on delivering exceptional haircuts and building community.
@@ -65,37 +65,37 @@ export default function AboutPage() {
               <div className="bg-olive-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <SparklesIcon className="h-8 w-8 text-olive-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Innovation</h3>
-              <p className="text-gray-600">Leading the industry with cutting-edge AI technology tailored specifically for barbershops.</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">Innovation</h3>
+              <p className="text-gray-600 dark:text-gray-300">Leading the industry with cutting-edge AI technology tailored specifically for barbershops.</p>
             </div>
             
             <div className="text-center">
               <div className="bg-green-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <UsersIcon className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Community</h3>
-              <p className="text-gray-600">Building a network of successful barbershop owners who support and learn from each other.</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">Community</h3>
+              <p className="text-gray-600 dark:text-gray-300">Building a network of successful barbershop owners who support and learn from each other.</p>
             </div>
             
             <div className="text-center">
               <div className="bg-gold-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <LightBulbIcon className="h-8 w-8 text-gold-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Excellence</h3>
-              <p className="text-gray-600">Delivering exceptional results through intelligent automation and data-driven insights.</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">Excellence</h3>
+              <p className="text-gray-600 dark:text-gray-300">Delivering exceptional results through intelligent automation and data-driven insights.</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Story Section */}
-      <div className="section-padding bg-gray-50">
+      <div className="section-padding bg-gray-50 dark:bg-muted">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Our Story</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-card-foreground mb-6">Our Story</h2>
           </div>
           
-          <div className="prose prose-lg mx-auto text-gray-600">
+          <div className="prose prose-lg mx-auto text-gray-600 dark:text-gray-300">
             <p className="mb-6">
               6FB AI Agent System was born from a simple observation: barbershop owners are incredibly 
               skilled at cutting hair and building relationships with their customers, but they often 
@@ -131,7 +131,7 @@ export default function AboutPage() {
           <p className="text-xl text-olive-100 mb-8 max-w-2xl mx-auto">
             Discover how AI can transform your barbershop business and connect with other successful owners.
           </p>
-          <Link href="/register" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-10 py-5 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl">
+          <Link href="/register" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 dark:text-card-foreground px-10 py-5 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl">
             Start Your Journey
           </Link>
         </div>

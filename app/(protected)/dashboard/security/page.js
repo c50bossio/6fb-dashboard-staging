@@ -5,9 +5,9 @@ import Link from 'next/link'
 
 export default function SecurityPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-card">
       {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white dark:bg-card/95 backdrop-blur-sm border-b border-gray-200 dark:border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -15,12 +15,12 @@ export default function SecurityPage() {
                 <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-card-foreground">AI Agent System</span>
               </Link>
             </div>
             
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -49,11 +49,11 @@ export default function SecurityPage() {
       </div>
 
       {/* Security Features */}
-      <div className="section-padding bg-white">
+      <div className="section-padding bg-white dark:bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Enterprise-Grade Security</h2>
-            <p className="text-xl text-gray-600">We implement industry-leading security practices to protect your business data</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-card-foreground mb-4">Enterprise-Grade Security</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">We implement industry-leading security practices to protect your business data</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
@@ -61,48 +61,48 @@ export default function SecurityPage() {
               <div className="bg-green-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <LockClosedIcon className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">End-to-End Encryption</h3>
-              <p className="text-gray-600">All data is encrypted both in transit and at rest using AES-256 encryption standards.</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">End-to-End Encryption</h3>
+              <p className="text-gray-600 dark:text-gray-300">All data is encrypted both in transit and at rest using AES-256 encryption standards.</p>
             </div>
             
             <div className="text-center">
               <div className="bg-olive-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <ShieldCheckIcon className="h-8 w-8 text-olive-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">SOC 2 Compliant</h3>
-              <p className="text-gray-600">Our systems undergo regular third-party security audits and maintain SOC 2 Type II compliance.</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">SOC 2 Compliant</h3>
+              <p className="text-gray-600 dark:text-gray-300">Our systems undergo regular third-party security audits and maintain SOC 2 Type II compliance.</p>
             </div>
             
             <div className="text-center">
               <div className="bg-gold-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <EyeSlashIcon className="h-8 w-8 text-gold-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Zero-Knowledge Architecture</h3>
-              <p className="text-gray-600">We cannot access your sensitive business data, ensuring complete privacy and control.</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">Zero-Knowledge Architecture</h3>
+              <p className="text-gray-600 dark:text-gray-300">We cannot access your sensitive business data, ensuring complete privacy and control.</p>
             </div>
             
             <div className="text-center">
               <div className="bg-orange-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <ServerIcon className="h-8 w-8 text-orange-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Secure Infrastructure</h3>
-              <p className="text-gray-600">Hosted on AWS with 99.9% uptime SLA and automatic backup systems.</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">Secure Infrastructure</h3>
+              <p className="text-gray-600 dark:text-gray-300">Hosted on AWS with 99.9% uptime SLA and automatic backup systems.</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Security Details */}
-      <div className="section-padding bg-gray-50">
+      <div className="section-padding bg-gray-50 dark:bg-muted">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Comprehensive Protection</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-card-foreground mb-4">Comprehensive Protection</h2>
           </div>
           
           <div className="space-y-8">
-            <div className="bg-white rounded-xl p-8 shadow-sm">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Data Protection</h3>
-              <ul className="space-y-3 text-gray-600">
+            <div className="bg-white dark:bg-card rounded-xl p-8 shadow-sm">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">Data Protection</h3>
+              <ul className="space-y-3 text-gray-600 dark:text-gray-300">
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-olive-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>All customer data is encrypted using AES-256 encryption</span>
@@ -122,9 +122,9 @@ export default function SecurityPage() {
               </ul>
             </div>
             
-            <div className="bg-white rounded-xl p-8 shadow-sm">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Access Controls</h3>
-              <ul className="space-y-3 text-gray-600">
+            <div className="bg-white dark:bg-card rounded-xl p-8 shadow-sm">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">Access Controls</h3>
+              <ul className="space-y-3 text-gray-600 dark:text-gray-300">
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>Multi-factor authentication (MFA) for all accounts</span>
@@ -144,9 +144,9 @@ export default function SecurityPage() {
               </ul>
             </div>
             
-            <div className="bg-white rounded-xl p-8 shadow-sm">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Infrastructure Security</h3>
-              <ul className="space-y-3 text-gray-600">
+            <div className="bg-white dark:bg-card rounded-xl p-8 shadow-sm">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">Infrastructure Security</h3>
+              <ul className="space-y-3 text-gray-600 dark:text-gray-300">
                 <li className="flex items-start">
                   <div className="w-2 h-2 bg-gold-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
                   <span>DDoS protection and web application firewall</span>
@@ -170,25 +170,25 @@ export default function SecurityPage() {
       </div>
 
       {/* Compliance */}
-      <div className="section-padding bg-white">
+      <div className="section-padding bg-white dark:bg-card">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Compliance & Certifications</h2>
-            <p className="text-xl text-gray-600">We meet the highest industry standards for security and privacy</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-card-foreground mb-4">Compliance & Certifications</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">We meet the highest industry standards for security and privacy</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">SOC 2 Type II</h3>
-              <p className="text-gray-600">Audited annually for security, availability, and confidentiality controls</p>
+            <div className="text-center bg-gray-50 dark:bg-muted rounded-xl p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-card-foreground mb-2">SOC 2 Type II</h3>
+              <p className="text-gray-600 dark:text-gray-300">Audited annually for security, availability, and confidentiality controls</p>
             </div>
-            <div className="text-center bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">GDPR Compliant</h3>
-              <p className="text-gray-600">Full compliance with EU data protection regulations</p>
+            <div className="text-center bg-gray-50 dark:bg-muted rounded-xl p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-card-foreground mb-2">GDPR Compliant</h3>
+              <p className="text-gray-600 dark:text-gray-300">Full compliance with EU data protection regulations</p>
             </div>
-            <div className="text-center bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-2">ISO 27001</h3>
-              <p className="text-gray-600">Information security management system certification</p>
+            <div className="text-center bg-gray-50 dark:bg-muted rounded-xl p-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-card-foreground mb-2">ISO 27001</h3>
+              <p className="text-gray-600 dark:text-gray-300">Information security management system certification</p>
             </div>
           </div>
         </div>
@@ -204,7 +204,7 @@ export default function SecurityPage() {
             Our security team is available to answer any questions about our security practices.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-            <Link href="/contact" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-8 py-4 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl">
+            <Link href="/contact" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 dark:text-card-foreground px-8 py-4 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl">
               Contact Security Team
             </Link>
             <a href="mailto:security@6fb.ai" className="text-olive-100 hover:text-white font-medium transition-colors">

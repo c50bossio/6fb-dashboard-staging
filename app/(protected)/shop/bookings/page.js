@@ -103,13 +103,13 @@ export default function ShopBookingsManagement() {
               <CalendarDaysIcon className="h-8 w-8 text-olive-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Bookings Management</h1>
-              <p className="text-gray-600">Manage all appointments across your shop</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Bookings Management</h1>
+              <p className="text-gray-600 dark:text-gray-300">Manage all appointments across your shop</p>
             </div>
           </div>
           
           <div className="flex space-x-3">
-            <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+            <button className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-muted">
               Export Schedule
             </button>
             <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center">
@@ -122,54 +122,54 @@ export default function ShopBookingsManagement() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-olive-100 rounded-lg">
               <CalendarDaysIcon className="h-6 w-6 text-olive-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{summary.total_appointments || 0}</p>
-          <p className="text-sm text-gray-600 mt-1">Total Appointments</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{summary.total_appointments || 0}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Total Appointments</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-green-100 rounded-lg">
               <CheckCircleIcon className="h-6 w-6 text-green-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{summary.completed || 0}</p>
-          <p className="text-sm text-gray-600 mt-1">Completed</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{summary.completed || 0}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Completed</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <ClockIcon className="h-6 w-6 text-amber-800" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{summary.confirmed || 0}</p>
-          <p className="text-sm text-gray-600 mt-1">Upcoming</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{summary.confirmed || 0}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Upcoming</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-green-100 rounded-lg">
               <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">${summary.total_revenue || 0}</p>
-          <p className="text-sm text-gray-600 mt-1">Revenue Today</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">${summary.total_revenue || 0}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Revenue Today</p>
         </div>
       </div>
 
       {/* Filters and Controls */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border mb-6">
+        <div className="p-6 border-b border-gray-200 dark:border-border">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div className="flex items-center space-x-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
                 <input
                   type="date"
                   value={selectedDate}
@@ -179,7 +179,7 @@ export default function ShopBookingsManagement() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Barber</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Barber</label>
                 <select
                   value={filterBarber}
                   onChange={(e) => setFilterBarber(e.target.value)}
@@ -193,7 +193,7 @@ export default function ShopBookingsManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
@@ -230,18 +230,18 @@ export default function ShopBookingsManagement() {
               const StatusIcon = getStatusIcon(appointment.status)
               
               return (
-                <div key={appointment.id} className="p-6 hover:bg-gray-50">
+                <div key={appointment.id} className="p-6 hover:bg-gray-50 dark:bg-muted">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
                         <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
-                          <UserGroupIcon className="h-6 w-6 text-gray-500" />
+                          <UserGroupIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
                         </div>
                       </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2">
-                          <p className="text-lg font-medium text-gray-900">
+                          <p className="text-lg font-medium text-gray-900 dark:text-card-foreground">
                             {appointment.customer_name}
                           </p>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
@@ -250,7 +250,7 @@ export default function ShopBookingsManagement() {
                           </span>
                         </div>
                         
-                        <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                        <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-300">
                           <span className="flex items-center">
                             <ClockIcon className="h-4 w-4 mr-1" />
                             {new Date(appointment.start_time).toLocaleTimeString('en-US', { 
@@ -274,7 +274,7 @@ export default function ShopBookingsManagement() {
                         </div>
                         
                         {appointment.customer_phone && (
-                          <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                          <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-300">
                             <span className="flex items-center">
                               <PhoneIcon className="h-4 w-4 mr-1" />
                               {appointment.customer_phone}
@@ -286,15 +286,15 @@ export default function ShopBookingsManagement() {
 
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
-                        <p className="text-lg font-semibold text-gray-900">${appointment.price}</p>
-                        <p className="text-sm text-gray-500">{appointment.duration_minutes} min</p>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-card-foreground">${appointment.price}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-300">{appointment.duration_minutes} min</p>
                       </div>
                       
                       <div className="flex space-x-2">
-                        <button className="p-2 text-gray-400 hover:text-gray-600">
+                        <button className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300">
                           <PencilIcon className="h-4 w-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600">
+                        <button className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300">
                           <PhoneIcon className="h-4 w-4" />
                         </button>
                       </div>
@@ -303,7 +303,7 @@ export default function ShopBookingsManagement() {
                   
                   {appointment.notes && (
                     <div className="mt-3 ml-16">
-                      <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-muted rounded-lg p-3">
                         <strong>Notes:</strong> {appointment.notes}
                       </p>
                     </div>
@@ -314,7 +314,7 @@ export default function ShopBookingsManagement() {
           ) : (
             <div className="p-12 text-center">
               <CalendarDaysIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 mb-4">No appointments found for the selected criteria</p>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">No appointments found for the selected criteria</p>
               <button className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
                 <PlusIcon className="h-5 w-5 mr-2" />
                 Create New Booking

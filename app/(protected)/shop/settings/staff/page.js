@@ -156,25 +156,25 @@ export default function StaffPermissions() {
               <UserGroupIcon className="h-8 w-8 text-olive-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Staff Permissions</h1>
-              <p className="text-gray-600">Manage barber access and service permissions</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Staff Permissions</h1>
+              <p className="text-gray-600 dark:text-gray-300">Manage barber access and service permissions</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Permission Templates Overview */}
-      <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Permission Templates</h2>
-          <p className="text-gray-600">Quick setup options for common barber roles</p>
+      <div className="mb-8 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border">
+        <div className="p-6 border-b border-gray-200 dark:border-border">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Permission Templates</h2>
+          <p className="text-gray-600 dark:text-gray-300">Quick setup options for common barber roles</p>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {templates.map((template) => (
-              <div key={template.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div key={template.id} className="border border-gray-200 dark:border-border rounded-lg p-4 hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900">{template.name}</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-card-foreground">{template.name}</h3>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     template.template_level === 'basic' ? 'bg-olive-100 text-olive-800' :
                     template.template_level === 'intermediate' ? 'bg-moss-100 text-moss-900' :
@@ -184,7 +184,7 @@ export default function StaffPermissions() {
                     {template.template_level}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">{template.description}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{template.description}</p>
                 <div className="space-y-1 text-xs">
                   {template.can_modify_services && (
                     <div className="flex items-center text-green-600">
@@ -212,12 +212,12 @@ export default function StaffPermissions() {
       </div>
 
       {/* Staff Members */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border">
+        <div className="p-6 border-b border-gray-200 dark:border-border">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Staff Members</h2>
-              <p className="text-gray-600">Manage individual barber permissions</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Staff Members</h2>
+              <p className="text-gray-600 dark:text-gray-300">Manage individual barber permissions</p>
             </div>
             <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center">
               <PlusIcon className="h-5 w-5 mr-2" />
@@ -229,8 +229,8 @@ export default function StaffPermissions() {
         {staff.length === 0 ? (
           <div className="p-12 text-center">
             <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Staff Members</h3>
-            <p className="text-gray-600 mb-4">Start by inviting barbers to join your shop</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-2">No Staff Members</h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Start by inviting barbers to join your shop</p>
             <button className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
               Invite Your First Barber
             </button>
@@ -240,17 +240,17 @@ export default function StaffPermissions() {
             {staff.map((staffMember) => {
               const permissionSummary = getStaffPermissionSummary(staffMember)
               return (
-                <div key={staffMember.id} className="p-6 hover:bg-gray-50">
+                <div key={staffMember.id} className="p-6 hover:bg-gray-50 dark:bg-muted">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center">
-                        <UserGroupIcon className="h-6 w-6 text-gray-600" />
+                        <UserGroupIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">
                           {staffMember.user?.name || staffMember.user?.email}
                         </h3>
-                        <p className="text-gray-600">{staffMember.role || 'Barber'}</p>
+                        <p className="text-gray-600 dark:text-gray-300">{staffMember.role || 'Barber'}</p>
                         <div className="flex items-center space-x-2 mt-1">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             permissionSummary.level === 'none' ? 'bg-gray-100 text-gray-800' :
@@ -261,7 +261,7 @@ export default function StaffPermissions() {
                           }`}>
                             {permissionSummary.description}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-gray-300">
                             {permissionSummary.capabilities} permissions active
                           </span>
                         </div>
@@ -293,7 +293,7 @@ export default function StaffPermissions() {
                           setSelectedStaff(staffMember)
                           setEditingPermissions(true)
                         }}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 hover:bg-gray-100 rounded-lg"
                       >
                         <Cog6ToothIcon className="h-5 w-5" />
                       </button>
@@ -305,14 +305,14 @@ export default function StaffPermissions() {
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div className="flex items-center space-x-2">
                         <ScissorsIcon className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600">Services:</span>
+                        <span className="text-gray-600 dark:text-gray-300">Services:</span>
                         <span className={staffMember.permissions[0].can_modify_services ? 'text-green-600' : 'text-gray-400'}>
                           {staffMember.permissions[0].can_modify_services ? 'Can modify' : 'View only'}
                         </span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <CurrencyDollarIcon className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600">Pricing:</span>
+                        <span className="text-gray-600 dark:text-gray-300">Pricing:</span>
                         <span className={staffMember.permissions[0].can_set_pricing ? 'text-green-600' : 'text-gray-400'}>
                           {staffMember.permissions[0].can_set_pricing 
                             ? `±${staffMember.permissions[0].pricing_variance_percent}%`
@@ -322,7 +322,7 @@ export default function StaffPermissions() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <ClockIcon className="h-4 w-4 text-gray-400" />
-                        <span className="text-gray-600">Schedule:</span>
+                        <span className="text-gray-600 dark:text-gray-300">Schedule:</span>
                         <span className={staffMember.permissions[0].can_set_availability ? 'text-green-600' : 'text-gray-400'}>
                           {staffMember.permissions[0].can_set_availability ? 'Full control' : 'Basic only'}
                         </span>

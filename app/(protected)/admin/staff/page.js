@@ -85,13 +85,13 @@ export default function StaffManagementPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Team Management</h1>
-            <p className="text-gray-600 mt-1">Manage your barbers and staff members</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Team Management</h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your barbers and staff members</p>
           </div>
           <div className="flex space-x-3">
             <button
               onClick={() => router.push('/admin/staff/analytics')}
-              className="flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-background focus:ring-4 focus:ring-gray-200"
+              className="flex items-center px-4 py-2 bg-white dark:bg-card border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-background focus:ring-4 focus:ring-gray-200"
             >
               <ChartBarIcon className="h-5 w-5 mr-2" />
               View Analytics
@@ -152,17 +152,17 @@ export default function StaffManagementPage() {
 
       {/* Staff Count */}
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
           {staff.length} team member{staff.length !== 1 ? 's' : ''}
         </p>
       </div>
 
       {/* Staff List */}
       {staff.length === 0 ? (
-        <div className="text-center py-12 bg-white border-2 border-dashed border-gray-300 rounded-lg">
+        <div className="text-center py-12 bg-white dark:bg-card border-2 border-dashed border-gray-300 rounded-lg">
           <UserCircleIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No team members yet</h3>
-          <p className="text-gray-600 mb-6">Get started by adding your first barber</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-2">No team members yet</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">Get started by adding your first barber</p>
           <button
             onClick={handleAddNew}
             className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
@@ -176,7 +176,7 @@ export default function StaffManagementPage() {
           {staff.map((member) => (
             <div
               key={member.id}
-              className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
+              className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6 hover:shadow-lg transition-shadow"
             >
               {/* Profile Photo & Name */}
               <div className="flex items-start space-x-4 mb-4">
@@ -195,23 +195,23 @@ export default function StaffManagementPage() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 truncate">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground truncate">
                     {member.first_name} {member.last_name}
                   </h3>
-                  <p className="text-sm text-gray-600 capitalize">{member.role.toLowerCase()}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">{member.role.toLowerCase()}</p>
                 </div>
               </div>
 
               {/* Contact Info */}
               <div className="space-y-2 mb-4 text-sm">
                 {member.email && (
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <EnvelopeIcon className="h-4 w-4 mr-2 flex-shrink-0" />
                     <span className="truncate">{member.email}</span>
                   </div>
                 )}
                 {member.phone && (
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-gray-600 dark:text-gray-300">
                     <PhoneIcon className="h-4 w-4 mr-2 flex-shrink-0" />
                     <span>{member.phone}</span>
                   </div>
@@ -231,7 +231,7 @@ export default function StaffManagementPage() {
                       </span>
                     ))}
                     {member.specialties.length > 3 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-600 dark:text-gray-300">
                         +{member.specialties.length - 3}
                       </span>
                     )}
@@ -241,14 +241,14 @@ export default function StaffManagementPage() {
 
               {/* Financial Model */}
               <div className="mb-4 p-3 bg-background rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Payment Model</p>
+                <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">Payment Model</p>
                 {member.financial_model === 'commission' && (
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-card-foreground">
                     Commission: {member.commission_percentage}%
                   </p>
                 )}
                 {member.financial_model === 'booth_rent' && (
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-card-foreground">
                     Booth Rent: ${member.booth_rent_amount} {member.booth_rent_frequency}
                   </p>
                 )}
@@ -257,7 +257,7 @@ export default function StaffManagementPage() {
               {/* Booking URL */}
               {member.booking_slug && (
                 <div className="pt-4 border-t">
-                  <p className="text-xs text-gray-600 mb-2">Booking Link</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">Booking Link</p>
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleViewBookingUrl(member.booking_slug)}
@@ -269,13 +269,13 @@ export default function StaffManagementPage() {
                     </button>
                     <button
                       onClick={() => handleCopyBookingUrl(member.booking_slug)}
-                      className="px-3 py-2 bg-background text-gray-700 rounded-lg hover:bg-gray-100 text-sm font-medium"
+                      className="px-3 py-2 bg-background text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 text-sm font-medium"
                       title="Copy URL"
                     >
                       Copy
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2 font-mono truncate">
+                  <p className="text-xs text-gray-500 dark:text-gray-300 mt-2 font-mono truncate">
                     /book/{member.booking_slug}
                   </p>
                 </div>

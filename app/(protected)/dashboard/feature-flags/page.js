@@ -66,12 +66,12 @@ export default function FeatureFlagsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       <div className="p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Feature Flags</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-2">Feature Flags</h1>
+          <p className="text-gray-600 dark:text-gray-300">
             Manage feature rollouts and experiments with Vercel Edge Config
           </p>
         </div>
@@ -96,15 +96,15 @@ export default function FeatureFlagsPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-            <p className="text-gray-500 mt-4">Loading feature flags...</p>
+            <p className="text-gray-500 dark:text-gray-300 mt-4">Loading feature flags...</p>
           </div>
         ) : (
           <div className="space-y-6">
             {Object.entries(flagCategories).map(([category, { icon: Icon, flags: categoryFlags }]) => (
-              <div key={category} className="bg-white rounded-lg shadow">
+              <div key={category} className="bg-white dark:bg-card rounded-lg shadow">
                 <div className="px-6 py-4 border-b flex items-center">
-                  <Icon className="h-5 w-5 text-gray-600 mr-2" />
-                  <h2 className="text-lg font-semibold text-gray-900">{category}</h2>
+                  <Icon className="h-5 w-5 text-gray-600 dark:text-gray-300 mr-2" />
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">{category}</h2>
                 </div>
                 <div className="divide-y divide-gray-200">
                   {categoryFlags.map((flagName) => (
@@ -122,7 +122,7 @@ export default function FeatureFlagsPage() {
                               <span className="ml-2 text-xs text-green-600">Copied!</span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                             {flagDescriptions[flagName]}
                           </p>
                         </div>

@@ -77,20 +77,20 @@ export default function EnterpriseFeaturesPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       <div className="p-8">
         {/* Header */}
         <div className="mb-8 text-center">
           <RocketLaunchIcon className="h-12 w-12 text-olive-600 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Enterprise Features</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground mb-2">Enterprise Features</h1>
+          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Your 6FB AI Agent System is now powered by enterprise-grade SDKs for stability, 
             scalability, and exceptional user experiences.
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6">
+        <div className="border-b border-gray-200 dark:border-border mb-6">
           <nav className="-mb-px flex justify-center space-x-8">
             <button
               onClick={() => setActiveTab('overview')}
@@ -131,22 +131,22 @@ export default function EnterpriseFeaturesPage() {
             {/* Feature Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {features.map((feature) => (
-                <div key={feature.name} className="bg-white rounded-lg shadow p-6">
+                <div key={feature.name} className="bg-white dark:bg-card rounded-lg shadow p-6">
                   <div className="flex items-center mb-4">
                     <span className="text-3xl mr-3">{feature.icon}</span>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{feature.name}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-card-foreground">{feature.name}</h3>
                       <span className="text-xs text-green-600 font-medium">Active</span>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-600">{feature.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{feature.description}</p>
                 </div>
               ))}
             </div>
 
             {/* Integration Status */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Integration Status</h2>
+            <div className="bg-white dark:bg-card rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Integration Status</h2>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Database & Authentication</span>
@@ -222,9 +222,9 @@ export default function EnterpriseFeaturesPage() {
 
         {activeTab === 'analytics' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Analytics Integration</h2>
-              <p className="text-gray-600 mb-6">
+            <div className="bg-white dark:bg-card rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Analytics Integration</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 PostHog is tracking user behavior, sessions, and custom events. 
                 All interactions below are being tracked in real-time.
               </p>
@@ -235,9 +235,9 @@ export default function EnterpriseFeaturesPage() {
 
         {activeTab === 'feature-flags' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Feature Flag Examples</h2>
-              <p className="text-gray-600 mb-6">
+            <div className="bg-white dark:bg-card rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Feature Flag Examples</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 These components demonstrate how feature flags control functionality. 
                 Flags are managed through Vercel Edge Config and update instantly.
               </p>

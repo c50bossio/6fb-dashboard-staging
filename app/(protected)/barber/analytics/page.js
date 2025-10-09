@@ -117,15 +117,15 @@ export default function BarberAnalyticsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-card border-b border-gray-200 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground flex items-center">
                 <ChartBarIcon className="h-8 w-8 mr-3 text-olive-600" />
                 My Performance
               </h1>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                 View your booking metrics and performance
               </p>
             </div>
@@ -133,7 +133,7 @@ export default function BarberAnalyticsPage() {
             <button
               onClick={handleRefresh}
               disabled={isLoading}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-background disabled:opacity-50 flex items-center"
+              className="px-4 py-2 bg-white dark:bg-card border border-gray-300 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-background disabled:opacity-50 flex items-center"
             >
               <ArrowPathIcon
                 className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`}
@@ -161,7 +161,7 @@ export default function BarberAnalyticsPage() {
               <div className="flex space-x-2">
                 <button
                   onClick={handleCopyBookingUrl}
-                  className="px-4 py-2 bg-white text-olive-700 rounded-lg hover:bg-olive-50 flex items-center"
+                  className="px-4 py-2 bg-white dark:bg-card text-olive-700 rounded-lg hover:bg-olive-50 flex items-center"
                 >
                   <LinkIcon className="h-4 w-4 mr-2" />
                   Copy Link
@@ -178,12 +178,12 @@ export default function BarberAnalyticsPage() {
         )}
 
         {/* Date Range Filter */}
-        <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="mb-6 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center space-x-4">
             <CalendarIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Start Date
                 </label>
                 <input
@@ -194,7 +194,7 @@ export default function BarberAnalyticsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   End Date
                 </label>
                 <input
@@ -222,7 +222,7 @@ export default function BarberAnalyticsPage() {
                     end: end.toISOString().split('T')[0],
                   })
                 }}
-                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                className="px-3 py-1 text-sm bg-gray-100 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200"
               >
                 Last {days} Days
               </button>
@@ -255,11 +255,11 @@ export default function BarberAnalyticsPage() {
           <>
             {/* Key Metrics */}
             <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 font-medium">Total Bookings</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Total Bookings</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-card-foreground mt-2">
                       {analytics.total_bookings}
                     </p>
                   </div>
@@ -267,11 +267,11 @@ export default function BarberAnalyticsPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 font-medium">Total Revenue</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Total Revenue</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-card-foreground mt-2">
                       ${analytics.total_revenue.toFixed(2)}
                     </p>
                   </div>
@@ -279,11 +279,11 @@ export default function BarberAnalyticsPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 font-medium">Avg. Booking</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">Avg. Booking</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-card-foreground mt-2">
                       ${analytics.average_booking_value.toFixed(2)}
                     </p>
                   </div>
@@ -295,16 +295,16 @@ export default function BarberAnalyticsPage() {
             {/* Detailed Analytics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Booking Sources */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Booking Sources
                 </h3>
                 <BookingSourceBreakdown sourceBreakdown={analytics.source_breakdown} />
               </div>
 
               {/* Top Services */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">
                   Your Top Services
                 </h3>
                 {analytics.top_services && analytics.top_services.length > 0 ? (
@@ -321,19 +321,19 @@ export default function BarberAnalyticsPage() {
                             </span>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                               {service.name}
                             </p>
-                            <p className="text-xs text-gray-600">
+                            <p className="text-xs text-gray-600 dark:text-gray-300">
                               ${parseFloat(service.price).toFixed(2)} per service
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-gray-900">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-card-foreground">
                             {service.booking_count} bookings
                           </p>
-                          <p className="text-xs text-gray-600">
+                          <p className="text-xs text-gray-600 dark:text-gray-300">
                             ${service.revenue.toFixed(2)}
                           </p>
                         </div>
@@ -341,7 +341,7 @@ export default function BarberAnalyticsPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-600 italic">No services booked yet</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 italic">No services booked yet</p>
                 )}
               </div>
             </div>
@@ -350,10 +350,10 @@ export default function BarberAnalyticsPage() {
 
         {/* No Data State */}
         {!isLoading && !error && !analytics && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-12 text-center">
             <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Data Yet</h3>
-            <p className="text-gray-600">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-2">No Data Yet</h3>
+            <p className="text-gray-600 dark:text-gray-300">
               Your booking analytics will appear here once you start receiving bookings
             </p>
           </div>

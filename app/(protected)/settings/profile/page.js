@@ -120,10 +120,10 @@ export default function ProfileSettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-6">
-      <div className="bg-white shadow-sm rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-          <p className="mt-1 text-sm text-gray-600">
+      <div className="bg-white dark:bg-card shadow-sm rounded-lg">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-border">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground">Profile Settings</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
             Update your personal information and account details.
           </p>
         </div>
@@ -131,11 +131,11 @@ export default function ProfileSettingsPage() {
         <form onSubmit={handleSubmit} className="px-6 py-4 space-y-6">
           {/* Account Info */}
           <div>
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Account Information</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">Account Information</h2>
             
             {/* Email (read-only) */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <EnvelopeIcon className="h-4 w-4 inline mr-1" />
                 Email Address
               </label>
@@ -144,7 +144,7 @@ export default function ProfileSettingsPage() {
                   type="email"
                   value={formData.email}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 dark:bg-muted text-gray-500 dark:text-gray-300 cursor-not-allowed"
                 />
                 <div className="absolute right-3 top-2">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
@@ -152,14 +152,14 @@ export default function ProfileSettingsPage() {
                   </span>
                 </div>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
                 Email address cannot be changed. Contact support if you need to update this.
               </p>
             </div>
 
             {/* First Name */}
             <div className="mb-4">
-              <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <UserIcon className="h-4 w-4 inline mr-1" />
                 First Name
               </label>
@@ -177,7 +177,7 @@ export default function ProfileSettingsPage() {
 
             {/* Last Name */}
             <div className="mb-4">
-              <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <UserIcon className="h-4 w-4 inline mr-1" />
                 Last Name
               </label>
@@ -195,7 +195,7 @@ export default function ProfileSettingsPage() {
 
             {/* Full Name Preview */}
             <div className="mb-4">
-              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Display Name
               </label>
               <input
@@ -208,14 +208,14 @@ export default function ProfileSettingsPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
                 placeholder="This is how your name will appear in the system"
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">
                 This is automatically created from your first and last name, but you can customize it.
               </p>
             </div>
 
             {/* Phone */}
             <div className="mb-4">
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <PhoneIcon className="h-4 w-4 inline mr-1" />
                 Phone Number
               </label>
@@ -255,7 +255,7 @@ export default function ProfileSettingsPage() {
           )}
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-border">
             <Button
               type="submit"
               disabled={isLoading || !hasChanges}

@@ -226,7 +226,7 @@
   }
 
   .card-modern-gold {
-    @apply backdrop-blur-sm border border-brand-600/20 bg-gradient-to-br from-white to-brand-50/30
+    @apply backdrop-blur-sm border border-brand-600/20 bg-gradient-to-br from-card to-brand-50/30 dark:to-brand-900/30
            shadow-gold hover:shadow-gold-glow
            transition-all duration-300 ease-out;
   }
@@ -315,13 +315,26 @@
   background: #f1f1f1;
 }
 
+.dark ::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
 ::-webkit-scrollbar-thumb {
   background: #c1c1c1;
   border-radius: 3px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #5a5a5a;
+  border-radius: 3px;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #707070;
 }
 
 /* Animations */
@@ -395,6 +408,12 @@
 /* Loading states */
 .loading-skeleton {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.dark .loading-skeleton {
+  background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
 }
@@ -608,10 +627,14 @@
 
 /* Card variants with consistent shadows */
 .card-default {
-  background: white;
+  background: hsl(var(--card));
   border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(var(--border));
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.dark .card-default {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 .card-elevated {
@@ -780,12 +803,12 @@
 
 /* Mobile card optimizations */
 .mobile-card {
-  @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+  @apply rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm;
   transition: all 0.2s ease-in-out;
 }
 
 .mobile-card:active {
-  @apply bg-gray-50 scale-[0.98];
+  @apply bg-gray-50 dark:bg-gray-700 scale-[0.98];
 }
 
 /* Prevent text selection on mobile interactive elements */

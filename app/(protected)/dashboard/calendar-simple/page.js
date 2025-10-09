@@ -51,7 +51,7 @@ export default function CalendarSimplePage() {
   return (
     <div className="p-8 h-full">
       <h1 className="text-2xl font-bold mb-4">Simple Calendar Test (CDN Version)</h1>
-      <div className="bg-white rounded-lg shadow p-4" style={{ height: 'calc(100% - 80px)' }}>
+      <div className="bg-white dark:bg-card rounded-lg shadow p-4" style={{ height: 'calc(100% - 80px)' }}>
         <div ref={calendarRef} style={{ height: '100%' }}></div>
       </div>
     </div>

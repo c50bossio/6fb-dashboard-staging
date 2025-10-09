@@ -236,15 +236,15 @@ export default function CalendarSettings() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white dark:bg-card rounded-xl border border-gray-200 dark:border-border p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="bg-gradient-to-r from-olive-500 to-gold-600 rounded-xl p-3">
               <CalendarSolid className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Calendar Integration</h1>
-              <p className="text-gray-600">Sync your appointments with Google Calendar and Outlook</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground">Calendar Integration</h1>
+              <p className="text-gray-600 dark:text-gray-300">Sync your appointments with Google Calendar and Outlook</p>
             </div>
           </div>
         </div>
@@ -252,9 +252,9 @@ export default function CalendarSettings() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Connected Accounts */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-card-foreground flex items-center">
               <LinkIcon className="h-6 w-6 mr-2 text-olive-600" />
               Connected Calendars
             </h2>
@@ -264,12 +264,12 @@ export default function CalendarSettings() {
             {connectedAccounts.length === 0 ? (
               <div className="text-center py-8">
                 <CalendarDaysIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500 mb-4">No calendars connected yet</p>
+                <p className="text-gray-500 dark:text-gray-300 mb-4">No calendars connected yet</p>
                 <p className="text-sm text-gray-400">Connect your calendar to automatically sync appointments</p>
               </div>
             ) : (
               connectedAccounts.map((account) => (
-                <div key={account.account_id} className="border border-gray-200 rounded-lg p-4">
+                <div key={account.account_id} className="border border-gray-200 dark:border-border rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
@@ -282,7 +282,7 @@ export default function CalendarSettings() {
                         )}
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900 flex items-center">
+                        <div className="font-medium text-gray-900 dark:text-card-foreground flex items-center">
                           {account.display_name}
                           {account.is_primary && (
                             <span className="ml-2 bg-moss-100 text-moss-900 text-xs font-medium px-2 py-1 rounded-full">
@@ -290,7 +290,7 @@ export default function CalendarSettings() {
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-500">{account.email}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-300">{account.email}</div>
                         <div className="text-xs text-gray-400 flex items-center space-x-4 mt-1">
                           <span>{account.sync_stats.total_syncs} syncs</span>
                           <span className={`flex items-center ${
@@ -329,16 +329,16 @@ export default function CalendarSettings() {
             )}
 
             {/* Connect Buttons */}
-            <div className="border-t border-gray-200 pt-4 space-y-3">
+            <div className="border-t border-gray-200 dark:border-border pt-4 space-y-3">
               <button
                 onClick={connectGoogleCalendar}
                 disabled={connecting === 'google'}
-                className="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center space-x-2 bg-white dark:bg-card border border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 dark:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="w-5 h-5 bg-red-500 rounded flex items-center justify-center">
                   <span className="text-white text-xs font-bold">G</span>
                 </div>
-                <span className="font-medium text-gray-700">
+                <span className="font-medium text-gray-700 dark:text-gray-300">
                   {connecting === 'google' ? 'Connecting...' : 'Connect Google Calendar'}
                 </span>
                 <ArrowTopRightOnSquareIcon className="h-4 w-4 text-gray-400" />
@@ -347,12 +347,12 @@ export default function CalendarSettings() {
               <button
                 onClick={connectOutlookCalendar}
                 disabled={connecting === 'outlook'}
-                className="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center space-x-2 bg-white dark:bg-card border border-gray-300 rounded-lg px-4 py-3 hover:bg-gray-50 dark:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="w-5 h-5 bg-olive-500 rounded flex items-center justify-center">
                   <span className="text-white text-xs font-bold">O</span>
                 </div>
-                <span className="font-medium text-gray-700">
+                <span className="font-medium text-gray-700 dark:text-gray-300">
                   {connecting === 'outlook' ? 'Connecting...' : 'Connect Outlook Calendar'}
                 </span>
                 <ArrowTopRightOnSquareIcon className="h-4 w-4 text-gray-400" />
@@ -362,10 +362,10 @@ export default function CalendarSettings() {
         </div>
 
         {/* Sync Settings */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center">
-              <Cog6ToothIcon className="h-6 w-6 mr-2 text-gray-600" />
+            <h2 className="text-xl font-bold text-gray-900 dark:text-card-foreground flex items-center">
+              <Cog6ToothIcon className="h-6 w-6 mr-2 text-gray-600 dark:text-gray-300" />
               Sync Settings
             </h2>
           </div>
@@ -380,7 +380,7 @@ export default function CalendarSettings() {
                   onChange={(e) => updateSyncSettings({ ...syncSettings, autoCreateEvents: e.target.checked })}
                   className="rounded border-gray-300 text-olive-600 shadow-sm focus:border-olive-300 focus:ring focus:ring-olive-200 focus:ring-opacity-50"
                 />
-                <span className="ml-2 text-sm font-medium text-gray-700">
+                <span className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   Automatically create calendar events for new appointments
                 </span>
               </label>
@@ -388,7 +388,7 @@ export default function CalendarSettings() {
 
             {/* Sync Direction */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Sync Direction
               </label>
               <select
@@ -404,7 +404,7 @@ export default function CalendarSettings() {
 
             {/* Event Title Template */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Event Title Template
               </label>
               <input
@@ -414,14 +414,14 @@ export default function CalendarSettings() {
                 className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-olive-500 focus:outline-none focus:ring-olive-500"
                 placeholder="{customer_name} - {service_name}"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
                 Available: {'{customer_name}'}, {'{service_name}'}, {'{barber_name}'}
               </p>
             </div>
 
             {/* Buffer Time */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Buffer Time (minutes)
               </label>
               <select
@@ -439,7 +439,7 @@ export default function CalendarSettings() {
 
             {/* Conflict Resolution */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Conflict Resolution
               </label>
               <select
@@ -459,8 +459,8 @@ export default function CalendarSettings() {
 
       {/* Sync Status */}
       {connectedAccounts.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Sync Activity</h2>
+        <div className="bg-white dark:bg-card rounded-xl border border-gray-200 dark:border-border p-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">Recent Sync Activity</h2>
           <div className="space-y-3">
             {connectedAccounts.map((account) => (
               <div key={account.account_id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
@@ -469,9 +469,9 @@ export default function CalendarSettings() {
                     account.sync_stats.success_rate >= 95 ? 'bg-green-500' : 
                     account.sync_stats.success_rate >= 80 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}></div>
-                  <span className="text-sm text-gray-700">{account.display_name}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{account.display_name}</span>
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 dark:text-gray-300">
                   Last sync: {account.last_sync || 'Never'}
                 </div>
               </div>

@@ -18,9 +18,9 @@ export default function DemoPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-card">
       {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white dark:bg-card/95 backdrop-blur-sm border-b border-gray-200 dark:border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -28,12 +28,12 @@ export default function DemoPage() {
                 <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-card-foreground">AI Agent System</span>
               </Link>
             </div>
             
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -65,7 +65,7 @@ export default function DemoPage() {
               <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
                 <button 
                   onClick={() => setShowVideoModal(true)}
-                  className="bg-white/10 hover:bg-white/20 rounded-full p-6 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-white/20"
+                  className="bg-white/10 hover:bg-white dark:bg-card/20 rounded-full p-6 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-white/20"
                 >
                   <PlayIcon className="w-16 h-16 text-white ml-2" />
                 </button>
@@ -90,52 +90,52 @@ export default function DemoPage() {
       </div>
 
       {/* Demo Benefits */}
-      <div className="section-padding bg-gray-50">
+      <div className="section-padding bg-gray-50 dark:bg-muted">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-card-foreground mb-4">
               What You'll See in the Demo
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Experience firsthand how our AI agents work together to grow your barbershop business.
             </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-xl shadow-sm">
+            <div className="bg-white dark:bg-card p-8 rounded-xl shadow-sm">
               <div className="bg-olive-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-2xl">🤖</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">AI Agent Coordination</h3>
-              <p className="text-gray-600">Watch how our 6 AI agents collaborate to handle marketing, bookings, and customer service simultaneously.</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-card-foreground mb-3">AI Agent Coordination</h3>
+              <p className="text-gray-600 dark:text-gray-300">Watch how our 6 AI agents collaborate to handle marketing, bookings, and customer service simultaneously.</p>
             </div>
             
-            <div className="bg-white p-8 rounded-xl shadow-sm">
+            <div className="bg-white dark:bg-card p-8 rounded-xl shadow-sm">
               <div className="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-2xl">📊</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Real-Time Analytics</h3>
-              <p className="text-gray-600">See live performance metrics, customer insights, and ROI calculations updating in real-time.</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-card-foreground mb-3">Real-Time Analytics</h3>
+              <p className="text-gray-600 dark:text-gray-300">See live performance metrics, customer insights, and ROI calculations updating in real-time.</p>
             </div>
             
-            <div className="bg-white p-8 rounded-xl shadow-sm">
+            <div className="bg-white dark:bg-card p-8 rounded-xl shadow-sm">
               <div className="bg-gold-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
                 <span className="text-2xl">⚡</span>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Instant Automation</h3>
-              <p className="text-gray-600">Experience how quickly campaigns launch, appointments get scheduled, and customers get engaged.</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-card-foreground mb-3">Instant Automation</h3>
+              <p className="text-gray-600 dark:text-gray-300">Experience how quickly campaigns launch, appointments get scheduled, and customers get engaged.</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Schedule Personal Demo */}
-      <div className="section-padding bg-white">
+      <div className="section-padding bg-white dark:bg-card">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-card-foreground mb-6">
             Want a Personal Demo?
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             Schedule a one-on-one demo tailored to your barbershop's specific needs and see how 
             our AI can solve your unique challenges.
           </p>
@@ -144,15 +144,15 @@ export default function DemoPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-olive-600">15 min</div>
-                <div className="text-gray-600">Demo Duration</div>
+                <div className="text-gray-600 dark:text-gray-300">Demo Duration</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-gold-600">1-on-1</div>
-                <div className="text-gray-600">Personal Session</div>
+                <div className="text-gray-600 dark:text-gray-300">Personal Session</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600">Free</div>
-                <div className="text-gray-600">No Cost</div>
+                <div className="text-gray-600 dark:text-gray-300">No Cost</div>
               </div>
             </div>
             
@@ -160,7 +160,7 @@ export default function DemoPage() {
               <Link href="/register" className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-8 py-4 rounded-lg font-semibold hover:from-olive-700 hover:to-gold-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
                 Book Personal Demo
               </Link>
-              <Link href="/" className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-200">
+              <Link href="/" className="border-2 border-gray-300 text-gray-700 dark:text-gray-300 px-8 py-4 rounded-lg font-semibold hover:border-gray-400 hover:bg-gray-50 dark:bg-muted transition-all duration-200">
                 Sign Up Instead
               </Link>
             </div>

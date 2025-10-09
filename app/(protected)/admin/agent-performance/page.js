@@ -132,7 +132,7 @@ export default function AgentPerformanceDashboard() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading agent performance data...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading agent performance data...</p>
         </div>
       </div>
     )
@@ -150,14 +150,14 @@ export default function AgentPerformanceDashboard() {
               <CpuChipIcon className="h-8 w-8 text-olive-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Agent Performance Dashboard</h1>
-              <p className="text-gray-600">Monitor AgentKit usage, costs, and performance metrics</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Agent Performance Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-300">Monitor AgentKit usage, costs, and performance metrics</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-3">
             {/* Date Range Selector */}
-            <div className="flex items-center space-x-2 bg-white border border-gray-300 rounded-lg px-3 py-2">
+            <div className="flex items-center space-x-2 bg-white dark:bg-card border border-gray-300 rounded-lg px-3 py-2">
               <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
               <select
                 value={dateRange}
@@ -178,10 +178,10 @@ export default function AgentPerformanceDashboard() {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-background flex items-center space-x-2 disabled:opacity-50"
+              className="px-4 py-2 bg-white dark:bg-card border border-gray-300 rounded-lg hover:bg-background flex items-center space-x-2 disabled:opacity-50"
             >
               <ArrowPathIcon className={`h-5 w-5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="text-gray-700">Refresh</span>
+              <span className="text-gray-700 dark:text-gray-300">Refresh</span>
             </button>
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function AgentPerformanceDashboard() {
         {/* Active Filter */}
         {agentFilter && (
           <div className="mt-4 flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Filtered by agent:</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">Filtered by agent:</span>
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-olive-100 text-olive-800">
               {cleanAgentName(agentFilter)}
               <button
@@ -208,61 +208,61 @@ export default function AgentPerformanceDashboard() {
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         {/* Total Queries */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-blue-100 rounded-lg">
               <ChartBarIcon className="h-6 w-6 text-blue-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{overview.total_queries || 0}</p>
-          <p className="text-sm text-gray-600 mt-1">Total Queries</p>
-          <p className="text-xs text-gray-500 mt-2">Last {dateRange} days</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{overview.total_queries || 0}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Total Queries</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300 mt-2">Last {dateRange} days</p>
         </div>
 
         {/* Total Cost */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-green-100 rounded-lg">
               <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
             ${(overview.total_cost || 0).toFixed(4)}
           </p>
-          <p className="text-sm text-gray-600 mt-1">Total Cost</p>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Total Cost</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300 mt-2">
             Avg: ${overview.total_queries > 0 ? (overview.total_cost / overview.total_queries).toFixed(4) : '0.0000'} per query
           </p>
         </div>
 
         {/* Avg Response Time */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-amber-100 rounded-lg">
               <ClockIcon className="h-6 w-6 text-amber-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
             {((overview.avg_response_time || 0) / 1000).toFixed(2)}s
           </p>
-          <p className="text-sm text-gray-600 mt-1">Avg Response Time</p>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Avg Response Time</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300 mt-2">
             {overview.avg_response_time < 10000 ? 'Excellent' : overview.avg_response_time < 15000 ? 'Good' : 'Needs optimization'}
           </p>
         </div>
 
         {/* Most Used Agent */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-purple-100 rounded-lg">
               <CpuChipIcon className="h-6 w-6 text-purple-600" />
             </div>
           </div>
-          <p className="text-lg font-bold text-gray-900 truncate">
+          <p className="text-lg font-bold text-gray-900 dark:text-card-foreground truncate">
             {cleanAgentName(overview.most_used_agent) || 'N/A'}
           </p>
-          <p className="text-sm text-gray-600 mt-1">Most Used Agent</p>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Most Used Agent</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300 mt-2">
             {overview.success_rate ? `${overview.success_rate}% success rate` : 'No data'}
           </p>
         </div>

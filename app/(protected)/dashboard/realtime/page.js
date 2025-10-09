@@ -28,19 +28,19 @@ export default function RealtimePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       <div className="p-8">
         {/* Page Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Real-time Features</h1>
-            <p className="text-gray-600">Live updates powered by Pusher</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-2">Real-time Features</h1>
+            <p className="text-gray-600 dark:text-gray-300">Live updates powered by Pusher</p>
           </div>
           
           {/* Notification Badge */}
           <div className="relative">
-            <button className="p-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-              <BellIcon className="h-6 w-6 text-gray-600" />
+            <button className="p-2 bg-white dark:bg-card rounded-lg shadow hover:shadow-md transition-shadow">
+              <BellIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
               {notifications.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {notifications.length}
@@ -51,7 +51,7 @@ export default function RealtimePage() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-gray-200 mb-6">
+        <div className="border-b border-gray-200 dark:border-border mb-6">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('dashboard')}
@@ -97,13 +97,13 @@ export default function RealtimePage() {
         {activeTab === 'chat' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">General Chat</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-card-foreground mb-4">General Chat</h3>
               <div style={{ height: '600px' }}>
                 <RealtimeChat roomId="general" />
               </div>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Support Chat</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-card-foreground mb-4">Support Chat</h3>
               <div style={{ height: '600px' }}>
                 <RealtimeChat roomId="support" />
               </div>
@@ -112,9 +112,9 @@ export default function RealtimePage() {
         )}
 
         {activeTab === 'notifications' && (
-          <div className="bg-white rounded-lg shadow">
+          <div className="bg-white dark:bg-card rounded-lg shadow">
             <div className="px-4 py-3 border-b flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Real-time Notifications</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-card-foreground">Real-time Notifications</h3>
               {notifications.length > 0 && (
                 <button
                   onClick={clearNotifications}
@@ -128,7 +128,7 @@ export default function RealtimePage() {
             {notifications.length === 0 ? (
               <div className="p-8 text-center">
                 <BellIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500">No real-time notifications yet</p>
+                <p className="text-gray-500 dark:text-gray-300">No real-time notifications yet</p>
                 <p className="text-sm text-gray-400 mt-2">
                   Notifications will appear here as events happen
                 </p>
@@ -136,7 +136,7 @@ export default function RealtimePage() {
             ) : (
               <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
                 {notifications.map((notification) => (
-                  <div key={notification.id} className="p-4 hover:bg-gray-50">
+                  <div key={notification.id} className="p-4 hover:bg-gray-50 dark:bg-muted">
                     <div className="flex items-start space-x-3">
                       <div className={`w-2 h-2 rounded-full mt-1.5 ${
                         notification.type === 'booking' ? 'bg-green-400' :
@@ -144,8 +144,8 @@ export default function RealtimePage() {
                         'bg-olive-400'
                       }`} />
                       <div className="flex-1">
-                        <p className="text-sm text-gray-900">{notification.message}</p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-sm text-gray-900 dark:text-card-foreground">{notification.message}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
                           {notification.timestamp.toLocaleString()}
                         </p>
                       </div>
@@ -159,7 +159,7 @@ export default function RealtimePage() {
 
         {/* Test Triggers */}
         <div className="mt-8 bg-gray-100 rounded-lg p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Test Real-time Events</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-card-foreground mb-4">Test Real-time Events</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <button
               onClick={async () => {

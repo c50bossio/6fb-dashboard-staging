@@ -207,14 +207,14 @@ export default function AddBarber() {
   const prevStep = () => setStep(step - 1)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-card shadow-sm border-b">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Add New Barber</h1>
-              <p className="text-sm text-gray-600">Add a barber to your shop team</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground">Add New Barber</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Add a barber to your shop team</p>
             </div>
             <div className="flex items-center space-x-4">
               {/* Step Indicators */}
@@ -237,8 +237,8 @@ export default function AddBarber() {
         <div className="max-w-3xl mx-auto">
           {/* Step 1: Basic Information */}
           {step === 1 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6 flex items-center">
                 <UserIcon className="h-5 w-5 mr-2 text-olive-600" />
                 Basic Information
               </h2>
@@ -246,7 +246,7 @@ export default function AddBarber() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Full Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -259,7 +259,7 @@ export default function AddBarber() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Email Address <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -272,7 +272,7 @@ export default function AddBarber() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Phone Number
                     </label>
                     <input
@@ -285,7 +285,7 @@ export default function AddBarber() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Years of Experience
                     </label>
                     <input
@@ -298,7 +298,7 @@ export default function AddBarber() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Specialty
                     </label>
                     <input
@@ -311,11 +311,11 @@ export default function AddBarber() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Custom Page URL
                     </label>
                     <div className="flex items-center">
-                      <span className="text-sm text-gray-500 mr-2">yourshop.com/</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-300 mr-2">yourshop.com/</span>
                       <input
                         type="text"
                         value={barberData.customPageSlug}
@@ -328,7 +328,7 @@ export default function AddBarber() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Bio
                   </label>
                   <textarea
@@ -345,19 +345,19 @@ export default function AddBarber() {
 
           {/* Step 2: Financial Arrangement */}
           {step === 2 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6 flex items-center">
                 <CurrencyDollarIcon className="h-5 w-5 mr-2 text-olive-600" />
                 Financial Arrangement
               </h2>
               
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Financial Model
                   </label>
                   <div className="space-y-3">
-                    <label className="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <label className="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-gray-50 dark:bg-muted">
                       <input
                         type="radio"
                         value="commission"
@@ -367,11 +367,11 @@ export default function AddBarber() {
                       />
                       <div className="ml-3">
                         <p className="font-medium">Commission Based</p>
-                        <p className="text-sm text-gray-600">Barber receives a percentage of service revenue</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Barber receives a percentage of service revenue</p>
                       </div>
                     </label>
                     
-                    <label className="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <label className="flex items-start p-4 border rounded-lg cursor-pointer hover:bg-gray-50 dark:bg-muted">
                       <input
                         type="radio"
                         value="booth_rent"
@@ -381,7 +381,7 @@ export default function AddBarber() {
                       />
                       <div className="ml-3">
                         <p className="font-medium">Booth Rent</p>
-                        <p className="text-sm text-gray-600">Barber pays fixed weekly/monthly rent</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Barber pays fixed weekly/monthly rent</p>
                       </div>
                     </label>
                   </div>
@@ -390,7 +390,7 @@ export default function AddBarber() {
                 {barberData.financialModel === 'commission' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Service Commission (% to Barber)
                       </label>
                       <input
@@ -401,11 +401,11 @@ export default function AddBarber() {
                         min="0"
                         max="100"
                       />
-                      <p className="text-xs text-gray-500 mt-1">Shop keeps {100 - barberData.commissionRate}%</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Shop keeps {100 - barberData.commissionRate}%</p>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Product Commission (% to Barber)
                       </label>
                       <input
@@ -422,7 +422,7 @@ export default function AddBarber() {
                 
                 {barberData.financialModel === 'booth_rent' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Weekly Booth Rent Amount ($)
                     </label>
                     <input
@@ -440,13 +440,13 @@ export default function AddBarber() {
 
           {/* Step 3: Schedule & Availability */}
           {step === 3 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6 flex items-center">
                 <CalendarDaysIcon className="h-5 w-5 mr-2 text-olive-600" />
                 Default Schedule
               </h2>
               
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
                 Set the default working hours. The barber can adjust these later.
               </p>
               
@@ -454,7 +454,7 @@ export default function AddBarber() {
                 {Object.entries(barberData.defaultSchedule).map(([day, schedule]) => (
                   <div key={day} className="flex items-center space-x-4 py-3 border-b">
                     <div className="w-32">
-                      <span className="text-sm font-medium text-gray-700 capitalize">{day}</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{day}</span>
                     </div>
                     
                     <input
@@ -472,7 +472,7 @@ export default function AddBarber() {
                           onChange={(e) => updateSchedule(day, 'start', e.target.value)}
                           className="px-3 py-1 border border-gray-300 rounded text-sm"
                         />
-                        <span className="text-gray-500">to</span>
+                        <span className="text-gray-500 dark:text-gray-300">to</span>
                         <input
                           type="time"
                           value={schedule.end}
@@ -483,14 +483,14 @@ export default function AddBarber() {
                     )}
                     
                     {!schedule.enabled && (
-                      <span className="text-sm text-gray-500">Day off</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-300">Day off</span>
                     )}
                   </div>
                 ))}
               </div>
               
               <div className="mt-6">
-                <h3 className="text-md font-medium text-gray-900 mb-4">Permissions</h3>
+                <h3 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-4">Permissions</h3>
                 <div className="space-y-3">
                   <label className="flex items-center">
                     <input
@@ -499,7 +499,7 @@ export default function AddBarber() {
                       onChange={(e) => setBarberData({...barberData, canManageOwnSchedule: e.target.checked})}
                       className="h-4 w-4 text-olive-600 rounded mr-3"
                     />
-                    <span className="text-sm text-gray-700">Can manage own schedule</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Can manage own schedule</span>
                   </label>
                   
                   <label className="flex items-center">
@@ -509,7 +509,7 @@ export default function AddBarber() {
                       onChange={(e) => setBarberData({...barberData, canViewOwnReports: e.target.checked})}
                       className="h-4 w-4 text-olive-600 rounded mr-3"
                     />
-                    <span className="text-sm text-gray-700">Can view own reports</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Can view own reports</span>
                   </label>
                   
                   <label className="flex items-center">
@@ -519,7 +519,7 @@ export default function AddBarber() {
                       onChange={(e) => setBarberData({...barberData, canManageOwnClients: e.target.checked})}
                       className="h-4 w-4 text-olive-600 rounded mr-3"
                     />
-                    <span className="text-sm text-gray-700">Can manage own clients</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Can manage own clients</span>
                   </label>
                   
                   <label className="flex items-center">
@@ -529,7 +529,7 @@ export default function AddBarber() {
                       onChange={(e) => setBarberData({...barberData, canSellProducts: e.target.checked})}
                       className="h-4 w-4 text-olive-600 rounded mr-3"
                     />
-                    <span className="text-sm text-gray-700">Can sell products</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Can sell products</span>
                   </label>
                 </div>
               </div>
@@ -538,16 +538,16 @@ export default function AddBarber() {
 
           {/* Step 4: Review */}
           {step === 4 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6 flex items-center">
                 <CheckCircleIcon className="h-5 w-5 mr-2 text-olive-600" />
                 Review & Confirm
               </h2>
               
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-3">Basic Information</h3>
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <h3 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-3">Basic Information</h3>
+                  <div className="bg-gray-50 dark:bg-muted rounded-lg p-4 space-y-2">
                     <p className="text-sm"><span className="font-medium">Name:</span> {barberData.fullName}</p>
                     <p className="text-sm"><span className="font-medium">Email:</span> {barberData.email}</p>
                     <p className="text-sm"><span className="font-medium">Phone:</span> {barberData.phone || 'Not provided'}</p>
@@ -557,8 +557,8 @@ export default function AddBarber() {
                 </div>
                 
                 <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-3">Financial Arrangement</h3>
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <h3 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-3">Financial Arrangement</h3>
+                  <div className="bg-gray-50 dark:bg-muted rounded-lg p-4 space-y-2">
                     <p className="text-sm">
                       <span className="font-medium">Model:</span> {barberData.financialModel === 'commission' ? 'Commission Based' : 'Booth Rent'}
                     </p>
@@ -574,8 +574,8 @@ export default function AddBarber() {
                 </div>
                 
                 <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-3">Working Days</h3>
-                  <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-md font-medium text-gray-900 dark:text-card-foreground mb-3">Working Days</h3>
+                  <div className="bg-gray-50 dark:bg-muted rounded-lg p-4">
                     <p className="text-sm">
                       {Object.entries(barberData.defaultSchedule)
                         .filter(([_, s]) => s.enabled)

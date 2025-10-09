@@ -5,9 +5,9 @@ import Link from 'next/link'
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-card">
       {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white dark:bg-card/95 backdrop-blur-sm border-b border-gray-200 dark:border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -15,12 +15,12 @@ export default function ContactPage() {
                 <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-card-foreground">AI Agent System</span>
               </Link>
             </div>
             
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -49,15 +49,15 @@ export default function ContactPage() {
       </div>
 
       {/* Contact Methods */}
-      <div className="section-padding bg-white">
+      <div className="section-padding bg-white dark:bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
             <div className="text-center">
               <div className="bg-olive-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <EnvelopeIcon className="h-8 w-8 text-olive-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Email Us</h3>
-              <p className="text-gray-600 mb-4">Get in touch via email</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-2">Email Us</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">Get in touch via email</p>
               <a href="mailto:support@6fb.ai" className="text-olive-600 hover:text-olive-700 font-medium">
                 support@6fb.ai
               </a>
@@ -67,8 +67,8 @@ export default function ContactPage() {
               <div className="bg-green-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <PhoneIcon className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Call Us</h3>
-              <p className="text-gray-600 mb-4">Speak with our team</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-2">Call Us</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">Speak with our team</p>
               <a href="tel:+1-555-6FB-AI" className="text-olive-600 hover:text-olive-700 font-medium">
                 +1 (555) 6FB-AI
               </a>
@@ -78,8 +78,8 @@ export default function ContactPage() {
               <div className="bg-gold-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <ChatBubbleLeftRightIcon className="h-8 w-8 text-gold-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Chat</h3>
-              <p className="text-gray-600 mb-4">Chat with support</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-2">Live Chat</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">Chat with support</p>
               <button className="text-olive-600 hover:text-olive-700 font-medium">
                 Start Chat
               </button>
@@ -89,8 +89,8 @@ export default function ContactPage() {
               <div className="bg-orange-100 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto">
                 <MapPinIcon className="h-8 w-8 text-orange-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Visit Us</h3>
-              <p className="text-gray-600 mb-4">Our headquarters</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-2">Visit Us</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">Our headquarters</p>
               <p className="text-olive-600 font-medium">
                 San Francisco, CA
               </p>
@@ -100,18 +100,18 @@ export default function ContactPage() {
       </div>
 
       {/* Contact Form */}
-      <div className="section-padding bg-gray-50">
+      <div className="section-padding bg-gray-50 dark:bg-muted">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Send Us a Message</h2>
-            <p className="text-xl text-gray-600">We'll get back to you within 24 hours</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-card-foreground mb-4">Send Us a Message</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">We'll get back to you within 24 hours</p>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-white dark:bg-card rounded-2xl shadow-sm border border-gray-200 dark:border-border p-8">
             <form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     First Name *
                   </label>
                   <input
@@ -121,7 +121,7 @@ export default function ContactPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Last Name *
                   </label>
                   <input
@@ -133,7 +133,7 @@ export default function ContactPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Email Address *
                 </label>
                 <input
@@ -144,7 +144,7 @@ export default function ContactPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Barbershop Name
                 </label>
                 <input
@@ -155,7 +155,7 @@ export default function ContactPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Subject *
                 </label>
                 <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent transition-all duration-200">
@@ -169,7 +169,7 @@ export default function ContactPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Message *
                 </label>
                 <textarea
@@ -193,29 +193,29 @@ export default function ContactPage() {
       </div>
 
       {/* FAQ Section */}
-      <div className="section-padding bg-white">
+      <div className="section-padding bg-white dark:bg-card">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-card-foreground mb-4">
               Frequently Asked Questions
             </h2>
-            <p className="text-xl text-gray-600">Quick answers to common questions</p>
+            <p className="text-xl text-gray-600 dark:text-gray-300">Quick answers to common questions</p>
           </div>
           
           <div className="space-y-6">
-            <div className="bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">How quickly can I get started?</h3>
-              <p className="text-gray-600">You can sign up immediately and have your first AI agent running within 5 minutes of signup.</p>
+            <div className="bg-gray-50 dark:bg-muted rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-3">How quickly can I get started?</h3>
+              <p className="text-gray-600 dark:text-gray-300">You can sign up immediately and have your first AI agent running within 5 minutes of signup.</p>
             </div>
             
-            <div className="bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you offer phone support?</h3>
-              <p className="text-gray-600">Yes, we offer phone support for Professional and Enterprise plans. Starter plan customers have access to email and chat support.</p>
+            <div className="bg-gray-50 dark:bg-muted rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-3">Do you offer phone support?</h3>
+              <p className="text-gray-600 dark:text-gray-300">Yes, we offer phone support for Professional and Enterprise plans. Starter plan customers have access to email and chat support.</p>
             </div>
             
-            <div className="bg-gray-50 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Can you help migrate from other platforms?</h3>
-              <p className="text-gray-600">Absolutely! Our team provides free migration assistance to help you seamlessly transition from other marketing platforms.</p>
+            <div className="bg-gray-50 dark:bg-muted rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-3">Can you help migrate from other platforms?</h3>
+              <p className="text-gray-600 dark:text-gray-300">Absolutely! Our team provides free migration assistance to help you seamlessly transition from other marketing platforms.</p>
             </div>
           </div>
         </div>

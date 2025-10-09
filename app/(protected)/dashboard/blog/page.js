@@ -5,8 +5,8 @@ import Link from 'next/link'
 
 export default function BlogPage() {
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-white dark:bg-card">
+      <nav className="bg-white dark:bg-card/95 backdrop-blur-sm border-b border-gray-200 dark:border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -14,11 +14,11 @@ export default function BlogPage() {
                 <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-card-foreground">AI Agent System</span>
               </Link>
             </div>
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -39,10 +39,10 @@ export default function BlogPage() {
         </div>
       </div>
 
-      <div className="section-padding bg-white">
+      <div className="section-padding bg-white dark:bg-card">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">Blog Coming Soon</h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-card-foreground mb-6">Blog Coming Soon</h2>
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
             We're preparing valuable content about AI, barbershop marketing, and business growth. 
             Stay tuned for expert insights!
           </p>

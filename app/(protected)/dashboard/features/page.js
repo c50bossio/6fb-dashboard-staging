@@ -82,9 +82,9 @@ export default function FeaturesPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-card">
       {/* Navigation */}
-      <nav className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white dark:bg-card/95 backdrop-blur-sm border-b border-gray-200 dark:border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -92,12 +92,12 @@ export default function FeaturesPage() {
                 <div className="h-10 w-10 bg-gradient-to-br from-olive-600 to-gold-600 rounded-xl flex items-center justify-center shadow-lg">
                   <span className="text-white font-bold text-sm">6FB</span>
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-900">AI Agent System</span>
+                <span className="ml-3 text-xl font-bold text-gray-900 dark:text-card-foreground">AI Agent System</span>
               </Link>
             </div>
             
             <div className="flex items-center space-x-8">
-              <Link href="/" className="flex items-center text-gray-600 hover:text-olive-600 font-medium transition-colors">
+              <Link href="/" className="flex items-center text-gray-600 dark:text-gray-300 hover:text-olive-600 font-medium transition-colors">
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back to Home
               </Link>
@@ -126,7 +126,7 @@ export default function FeaturesPage() {
       </div>
 
       {/* Features Section */}
-      <div className="section-padding bg-white">
+      <div className="section-padding bg-white dark:bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {features.map((feature, index) => (
@@ -136,15 +136,15 @@ export default function FeaturesPage() {
                     <feature.icon className="h-8 w-8 text-olive-600 group-hover:text-gold-600 transition-colors duration-300" />
                   </div>
                   <div className="ml-6">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-olive-600 transition-colors duration-300">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-4 group-hover:text-olive-600 transition-colors duration-300">
                       {feature.name}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed mb-6">
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
                       {feature.description}
                     </p>
                     <ul className="space-y-3">
                       {feature.benefits.map((benefit, idx) => (
-                        <li key={idx} className="flex items-center text-gray-700">
+                        <li key={idx} className="flex items-center text-gray-700 dark:text-gray-300">
                           <div className="w-2 h-2 bg-gradient-to-r from-olive-500 to-gold-500 rounded-full mr-3"></div>
                           {benefit}
                         </li>
@@ -168,10 +168,10 @@ export default function FeaturesPage() {
             Sign up today and see how AI can transform your barbershop business.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-10 py-5 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl">
+            <Link href="/register" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 dark:text-card-foreground px-10 py-5 rounded-xl text-lg font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 transform hover:scale-105 shadow-2xl">
               Sign Up
             </Link>
-            <Link href="/demo" className="border-2 border-white/30 text-white px-10 py-5 rounded-xl text-lg font-semibold hover:bg-white/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm">
+            <Link href="/demo" className="border-2 border-white/30 text-white px-10 py-5 rounded-xl text-lg font-semibold hover:bg-white dark:bg-card/10 hover:border-white/50 transition-all duration-300 backdrop-blur-sm">
               Watch Demo
             </Link>
           </div>

@@ -233,12 +233,12 @@ export default function StaffBookingsPage() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Booking Management</h1>
-        <p className="text-gray-600 mt-2">Manage all customer appointments and bookings</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Booking Management</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">Manage all customer appointments and bookings</p>
       </div>
 
       {/* Filters and Search */}
-      <div className="mb-6 bg-white rounded-lg shadow p-4">
+      <div className="mb-6 bg-white dark:bg-card rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
@@ -289,12 +289,12 @@ export default function StaffBookingsPage() {
       </div>
 
       {/* Bookings List */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-card rounded-lg shadow overflow-hidden">
         {bookings.length === 0 ? (
           <div className="text-center py-12">
             <CalendarDaysIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No bookings found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-card-foreground">No bookings found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
               No bookings match your current filters.
             </p>
           </div>
@@ -304,40 +304,40 @@ export default function StaffBookingsPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-background">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Customer
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Service
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Date & Time
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Payment
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-card divide-y divide-gray-200">
                   {bookings.map((booking) => (
                     <tr key={booking.id} className="hover:bg-background">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                             {booking.extendedProps?.clientName}
                           </div>
-                          <div className="text-sm text-gray-500 flex items-center gap-1">
+                          <div className="text-sm text-gray-500 dark:text-gray-300 flex items-center gap-1">
                             <EnvelopeIcon className="h-3 w-3" />
                             {booking.extendedProps?.clientEmail}
                           </div>
                           {booking.extendedProps?.clientPhone && (
-                            <div className="text-sm text-gray-500 flex items-center gap-1">
+                            <div className="text-sm text-gray-500 dark:text-gray-300 flex items-center gap-1">
                               <PhoneIcon className="h-3 w-3" />
                               {booking.extendedProps?.clientPhone}
                             </div>
@@ -345,21 +345,21 @@ export default function StaffBookingsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                           {booking.extendedProps?.serviceName}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-300">
                           {booking.extendedProps?.duration} min • ${booking.extendedProps?.servicePrice}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-300">
                           {booking.extendedProps?.barberName}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-gray-900 dark:text-card-foreground">
                           {new Date(booking.start).toLocaleDateString()}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 dark:text-gray-300">
                           {new Date(booking.start).toLocaleTimeString('en-US', {
                             hour: 'numeric',
                             minute: '2-digit'
@@ -412,26 +412,26 @@ export default function StaffBookingsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
+              <div className="bg-white dark:bg-card px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-border">
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
                       Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
                       <span className="font-medium">
                         {Math.min(currentPage * itemsPerPage, totalBookings)}
@@ -444,7 +444,7 @@ export default function StaffBookingsPage() {
                       <button
                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white dark:bg-card text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <ChevronLeftIcon className="h-5 w-5" />
                       </button>
@@ -470,7 +470,7 @@ export default function StaffBookingsPage() {
                       <button
                         onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                         disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white dark:bg-card text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <ChevronRightIcon className="h-5 w-5" />
                       </button>
@@ -486,14 +486,14 @@ export default function StaffBookingsPage() {
       {/* Booking Details Modal */}
       {showDetails && selectedBooking && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+          <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-card">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-card-foreground">
                 Booking Details
               </h3>
               <button
                 onClick={() => setShowDetails(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 <XCircleIcon className="h-6 w-6" />
               </button>
@@ -502,39 +502,39 @@ export default function StaffBookingsPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Customer</label>
-                  <p className="text-sm text-gray-900">{selectedBooking.extendedProps?.clientName}</p>
-                  <p className="text-sm text-gray-600">{selectedBooking.extendedProps?.clientEmail}</p>
-                  <p className="text-sm text-gray-600">{selectedBooking.extendedProps?.clientPhone}</p>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer</label>
+                  <p className="text-sm text-gray-900 dark:text-card-foreground">{selectedBooking.extendedProps?.clientName}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedBooking.extendedProps?.clientEmail}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedBooking.extendedProps?.clientPhone}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Service</label>
-                  <p className="text-sm text-gray-900">{selectedBooking.extendedProps?.serviceName}</p>
-                  <p className="text-sm text-gray-600">{selectedBooking.extendedProps?.duration} minutes</p>
-                  <p className="text-sm text-gray-600">${selectedBooking.extendedProps?.servicePrice}</p>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Service</label>
+                  <p className="text-sm text-gray-900 dark:text-card-foreground">{selectedBooking.extendedProps?.serviceName}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{selectedBooking.extendedProps?.duration} minutes</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">${selectedBooking.extendedProps?.servicePrice}</p>
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Date & Time</label>
-                  <p className="text-sm text-gray-900">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Date & Time</label>
+                  <p className="text-sm text-gray-900 dark:text-card-foreground">
                     {new Date(selectedBooking.start).toLocaleString()}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Barber</label>
-                  <p className="text-sm text-gray-900">{selectedBooking.extendedProps?.barberName}</p>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Barber</label>
+                  <p className="text-sm text-gray-900 dark:text-card-foreground">{selectedBooking.extendedProps?.barberName}</p>
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                   {getStatusBadge(selectedBooking.extendedProps?.status)}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Payment</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment</label>
                   {getPaymentStatusBadge(selectedBooking.extendedProps?.paymentStatus)}
                 </div>
               </div>
@@ -543,7 +543,7 @@ export default function StaffBookingsPage() {
             <div className="mt-6 flex justify-end space-x-3">
               <button
                 onClick={() => setShowDetails(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-background"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-background"
               >
                 Close
               </button>

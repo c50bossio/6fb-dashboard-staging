@@ -344,14 +344,14 @@ export default function BarberReports() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-card shadow-sm border-b">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Performance Reports</h1>
-              <p className="text-sm text-gray-600">Track your earnings, appointments, and client metrics</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground">Performance Reports</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Track your earnings, appointments, and client metrics</p>
             </div>
             <div className="flex items-center space-x-3">
               <select
@@ -379,7 +379,7 @@ export default function BarberReports() {
       <div className="p-6">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-green-100 rounded-lg">
                 <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
@@ -389,23 +389,23 @@ export default function BarberReports() {
                 12%
               </span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
               ${reportData.earnings.total.toFixed(2)}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Total Earnings</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Total Earnings</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-amber-100 rounded-lg">
                 <CalendarDaysIcon className="h-6 w-6 text-amber-700" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{reportData.appointments.total}</p>
-            <p className="text-sm text-gray-600 mt-1">Total Appointments</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{reportData.appointments.total}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Total Appointments</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-olive-100 rounded-lg">
                 <UserGroupIcon className="h-6 w-6 text-olive-600" />
@@ -414,28 +414,28 @@ export default function BarberReports() {
                 +{reportData.clients.new}
               </span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{reportData.clients.total}</p>
-            <p className="text-sm text-gray-600 mt-1">Total Clients</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{reportData.clients.total}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Total Clients</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
             <div className="flex items-center justify-between mb-2">
               <div className="p-2 bg-gold-100 rounded-lg">
                 <ScissorsIcon className="h-6 w-6 text-gold-600" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
               {reportData.appointments.completed}
             </p>
-            <p className="text-sm text-gray-600 mt-1">Services Completed</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Services Completed</p>
           </div>
         </div>
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Revenue Trend */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Trend</h3>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Revenue Trend</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={reportData.trends.daily}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -454,8 +454,8 @@ export default function BarberReports() {
           </div>
 
           {/* Appointment Distribution */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Appointment Status</h3>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Appointment Status</h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -486,8 +486,8 @@ export default function BarberReports() {
           </div>
 
           {/* Popular Services */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Services</h3>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Popular Services</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={reportData.services.popular}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -500,8 +500,8 @@ export default function BarberReports() {
           </div>
 
           {/* Hourly Distribution */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Peak Hours</h3>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Peak Hours</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={reportData.trends.hourly}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -517,36 +517,36 @@ export default function BarberReports() {
         {/* Detailed Tables */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Earnings Breakdown */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Earnings Breakdown</h3>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Earnings Breakdown</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">Services</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Services</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                   ${reportData.earnings.services.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">Products</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Products</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                   ${reportData.earnings.products.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">Tips</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Tips</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                   ${reportData.earnings.tips.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm font-medium text-gray-900">Total Revenue</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">Total Revenue</span>
                 <span className="text-lg font-bold text-green-600">
                   ${reportData.earnings.total.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-t">
-                <span className="text-sm text-gray-600">Commission (60%)</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Commission (60%)</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                   ${reportData.earnings.commission.toFixed(2)}
                 </span>
               </div>
@@ -554,30 +554,30 @@ export default function BarberReports() {
           </div>
 
           {/* Client Metrics */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Client Metrics</h3>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Client Metrics</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">Total Clients</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Total Clients</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                   {reportData.clients.total}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">New Clients</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">New Clients</span>
                 <span className="text-sm font-medium text-green-600">
                   +{reportData.clients.new}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-gray-600">Returning Clients</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Returning Clients</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                   {reportData.clients.returning}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-gray-600">Retention Rate</span>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Retention Rate</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                   {((reportData.clients.returning / Math.max(reportData.clients.total, 1)) * 100).toFixed(1)}%
                 </span>
               </div>

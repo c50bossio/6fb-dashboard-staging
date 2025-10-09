@@ -77,25 +77,25 @@ const AlertsDashboardPage = () => {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-olive-600"></div>
       </div>
     );
   }
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-white dark:bg-card shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center">
               <BellIcon className="h-8 w-8 text-olive-600 mr-3" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">
                   Intelligent Alert System
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-300">
                   ML-powered alert management with real-time prioritization and adaptive learning
                 </p>
               </div>
@@ -108,7 +108,7 @@ const AlertsDashboardPage = () => {
           </div>
           
           {/* Navigation Tabs */}
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-200 dark:border-border">
             <nav className="-mb-px flex space-x-8">
               <button
                 onClick={() => setActiveTab('alerts')}
@@ -166,8 +166,8 @@ const AlertsDashboardPage = () => {
             />
             
             {/* Alert Creation Demo */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Create Test Alert</h3>
+            <div className="bg-white dark:bg-card rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">Create Test Alert</h3>
               <AlertCreationDemo 
                 barbershopId={user?.barbershop_id}
                 userId={user?.id}
@@ -212,7 +212,7 @@ const SystemHealthIndicator = ({ status }) => {
   return (
     <div className="flex items-center space-x-2">
       <div className={`h-3 w-3 rounded-full bg-${color}-400 animate-pulse`}></div>
-      <span className="text-sm text-gray-600">System Health</span>
+      <span className="text-sm text-gray-600 dark:text-gray-300">System Health</span>
     </div>
   );
 };
@@ -235,7 +235,7 @@ const IntegrationStatusIndicator = ({ status }) => {
   return (
     <div className="flex items-center space-x-2">
       <div className={`h-3 w-3 rounded-full ${isHealthy ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
-      <span className="text-sm text-gray-600">
+      <span className="text-sm text-gray-600 dark:text-gray-300">
         Integrations {healthy}/{total}
       </span>
     </div>
@@ -342,7 +342,7 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Alert Type
           </label>
           <select
@@ -358,7 +358,7 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Custom Title (optional)
           </label>
           <input
@@ -372,7 +372,7 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
       </div>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Custom Message (optional)
         </label>
         <textarea
@@ -410,9 +410,9 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
       </div>
       
       {/* Preview */}
-      <div className="mt-4 p-4 bg-gray-50 rounded-md">
-        <h4 className="text-sm font-medium text-gray-900 mb-2">Preview:</h4>
-        <div className="text-sm text-gray-600">
+      <div className="mt-4 p-4 bg-gray-50 dark:bg-muted rounded-md">
+        <h4 className="text-sm font-medium text-gray-900 dark:text-card-foreground mb-2">Preview:</h4>
+        <div className="text-sm text-gray-600 dark:text-gray-300">
           <div><strong>Title:</strong> {customTitle || alertTypes[selectedType].title}</div>
           <div><strong>Message:</strong> {customMessage || alertTypes[selectedType].message}</div>
           <div><strong>Category:</strong> {selectedType.replace('_', ' ')}</div>
@@ -426,35 +426,35 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
 const AlertAnalyticsDashboard = ({ integrationStatus }) => {
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="bg-white dark:bg-card rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">
           Alert System Analytics
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
             <div className="text-3xl font-bold text-olive-600">87%</div>
-            <div className="text-sm text-gray-500">ML Accuracy</div>
+            <div className="text-sm text-gray-500 dark:text-gray-300">ML Accuracy</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-green-600">92%</div>
-            <div className="text-sm text-gray-500">User Satisfaction</div>
+            <div className="text-sm text-gray-500 dark:text-gray-300">User Satisfaction</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold text-gold-600">3.2s</div>
-            <div className="text-sm text-gray-500">Avg Response Time</div>
+            <div className="text-sm text-gray-500 dark:text-gray-300">Avg Response Time</div>
           </div>
         </div>
       </div>
       
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="bg-white dark:bg-card rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">
           Integration Health
         </h3>
         {integrationStatus && (
           <div className="space-y-3">
             {Object.entries(integrationStatus.service_integrations || {}).map(([service, healthy]) => (
               <div key={service} className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 capitalize">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">
                   {service.replace('_', ' ')}
                 </span>
                 <div className={`flex items-center space-x-2 ${
@@ -480,11 +480,11 @@ const AlertAnalyticsDashboard = ({ integrationStatus }) => {
 const AlertConfigurationDashboard = ({ barbershopId, userId }) => {
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="bg-white dark:bg-card rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">
           Alert Preferences
         </h3>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300">
           Configure your alert preferences and thresholds. This feature integrates with the
           alert configuration API endpoints.
         </p>
@@ -505,37 +505,37 @@ const AlertConfigurationDashboard = ({ barbershopId, userId }) => {
 const SystemMonitoringDashboard = ({ systemStatus, integrationStatus }) => {
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
+      <div className="bg-white dark:bg-card rounded-lg shadow p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">
           System Health Monitoring
         </h3>
         
         {systemStatus && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">
+              <div className="text-center p-4 bg-gray-50 dark:bg-muted rounded-lg">
+                <div className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {systemStatus.status || 'Unknown'}
                 </div>
-                <div className="text-sm text-gray-500">System Status</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">System Status</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">
+              <div className="text-center p-4 bg-gray-50 dark:bg-muted rounded-lg">
+                <div className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {systemStatus.version || 'N/A'}
                 </div>
-                <div className="text-sm text-gray-500">Version</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">Version</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-900">
+              <div className="text-center p-4 bg-gray-50 dark:bg-muted rounded-lg">
+                <div className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {new Date().toLocaleTimeString()}
                 </div>
-                <div className="text-sm text-gray-500">Current Time</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">Current Time</div>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-gray-50 dark:bg-muted rounded-lg">
                 <div className="text-2xl font-bold text-green-600">
                   Online
                 </div>
-                <div className="text-sm text-gray-500">Service Status</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">Service Status</div>
               </div>
             </div>
           </div>
@@ -543,18 +543,18 @@ const SystemMonitoringDashboard = ({ systemStatus, integrationStatus }) => {
       </div>
       
       {integrationStatus && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="bg-white dark:bg-card rounded-lg shadow p-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">
             Alert Integration Status
           </h3>
           
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">Monitoring Status</h4>
+                <h4 className="font-medium text-gray-900 dark:text-card-foreground mb-2">Monitoring Status</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Scheduler Running</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Scheduler Running</span>
                     <span className={`text-sm ${
                       integrationStatus.system_health?.scheduler_running 
                         ? 'text-green-600' : 'text-red-600'
@@ -563,7 +563,7 @@ const SystemMonitoringDashboard = ({ systemStatus, integrationStatus }) => {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Services Available</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">Services Available</span>
                     <span className={`text-sm ${
                       integrationStatus.system_health?.services_available 
                         ? 'text-green-600' : 'text-red-600'
@@ -575,14 +575,14 @@ const SystemMonitoringDashboard = ({ systemStatus, integrationStatus }) => {
               </div>
               
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">Alert Thresholds</h4>
+                <h4 className="font-medium text-gray-900 dark:text-card-foreground mb-2">Alert Thresholds</h4>
                 <div className="space-y-2">
                   {Object.entries(integrationStatus.alert_thresholds || {}).map(([key, value]) => (
                     <div key={key} className="flex justify-between">
-                      <span className="text-sm text-gray-600 capitalize">
+                      <span className="text-sm text-gray-600 dark:text-gray-300 capitalize">
                         {key.replace('_', ' ')}
                       </span>
-                      <span className="text-sm text-gray-900">
+                      <span className="text-sm text-gray-900 dark:text-card-foreground">
                         {typeof value === 'number' ? `${(value * 100).toFixed(0)}%` : value}
                       </span>
                     </div>

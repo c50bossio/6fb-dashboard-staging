@@ -282,27 +282,27 @@ export default function BookingLinksPage() {
   }
 
   const StatCard = ({ icon: Icon, title, value, subtitle, color = "text-gray-900" }) => (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+    <div className="bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border p-4">
       <div className="flex items-center">
         <div className={`p-2 rounded-lg ${color.replace('text-', 'bg-').replace('900', '100')}`}>
           <Icon className={`h-5 w-5 ${color.replace('900', '600')}`} />
         </div>
         <div className="ml-3 flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{title}</p>
           <p className={`text-xl font-bold ${color}`}>{value}</p>
-          {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-gray-500 dark:text-gray-300">{subtitle}</p>}
         </div>
       </div>
     </div>
   )
 
   const LinkCard = ({ link }) => (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border p-6">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-lg font-semibold text-gray-900">{link.name}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">{link.name}</h3>
             <span className={`px-2 py-1 text-xs rounded-full ${
               link.active 
                 ? 'bg-moss-100 text-moss-900' 
@@ -311,7 +311,7 @@ export default function BookingLinksPage() {
               {link.active ? 'Active' : 'Inactive'}
             </span>
           </div>
-          <p className="text-sm text-gray-600 font-mono bg-gray-50 p-2 rounded border truncate">
+          <p className="text-sm text-gray-600 dark:text-gray-300 font-mono bg-gray-50 dark:bg-muted p-2 rounded border truncate">
             {window.location?.origin || 'https://yourdomain.com'}{link.url}
           </p>
         </div>
@@ -330,7 +330,7 @@ export default function BookingLinksPage() {
           </button>
           
           <button 
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
+            className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:bg-muted rounded-lg transition-all"
             title="Edit"
           >
             <PencilIcon className="h-4 w-4" />
@@ -348,7 +348,7 @@ export default function BookingLinksPage() {
       {/* Services & Config */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-1">Services</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Services</p>
           <div className="flex flex-wrap gap-1">
             {link.services.map((service, index) => (
               <span key={index} className="px-2 py-1 bg-olive-100 text-olive-800 text-xs rounded">
@@ -359,7 +359,7 @@ export default function BookingLinksPage() {
         </div>
         
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-1">Time Slots</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Slots</p>
           <div className="flex flex-wrap gap-1">
             {link.timeSlots.map((slot, index) => (
               <span key={index} className="px-2 py-1 bg-gold-100 text-gold-800 text-xs rounded capitalize">
@@ -371,13 +371,13 @@ export default function BookingLinksPage() {
         
         <div className="flex items-center gap-4">
           <div>
-            <p className="text-sm font-medium text-gray-700">Duration</p>
-            <p className="text-sm text-gray-600">{link.duration} min</p>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Duration</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{link.duration} min</p>
           </div>
           {link.customPrice && (
             <div>
-              <p className="text-sm font-medium text-gray-700">Price</p>
-              <p className="text-sm text-gray-600">${link.customPrice}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Price</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">${link.customPrice}</p>
             </div>
           )}
         </div>
@@ -387,23 +387,23 @@ export default function BookingLinksPage() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
         <div className="text-center">
           <p className="text-2xl font-bold text-olive-600">{link.clicks}</p>
-          <p className="text-xs text-gray-500">Clicks</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300">Clicks</p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-green-600">{link.conversions}</p>
-          <p className="text-xs text-gray-500">Bookings</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300">Bookings</p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-olive-600">{link.embed_count || 0}</p>
-          <p className="text-xs text-gray-500">Embeds</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300">Embeds</p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-gold-600">{link.conversionRate}%</p>
-          <p className="text-xs text-gray-500">Conversion</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300">Conversion</p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-orange-600">${link.revenue}</p>
-          <p className="text-xs text-gray-500">Revenue</p>
+          <p className="text-xs text-gray-500 dark:text-gray-300">Revenue</p>
         </div>
       </div>
 
@@ -444,7 +444,7 @@ export default function BookingLinksPage() {
           </button>
         </div>
         
-        <div className="flex items-center gap-2 text-xs text-gray-500">
+        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-300">
           <span>Created {new Date(link.createdAt).toLocaleDateString()}</span>
           {link.expiresAt && (
             <span>• Expires {new Date(link.expiresAt).toLocaleDateString()}</span>
@@ -462,21 +462,21 @@ export default function BookingLinksPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-card border-b border-gray-200 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Booking Links</h1>
-              <p className="text-gray-600">Create and manage custom booking links for your services</p>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground">Booking Links</h1>
+              <p className="text-gray-600 dark:text-gray-300">Create and manage custom booking links for your services</p>
             </div>
             
             <button
@@ -530,10 +530,10 @@ export default function BookingLinksPage() {
               <LinkCard key={link.id} link={link} />
             ))
           ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+            <div className="bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border p-12 text-center">
               <LinkIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No Booking Links Yet</h3>
-              <p className="text-gray-600 mb-6">Create your first custom booking link to share with clients</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-2">No Booking Links Yet</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">Create your first custom booking link to share with clients</p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="px-6 py-3 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-all"

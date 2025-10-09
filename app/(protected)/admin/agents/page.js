@@ -95,10 +95,10 @@ export default function AgentManagementPage() {
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <div className="text-center max-w-md">
             <ExclamationCircleIcon className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground mb-2">
               Access Denied
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Only Super Admins and Shop Owners can access the agent management panel.
             </p>
           </div>
@@ -111,23 +111,23 @@ export default function AgentManagementPage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200">
+        <div className="bg-white dark:bg-card border-b border-gray-200 dark:border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <CpuChipIcon className="w-10 h-10 text-indigo-600 mr-4" />
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">
                     AgentKit Management
                   </h1>
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-gray-600 dark:text-gray-300 mt-1">
                     Configure and manage your AI agents without code changes
                   </p>
                 </div>
               </div>
               <button
                 onClick={loadAgents}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-background focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-background focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Refresh
               </button>
@@ -145,7 +145,7 @@ export default function AgentManagementPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search agents..."
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white dark:bg-card placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 />
               </div>
 
@@ -200,10 +200,10 @@ export default function AgentManagementPage() {
               {filteredAgents.length === 0 ? (
                 <div className="text-center py-12">
                   <CpuChipIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-2">
                     No agents found
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-300">
                     {searchTerm || filterEnabled !== 'all'
                       ? 'Try adjusting your search or filters'
                       : 'No agents available'}
@@ -213,7 +213,7 @@ export default function AgentManagementPage() {
                 <>
                   {/* Stats Summary */}
                   <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="bg-white dark:bg-card overflow-hidden shadow rounded-lg">
                       <div className="p-5">
                         <div className="flex items-center">
                           <div className="flex-shrink-0">
@@ -221,10 +221,10 @@ export default function AgentManagementPage() {
                           </div>
                           <div className="ml-5 w-0 flex-1">
                             <dl>
-                              <dt className="text-sm font-medium text-gray-500 truncate">
+                              <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">
                                 Total Agents
                               </dt>
-                              <dd className="text-lg font-medium text-gray-900">
+                              <dd className="text-lg font-medium text-gray-900 dark:text-card-foreground">
                                 {agents.length}
                               </dd>
                             </dl>
@@ -233,7 +233,7 @@ export default function AgentManagementPage() {
                       </div>
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="bg-white dark:bg-card overflow-hidden shadow rounded-lg">
                       <div className="p-5">
                         <div className="flex items-center">
                           <div className="flex-shrink-0">
@@ -241,10 +241,10 @@ export default function AgentManagementPage() {
                           </div>
                           <div className="ml-5 w-0 flex-1">
                             <dl>
-                              <dt className="text-sm font-medium text-gray-500 truncate">
+                              <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">
                                 Enabled
                               </dt>
-                              <dd className="text-lg font-medium text-gray-900">
+                              <dd className="text-lg font-medium text-gray-900 dark:text-card-foreground">
                                 {agents.filter(a => a.enabled).length}
                               </dd>
                             </dl>
@@ -253,7 +253,7 @@ export default function AgentManagementPage() {
                       </div>
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow rounded-lg">
+                    <div className="bg-white dark:bg-card overflow-hidden shadow rounded-lg">
                       <div className="p-5">
                         <div className="flex items-center">
                           <div className="flex-shrink-0">
@@ -261,10 +261,10 @@ export default function AgentManagementPage() {
                           </div>
                           <div className="ml-5 w-0 flex-1">
                             <dl>
-                              <dt className="text-sm font-medium text-gray-500 truncate">
+                              <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">
                                 Disabled
                               </dt>
-                              <dd className="text-lg font-medium text-gray-900">
+                              <dd className="text-lg font-medium text-gray-900 dark:text-card-foreground">
                                 {agents.filter(a => !a.enabled).length}
                               </dd>
                             </dl>

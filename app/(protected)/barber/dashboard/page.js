@@ -79,13 +79,13 @@ export default function BarberDashboard() {
   }
 
   const StatCard = ({ icon: Icon, title, value, color, subtitle }) => (
-    <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-3 sm:p-6">
+    <div className="bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-border p-3 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="order-2 sm:order-1">
-          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{title}</p>
+          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 truncate">{title}</p>
           <p className={`text-lg sm:text-2xl font-bold ${color}`}>{value}</p>
           {subtitle && (
-            <p className="text-xs text-gray-500 mt-0.5 sm:mt-1 hidden sm:block">{subtitle}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-300 mt-0.5 sm:mt-1 hidden sm:block">{subtitle}</p>
           )}
         </div>
         <div className={`p-2 sm:p-3 rounded-lg ${color.replace('text-', 'bg-').replace('600', '100')} mb-2 sm:mb-0 order-1 sm:order-2 self-start sm:self-auto`}>
@@ -120,21 +120,21 @@ export default function BarberDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-card shadow-sm border-b">
         <div className="px-4 sm:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Barber Dashboard</h1>
-              <p className="text-xs sm:text-sm text-gray-600">Welcome back, {profile?.full_name || user?.email || 'Barber'}</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-card-foreground">Barber Dashboard</h1>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Welcome back, {profile?.full_name || user?.email || 'Barber'}</p>
             </div>
             <div className="flex items-center justify-between sm:justify-end space-x-3">
-              <button className="relative p-2 text-gray-600 hover:text-gray-900">
+              <button className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:text-card-foreground">
                 <BellIcon className="h-5 sm:h-6 w-5 sm:w-6" />
                 <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
               </button>
-              <div className="text-xs sm:text-sm text-gray-600">
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
                 {new Date().toLocaleDateString('en-US', { 
                   weekday: 'short', 
                   month: 'short', 
@@ -180,49 +180,49 @@ export default function BarberDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Quick Actions</h2>
+        <div className="bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-border p-4 sm:p-6 mb-6 sm:mb-8">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-card-foreground mb-3 sm:mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Link href="/barber/schedule" className="p-3 sm:p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors text-center">
               <CalendarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-amber-700 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xs sm:text-sm font-medium text-gray-900">View Schedule</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-card-foreground">View Schedule</p>
             </Link>
             <Link href="/barber/clients" className="p-3 sm:p-4 bg-olive-50 rounded-lg hover:bg-olive-100 transition-colors text-center">
               <UserGroupIcon className="h-5 sm:h-6 w-5 sm:w-6 text-olive-600 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xs sm:text-sm font-medium text-gray-900">My Clients</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-card-foreground">My Clients</p>
             </Link>
             <Link href="/barber/reports" className="p-3 sm:p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors text-center">
               <ChartBarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-green-600 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xs sm:text-sm font-medium text-gray-900">View Reports</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-card-foreground">View Reports</p>
             </Link>
             <Link href="/barber/services" className="p-3 sm:p-4 bg-gold-50 rounded-lg hover:bg-gold-100 transition-colors text-center">
               <ScissorsIcon className="h-5 sm:h-6 w-5 sm:w-6 text-gold-600 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xs sm:text-sm font-medium text-gray-900">My Services</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-card-foreground">My Services</p>
             </Link>
           </div>
         </div>
 
         {/* Today's Schedule */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Today's Schedule</h2>
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-border">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Today's Schedule</h2>
           </div>
           <div className="divide-y divide-gray-200">
             {appointments.length > 0 ? (
               appointments.map((appointment) => (
-                <div key={appointment.id} className="px-6 py-4 hover:bg-gray-50">
+                <div key={appointment.id} className="px-6 py-4 hover:bg-gray-50 dark:bg-muted">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
                         <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                          <UserGroupIcon className="h-5 w-5 text-gray-600" />
+                          <UserGroupIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                           {appointment.customer_name}
                         </p>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-gray-300">
                           {appointment.service_name} • {appointment.start_time} - {appointment.end_time}
                         </p>
                       </div>
@@ -239,8 +239,8 @@ export default function BarberDashboard() {
             ) : (
               <div className="px-6 py-12 text-center">
                 <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No appointments today</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-card-foreground">No appointments today</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
                   Enjoy your day off or check tomorrow's schedule
                 </p>
               </div>
@@ -250,20 +250,20 @@ export default function BarberDashboard() {
 
         {/* Earnings Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">This Week</h3>
-            <p className="text-2xl font-bold text-gray-900">${stats.weekEarnings}</p>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">This Week</h3>
+            <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">${stats.weekEarnings}</p>
             <p className="text-xs text-green-600 mt-1">↑ 12% from last week</p>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">This Month</h3>
-            <p className="text-2xl font-bold text-gray-900">${stats.monthEarnings}</p>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">This Month</h3>
+            <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">${stats.monthEarnings}</p>
             <p className="text-xs text-green-600 mt-1">↑ 8% from last month</p>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Commission Rate</h3>
-            <p className="text-2xl font-bold text-gray-900">60%</p>
-            <p className="text-xs text-gray-500 mt-1">Standard rate</p>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-2">Commission Rate</h3>
+            <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">60%</p>
+            <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">Standard rate</p>
           </div>
         </div>
       </div>

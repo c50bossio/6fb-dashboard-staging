@@ -97,21 +97,21 @@ export default function BookingHub() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm">
+      <div className="bg-white dark:bg-card shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground flex items-center gap-3">
                   <LinkIcon className="h-8 w-8 text-olive-600" />
                   Booking Hub
                   <span className="text-sm font-medium bg-olive-100 text-olive-800 px-2 py-1 rounded-full">
                     All-in-One
                   </span>
                 </h1>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
                   Manage all your booking links, QR codes, embeds, and public page in one place
                 </p>
               </div>
@@ -120,15 +120,15 @@ export default function BookingHub() {
               <div className="hidden md:flex items-center space-x-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-olive-600">3</div>
-                  <div className="text-xs text-gray-500">Active Links</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-300">Active Links</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">28</div>
-                  <div className="text-xs text-gray-500">Total Clicks</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-300">Total Clicks</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-gold-600">6</div>
-                  <div className="text-xs text-gray-500">QR Codes</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-300">QR Codes</div>
                 </div>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function BookingHub() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-card border-b border-gray-200 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8 overflow-x-auto">
             {tabs.map((tab) => {
@@ -167,9 +167,9 @@ export default function BookingHub() {
       </div>
 
       {/* Tab Description */}
-      <div className="bg-gray-50 border-b border-gray-200">
+      <div className="bg-gray-50 dark:bg-muted border-b border-gray-200 dark:border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             {tabs.find(tab => tab.id === activeTab)?.description}
           </p>
         </div>

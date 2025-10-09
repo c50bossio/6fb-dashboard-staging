@@ -32,8 +32,8 @@ function SettingsSection({ title, description, icon: Icon, children }) {
           </div>
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <p className="mt-1 text-sm text-gray-600">{description}</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">{title}</h3>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{description}</p>
         </div>
       </div>
       <div className="space-y-4">
@@ -46,11 +46,11 @@ function SettingsSection({ title, description, icon: Icon, children }) {
 // Settings Item Component
 function SettingsItem({ label, description, value, onChange, type = "text", options = [] }) {
   return (
-    <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-border last:border-0">
       <div className="flex-1 pr-4">
-        <label className="text-sm font-medium text-gray-900">{label}</label>
+        <label className="text-sm font-medium text-gray-900 dark:text-card-foreground">{label}</label>
         {description && (
-          <p className="mt-1 text-xs text-gray-500">{description}</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-300">{description}</p>
         )}
       </div>
       <div className="flex-shrink-0">
@@ -150,8 +150,8 @@ function Settings() {
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-2">Manage your account settings and preferences</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Settings</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">Manage your account settings and preferences</p>
       </div>
       
       {/* Save Notification */}
@@ -379,43 +379,43 @@ function Settings() {
           icon={GlobeAltIcon}
         >
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-muted rounded-lg">
               <div className="flex items-center space-x-3">
-                <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckIcon className="h-5 w-5 text-green-600" />
+                <div className="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                  <CheckIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Google Calendar</p>
-                  <p className="text-xs text-gray-500">Connected</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">Google Calendar</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-300">Connected</p>
                 </div>
               </div>
-              <button className="text-xs text-red-600 hover:text-red-700">Disconnect</button>
+              <button className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">Disconnect</button>
             </div>
-            
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-muted rounded-lg">
               <div className="flex items-center space-x-3">
-                <div className="h-8 w-8 bg-gray-200 rounded-lg flex items-center justify-center">
+                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
                   <XMarkIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Stripe</p>
-                  <p className="text-xs text-gray-500">Not connected</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">Stripe</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-300">Not connected</p>
                 </div>
               </div>
-              <button className="text-xs text-olive-600 hover:text-olive-700">Connect</button>
+              <button className="text-xs text-olive-600 dark:text-olive-400 hover:text-olive-700 dark:hover:text-olive-300">Connect</button>
             </div>
-            
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-muted rounded-lg">
               <div className="flex items-center space-x-3">
-                <div className="h-8 w-8 bg-gray-200 rounded-lg flex items-center justify-center">
+                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
                   <XMarkIcon className="h-5 w-5 text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">QuickBooks</p>
-                  <p className="text-xs text-gray-500">Not connected</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">QuickBooks</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-300">Not connected</p>
                 </div>
               </div>
-              <button className="text-xs text-olive-600 hover:text-olive-700">Connect</button>
+              <button className="text-xs text-olive-600 dark:text-olive-400 hover:text-olive-700 dark:hover:text-olive-300">Connect</button>
             </div>
           </div>
         </SettingsSection>
@@ -426,63 +426,63 @@ function Settings() {
         {/* API & Developer */}
         <Card className="hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center space-x-3 mb-4">
-            <CodeBracketIcon className="h-6 w-6 text-gold-600" />
-            <h3 className="text-lg font-semibold text-gray-900">API & Developer</h3>
+            <CodeBracketIcon className="h-6 w-6 text-gold-600 dark:text-gold-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">API & Developer</h3>
           </div>
           <div className="space-y-3">
-            <button className="w-full text-left text-sm text-gray-600 hover:text-gray-900 py-2 flex items-center justify-between">
+            <button className="w-full text-left text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 py-2 flex items-center justify-between">
               API Keys
               <ChevronRightIcon className="h-4 w-4" />
             </button>
-            <button className="w-full text-left text-sm text-gray-600 hover:text-gray-900 py-2 flex items-center justify-between">
+            <button className="w-full text-left text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 py-2 flex items-center justify-between">
               Webhooks
               <ChevronRightIcon className="h-4 w-4" />
             </button>
-            <button className="w-full text-left text-sm text-gray-600 hover:text-gray-900 py-2 flex items-center justify-between">
+            <button className="w-full text-left text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 py-2 flex items-center justify-between">
               Developer Docs
               <ChevronRightIcon className="h-4 w-4" />
             </button>
           </div>
         </Card>
-        
+
         {/* Help & Support */}
         <Card className="hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center space-x-3 mb-4">
-            <QuestionMarkCircleIcon className="h-6 w-6 text-green-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Help & Support</h3>
+            <QuestionMarkCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Help & Support</h3>
           </div>
           <div className="space-y-3">
-            <button className="w-full text-left text-sm text-gray-600 hover:text-gray-900 py-2 flex items-center justify-between">
+            <button className="w-full text-left text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 py-2 flex items-center justify-between">
               Help Center
               <ChevronRightIcon className="h-4 w-4" />
             </button>
-            <button className="w-full text-left text-sm text-gray-600 hover:text-gray-900 py-2 flex items-center justify-between">
+            <button className="w-full text-left text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 py-2 flex items-center justify-between">
               Contact Support
               <ChevronRightIcon className="h-4 w-4" />
             </button>
-            <button className="w-full text-left text-sm text-gray-600 hover:text-gray-900 py-2 flex items-center justify-between">
+            <button className="w-full text-left text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 py-2 flex items-center justify-between">
               Feature Requests
               <ChevronRightIcon className="h-4 w-4" />
             </button>
           </div>
         </Card>
-        
+
         {/* Legal & Compliance */}
         <Card className="hover:shadow-lg transition-shadow duration-200">
           <div className="flex items-center space-x-3 mb-4">
-            <DocumentTextIcon className="h-6 w-6 text-orange-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Legal & Compliance</h3>
+            <DocumentTextIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Legal & Compliance</h3>
           </div>
           <div className="space-y-3">
-            <button className="w-full text-left text-sm text-gray-600 hover:text-gray-900 py-2 flex items-center justify-between">
+            <button className="w-full text-left text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 py-2 flex items-center justify-between">
               Terms of Service
               <ChevronRightIcon className="h-4 w-4" />
             </button>
-            <button className="w-full text-left text-sm text-gray-600 hover:text-gray-900 py-2 flex items-center justify-between">
+            <button className="w-full text-left text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 py-2 flex items-center justify-between">
               Privacy Policy
               <ChevronRightIcon className="h-4 w-4" />
             </button>
-            <button className="w-full text-left text-sm text-gray-600 hover:text-gray-900 py-2 flex items-center justify-between">
+            <button className="w-full text-left text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 py-2 flex items-center justify-between">
               GDPR Settings
               <ChevronRightIcon className="h-4 w-4" />
             </button>
@@ -491,16 +491,16 @@ function Settings() {
       </div>
       
       {/* Save Button */}
-      <div className="mt-8 flex items-center justify-between bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="mt-8 flex items-center justify-between bg-white dark:bg-card rounded-lg shadow-sm border border-gray-200 dark:border-border p-6">
         <div>
-          <h3 className="text-sm font-medium text-gray-900">Save Changes</h3>
-          <p className="text-sm text-gray-500 mt-1">Your changes will be applied immediately</p>
+          <h3 className="text-sm font-medium text-gray-900 dark:text-card-foreground">Save Changes</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">Your changes will be applied immediately</p>
         </div>
         <div className="flex items-center space-x-3">
-          <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          <button className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-muted border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
             Cancel
           </button>
-          <button 
+          <button
             onClick={handleSave}
             className="px-6 py-2 text-sm font-medium text-white bg-olive-600 rounded-lg hover:bg-olive-700 transition-colors"
           >
@@ -511,7 +511,7 @@ function Settings() {
       
       {/* Sign Out */}
       <div className="mt-6 flex justify-center">
-        <button className="flex items-center space-x-2 text-sm text-red-600 hover:text-red-700 font-medium">
+        <button className="flex items-center space-x-2 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium">
           <ArrowRightOnRectangleIcon className="h-4 w-4" />
           <span>Sign Out</span>
         </button>

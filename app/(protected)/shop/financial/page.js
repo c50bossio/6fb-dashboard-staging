@@ -128,65 +128,65 @@ export default function FinancialArrangements() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Financial Arrangements</h1>
-        <p className="text-gray-600 mt-2">Manage commission structures and booth rent agreements</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Financial Arrangements</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">Manage commission structures and booth rent agreements</p>
       </div>
 
       {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border p-4">
           <div className="flex items-center justify-between">
             <div className="p-2 bg-green-100 rounded-lg">
               <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
               ${metrics.totalCommissions.toLocaleString()}
             </span>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Monthly Commissions</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Monthly Commissions</p>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border p-4">
           <div className="flex items-center justify-between">
             <div className="p-2 bg-olive-100 rounded-lg">
               <BanknotesIcon className="h-6 w-6 text-olive-600" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
               ${metrics.totalBoothRent.toLocaleString()}
             </span>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Monthly Booth Rent</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Monthly Booth Rent</p>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border p-4">
           <div className="flex items-center justify-between">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <ClockIcon className="h-6 w-6 text-amber-800" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
               ${metrics.pendingPayouts.toLocaleString()}
             </span>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Pending Payouts</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Pending Payouts</p>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border p-4">
           <div className="flex items-center justify-between">
             <div className="p-2 bg-gold-100 rounded-lg">
               <CheckCircleIcon className="h-6 w-6 text-gold-600" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
               ${metrics.completedPayouts.toLocaleString()}
             </span>
           </div>
-          <p className="text-sm text-gray-600 mt-2">Completed Payouts</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Completed Payouts</p>
         </div>
       </div>
 
       {/* Actions Bar */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+      <div className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border p-4 mb-6">
         <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">Active Arrangements</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Active Arrangements</h2>
           <button
             onClick={() => setShowArrangementModal(true)}
             className="px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700 flex items-center"
@@ -198,43 +198,43 @@ export default function FinancialArrangements() {
       </div>
 
       {/* Arrangements List */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-muted">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Barber
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Type
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Terms
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Payment
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-card divide-y divide-gray-200">
             {arrangements.map((arrangement) => (
-              <tr key={arrangement.id} className="hover:bg-gray-50">
+              <tr key={arrangement.id} className="hover:bg-gray-50 dark:bg-muted">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <UserGroupIcon className="h-6 w-6 text-gray-500" />
+                      <UserGroupIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-gray-900 dark:text-card-foreground">
                         {arrangement.barber_name}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-300">
                         {arrangement.barber_email}
                       </div>
                     </div>
@@ -253,7 +253,7 @@ export default function FinancialArrangements() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-gray-900 dark:text-card-foreground">
                     {arrangement.type === 'commission' && (
                       <span>{arrangement.commission_percentage}% Commission</span>
                     )}
@@ -267,13 +267,13 @@ export default function FinancialArrangements() {
                       </div>
                     )}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 dark:text-gray-300">
                     {arrangement.product_commission_percentage}% product commission
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{arrangement.payment_frequency}</div>
-                  <div className="text-xs text-gray-500">{arrangement.payment_method}</div>
+                  <div className="text-sm text-gray-900 dark:text-card-foreground">{arrangement.payment_frequency}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-300">{arrangement.payment_method}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -303,7 +303,7 @@ export default function FinancialArrangements() {
         {arrangements.length === 0 && (
           <div className="text-center py-12">
             <CalculatorIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600 mb-4">No financial arrangements set up yet</p>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">No financial arrangements set up yet</p>
             <button
               onClick={() => setShowArrangementModal(true)}
               className="inline-flex items-center px-4 py-2 bg-moss-600 text-white rounded-lg hover:bg-green-700"
@@ -351,9 +351,9 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-card rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-card-foreground mb-4">
             {arrangement ? 'Edit Financial Arrangement' : 'New Financial Arrangement'}
           </h2>
           
@@ -361,7 +361,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
             {/* Barber Selection */}
             {!arrangement && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Select Barber *
                 </label>
                 <select
@@ -382,7 +382,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
             
             {/* Arrangement Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Arrangement Type *
               </label>
               <select
@@ -400,7 +400,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
             {/* Commission Settings */}
             {(formData.type === 'commission' || formData.type === 'hybrid') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Service Commission Percentage *
                 </label>
                 <div className="flex items-center">
@@ -413,9 +413,9 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
                     onChange={(e) => setFormData({...formData, commission_percentage: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   />
-                  <span className="ml-2 text-gray-600">%</span>
+                  <span className="ml-2 text-gray-600 dark:text-gray-300">%</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
                   Barber keeps this percentage of service revenue
                 </p>
               </div>
@@ -425,11 +425,11 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
             {(formData.type === 'booth_rent' || formData.type === 'hybrid') && (
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Booth Rent Amount *
                   </label>
                   <div className="flex items-center">
-                    <span className="mr-2 text-gray-600">$</span>
+                    <span className="mr-2 text-gray-600 dark:text-gray-300">$</span>
                     <input
                       type="number"
                       min="0"
@@ -443,7 +443,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Rent Frequency *
                   </label>
                   <select
@@ -462,7 +462,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
             
             {/* Product Commission */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Product Sales Commission
               </label>
               <div className="flex items-center">
@@ -474,9 +474,9 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
                   onChange={(e) => setFormData({...formData, product_commission_percentage: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
-                <span className="ml-2 text-gray-600">%</span>
+                <span className="ml-2 text-gray-600 dark:text-gray-300">%</span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
                 Commission on retail product sales
               </p>
             </div>
@@ -484,7 +484,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
             {/* Payment Settings */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Payment Method
                 </label>
                 <select
@@ -501,7 +501,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Payment Frequency
                 </label>
                 <select
@@ -526,7 +526,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
                 onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
                 className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
               />
-              <label htmlFor="is_active" className="ml-2 text-sm text-gray-700">
+              <label htmlFor="is_active" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                 Arrangement is active
               </label>
             </div>
@@ -536,7 +536,7 @@ function ArrangementModal({ arrangement, barbers, onSave, onClose }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-gray-700 hover:text-gray-900"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:text-card-foreground"
               >
                 Cancel
               </button>

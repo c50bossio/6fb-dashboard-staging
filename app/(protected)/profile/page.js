@@ -97,11 +97,11 @@ export default function ProfilePage() {
   // Show loading state until we have real data
   if (loading || !dataLoaded) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading your profile...</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-300">Loading your profile...</p>
           </div>
         </div>
       </div>
@@ -111,11 +111,11 @@ export default function ProfilePage() {
   // Show error state if no user data
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center py-12">
             <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto" />
-            <p className="mt-4 text-gray-600">Unable to load profile data. Please try refreshing the page.</p>
+            <p className="mt-4 text-gray-600 dark:text-gray-300">Unable to load profile data. Please try refreshing the page.</p>
           </div>
         </div>
       </div>
@@ -123,12 +123,12 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-          <p className="text-gray-600 mt-2">Manage your personal information and view your activity</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Profile</h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">Manage your personal information and view your activity</p>
         </div>
 
         {/* Save Status */}
@@ -151,9 +151,9 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Card */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
               <div className="flex items-start justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-card-foreground">Personal Information</h2>
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
@@ -166,7 +166,7 @@ export default function ProfilePage() {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={handleCancel}
-                      className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                       Cancel
                     </button>
@@ -202,15 +202,15 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{profileData.full_name}</h3>
-                  <p className="text-sm text-gray-500">{profileData.role}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">{profileData.full_name}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-300">{profileData.role}</p>
                 </div>
               </div>
 
               {/* Form Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
                   {isEditing ? (
                     <input
                       type="text"
@@ -221,22 +221,22 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center space-x-2 py-2">
                       <UserIcon className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-900">{profileData.full_name}</span>
+                      <span className="text-gray-900 dark:text-card-foreground">{profileData.full_name}</span>
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
                   <div className="flex items-center space-x-2 py-2">
                     <EnvelopeIcon className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-500">{profileData.email}</span>
+                    <span className="text-gray-500 dark:text-gray-300">{profileData.email}</span>
                     <span className="text-xs text-gray-400">(Cannot be changed)</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone</label>
                   {isEditing ? (
                     <input
                       type="tel"
@@ -247,13 +247,13 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center space-x-2 py-2">
                       <PhoneIcon className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-900">{profileData.phone}</span>
+                      <span className="text-gray-900 dark:text-card-foreground">{profileData.phone}</span>
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
                   {isEditing ? (
                     <input
                       type="text"
@@ -264,13 +264,13 @@ export default function ProfilePage() {
                   ) : (
                     <div className="flex items-center space-x-2 py-2">
                       <MapPinIcon className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-900">{profileData.location}</span>
+                      <span className="text-gray-900 dark:text-card-foreground">{profileData.location}</span>
                     </div>
                   )}
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bio</label>
                   {isEditing ? (
                     <textarea
                       value={profileData.bio}
@@ -279,15 +279,15 @@ export default function ProfilePage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
                     />
                   ) : (
-                    <p className="text-gray-900 py-2">{profileData.bio}</p>
+                    <p className="text-gray-900 dark:text-card-foreground py-2">{profileData.bio}</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Recent Activity */}
-            <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+            <div className="mt-8 bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-card-foreground mb-4">Recent Activity</h2>
               <div className="space-y-4">
                 {recentActivity.map((activity) => (
                   <div key={activity.id} className="flex items-start space-x-3">
@@ -295,8 +295,8 @@ export default function ProfilePage() {
                       <activity.icon className={`h-5 w-5 ${activity.color}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900">{activity.message}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
+                      <p className="text-sm text-gray-900 dark:text-card-foreground">{activity.message}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-300">{activity.time}</p>
                     </div>
                   </div>
                 ))}
@@ -310,14 +310,14 @@ export default function ProfilePage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Stats */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Stats</h3>
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Your Stats</h3>
               <div className="space-y-4">
                 {stats.map((stat, index) => (
                   <div key={index} className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-600">{stat.label}</p>
-                      <p className="text-lg font-semibold text-gray-900">{stat.value}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{stat.label}</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-card-foreground">{stat.value}</p>
                     </div>
                     <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
                       {stat.change}
@@ -328,31 +328,31 @@ export default function ProfilePage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">Quick Actions</h3>
               <div className="space-y-3">
                 <Link 
                   href="/dashboard/settings"
-                  className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 dark:bg-muted rounded-lg transition-colors"
                 >
                   <Cog6ToothIcon className="h-5 w-5 text-gray-400" />
                   <span>Account Settings</span>
                 </Link>
                 <Link 
                   href="/dashboard/bookings"
-                  className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 dark:bg-muted rounded-lg transition-colors"
                 >
                   <CalendarIcon className="h-5 w-5 text-gray-400" />
                   <span>View Bookings</span>
                 </Link>
                 <Link 
                   href="/dashboard/analytics"
-                  className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 dark:bg-muted rounded-lg transition-colors"
                 >
                   <ChartBarIcon className="h-5 w-5 text-gray-400" />
                   <span>Analytics</span>
                 </Link>
-                <button className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                <button className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 dark:bg-muted rounded-lg transition-colors">
                   <EyeIcon className="h-5 w-5 text-gray-400" />
                   <span>Public Profile</span>
                 </button>

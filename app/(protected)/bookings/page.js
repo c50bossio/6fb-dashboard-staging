@@ -158,13 +158,13 @@ export default function BookingsPage() {
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">My Bookings</h1>
-        <p className="text-gray-600 mt-2">Manage your appointments and payments</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">My Bookings</h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">Manage your appointments and payments</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {bookings.map((booking) => (
-          <div key={booking.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div key={booking.id} className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-4">
               <h3 className="text-lg font-semibold text-white">{booking.service_name}</h3>
@@ -173,24 +173,24 @@ export default function BookingsPage() {
 
             {/* Details */}
             <div className="p-6 space-y-4">
-              <div className="flex items-center space-x-2 text-gray-600">
+              <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                 <CalendarDaysIcon className="h-4 w-4" />
                 <span className="text-sm">{new Date(booking.appointment_date).toLocaleDateString()}</span>
               </div>
               
-              <div className="flex items-center space-x-2 text-gray-600">
+              <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                 <ClockIcon className="h-4 w-4" />
                 <span className="text-sm">{booking.start_time} - {booking.end_time}</span>
               </div>
 
-              <div className="flex items-center space-x-2 text-gray-600">
+              <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
                 <UserIcon className="h-4 w-4" />
                 <span className="text-sm">{booking.customer_name}</span>
               </div>
 
               {/* Payment Status */}
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Payment Status</span>
+                <span className="text-sm text-gray-500 dark:text-gray-300">Payment Status</span>
                 {getPaymentStatusBadge(booking.payment_status)}
               </div>
 
@@ -244,8 +244,8 @@ export default function BookingsPage() {
       {bookings.length === 0 && (
         <div className="text-center py-12">
           <CalendarDaysIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No bookings</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-card-foreground">No bookings</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
             You don't have any bookings yet. Book your first appointment!
           </p>
         </div>
