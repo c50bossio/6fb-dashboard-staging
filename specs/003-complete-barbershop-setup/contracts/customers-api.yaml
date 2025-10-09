@@ -1,0 +1,619 @@
+openapi: 3.0.3
+info:
+  title: Customer Management API
+  description: |
+    API for managing customer profiles, visit history, loyalty points, and customer analytics.
+
+    **Critical**: This API replaces all mock data with real Supabase queries.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9999/api
+    description: Development server
+  - url: https://production-domain.com/api
+    description: Production server
+
+tags:
+  - name: Customers
+    description: Customer management operations
+
+paths:
+  /shop/customers:
+    get:
+      summary: Get customer list
+      description: |
+        Retrieves all customers for the authenticated user's barbershop with optional filtering and pagination.
+
+        **Authentication**: Required - Supabase Auth token
+
+        **Row Level Security**: Returns only customers for barbershops where user is staff member
+      operationId: getCustomers
+      tags:
+        - Customers
+      parameters:
+        - name: status
+          in: query
+          description: Filter by customer status
+          required: false
+          schema:
+            type: string
+            enum: [active, inactive, vip]
+        - name: search
+          in: query
+          description: Search by name, email, or phone
+          required: false
+          schema:
+            type: string
+            example: "john"
+        - name: sort
+          in: query
+          description: Sort field
+          required: false
+          schema:
+            type: string
+            enum: [name, join_date, total_visits, total_spent, loyalty_points]
+            default: name
+        - name: order
+          in: query
+          description: Sort order
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+        - name: page
+          in: query
+          description: Page number (1-indexed)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Items per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Successfully retrieved customers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Customer'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  metrics:
+                    type: object
+                    properties:
+                      total_customers:
+                        type: integer
+                        example: 247
+                      active_customers:
+                        type: integer
+                        example: 198
+                      vip_customers:
+                        type: integer
+                        example: 15
+                      average_ltv:
+                        type: number
+                        format: decimal
+                        example: 425.50
+              examples:
+                success:
+                  summary: Successful customer list retrieval
+                  value:
+                    customers:
+                      - id: "cust-001"
+                        barbershop_id: "shop-001"
+                        name: "John Smith"
+                        email: "john@example.com"
+                        phone: "+1234567890"
+                        join_date: "2024-03-15"
+                        status: "active"
+                        total_visits: 12
+                        total_spent: 420.00
+                        loyalty_points: 840
+                        preferred_barber:
+                          id: "barber-001"
+                          full_name: "Mike Johnson"
+                        created_at: "2024-03-15T10:00:00Z"
+                        updated_at: "2025-01-09T14:30:00Z"
+                    pagination:
+                      page: 1
+                      limit: 20
+                      total: 247
+                      total_pages: 13
+                    metrics:
+                      total_customers: 247
+                      active_customers: 198
+                      vip_customers: 15
+                      average_ltv: 425.50
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create new customer
+      description: |
+        Creates a new customer profile for the barbershop.
+
+        **Validation**:
+        - Name is required
+        - Either email or phone must be provided
+        - Email must be unique within barbershop if provided
+      operationId: createCustomer
+      tags:
+        - Customers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+            examples:
+              with_email:
+                summary: Create customer with email
+                value:
+                  name: "Jane Doe"
+                  email: "jane@example.com"
+                  phone: "+1234567890"
+                  preferred_barber_id: "barber-001"
+                  notes: "Prefers early morning appointments"
+              with_phone_only:
+                summary: Create customer with phone only
+                value:
+                  name: "Mike Wilson"
+                  phone: "+1987654321"
+      responses:
+        '201':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer:
+                    $ref: '#/components/schemas/Customer'
+                  message:
+                    type: string
+                    example: "Customer created successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Customer already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Customer with this email already exists"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/customers/{customerId}:
+    get:
+      summary: Get customer details
+      description: |
+        Retrieves detailed information for a specific customer including visit history and loyalty data.
+      operationId: getCustomerById
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: Customer UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successfully retrieved customer details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer:
+                    $ref: '#/components/schemas/CustomerDetail'
+                  recent_appointments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AppointmentSummary'
+                  visit_stats:
+                    type: object
+                    properties:
+                      last_visit_date:
+                        type: string
+                        format: date
+                      average_days_between_visits:
+                        type: integer
+                      most_requested_service:
+                        type: string
+                      preferred_barber_percentage:
+                        type: number
+                        format: decimal
+                        description: Percentage of visits with preferred barber
+              examples:
+                success:
+                  summary: Customer detail with history
+                  value:
+                    customer:
+                      id: "cust-001"
+                      barbershop_id: "shop-001"
+                      name: "John Smith"
+                      email: "john@example.com"
+                      phone: "+1234567890"
+                      join_date: "2024-03-15"
+                      status: "vip"
+                      total_visits: 12
+                      total_spent: 420.00
+                      loyalty_points: 840
+                      preferred_barber:
+                        id: "barber-001"
+                        full_name: "Mike Johnson"
+                      notes: "Always tips well, prefers morning appointments"
+                      created_at: "2024-03-15T10:00:00Z"
+                      updated_at: "2025-01-09T14:30:00Z"
+                    recent_appointments:
+                      - id: "apt-001"
+                        appointment_date: "2025-01-05"
+                        service_name: "Classic Haircut"
+                        barber_name: "Mike Johnson"
+                        status: "completed"
+                        amount_paid: 35.00
+                    visit_stats:
+                      last_visit_date: "2025-01-05"
+                      average_days_between_visits: 21
+                      most_requested_service: "Classic Haircut"
+                      preferred_barber_percentage: 91.67
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      summary: Update customer information
+      description: |
+        Updates customer profile information or status.
+
+        Common use cases:
+        - Update contact information
+        - Change customer status (active/inactive/vip)
+        - Update preferred barber
+        - Manually adjust loyalty points
+      operationId: updateCustomer
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: Customer UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequest'
+            examples:
+              update_contact:
+                summary: Update contact information
+                value:
+                  email: "newemail@example.com"
+                  phone: "+1111111111"
+              upgrade_to_vip:
+                summary: Upgrade customer to VIP status
+                value:
+                  status: "vip"
+                  notes: "Upgraded to VIP - spends $50+ per visit consistently"
+              adjust_points:
+                summary: Manually adjust loyalty points
+                value:
+                  loyalty_points: 1000
+                  notes: "Bonus points for referral"
+      responses:
+        '200':
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer:
+                    $ref: '#/components/schemas/Customer'
+                  message:
+                    type: string
+                    example: "Customer updated successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Delete customer
+      description: |
+        Soft deletes a customer (sets status to 'inactive'). Hard delete not recommended due to appointment history.
+      operationId: deleteCustomer
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: Customer UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Customer deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Customer marked as inactive"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Customer:
+      type: object
+      required:
+        - id
+        - barbershop_id
+        - name
+        - join_date
+        - status
+        - total_visits
+        - total_spent
+        - loyalty_points
+      properties:
+        id:
+          type: string
+          format: uuid
+        barbershop_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "John Smith"
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        join_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [active, inactive, vip]
+        total_visits:
+          type: integer
+          minimum: 0
+        total_spent:
+          type: number
+          format: decimal
+          minimum: 0
+        loyalty_points:
+          type: integer
+          minimum: 0
+        preferred_barber:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            full_name:
+              type: string
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CustomerDetail:
+      allOf:
+        - $ref: '#/components/schemas/Customer'
+        - type: object
+          properties:
+            visit_history_summary:
+              type: object
+              properties:
+                first_visit:
+                  type: string
+                  format: date
+                last_visit:
+                  type: string
+                  format: date
+                average_visit_value:
+                  type: number
+                  format: decimal
+
+    CreateCustomerRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: "Jane Doe"
+        email:
+          type: string
+          format: email
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        preferred_barber_id:
+          type: string
+          format: uuid
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+
+    UpdateCustomerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, vip]
+        preferred_barber_id:
+          type: string
+          format: uuid
+          nullable: true
+        loyalty_points:
+          type: integer
+          minimum: 0
+        notes:
+          type: string
+
+    AppointmentSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        appointment_date:
+          type: string
+          format: date
+        service_name:
+          type: string
+        barber_name:
+          type: string
+        status:
+          type: string
+        amount_paid:
+          type: number
+          format: decimal
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 247
+        total_pages:
+          type: integer
+          example: 13
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Either email or phone must be provided"
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Unauthorized - Authentication required"
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Forbidden - Must be shop owner or staff member"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Customer not found"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal server error"
+
+  securitySchemes:
+    SupabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - SupabaseAuth: []

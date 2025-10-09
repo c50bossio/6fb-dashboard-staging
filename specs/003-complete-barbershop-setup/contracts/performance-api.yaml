@@ -1,0 +1,237 @@
+openapi: 3.0.3
+info:
+  title: Barber Performance API
+  description: |
+    API for tracking and analyzing individual barber performance metrics.
+
+    **Features**:
+    - Daily performance snapshots
+    - Revenue and commission tracking
+    - Customer satisfaction scores
+    - Appointment completion rates
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9999/api
+    description: Development server
+
+tags:
+  - name: Performance
+    description: Barber performance tracking
+
+paths:
+  /barber/performance:
+    get:
+      summary: Get barber's performance metrics
+      description: |
+        Retrieves performance metrics for the authenticated barber.
+
+        **Authentication**: Required (barber role)
+      operationId: getBarberPerformance
+      tags:
+        - Performance
+      parameters:
+        - name: start_date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: aggregation
+          in: query
+          description: Aggregation level
+          schema:
+            type: string
+            enum: [daily, weekly, monthly]
+            default: daily
+      responses:
+        '200':
+          description: Performance metrics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metrics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PerformanceMetric'
+                  summary:
+                    $ref: '#/components/schemas/PerformanceSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/performance:
+    get:
+      summary: Get shop performance (all barbers)
+      description: |
+        Retrieves performance metrics for all barbers in the shop.
+
+        **Authentication**: Required (shop owner role)
+      operationId: getShopPerformance
+      tags:
+        - Performance
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: barber_id
+          in: query
+          description: Filter by specific barber
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Shop performance retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  by_barber:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        barber_id:
+                          type: string
+                          format: uuid
+                        barber_name:
+                          type: string
+                        metrics:
+                          $ref: '#/components/schemas/PerformanceSummary'
+                  shop_totals:
+                    $ref: '#/components/schemas/PerformanceSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    PerformanceMetric:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        barber_id:
+          type: string
+          format: uuid
+        barbershop_id:
+          type: string
+          format: uuid
+        metric_date:
+          type: string
+          format: date
+        appointments_completed:
+          type: integer
+        appointments_cancelled:
+          type: integer
+        appointments_no_show:
+          type: integer
+        total_service_revenue:
+          type: number
+          format: decimal
+        total_product_revenue:
+          type: number
+          format: decimal
+        total_tips:
+          type: number
+          format: decimal
+        commission_earned:
+          type: number
+          format: decimal
+        average_service_duration:
+          type: integer
+          nullable: true
+        customer_satisfaction_score:
+          type: number
+          format: decimal
+          nullable: true
+        new_customers:
+          type: integer
+        returning_customers:
+          type: integer
+
+    PerformanceSummary:
+      type: object
+      properties:
+        total_appointments:
+          type: integer
+        completed_appointments:
+          type: integer
+        cancelled_appointments:
+          type: integer
+        completion_rate:
+          type: number
+          format: decimal
+          description: Percentage (0-100)
+        total_revenue:
+          type: number
+          format: decimal
+        total_commission:
+          type: number
+          format: decimal
+        average_ticket:
+          type: number
+          format: decimal
+        customer_satisfaction_avg:
+          type: number
+          format: decimal
+          nullable: true
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    SupabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - SupabaseAuth: []

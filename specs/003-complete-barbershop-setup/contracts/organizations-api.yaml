@@ -1,0 +1,278 @@
+openapi: 3.0.3
+info:
+  title: Organizations API
+  description: |
+    API for managing multi-location enterprises and franchise operations.
+
+    **Features**:
+    - Manage multiple barbershop locations
+    - Cross-location analytics
+    - Enterprise-level reporting
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9999/api
+    description: Development server
+
+tags:
+  - name: Organizations
+    description: Enterprise/franchise management
+
+paths:
+  /organizations:
+    get:
+      summary: Get user's organizations
+      description: |
+        Retrieves organizations owned by the authenticated user.
+
+        **Authentication**: Required (enterprise owner role)
+      operationId: getOrganizations
+      tags:
+        - Organizations
+      responses:
+        '200':
+          description: Organizations retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organizations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Organization'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create organization
+      description: Creates a new organization/enterprise
+      operationId: createOrganization
+      tags:
+        - Organizations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationRequest'
+      responses:
+        '201':
+          description: Organization created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organization:
+                    $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /organizations/{organizationId}/analytics:
+    get:
+      summary: Get organization-wide analytics
+      description: |
+        Retrieves aggregated analytics across all locations in the organization.
+      operationId: getOrganizationAnalytics
+      tags:
+        - Organizations
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Analytics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organization_totals:
+                    type: object
+                    properties:
+                      total_locations:
+                        type: integer
+                      total_staff:
+                        type: integer
+                      total_appointments:
+                        type: integer
+                      total_revenue:
+                        type: number
+                        format: decimal
+                  by_location:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location_id:
+                          type: string
+                          format: uuid
+                        location_name:
+                          type: string
+                        appointments:
+                          type: integer
+                        revenue:
+                          type: number
+                          format: decimal
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        owner_id:
+          type: string
+          format: uuid
+        organization_type:
+          type: string
+          enum: [franchise, chain, group]
+        tax_id:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        state:
+          type: string
+          nullable: true
+        zip_code:
+          type: string
+          nullable: true
+        country:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        logo_url:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateOrganizationRequest:
+      type: object
+      required:
+        - name
+        - organization_type
+      properties:
+        name:
+          type: string
+        organization_type:
+          type: string
+          enum: [franchise, chain, group]
+        tax_id:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip_code:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        website:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    SupabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - SupabaseAuth: []

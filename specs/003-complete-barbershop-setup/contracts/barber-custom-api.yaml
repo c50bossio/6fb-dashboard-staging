@@ -1,0 +1,622 @@
+openapi: 3.0.3
+info:
+  title: Barber Customization API
+  description: |
+    API for managing individual barber branding, landing pages, and customization settings.
+
+    **Features**:
+    - Personal landing pages at `/[barbershop]/[barber-slug]`
+    - Custom branding (colors, images, bio)
+    - Shop owner approval workflow
+    - Social media integration
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9999/api
+    description: Development server
+
+tags:
+  - name: Barber Customization
+    description: Barber branding and customization operations
+
+paths:
+  /barber/customization:
+    get:
+      summary: Get barber's customization settings
+      description: |
+        Retrieves the authenticated barber's customization profile.
+
+        **Authentication**: Required (barber role)
+      operationId: getCustomization
+      tags:
+        - Barber Customization
+      responses:
+        '200':
+          description: Customization settings retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customization:
+                    $ref: '#/components/schemas/BarberCustomization'
+              example:
+                customization:
+                  id: "custom-001"
+                  barber_id: "barber-001"
+                  barbershop_id: "shop-001"
+                  custom_url_slug: "mike-johnson"
+                  display_name: "Mike Johnson - Master Barber"
+                  bio: "15+ years of experience specializing in fades and classic cuts"
+                  profile_image_url: "https://example.com/mike.jpg"
+                  cover_image_url: "https://example.com/mike-cover.jpg"
+                  specialties: ["fades", "beard styling", "classic cuts"]
+                  social_media_links:
+                    instagram: "https://instagram.com/mikecutsit"
+                    tiktok: "https://tiktok.com/@mikethecutt"
+                  custom_brand_color: "#FF5733"
+                  is_accepting_bookings: true
+                  requires_shop_approval: true
+                  is_approved: true
+                  approved_at: "2025-01-09T14:00:00Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No customization profile found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Customization profile not found - create one first"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create barber customization profile
+      description: |
+        Creates a new customization profile for the authenticated barber.
+
+        **Validation**:
+        - custom_url_slug must be unique across entire system
+        - slug must be lowercase alphanumeric with hyphens only
+        - custom_brand_color must be valid hex color
+        - If requires_shop_approval is true, is_approved defaults to false
+      operationId: createCustomization
+      tags:
+        - Barber Customization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomizationRequest'
+            example:
+              custom_url_slug: "mike-johnson"
+              display_name: "Mike Johnson - Master Barber"
+              bio: "15+ years of experience specializing in fades and classic cuts"
+              specialties: ["fades", "beard styling", "classic cuts"]
+              custom_brand_color: "#FF5733"
+      responses:
+        '201':
+          description: Customization profile created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customization:
+                    $ref: '#/components/schemas/BarberCustomization'
+                  message:
+                    type: string
+                  requires_approval:
+                    type: boolean
+                    description: Whether shop owner approval is needed
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                slug_taken:
+                  summary: URL slug already in use
+                  value:
+                    error: "This URL slug is already taken"
+                    suggestion: "mike-johnson-2"
+                invalid_color:
+                  summary: Invalid hex color
+                  value:
+                    error: "custom_brand_color must be valid hex color (e.g., #FF5733)"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      summary: Update barber customization
+      description: |
+        Updates the authenticated barber's customization settings.
+
+        If `requires_shop_approval` is true, changes will reset `is_approved` to false and require re-approval.
+      operationId: updateCustomization
+      tags:
+        - Barber Customization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomizationRequest'
+            examples:
+              update_bio:
+                summary: Update bio and specialties
+                value:
+                  bio: "Updated bio with new accomplishments"
+                  specialties: ["fades", "beard styling", "classic cuts", "hot towel shaves"]
+              change_branding:
+                summary: Update brand color and images
+                value:
+                  custom_brand_color: "#3366FF"
+                  profile_image_url: "https://example.com/new-profile.jpg"
+                  cover_image_url: "https://example.com/new-cover.jpg"
+      responses:
+        '200':
+          description: Customization updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customization:
+                    $ref: '#/components/schemas/BarberCustomization'
+                  message:
+                    type: string
+                  approval_required:
+                    type: boolean
+                    description: Whether changes need shop owner approval
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/barber-customizations:
+    get:
+      summary: Get all barber customizations in shop (shop owner view)
+      description: |
+        Retrieves all barber customization profiles for the shop owner's barbershop.
+
+        **Authentication**: Required (shop owner role)
+        **Use case**: Shop owner reviews and approves barber customizations
+      operationId: getShopCustomizations
+      tags:
+        - Barber Customization
+      parameters:
+        - name: approval_status
+          in: query
+          description: Filter by approval status
+          schema:
+            type: string
+            enum: [pending, approved, all]
+            default: all
+      responses:
+        '200':
+          description: Customizations retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customizations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BarberCustomizationWithBarber'
+                  pending_approvals_count:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/barber-customizations/{customizationId}/approve:
+    post:
+      summary: Approve barber customization (shop owner)
+      description: |
+        Shop owner approves a barber's customization changes.
+
+        Sets `is_approved` to true and records approval timestamp and approver.
+      operationId: approveCustomization
+      tags:
+        - Barber Customization
+      parameters:
+        - name: customizationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Customization approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customization:
+                    $ref: '#/components/schemas/BarberCustomization'
+                  message:
+                    type: string
+                    example: "Customization approved successfully"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/barber-customizations/{customizationId}/reject:
+    post:
+      summary: Reject barber customization (shop owner)
+      description: |
+        Shop owner rejects a barber's customization changes with reason.
+      operationId: rejectCustomization
+      tags:
+        - Barber Customization
+      parameters:
+        - name: customizationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+                  minLength: 10
+                  description: Reason for rejection
+            example:
+              reason: "Brand color conflicts with shop branding guidelines. Please use colors from our brand palette."
+      responses:
+        '200':
+          description: Customization rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  rejection_reason:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /public/barber/{barbershopSlug}/{barberSlug}:
+    get:
+      summary: Get public barber landing page data
+      description: |
+        Retrieves public barber landing page information for rendering custom barber pages.
+
+        **No authentication required** - Public endpoint
+
+        Returns only approved customizations where `is_approved = true`.
+      operationId: getPublicBarberPage
+      tags:
+        - Barber Customization
+      parameters:
+        - name: barbershopSlug
+          in: path
+          required: true
+          description: Barbershop URL slug
+          schema:
+            type: string
+        - name: barberSlug
+          in: path
+          required: true
+          description: Barber custom URL slug
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Barber landing page data retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  barber:
+                    $ref: '#/components/schemas/PublicBarberProfile'
+                  barbershop:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      address:
+                        type: string
+                      phone:
+                        type: string
+                  services:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BarberServiceSummary'
+        '404':
+          description: Barber not found or not approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Barber landing page not found"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    BarberCustomization:
+      type: object
+      required:
+        - id
+        - barber_id
+        - barbershop_id
+        - custom_url_slug
+        - display_name
+        - is_accepting_bookings
+        - requires_shop_approval
+        - is_approved
+      properties:
+        id:
+          type: string
+          format: uuid
+        barber_id:
+          type: string
+          format: uuid
+        barbershop_id:
+          type: string
+          format: uuid
+        custom_url_slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          example: "mike-johnson"
+        display_name:
+          type: string
+          example: "Mike Johnson - Master Barber"
+        bio:
+          type: string
+          nullable: true
+        profile_image_url:
+          type: string
+          format: uri
+          nullable: true
+        cover_image_url:
+          type: string
+          format: uri
+          nullable: true
+        specialties:
+          type: array
+          items:
+            type: string
+          nullable: true
+        social_media_links:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: string
+            format: uri
+        custom_brand_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          nullable: true
+          example: "#FF5733"
+        is_accepting_bookings:
+          type: boolean
+        requires_shop_approval:
+          type: boolean
+        is_approved:
+          type: boolean
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+        approved_by:
+          type: string
+          format: uuid
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    BarberCustomizationWithBarber:
+      allOf:
+        - $ref: '#/components/schemas/BarberCustomization'
+        - type: object
+          properties:
+            barber:
+              type: object
+              properties:
+                full_name:
+                  type: string
+                email:
+                  type: string
+                avatar_url:
+                  type: string
+
+    CreateCustomizationRequest:
+      type: object
+      required:
+        - custom_url_slug
+        - display_name
+      properties:
+        custom_url_slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        display_name:
+          type: string
+        bio:
+          type: string
+        profile_image_url:
+          type: string
+          format: uri
+        cover_image_url:
+          type: string
+          format: uri
+        specialties:
+          type: array
+          items:
+            type: string
+        social_media_links:
+          type: object
+          additionalProperties:
+            type: string
+            format: uri
+        custom_brand_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        is_accepting_bookings:
+          type: boolean
+          default: true
+
+    UpdateCustomizationRequest:
+      type: object
+      properties:
+        display_name:
+          type: string
+        bio:
+          type: string
+        profile_image_url:
+          type: string
+          format: uri
+        cover_image_url:
+          type: string
+          format: uri
+        specialties:
+          type: array
+          items:
+            type: string
+        social_media_links:
+          type: object
+          additionalProperties:
+            type: string
+            format: uri
+        custom_brand_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+        is_accepting_bookings:
+          type: boolean
+
+    PublicBarberProfile:
+      type: object
+      properties:
+        display_name:
+          type: string
+        bio:
+          type: string
+        profile_image_url:
+          type: string
+          format: uri
+        cover_image_url:
+          type: string
+          format: uri
+        specialties:
+          type: array
+          items:
+            type: string
+        social_media_links:
+          type: object
+          additionalProperties:
+            type: string
+            format: uri
+        custom_brand_color:
+          type: string
+        is_accepting_bookings:
+          type: boolean
+
+    BarberServiceSummary:
+      type: object
+      properties:
+        service_name:
+          type: string
+        base_price:
+          type: number
+          format: decimal
+        duration_minutes:
+          type: integer
+        description:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    SupabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - SupabaseAuth: []

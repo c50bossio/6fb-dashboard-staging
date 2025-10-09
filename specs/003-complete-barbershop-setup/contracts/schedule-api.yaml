@@ -1,0 +1,592 @@
+openapi: 3.0.3
+info:
+  title: Schedule Management API
+  description: |
+    API for managing barbershop appointment schedules with real-time availability and booking management.
+
+    **Critical**: This API replaces all mock data with real Supabase queries.
+  version: 1.0.0
+  contact:
+    name: 6FB AI Agent System
+
+servers:
+  - url: http://localhost:9999/api
+    description: Development server
+  - url: https://production-domain.com/api
+    description: Production server
+
+tags:
+  - name: Schedule
+    description: Appointment schedule operations
+
+paths:
+  /shop/schedule:
+    get:
+      summary: Get appointment schedule
+      description: |
+        Retrieves appointments for the authenticated user's barbershop, optionally filtered by date range and barber.
+
+        **Authentication**: Required - Supabase Auth token
+
+        **Row Level Security**: Returns only appointments for barbershops where user is staff member
+      operationId: getSchedule
+      tags:
+        - Schedule
+      parameters:
+        - name: start_date
+          in: query
+          description: Start date for schedule (ISO 8601 format)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2025-01-10"
+        - name: end_date
+          in: query
+          description: End date for schedule (ISO 8601 format)
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2025-01-17"
+        - name: barber_id
+          in: query
+          description: Filter appointments by specific barber
+          required: false
+          schema:
+            type: string
+            format: uuid
+            example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        - name: status
+          in: query
+          description: Filter appointments by status
+          required: false
+          schema:
+            type: string
+            enum: [scheduled, in_progress, completed, cancelled, no_show]
+            example: "scheduled"
+      responses:
+        '200':
+          description: Successfully retrieved schedule
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Appointment'
+                  barbers:
+                    type: array
+                    description: List of barbers in the shop for resource grouping
+                    items:
+                      $ref: '#/components/schemas/BarberResource'
+                  services:
+                    type: array
+                    description: List of services available for quick reference
+                    items:
+                      $ref: '#/components/schemas/Service'
+                  metrics:
+                    type: object
+                    description: Schedule summary metrics
+                    properties:
+                      total_appointments:
+                        type: integer
+                        example: 42
+                      completed_appointments:
+                        type: integer
+                        example: 30
+                      cancelled_appointments:
+                        type: integer
+                        example: 2
+                      revenue_total:
+                        type: number
+                        format: decimal
+                        example: 1850.00
+              examples:
+                success:
+                  summary: Successful schedule retrieval
+                  value:
+                    appointments:
+                      - id: "apt-001"
+                        barbershop_id: "shop-001"
+                        customer_id: "cust-001"
+                        barber_id: "barber-001"
+                        service_id: "svc-001"
+                        appointment_date: "2025-01-10"
+                        start_time: "09:00:00"
+                        end_time: "09:30:00"
+                        status: "scheduled"
+                        customer:
+                          name: "John Smith"
+                          email: "john@example.com"
+                          phone: "+1234567890"
+                        barber:
+                          full_name: "Mike Johnson"
+                          avatar_url: "https://example.com/avatar.jpg"
+                        service:
+                          name: "Classic Haircut"
+                          price: 35.00
+                          duration_minutes: 30
+                        notes: "First time customer"
+                        created_at: "2025-01-09T10:30:00Z"
+                    barbers:
+                      - id: "barber-001"
+                        full_name: "Mike Johnson"
+                        avatar_url: "https://example.com/avatar.jpg"
+                      - id: "barber-002"
+                        full_name: "Sarah Williams"
+                        avatar_url: "https://example.com/avatar2.jpg"
+                    services:
+                      - id: "svc-001"
+                        name: "Classic Haircut"
+                        price: 35.00
+                        duration_minutes: 30
+                      - id: "svc-002"
+                        name: "Beard Trim"
+                        price: 20.00
+                        duration_minutes: 15
+                    metrics:
+                      total_appointments: 42
+                      completed_appointments: 30
+                      cancelled_appointments: 2
+                      revenue_total: 1850.00
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create new appointment
+      description: |
+        Creates a new appointment in the schedule.
+
+        **Authentication**: Required - Supabase Auth token
+
+        **Validation**:
+        - Barber must be available during requested time
+        - No overlapping appointments for the barber
+        - Service must exist and be active
+        - Customer must exist or be created
+      operationId: createAppointment
+      tags:
+        - Schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppointmentRequest'
+            examples:
+              new_appointment:
+                summary: Create new appointment
+                value:
+                  customer_id: "cust-001"
+                  barber_id: "barber-001"
+                  service_id: "svc-001"
+                  appointment_date: "2025-01-15"
+                  start_time: "14:00:00"
+                  notes: "Customer prefers scissors over clippers"
+      responses:
+        '201':
+          description: Appointment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointment:
+                    $ref: '#/components/schemas/Appointment'
+                  message:
+                    type: string
+                    example: "Appointment created successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Scheduling conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Barber is not available during requested time"
+                  conflict_details:
+                    type: object
+                    properties:
+                      conflicting_appointment_id:
+                        type: string
+                        format: uuid
+                      conflicting_time:
+                        type: string
+                        example: "14:00-14:30"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/schedule/{appointmentId}:
+    patch:
+      summary: Update appointment status or details
+      description: |
+        Updates an existing appointment. Common use cases include:
+        - Marking appointment as completed
+        - Cancelling an appointment
+        - Rescheduling (change date/time)
+        - Updating notes
+      operationId: updateAppointment
+      tags:
+        - Schedule
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          description: Appointment UUID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAppointmentRequest'
+            examples:
+              complete_appointment:
+                summary: Mark appointment as completed
+                value:
+                  status: "completed"
+              cancel_appointment:
+                summary: Cancel appointment
+                value:
+                  status: "cancelled"
+                  notes: "Customer called to cancel - personal emergency"
+              reschedule:
+                summary: Reschedule appointment
+                value:
+                  appointment_date: "2025-01-16"
+                  start_time: "10:00:00"
+      responses:
+        '200':
+          description: Appointment updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  appointment:
+                    $ref: '#/components/schemas/Appointment'
+                  message:
+                    type: string
+                    example: "Appointment updated successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Delete appointment
+      description: |
+        Permanently deletes an appointment. Use with caution - consider using PATCH with status="cancelled" instead.
+      operationId: deleteAppointment
+      tags:
+        - Schedule
+      parameters:
+        - name: appointmentId
+          in: path
+          required: true
+          description: Appointment UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Appointment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Appointment deleted successfully"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Appointment:
+      type: object
+      required:
+        - id
+        - barbershop_id
+        - customer_id
+        - barber_id
+        - service_id
+        - appointment_date
+        - start_time
+        - end_time
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "apt-001"
+        barbershop_id:
+          type: string
+          format: uuid
+          example: "shop-001"
+        customer_id:
+          type: string
+          format: uuid
+          example: "cust-001"
+        barber_id:
+          type: string
+          format: uuid
+          example: "barber-001"
+        service_id:
+          type: string
+          format: uuid
+          example: "svc-001"
+        appointment_date:
+          type: string
+          format: date
+          example: "2025-01-10"
+        start_time:
+          type: string
+          format: time
+          example: "09:00:00"
+        end_time:
+          type: string
+          format: time
+          example: "09:30:00"
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled, no_show]
+          example: "scheduled"
+        notes:
+          type: string
+          nullable: true
+          example: "Customer prefers fade on sides"
+        customer:
+          $ref: '#/components/schemas/CustomerSummary'
+        barber:
+          $ref: '#/components/schemas/BarberSummary'
+        service:
+          $ref: '#/components/schemas/ServiceSummary'
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-09T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-01-09T10:30:00Z"
+
+    CreateAppointmentRequest:
+      type: object
+      required:
+        - customer_id
+        - barber_id
+        - service_id
+        - appointment_date
+        - start_time
+      properties:
+        customer_id:
+          type: string
+          format: uuid
+          description: Existing customer UUID or "new" to create
+        barber_id:
+          type: string
+          format: uuid
+        service_id:
+          type: string
+          format: uuid
+        appointment_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        notes:
+          type: string
+          nullable: true
+        customer_details:
+          description: Required if customer_id is "new"
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+              format: email
+            phone:
+              type: string
+
+    UpdateAppointmentRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled, no_show]
+        appointment_date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        notes:
+          type: string
+
+    CustomerSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+
+    BarberSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+
+    BarberResource:
+      type: object
+      description: Barber information for FullCalendar resource grouping
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+          nullable: true
+
+    ServiceSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        price:
+          type: number
+          format: decimal
+        duration_minutes:
+          type: integer
+
+    Service:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        price:
+          type: number
+          format: decimal
+        duration_minutes:
+          type: integer
+        category:
+          type: string
+        is_active:
+          type: boolean
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "Error message"
+        details:
+          type: object
+          nullable: true
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Invalid appointment date - must be in the future"
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Unauthorized - Authentication required"
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Forbidden - Must be shop owner or staff member"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Appointment not found"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Internal server error"
+
+  securitySchemes:
+    SupabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase authentication token
+
+security:
+  - SupabaseAuth: []

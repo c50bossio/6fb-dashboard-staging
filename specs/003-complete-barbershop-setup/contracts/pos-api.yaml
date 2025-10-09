@@ -1,0 +1,499 @@
+openapi: 3.0.3
+info:
+  title: Point of Sale (POS) API
+  description: |
+    API for processing product sales, managing transactions, and tracking commissions.
+
+    **Features**:
+    - Record product sales with automatic inventory deduction
+    - Calculate barber commissions automatically
+    - Support multiple payment methods
+    - Update customer loyalty points (2 points per dollar)
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9999/api
+    description: Development server
+
+tags:
+  - name: POS
+    description: Point of sale operations
+
+paths:
+  /shop/pos/sales:
+    get:
+      summary: Get sales history
+      description: |
+        Retrieves product sales transactions with filtering by date range, barber, or product.
+
+        **Authentication**: Required
+        **RLS**: Returns only sales for user's barbershop
+      operationId: getSales
+      tags:
+        - POS
+      parameters:
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: barber_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: product_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Sales history retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sales:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductSale'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  summary:
+                    type: object
+                    properties:
+                      total_revenue:
+                        type: number
+                        format: decimal
+                      total_commission:
+                        type: number
+                        format: decimal
+                      total_sales_count:
+                        type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Record product sale
+      description: |
+        Creates a new product sale transaction.
+
+        **Automatic Actions**:
+        - Decreases product inventory by quantity sold
+        - Calculates commission based on product's commission_rate
+        - Awards loyalty points to customer (2 points per dollar)
+        - Updates customer total_spent and total_visits
+
+        **Validation**:
+        - Product must have sufficient inventory
+        - Product must be active
+        - Commission rate comes from product record at time of sale
+      operationId: createSale
+      tags:
+        - POS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSaleRequest'
+            examples:
+              simple_sale:
+                summary: Single product sale
+                value:
+                  product_id: "prod-001"
+                  barber_id: "barber-001"
+                  customer_id: "cust-001"
+                  quantity: 2
+                  payment_method: "card"
+              cash_sale_no_customer:
+                summary: Cash sale without customer tracking
+                value:
+                  product_id: "prod-002"
+                  barber_id: "barber-001"
+                  quantity: 1
+                  payment_method: "cash"
+      responses:
+        '201':
+          description: Sale recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sale:
+                    $ref: '#/components/schemas/ProductSale'
+                  inventory_updated:
+                    type: object
+                    properties:
+                      previous_quantity:
+                        type: integer
+                      new_quantity:
+                        type: integer
+                  customer_points_awarded:
+                    type: integer
+                    nullable: true
+                  message:
+                    type: string
+              example:
+                sale:
+                  id: "sale-001"
+                  product_id: "prod-001"
+                  barber_id: "barber-001"
+                  customer_id: "cust-001"
+                  quantity: 2
+                  unit_price: 25.00
+                  total_amount: 50.00
+                  commission_rate: 10.00
+                  commission_amount: 5.00
+                  payment_method: "card"
+                  sale_date: "2025-01-10"
+                inventory_updated:
+                  previous_quantity: 15
+                  new_quantity: 13
+                customer_points_awarded: 100
+                message: "Sale recorded successfully"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                insufficient_inventory:
+                  summary: Not enough inventory
+                  value:
+                    error: "Insufficient inventory - only 5 units available"
+                inactive_product:
+                  summary: Product not active
+                  value:
+                    error: "Product is not active for sale"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/pos/sales/{saleId}:
+    get:
+      summary: Get sale details
+      description: Retrieves detailed information about a specific sale transaction
+      operationId: getSaleById
+      tags:
+        - POS
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sale details retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sale:
+                    $ref: '#/components/schemas/ProductSaleDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/pos/daily-summary:
+    get:
+      summary: Get daily sales summary
+      description: |
+        Retrieves aggregated sales data for a specific date, grouped by barber and payment method.
+
+        Useful for end-of-day reconciliation.
+      operationId: getDailySummary
+      tags:
+        - POS
+      parameters:
+        - name: date
+          in: query
+          required: true
+          description: Date for summary (defaults to today)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Daily summary retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  total_sales:
+                    type: integer
+                  total_revenue:
+                    type: number
+                    format: decimal
+                  total_commission:
+                    type: number
+                    format: decimal
+                  by_barber:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        barber_id:
+                          type: string
+                          format: uuid
+                        barber_name:
+                          type: string
+                        sales_count:
+                          type: integer
+                        revenue:
+                          type: number
+                          format: decimal
+                        commission:
+                          type: number
+                          format: decimal
+                  by_payment_method:
+                    type: object
+                    properties:
+                      cash:
+                        type: number
+                        format: decimal
+                      card:
+                        type: number
+                        format: decimal
+                      digital:
+                        type: number
+                        format: decimal
+              example:
+                date: "2025-01-10"
+                total_sales: 23
+                total_revenue: 487.50
+                total_commission: 48.75
+                by_barber:
+                  - barber_id: "barber-001"
+                    barber_name: "Mike Johnson"
+                    sales_count: 12
+                    revenue: 285.00
+                    commission: 28.50
+                  - barber_id: "barber-002"
+                    barber_name: "Sarah Williams"
+                    sales_count: 11
+                    revenue: 202.50
+                    commission: 20.25
+                by_payment_method:
+                  cash: 125.00
+                  card: 312.50
+                  digital: 50.00
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    ProductSale:
+      type: object
+      required:
+        - id
+        - barbershop_id
+        - product_id
+        - quantity
+        - unit_price
+        - total_amount
+        - commission_rate
+        - commission_amount
+        - payment_method
+        - sale_date
+      properties:
+        id:
+          type: string
+          format: uuid
+        barbershop_id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        barber_id:
+          type: string
+          format: uuid
+          nullable: true
+        customer_id:
+          type: string
+          format: uuid
+          nullable: true
+        quantity:
+          type: integer
+          minimum: 1
+        unit_price:
+          type: number
+          format: decimal
+          minimum: 0
+        total_amount:
+          type: number
+          format: decimal
+          minimum: 0
+          description: quantity * unit_price
+        commission_rate:
+          type: number
+          format: decimal
+          minimum: 0
+          maximum: 100
+          description: Percentage at time of sale
+        commission_amount:
+          type: number
+          format: decimal
+          minimum: 0
+          description: total_amount * (commission_rate / 100)
+        payment_method:
+          type: string
+          enum: [cash, card, digital]
+        sale_date:
+          type: string
+          format: date
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    ProductSaleDetail:
+      allOf:
+        - $ref: '#/components/schemas/ProductSale'
+        - type: object
+          properties:
+            product:
+              type: object
+              properties:
+                name:
+                  type: string
+                brand:
+                  type: string
+                category:
+                  type: string
+            barber:
+              type: object
+              nullable: true
+              properties:
+                full_name:
+                  type: string
+                avatar_url:
+                  type: string
+            customer:
+              type: object
+              nullable: true
+              properties:
+                name:
+                  type: string
+                loyalty_points_before:
+                  type: integer
+                loyalty_points_after:
+                  type: integer
+
+    CreateSaleRequest:
+      type: object
+      required:
+        - product_id
+        - quantity
+        - payment_method
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        barber_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Barber who made the sale (optional)
+        customer_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Customer who purchased (optional)
+        quantity:
+          type: integer
+          minimum: 1
+        payment_method:
+          type: string
+          enum: [cash, card, digital]
+        notes:
+          type: string
+          nullable: true
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        total_pages:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    SupabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - SupabaseAuth: []

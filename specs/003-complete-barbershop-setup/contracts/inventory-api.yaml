@@ -1,0 +1,522 @@
+openapi: 3.0.3
+info:
+  title: Inventory Management API
+  description: |
+    API for tracking inventory adjustments, restocks, damages, and corrections.
+
+    **Features**:
+    - Record manual inventory changes with detailed audit trail
+    - Track reasons for adjustments (restock, damage, theft, correction, return)
+    - Automatic stock level updates
+    - Low stock alerts and notifications
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9999/api
+    description: Development server
+
+tags:
+  - name: Inventory
+    description: Inventory adjustment operations
+
+paths:
+  /shop/inventory/adjustments:
+    get:
+      summary: Get inventory adjustment history
+      description: |
+        Retrieves inventory adjustment records with filtering and pagination.
+
+        **Authentication**: Required
+        **RLS**: Returns only adjustments for user's barbershop
+      operationId: getAdjustments
+      tags:
+        - Inventory
+      parameters:
+        - name: product_id
+          in: query
+          description: Filter by specific product
+          schema:
+            type: string
+            format: uuid
+        - name: adjustment_type
+          in: query
+          description: Filter by adjustment type
+          schema:
+            type: string
+            enum: [restock, damage, theft, correction, return]
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Adjustment history retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  adjustments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventoryAdjustment'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  summary:
+                    type: object
+                    properties:
+                      total_adjustments:
+                        type: integer
+                      by_type:
+                        type: object
+                        properties:
+                          restock:
+                            type: integer
+                          damage:
+                            type: integer
+                          theft:
+                            type: integer
+                          correction:
+                            type: integer
+                          return:
+                            type: integer
+              example:
+                adjustments:
+                  - id: "adj-001"
+                    barbershop_id: "shop-001"
+                    product_id: "prod-001"
+                    product:
+                      name: "Premium Hair Gel"
+                      sku: "PHG-001"
+                    adjustment_type: "restock"
+                    quantity_change: 24
+                    previous_quantity: 5
+                    new_quantity: 29
+                    adjusted_by:
+                      full_name: "John Manager"
+                    reason: "Weekly restock delivery from supplier"
+                    cost_impact: 288.00
+                    adjustment_date: "2025-01-10"
+                    created_at: "2025-01-10T09:15:00Z"
+                pagination:
+                  page: 1
+                  limit: 20
+                  total: 156
+                  total_pages: 8
+                summary:
+                  total_adjustments: 156
+                  by_type:
+                    restock: 82
+                    damage: 12
+                    theft: 3
+                    correction: 48
+                    return: 11
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Record inventory adjustment
+      description: |
+        Creates a new inventory adjustment record.
+
+        **Automatic Actions**:
+        - Updates product stock_quantity to new_quantity
+        - Creates audit trail with timestamp and user
+        - Triggers low stock alert if new_quantity <= low_stock_threshold
+
+        **Validation**:
+        - new_quantity must equal previous_quantity + quantity_change
+        - new_quantity cannot be negative
+        - reason must be at least 10 characters
+        - product must exist
+      operationId: createAdjustment
+      tags:
+        - Inventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdjustmentRequest'
+            examples:
+              restock:
+                summary: Record restock from supplier
+                value:
+                  product_id: "prod-001"
+                  adjustment_type: "restock"
+                  quantity_change: 24
+                  reason: "Weekly restock delivery from supplier - Invoice #INV-2025-001"
+                  cost_impact: 288.00
+              damage:
+                summary: Record damaged product
+                value:
+                  product_id: "prod-002"
+                  adjustment_type: "damage"
+                  quantity_change: -3
+                  reason: "Bottles damaged during shelf reorganization - accidental drop"
+                  cost_impact: -45.00
+              correction:
+                summary: Correct inventory count
+                value:
+                  product_id: "prod-003"
+                  adjustment_type: "correction"
+                  quantity_change: -2
+                  reason: "Physical count correction - found 2 fewer units than recorded in system"
+      responses:
+        '201':
+          description: Adjustment recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  adjustment:
+                    $ref: '#/components/schemas/InventoryAdjustment'
+                  stock_updated:
+                    type: object
+                    properties:
+                      previous_quantity:
+                        type: integer
+                      new_quantity:
+                        type: integer
+                  low_stock_alert:
+                    type: boolean
+                    description: true if new quantity triggered low stock alert
+                  message:
+                    type: string
+              example:
+                adjustment:
+                  id: "adj-002"
+                  barbershop_id: "shop-001"
+                  product_id: "prod-001"
+                  adjustment_type: "restock"
+                  quantity_change: 24
+                  previous_quantity: 5
+                  new_quantity: 29
+                  adjusted_by_id: "user-001"
+                  reason: "Weekly restock delivery from supplier - Invoice #INV-2025-001"
+                  cost_impact: 288.00
+                  adjustment_date: "2025-01-10"
+                stock_updated:
+                  previous_quantity: 5
+                  new_quantity: 29
+                low_stock_alert: false
+                message: "Inventory adjustment recorded successfully"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalid_calculation:
+                  summary: Quantity calculation error
+                  value:
+                    error: "new_quantity must equal previous_quantity + quantity_change"
+                    details:
+                      previous_quantity: 10
+                      quantity_change: 5
+                      expected_new_quantity: 15
+                      provided_new_quantity: 14
+                negative_stock:
+                  summary: Negative stock not allowed
+                  value:
+                    error: "new_quantity cannot be negative"
+                    details:
+                      current_stock: 3
+                      adjustment: -5
+                      would_result_in: -2
+                short_reason:
+                  summary: Reason too short
+                  value:
+                    error: "reason must be at least 10 characters"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Product not found"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/inventory/adjustments/{adjustmentId}:
+    get:
+      summary: Get adjustment details
+      description: Retrieves detailed information about a specific inventory adjustment
+      operationId: getAdjustmentById
+      tags:
+        - Inventory
+      parameters:
+        - name: adjustmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Adjustment details retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  adjustment:
+                    $ref: '#/components/schemas/InventoryAdjustmentDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /shop/inventory/low-stock:
+    get:
+      summary: Get low stock products
+      description: |
+        Retrieves products where stock_quantity <= low_stock_threshold.
+
+        Useful for generating restock orders and inventory alerts.
+      operationId: getLowStockProducts
+      tags:
+        - Inventory
+      responses:
+        '200':
+          description: Low stock products retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  low_stock_products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        product_id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                        sku:
+                          type: string
+                        current_stock:
+                          type: integer
+                        low_stock_threshold:
+                          type: integer
+                        suggested_reorder_quantity:
+                          type: integer
+                          description: Recommended reorder amount
+                        days_until_stockout:
+                          type: integer
+                          nullable: true
+                          description: Estimated days until out of stock based on sales velocity
+                  count:
+                    type: integer
+              example:
+                low_stock_products:
+                  - product_id: "prod-001"
+                    name: "Premium Hair Gel"
+                    sku: "PHG-001"
+                    current_stock: 3
+                    low_stock_threshold: 5
+                    suggested_reorder_quantity: 24
+                    days_until_stockout: 7
+                  - product_id: "prod-002"
+                    name: "Beard Oil"
+                    sku: "BO-001"
+                    current_stock: 1
+                    low_stock_threshold: 5
+                    suggested_reorder_quantity: 12
+                    days_until_stockout: 2
+                count: 2
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    InventoryAdjustment:
+      type: object
+      required:
+        - id
+        - barbershop_id
+        - product_id
+        - adjustment_type
+        - quantity_change
+        - previous_quantity
+        - new_quantity
+        - adjusted_by
+        - reason
+        - adjustment_date
+      properties:
+        id:
+          type: string
+          format: uuid
+        barbershop_id:
+          type: string
+          format: uuid
+        product_id:
+          type: string
+          format: uuid
+        product:
+          type: object
+          properties:
+            name:
+              type: string
+            sku:
+              type: string
+        adjustment_type:
+          type: string
+          enum: [restock, damage, theft, correction, return]
+        quantity_change:
+          type: integer
+          description: Positive or negative change
+        previous_quantity:
+          type: integer
+          minimum: 0
+        new_quantity:
+          type: integer
+          minimum: 0
+        adjusted_by:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            full_name:
+              type: string
+        reason:
+          type: string
+          minLength: 10
+        cost_impact:
+          type: number
+          format: decimal
+          nullable: true
+        adjustment_date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+
+    InventoryAdjustmentDetail:
+      allOf:
+        - $ref: '#/components/schemas/InventoryAdjustment'
+        - type: object
+          properties:
+            product_full_details:
+              type: object
+              properties:
+                name:
+                  type: string
+                sku:
+                  type: string
+                category:
+                  type: string
+                brand:
+                  type: string
+                cost:
+                  type: number
+                  format: decimal
+
+    CreateAdjustmentRequest:
+      type: object
+      required:
+        - product_id
+        - adjustment_type
+        - quantity_change
+        - reason
+      properties:
+        product_id:
+          type: string
+          format: uuid
+        adjustment_type:
+          type: string
+          enum: [restock, damage, theft, correction, return]
+        quantity_change:
+          type: integer
+          description: Positive for additions, negative for reductions
+        reason:
+          type: string
+          minLength: 10
+          description: Detailed reason for adjustment (minimum 10 characters)
+        cost_impact:
+          type: number
+          format: decimal
+          nullable: true
+          description: Financial impact for accounting (optional)
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        total_pages:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+          nullable: true
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    SupabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - SupabaseAuth: []

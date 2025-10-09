@@ -1,0 +1,381 @@
+openapi: 3.0.3
+info:
+  title: Barber Services API
+  description: |
+    API for managing custom services and pricing for individual barbers.
+
+    **Features**:
+    - Custom service catalog per barber
+    - Add-on services
+    - Deposit requirements
+    - Service categorization
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9999/api
+    description: Development server
+
+tags:
+  - name: Barber Services
+    description: Custom barber service management
+
+paths:
+  /barber/services:
+    get:
+      summary: Get barber's custom services
+      description: |
+        Retrieves all services offered by the authenticated barber.
+
+        **Authentication**: Required (barber role)
+      operationId: getBarberServices
+      tags:
+        - Barber Services
+      parameters:
+        - name: is_active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+        - name: category
+          in: query
+          description: Filter by category
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Services retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  services:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BarberService'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      summary: Create custom service
+      description: |
+        Creates a new custom service for the authenticated barber.
+
+        **Validation**:
+        - duration_minutes must be multiple of 15
+        - If is_addon is true, parent_service_id is required
+        - If requires_deposit is true, deposit_amount must be < base_price
+      operationId: createBarberService
+      tags:
+        - Barber Services
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBarberServiceRequest'
+            example:
+              service_name: "Signature Fade + Beard Design"
+              description: "Premium fade with detailed beard sculpting"
+              base_price: 65.00
+              duration_minutes: 60
+              category: "haircut"
+              requires_deposit: true
+              deposit_amount: 20.00
+      responses:
+        '201':
+          description: Service created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service:
+                    $ref: '#/components/schemas/BarberService'
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /barber/services/{serviceId}:
+    patch:
+      summary: Update service
+      description: Updates a barber's custom service
+      operationId: updateBarberService
+      tags:
+        - Barber Services
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBarberServiceRequest'
+      responses:
+        '200':
+          description: Service updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service:
+                    $ref: '#/components/schemas/BarberService'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      summary: Delete service
+      description: Soft deletes a service (sets is_active to false)
+      operationId: deleteBarberService
+      tags:
+        - Barber Services
+      parameters:
+        - name: serviceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Service deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /public/barber-services/{barberId}:
+    get:
+      summary: Get public barber services
+      description: |
+        Retrieves active services for a specific barber (public endpoint for booking).
+
+        **No authentication required**
+      operationId: getPublicBarberServices
+      tags:
+        - Barber Services
+      parameters:
+        - name: barberId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Services retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  services:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PublicBarberService'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    BarberService:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        barber_id:
+          type: string
+          format: uuid
+        barbershop_id:
+          type: string
+          format: uuid
+        service_name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        base_price:
+          type: number
+          format: decimal
+        duration_minutes:
+          type: integer
+        category:
+          type: string
+        is_addon:
+          type: boolean
+        parent_service_id:
+          type: string
+          format: uuid
+          nullable: true
+        requires_deposit:
+          type: boolean
+        deposit_amount:
+          type: number
+          format: decimal
+          nullable: true
+        is_active:
+          type: boolean
+        display_order:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateBarberServiceRequest:
+      type: object
+      required:
+        - service_name
+        - base_price
+        - duration_minutes
+        - category
+      properties:
+        service_name:
+          type: string
+        description:
+          type: string
+        base_price:
+          type: number
+          format: decimal
+          minimum: 0
+        duration_minutes:
+          type: integer
+          minimum: 15
+          multipleOf: 15
+        category:
+          type: string
+        is_addon:
+          type: boolean
+          default: false
+        parent_service_id:
+          type: string
+          format: uuid
+        requires_deposit:
+          type: boolean
+          default: false
+        deposit_amount:
+          type: number
+          format: decimal
+        display_order:
+          type: integer
+
+    UpdateBarberServiceRequest:
+      type: object
+      properties:
+        service_name:
+          type: string
+        description:
+          type: string
+        base_price:
+          type: number
+          format: decimal
+        duration_minutes:
+          type: integer
+        is_active:
+          type: boolean
+        requires_deposit:
+          type: boolean
+        deposit_amount:
+          type: number
+          format: decimal
+        display_order:
+          type: integer
+
+    PublicBarberService:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        service_name:
+          type: string
+        description:
+          type: string
+        base_price:
+          type: number
+          format: decimal
+        duration_minutes:
+          type: integer
+        category:
+          type: string
+        is_addon:
+          type: boolean
+        requires_deposit:
+          type: boolean
+        deposit_amount:
+          type: number
+          format: decimal
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    SupabaseAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - SupabaseAuth: []
