@@ -118,15 +118,15 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
-        return 'bg-green-100 text-green-800'
+        return 'bg-muted text-green-800'
       case 'PENDING':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-muted text-yellow-800'
       case 'COMPLETED':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-muted text-blue-800'
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800'
+        return 'bg-muted text-red-800'
       default:
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-muted text-gray-800'
     }
   }
 
@@ -148,49 +148,49 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Today's Revenue</p>
               <p className="text-2xl font-bold text-gray-900">${stats.todayRevenue.toFixed(2)}</p>
             </div>
-            <div className="p-3 bg-green-50 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Today's Bookings</p>
               <p className="text-2xl font-bold text-gray-900">{stats.todayBookings}</p>
             </div>
-            <div className="p-3 bg-blue-50 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <CalendarIcon className="h-6 w-6 text-blue-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Active Staff</p>
               <p className="text-2xl font-bold text-gray-900">{stats.activeStaff}</p>
             </div>
-            <div className="p-3 bg-purple-50 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <UserGroupIcon className="h-6 w-6 text-purple-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Completion Rate</p>
               <p className="text-2xl font-bold text-gray-900">{stats.completionRate}%</p>
             </div>
-            <div className="p-3 bg-orange-50 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <CheckCircleIcon className="h-6 w-6 text-orange-600" />
             </div>
           </div>
@@ -198,8 +198,8 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
       </div>
 
       {/* Recent Bookings */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+      <div className="bg-card rounded-xl shadow-sm border border-border">
+        <div className="p-6 border-b border-border flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">Recent Bookings</h3>
           <a
             href="/dashboard/calendar"
@@ -208,7 +208,7 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
             View all →
           </a>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-border">
           {recentBookings.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
@@ -216,7 +216,7 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
             </div>
           ) : (
             recentBookings.map((booking) => (
-              <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div key={booking.id} className="p-6 hover:bg-muted transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-4">
@@ -256,7 +256,7 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <a
           href="/dashboard/staff"
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+          className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3 mb-3">
             <UserGroupIcon className="h-6 w-6 text-blue-600" />
@@ -267,7 +267,7 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
 
         <a
           href="/dashboard/analytics-enhanced"
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+          className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3 mb-3">
             <ChartBarIcon className="h-6 w-6 text-purple-600" />
@@ -278,7 +278,7 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
 
         <a
           href="/dashboard/calendar"
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+          className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow"
         >
           <div className="flex items-center gap-3 mb-3">
             <CalendarIcon className="h-6 w-6 text-green-600" />

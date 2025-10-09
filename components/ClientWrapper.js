@@ -1,5 +1,6 @@
 'use client'
 
+import { ThemeProvider } from 'next-themes'
 import { AppErrorBoundary } from './error-boundary'
 import { SupabaseAuthProvider } from './SupabaseAuthProvider'
 import { ToastProvider } from './ToastContainer'
@@ -11,19 +12,21 @@ export default function ClientWrapper({ children }) {
   return (
     <>
       <SkipToContent />
-      <AppErrorBoundary>
-        <ServiceWorkerProvider>
-          <AccessibilityProvider>
-            <ToastProvider>
-              <SupabaseAuthProvider>
-                <GlobalOnboardingWrapper>
-                  {children}
-                </GlobalOnboardingWrapper>
-              </SupabaseAuthProvider>
-            </ToastProvider>
-          </AccessibilityProvider>
-        </ServiceWorkerProvider>
-      </AppErrorBoundary>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <AppErrorBoundary>
+          <ServiceWorkerProvider>
+            <AccessibilityProvider>
+              <ToastProvider>
+                <SupabaseAuthProvider>
+                  <GlobalOnboardingWrapper>
+                    {children}
+                  </GlobalOnboardingWrapper>
+                </SupabaseAuthProvider>
+              </ToastProvider>
+            </AccessibilityProvider>
+          </ServiceWorkerProvider>
+        </AppErrorBoundary>
+      </ThemeProvider>
     </>
   )
 }

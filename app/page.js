@@ -33,19 +33,35 @@ export default function HomePage() {
 
   useEffect(() => {
     setMounted(true)
+
+    // Initialize Supabase client
+    const supabase = createClient()
+
+    // Check initial auth state
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsAuthenticated(!!session)
+    }
+
     checkAuth()
+
+    // Subscribe to auth state changes
+    // This ensures the UI updates when user logs in/out
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🏠 [Homepage] Auth state changed:', event, { hasSession: !!session })
+      setIsAuthenticated(!!session)
+    })
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
-  const checkAuth = async () => {
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    setIsAuthenticated(!!session)
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <header className="bg-card border-b border-border sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center">
@@ -53,36 +69,36 @@ export default function HomePage() {
                   <LogoHeader size="small" />
                 </Link>
               </div>
-              
+
               {/* Navigation Links */}
               <nav className="hidden md:flex items-center space-x-8">
                 <Link
                   href="#features"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   Features
                 </Link>
                 <Link
                   href="#pricing"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   Pricing
                 </Link>
                 <Link
                   href="#how-it-works"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   How It Works
                 </Link>
                 <Link
                   href="#testimonials"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   Testimonials
                 </Link>
                 <Link
                   href="/contact"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   Contact
                 </Link>
@@ -94,7 +110,7 @@ export default function HomePage() {
                   <>
                     <Link
                       href="/dashboard"
-                      className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+                      className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 font-medium"
                     >
                       <Cog6ToothIcon className="h-4 w-4" />
                       <span>Dashboard</span>
@@ -106,7 +122,7 @@ export default function HomePage() {
                         setIsAuthenticated(false)
                         router.refresh()
                       }}
-                      className="text-gray-600 hover:text-gray-900 font-medium"
+                      className="text-muted-foreground hover:text-foreground font-medium"
                     >
                       Sign Out
                     </button>
@@ -115,7 +131,7 @@ export default function HomePage() {
                   <>
                     <Link
                       href="/login"
-                      className="text-gray-600 hover:text-gray-900 font-medium"
+                      className="text-muted-foreground hover:text-foreground font-medium"
                     >
                       Sign In
                     </Link>
@@ -133,10 +149,10 @@ export default function HomePage() {
         </header>
 
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-brand-600 via-brand-500 to-brand-700 text-white py-32 overflow-hidden">
-          <div className="absolute inset-0 bg-black opacity-10"></div>
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
+        <section className="relative bg-gradient-to-br from-brand-600 via-brand-500 to-brand-700 dark:from-brand-700 dark:via-brand-600 dark:to-brand-800 text-white py-32 overflow-hidden">
+          <div className="absolute inset-0 bg-black/10 dark:bg-black/30"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 dark:bg-white/10 rounded-full"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/5 dark:bg-white/10 rounded-full"></div>
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
@@ -152,9 +168,9 @@ export default function HomePage() {
                 </span>
               </h1>
               
-              <p className="text-xl lg:text-2xl text-olive-100 max-w-3xl mx-auto mb-16 leading-relaxed">
-                The AI-powered platform where barbers own their brand, automate their business, 
-                and grow with real data. No marketplace fees. No competing for visibility. 
+              <p className="text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto mb-16 leading-relaxed">
+                The AI-powered platform where barbers own their brand, automate their business,
+                and grow with real data. No marketplace fees. No competing for visibility.
                 100% your business.
               </p>
               
@@ -223,41 +239,41 @@ export default function HomePage() {
         <PricingCalculator />
 
         {/* Final CTA Section */}
-        <section className="py-24 bg-gradient-to-br from-gray-900 to-black text-white">
+        <section className="py-24 bg-gradient-to-br from-gray-900 to-black dark:from-gray-950 dark:to-black text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-bold mb-6">
               Ready to Take Control of Your Business?
             </h2>
-            <p className="text-xl text-gray-300 mb-12 leading-relaxed">
-              Join 500+ barbers who've stopped renting space in marketplaces 
+            <p className="text-xl text-gray-300 dark:text-gray-400 mb-12 leading-relaxed">
+              Join 500+ barbers who've stopped renting space in marketplaces
               and started building their own empires.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10">
               <Link
                 href="/register"
-                className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
+                className="bg-gradient-to-r from-brand-600 to-brand-500 dark:from-brand-500 dark:to-brand-400 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
               >
                 Sign Up
                 <ArrowRightIcon className="h-5 w-5 ml-2" />
               </Link>
-              
-              <button 
+
+              <button
                 onClick={() => setShowScheduleModal(true)}
-                className="bg-white text-gray-900 px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300"
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300"
               >
                 Schedule a Demo
               </button>
             </div>
-            
-            <div className="text-sm text-gray-400">
+
+            <div className="text-sm text-gray-400 dark:text-gray-500">
               No credit card required • Cancel anytime • Full support included
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="bg-black text-white py-16">
+        <footer className="bg-gray-950 dark:bg-black text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
               {/* Brand */}
@@ -265,15 +281,15 @@ export default function HomePage() {
                 <div className="mb-4">
                   <Logo size="medium" />
                 </div>
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-400 dark:text-gray-500 text-sm">
                   The AI-powered platform where barbers own their brand and grow their business.
                 </p>
-                <div className="mt-4 text-sm text-gray-400">
+                <div className="mt-4 text-sm text-gray-400 dark:text-gray-500">
                   <p className="font-semibold text-white mb-2">SMS Opt-In</p>
-                  <p>Text START to <a href="sms:+18135483884&body=START" className="text-white font-medium hover:text-gray-300 transition-colors">813-548-3884</a> to subscribe</p>
-                  <p>Text STOP to <a href="sms:+18135483884&body=STOP" className="text-white font-medium hover:text-gray-300 transition-colors">813-548-3884</a> to unsubscribe</p>
-                  <p>Text HELP to <a href="sms:+18135483884&body=HELP" className="text-white font-medium hover:text-gray-300 transition-colors">813-548-3884</a> for assistance</p>
-                  <p className="text-xs mt-2 text-gray-500">A2P Compliant Messaging Service</p>
+                  <p>Text START to <a href="sms:+18135483884&body=START" className="text-white font-medium hover:text-gray-300 dark:hover:text-gray-400 transition-colors">813-548-3884</a> to subscribe</p>
+                  <p>Text STOP to <a href="sms:+18135483884&body=STOP" className="text-white font-medium hover:text-gray-300 dark:hover:text-gray-400 transition-colors">813-548-3884</a> to unsubscribe</p>
+                  <p>Text HELP to <a href="sms:+18135483884&body=HELP" className="text-white font-medium hover:text-gray-300 dark:hover:text-gray-400 transition-colors">813-548-3884</a> for assistance</p>
+                  <p className="text-xs mt-2 text-gray-500 dark:text-gray-600">A2P Compliant Messaging Service</p>
                 </div>
               </div>
 

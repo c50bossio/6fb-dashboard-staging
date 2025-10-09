@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect, Fragment, useMemo, useCallback } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { 
   ChevronDownIcon,
@@ -17,17 +17,13 @@ export default function ViewSwitcher() {
   const [availableContexts, setAvailableContexts] = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Get the user's role from either profile or user metadata
-  const userRole = profile?.role || user?.user_metadata?.role || 'CLIENT'
+  // Memoize user role to prevent recalculation on every render
+  const userRole = useMemo(() => {
+    return profile?.role || user?.user_metadata?.role || 'CLIENT'
+  }, [profile?.role, user?.user_metadata?.role])
 
-  // Load available contexts based on role
-  useEffect(() => {
-    if (userRole) {
-      loadAvailableContexts()
-    }
-  }, [userRole])
-
-  const loadAvailableContexts = async () => {
+  // Memoize loadAvailableContexts to prevent infinite loops
+  const loadAvailableContexts = useCallback(async () => {
     try {
       const contexts = []
       
@@ -85,7 +81,14 @@ export default function ViewSwitcher() {
       console.error('Error loading contexts:', error)
       setAvailableContexts([])
     }
-  }
+  }, [userRole]) // Only re-create when userRole actually changes
+
+  // Load available contexts when userRole changes
+  useEffect(() => {
+    if (userRole && userRole !== 'CLIENT' && userRole !== 'BARBER') {
+      loadAvailableContexts()
+    }
+  }, [userRole, loadAvailableContexts]) // Include both dependencies
 
   const switchContext = async (context) => {
     setLoading(true)

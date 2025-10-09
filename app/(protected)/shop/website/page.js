@@ -233,7 +233,7 @@ export default function ShopWebsiteCustomization() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -255,7 +255,7 @@ export default function ShopWebsiteCustomization() {
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => window.open(`/shop/${settings.slug}`, '_blank')}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-background"
               >
                 <EyeIcon className="h-4 w-4 mr-2" />
                 View Live
@@ -605,7 +605,7 @@ export default function ShopWebsiteCustomization() {
                   {themeTemplates.map((template) => (
                     <label
                       key={template.id}
-                      className={`flex items-start p-4 border rounded-lg cursor-pointer hover:bg-gray-50 ${
+                      className={`flex items-start p-4 border rounded-lg cursor-pointer hover:bg-background ${
                         settings.theme_template === template.id
                           ? 'border-olive-500 bg-indigo-50'
                           : 'border-gray-200'
@@ -1216,7 +1216,7 @@ export default function ShopWebsiteCustomization() {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setPreviewMode('desktop')}
-                    className={`p-2 rounded ${previewMode === 'desktop' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                    className={`p-2 rounded ${previewMode === 'desktop' ? 'bg-gray-200' : 'hover:bg-background'}`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -1224,7 +1224,7 @@ export default function ShopWebsiteCustomization() {
                   </button>
                   <button
                     onClick={() => setPreviewMode('mobile')}
-                    className={`p-2 rounded ${previewMode === 'mobile' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+                    className={`p-2 rounded ${previewMode === 'mobile' ? 'bg-gray-200' : 'hover:bg-background'}`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -1282,7 +1282,7 @@ export default function ShopWebsiteCustomization() {
 
                     {/* Services Section Preview */}
                     {settings.show_team && (
-                      <div className="p-8 bg-gray-50">
+                      <div className="p-8 bg-background">
                         <h2 className="text-2xl font-bold mb-4" style={{ color: settings.text_color, fontFamily: settings.heading_font }}>
                           {settings.services_title}
                         </h2>

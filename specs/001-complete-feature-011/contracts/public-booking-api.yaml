@@ -1,0 +1,380 @@
+openapi: 3.0.3
+info:
+  title: Public Staff Booking API
+  description: Public API endpoints for booking appointments via staff booking links
+  version: 1.0.0
+  contact:
+    name: 6FB AI Agent System
+    email: c50bossio@gmail.com
+
+servers:
+  - url: https://yourbarbershop.com/api
+    description: Production server
+  - url: http://localhost:9999/api
+    description: Local development server
+
+tags:
+  - name: Public Booking
+    description: Unauthenticated booking endpoints
+
+paths:
+  /book/{staffSlug}:
+    get:
+      summary: Get staff profile for booking page
+      description: Returns public profile information for a barber including bio, specialties, and available services
+      operationId: getStaffProfile
+      tags:
+        - Public Booking
+      parameters:
+        - name: staffSlug
+          in: path
+          required: true
+          description: Unique booking slug for the staff member (e.g., "john-smith")
+          schema:
+            type: string
+            pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+            example: "john-smith"
+      responses:
+        '200':
+          description: Staff profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffProfile'
+        '404':
+          description: Staff member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /book/{staffSlug}/services:
+    get:
+      summary: Get available services for staff member
+      description: Returns list of services this staff member provides with pricing
+      operationId: getStaffServices
+      tags:
+        - Public Booking
+      parameters:
+        - name: staffSlug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "john-smith"
+      responses:
+        '200':
+          description: Services retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  services:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Service'
+        '404':
+          description: Staff member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /book/{staffSlug}/availability:
+    get:
+      summary: Get available time slots
+      description: Returns available 30-minute time slots for a specific date and service
+      operationId: getAvailability
+      tags:
+        - Public Booking
+      parameters:
+        - name: staffSlug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "john-smith"
+        - name: date
+          in: query
+          required: true
+          description: Date to check availability (YYYY-MM-DD format)
+          schema:
+            type: string
+            format: date
+            example: "2025-10-15"
+        - name: service_id
+          in: query
+          required: true
+          description: Service ID to calculate duration
+          schema:
+            type: string
+            format: uuid
+            example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      responses:
+        '200':
+          description: Available slots retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                    example: "2025-10-15"
+                  slots:
+                    type: array
+                    description: Array of ISO timestamp strings for available 30-min slots
+                    items:
+                      type: string
+                      format: date-time
+                      example: "2025-10-15T09:00:00Z"
+                  timezone:
+                    type: string
+                    example: "America/New_York"
+        '400':
+          description: Invalid date or service_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Staff member or service not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /book/{staffSlug}/create:
+    post:
+      summary: Create a booking with payment
+      description: Creates a new booking after successful Stripe payment confirmation
+      operationId: createBooking
+      tags:
+        - Public Booking
+      parameters:
+        - name: staffSlug
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "john-smith"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingConfirmation'
+        '400':
+          description: Invalid request (time slot unavailable, payment failed, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Staff member or service not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Time slot no longer available (concurrent booking conflict)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    StaffProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        name:
+          type: string
+          example: "John Smith"
+        bio:
+          type: string
+          example: "Specialist in fades and beard trims with 10 years experience"
+        specialties:
+          type: array
+          items:
+            type: string
+          example: ["Fades", "Beard Trim", "Hot Towel Shave"]
+        image:
+          type: string
+          format: uri
+          example: "https://storage.example.com/staff-photos/john-smith.jpg"
+        phone:
+          type: string
+          example: "+1-555-123-4567"
+        barbershop:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+              example: "The Classic Barber Shop"
+            address:
+              type: string
+              example: "123 Main St, Brooklyn, NY 11201"
+            city:
+              type: string
+              example: "Brooklyn"
+            state:
+              type: string
+              example: "NY"
+            zip_code:
+              type: string
+              example: "11201"
+            phone:
+              type: string
+              example: "+1-555-987-6543"
+
+    Service:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "service-uuid-123"
+        name:
+          type: string
+          example: "Haircut & Beard Trim"
+        description:
+          type: string
+          example: "Classic haircut with precision beard trimming"
+        duration:
+          type: integer
+          description: Duration in minutes
+          example: 45
+        price:
+          type: number
+          format: float
+          example: 45.00
+        currency:
+          type: string
+          example: "USD"
+
+    CreateBookingRequest:
+      type: object
+      required:
+        - service_id
+        - start_time
+        - customer_name
+        - customer_email
+        - payment_intent_id
+      properties:
+        service_id:
+          type: string
+          format: uuid
+          example: "service-uuid-123"
+        start_time:
+          type: string
+          format: date-time
+          description: ISO timestamp for appointment start
+          example: "2025-10-15T09:00:00Z"
+        customer_name:
+          type: string
+          example: "Jane Doe"
+        customer_email:
+          type: string
+          format: email
+          example: "jane.doe@example.com"
+        customer_phone:
+          type: string
+          description: Optional phone number in E.164 format
+          example: "+1-555-234-5678"
+        notes:
+          type: string
+          description: Optional booking notes
+          example: "Please focus on beard shaping"
+        payment_intent_id:
+          type: string
+          description: Stripe Payment Intent ID that was successfully confirmed
+          example: "pi_1234567890abcdef"
+
+    BookingConfirmation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "booking-uuid-456"
+        status:
+          type: string
+          enum: ["confirmed"]
+          example: "confirmed"
+        service:
+          $ref: '#/components/schemas/Service'
+        start_time:
+          type: string
+          format: date-time
+          example: "2025-10-15T09:00:00Z"
+        end_time:
+          type: string
+          format: date-time
+          example: "2025-10-15T09:45:00Z"
+        total_price:
+          type: number
+          format: float
+          example: 45.00
+        customer_name:
+          type: string
+          example: "Jane Doe"
+        customer_email:
+          type: string
+          example: "jane.doe@example.com"
+        barbershop:
+          type: object
+          properties:
+            name:
+              type: string
+              example: "The Classic Barber Shop"
+            address:
+              type: string
+              example: "123 Main St, Brooklyn, NY 11201"
+            phone:
+              type: string
+              example: "+1-555-987-6543"
+        confirmation_number:
+          type: string
+          example: "BK-20251015-001"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Staff member not found"
+        message:
+          type: string
+          example: "No barber found with booking slug 'john-smith'"
+        code:
+          type: string
+          example: "STAFF_NOT_FOUND"

@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-background hero-gradient flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           {/* Logo */}
           <div className="flex justify-center">
@@ -44,16 +44,16 @@ export default function ForgotPasswordPage() {
               <CheckCircleIcon className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-bold text-foreground gradient-text">
             Check your email
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             We've sent a password reset link to your email address
           </p>
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="card-elevated backdrop-blur-sm">
             <div className="text-center">
               <div className="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
                 <div className="flex">
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
 
-              <div className="space-y-4 text-sm text-gray-600">
+              <div className="space-y-4 text-sm text-foreground">
                 <p>
                   <strong>What to do next:</strong>
                 </p>
@@ -116,22 +116,22 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background hero-gradient flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <div className="flex justify-center">
           <Logo size="medium" />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-bold text-foreground gradient-text">
           Reset your password
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           Enter your email address and we'll send you a reset link
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="card-elevated backdrop-blur-sm">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
@@ -140,7 +140,7 @@ export default function ForgotPasswordPage() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Email address
               </label>
               <div className="mt-1 relative">
@@ -205,12 +205,12 @@ export default function ForgotPasswordPage() {
           </div>
 
           <div className="mt-6">
-            <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+            <div className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-4">
               <div className="text-center">
-                <p className="text-xs font-medium text-gray-900 mb-2">
+                <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   Having trouble with your account?
                 </p>
-                <div className="space-y-1 text-xs text-gray-600">
+                <div className="space-y-1 text-xs text-gray-700 dark:text-gray-300">
                   <p>• Make sure to check your spam/junk folder</p>
                   <p>• Email verification links expire after 24 hours</p>
                   <p>• Try registering with a new email if needed</p>

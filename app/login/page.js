@@ -142,7 +142,7 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Email address
               </label>
               <div className="relative">
@@ -165,7 +165,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -282,9 +282,9 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6">
-            <div className="text-center p-4 bg-muted/30 rounded-xl border border-border/50">
-              <p className="text-sm text-muted-foreground mb-2">Demo credentials for testing:</p>
-              <div className="font-mono text-xs bg-card border border-border/50 rounded-lg p-2 text-foreground/80">
+            <div className="text-center p-4 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Demo credentials for testing:</p>
+              <div className="font-mono text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-gray-900 dark:text-gray-100">
                 <div><strong>Email:</strong> demo@barbershop.com</div>
                 <div><strong>Password:</strong> demo123</div>
               </div>

@@ -36,7 +36,7 @@ import InventoryPanel from './InventoryPanel'
 // Use API calls instead of direct database imports (client component)
 
 // Demo barbershop ID constant - matches Supabase UUID
-const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+// NO DEMO/MOCK DATA - Use real barbershop IDs from profile only
 
 // Dashboard modes for different user needs
 const DASHBOARD_MODES = {
@@ -95,7 +95,7 @@ const modeConfigs = {
   }
 }
 
-export default function UnifiedDashboard({ user }) {
+export default function UnifiedDashboard({ user, profile }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const modeParam = searchParams.get('mode')
@@ -114,22 +114,31 @@ export default function UnifiedDashboard({ user }) {
 
   // Load dashboard data based on current mode - API CALLS ONLY
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
-    // Get barbershop ID from user or use demo
-    const barbershopId = user?.barbershop_id || DEMO_BARBERSHOP_ID
-    
+    // Get barbershop ID from profile - NO FALLBACK TO DEMO DATA
+    const barbershopId = profile?.barbershop_id || profile?.shop_id
+
+    if (!barbershopId) {
+      // Only log error once to avoid spam
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ No barbershop ID found in profile - skipping dashboard load')
+      }
+      setIsLoading(false)
+      return
+    }
+
     // CACHE DISABLED: Always fetch fresh data for consistency between Executive/Analytics modes
     // Previously cached data was causing inconsistencies with Analytics panel
-    
-    console.log('Starting dashboard data load...', { currentMode, barbershopId, user })
+
+    if (process.env.NODE_ENV === 'development' && forceRefresh) {
+      console.log('🏪 [UnifiedDashboard] Force refresh - loading data for:', currentMode)
+    }
     setIsLoading(true)
     try {
-      console.log(`Loading dashboard data for mode: ${currentMode}`)
-      
       // Use faster analytics API for executive mode to avoid slow AI health checks
       if (currentMode === DASHBOARD_MODES.EXECUTIVE) {
         const response = await fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json&force_refresh=true`)
         const result = await response.json()
-        
+
         if (response.ok && result.success) {
           // Transform analytics data for executive dashboard - FIX DATA MAPPING
           const apiData = result.data
@@ -172,7 +181,6 @@ export default function UnifiedDashboard({ user }) {
             analytics_data: apiData
           }
           setDashboardData(transformedData)
-          console.log('Dashboard data loaded successfully:', transformedData)
           // Cache removed for data consistency between Executive/Analytics modes
         } else {
           console.warn('Analytics API error:', result)
@@ -201,15 +209,17 @@ export default function UnifiedDashboard({ user }) {
       }
       
       setLastRefresh(new Date())
-      
+
     } catch (error) {
-      console.error('Failed to load dashboard data:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ [UnifiedDashboard] Failed to load dashboard data:', error)
+      }
       // Show empty state instead of mock data
       setDashboardData({})
     } finally {
       setIsLoading(false)
     }
-  }, [currentMode, user])
+  }, [currentMode, user, profile])
 
   // Onboarding checklist data loading now handled globally
   // const loadChecklistData = useCallback(async () => { ... }, [])
@@ -246,7 +256,7 @@ export default function UnifiedDashboard({ user }) {
       }, 30000)
       return () => clearInterval(interval)
     }
-  }, [currentMode, user]) // Add user dependency, but not loadDashboardData to avoid infinite loop
+  }, [currentMode, user, profile]) // Add user and profile dependencies
 
   const handleModeChange = (mode) => {
     setCurrentMode(mode)
@@ -258,18 +268,20 @@ export default function UnifiedDashboard({ user }) {
   // Prefetch data when hovering over executive mode button
   const handleExecutiveModeHover = useCallback(() => {
     if (currentMode !== DASHBOARD_MODES.EXECUTIVE) {
-      // Prefetch analytics data for executive mode
-      const barbershopId = user?.barbershop_id || DEMO_BARBERSHOP_ID
-      fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
-        .then(response => response.json())
-        .then(result => {
-          if (result.success) {
-            console.log('Executive data prefetched')
-          }
-        })
-        .catch(() => {}) // Ignore errors for prefetch
+      // Prefetch analytics data for executive mode - use real barbershop ID only
+      const barbershopId = profile?.barbershop_id || profile?.shop_id
+      if (barbershopId) {
+        fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
+          .then(response => response.json())
+          .then(result => {
+            if (result.success) {
+              console.log('Executive data prefetched')
+            }
+          })
+          .catch(() => {}) // Ignore errors for prefetch
+      }
     }
-  }, [currentMode, user])
+  }, [currentMode, user, profile])
 
   // Mode selector component
   const ModeSelector = () => (
@@ -286,10 +298,10 @@ export default function UnifiedDashboard({ user }) {
             onMouseEnter={value === DASHBOARD_MODES.EXECUTIVE ? handleExecutiveModeHover : undefined}
             className={`
               flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
-              transition-all duration-300 
-              ${isActive 
-                ? `gradient-gold-header text-white shadow-gold-glow scale-105 text-shadow-subtle` 
-                : `bg-gray-50/70 text-gray-700 hover:bg-brand-50/50 hover:text-brand-700 hover:shadow-modern`
+              transition-all duration-300
+              ${isActive
+                ? `gradient-gold-header text-white shadow-gold-glow scale-105 text-shadow-subtle`
+                : `bg-muted/70 text-foreground hover:bg-brand-50/50 dark:hover:bg-brand-900/30 hover:text-brand-700 dark:hover:text-brand-300 hover:shadow-modern`
               }
             `}
           >
@@ -303,7 +315,7 @@ export default function UnifiedDashboard({ user }) {
       <button
         onClick={() => loadDashboardData(true)}
         disabled={isLoading}
-        className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+        className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
       >
         <ArrowPathIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
         <span className="text-xs hidden lg:inline">
@@ -319,8 +331,40 @@ export default function UnifiedDashboard({ user }) {
       return (
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
-            <ArrowPathIcon className="h-12 w-12 text-gray-400 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600">Loading dashboard...</p>
+            <ArrowPathIcon className="h-12 w-12 text-muted-foreground animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading dashboard...</p>
+          </div>
+        </div>
+      )
+    }
+
+    // Show setup prompt when no barbershop is configured
+    if (!dashboardData && !profile?.barbershop_id && !profile?.shop_id) {
+      return (
+        <div className="card-modern rounded-xl p-12 text-center">
+          <div className="max-w-md mx-auto">
+            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Squares2X2Icon className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">Complete Your Shop Setup</h3>
+            <p className="text-muted-foreground mb-6">
+              To access {modeConfigs[currentMode].label}, you need to complete your barbershop profile setup.
+              This will enable all dashboard features.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <a
+                href="/settings/shop"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+              >
+                Complete Shop Setup
+              </a>
+              <a
+                href="/settings/profile"
+                className="inline-flex items-center px-4 py-2 border border-muted text-sm font-medium rounded-md text-foreground bg-muted hover:bg-muted/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+              >
+                Update Profile
+              </a>
+            </div>
           </div>
         </div>
       )
@@ -381,8 +425,8 @@ export default function UnifiedDashboard({ user }) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Main Dashboard</h2>
-            <p className="text-gray-600 mt-1">{modeConfigs[currentMode].description}</p>
+            <h2 className="text-2xl font-bold text-foreground">Main Dashboard</h2>
+            <p className="text-muted-foreground mt-1">{modeConfigs[currentMode].description}</p>
           </div>
           <ModeSelector />
         </div>
@@ -398,9 +442,37 @@ export default function UnifiedDashboard({ user }) {
             <div className="space-y-6">
               {/* Executive Summary - Full width now that onboarding is global */}
               <UnifiedExecutiveSummary data={dashboardData} />
-              <SmartAlertsPanel barbershop_id={user?.barbershop_id || 'demo'} />
+              <SmartAlertsPanel barbershop_id={profile?.barbershop_id || profile?.shop_id} />
             </div>
-          ) : null}
+          ) : (
+            // Show setup prompt when no barbershop is configured
+            <div className="card-modern rounded-xl p-12 text-center">
+              <div className="max-w-md mx-auto">
+                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Squares2X2Icon className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">Complete Your Shop Setup</h3>
+                <p className="text-muted-foreground mb-6">
+                  To view your dashboard, you need to complete your barbershop profile setup.
+                  This will enable analytics, appointments, and all dashboard features.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <a
+                    href="/settings/shop"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+                  >
+                    Complete Shop Setup
+                  </a>
+                  <a
+                    href="/settings/profile"
+                    className="inline-flex items-center px-4 py-2 border border-muted text-sm font-medium rounded-md text-foreground bg-muted hover:bg-muted/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+                  >
+                    Update Profile
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 

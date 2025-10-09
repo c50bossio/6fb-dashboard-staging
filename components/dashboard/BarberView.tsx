@@ -110,31 +110,31 @@ export default function BarberView({ userId, userName }: BarberViewProps) {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Today's Earnings</p>
               <p className="text-2xl font-bold text-gray-900">${todayEarnings.toFixed(2)}</p>
             </div>
-            <div className="p-3 bg-green-50 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Upcoming This Week</p>
               <p className="text-2xl font-bold text-gray-900">{upcomingCount}</p>
             </div>
-            <div className="p-3 bg-blue-50 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <CalendarIcon className="h-6 w-6 text-blue-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Next Appointment</p>
@@ -144,7 +144,7 @@ export default function BarberView({ userId, userName }: BarberViewProps) {
                   : 'No appointments'}
               </p>
             </div>
-            <div className="p-3 bg-purple-50 rounded-full">
+            <div className="p-3 bg-muted rounded-full">
               <ClockIcon className="h-6 w-6 text-purple-600" />
             </div>
           </div>
@@ -152,11 +152,11 @@ export default function BarberView({ userId, userName }: BarberViewProps) {
       </div>
 
       {/* Upcoming Bookings */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-card rounded-xl shadow-sm border border-border">
+        <div className="p-6 border-b border-border">
           <h3 className="text-lg font-semibold text-gray-900">Your Upcoming Appointments</h3>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-border">
           {bookings.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
@@ -164,11 +164,11 @@ export default function BarberView({ userId, userName }: BarberViewProps) {
             </div>
           ) : (
             bookings.map((booking) => (
-              <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div key={booking.id} className="p-6 hover:bg-muted transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-50 rounded-lg">
+                      <div className="p-2 bg-muted rounded-lg">
                         <UserCircleIcon className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
@@ -199,12 +199,12 @@ export default function BarberView({ userId, userName }: BarberViewProps) {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <a
             href="/dashboard/calendar"
-            className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-muted transition-colors"
           >
             <CalendarIcon className="h-6 w-6 text-gray-600" />
             <div>
@@ -214,7 +214,7 @@ export default function BarberView({ userId, userName }: BarberViewProps) {
           </a>
           <a
             href="/dashboard/settings"
-            className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-muted transition-colors"
           >
             <UserCircleIcon className="h-6 w-6 text-gray-600" />
             <div>

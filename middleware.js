@@ -1,8 +1,9 @@
-// 🚨 SECURITY AUDIT FIX: Re-enable middleware with proper CORS configuration
+// 🚨 SECURITY AUDIT FIX: Re-enable middleware with proper CORS configuration + Auth
 import { NextResponse } from 'next/server'
 import { handlePreflightRequest, addCorsHeaders } from './lib/cors-config'
+import { updateSession } from './lib/supabase/middleware'
 
-export function middleware(request) {
+export async function middleware(request) {
   const origin = request.headers.get('origin')
   const pathname = request.nextUrl.pathname
 
@@ -20,10 +21,43 @@ export function middleware(request) {
     return NextResponse.next()
   }
 
+  // CRITICAL: Call Supabase middleware FIRST to refresh session and validate user
+  // This follows Supabase 2025 best practices for Next.js 14 App Router
+  const { response: supabaseResponse, user, error } = await updateSession(request)
+
+  // Define protected routes that require authentication
+  const protectedPaths = [
+    '/dashboard',
+    '/shop',
+    '/admin',
+    '/barber',
+    '/settings',
+    '/profile'
+  ]
+
+  // Check if current path is protected
+  const isProtectedRoute = protectedPaths.some(path => pathname.startsWith(path))
+
+  // Redirect unauthenticated users trying to access protected routes
+  if (isProtectedRoute && !user) {
+    console.log(`🚫 [Middleware] Blocking unauthenticated access to: ${pathname}`)
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirectTo', pathname) // Remember where they wanted to go
+    return NextResponse.redirect(loginUrl)
+  }
+
+  // Redirect authenticated users away from auth pages
+  const authPaths = ['/login', '/register', '/forgot-password']
+  const isAuthRoute = authPaths.some(path => pathname.startsWith(path))
+
+  if (isAuthRoute && user) {
+    console.log(`↪️ [Middleware] Redirecting authenticated user from ${pathname} to /dashboard`)
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
   // For API routes, ensure CORS headers are set
   if (pathname.startsWith('/api/')) {
-    const response = NextResponse.next()
-    return addCorsHeaders(response, origin, {
+    return addCorsHeaders(supabaseResponse, origin, {
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
       headers: [
@@ -38,20 +72,17 @@ export function middleware(request) {
   }
 
   // Add security headers to all responses
-  const response = NextResponse.next()
-  
-  // Security headers
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('X-XSS-Protection', '1; mode=block')
-  
+  supabaseResponse.headers.set('X-Frame-Options', 'DENY')
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff')
+  supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  supabaseResponse.headers.set('X-XSS-Protection', '1; mode=block')
+
   // Add CORS headers if origin is present
   if (origin) {
-    return addCorsHeaders(response, origin)
+    return addCorsHeaders(supabaseResponse, origin)
   }
-  
-  return response
+
+  return supabaseResponse
 }
 
 export const config = {

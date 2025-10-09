@@ -11,7 +11,7 @@ function ProtectedLayoutContent({ children }) {
   const { isCollapsed } = useNavigation()
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Responsive Navigation - handles both mobile and desktop */}
       <Navigation />
       

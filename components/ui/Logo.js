@@ -48,12 +48,12 @@ const Logo = ({
   const getLogoVariant = () => {
     // Use the transparent background logos based on theme
     const isDarkMode = resolvedTheme === 'dark';
-    
+
     if (isDarkMode) {
-      // Use gold logo with transparent background for dark mode
-      return 'bookedbarber-logo-transparent.png';
+      // Use gold logo for dark mode (better contrast)
+      return 'bookedbarber-logo-gold.png';
     }
-    // Use green logo with transparent background for light mode
+    // Use green logo for light mode
     return 'bookedbarber-logo-green.png';
   };
 

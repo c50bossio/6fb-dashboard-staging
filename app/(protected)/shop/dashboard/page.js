@@ -108,16 +108,9 @@ export default function ShopDashboard() {
           <div className="flex space-x-3">
             <Link
               href="/shop/settings"
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-background"
             >
               Shop Settings
-            </Link>
-            <Link
-              href="/shop/barbers/add"
-              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
-            >
-              <UserPlusIcon className="h-5 w-5 mr-2" />
-              Add Barber
             </Link>
           </div>
         </div>
@@ -248,7 +241,7 @@ export default function ShopDashboard() {
                       View Details
                     </button>
                     <button
-                      className="flex-1 text-center py-1.5 text-sm text-gray-600 bg-gray-50 rounded hover:bg-gray-100"
+                      className="flex-1 text-center py-1.5 text-sm text-gray-600 bg-background rounded hover:bg-gray-100"
                     >
                       Schedule
                     </button>

@@ -5,9 +5,6 @@
 
 'use client';
 
-// Demo barbershop ID constant - matches Supabase UUID
-const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
-
 import { useState, useEffect } from 'react';
 import {
   BoltIcon,
@@ -18,17 +15,17 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
-export default function PerformanceIndicator({ className = '' }) {
+export default function PerformanceIndicator({ className = '', barbershop_id = null }) {
   const [performanceData, setPerformanceData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadPerformanceData();
-    
+
     // Update every 30 seconds
     const interval = setInterval(loadPerformanceData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [barbershop_id]);
 
   const loadPerformanceData = async () => {
     try {
@@ -36,19 +33,24 @@ export default function PerformanceIndicator({ className = '' }) {
       const cacheResponse = await fetch('/api/cache/stats?detailed=true');
       const cacheData = await cacheResponse.json();
 
-      // Test API response time
-      const startTime = Date.now();
-      const apiResponse = await fetch(`/api/analytics/live-data?barbershop_id=${DEMO_BARBERSHOP_ID}`);
-      const apiResponseTime = Date.now() - startTime;
-      const apiData = await apiResponse.json();
+      // Test API response time only if barbershop_id is provided
+      let apiPerformance = null;
+      if (barbershop_id) {
+        const startTime = Date.now();
+        const apiResponse = await fetch(`/api/analytics/live-data?barbershop_id=${barbershop_id}`);
+        const apiResponseTime = Date.now() - startTime;
+        const apiData = await apiResponse.json();
 
-      setPerformanceData({
-        cache: cacheData.success ? cacheData : null,
-        api: {
+        apiPerformance = {
           responseTime: apiResponseTime,
           cached: apiData.meta?.cache_info?.hit || false,
           success: apiResponse.ok
-        },
+        };
+      }
+
+      setPerformanceData({
+        cache: cacheData.success ? cacheData : null,
+        api: apiPerformance,
         timestamp: new Date()
       });
     } catch (error) {

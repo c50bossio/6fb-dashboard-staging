@@ -1,0 +1,238 @@
+openapi: 3.0.3
+info:
+  title: Staff Analytics API
+  description: Admin and barber endpoints for viewing booking performance metrics
+  version: 1.0.0
+
+servers:
+  - url: https://yourbarbershop.com/api
+    description: Production server
+  - url: http://localhost:9999/api
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Staff Analytics
+    description: Performance metrics with RBAC enforcement
+
+paths:
+  /admin/staff/analytics:
+    get:
+      summary: Get staff analytics (admin view)
+      description: Returns booking metrics for all barbers in the organization (admin only)
+      operationId: getStaffAnalytics
+      tags:
+        - Staff Analytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: start_date
+          in: query
+          required: false
+          description: Start of date range (default 30 days ago)
+          schema:
+            type: string
+            format: date
+            example: "2025-09-07"
+        - name: end_date
+          in: query
+          required: false
+          description: End of date range (default today)
+          schema:
+            type: string
+            format: date
+            example: "2025-10-07"
+        - name: barber_id
+          in: query
+          required: false
+          description: Filter to specific barber (default all)
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date_range:
+                    type: object
+                    properties:
+                      start:
+                        type: string
+                        format: date
+                        example: "2025-09-07"
+                      end:
+                        type: string
+                        format: date
+                        example: "2025-10-07"
+                  staff_metrics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StaffMetrics'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (not an admin)
+
+  /barber/analytics:
+    get:
+      summary: Get own analytics (barber view)
+      description: Returns booking metrics for the authenticated barber only (RBAC enforced)
+      operationId: getOwnAnalytics
+      tags:
+        - Staff Analytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: start_date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Own analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date_range:
+                    type: object
+                    properties:
+                      start:
+                        type: string
+                        format: date
+                      end:
+                        type: string
+                        format: date
+                  metrics:
+                    $ref: '#/components/schemas/StaffMetrics'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (not a barber)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    StaffMetrics:
+      type: object
+      properties:
+        staff_id:
+          type: string
+          format: uuid
+          example: "staff-uuid-789"
+        staff_name:
+          type: string
+          example: "John Smith"
+        booking_slug:
+          type: string
+          example: "john-smith"
+        booking_url:
+          type: string
+          example: "https://yourbarbershop.com/book/john-smith"
+        total_bookings:
+          type: integer
+          description: Total bookings in date range
+          example: 45
+        total_revenue:
+          type: number
+          format: float
+          description: Total revenue generated
+          example: 2025.00
+        average_booking_value:
+          type: number
+          format: float
+          description: Average revenue per booking
+          example: 45.00
+        booking_source_breakdown:
+          type: object
+          description: Bookings grouped by source
+          properties:
+            staff_link:
+              $ref: '#/components/schemas/SourceMetrics'
+            admin:
+              $ref: '#/components/schemas/SourceMetrics'
+            walk_in:
+              $ref: '#/components/schemas/SourceMetrics'
+        top_services:
+          type: array
+          description: Most popular services (max 5)
+          items:
+            type: object
+            properties:
+              service_id:
+                type: string
+                format: uuid
+              service_name:
+                type: string
+                example: "Haircut & Beard Trim"
+              booking_count:
+                type: integer
+                example: 25
+              revenue:
+                type: number
+                format: float
+                example: 1125.00
+        bookings_last_7_days:
+          type: integer
+          example: 12
+        bookings_last_30_days:
+          type: integer
+          example: 45
+        conversion_rate:
+          type: number
+          format: float
+          description: Percentage of page views that became bookings
+          example: 12.5
+        peak_booking_hours:
+          type: array
+          description: Top 3 most popular booking times
+          items:
+            type: object
+            properties:
+              hour:
+                type: integer
+                example: 14
+              day_of_week:
+                type: string
+                example: "Saturday"
+              booking_count:
+                type: integer
+                example: 8
+
+    SourceMetrics:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Number of bookings from this source
+          example: 30
+        revenue:
+          type: number
+          format: float
+          description: Revenue from this source
+          example: 1350.00
+        percentage:
+          type: number
+          format: float
+          description: Percentage of total bookings
+          example: 66.7

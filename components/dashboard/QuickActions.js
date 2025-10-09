@@ -22,7 +22,7 @@ const {
 
 // Fallback icon component in case of import issues
 const FallbackIcon = ({ className }) => (
-  <div className={`${className} bg-gray-300 rounded-full`} />
+  <div className={`${className} bg-muted rounded-full`} />
 )
 
 export default function QuickActions({ profile }) {
@@ -107,14 +107,14 @@ export default function QuickActions({ profile }) {
 
   const getColorClasses = (color) => {
     const colorMap = {
-      purple: 'text-gold-600 bg-gold-50 hover:bg-gold-100',
-      blue: 'text-olive-600 bg-olive-50 hover:bg-olive-100',
-      green: 'text-green-600 bg-green-50 hover:bg-green-100',
-      orange: 'text-orange-600 bg-orange-50 hover:bg-orange-100',
-      pink: 'text-pink-600 bg-pink-50 hover:bg-pink-100',
-      indigo: 'text-olive-600 bg-indigo-50 hover:bg-indigo-100',
-      emerald: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100',
-      amber: 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+      purple: 'text-gold-600 bg-muted hover:bg-muted',
+      blue: 'text-olive-600 bg-muted hover:bg-muted',
+      green: 'text-green-600 bg-muted hover:bg-muted',
+      orange: 'text-orange-600 bg-muted hover:bg-muted',
+      pink: 'text-pink-600 bg-muted hover:bg-muted',
+      indigo: 'text-olive-600 bg-muted hover:bg-muted',
+      emerald: 'text-emerald-600 bg-muted hover:bg-muted',
+      amber: 'text-amber-700 bg-muted hover:bg-muted'
     }
     return colorMap[color] || colorMap.blue
   }
@@ -252,7 +252,7 @@ export default function QuickActions({ profile }) {
       </div>
 
       {/* Settings Quick Access */}
-      <div className="bg-gray-50 rounded-xl p-6">
+      <div className="bg-muted rounded-xl p-6">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-gray-900">System Settings</h3>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server-sync'
 // Remove edge runtime to use Node.js APIs
 // export const runtime = 'edge'
 
@@ -14,7 +14,7 @@ export async function GET(request) {
     const detailed = searchParams.get('detailed') === 'true'
     const type = searchParams.get('type') // trending_services, metrics, etc.
     
-    const supabase = createClient()
+    const supabase = createServerClient()
     
     // Get current timestamp for calculations
     const now = new Date()
@@ -25,7 +25,7 @@ export async function GET(request) {
       '90d': new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
     }
     const startDate = ranges[timeRange] || ranges['7d']
-    
+
     // Handle specific metric types
     if (type === 'trending_services') {
       return getTrendingServices(supabase, startDate, now)
@@ -117,7 +117,7 @@ async function getSystemHealthMetrics() {
 
 async function getAIActivityMetrics(startDate, endDate) {
   try {
-    const supabase = createClient()
+    const supabase = createServerClient()
     
     // Get chat history from the time range
     const { data: chatHistory, error } = await supabase
@@ -164,7 +164,7 @@ async function getAIActivityMetrics(startDate, endDate) {
 
 async function getBusinessInsightsMetrics(startDate, endDate) {
   try {
-    const supabase = createClient()
+    const supabase = createServerClient()
     
     // Use customers and business data to match Analytics API consistency
     const { data: customers } = await supabase
@@ -216,7 +216,7 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
 
 async function getUserEngagementMetrics(startDate, endDate) {
   try {
-    const supabase = createClient()
+    const supabase = createServerClient()
     
     // Use customers data to match Analytics API for consistency
     const { data: customers } = await supabase
@@ -277,7 +277,7 @@ async function getPerformanceMetrics() {
 
 async function checkDatabaseHealth() {
   try {
-    const supabase = createClient()
+    const supabase = createServerClient()
     const startTime = Date.now()
     
     // Simple health check query

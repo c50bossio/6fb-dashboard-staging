@@ -26,6 +26,8 @@ function SupabaseAuthProvider({ children }) {
 
   // Profile fetch with retry logic
   const fetchProfile = useCallback(async (userId, retries = 3) => {
+    console.log(`🔍 [fetchProfile] Fetching profile for user: ${userId}`)
+
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         const { data, error } = await supabase
@@ -36,62 +38,154 @@ function SupabaseAuthProvider({ children }) {
 
         if (error) throw error
         if (data) {
-          console.log(`👤 Profile loaded successfully`)
+          console.log(`✅ [fetchProfile] Profile loaded:`, {
+            full_name: data.full_name,
+            role: data.role,
+            organization_id: data.organization_id,
+            barbershop_id: data.barbershop_id
+          })
           return data
         }
       } catch (error) {
-        console.error(`Error fetching profile (attempt ${attempt + 1}/${retries}):`, error.message)
+        console.error(`❌ [fetchProfile] Attempt ${attempt + 1}/${retries} failed:`, error.message)
 
         // Wait before retry (exponential backoff)
         if (attempt < retries - 1) {
-          await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, attempt)))
+          const waitMs = 500 * Math.pow(2, attempt)
+          console.log(`⏳ [fetchProfile] Retrying in ${waitMs}ms...`)
+          await new Promise(resolve => setTimeout(resolve, waitMs))
         }
       }
     }
+
+    console.error(`❌ [fetchProfile] Failed to load profile after ${retries} attempts`)
     return null
   }, [supabase])
 
-  // Listen to auth state changes only (no initial async call)
+  // Set up auth - Hybrid pattern for reliability
+  // 1. Get initial user immediately (fast, local JWT validation)
+  // 2. Set up listener for real-time auth changes
   useEffect(() => {
     let mounted = true
+    let timeoutId = null
 
-    console.log('🔐 Setting up auth listener...')
+    console.log('🔐 [SupabaseAuthProvider] Initializing auth...')
 
-    // Listen for auth state changes (sign in, sign out, token refresh)
-    // This listener fires IMMEDIATELY with the current session (if any)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Get initial user state - getUser() is fast (local JWT validation, no network call)
+    const initializeAuth = async () => {
+      try {
+        console.log('🔍 [SupabaseAuthProvider] Getting initial user...')
+
+        // Set timeout fallback in case getUser hangs (defensive)
+        timeoutId = setTimeout(() => {
+          if (mounted && loading) {
+            console.warn('⏰ [SupabaseAuthProvider] getUser() timeout, assuming no user')
+            setUser(null)
+            setLoading(false)
+          }
+        }, 3000)
+
+        const { data: { user }, error } = await supabase.auth.getUser()
+
+        // Clear timeout since we got a response
+        if (timeoutId) clearTimeout(timeoutId)
+
+        if (!mounted) return
+
+        if (error) {
+          console.warn('⚠️ [SupabaseAuthProvider] Auth error:', error.message)
+          setUser(null)
+        } else if (user) {
+          console.log('✅ [SupabaseAuthProvider] User authenticated:', user.email)
+          setUser(user)
+        } else {
+          console.log('ℹ️ [SupabaseAuthProvider] No authenticated user')
+          setUser(null)
+        }
+
+        setLoading(false)
+      } catch (err) {
+        console.error('❌ [SupabaseAuthProvider] Failed to initialize auth:', err.message)
+        if (mounted) {
+          setUser(null)
+          setLoading(false)
+        }
+      }
+    }
+
+    initializeAuth()
+
+    // Set up listener for auth state changes (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return
 
-      console.log('🔐 Auth event:', event, session?.user ? `User: ${session.user.email}` : 'No session')
+      console.log('🔐 [SupabaseAuthProvider] Auth event:', event, session?.user?.email || 'no user')
 
-      const user = session?.user ?? null
-      setUser(user)
-
-      // Fetch profile when user exists
-      if (user && mounted) {
-        const profileData = await fetchProfile(user.id)
-        if (mounted) {
-          console.log('👤 Profile fetched:', profileData ? 'Success' : 'Failed')
-          setProfile(profileData)
-          if (!profileData) {
-            setError('Profile not found. Please contact support.')
-          }
-        }
-      } else {
-        setProfile(null)
-      }
-
-      // Stop loading once we have auth state
-      if (mounted) {
+      // Handle auth events
+      if (event === 'SIGNED_IN') {
+        console.log('👤 [SupabaseAuthProvider] User signed in:', session?.user?.email)
+        setUser(session?.user ?? null)
         setLoading(false)
+      } else if (event === 'SIGNED_OUT') {
+        console.log('👋 [SupabaseAuthProvider] User signed out')
+        setUser(null)
+        setProfile(null)
+        setLoading(false)
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 [SupabaseAuthProvider] Token refreshed:', session?.user?.email)
+        setUser(session?.user ?? null)
+      } else if (event === 'USER_UPDATED') {
+        console.log('📝 [SupabaseAuthProvider] User updated:', session?.user?.email)
+        setUser(session?.user ?? null)
       }
     })
 
     return () => {
       mounted = false
-      subscription.unsubscribe()
+      if (timeoutId) clearTimeout(timeoutId)
+      subscription?.unsubscribe()
     }
-  }, [supabase, fetchProfile])
+  }, [supabase])
+
+  // Separate effect to fetch profile when user changes
+  // This keeps async operations OUT of the onAuthStateChange listener
+  useEffect(() => {
+    if (!user) {
+      // No user, clear profile
+      console.log('🚫 [Profile Effect] No user, clearing profile')
+      setProfile(null)
+      return
+    }
+
+    console.log('👤 [Profile Effect] User detected, loading profile...', {
+      userId: user.id,
+      email: user.email,
+      provider: user.app_metadata?.provider
+    })
+
+    // User exists, fetch their profile
+    let isMounted = true
+
+    const loadProfile = async () => {
+      const profileData = await fetchProfile(user.id)
+      if (isMounted) {
+        if (profileData) {
+          console.log('✅ [Profile Effect] Profile set in state')
+          setProfile(profileData)
+          setError(null)
+        } else {
+          console.error('❌ [Profile Effect] Profile not found in database')
+          setError('Profile not found. Please contact support.')
+        }
+      }
+    }
+
+    loadProfile()
+
+    return () => {
+      isMounted = false
+    }
+  }, [user, fetchProfile])
 
   // Auth methods
   const signIn = async ({ email, password }) => {

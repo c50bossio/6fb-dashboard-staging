@@ -668,7 +668,7 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
           </div>
           
           {/* Drag handle indicator */}
-          <div className="drag-handle absolute -top-1 -right-1 bg-gray-300 hover:bg-gray-400 text-gray-600 rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-move">
+          <div className="drag-handle absolute -top-1 -right-1 bg-muted hover:bg-muted/80 text-muted-foreground rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-move">
             <ArrowsPointingOutIcon className="h-2 w-2" />
           </div>
           
@@ -685,7 +685,7 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
 
       {/* Chat Widget */}
       {isOpen && (
-        <div className={`fixed ${getPositionClasses(position)} w-80 h-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 flex flex-col`}>
+        <div className={`fixed ${getPositionClasses(position)} w-80 h-96 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col`}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-t-xl">
             <div className="flex items-center space-x-2">
@@ -719,14 +719,14 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
                   className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
                     msg.type === 'user'
                       ? 'bg-amber-700 text-white rounded-br-sm'
-                      : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-sm'
                   }`}
                 >
                   {msg.content}
                   
                   {/* Smart Actions */}
                   {msg.actions && msg.actions.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                       <div className="flex flex-wrap gap-1">
                         {msg.actions.map((action, idx) => (
                           <button
@@ -743,18 +743,18 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
                   )}
                   
                   {msg.type === 'assistant' && msg.id > 1 && !msg.rated && showRating !== msg.id && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                       <button
                         onClick={() => setShowRating(msg.id)}
-                        className="text-xs text-gray-500 hover:text-gray-700"
+                        className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                       >
                         Rate this response
                       </button>
                     </div>
                   )}
                   {showRating === msg.id && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <p className="text-xs text-gray-600 mb-2">How helpful was this response?</p>
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">How helpful was this response?</p>
                       <div className="flex space-x-1">
                         {[1, 2, 3, 4, 5].map(rating => (
                           <button
@@ -769,8 +769,8 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
                     </div>
                   )}
                   {msg.rated && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         Rated: {Array(msg.rated).fill('⭐').join('')} Thanks for your feedback!
                       </p>
                     </div>
@@ -780,7 +780,7 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 px-3 py-2 rounded-lg rounded-bl-sm">
+                <div className="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg rounded-bl-sm">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -795,13 +795,13 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
           {/* Quick Actions */}
           {messages.length === 1 && (
             <div className="px-3 pb-2">
-              <p className="text-xs text-gray-500 mb-2">Quick Actions:</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Quick Actions:</p>
               <div className="flex flex-wrap gap-1">
                 {getQuickActions().map((action, index) => (
                   <button
                     key={index}
                     onClick={() => handleQuickAction(action.query)}
-                    className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full transition-colors flex items-center space-x-1"
+                    className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-2 py-1 rounded-full transition-colors flex items-center space-x-1"
                     disabled={isLoading}
                   >
                     <span>{action.icon}</span>
@@ -813,7 +813,7 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
           )}
 
           {/* Input */}
-          <div className="p-3 border-t border-gray-200">
+          <div className="p-3 border-t border-gray-200 dark:border-gray-700">
             <div className="flex space-x-2">
               <input
                 type="text"
@@ -821,7 +821,7 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about your business..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 disabled={isLoading || isVoiceListening}
               />
               <button

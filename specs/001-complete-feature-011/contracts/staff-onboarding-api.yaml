@@ -1,0 +1,336 @@
+openapi: 3.0.3
+info:
+  title: Staff Onboarding API
+  description: Admin API endpoints for onboarding new barbers and managing staff
+  version: 1.0.0
+
+servers:
+  - url: https://yourbarbershop.com/api
+    description: Production server
+  - url: http://localhost:9999/api
+    description: Local development server
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Staff Onboarding
+    description: Admin-only endpoints for adding/managing barbers
+
+paths:
+  /admin/staff/generate-slug:
+    post:
+      summary: Generate unique booking slug
+      description: Generates a unique booking slug from first and last name, handling conflicts automatically
+      operationId: generateBookingSlug
+      tags:
+        - Staff Onboarding
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - first_name
+                - last_name
+              properties:
+                first_name:
+                  type: string
+                  example: "John"
+                last_name:
+                  type: string
+                  example: "Smith"
+                custom_slug:
+                  type: string
+                  description: Optional manual override (must be unique and kebab-case)
+                  pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                  example: "johnny-s"
+      responses:
+        '200':
+          description: Slug generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  slug:
+                    type: string
+                    example: "john-smith"
+                  is_available:
+                    type: boolean
+                    example: true
+                  alternatives:
+                    type: array
+                    description: Suggested alternatives if custom_slug was taken
+                    items:
+                      type: string
+                    example: ["john-smith-2", "john-smith-3"]
+        '400':
+          description: Invalid input (slug format invalid)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized (not logged in)
+        '403':
+          description: Forbidden (not an admin)
+
+  /admin/staff/create:
+    post:
+      summary: Create new staff member
+      description: Onboards a new barber with profile, services, and financial configuration
+      operationId: createStaffMember
+      tags:
+        - Staff Onboarding
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - first_name
+                - last_name
+                - email
+                - booking_slug
+                - role
+              properties:
+                first_name:
+                  type: string
+                  example: "John"
+                last_name:
+                  type: string
+                  example: "Smith"
+                email:
+                  type: string
+                  format: email
+                  example: "john.smith@example.com"
+                phone:
+                  type: string
+                  example: "+1-555-123-4567"
+                bio:
+                  type: string
+                  maxLength: 500
+                  example: "Specialist in fades and beard trims"
+                specialties:
+                  type: array
+                  items:
+                    type: string
+                  maxItems: 10
+                  example: ["Fades", "Beard Trim"]
+                booking_slug:
+                  type: string
+                  pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+                  example: "john-smith"
+                role:
+                  type: string
+                  enum: ["BARBER", "MANAGER", "RECEPTIONIST"]
+                  example: "BARBER"
+                photo:
+                  type: string
+                  format: binary
+                  description: Profile photo file (jpg, png, webp)
+                service_ids:
+                  type: array
+                  description: Array of service UUIDs this barber provides
+                  items:
+                    type: string
+                    format: uuid
+                  example: ["service-uuid-1", "service-uuid-2"]
+                financial_model:
+                  type: string
+                  enum: ["commission", "booth_rent"]
+                  example: "commission"
+                commission_percentage:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                  description: Required if financial_model is "commission"
+                  example: 60
+                booth_rent_amount:
+                  type: number
+                  minimum: 0
+                  description: Required if financial_model is "booth_rent"
+                  example: 150
+                booth_rent_frequency:
+                  type: string
+                  enum: ["weekly", "monthly"]
+                  description: Required if financial_model is "booth_rent"
+                  example: "weekly"
+      responses:
+        '201':
+          description: Staff member created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    example: "staff-uuid-789"
+                  booking_slug:
+                    type: string
+                    example: "john-smith"
+                  booking_url:
+                    type: string
+                    example: "https://yourbarbershop.com/book/john-smith"
+                  profile:
+                    $ref: '#/components/schemas/StaffProfile'
+        '400':
+          description: Validation error (slug taken, invalid data, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (not an admin)
+        '409':
+          description: Conflict (booking_slug already exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/staff/migrate:
+    post:
+      summary: Migrate existing barbers to slug system
+      description: Batch generates booking_slug for existing barbers without one
+      operationId: migrateExistingStaff
+      tags:
+        - Staff Onboarding
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dry_run:
+                  type: boolean
+                  description: If true, returns preview without making changes
+                  example: true
+                barber_ids:
+                  type: array
+                  description: Optional - specific barbers to migrate (default all)
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '200':
+          description: Migration completed (or preview if dry_run=true)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  migrated_count:
+                    type: integer
+                    example: 10
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                          example: "John Smith"
+                        old_url:
+                          type: string
+                          example: "/book/staff-uuid-789"
+                        new_url:
+                          type: string
+                          example: "/book/john-smith"
+                        generated_slug:
+                          type: string
+                          example: "john-smith"
+                        status:
+                          type: string
+                          enum: ["success", "error", "preview"]
+                          example: "success"
+                        error:
+                          type: string
+                          description: Error message if status is "error"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (not an admin)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token from auth.session.access_token
+
+  schemas:
+    StaffProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "John Smith"
+        email:
+          type: string
+          example: "john.smith@example.com"
+        phone:
+          type: string
+          example: "+1-555-123-4567"
+        bio:
+          type: string
+          example: "Specialist in fades"
+        specialties:
+          type: array
+          items:
+            type: string
+          example: ["Fades", "Beard Trim"]
+        booking_slug:
+          type: string
+          example: "john-smith"
+        role:
+          type: string
+          example: "BARBER"
+        image:
+          type: string
+          format: uri
+          example: "https://storage.example.com/staff-photos/john-smith.jpg"
+        created_at:
+          type: string
+          format: date-time
+        barbershop_id:
+          type: string
+          format: uuid
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Booking slug already exists"
+        message:
+          type: string
+          example: "The slug 'john-smith' is already taken. Try 'john-smith-2'."
+        code:
+          type: string
+          example: "SLUG_CONFLICT"
+        field:
+          type: string
+          description: Field that caused the error
+          example: "booking_slug"

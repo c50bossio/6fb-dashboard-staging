@@ -255,7 +255,8 @@
 
   .metric-card {
     @apply card-modern p-6 hover:scale-[1.02] hover:-translate-y-1
-           bg-gradient-to-br from-white via-white to-brand-50/20;
+           bg-gradient-to-br from-card via-card to-brand-50/20
+           dark:to-brand-900/20;
   }
 
   .metric-card-gold {
@@ -389,12 +390,7 @@
   animation: pulse 2s infinite;
 }
 
-/* Responsive improvements */
-@media (max-width: 768px) {
-  .hero-gradient {
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #1d4ed8 100%);
-  }
-}
+/* Responsive improvements - mobile inherits desktop brand colors */
 
 /* Loading states */
 .loading-skeleton {
@@ -619,10 +615,15 @@
 }
 
 .card-elevated {
-  background: white;
+  background: hsl(var(--card));
   border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(var(--border));
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Dark mode support for card-elevated */
+.dark .card-elevated {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
 
 /* Calendar Optimistic Update Styles */

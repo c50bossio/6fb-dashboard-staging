@@ -3,15 +3,14 @@
 import React from 'react'
 import { useAuth } from './SupabaseAuthProvider'
 import ViewSwitcher from './ViewSwitcher'
-import { 
+import ThemeToggle, { ThemeToggleSimple } from './ui/ThemeToggle'
+import {
   BellIcon,
   Cog6ToothIcon,
   UserCircleIcon,
   CheckIcon,
   ArrowRightOnRectangleIcon,
   UserIcon,
-  MoonIcon,
-  SunIcon,
   LanguageIcon,
   BellSlashIcon
 } from '@heroicons/react/24/outline'
@@ -25,8 +24,7 @@ const DashboardHeader = React.memo(function DashboardHeader() {
   const [timeOfDay, setTimeOfDay] = useState('')
   const [currentTime, setCurrentTime] = useState('')
   const [activeDropdown, setActiveDropdown] = useState(null) // 'notifications', 'profile', or null
-  const [darkMode, setDarkMode] = useState(false)
-  
+
   // Refs for dropdown containers
   const notificationsRef = useRef(null)
   const profileRef = useRef(null)
@@ -40,21 +38,15 @@ const DashboardHeader = React.memo(function DashboardHeader() {
 
     // Update current time
     const updateTime = () => {
-      setCurrentTime(new Date().toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+      setCurrentTime(new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
       }))
     }
-    
+
     updateTime()
     const interval = setInterval(updateTime, 60000) // Update every minute
-    
-    // Load dark mode preference from localStorage
-    const savedDarkMode = localStorage.getItem('darkMode')
-    if (savedDarkMode !== null) {
-      setDarkMode(savedDarkMode === 'true')
-    }
-    
+
     return () => clearInterval(interval)
   }, [])
 
@@ -75,26 +67,33 @@ const DashboardHeader = React.memo(function DashboardHeader() {
   }, [activeDropdown])
 
   const getUserName = () => {
-    // Try profile first, then user metadata, then email prefix, then fallback
+    // Priority 1: Profile full_name (database)
     if (profile?.full_name && profile.full_name !== 'User' && profile.full_name.trim() !== '') {
       return profile.full_name
     }
-    
-    // Try first + last name from profile
+
+    // Priority 2: Profile first + last name (database)
     if (profile?.first_name || profile?.last_name) {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'User'
     }
-    
-    // Try user metadata from OAuth
+
+    // Priority 3: Google OAuth metadata (from user.user_metadata)
     if (user?.user_metadata?.full_name) {
       return user.user_metadata.full_name
     }
-    
+
     if (user?.user_metadata?.name) {
       return user.user_metadata.name
     }
-    
-    // Try email prefix as last resort
+
+    // Priority 4: Constructed from Google given/family names
+    const givenName = user?.user_metadata?.given_name
+    const familyName = user?.user_metadata?.family_name
+    if (givenName || familyName) {
+      return `${givenName || ''} ${familyName || ''}`.trim()
+    }
+
+    // Priority 5: Email prefix (non-generic)
     if (user?.email) {
       const emailPrefix = user.email.split('@')[0]
       // Don't use if it looks like a generic email
@@ -102,7 +101,12 @@ const DashboardHeader = React.memo(function DashboardHeader() {
         return emailPrefix
       }
     }
-    
+
+    // Priority 6: Loading state if we have a user but no profile yet
+    if (user && !profile) {
+      return 'Loading...'
+    }
+
     return 'User'
   }
 
@@ -114,9 +118,23 @@ const DashboardHeader = React.memo(function DashboardHeader() {
       'ENTERPRISE_OWNER': 'Enterprise Owner',
       'SUPER_ADMIN': 'Administrator'
     }
-    
-    const userRole = profile?.role || user?.user_metadata?.role || 'CLIENT'
-    return roleMap[userRole] || 'User'
+
+    // Priority 1: Profile role (database)
+    if (profile?.role) {
+      return roleMap[profile.role] || 'User'
+    }
+
+    // Priority 2: User metadata role (OAuth)
+    if (user?.user_metadata?.role) {
+      return roleMap[user.user_metadata.role] || 'User'
+    }
+
+    // Priority 3: Loading state if we have a user but no profile yet
+    if (user && !profile) {
+      return 'Loading...'
+    }
+
+    return 'Client'
   }
 
   // Get the actual user role for permissions
@@ -138,12 +156,12 @@ const DashboardHeader = React.memo(function DashboardHeader() {
     try {
       console.log('🚪 Attempting to sign out...')
       setActiveDropdown(null) // Close dropdown immediately
-      
+
       await signOut()
-      
+
       // Clear any cached data
       localStorage.removeItem('supabase.auth.token')
-      
+
       console.log('✅ Sign out successful, redirecting to login')
       router.push('/login')
     } catch (error) {
@@ -153,38 +171,21 @@ const DashboardHeader = React.memo(function DashboardHeader() {
     }
   }
 
-  const handleDarkModeToggle = () => {
-    const newDarkMode = !darkMode
-    setDarkMode(newDarkMode)
-    
-    // Save to localStorage
-    localStorage.setItem('darkMode', newDarkMode.toString())
-    
-    // Apply dark mode class to document
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-    
-    console.log('🌙 Dark mode toggled to:', newDarkMode ? 'ON' : 'OFF')
-  }
-
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+    <header className="bg-card shadow-sm border-b border-border sticky top-0 z-40">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left side - Greeting */}
           <div className="flex-shrink-0">
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">
+              <h1 className="text-lg font-semibold text-foreground">
                 Good {timeOfDay}, {getUserName()}!
               </h1>
-              <p className="text-xs text-gray-500">
-                {getUserRole()} • {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'short', 
-                  month: 'short', 
-                  day: 'numeric' 
+              <p className="text-xs text-muted-foreground">
+                {getUserRole()} • {new Date().toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric'
                 })} • {currentTime}
               </p>
             </div>
@@ -197,39 +198,42 @@ const DashboardHeader = React.memo(function DashboardHeader() {
               <ViewSwitcher />
             )}
 
+            {/* Theme Toggle */}
+            <ThemeToggleSimple />
+
             {/* Notifications Dropdown */}
             <div className="relative" ref={notificationsRef}>
-              <button 
+              <button
                 onClick={() => toggleDropdown('notifications')}
-                className="relative p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
               >
                 <BellIcon className="h-6 w-6" />
                 {notifications.filter(n => !n.read).length > 0 && (
-                  <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-white" />
+                  <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-400 ring-2 ring-card dark:ring-card" />
                 )}
               </button>
-              
+
               {activeDropdown === 'notifications' && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  <div className="p-4 border-b border-gray-200">
-                    <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                <div className="absolute right-0 mt-2 w-80 bg-card rounded-lg shadow-lg border border-border z-50">
+                  <div className="p-4 border-b border-border">
+                    <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length > 0 ? (
                       notifications.map(notif => (
-                        <div key={notif.id} className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${!notif.read ? 'bg-olive-50' : ''}`}>
-                          <p className="text-sm text-gray-900">{notif.message}</p>
-                          <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
+                        <div key={notif.id} className={`p-4 border-b border-border hover:bg-muted ${!notif.read ? 'bg-olive-50 dark:bg-olive-900/20' : ''}`}>
+                          <p className="text-sm text-foreground">{notif.message}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{notif.time}</p>
                         </div>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-sm text-gray-500">
+                      <div className="p-4 text-center text-sm text-muted-foreground">
                         No new notifications
                       </div>
                     )}
                   </div>
-                  <div className="p-3 border-t border-gray-200">
-                    <button className="text-sm text-olive-600 hover:text-olive-700 font-medium w-full text-center">
+                  <div className="p-3 border-t border-border">
+                    <button className="text-sm text-olive-600 dark:text-olive-400 hover:text-olive-700 dark:hover:text-olive-300 font-medium w-full text-center">
                       View all notifications
                     </button>
                   </div>
@@ -240,14 +244,14 @@ const DashboardHeader = React.memo(function DashboardHeader() {
 
             {/* User Profile Dropdown */}
             <div className="relative" ref={profileRef}>
-              <button 
+              <button
                 onClick={() => toggleDropdown('profile')}
-                className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="flex items-center space-x-3 p-2 hover:bg-muted rounded-lg transition-colors"
               >
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
                   {user?.user_metadata?.avatar_url ? (
-                    <img 
-                      src={user.user_metadata.avatar_url} 
+                    <img
+                      src={user.user_metadata.avatar_url}
                       alt={getUserName()}
                       className="h-8 w-8 rounded-full"
                     />
@@ -256,51 +260,41 @@ const DashboardHeader = React.memo(function DashboardHeader() {
                   )}
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium text-gray-700">{getUserName()}</p>
-                  <p className="text-xs text-gray-500">{getUserRole()}</p>
+                  <p className="text-sm font-medium text-foreground">{getUserName()}</p>
+                  <p className="text-xs text-muted-foreground">{getUserRole()}</p>
                 </div>
               </button>
-              
+
               {activeDropdown === 'profile' && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  <div className="px-4 py-3 border-b border-gray-200">
-                    <p className="text-sm font-medium text-gray-900">{getUserName()}</p>
-                    <p className="text-xs text-gray-500">{user?.email || 'dev@localhost.com'}</p>
+                <div className="absolute right-0 mt-2 w-56 bg-card rounded-lg shadow-lg border border-border z-50">
+                  <div className="px-4 py-3 border-b border-border">
+                    <p className="text-sm font-medium text-foreground">{getUserName()}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email || 'dev@localhost.com'}</p>
                   </div>
                   <div className="py-2">
-                    <Link 
+                    <Link
                       href="/profile"
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center"
                       onClick={() => setActiveDropdown(null)}
                     >
                       <UserIcon className="h-4 w-4 mr-2" />
                       View Profile
                     </Link>
-                    <button 
-                      onClick={handleDarkModeToggle}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center justify-between"
-                    >
-                      <span className="flex items-center">
-                        {darkMode ? <MoonIcon className="h-4 w-4 mr-2" /> : <SunIcon className="h-4 w-4 mr-2" />}
-                        Dark Mode
-                      </span>
-                      <span className="text-xs text-gray-500">{darkMode ? 'On' : 'Off'}</span>
-                    </button>
                   </div>
-                  <div className="border-t border-gray-200 py-2">
-                    <Link 
+                  <div className="border-t border-border py-2">
+                    <Link
                       href="/dashboard/settings"
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                      className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center"
                       onClick={() => setActiveDropdown(null)}
                     >
                       <Cog6ToothIcon className="h-4 w-4 mr-2" />
                       Open Full Settings
                     </Link>
                   </div>
-                  <div className="border-t border-gray-200">
-                    <button 
+                  <div className="border-t border-border">
+                    <button
                       onClick={handleSignOut}
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
                     >
                       <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
                       Sign Out

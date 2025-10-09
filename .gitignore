@@ -71,6 +71,10 @@ automated-test-*.js
 *.pem
 *.crt
 
+# Claude Code agent folder (Spec-Kit - may contain credentials/tokens)
+.claude/
+.claude/settings.local.json
+
 # Logs
 *.log
 logs/
