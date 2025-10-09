@@ -5,7 +5,7 @@ import NuclearInput from './NuclearInput'
 /**
  * INTERNATIONAL PHONE INPUT WITH COUNTRY CODE SUPPORT
  * 
- * Specifically designed for Twilio SMS integration requiring E.164 format
+ * Specifically designed for SMS integration requiring E.164 format
  * Provides country code dropdown + formatted phone number input
  */
 
@@ -97,7 +97,7 @@ const formatByCountry = (value, countryCode) => {
 }
 
 /**
- * Generate E.164 format for Twilio SMS
+ * Generate E.164 format for SMS messaging
  */
 const toE164Format = (phoneNumber, countryDialCode) => {
   if (!phoneNumber) return ''
@@ -179,7 +179,8 @@ const InternationalPhoneInput = memo(forwardRef(({
   }, [])
   
   const selectedCountryData = COUNTRY_CODES.find(c => c.code === selectedCountry) || COUNTRY_CODES[0]
-  
+  const phoneFormat = selectedCountryData.format.replace(/X/g, '0') // Input example pattern
+
   const handleCountrySelect = (countryCode) => {
     setSelectedCountry(countryCode)
     setIsDropdownOpen(false)
@@ -223,7 +224,7 @@ const InternationalPhoneInput = memo(forwardRef(({
         target: {
           ...e.target,
           value: value, // Formatted display value
-          e164: e164,   // E.164 for Twilio
+          e164: e164,   // E.164 for SMS
           country: selectedCountryData.code,
           dialCode: selectedCountryData.dialCode
         }
@@ -293,7 +294,7 @@ const InternationalPhoneInput = memo(forwardRef(({
             defaultValue={phoneNumber}
             onInput={handlePhoneInput}
             onBlur={handleBlur}
-            placeholder={selectedCountryData.format.replace(/X/g, '0')}
+            placeholder={phoneFormat}
             className={`${className} rounded-l-none ${!isValid ? 'border-red-500 focus:ring-red-500' : ''}`}
             disabled={disabled}
             autoFormatting={false} // We handle formatting manually
@@ -319,7 +320,7 @@ const InternationalPhoneInput = memo(forwardRef(({
           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
-          Valid • Twilio format: {toE164Format(phoneNumber, selectedCountryData.dialCode)}
+          Valid • International format: {toE164Format(phoneNumber, selectedCountryData.dialCode)}
         </div>
       )}
     </div>
