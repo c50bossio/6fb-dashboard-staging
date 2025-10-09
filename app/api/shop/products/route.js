@@ -1,96 +1,27 @@
-import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { authenticateShopOwnerStrict } from '@/lib/shop-auth'
+import { success, serverError } from '@/lib/api-response'
+
 export const runtime = 'edge'
 
 export async function GET(request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
-    
-    // Development bypass for testing
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    
-    // Get the current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (!isDevelopment && (authError || !user)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-    
-    // Use the first shop owner for development testing
-    let userId = user?.id
-    if (isDevelopment && !userId) {
-      const { data: devUser } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('role', 'SHOP_OWNER')
-        .limit(1)
-        .single()
-      userId = devUser?.id
-    }
-    
-    // Get the user's profile to check role (skip in development)
-    let profile = null
-    if (userId) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single()
-      profile = profileData
-    }
-    
-    // Check permissions (skip check in development)
-    if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
-      return NextResponse.json(
-        { error: 'Forbidden - Must be a shop owner or admin' },
-        { status: 403 }
-      )
-    }
-    
-    // Get the shop owned by this user
-    const { data: shop } = await supabase
-      .from('barbershops')
-      .select('id')
-      .eq('owner_id', userId)
-      .single()
-    
-    if (!shop) {
-      return NextResponse.json({
-        products: [],
-        metrics: {
-          totalProducts: 0,
-          totalValue: 0,
-          lowStock: 0,
-          outOfStock: 0
-        }
-      })
-    }
-    
+    // NEW PATTERN: Single function replaces 40+ lines of auth boilerplate
+    const { shop, supabase } = await authenticateShopOwnerStrict(request, {
+      allowDevBypass: true
+    })
+
     // Get all products for this shop
     const { data: products, error: productsError } = await supabase
       .from('products')
       .select('*')
       .eq('barbershop_id', shop.id)
       .order('name', { ascending: true })
-    
+
     if (productsError) {
-      console.error('Error fetching products:', productsError)
-      return NextResponse.json({
-        products: [],
-        metrics: {
-          totalProducts: 0,
-          totalValue: 0,
-          lowStock: 0,
-          outOfStock: 0
-        }
-      })
+      console.error('[Products API] Database query failed:', productsError)
+      return serverError('Failed to fetch products', productsError)
     }
-    
+
     // Calculate metrics
     const metrics = {
       totalProducts: products?.length || 0,
@@ -98,118 +29,61 @@ export async function GET(request) {
       lowStock: products?.filter(p => p.current_stock > 0 && p.current_stock <= p.min_stock_level).length || 0,
       outOfStock: products?.filter(p => p.current_stock === 0).length || 0
     }
-    
-    return NextResponse.json({
+
+    return success({
       products: products || [],
       metrics
     })
-    
+
   } catch (error) {
-    console.error('Error in /api/shop/products:', error)
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    // Errors from authenticateShopOwnerStrict are already HTTP responses
+    if (error instanceof Response || error?.status) {
+      return error
+    }
+
+    console.error('[Products API] Unexpected error:', error)
+    return serverError('Internal server error', error)
   }
 }
 
 export async function POST(request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
-    
-    // Development bypass for testing
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    
-    // Get the current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (!isDevelopment && (authError || !user)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-    
+    // NEW PATTERN: Single function replaces 40+ lines of auth boilerplate
+    const { shop, supabase } = await authenticateShopOwnerStrict(request, {
+      allowDevBypass: true
+    })
+
     // Get the request body
     const productData = await request.json()
-    
-    // Use the first shop owner for development testing
-    let userId = user?.id
-    if (isDevelopment && !userId) {
-      const { data: devUser } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('role', 'SHOP_OWNER')
-        .limit(1)
-        .single()
-      userId = devUser?.id
-    }
-    
-    // Get the user's profile to check role (skip in development)
-    let profile = null
-    if (userId) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userId)
-        .single()
-      profile = profileData
-    }
-    
-    // Check permissions (skip check in development)
-    if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
-      return NextResponse.json(
-        { error: 'Forbidden - Must be a shop owner or admin' },
-        { status: 403 }
-      )
-    }
-    
-    // Get the shop owned by this user
-    const { data: shop } = await supabase
-      .from('barbershops')
-      .select('id')
-      .eq('owner_id', userId)
-      .single()
-    
-    if (!shop) {
-      return NextResponse.json(
-        { error: 'No shop found for this user' },
-        { status: 404 }
-      )
-    }
-    
+
     // Add the barbershop_id to the product data
     const productToInsert = {
       ...productData,
       barbershop_id: shop.id,
       is_active: true
     }
-    
+
     // Insert the new product
     const { data: newProduct, error: insertError } = await supabase
       .from('products')
       .insert(productToInsert)
       .select()
       .single()
-    
+
     if (insertError) {
-      console.error('Error inserting product:', insertError)
-      return NextResponse.json(
-        { error: 'Failed to create product' },
-        { status: 500 }
-      )
+      console.error('[Products API] Insert failed:', insertError)
+      return serverError('Failed to create product', insertError)
     }
-    
-    return NextResponse.json(newProduct)
-    
+
+    return success(newProduct, { status: 201 })
+
   } catch (error) {
-    console.error('Error in POST /api/shop/products:', error)
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    // Errors from authenticateShopOwnerStrict are already HTTP responses
+    if (error instanceof Response || error?.status) {
+      return error
+    }
+
+    console.error('[Products API] Unexpected error:', error)
+    return serverError('Internal server error', error)
   }
 }

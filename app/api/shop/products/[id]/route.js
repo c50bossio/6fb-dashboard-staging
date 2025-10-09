@@ -1,70 +1,29 @@
-import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { authenticateShopOwnerStrict } from '@/lib/shop-auth'
+import { success, notFound, serverError } from '@/lib/api-response'
+
 export const runtime = 'edge'
 
 export async function PUT(request, { params }) {
   try {
     const { id } = params
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
-    
-    // Get the current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-    
+
+    // NEW PATTERN: Single function replaces 40+ lines of auth boilerplate
+    const { shop, supabase } = await authenticateShopOwnerStrict(request)
+
     // Get the request body
     const updates = await request.json()
-    
-    // Get the user's profile to check role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-    
-    // Check permissions
-    if (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)) {
-      return NextResponse.json(
-        { error: 'Forbidden - Must be a shop owner or admin' },
-        { status: 403 }
-      )
-    }
-    
-    // Get the shop owned by this user
-    const { data: shop } = await supabase
-      .from('barbershops')
-      .select('id')
-      .eq('owner_id', user.id)
-      .single()
-    
-    if (!shop) {
-      return NextResponse.json(
-        { error: 'No shop found for this user' },
-        { status: 404 }
-      )
-    }
-    
+
     // Verify the product belongs to this shop
     const { data: existingProduct } = await supabase
       .from('products')
       .select('barbershop_id')
       .eq('id', id)
       .single()
-    
+
     if (!existingProduct || existingProduct.barbershop_id !== shop.id) {
-      return NextResponse.json(
-        { error: 'Product not found or unauthorized' },
-        { status: 404 }
-      )
+      return notFound('Product not found or unauthorized')
     }
-    
+
     // Update the product
     const { data: updatedProduct, error: updateError } = await supabase
       .from('products')
@@ -75,111 +34,66 @@ export async function PUT(request, { params }) {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (updateError) {
-      console.error('Error updating product:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to update product' },
-        { status: 500 }
-      )
+      console.error('[Products API] Update failed:', updateError)
+      return serverError('Failed to update product', updateError)
     }
-    
-    return NextResponse.json(updatedProduct)
-    
+
+    return success(updatedProduct)
+
   } catch (error) {
-    console.error('Error in PUT /api/shop/products/[id]:', error)
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    // Errors from authenticateShopOwnerStrict are already HTTP responses
+    if (error instanceof Response || error?.status) {
+      return error
+    }
+
+    console.error('[Products API] Unexpected error:', error)
+    return serverError('Internal server error', error)
   }
 }
 
 export async function DELETE(request, { params }) {
   try {
     const { id } = params
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
-    
-    // Get the current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-    
-    // Get the user's profile to check role
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-    
-    // Check permissions
-    if (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)) {
-      return NextResponse.json(
-        { error: 'Forbidden - Must be a shop owner or admin' },
-        { status: 403 }
-      )
-    }
-    
-    // Get the shop owned by this user
-    const { data: shop } = await supabase
-      .from('barbershops')
-      .select('id')
-      .eq('owner_id', user.id)
-      .single()
-    
-    if (!shop) {
-      return NextResponse.json(
-        { error: 'No shop found for this user' },
-        { status: 404 }
-      )
-    }
-    
+
+    // NEW PATTERN: Single function replaces 40+ lines of auth boilerplate
+    const { shop, supabase } = await authenticateShopOwnerStrict(request)
+
     // Verify the product belongs to this shop
     const { data: existingProduct } = await supabase
       .from('products')
       .select('barbershop_id')
       .eq('id', id)
       .single()
-    
+
     if (!existingProduct || existingProduct.barbershop_id !== shop.id) {
-      return NextResponse.json(
-        { error: 'Product not found or unauthorized' },
-        { status: 404 }
-      )
+      return notFound('Product not found or unauthorized')
     }
-    
+
     // Soft delete by setting is_active to false
     const { error: deleteError } = await supabase
       .from('products')
-      .update({ 
+      .update({
         is_active: false,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-    
+
     if (deleteError) {
-      console.error('Error deleting product:', deleteError)
-      return NextResponse.json(
-        { error: 'Failed to delete product' },
-        { status: 500 }
-      )
+      console.error('[Products API] Delete failed:', deleteError)
+      return serverError('Failed to delete product', deleteError)
     }
-    
-    return NextResponse.json({ success: true })
-    
+
+    return success({ success: true, message: 'Product deleted successfully' })
+
   } catch (error) {
-    console.error('Error in DELETE /api/shop/products/[id]:', error)
-    
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    // Errors from authenticateShopOwnerStrict are already HTTP responses
+    if (error instanceof Response || error?.status) {
+      return error
+    }
+
+    console.error('[Products API] Unexpected error:', error)
+    return serverError('Internal server error', error)
   }
 }
