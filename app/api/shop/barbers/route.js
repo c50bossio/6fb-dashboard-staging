@@ -1,12 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
-export const runtime = 'edge'
+import { success, unauthorized, forbidden, serverError } from '@/lib/api-response'
 
 export async function GET(request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
     
     // Development bypass for testing
     const isDevelopment = process.env.NODE_ENV === 'development'
@@ -15,10 +12,7 @@ export async function GET(request) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (!isDevelopment && (authError || !user)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return unauthorized('Authentication required')
     }
     
     // Use the first shop owner for development testing
@@ -46,15 +40,12 @@ export async function GET(request) {
     
     // Only shop owners, enterprise owners, and admins can view barbers (skip check in development)
     if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
-      return NextResponse.json(
-        { error: 'Forbidden - Must be a shop owner or admin' },
-        { status: 403 }
-      )
+      return forbidden('Must be a shop owner or admin')
     }
     
     // Get the shop(s) owned by this user
     if (!userId) {
-      return NextResponse.json({ barbers: [] })
+      return success({ barbers: [] })
     }
     
     const { data: shops, error: shopError } = await supabase
@@ -64,15 +55,12 @@ export async function GET(request) {
     
     if (shopError) {
       console.error('Error fetching shops:', shopError)
-      return NextResponse.json(
-        { error: 'Failed to fetch shops' },
-        { status: 500 }
-      )
+      return serverError('Failed to fetch shops', shopError)
     }
     
     if (!shops || shops.length === 0) {
       console.log('⚠️ No shops found for user - returning empty barbers array')
-      return NextResponse.json({ barbers: [] })
+      return success({ barbers: [] })
     }
     
     // Get all barbers from the user's shops
@@ -86,7 +74,7 @@ export async function GET(request) {
         user_id,
         role,
         is_active,
-        users:profiles!barbershop_staff_user_id_fkey (
+        profiles!user_id (
           id,
           email,
           full_name,
@@ -110,7 +98,7 @@ export async function GET(request) {
       
       if (profileError) {
         console.error('Error fetching barber profiles:', profileError)
-        return NextResponse.json({ barbers: [] })
+        return success({ barbers: [] })
       }
       
       // Format profiles as barber staff
@@ -124,29 +112,26 @@ export async function GET(request) {
           avatar_url: profile.avatar_url
         }
       }))
-      
-      return NextResponse.json({ barbers: formattedBarbers })
+
+      return success({ barbers: formattedBarbers })
     }
     
     // Format and return the barber data
     const formattedBarbers = (barberStaff || []).map(staff => ({
       id: staff.id,
       user_id: staff.user_id,
-      users: staff.users || {
+      users: staff.profiles || {
         id: staff.user_id,
         email: 'barber@shop.com',
         full_name: 'Barber',
         avatar_url: null
       }
     }))
-    
-    return NextResponse.json({ barbers: formattedBarbers })
-    
+
+    return success({ barbers: formattedBarbers })
+
   } catch (error) {
     console.error('Error in /api/shop/barbers:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return serverError('Internal server error', error)
   }
 }

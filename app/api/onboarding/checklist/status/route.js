@@ -1,18 +1,15 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '../../../../../lib/supabase/server'
 import { withAuth, getUserProfile } from '../../../../../lib/auth-middleware'
+import { success, unauthorized, serverError } from '../../../../../lib/api-response'
 
 export const GET = withAuth(async function(request) {
   try {
     const user = request.user
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Skip auth validation if already handled by middleware
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
+      return unauthorized('Authentication required')
     }
 
     // Get user profile with robust error handling
@@ -182,29 +179,23 @@ export const GET = withAuth(async function(request) {
     const completionPercentage = Math.round((completedCount / totalItems) * 100)
     const isFullyCompleted = completedCount === totalItems
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        user_id: user.id,
-        onboarding_completed: profile.onboarding_completed || false,
-        items: checklistItems,
-        progress: {
-          completed_count: completedCount,
-          total_count: totalItems,
-          completion_percentage: completionPercentage,
-          earned_points: earnedPoints,
-          total_points: totalPoints,
-          is_fully_completed: isFullyCompleted
-        },
-        last_updated: new Date().toISOString()
-      }
+    return success({
+      user_id: user.id,
+      onboarding_completed: profile.onboarding_completed || false,
+      items: checklistItems,
+      progress: {
+        completed_count: completedCount,
+        total_count: totalItems,
+        completion_percentage: completionPercentage,
+        earned_points: earnedPoints,
+        total_points: totalPoints,
+        is_fully_completed: isFullyCompleted
+      },
+      last_updated: new Date().toISOString()
     })
 
   } catch (error) {
     console.error('Checklist status error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to get checklist status' },
-      { status: 500 }
-    )
+    return serverError('Failed to get checklist status', error)
   }
 })
