@@ -41,35 +41,25 @@ export default function ShopDashboard() {
 
   const loadShopData = async () => {
     try {
-      // Load comprehensive demo data
-      const demoResponse = await fetch('/api/shop/demo-data')
-      if (demoResponse.ok) {
-        const demoData = await demoResponse.json()
-        setShopData(demoData.shopInfo)
-        setBarbers(demoData.barbers)
-        setMetrics(demoData.metrics)
-      } else {
-        // Fallback to individual API calls
-        // Load shop information
-        const shopResponse = await fetch('/api/shop/info')
-        if (shopResponse.ok) {
-          const shop = await shopResponse.json()
-          setShopData(shop)
-        }
+      // Load shop information from real API
+      const shopResponse = await fetch('/api/shop/info')
+      if (shopResponse.ok) {
+        const shop = await shopResponse.json()
+        setShopData(shop)
+      }
 
-        // Load barbers
-        const barbersResponse = await fetch('/api/shop/barbers')
-        if (barbersResponse.ok) {
-          const { barbers } = await barbersResponse.json()
-          setBarbers(barbers)
-        }
+      // Load barbers from real API
+      const barbersResponse = await fetch('/api/shop/barbers')
+      if (barbersResponse.ok) {
+        const { barbers } = await barbersResponse.json()
+        setBarbers(barbers)
+      }
 
-        // Load metrics
-        const metricsResponse = await fetch('/api/shop/metrics')
-        if (metricsResponse.ok) {
-          const metricsData = await metricsResponse.json()
-          setMetrics(metricsData)
-        }
+      // Load metrics from real API
+      const metricsResponse = await fetch('/api/shop/metrics')
+      if (metricsResponse.ok) {
+        const metricsData = await metricsResponse.json()
+        setMetrics(metricsData)
       }
     } catch (error) {
       console.error('Error loading shop data:', error)
@@ -96,10 +86,10 @@ export default function ShopDashboard() {
               <BuildingStorefrontIcon className="h-10 w-10 text-olive-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">
                 {shopData?.name || 'My Barbershop'}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-300">
                 {shopData?.address && `${shopData.address}, ${shopData.city}, ${shopData.state}`}
               </p>
             </div>
@@ -108,7 +98,7 @@ export default function ShopDashboard() {
           <div className="flex space-x-3">
             <Link
               href="/shop/settings"
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-background"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 rounded-lg hover:bg-background"
             >
               Shop Settings
             </Link>
@@ -119,7 +109,7 @@ export default function ShopDashboard() {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Monthly Revenue */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-green-100 rounded-lg">
               <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
@@ -135,14 +125,14 @@ export default function ShopDashboard() {
               {Math.abs(metrics.revenueChange)}%
             </span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
             ${metrics.monthlyRevenue.toLocaleString()}
           </p>
-          <p className="text-sm text-gray-600 mt-1">Monthly Revenue</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Monthly Revenue</p>
         </div>
 
         {/* Today's Bookings */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-olive-100 rounded-lg">
               <CalendarDaysIcon className="h-6 w-6 text-olive-600" />
@@ -158,38 +148,38 @@ export default function ShopDashboard() {
               {Math.abs(metrics.bookingsChange)}%
             </span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{metrics.todayBookings}</p>
-          <p className="text-sm text-gray-600 mt-1">Today's Bookings</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{metrics.todayBookings}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Today's Bookings</p>
         </div>
 
         {/* Active Barbers */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-indigo-100 rounded-lg">
               <ScissorsIcon className="h-6 w-6 text-olive-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{metrics.activeBarbers}</p>
-          <p className="text-sm text-gray-600 mt-1">Active Barbers</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{metrics.activeBarbers}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Active Barbers</p>
         </div>
 
         {/* Average Rating */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <StarIcon className="h-6 w-6 text-amber-800" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{metrics.avgRating.toFixed(1)}</p>
-          <p className="text-sm text-gray-600 mt-1">Average Rating</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{metrics.avgRating.toFixed(1)}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Average Rating</p>
         </div>
       </div>
 
       {/* Barbers Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border mb-8">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-border">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Your Barbers</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Your Barbers</h2>
             <span className="text-sm text-gray-400">
               View All (Coming Soon)
             </span>
@@ -200,7 +190,7 @@ export default function ShopDashboard() {
           {barbers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {barbers.slice(0, 6).map((barber) => (
-                <div key={barber.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={barber.id} className="border border-gray-200 dark:border-border rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start space-x-3">
                     <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
                       {barber.users?.avatar_url ? (
@@ -210,22 +200,22 @@ export default function ShopDashboard() {
                           className="h-12 w-12 rounded-full object-cover"
                         />
                       ) : (
-                        <UserGroupIcon className="h-6 w-6 text-gray-500" />
+                        <UserGroupIcon className="h-6 w-6 text-gray-500 dark:text-gray-300" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">
+                      <p className="font-medium text-gray-900 dark:text-card-foreground truncate">
                         {barber.users?.full_name || 'Unnamed Barber'}
                       </p>
-                      <p className="text-sm text-gray-600 truncate">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 truncate">
                         {barber.users?.email}
                       </p>
                       <div className="mt-2 flex items-center space-x-4 text-xs">
-                        <span className="flex items-center text-gray-500">
+                        <span className="flex items-center text-gray-500 dark:text-gray-300">
                           <CalendarDaysIcon className="h-3 w-3 mr-1" />
                           {barber.bookings_today || 0} today
                         </span>
-                        <span className="flex items-center text-gray-500">
+                        <span className="flex items-center text-gray-500 dark:text-gray-300">
                           <CurrencyDollarIcon className="h-3 w-3 mr-1" />
                           ${barber.revenue_today || 0}
                         </span>
@@ -241,7 +231,7 @@ export default function ShopDashboard() {
                       View Details
                     </button>
                     <button
-                      className="flex-1 text-center py-1.5 text-sm text-gray-600 bg-background rounded hover:bg-gray-100"
+                      className="flex-1 text-center py-1.5 text-sm text-gray-600 dark:text-gray-300 bg-background rounded hover:bg-gray-100"
                     >
                       Schedule
                     </button>
@@ -252,7 +242,7 @@ export default function ShopDashboard() {
           ) : (
             <div className="text-center py-12">
               <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 mb-4">No barbers added yet</p>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">No barbers added yet</p>
               <Link
                 href="/shop/barbers/add"
                 className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
@@ -269,45 +259,45 @@ export default function ShopDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
           href="/shop/bookings"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+          className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
           <CalendarDaysIcon className="h-8 w-8 text-olive-600" />
           <div>
-            <p className="font-medium text-gray-900">Manage Bookings</p>
-            <p className="text-sm text-gray-600">View all appointments & schedule</p>
+            <p className="font-medium text-gray-900 dark:text-card-foreground">Manage Bookings</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">View all appointments & schedule</p>
           </div>
         </Link>
 
         <Link
           href="/shop/financial"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+          className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
           <CreditCardIcon className="h-8 w-8 text-green-600" />
           <div>
-            <p className="font-medium text-gray-900">Financial Overview</p>
-            <p className="text-sm text-gray-600">Track revenue & commissions</p>
+            <p className="font-medium text-gray-900 dark:text-card-foreground">Financial Overview</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Track revenue & commissions</p>
           </div>
         </Link>
 
         <Link
           href="/shop/services"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+          className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
           <ScissorsIcon className="h-8 w-8 text-gold-600" />
           <div>
-            <p className="font-medium text-gray-900">Services & Pricing</p>
-            <p className="text-sm text-gray-600">Manage service catalog & pricing</p>
+            <p className="font-medium text-gray-900 dark:text-card-foreground">Services & Pricing</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Manage service catalog & pricing</p>
           </div>
         </Link>
 
         <Link
           href="/shop/analytics"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+          className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-border p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
           <ChartBarIcon className="h-8 w-8 text-olive-600" />
           <div>
-            <p className="font-medium text-gray-900">Analytics</p>
-            <p className="text-sm text-gray-600">Performance insights & reports</p>
+            <p className="font-medium text-gray-900 dark:text-card-foreground">Analytics</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Performance insights & reports</p>
           </div>
         </Link>
       </div>

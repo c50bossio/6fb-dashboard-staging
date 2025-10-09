@@ -101,122 +101,9 @@ export default function ShopServicesAndPricing() {
 
       if (servicesError) {
         console.error('Error loading services:', servicesError)
-        // Fallback to mock data for demo
-        const mockServices = [
-        {
-          id: 'service-1',
-          name: 'Classic Haircut',
-          description: 'Traditional scissor cut with styling',
-          category: 'haircut',
-          price: 35.00,
-          duration_minutes: 45,
-          is_featured: true,
-          is_active: true,
-          online_booking_enabled: true,
-          requires_consultation: false,
-          monthly_bookings: 89,
-          monthly_revenue: 3115.00,
-          average_rating: 4.8,
-          image_url: 'https://images.unsplash.com/photo-1622286346003-c8b156c91d3b?w=300',
-          barbers_offering: ['Alex Rodriguez', 'Jamie Chen', 'Mike Thompson']
-        },
-        {
-          id: 'service-2',
-          name: 'Fade Cut',
-          description: 'Modern fade with precise blending',
-          category: 'haircut',
-          price: 40.00,
-          duration_minutes: 50,
-          is_featured: true,
-          is_active: true,
-          online_booking_enabled: true,
-          requires_consultation: false,
-          monthly_bookings: 67,
-          monthly_revenue: 2680.00,
-          average_rating: 4.9,
-          image_url: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=300',
-          barbers_offering: ['Jamie Chen', 'Mike Thompson']
-        },
-        {
-          id: 'service-3',
-          name: 'Beard Trim & Shape',
-          description: 'Professional beard trimming and shaping',
-          category: 'beard',
-          price: 25.00,
-          duration_minutes: 30,
-          is_featured: false,
-          is_active: true,
-          online_booking_enabled: true,
-          requires_consultation: false,
-          monthly_bookings: 45,
-          monthly_revenue: 1125.00,
-          average_rating: 4.7,
-          image_url: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=300',
-          barbers_offering: ['Alex Rodriguez', 'Mike Thompson']
-        },
-        {
-          id: 'service-4',
-          name: 'Hot Towel Shave',
-          description: 'Traditional straight razor shave with hot towel',
-          category: 'shave',
-          price: 45.00,
-          duration_minutes: 60,
-          is_featured: false,
-          is_active: true,
-          online_booking_enabled: false,
-          requires_consultation: true,
-          monthly_bookings: 5,
-          monthly_revenue: 225.00,
-          average_rating: 5.0,
-          image_url: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=300',
-          barbers_offering: ['Alex Rodriguez']
-        },
-        {
-          id: 'service-5',
-          name: 'Hair Wash & Style',
-          description: 'Shampoo, conditioning, and professional styling',
-          category: 'styling',
-          price: 20.00,
-          duration_minutes: 25,
-          is_featured: false,
-          is_active: true,
-          online_booking_enabled: true,
-          requires_consultation: false,
-          monthly_bookings: 32,
-          monthly_revenue: 640.00,
-          average_rating: 4.6,
-          image_url: 'https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?w=300',
-          barbers_offering: ['Jamie Chen']
-        },
-        {
-          id: 'service-6',
-          name: 'Full Service Package',
-          description: 'Haircut, beard trim, shampoo, and styling',
-          category: 'combo',
-          price: 75.00,
-          duration_minutes: 90,
-          is_featured: true,
-          is_active: true,
-          online_booking_enabled: true,
-          requires_consultation: false,
-          monthly_bookings: 23,
-          monthly_revenue: 1725.00,
-          average_rating: 4.9,
-          image_url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300',
-          barbers_offering: ['Mike Thompson']
-        }
-      ]
-
-      const mockCategories = [
-        { id: 'haircut', name: 'Haircuts', count: 2, color: 'blue' },
-        { id: 'beard', name: 'Beard Care', count: 1, color: 'green' },
-        { id: 'shave', name: 'Shaves', count: 1, color: 'red' },
-        { id: 'styling', name: 'Styling', count: 1, color: 'purple' },
-        { id: 'combo', name: 'Packages', count: 1, color: 'indigo' }
-      ]
-
-      setServices(mockServices)
-      setCategories(mockCategories)
+        // Show empty state - no fallback mock data
+        setServices([])
+        setCategories([])
       } else {
         // Process real Supabase data
         const enhancedServices = servicesData.map(service => ({
@@ -285,13 +172,13 @@ export default function ShopServicesAndPricing() {
               <ScissorsIcon className="h-8 w-8 text-gold-600" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Services & Pricing</h1>
-              <p className="text-gray-600">Manage your service catalog and pricing</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground">Services & Pricing</h1>
+              <p className="text-gray-600 dark:text-gray-300">Manage your service catalog and pricing</p>
             </div>
           </div>
           
           <div className="flex space-x-3">
-            <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+            <button className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-card border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-muted">
               Import Services
             </button>
             <button 
@@ -307,51 +194,51 @@ export default function ShopServicesAndPricing() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-olive-100 rounded-lg">
               <ScissorsIcon className="h-6 w-6 text-olive-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{services.length}</p>
-          <p className="text-sm text-gray-600 mt-1">Total Services</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{services.length}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Total Services</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-green-100 rounded-lg">
               <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">${totalRevenue.toLocaleString()}</p>
-          <p className="text-sm text-gray-600 mt-1">Monthly Revenue</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">${totalRevenue.toLocaleString()}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Monthly Revenue</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <ChartBarIcon className="h-6 w-6 text-amber-800" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{totalBookings}</p>
-          <p className="text-sm text-gray-600 mt-1">Monthly Bookings</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">{totalBookings}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Monthly Bookings</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
           <div className="flex items-center justify-between mb-2">
             <div className="p-2 bg-gold-100 rounded-lg">
               <TagIcon className="h-6 w-6 text-gold-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">${averagePrice.toFixed(0)}</p>
-          <p className="text-sm text-gray-600 mt-1">Avg Service Price</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">${averagePrice.toFixed(0)}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">Avg Service Price</p>
         </div>
       </div>
 
       {/* Categories */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Service Categories</h2>
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border mb-6">
+        <div className="p-6 border-b border-gray-200 dark:border-border">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Service Categories</h2>
         </div>
         <div className="p-6">
           <div className="flex flex-wrap gap-3">
@@ -383,7 +270,7 @@ export default function ShopServicesAndPricing() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+      <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border mb-6">
         <div className="p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div className="flex items-center space-x-4">
@@ -399,7 +286,7 @@ export default function ShopServicesAndPricing() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300">
               <span>Sort by:</span>
               <select className="border border-gray-300 rounded-lg px-3 py-2">
                 <option>Most Popular</option>
@@ -416,7 +303,7 @@ export default function ShopServicesAndPricing() {
       {/* Services Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredServices.map((service) => (
-          <div key={service.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div key={service.id} className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border overflow-hidden">
             {/* Service Image */}
             <div className="h-48 bg-gray-200 relative">
               {service.image_url ? (
@@ -453,16 +340,16 @@ export default function ShopServicesAndPricing() {
             <div className="p-6">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{service.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">{service.name}</h3>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(service.category)}`}>
                     {service.category}
                   </span>
                 </div>
                 <div className="flex space-x-1">
-                  <button className="p-1 text-gray-400 hover:text-gray-600">
+                  <button className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-300">
                     <EyeIcon className="h-4 w-4" />
                   </button>
-                  <button className="p-1 text-gray-400 hover:text-gray-600">
+                  <button className="p-1 text-gray-400 hover:text-gray-600 dark:text-gray-300">
                     <PencilIcon className="h-4 w-4" />
                   </button>
                   <button className="p-1 text-gray-400 hover:text-red-600">
@@ -471,50 +358,50 @@ export default function ShopServicesAndPricing() {
                 </div>
               </div>
 
-              <p className="text-gray-600 text-sm mb-4">{service.description}</p>
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{service.description}</p>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 flex items-center">
+                  <span className="text-sm text-gray-500 dark:text-gray-300 flex items-center">
                     <CurrencyDollarIcon className="h-4 w-4 mr-1" />
                     Price
                   </span>
-                  <span className="text-lg font-semibold text-gray-900">${service.price}</span>
+                  <span className="text-lg font-semibold text-gray-900 dark:text-card-foreground">${service.price}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 flex items-center">
+                  <span className="text-sm text-gray-500 dark:text-gray-300 flex items-center">
                     <ClockIcon className="h-4 w-4 mr-1" />
                     Duration
                   </span>
-                  <span className="text-sm text-gray-600">{service.duration_minutes} min</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{service.duration_minutes} min</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 flex items-center">
+                  <span className="text-sm text-gray-500 dark:text-gray-300 flex items-center">
                     <StarIcon className="h-4 w-4 mr-1" />
                     Rating
                   </span>
-                  <span className="text-sm text-gray-600">{service.average_rating}/5</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{service.average_rating}/5</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500 flex items-center">
+                  <span className="text-sm text-gray-500 dark:text-gray-300 flex items-center">
                     <ChartBarIcon className="h-4 w-4 mr-1" />
                     Monthly
                   </span>
-                  <span className="text-sm text-gray-600">{service.monthly_bookings} bookings</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{service.monthly_bookings} bookings</span>
                 </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-border">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Monthly Revenue</span>
+                  <span className="text-gray-500 dark:text-gray-300">Monthly Revenue</span>
                   <span className="font-semibold text-green-600">${service.monthly_revenue.toLocaleString()}</span>
                 </div>
               </div>
 
-              <div className="mt-4 flex items-center space-x-4 text-xs text-gray-500">
+              <div className="mt-4 flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-300">
                 {service.online_booking_enabled && (
                   <span className="flex items-center">
                     <GlobeAltIcon className="h-3 w-3 mr-1" />
@@ -530,7 +417,7 @@ export default function ShopServicesAndPricing() {
               </div>
 
               <div className="mt-3">
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-gray-300">
                   Offered by: {service.barbers_offering.join(', ')}
                 </p>
               </div>
@@ -542,7 +429,7 @@ export default function ShopServicesAndPricing() {
       {filteredServices.length === 0 && (
         <div className="text-center py-12">
           <ScissorsIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-          <p className="text-gray-600 mb-4">No services found matching your criteria</p>
+          <p className="text-gray-600 dark:text-gray-300 mb-4">No services found matching your criteria</p>
           <button 
             onClick={() => setShowServiceModal(true)}
             className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
