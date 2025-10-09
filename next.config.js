@@ -70,6 +70,16 @@ const nextConfig = {
     // Remove Preact aliasing - causes React 18 hook compatibility issues
     // Keeping React for better compatibility with modern features
 
+    // Exclude test pages from production builds
+    if (!dev && process.env.NODE_ENV === 'production') {
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^\.\/test-.*\/page\.js$/,
+          contextRegExp: /app/,
+        })
+      );
+    }
+
     // Bundle analyzer in development
     if (dev) {
       config.plugins.push(
@@ -78,10 +88,10 @@ const nextConfig = {
         }),
       );
     }
-    
+
     // Ensure .js extensions are resolved
     config.resolve.extensions = ['.js', '.jsx', '.ts', '.tsx', '.json']
-    
+
     // Minimal webpack fallbacks - let lazy loading handle the rest
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -89,7 +99,7 @@ const nextConfig = {
       net: false,
       tls: false,
     }
-    
+
     return config
   },
 
