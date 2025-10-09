@@ -1,111 +1,48 @@
-import { NextResponse } from 'next/server'
-export const dynamic = 'force-dynamic'
+import { authenticateBarberOrOwner } from '@/lib/shop-auth'
+import { success, serverError } from '@/lib/api-response'
 
-import { createClient } from '@/lib/supabase/server'
 export const runtime = 'edge'
 
-// Demo barbershop ID constant - matches Supabase UUID
-const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
-
-// GET /api/barbers - Fetch barbers/staff
+/**
+ * GET /api/barbers - Fetch barbers/staff for a barbershop
+ *
+ * Query Parameters:
+ * - barbershop_id: UUID (optional, filters by shop - defaults to authenticated user's shop)
+ * - active_only: boolean (optional, default true - only return active staff)
+ *
+ * Response:
+ * {
+ *   barbers: [{ id, name, email, phone, avatar_url, role, commission_rate, is_active, started_at, barbershop_id, barbershop_name, business_hours }],
+ *   total: number
+ * }
+ */
 export async function GET(request) {
   try {
-    const supabase = createClient()
-    
-    // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Authenticate - allows both shop owners and barbers to view staff
+    const { shop, supabase } = await authenticateBarberOrOwner(request, {
+      allowDevBypass: true
+    })
 
     const { searchParams } = new URL(request.url)
-    const barbershop_id = searchParams.get('barbershop_id')
+    const barbershop_id = searchParams.get('barbershop_id') || shop.id
     const active_only = searchParams.get('active_only') !== 'false'
 
-    // For demo/development, return mock data when database tables don't exist
-    const mockBarbers = [
-      {
-        id: 'barber-001',
-        name: 'John Smith',
-        email: 'john@barbershop.com',
-        phone: '555-0101',
-        avatar_url: null,
-        role: 'BARBER',
-        barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-        specialties: ['Haircut', 'Beard Trim', 'Shave'],
-        is_active: true,
-        rating: 4.8,
-        business_hours: {
-          monday: { start: '09:00', end: '18:00' },
-          tuesday: { start: '09:00', end: '18:00' },
-          wednesday: { start: '09:00', end: '18:00' },
-          thursday: { start: '09:00', end: '18:00' },
-          friday: { start: '09:00', end: '18:00' },
-          saturday: { start: '10:00', end: '16:00' },
-          sunday: null
-        }
-      },
-      {
-        id: 'barber-002',
-        name: 'Mike Johnson',
-        email: 'mike@barbershop.com',
-        phone: '555-0102',
-        avatar_url: null,
-        role: 'BARBER',
-        barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-        specialties: ['Fade', 'Design', 'Color'],
-        is_active: true,
-        rating: 4.9,
-        business_hours: {
-          monday: { start: '10:00', end: '19:00' },
-          tuesday: { start: '10:00', end: '19:00' },
-          wednesday: { start: '10:00', end: '19:00' },
-          thursday: { start: '10:00', end: '19:00' },
-          friday: { start: '10:00', end: '19:00' },
-          saturday: { start: '09:00', end: '17:00' },
-          sunday: null
-        }
-      },
-      {
-        id: 'barber-003',
-        name: 'Sarah Williams',
-        email: 'sarah@barbershop.com',
-        phone: '555-0103',
-        avatar_url: null,
-        role: 'BARBER',
-        barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-        specialties: ['Style', 'Coloring', 'Extensions'],
-        is_active: true,
-        rating: 5.0,
-        business_hours: {
-          monday: null,
-          tuesday: { start: '11:00', end: '19:00' },
-          wednesday: { start: '11:00', end: '19:00' },
-          thursday: { start: '11:00', end: '19:00' },
-          friday: { start: '11:00', end: '20:00' },
-          saturday: { start: '10:00', end: '18:00' },
-          sunday: { start: '12:00', end: '17:00' }
-        }
-      }
-    ]
-
-    // Filter by active status
-    const barbers = active_only ? mockBarbers.filter(b => b.is_active) : mockBarbers
-    
-    // Try to fetch from database, fallback to mock data
+    // Build query to fetch staff members
     let query = supabase
       .from('barbershop_staff')
       .select(`
-        *,
-        user:users(id, name, email, phone, avatar_url),
-        barbershop:barbershops(id, name, business_hours)
+        user_id,
+        role,
+        commission_rate,
+        is_active,
+        started_at,
+        barbershop_id,
+        profiles!barbershop_staff_user_id_fkey(id, full_name, email, phone, avatar_url),
+        barbershops!inner(id, name, business_hours)
       `)
       .in('role', ['BARBER', 'SHOP_OWNER'])
+      .eq('barbershop_id', barbershop_id)
       .order('started_at', { ascending: true })
-
-    if (barbershop_id) {
-      query = query.eq('barbershop_id', barbershop_id)
-    }
 
     if (active_only) {
       query = query.eq('is_active', true)
@@ -114,33 +51,46 @@ export async function GET(request) {
     const { data: staff, error } = await query
 
     if (error) {
-      console.warn('Database query failed, using mock data:', error.message)
-      return NextResponse.json({ barbers }, { status: 200 })
+      console.error('[Barbers API] Database query failed:', error)
+      return serverError('Failed to fetch barbers', error)
     }
 
-    // Format the response to make it easier to work with
+    // Return empty array if no staff found (NO MOCK DATA)
+    if (!staff || staff.length === 0) {
+      return success({
+        barbers: [],
+        total: 0
+      })
+    }
+
+    // Format the response
     const formattedBarbers = staff.map(staffMember => ({
-      id: staffMember.user.id,
-      name: staffMember.user.name,
-      email: staffMember.user.email,
-      phone: staffMember.user.phone,
-      avatar_url: staffMember.user.avatar_url,
+      id: staffMember.profiles?.id || staffMember.user_id,
+      name: staffMember.profiles?.full_name || null,
+      email: staffMember.profiles?.email || null,
+      phone: staffMember.profiles?.phone || null,
+      avatar_url: staffMember.profiles?.avatar_url || null,
       role: staffMember.role,
       commission_rate: staffMember.commission_rate,
       is_active: staffMember.is_active,
       started_at: staffMember.started_at,
       barbershop_id: staffMember.barbershop_id,
-      barbershop_name: staffMember.barbershop.name,
-      business_hours: staffMember.barbershop.business_hours
+      barbershop_name: staffMember.barbershops?.name || null,
+      business_hours: staffMember.barbershops?.business_hours || null
     }))
 
-    return NextResponse.json({
-      barbers,
-      total: barbers.length
+    return success({
+      barbers: formattedBarbers,
+      total: formattedBarbers.length
     })
 
   } catch (error) {
-    console.error('Unexpected error in GET /api/barbers:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    // Errors from authenticateBarberOrOwner are already HTTP responses
+    if (error instanceof Response || error?.status) {
+      return error
+    }
+
+    console.error('[Barbers API] Unexpected error:', error)
+    return serverError('Internal server error', error)
   }
 }
