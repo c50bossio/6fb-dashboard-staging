@@ -1,5 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse} from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
+
+export const dynamic = 'force-dynamic'
 
 /**
  * No-Show Revenue Impact Analytics API

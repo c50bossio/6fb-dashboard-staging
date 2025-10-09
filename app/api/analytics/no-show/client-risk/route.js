@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * No-Show Client Risk Analytics API
  * GET /api/analytics/no-show/client-risk
