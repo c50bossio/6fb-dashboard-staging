@@ -18,18 +18,21 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import NoShowAnalyticsDashboard from '@/components/analytics/NoShowAnalyticsDashboard'
-import AutomationSettings from '@/components/booking/AutomationSettings'
-import ClientCareFlow from '@/components/booking/ClientCareFlow'
-import ClientHistoryTracker from '@/components/booking/ClientHistoryTracker'
-import GoodClientBenefitsManager from '@/components/booking/GoodClientBenefitsManager'
-import SimplifiedClientBenefits from '@/components/booking/SimplifiedClientBenefits'
-import BookingRulesSetup from '@/components/onboarding/BookingRulesSetup'
-import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
+import Dynamic from 'next/dynamic'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { OnboardingProvider } from '@/contexts/OnboardingContext'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { cn } from '@/lib/utils'
+
+// Dynamic imports with SSR disabled to prevent build-time serialization issues
+const NoShowAnalyticsDashboard = Dynamic(() => import('@/components/analytics/NoShowAnalyticsDashboard'), { ssr: false })
+const AutomationSettings = Dynamic(() => import('@/components/booking/AutomationSettings'), { ssr: false })
+const ClientCareFlow = Dynamic(() => import('@/components/booking/ClientCareFlow'), { ssr: false })
+const ClientHistoryTracker = Dynamic(() => import('@/components/booking/ClientHistoryTracker'), { ssr: false })
+const GoodClientBenefitsManager = Dynamic(() => import('@/components/booking/GoodClientBenefitsManager'), { ssr: false })
+const SimplifiedClientBenefits = Dynamic(() => import('@/components/booking/SimplifiedClientBenefits'), { ssr: false })
+const BookingRulesSetup = Dynamic(() => import('@/components/onboarding/BookingRulesSetup'), { ssr: false })
+const OnboardingStepBanner = Dynamic(() => import('@/components/onboarding/OnboardingStepBanner'), { ssr: false })
 
 export default function BookingRulesPage() {
   const { user, profile, supabase } = useAuth()
@@ -59,7 +62,7 @@ export default function BookingRulesPage() {
   const [showCareFlow, setShowCareFlow] = useState(false)
   const [showBlockedClientsModal, setShowBlockedClientsModal] = useState(false)
   const [blockedClients, setBlockedClients] = useState([])
-  const [selectedClients, setSelectedClients] = useState(new Set())
+  const [selectedClients, setSelectedClients] = useState([])
   
   // Client benefits mode - default to simplified for new users
   const [useSimplifiedBenefits, setUseSimplifiedBenefits] = useState(true)
@@ -179,16 +182,16 @@ export default function BookingRulesPage() {
 
   // Bulk operations for blocked clients
   const handleBulkUnblock = async () => {
-    if (selectedClients.size === 0) return
-    
-    if (!confirm(`Are you sure you want to unblock ${selectedClients.size} client(s)? This will reset their strike counts.`)) {
+    if (selectedClients.length === 0) return
+
+    if (!confirm(`Are you sure you want to unblock ${selectedClients.length} client(s)? This will reset their strike counts.`)) {
       return
     }
-    
+
     setBulkActionLoading(true)
-    
+
     try {
-      const promises = Array.from(selectedClients).map(clientId => {
+      const promises = selectedClients.map(clientId => {
         const client = blockedClients.find(c => c.client_id === clientId)
         return fetch('/api/no-show/strikes', {
           method: 'PUT',
@@ -205,10 +208,10 @@ export default function BookingRulesPage() {
       
       setNotification({
         type: 'success',
-        message: `Successfully unblocked ${selectedClients.size} client(s)`
+        message: `Successfully unblocked ${selectedClients.length} client(s)`
       })
-      
-      setSelectedClients(new Set())
+
+      setSelectedClients([])
       loadBlockedClients() // Refresh the list
     } catch (err) {
       console.error('Bulk unblock error:', err)
@@ -222,21 +225,19 @@ export default function BookingRulesPage() {
   }
 
   const handleSelectAllClients = () => {
-    if (selectedClients.size === blockedClients.length) {
-      setSelectedClients(new Set())
+    if (selectedClients.length === blockedClients.length) {
+      setSelectedClients([])
     } else {
-      setSelectedClients(new Set(blockedClients.map(c => c.client_id)))
+      setSelectedClients(blockedClients.map(c => c.client_id))
     }
   }
 
   const handleSelectClient = (clientId) => {
-    const newSelection = new Set(selectedClients)
-    if (newSelection.has(clientId)) {
-      newSelection.delete(clientId)
+    if (selectedClients.includes(clientId)) {
+      setSelectedClients(selectedClients.filter(id => id !== clientId))
     } else {
-      newSelection.add(clientId)
+      setSelectedClients([...selectedClients, clientId])
     }
-    setSelectedClients(newSelection)
   }
 
   const loadBookingRules = async () => {
@@ -921,16 +922,16 @@ export default function BookingRulesPage() {
                     <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
                       <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mr-2" />
                       Blocked Clients ({blockedClients.length})
-                      {selectedClients.size > 0 && (
+                      {selectedClients.length > 0 && (
                         <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
-                          {selectedClients.size} selected
+                          {selectedClients.length} selected
                         </span>
                       )}
                     </h3>
                     <button
                       onClick={() => {
                         setShowBlockedClientsModal(false)
-                        setSelectedClients(new Set())
+                        setSelectedClients([])
                       }}
                       className="text-gray-400 hover:text-gray-600"
                     >
@@ -954,7 +955,7 @@ export default function BookingRulesPage() {
                           <label className="flex items-center">
                             <input
                               type="checkbox"
-                              checked={blockedClients.length > 0 && selectedClients.size === blockedClients.length}
+                              checked={blockedClients.length > 0 && selectedClients.length === blockedClients.length}
                               onChange={handleSelectAllClients}
                               className="rounded border-gray-300 text-olive-600 focus:ring-olive-500"
                             />
@@ -962,18 +963,18 @@ export default function BookingRulesPage() {
                               Select All ({blockedClients.length})
                             </span>
                           </label>
-                          
-                          {selectedClients.size > 0 && (
+
+                          {selectedClients.length > 0 && (
                             <div className="flex items-center space-x-2 ml-4">
                               <button
                                 onClick={handleBulkUnblock}
                                 disabled={bulkActionLoading}
                                 className="px-3 py-1 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                {bulkActionLoading ? 'Unblocking...' : `Unblock ${selectedClients.size}`}
+                                {bulkActionLoading ? 'Unblocking...' : `Unblock ${selectedClients.length}`}
                               </button>
                               <button
-                                onClick={() => setSelectedClients(new Set())}
+                                onClick={() => setSelectedClients([])}
                                 className="px-3 py-1 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-200 rounded-md hover:bg-gray-200"
                               >
                                 Clear Selection
@@ -990,7 +991,7 @@ export default function BookingRulesPage() {
                               <div className="flex items-center">
                                 <input
                                   type="checkbox"
-                                  checked={selectedClients.has(client.client_id)}
+                                  checked={selectedClients.includes(client.client_id)}
                                   onChange={() => handleSelectClient(client.client_id)}
                                   className="rounded border-gray-300 text-olive-600 focus:ring-olive-500 mr-4"
                                 />
