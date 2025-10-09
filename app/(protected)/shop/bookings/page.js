@@ -40,15 +40,22 @@ export default function ShopBookingsManagement() {
   const loadBookingsData = async () => {
     try {
       const params = new URLSearchParams({
-        date: selectedDate,
+        start_date: selectedDate,
+        end_date: selectedDate,
         ...(filterBarber !== 'all' && { barber_id: filterBarber })
       })
-      
+
       const response = await fetch(`/api/shop/schedule?${params}`)
       if (response.ok) {
         const data = await response.json()
         setAppointments(data.appointments || [])
-        setSummary(data.summary || {})
+        // Map new API metrics structure to frontend summary structure
+        setSummary({
+          total_appointments: data.metrics?.total_appointments || 0,
+          completed: data.metrics?.completed_appointments || 0,
+          confirmed: data.appointments?.filter(a => a.status === 'pending').length || 0,
+          total_revenue: data.metrics?.revenue_total || 0
+        })
       }
     } catch (error) {
       console.error('Error loading bookings:', error)
@@ -60,6 +67,7 @@ export default function ShopBookingsManagement() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed': return 'text-green-700 bg-green-100'
+      case 'pending': return 'text-olive-700 bg-olive-100'
       case 'confirmed': return 'text-olive-700 bg-olive-100'
       case 'in_progress': return 'text-yellow-700 bg-yellow-100'
       case 'cancelled': return 'text-red-700 bg-red-100'
@@ -71,6 +79,7 @@ export default function ShopBookingsManagement() {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'completed': return CheckCircleIcon
+      case 'pending': return ClockIcon
       case 'confirmed': return ClockIcon
       case 'in_progress': return ArrowPathIcon
       case 'cancelled': return XCircleIcon
@@ -81,7 +90,9 @@ export default function ShopBookingsManagement() {
 
   const filteredAppointments = appointments.filter(apt => {
     if (filterStatus !== 'all' && apt.status !== filterStatus) return false
-    if (searchTerm && !apt.customer_name.toLowerCase().includes(searchTerm.toLowerCase())) return false
+    // Handle customer data from new API structure
+    const customerName = apt.customer?.name || apt.customer_name || ''
+    if (searchTerm && !customerName.toLowerCase().includes(searchTerm.toLowerCase())) return false
     return true
   })
 
@@ -242,42 +253,42 @@ export default function ShopBookingsManagement() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2">
                           <p className="text-lg font-medium text-gray-900 dark:text-card-foreground">
-                            {appointment.customer_name}
+                            {appointment.customer?.name || appointment.customer_name || 'Unknown'}
                           </p>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
                             <StatusIcon className="h-3 w-3 mr-1" />
                             {appointment.status.replace('_', ' ')}
                           </span>
                         </div>
-                        
+
                         <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-300">
                           <span className="flex items-center">
                             <ClockIcon className="h-4 w-4 mr-1" />
-                            {new Date(appointment.start_time).toLocaleTimeString('en-US', { 
-                              hour: 'numeric', 
+                            {new Date(appointment.start_time).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
                               minute: '2-digit',
-                              hour12: true 
-                            })} - {new Date(appointment.end_time).toLocaleTimeString('en-US', { 
-                              hour: 'numeric', 
+                              hour12: true
+                            })} - {new Date(appointment.end_time).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
                               minute: '2-digit',
-                              hour12: true 
+                              hour12: true
                             })}
                           </span>
                           <span className="flex items-center">
                             <ScissorsIcon className="h-4 w-4 mr-1" />
-                            {appointment.barber_name}
+                            {appointment.barber?.full_name || appointment.barber_name || 'Unknown'}
                           </span>
                           <span className="flex items-center">
                             <MapPinIcon className="h-4 w-4 mr-1" />
-                            {appointment.service_name}
+                            {appointment.service?.name || appointment.service_name || 'Unknown'}
                           </span>
                         </div>
-                        
-                        {appointment.customer_phone && (
+
+                        {(appointment.customer?.phone || appointment.customer_phone) && (
                           <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-300">
                             <span className="flex items-center">
                               <PhoneIcon className="h-4 w-4 mr-1" />
-                              {appointment.customer_phone}
+                              {appointment.customer?.phone || appointment.customer_phone}
                             </span>
                           </div>
                         )}
@@ -286,8 +297,12 @@ export default function ShopBookingsManagement() {
 
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
-                        <p className="text-lg font-semibold text-gray-900 dark:text-card-foreground">${appointment.price}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-300">{appointment.duration_minutes} min</p>
+                        <p className="text-lg font-semibold text-gray-900 dark:text-card-foreground">
+                          ${appointment.service?.price || appointment.price || 0}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-300">
+                          {appointment.service?.duration_minutes || appointment.duration_minutes || 0} min
+                        </p>
                       </div>
                       
                       <div className="flex space-x-2">

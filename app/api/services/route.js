@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
+import { success, error as apiError, serverError } from '@/lib/api-response'
 
 // Demo barbershop ID constant - matches Supabase UUID
 const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
@@ -20,19 +21,14 @@ const serviceSchema = z.object({
 // GET /api/services - Fetch services
 export async function GET(request) {
   try {
-    const supabase = createClient()
-    
-    // Get user session
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const supabase = await createClient()
 
     const { searchParams } = new URL(request.url)
     const barbershop_id = searchParams.get('barbershop_id')
     const category = searchParams.get('category')
     const active_only = searchParams.get('active_only') !== 'false'
 
+    // Build query with filters
     let query = supabase
       .from('services')
       .select(`
@@ -42,173 +38,75 @@ export async function GET(request) {
       .order('category', { ascending: true })
       .order('name', { ascending: true })
 
+    // Filter by barbershop_id (RLS security)
     if (barbershop_id) {
       query = query.eq('barbershop_id', barbershop_id)
     }
-    
+
+    // Filter by category
     if (category) {
       query = query.eq('category', category)
     }
 
+    // Filter by active status
     if (active_only) {
       query = query.eq('is_active', true)
     }
 
+    // Execute database query
     const { data: services, error } = await query
 
+    // Handle database errors
     if (error) {
-      console.warn('Database query failed, using mock data:', error.message)
-      
-      // Mock services data for demo/development
-      const mockServices = [
-        {
-          id: 'service-001',
-          name: 'Classic Haircut',
-          description: 'Traditional haircut with scissors and clippers',
-          price: 35,
-          duration_minutes: 30,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Hair'
-        },
-        {
-          id: 'service-002',
-          name: 'Fade Cut',
-          description: 'Modern fade haircut with precise blending',
-          price: 45,
-          duration_minutes: 45,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Hair'
-        },
-        {
-          id: 'service-003',
-          name: 'Beard Trim',
-          description: 'Professional beard shaping and trimming',
-          price: 25,
-          duration_minutes: 20,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Beard'
-        },
-        {
-          id: 'service-004',
-          name: 'Hot Towel Shave',
-          description: 'Luxury hot towel shave with straight razor',
-          price: 50,
-          duration_minutes: 45,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Shave'
-        },
-        {
-          id: 'service-005',
-          name: 'Hair & Beard Combo',
-          description: 'Complete haircut and beard grooming package',
-          price: 60,
-          duration_minutes: 60,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Package'
-        }
-      ]
-
-      // Filter by active status and category
-      let finalServices = active_only ? mockServices.filter(s => s.is_active) : mockServices
-      if (category) {
-        finalServices = finalServices.filter(s => s.category === category)
-      }
-      
-      // Group services by category
-      const servicesByCategory = finalServices.reduce((acc, service) => {
-        const cat = service.category || 'General'
-        if (!acc[cat]) {
-          acc[cat] = []
-        }
-        acc[cat].push(service)
-        return acc
-      }, {})
-
-      return NextResponse.json({
-        services: finalServices,
-        servicesByCategory,
-        total: finalServices.length
+      console.error('[Services API] Database query failed:', {
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        barbershop_id,
+        category,
+        active_only
       })
+
+      return serverError('Failed to fetch services from database', error)
     }
 
-    // If no services found, try to get default services from payment service
-    let finalServices = services
-    if (services.length === 0) {
-      try {
-        const { spawn } = await import('child_process')
-        const path = await import('path')
-        
-        const scriptPath = path.join(process.cwd(), 'scripts', 'payment_api.py')
-        const pythonProcess = spawn('python3', [scriptPath, 'get-services'], {
-          stdio: ['pipe', 'pipe', 'pipe']
-        })
+    // Return empty array if no services exist (NO MOCK DATA)
+    const finalServices = services || []
 
-        pythonProcess.stdin.write('{}')
-        pythonProcess.stdin.end()
-
-        const result = await new Promise((resolve) => {
-          let stdout = ''
-          pythonProcess.stdout.on('data', (data) => {
-            stdout += data.toString()
-          })
-          pythonProcess.on('close', () => {
-            try {
-              resolve(JSON.parse(stdout.trim()))
-            } catch {
-              resolve({ success: false, services: [] })
-            }
-          })
-        })
-
-        if (result.success && result.services) {
-          finalServices = result.services.map(service => ({
-            id: service.service_id,
-            name: service.name,
-            price: service.base_price,
-            duration_minutes: service.duration_minutes,
-            category: service.category,
-            deposit_required: service.deposit_required,
-            deposit_percentage: service.deposit_percentage,
-            is_active: true
-          }))
-        }
-      } catch (error) {
-        console.error('Failed to fetch default services:', error)
-      }
-    }
-
-    // Group services by category
+    // Group services by category for easier frontend consumption
     const servicesByCategory = finalServices.reduce((acc, service) => {
-      const category = service.category || 'General'
-      if (!acc[category]) {
-        acc[category] = []
+      const cat = service.category || 'General'
+      if (!acc[cat]) {
+        acc[cat] = []
       }
-      acc[category].push(service)
+      acc[cat].push(service)
       return acc
     }, {})
 
+    // Return successful response with metadata
     return NextResponse.json({
       services: finalServices,
       servicesByCategory,
-      total: finalServices.length
+      total: finalServices.length,
+      meta: {
+        barbershop_id,
+        category: category || 'all',
+        active_only,
+        has_services: finalServices.length > 0
+      }
     })
 
   } catch (error) {
-    console.error('Unexpected error in GET /api/services:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[Services API] Unexpected error:', error)
+    return serverError('Internal server error', error)
   }
 }
 
 // POST /api/services - Create new service
 export async function POST(request) {
   try {
-    const supabase = createClient()
-    
+    const supabase = await createClient()
+
     // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {

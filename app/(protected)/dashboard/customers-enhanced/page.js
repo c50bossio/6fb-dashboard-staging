@@ -66,76 +66,53 @@ export default function CustomersEnhancedPage() {
   const loadCustomers = async () => {
     try {
       setLoading(true)
-      
-      // For now, use demo data
-      const demoCustomers = [
-        {
-          id: 1,
-          name: 'John Smith',
-          email: 'john@example.com',
-          phone: '+1 (555) 123-4567',
-          total_visits: 12,
-          last_visit: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          total_spent: 480,
-          preferred_contact: 'email',
-          created_at: '2024-03-15',
-          notes: 'Prefers morning appointments, asks for Marcus',
-          rating: 5
-        },
-        {
-          id: 2,
-          name: 'Sarah Johnson',
-          email: 'sarah@example.com',
-          phone: '+1 (555) 234-5678',
-          total_visits: 6,
-          last_visit: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-          total_spent: 240,
-          preferred_contact: 'sms',
-          created_at: '2024-06-20',
-          notes: 'Likes beard trim with haircut',
-          rating: 4
-        },
-        {
-          id: 3,
-          name: 'Mike Wilson',
-          email: 'mike@example.com',
-          phone: '+1 (555) 345-6789',
-          total_visits: 15,
-          last_visit: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          total_spent: 750,
-          preferred_contact: 'phone',
-          created_at: '2023-12-10',
-          notes: 'VIP customer, monthly full service',
-          rating: 5
-        },
-        {
-          id: 4,
-          name: 'Emily Davis',
-          email: 'emily@example.com',
-          phone: '+1 (555) 456-7890',
-          total_visits: 3,
-          last_visit: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-          total_spent: 105,
-          preferred_contact: 'email',
-          created_at: '2024-11-01',
-          notes: 'New customer, referred by John Smith',
-          rating: 4
-        }
-      ]
+
+      // Fetch customers from API
+      const response = await fetch('/api/shop/customers')
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch customers')
+      }
+
+      const data = await response.json()
 
       // Add segment to each customer
-      const customersWithSegments = demoCustomers.map(customer => ({
+      const customersWithSegments = data.customers.map(customer => ({
         ...customer,
-        segment: getCustomerSegment(customer)
+        segment: getCustomerSegment(customer),
+        last_visit: customer.last_visit || customer.join_date
       }))
 
       setCustomers(customersWithSegments)
-      calculateStats(customersWithSegments)
+
+      // Use metrics from API instead of calculating locally
+      setStats({
+        total: data.metrics.total_customers,
+        newThisMonth: calculateNewThisMonth(customersWithSegments),
+        vipCount: data.metrics.vip_customers,
+        averageSpent: data.metrics.average_ltv
+      })
     } catch (error) {
       console.error('Error loading customers:', error)
+      // Show empty state on error
+      setCustomers([])
+      setStats({
+        total: 0,
+        newThisMonth: 0,
+        vipCount: 0,
+        averageSpent: 0
+      })
     } finally {
       setLoading(false)
     }
+  }
+
+  const calculateNewThisMonth = (customerList) => {
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    return customerList.filter(c =>
+      new Date(c.created_at) >= startOfMonth
+    ).length
   }
 
   const getCustomerSegment = (customer) => {
@@ -152,26 +129,6 @@ export default function CustomersEnhancedPage() {
     }
   }
 
-  const calculateStats = (customerList) => {
-    const now = new Date()
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    
-    const newThisMonth = customerList.filter(c => 
-      new Date(c.created_at) >= startOfMonth
-    ).length
-
-    const vipCount = customerList.filter(c => c.segment === 'vip').length
-    
-    const totalSpent = customerList.reduce((sum, c) => sum + c.total_spent, 0)
-    const averageSpent = customerList.length > 0 ? totalSpent / customerList.length : 0
-
-    setStats({
-      total: customerList.length,
-      newThisMonth,
-      vipCount,
-      averageSpent
-    })
-  }
 
   const filterCustomers = () => {
     let filtered = [...customers]
@@ -195,37 +152,75 @@ export default function CustomersEnhancedPage() {
   }
 
   const handleAddCustomer = async (customerData) => {
-    const newCustomer = {
-      id: Date.now(),
-      ...customerData,
-      total_visits: 0,
-      last_visit: null,
-      total_spent: 0,
-      created_at: new Date().toISOString(),
-      rating: 0
+    try {
+      const response = await fetch('/api/shop/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(customerData)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to create customer')
+        return
+      }
+
+      // Reload customers to get updated data
+      await loadCustomers()
+      setShowAddModal(false)
+    } catch (error) {
+      console.error('Error adding customer:', error)
+      alert('Failed to create customer')
     }
-    
-    newCustomer.segment = getCustomerSegment(newCustomer)
-    
-    setCustomers([...customers, newCustomer])
-    setShowAddModal(false)
-    calculateStats([...customers, newCustomer])
   }
 
   const handleUpdateCustomer = async (customerId, updates) => {
-    const updatedCustomers = customers.map(c => 
-      c.id === customerId ? { ...c, ...updates } : c
-    )
-    setCustomers(updatedCustomers)
-    setShowEditModal(false)
-    setSelectedCustomer(null)
+    try {
+      const response = await fetch(`/api/shop/customers/${customerId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updates)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        alert(errorData.error || 'Failed to update customer')
+        return
+      }
+
+      // Reload customers to get updated data
+      await loadCustomers()
+      setShowEditModal(false)
+      setSelectedCustomer(null)
+    } catch (error) {
+      console.error('Error updating customer:', error)
+      alert('Failed to update customer')
+    }
   }
 
   const handleDeleteCustomer = async (customerId) => {
-    if (confirm('Are you sure you want to delete this customer?')) {
-      const updatedCustomers = customers.filter(c => c.id !== customerId)
-      setCustomers(updatedCustomers)
-      calculateStats(updatedCustomers)
+    if (confirm('Are you sure you want to mark this customer as inactive?')) {
+      try {
+        const response = await fetch(`/api/shop/customers/${customerId}`, {
+          method: 'DELETE'
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          alert(errorData.error || 'Failed to delete customer')
+          return
+        }
+
+        // Reload customers to get updated data
+        await loadCustomers()
+      } catch (error) {
+        console.error('Error deleting customer:', error)
+        alert('Failed to delete customer')
+      }
     }
   }
 

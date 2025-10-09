@@ -431,3 +431,81 @@ CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON services FOR EACH ROW
 CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON appointments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_ai_sessions_updated_at BEFORE UPDATE ON ai_chat_sessions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_knowledge_base_updated_at BEFORE UPDATE ON ai_knowledge_base FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ==========================================
+-- CUSTOMER MANAGEMENT
+-- ==========================================
+-- Based on database/schemas/customers.sql
+-- Supports: Customer management, loyalty tracking, preferences
+
+CREATE TABLE IF NOT EXISTS customers (
+  -- Primary identification
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- Barbershop relationship (CRITICAL for RLS filtering)
+  barbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE NOT NULL,
+
+  -- Personal information
+  name TEXT NOT NULL,
+  email TEXT,
+  phone TEXT,
+  address TEXT,
+
+  -- Profile and membership
+  join_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  status TEXT NOT NULL DEFAULT 'active'
+    CHECK (status IN ('active', 'inactive', 'vip')),
+
+  -- Visit and spending analytics
+  total_visits INTEGER NOT NULL DEFAULT 0,
+  total_spent DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  last_visit DATE,
+
+  -- Customer preferences
+  preferred_barber_id UUID REFERENCES users(id),
+  notes TEXT,
+
+  -- Loyalty and engagement
+  loyalty_points INTEGER NOT NULL DEFAULT 0,
+
+  -- System fields
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  created_by UUID REFERENCES users(id),
+  updated_by UUID REFERENCES users(id),
+
+  -- Soft delete support
+  deleted_at TIMESTAMP WITH TIME ZONE,
+  deleted_by UUID REFERENCES users(id),
+
+  -- Unique constraint: email must be unique per barbershop (not globally)
+  UNIQUE(barbershop_id, email)
+);
+
+-- Customer indexes
+CREATE INDEX IF NOT EXISTS idx_customers_barbershop ON customers(barbershop_id)
+  WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email)
+  WHERE deleted_at IS NULL AND email IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone)
+  WHERE deleted_at IS NULL AND phone IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_customers_name ON customers(name)
+  WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_customers_status ON customers(status)
+  WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_customers_last_visit ON customers(last_visit DESC)
+  WHERE deleted_at IS NULL;
+
+CREATE INDEX IF NOT EXISTS idx_customers_preferred_barber ON customers(preferred_barber_id)
+  WHERE deleted_at IS NULL AND preferred_barber_id IS NOT NULL;
+
+-- Customer triggers
+CREATE TRIGGER update_customers_updated_at
+  BEFORE UPDATE ON customers
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
