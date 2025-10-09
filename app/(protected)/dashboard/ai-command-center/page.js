@@ -67,7 +67,7 @@ function AIPerformanceMetricsWidget({ onRefresh, loading }) {
         <button
           onClick={fetchOptimizationMetrics}
           disabled={widgetLoading}
-          className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+          className="p-2 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 transition-colors"
         >
           <ArrowPathIcon className={`h-4 w-4 ${widgetLoading ? 'animate-spin' : ''}`} />
         </button>
@@ -90,17 +90,17 @@ function AIPerformanceMetricsWidget({ onRefresh, loading }) {
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-white rounded p-2">
+              <div className="bg-white dark:bg-card rounded p-2">
                 <div className="text-emerald-600 font-bold text-lg">
                   {metrics.optimization_results?.response_time_improvement?.current_avg_ms || 126}ms
                 </div>
-                <div className="text-gray-600">Current Avg</div>
+                <div className="text-gray-600 dark:text-gray-300">Current Avg</div>
               </div>
-              <div className="bg-white rounded p-2">
+              <div className="bg-white dark:bg-card rounded p-2">
                 <div className="text-emerald-600 font-bold text-lg">
                   {metrics.optimization_results?.response_time_improvement?.improvement_percentage || 85}%
                 </div>
-                <div className="text-gray-600">Improvement</div>
+                <div className="text-gray-600 dark:text-gray-300">Improvement</div>
               </div>
             </div>
           </div>
@@ -114,23 +114,23 @@ function AIPerformanceMetricsWidget({ onRefresh, loading }) {
               </span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="bg-white rounded p-2">
+              <div className="bg-white dark:bg-card rounded p-2">
                 <div className="text-olive-600 font-bold text-lg">
                   {metrics.optimization_results?.cache_performance?.hit_rate || 78.5}%
                 </div>
-                <div className="text-gray-600">Hit Rate</div>
+                <div className="text-gray-600 dark:text-gray-300">Hit Rate</div>
               </div>
-              <div className="bg-white rounded p-2">
+              <div className="bg-white dark:bg-card rounded p-2">
                 <div className="text-olive-600 font-bold text-lg">
                   {metrics.optimization_results?.cache_performance?.cost_savings_percentage || 82.3}%
                 </div>
-                <div className="text-gray-600">Cost Savings</div>
+                <div className="text-gray-600 dark:text-gray-300">Cost Savings</div>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-gray-500 dark:text-gray-300">
           <ChartBarIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">Loading AI metrics...</p>
         </div>
@@ -232,7 +232,7 @@ function AgentSelector({ selectedAgent, onAgentChange, isLoading }) {
       </button>
       
       {showDropdown && (
-        <div className="absolute top-full left-0 mt-1 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 mt-1 w-80 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
           {AVAILABLE_AGENTS.map((agent) => {
             const AgentIcon = agent.icon
             return (
@@ -250,8 +250,8 @@ function AgentSelector({ selectedAgent, onAgentChange, isLoading }) {
                   <AgentIcon className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm text-gray-900 mb-1">{agent.name}</div>
-                  <div className="text-xs text-gray-600 line-clamp-2">{agent.description}</div>
+                  <div className="font-medium text-sm text-gray-900 dark:text-card-foreground mb-1">{agent.name}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2">{agent.description}</div>
                 </div>
                 {selectedAgent === agent.id && (
                   <div className="text-olive-600 mt-1">
@@ -318,7 +318,7 @@ function QuickActions({ onQuickAction, isLoading }) {
 
   return (
     <div className="mb-8">
-      <h3 className="text-sm font-semibold text-gray-700 mb-4 flex items-center">
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center">
         <BoltIcon className="h-4 w-4 mr-2 text-olive-600" />
         Quick Actions
       </h3>
@@ -336,7 +336,7 @@ function QuickActions({ onQuickAction, isLoading }) {
               tabIndex={isLoading ? -1 : 0}
             >
               <div className="flex flex-col items-center space-y-2">
-                <div className="p-2 rounded-lg bg-white/20 group-hover:bg-white/30 transition-colors">
+                <div className="p-2 rounded-lg bg-white/20 group-hover:bg-white dark:bg-card/30 transition-colors">
                   <IconComponent className="h-5 w-5" />
                 </div>
                 <span className="text-xs font-semibold text-center leading-tight">{action.label}</span>
@@ -381,7 +381,7 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
         </div>
 
         {/* Message Content */}
-        <div className="bg-white rounded-2xl rounded-tl-md px-5 py-4 border border-gray-200 shadow-sm">
+        <div className="bg-white dark:bg-card rounded-2xl rounded-tl-md px-5 py-4 border border-gray-200 dark:border-border shadow-sm">
           {isLoading ? (
             <div className="flex items-center space-x-2">
               <div className="flex space-x-1">
@@ -389,7 +389,7 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
-              <span className="text-sm text-gray-500">AI is thinking...</span>
+              <span className="text-sm text-gray-500 dark:text-gray-300">AI is thinking...</span>
             </div>
           ) : (
             <div>
@@ -586,11 +586,11 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
   }, [conversations, searchQuery, sortBy])
   
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-64 bg-white dark:bg-card border-r border-gray-200 dark:border-border flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 dark:border-border">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-gray-900">Conversations</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-card-foreground">Conversations</h2>
           <div className="flex space-x-2">
             {conversations.length > 0 && (
               <button
@@ -654,13 +654,13 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
+          <div className="p-4 text-center text-gray-500 dark:text-gray-300">
             <ChatBubbleLeftRightIcon className="h-12 w-12 mx-auto text-gray-300 mb-2" />
             <p className="text-sm">No conversations yet</p>
             <p className="text-xs">Start chatting to see history</p>
           </div>
         ) : filteredAndSortedConversations.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
+          <div className="p-4 text-center text-gray-500 dark:text-gray-300">
             <div className="text-4xl mb-2">🔍</div>
             <p className="text-sm">No conversations found</p>
             <p className="text-xs">Try a different search term</p>
@@ -686,7 +686,7 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
                   <div className="font-medium text-sm truncate pr-16">
                     {conversation.title || 'New Conversation'}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">
                     {conversation.messages?.length || 0} messages
                   </div>
                   <div className="text-xs text-gray-400 mt-1">
@@ -706,19 +706,19 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
                       className="p-1 hover:bg-gray-200 rounded transition-colors"
                       title="More actions"
                     >
-                      <EllipsisVerticalIcon className="h-4 w-4 text-gray-600" />
+                      <EllipsisVerticalIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                     </button>
                     
                     {/* Dropdown Menu */}
                     {showDropdown === conversation.id && (
-                      <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                      <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg shadow-lg z-10">
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             exportConversation(conversation, 'txt')
                             setShowDropdown(null)
                           }}
-                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg"
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-muted rounded-t-lg"
                         >
                           <ArrowDownTrayIcon className="h-4 w-4" />
                           <span>Export as TXT</span>
@@ -729,12 +729,12 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
                             exportConversation(conversation, 'json')
                             setShowDropdown(null)
                           }}
-                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:bg-muted"
                         >
                           <ArrowDownTrayIcon className="h-4 w-4" />
                           <span>Export as JSON</span>
                         </button>
-                        <div className="border-t border-gray-200"></div>
+                        <div className="border-t border-gray-200 dark:border-border"></div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -759,9 +759,9 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm">
+          <div className="bg-white dark:bg-card rounded-lg p-6 max-w-sm">
             <h3 className="text-lg font-semibold mb-2">Confirm Delete</h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               {deleteTarget === 'all' 
                 ? 'Are you sure you want to delete all conversations? This cannot be undone.'
                 : 'Are you sure you want to delete this conversation?'}
@@ -769,7 +769,7 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 rounded-lg"
               >
                 Cancel
               </button>
@@ -1255,15 +1255,15 @@ What would you like to work on today?`,
       {/* Main Chat Interface */}
       <main className="flex-1 flex flex-col" role="main" aria-label="AI Command Center Chat Interface">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="bg-white dark:bg-card border-b border-gray-200 dark:border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="bg-gradient-to-r from-olive-500 to-gold-600 w-10 h-10 rounded-lg flex items-center justify-center">
                 <SparklesIcon className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">AI Command Center</h1>
-                <p className="text-sm text-gray-500">Your intelligent business assistant</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-card-foreground">AI Command Center</h1>
+                <p className="text-sm text-gray-500 dark:text-gray-300">Your intelligent business assistant</p>
               </div>
             </div>
             
@@ -1285,7 +1285,7 @@ What would you like to work on today?`,
               
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 title="Toggle conversation history"
               >
                 <ClockIcon className="h-5 w-5" />
@@ -1293,7 +1293,7 @@ What would you like to work on today?`,
               
               <button
                 onClick={() => setShowInsights(!showInsights)}
-                className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:text-gray-300 p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 title="Toggle AI insights"
               >
                 <ChartBarIcon className="h-5 w-5" />
@@ -1322,8 +1322,8 @@ What would you like to work on today?`,
         </div>
 
         {/* Messages Area */}
-        <section 
-          className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white"
+        <section
+          className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800"
           aria-label="Conversation messages"
           role="region"
           aria-live="polite"
@@ -1352,7 +1352,7 @@ What would you like to work on today?`,
         </section>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 p-6 shadow-lg">
+        <div className="bg-white dark:bg-card border-t border-gray-200 dark:border-border p-6 shadow-lg">
           <div className="max-w-4xl mx-auto">
             <form onSubmit={handleSubmit} className="flex items-end space-x-3" role="form">
             <div className="flex-1">
@@ -1412,7 +1412,7 @@ What would you like to work on today?`,
               </div>
             </div>
             
-            <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
+            <div className="flex items-center justify-between mt-4 text-xs text-gray-500 dark:text-gray-300">
               <div className="flex items-center space-x-4">
                 <span>💡 Try: "Analyze my revenue" or "Launch a marketing campaign"</span>
               </div>
@@ -1426,13 +1426,13 @@ What would you like to work on today?`,
 
       {/* AI Insights Sidebar */}
       {showInsights && (
-        <aside className="w-80 bg-white border-l border-gray-200 flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-gray-200">
+        <aside className="w-80 bg-white dark:bg-card border-l border-gray-200 dark:border-border flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-gray-200 dark:border-border">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">AI Insights</h2>
+              <h2 className="font-semibold text-gray-900 dark:text-card-foreground">AI Insights</h2>
               <button
                 onClick={() => setShowInsights(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300"
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>

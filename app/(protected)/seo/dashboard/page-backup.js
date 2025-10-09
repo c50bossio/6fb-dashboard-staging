@@ -209,27 +209,27 @@ export default function SEODashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-olive-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading AI SEO Dashboard...</p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">Loading AI SEO Dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-card shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground flex items-center gap-3">
                 <ChartBarIconSolid className="h-8 w-8 text-olive-600" />
                 AI SEO Dashboard
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
                 Automated SEO optimization and competitive intelligence
               </p>
             </div>
@@ -257,11 +257,11 @@ export default function SEODashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Organic Traffic</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Organic Traffic</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {formatNumber(seoData.overview.organic_traffic)}
                 </p>
               </div>
@@ -272,11 +272,11 @@ export default function SEODashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Keywords Ranking</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Keywords Ranking</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {seoData.overview.ranking_keywords}
                 </p>
               </div>
@@ -284,11 +284,11 @@ export default function SEODashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Avg Position</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg Position</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {seoData.overview.avg_position}
                 </p>
               </div>
@@ -296,11 +296,11 @@ export default function SEODashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Content Pieces</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Content Pieces</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {seoData.overview.content_pieces}
                 </p>
               </div>
@@ -308,11 +308,11 @@ export default function SEODashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Review Score</p>
-                <p className="text-2xl font-bold text-gray-900 flex items-center gap-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Review Score</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground flex items-center gap-1">
                   {seoData.overview.review_score}
                   <StarIconSolid className="h-5 w-5 text-yellow-400" />
                 </p>
@@ -323,7 +323,7 @@ export default function SEODashboard() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-8">
+        <div className="border-b border-gray-200 dark:border-border mb-8">
           <nav className="-mb-px flex space-x-8">
             {[
               { id: 'overview', name: 'Overview', icon: ChartBarIcon },
@@ -352,9 +352,9 @@ export default function SEODashboard() {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* AI Recommendations */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border">
+            <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground flex items-center gap-2">
                   <StarIcon className="h-5 w-5 text-amber-800" />
                   AI Recommendations
                 </h3>
@@ -368,8 +368,8 @@ export default function SEODashboard() {
                   <div key={index} className="border-l-4 border-indigo-400 pl-4 py-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-gray-900">{rec.title}</h4>
-                        <p className="text-gray-600 text-sm">{rec.description}</p>
+                        <h4 className="font-medium text-gray-900 dark:text-card-foreground">{rec.title}</h4>
+                        <p className="text-gray-600 dark:text-gray-300 text-sm">{rec.description}</p>
                       </div>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(rec.priority)}`}>
                         {rec.priority}
@@ -381,8 +381,8 @@ export default function SEODashboard() {
             </div>
 
             {/* Traffic Chart */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">
+            <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6">
                 Traffic Trends
               </h3>
               
@@ -399,7 +399,7 @@ export default function SEODashboard() {
                         style={{ height: `${(data.total / 3500) * 200}px`, opacity: 0.7 }}
                       ></div>
                     </div>
-                    <span className="text-xs text-gray-600 mt-2">{data.month}</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300 mt-2">{data.month}</span>
                   </div>
                 ))}
               </div>
@@ -407,11 +407,11 @@ export default function SEODashboard() {
               <div className="flex items-center justify-center gap-6 mt-4">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-olive-500 rounded"></div>
-                  <span className="text-sm text-gray-600">Organic Traffic</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Organic Traffic</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-olive-300 rounded"></div>
-                  <span className="text-sm text-gray-600">Total Traffic</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Total Traffic</span>
                 </div>
               </div>
             </div>
@@ -419,30 +419,30 @@ export default function SEODashboard() {
         )}
 
         {activeTab === 'keywords' && (
-          <div className="bg-white rounded-xl shadow-sm border">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Keyword Rankings</h3>
-              <p className="text-gray-600">Track your most important keyword positions</p>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border">
+            <div className="p-6 border-b border-gray-200 dark:border-border">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Keyword Rankings</h3>
+              <p className="text-gray-600 dark:text-gray-300">Track your most important keyword positions</p>
             </div>
             
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-muted">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keyword</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Position</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Change</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Volume</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Difficulty</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Keyword</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Position</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Change</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Volume</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Difficulty</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {seoData.keyword_rankings.map((keyword, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    <tr key={index} className="hover:bg-gray-50 dark:bg-muted">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-card-foreground">
                         {keyword.keyword}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
+                      <td className="px-6 py-4 text-sm text-gray-900 dark:text-card-foreground">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           keyword.position <= 3 ? 'bg-moss-100 text-moss-900' :
                           keyword.position <= 10 ? 'bg-amber-100 text-amber-900' :
@@ -462,8 +462,8 @@ export default function SEODashboard() {
                           {keyword.change === 0 && '—'}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{keyword.volume}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{keyword.difficulty}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{keyword.volume}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{keyword.difficulty}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -473,12 +473,12 @@ export default function SEODashboard() {
         )}
 
         {activeTab === 'content' && (
-          <div className="bg-white rounded-xl shadow-sm border">
-            <div className="p-6 border-b border-gray-200">
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border">
+            <div className="p-6 border-b border-gray-200 dark:border-border">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">AI Content Calendar</h3>
-                  <p className="text-gray-600">Automated content planning and performance tracking</p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">AI Content Calendar</h3>
+                  <p className="text-gray-600 dark:text-gray-300">Automated content planning and performance tracking</p>
                 </div>
                 <button className="flex items-center gap-2 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700">
                   <PencilSquareIcon className="h-4 w-4" />
@@ -490,12 +490,12 @@ export default function SEODashboard() {
             <div className="p-6">
               <div className="space-y-4">
                 {seoData.content_calendar.map((content) => (
-                  <div key={content.id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={content.id} className="border border-gray-200 dark:border-border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
                           {getPerformanceIcon(content.performance)}
-                          <h4 className="font-medium text-gray-900">{content.title}</h4>
+                          <h4 className="font-medium text-gray-900 dark:text-card-foreground">{content.title}</h4>
                         </div>
                         <span className="px-2 py-1 bg-olive-100 text-olive-800 text-xs rounded-full">
                           {content.type}
@@ -510,13 +510,13 @@ export default function SEODashboard() {
                         }`}>
                           {content.status}
                         </span>
-                        <span className="text-sm text-gray-500">{content.publish_date}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-300">{content.publish_date}</span>
                       </div>
                     </div>
                     
                     <div className="flex flex-wrap gap-2">
                       {content.keywords.map((keyword, index) => (
-                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 dark:text-gray-300 text-xs rounded">
                           {keyword}
                         </span>
                       ))}
@@ -529,22 +529,22 @@ export default function SEODashboard() {
         )}
 
         {activeTab === 'competitors' && (
-          <div className="bg-white rounded-xl shadow-sm border">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Competitive Analysis</h3>
-              <p className="text-gray-600">Monitor competitor performance and identify opportunities</p>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border">
+            <div className="p-6 border-b border-gray-200 dark:border-border">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Competitive Analysis</h3>
+              <p className="text-gray-600 dark:text-gray-300">Monitor competitor performance and identify opportunities</p>
             </div>
             
             <div className="p-6">
               <div className="space-y-6">
                 {seoData.competitors.map((competitor) => (
-                  <div key={competitor.id} className="border border-gray-200 rounded-lg p-6">
+                  <div key={competitor.id} className="border border-gray-200 dark:border-border rounded-lg p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h4 className="font-semibold text-gray-900">{competitor.name}</h4>
-                        <p className="text-gray-600">Position #{competitor.position} • {formatNumber(competitor.estimated_traffic)} traffic</p>
+                        <h4 className="font-semibold text-gray-900 dark:text-card-foreground">{competitor.name}</h4>
+                        <p className="text-gray-600 dark:text-gray-300">Position #{competitor.position} • {formatNumber(competitor.estimated_traffic)} traffic</p>
                       </div>
-                      <span className="text-sm text-gray-500">Posts {competitor.content_frequency}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-300">Posts {competitor.content_frequency}</span>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -552,7 +552,7 @@ export default function SEODashboard() {
                         <h5 className="font-medium text-green-700 mb-2">Strengths</h5>
                         <ul className="space-y-1">
                           {competitor.strengths.map((strength, index) => (
-                            <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
+                            <li key={index} className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
                               <CheckCircleIcon className="h-4 w-4 text-green-500" />
                               {strength}
                             </li>
@@ -564,7 +564,7 @@ export default function SEODashboard() {
                         <h5 className="font-medium text-red-700 mb-2">Weaknesses</h5>
                         <ul className="space-y-1">
                           {competitor.weaknesses.map((weakness, index) => (
-                            <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
+                            <li key={index} className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
                               <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />
                               {weakness}
                             </li>
@@ -582,26 +582,26 @@ export default function SEODashboard() {
         {activeTab === 'opportunities' && (
           <div className="space-y-6">
             {seoData.opportunities.map((opportunity) => (
-              <div key={opportunity.id} className="bg-white rounded-xl p-6 shadow-sm border">
+              <div key={opportunity.id} className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${
                       opportunity.priority === 'high' ? 'bg-red-500' :
                       opportunity.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
                     }`}></div>
-                    <h3 className="font-semibold text-gray-900">{opportunity.title}</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-card-foreground">{opportunity.title}</h3>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(opportunity.priority)}`}>
                       {opportunity.priority} priority
                     </span>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-300">
                     <span>Impact: {opportunity.impact}</span>
                     <span>Effort: {opportunity.effort}</span>
                   </div>
                 </div>
                 
-                <p className="text-gray-600 mb-4">{opportunity.description}</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">{opportunity.description}</p>
                 
                 {opportunity.keywords.length > 0 && (
                   <div className="flex flex-wrap gap-2">

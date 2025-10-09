@@ -63,7 +63,7 @@ function LeaderboardRank({ rank, barber, category, showDetails = false }) {
       case 1: return <TrophyIcon className="h-6 w-6 text-amber-800" />
       case 2: return <TrophySolidIcon className="h-6 w-6 text-gray-400" />
       case 3: return <TrophySolidIcon className="h-6 w-6 text-amber-700" />
-      default: return <span className="text-lg font-bold text-gray-500">#{position}</span>
+      default: return <span className="text-lg font-bold text-gray-500 dark:text-gray-300">#{position}</span>
     }
   }
 
@@ -81,16 +81,16 @@ function LeaderboardRank({ rank, barber, category, showDetails = false }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           {/* Rank Position */}
-          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white border-2 border-current">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white dark:bg-card border-2 border-current">
             {getRankIcon(rank)}
           </div>
           
           {/* Barber Info */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{barber.name}</h3>
-            <p className="text-sm text-gray-600">{barber.location}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">{barber.name}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">{barber.location}</p>
             {showDetails && (
-              <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+              <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500 dark:text-gray-300">
                 <span className="flex items-center">
                   <BanknotesIcon className="h-3 w-3 mr-1" />
                   ${barber.revenue.toLocaleString()}
@@ -110,21 +110,21 @@ function LeaderboardRank({ rank, barber, category, showDetails = false }) {
         
         {/* Category Score */}
         <div className="text-right">
-          <div className="text-2xl font-bold text-gray-900">
+          <div className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
             {category === 'revenue' && `$${barber.revenue.toLocaleString()}`}
             {category === 'customers' && barber.customers}
             {category === 'rating' && barber.rating}
             {category === 'growth' && `+${barber.growth}%`}
             {category === 'overall' && barber.overallScore}
           </div>
-          <div className="text-sm text-gray-600 capitalize">{category}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300 capitalize">{category}</div>
         </div>
       </div>
       
       {/* Achievement Badges */}
       {barber.achievements && barber.achievements.length > 0 && (
-        <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-gray-200">
-          <span className="text-xs text-gray-600 mr-2">Recent:</span>
+        <div className="flex items-center space-x-2 mt-3 pt-3 border-t border-gray-200 dark:border-border">
+          <span className="text-xs text-gray-600 dark:text-gray-300 mr-2">Recent:</span>
           {barber.achievements.slice(0, 3).map((achievement, idx) => (
             <AchievementBadge key={idx} achievement={achievement} earned={true} size="small" />
           ))}
@@ -199,7 +199,7 @@ function AICoachingInsights({ selectedBarber }) {
                 Personalized Coaching - {selectedBarber ? selectedBarber.name : 'Team Focus'}
               </span>
             </div>
-            <p className="text-sm text-gray-700 mb-3">
+            <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
               {insights.response?.substring(0, 180)}...
             </p>
             
@@ -207,13 +207,13 @@ function AICoachingInsights({ selectedBarber }) {
               <div className="space-y-3">
                 <h4 className="text-sm font-medium text-indigo-800">🎯 Next Level Actions:</h4>
                 {insights.agent_details.recommendations.slice(0, 3).map((rec, idx) => (
-                  <div key={idx} className="bg-white rounded-lg p-3 border border-indigo-100">
+                  <div key={idx} className="bg-white dark:bg-card rounded-lg p-3 border border-indigo-100">
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 w-6 h-6 bg-olive-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
                         {idx + 1}
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900 mb-1">
+                        <div className="text-sm font-medium text-gray-900 dark:text-card-foreground mb-1">
                           {rec.length > 80 ? rec.substring(0, 80) + '...' : rec}
                         </div>
                         <div className="text-xs text-olive-600">
@@ -232,7 +232,7 @@ function AICoachingInsights({ selectedBarber }) {
               <h4 className="text-sm font-medium text-yellow-800 mb-2">🏆 Achievement Path</h4>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Current Level:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Current Level:</span>
                   <span className="font-medium">
                     {selectedBarber.overallScore >= 90 ? 'Elite' :
                      selectedBarber.overallScore >= 80 ? 'Expert' :
@@ -240,7 +240,7 @@ function AICoachingInsights({ selectedBarber }) {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Next Milestone:</span>
+                  <span className="text-gray-600 dark:text-gray-300">Next Milestone:</span>
                   <span className="font-medium text-yellow-700">
                     {selectedBarber.overallScore < 70 ? 'Advanced' :
                      selectedBarber.overallScore < 80 ? 'Expert' :
@@ -252,7 +252,7 @@ function AICoachingInsights({ selectedBarber }) {
           )}
         </div>
       ) : (
-        <div className="text-center py-6 text-gray-500">
+        <div className="text-center py-6 text-gray-500 dark:text-gray-300">
           <AcademicCapIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">Loading AI coaching insights...</p>
         </div>
@@ -294,7 +294,7 @@ function GamificationProgress({ barber }) {
       {/* Level Progress Bar */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">Progress to Next Level</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300">Progress to Next Level</span>
           <span className="text-sm font-medium text-gold-600">{currentLevelProgress}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
@@ -324,7 +324,7 @@ function GamificationProgress({ barber }) {
       </div>
 
       {/* Next Achievement */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-border">
         <div className="bg-gold-50 border border-gold-200 rounded-lg p-3">
           <h4 className="text-sm font-medium text-gold-800 mb-2">🎯 Next Achievement</h4>
           {(() => {
@@ -333,8 +333,8 @@ function GamificationProgress({ barber }) {
               <div className="flex items-center space-x-3">
                 <span className="text-2xl">{nextAchievement.icon}</span>
                 <div>
-                  <div className="text-sm font-medium text-gray-900">{nextAchievement.name}</div>
-                  <div className="text-xs text-gray-600">{nextAchievement.description}</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-card-foreground">{nextAchievement.name}</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-300">{nextAchievement.description}</div>
                 </div>
               </div>
             ) : (
@@ -470,11 +470,11 @@ function GamifiedLeaderboard() {
     <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-card-foreground flex items-center">
           <TrophyIcon className="h-8 w-8 mr-3 text-amber-800" />
           Gamified Leaderboards & Coaching
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-gray-600 dark:text-gray-300 mt-2">
           Performance rankings, achievements, and AI-powered coaching insights
         </p>
       </div>
@@ -504,11 +504,11 @@ function GamifiedLeaderboard() {
         {/* Leaderboard Rankings */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-card-foreground flex items-center">
               <FireIcon className="h-5 w-5 mr-2 text-red-500" />
               {categories.find(c => c.id === activeCategory)?.name} Rankings
             </h2>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
               Updated: {new Date().toLocaleDateString()}
             </div>
           </div>
@@ -547,25 +547,25 @@ function GamifiedLeaderboard() {
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Total Team Revenue</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Total Team Revenue</span>
                 <span className="font-semibold text-green-600">
                   ${barberData.reduce((sum, b) => sum + b.revenue, 0).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Average Rating</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Average Rating</span>
                 <span className="font-semibold text-amber-800">
                   {(barberData.reduce((sum, b) => sum + b.rating, 0) / barberData.length).toFixed(1)} ⭐
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Total Customers</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Total Customers</span>
                 <span className="font-semibold text-olive-600">
                   {barberData.reduce((sum, b) => sum + b.customers, 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Top Performers</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Top Performers</span>
                 <span className="font-semibold text-gold-600">
                   {barberData.filter(b => b.overallScore >= 80).length}/5
                 </span>

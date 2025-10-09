@@ -27,27 +27,27 @@ const AIDashboard = () => (
   <div className="space-y-6">
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* AI Agent Status Cards */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
         <div className="flex items-center space-x-3 mb-4">
           <div className="h-10 w-10 bg-olive-100 rounded-full flex items-center justify-center">
             <SparklesIcon className="h-6 w-6 text-olive-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Marcus</h3>
-            <p className="text-sm text-gray-600">Master Coach</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Marcus</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Master Coach</p>
           </div>
         </div>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Conversations Today</span>
+            <span className="text-gray-600 dark:text-gray-300">Conversations Today</span>
             <span className="font-medium">127</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Avg Confidence</span>
+            <span className="text-gray-600 dark:text-gray-300">Avg Confidence</span>
             <span className="font-medium">94%</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Status</span>
+            <span className="text-gray-600 dark:text-gray-300">Status</span>
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
               Active
             </span>
@@ -55,27 +55,27 @@ const AIDashboard = () => (
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
         <div className="flex items-center space-x-3 mb-4">
           <div className="h-10 w-10 bg-gold-100 rounded-full flex items-center justify-center">
             <ChatBubbleLeftRightIcon className="h-6 w-6 text-gold-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Sophia</h3>
-            <p className="text-sm text-gray-600">Marketing Expert</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">Sophia</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Marketing Expert</p>
           </div>
         </div>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Campaigns Generated</span>
+            <span className="text-gray-600 dark:text-gray-300">Campaigns Generated</span>
             <span className="font-medium">23</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Success Rate</span>
+            <span className="text-gray-600 dark:text-gray-300">Success Rate</span>
             <span className="font-medium">87%</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Status</span>
+            <span className="text-gray-600 dark:text-gray-300">Status</span>
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
               Active
             </span>
@@ -83,27 +83,27 @@ const AIDashboard = () => (
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
         <div className="flex items-center space-x-3 mb-4">
           <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
             <ChartBarIcon className="h-6 w-6 text-green-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">David</h3>
-            <p className="text-sm text-gray-600">Operations Manager</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">David</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Operations Manager</p>
           </div>
         </div>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Optimizations</span>
+            <span className="text-gray-600 dark:text-gray-300">Optimizations</span>
             <span className="font-medium">45</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Cost Savings</span>
+            <span className="text-gray-600 dark:text-gray-300">Cost Savings</span>
             <span className="font-medium">$2,340</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Status</span>
+            <span className="text-gray-600 dark:text-gray-300">Status</span>
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
               Active
             </span>
@@ -113,34 +113,34 @@ const AIDashboard = () => (
     </div>
 
     {/* Recent AI Activity */}
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">Recent AI Activity</h3>
+    <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
+      <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">Recent AI Activity</h3>
       <div className="space-y-4">
         <div className="flex items-center space-x-4 p-4 bg-olive-50 rounded-lg">
           <SparklesIcon className="h-5 w-5 text-olive-600" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">Marcus provided scheduling optimization</p>
-            <p className="text-xs text-gray-600">Suggested moving 3 appointments to increase daily revenue by $180</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">Marcus provided scheduling optimization</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">Suggested moving 3 appointments to increase daily revenue by $180</p>
           </div>
-          <span className="text-xs text-gray-500">2 min ago</span>
+          <span className="text-xs text-gray-500 dark:text-gray-300">2 min ago</span>
         </div>
         
         <div className="flex items-center space-x-4 p-4 bg-gold-50 rounded-lg">
           <ChatBubbleLeftRightIcon className="h-5 w-5 text-gold-600" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">Sophia created new social media campaign</p>
-            <p className="text-xs text-gray-600">Generated 5 Instagram posts for summer promotions</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">Sophia created new social media campaign</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">Generated 5 Instagram posts for summer promotions</p>
           </div>
-          <span className="text-xs text-gray-500">15 min ago</span>
+          <span className="text-xs text-gray-500 dark:text-gray-300">15 min ago</span>
         </div>
         
         <div className="flex items-center space-x-4 p-4 bg-green-50 rounded-lg">
           <ChartBarIcon className="h-5 w-5 text-green-600" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900">David analyzed inventory levels</p>
-            <p className="text-xs text-gray-600">Recommended reordering hair products for next week</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-card-foreground">David analyzed inventory levels</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">Recommended reordering hair products for next week</p>
           </div>
-          <span className="text-xs text-gray-500">1 hour ago</span>
+          <span className="text-xs text-gray-500 dark:text-gray-300">1 hour ago</span>
         </div>
       </div>
     </div>
@@ -178,7 +178,7 @@ const AIPerformance = () => {
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white border border-gray-200 rounded-lg p-6">
+            <div key={i} className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
               <div className="animate-pulse">
                 <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                 <div className="h-6 bg-gray-200 rounded w-1/2"></div>
@@ -199,7 +199,7 @@ const AIPerformance = () => {
       {/* Optimization Results Header */}
       <div className="bg-gradient-to-r from-green-50 to-olive-50 border border-green-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">🚀 Optimization Results</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">🚀 Optimization Results</h3>
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
             Live Data
           </span>
@@ -207,33 +207,33 @@ const AIPerformance = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
           <div>
             <div className="text-2xl font-bold text-green-600">85%</div>
-            <div className="text-xs text-gray-600">Response Time Improvement</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">Response Time Improvement</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-olive-600">82.3%</div>
-            <div className="text-xs text-gray-600">Cost Savings</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">Cost Savings</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-gold-600">100%</div>
-            <div className="text-xs text-gray-600">Security Detection</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">Security Detection</div>
           </div>
           <div>
             <div className="text-2xl font-bold text-orange-600">88.9%</div>
-            <div className="text-xs text-gray-600">Test Success Rate</div>
+            <div className="text-xs text-gray-600 dark:text-gray-300">Test Success Rate</div>
           </div>
         </div>
       </div>
 
       {/* Performance Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <RocketLaunchIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Response Time</dt>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">Response Time</dt>
                 <dd className="text-lg font-medium text-green-600">
                   {data.current_avg_ms ? `${Math.round(data.current_avg_ms)}ms` : '126ms'}
                 </dd>
@@ -245,14 +245,14 @@ const AIPerformance = () => {
           </div>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <SparklesIcon className="h-6 w-6 text-olive-600" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Cache Hit Rate</dt>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">Cache Hit Rate</dt>
                 <dd className="text-lg font-medium text-olive-600">
                   {data.hit_rate || '78.5'}%
                 </dd>
@@ -264,14 +264,14 @@ const AIPerformance = () => {
           </div>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <ChatBubbleLeftRightIcon className="h-6 w-6 text-gold-600" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Avg Confidence</dt>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">Avg Confidence</dt>
                 <dd className="text-lg font-medium text-gold-600">
                   {metrics.ai_orchestrator?.confidence_score?.value 
                     ? `${Math.round(metrics.ai_orchestrator.confidence_score.value * 100)}%` 
@@ -284,14 +284,14 @@ const AIPerformance = () => {
           </div>
         </div>
         
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <ChartBarIcon className="h-6 w-6 text-orange-600" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Success Rate</dt>
+                <dt className="text-sm font-medium text-gray-500 dark:text-gray-300 truncate">Success Rate</dt>
                 <dd className="text-lg font-medium text-orange-600">
                   {data.overall_rate || '88.9'}%
                 </dd>
@@ -305,18 +305,18 @@ const AIPerformance = () => {
       </div>
       
       {/* Active Optimizations */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Active Optimization Strategies</h3>
+      <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">Active Optimization Strategies</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {optimizations.map((opt, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-muted rounded-lg">
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
                 <div>
-                  <div className="text-sm font-medium text-gray-900 capitalize">
+                  <div className="text-sm font-medium text-gray-900 dark:text-card-foreground capitalize">
                     {opt.strategy?.replace('_', ' ') || 'Unknown Strategy'}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 dark:text-gray-300">
                     {opt.enabled ? 'Active' : 'Disabled'}
                   </div>
                 </div>
@@ -330,8 +330,8 @@ const AIPerformance = () => {
       </div>
 
       {/* Performance Trends */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Performance Impact</h3>
+      <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">Performance Impact</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
             <div className="flex items-center">
@@ -380,61 +380,61 @@ const AIPerformance = () => {
 // Knowledge Base component
 const KnowledgeBase = () => (
   <div className="space-y-6">
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-medium text-gray-900">Business Knowledge</h3>
-        <button className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-card-foreground">Business Knowledge</h3>
+        <button className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-gray-600 dark:bg-muted">
           <BookOpenIcon className="h-4 w-4 mr-2" />
           Add Knowledge
         </button>
       </div>
       
       <div className="space-y-4">
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="border border-gray-200 dark:border-border rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-900">Peak Hour Strategies</h4>
+            <h4 className="text-sm font-medium text-gray-900 dark:text-card-foreground">Peak Hour Strategies</h4>
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-olive-100 text-olive-800">
               Operations
             </span>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Best practices for managing high-traffic periods and maximizing revenue during peak hours.
           </p>
           <div className="flex items-center justify-between mt-3">
-            <span className="text-xs text-gray-500">Confidence: 94%</span>
-            <span className="text-xs text-gray-500">Last updated: 2 days ago</span>
+            <span className="text-xs text-gray-500 dark:text-gray-300">Confidence: 94%</span>
+            <span className="text-xs text-gray-500 dark:text-gray-300">Last updated: 2 days ago</span>
           </div>
         </div>
         
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="border border-gray-200 dark:border-border rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-900">Customer Retention Tactics</h4>
+            <h4 className="text-sm font-medium text-gray-900 dark:text-card-foreground">Customer Retention Tactics</h4>
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
               Marketing
             </span>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Proven strategies for increasing customer loyalty and repeat visit rates.
           </p>
           <div className="flex items-center justify-between mt-3">
-            <span className="text-xs text-gray-500">Confidence: 91%</span>
-            <span className="text-xs text-gray-500">Last updated: 1 week ago</span>
+            <span className="text-xs text-gray-500 dark:text-gray-300">Confidence: 91%</span>
+            <span className="text-xs text-gray-500 dark:text-gray-300">Last updated: 1 week ago</span>
           </div>
         </div>
         
-        <div className="border border-gray-200 rounded-lg p-4">
+        <div className="border border-gray-200 dark:border-border rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-900">Service Pricing Models</h4>
+            <h4 className="text-sm font-medium text-gray-900 dark:text-card-foreground">Service Pricing Models</h4>
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gold-100 text-gold-800">
               Revenue
             </span>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             Dynamic pricing strategies based on demand, time of day, and service complexity.
           </p>
           <div className="flex items-center justify-between mt-3">
-            <span className="text-xs text-gray-500">Confidence: 87%</span>
-            <span className="text-xs text-gray-500">Last updated: 3 days ago</span>
+            <span className="text-xs text-gray-500 dark:text-gray-300">Confidence: 87%</span>
+            <span className="text-xs text-gray-500 dark:text-gray-300">Last updated: 3 days ago</span>
           </div>
         </div>
       </div>
@@ -489,7 +489,7 @@ const AITestCenter = () => {
       {/* Testing Overview */}
       <div className="bg-gradient-to-r from-olive-50 to-green-50 border border-olive-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">🧪 Automated Testing Pipeline</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">🧪 Automated Testing Pipeline</h3>
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
             {stats.test_success_rate || '88.9'}% Success Rate
           </span>
@@ -497,22 +497,22 @@ const AITestCenter = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{stats.test_success_rate || '88.9'}%</div>
-            <div className="text-sm text-gray-600">Success Rate</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Success Rate</div>
             <div className="text-xs text-gray-400">↑ from 66.7%</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-olive-600">45</div>
-            <div className="text-sm text-gray-600">Total Tests</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Total Tests</div>
             <div className="text-xs text-gray-400">40 passed, 5 failed</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-gold-600">5</div>
-            <div className="text-sm text-gray-600">Test Suites</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Test Suites</div>
             <div className="text-xs text-gray-400">All active</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-600">85.2%</div>
-            <div className="text-sm text-gray-600">Avg Coverage</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">Avg Coverage</div>
             <div className="text-xs text-gray-400">Quality assured</div>
           </div>
         </div>
@@ -520,15 +520,15 @@ const AITestCenter = () => {
 
       {/* Test Suite Results */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h4 className="text-lg font-medium text-gray-900 mb-4">Test Suite Status</h4>
+        <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
+          <h4 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">Test Suite Status</h4>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
               <div className="flex items-center">
                 <CheckCircleIcon className="h-5 w-5 text-green-500 mr-3" />
                 <div>
-                  <div className="font-medium text-gray-900">AI System Unit Tests</div>
-                  <div className="text-sm text-gray-500">5/5 tests passed</div>
+                  <div className="font-medium text-gray-900 dark:text-card-foreground">AI System Unit Tests</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">5/5 tests passed</div>
                 </div>
               </div>
               <div className="text-green-600 font-bold">100%</div>
@@ -538,8 +538,8 @@ const AITestCenter = () => {
               <div className="flex items-center">
                 <CheckCircleIcon className="h-5 w-5 text-green-500 mr-3" />
                 <div>
-                  <div className="font-medium text-gray-900">Security Tests</div>
-                  <div className="text-sm text-gray-500">5/5 tests passed</div>
+                  <div className="font-medium text-gray-900 dark:text-card-foreground">Security Tests</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">5/5 tests passed</div>
                 </div>
               </div>
               <div className="text-green-600 font-bold">100%</div>
@@ -549,8 +549,8 @@ const AITestCenter = () => {
               <div className="flex items-center">
                 <ExclamationTriangleIcon className="h-5 w-5 text-amber-800 mr-3" />
                 <div>
-                  <div className="font-medium text-gray-900">AI Integration Tests</div>
-                  <div className="text-sm text-gray-500">19/20 tests passed</div>
+                  <div className="font-medium text-gray-900 dark:text-card-foreground">AI Integration Tests</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">19/20 tests passed</div>
                 </div>
               </div>
               <div className="text-amber-800 font-bold">95%</div>
@@ -560,8 +560,8 @@ const AITestCenter = () => {
               <div className="flex items-center">
                 <CheckCircleIcon className="h-5 w-5 text-green-500 mr-3" />
                 <div>
-                  <div className="font-medium text-gray-900">Performance Tests</div>
-                  <div className="text-sm text-gray-500">7/8 tests passed</div>
+                  <div className="font-medium text-gray-900 dark:text-card-foreground">Performance Tests</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">7/8 tests passed</div>
                 </div>
               </div>
               <div className="text-green-600 font-bold">87.5%</div>
@@ -571,8 +571,8 @@ const AITestCenter = () => {
               <div className="flex items-center">
                 <ExclamationTriangleIcon className="h-5 w-5 text-amber-800 mr-3" />
                 <div>
-                  <div className="font-medium text-gray-900">E2E Tests</div>
-                  <div className="text-sm text-gray-500">6/7 tests passed</div>
+                  <div className="font-medium text-gray-900 dark:text-card-foreground">E2E Tests</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">6/7 tests passed</div>
                 </div>
               </div>
               <div className="text-amber-800 font-bold">85.7%</div>
@@ -580,11 +580,11 @@ const AITestCenter = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h4 className="text-lg font-medium text-gray-900 mb-4">Quality Metrics</h4>
+        <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
+          <h4 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">Quality Metrics</h4>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-gray-700">Overall Test Coverage</span>
+              <span className="text-gray-700 dark:text-gray-300">Overall Test Coverage</span>
               <div className="flex items-center">
                 <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
                   <div className="bg-green-600 h-2 rounded-full" style={{width: '85.2%'}}></div>
@@ -594,7 +594,7 @@ const AITestCenter = () => {
             </div>
             
             <div className="flex items-center justify-between">
-              <span className="text-gray-700">Security Test Coverage</span>
+              <span className="text-gray-700 dark:text-gray-300">Security Test Coverage</span>
               <div className="flex items-center">
                 <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
                   <div className="bg-green-600 h-2 rounded-full" style={{width: '95.1%'}}></div>
@@ -604,7 +604,7 @@ const AITestCenter = () => {
             </div>
             
             <div className="flex items-center justify-between">
-              <span className="text-gray-700">Performance Test Coverage</span>
+              <span className="text-gray-700 dark:text-gray-300">Performance Test Coverage</span>
               <div className="flex items-center">
                 <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
                   <div className="bg-orange-600 h-2 rounded-full" style={{width: '76.8%'}}></div>
@@ -613,13 +613,13 @@ const AITestCenter = () => {
               </div>
             </div>
             
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-gray-200 dark:border-border">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Last Test Run</span>
+                <span className="text-gray-600 dark:text-gray-300">Last Test Run</span>
                 <span className="font-medium">2 hours ago</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">CI/CD Pipeline</span>
+                <span className="text-gray-600 dark:text-gray-300">CI/CD Pipeline</span>
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
                   Active
                 </span>
@@ -630,15 +630,15 @@ const AITestCenter = () => {
       </div>
 
       {/* Testing Pipeline Status */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Automated Testing Pipeline</h4>
+      <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-6">
+        <h4 className="text-lg font-medium text-gray-900 dark:text-card-foreground mb-4">Automated Testing Pipeline</h4>
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-muted rounded-lg">
             <div className="flex items-center">
               <div className="w-2 h-2 bg-green-500 rounded-full mr-3 animate-pulse"></div>
               <div>
-                <div className="font-medium text-gray-900">GitHub Actions Workflow</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-gray-900 dark:text-card-foreground">GitHub Actions Workflow</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">
                   Automated testing on every push and PR
                 </div>
               </div>
@@ -646,12 +646,12 @@ const AITestCenter = () => {
             <div className="text-green-600 font-bold">Running</div>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-muted rounded-lg">
             <div className="flex items-center">
               <div className="w-2 h-2 bg-olive-500 rounded-full mr-3"></div>
               <div>
-                <div className="font-medium text-gray-900">Quality Gate Checks</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-gray-900 dark:text-card-foreground">Quality Gate Checks</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">
                   95% success rate threshold enforced
                 </div>
               </div>
@@ -659,12 +659,12 @@ const AITestCenter = () => {
             <div className="text-olive-600 font-bold">✓ Passed</div>
           </div>
           
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-muted rounded-lg">
             <div className="flex items-center">
               <div className="w-2 h-2 bg-gold-500 rounded-full mr-3"></div>
               <div>
-                <div className="font-medium text-gray-900">Automated Reports</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-gray-900 dark:text-card-foreground">Automated Reports</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">
                   HTML, JSON, and JUnit format generation
                 </div>
               </div>
@@ -715,7 +715,7 @@ export default function AIToolsPage() {
       ],
       component: (
         <TabContent loading={false}>
-          <div className="bg-white border border-gray-200 rounded-lg">
+          <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg">
             <Suspense fallback={<div className="animate-pulse h-96 bg-gray-100 rounded"></div>}>
               <AIAgentChat />
             </Suspense>
@@ -768,7 +768,7 @@ export default function AIToolsPage() {
       ],
       component: (
         <TabContent loading={false}>
-          <div className="bg-white border border-gray-200 rounded-lg">
+          <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg">
             <Suspense fallback={<div className="animate-pulse h-96 bg-gray-100 rounded"></div>}>
               <AITrainingInterface />
             </Suspense>

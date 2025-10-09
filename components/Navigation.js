@@ -306,7 +306,7 @@ export default function Navigation() {
       <div className={`${collapsed ? 'px-2' : 'px-4'} py-4`}>
         {!collapsed && (
           <div className="mb-4">
-            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-3">
             AI-POWERED MODULES
             </h2>
           </div>
@@ -367,7 +367,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-tight">
                           {item.description}
                         </p>
                       )}
@@ -401,7 +401,7 @@ export default function Navigation() {
       <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
         {!collapsed && (
           <div className="mb-4">
-            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-3">
             CORE OPERATIONS
             </h2>
           </div>
@@ -430,7 +430,7 @@ export default function Navigation() {
                       <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
-                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                          isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100'
                         }`}>
                           {item.name}
                         </p>
@@ -465,7 +465,7 @@ export default function Navigation() {
       <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
         {!collapsed && (
           <div className="mb-4">
-            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-3">
               MARKETING
             </h2>
           </div>
@@ -530,7 +530,7 @@ export default function Navigation() {
         <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
           {!collapsed && (
             <div className="mb-4">
-              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-3">
                 BARBER OPERATIONS
               </h2>
             </div>
@@ -596,7 +596,7 @@ export default function Navigation() {
         <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
           {!collapsed && (
             <div className="mb-4">
-              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-3">
                 SHOP MANAGEMENT
               </h2>
             </div>
@@ -662,7 +662,7 @@ export default function Navigation() {
         <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
           {!collapsed && (
             <div className="mb-4">
-              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider mb-3">
                 ENTERPRISE OPERATIONS
               </h2>
             </div>

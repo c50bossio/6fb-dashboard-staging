@@ -123,13 +123,13 @@ function GMBIntegrationTab() {
   return (
     <div className="space-y-6">
       {/* Connection Status */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border">
+      <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground flex items-center gap-2">
               🏪 Google My Business Integration
             </h3>
-            <p className="text-gray-600">Connect your GMB account for automated review management and attribution</p>
+            <p className="text-gray-600 dark:text-gray-300">Connect your GMB account for automated review management and attribution</p>
           </div>
           
           <div className="flex items-center gap-3">
@@ -164,36 +164,36 @@ function GMBIntegrationTab() {
 
         {/* Features Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="border border-gray-200 rounded-lg p-4">
+          <div className="border border-gray-200 dark:border-border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">🤖</span>
-              <h4 className="font-medium text-gray-900">AI Attribution</h4>
+              <h4 className="font-medium text-gray-900 dark:text-card-foreground">AI Attribution</h4>
             </div>
-            <p className="text-sm text-gray-600">Automatically identify which barber each review mentions</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Automatically identify which barber each review mentions</p>
           </div>
           
-          <div className="border border-gray-200 rounded-lg p-4">
+          <div className="border border-gray-200 dark:border-border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">💬</span>
-              <h4 className="font-medium text-gray-900">Auto Responses</h4>
+              <h4 className="font-medium text-gray-900 dark:text-card-foreground">Auto Responses</h4>
             </div>
-            <p className="text-sm text-gray-600">Generate and post intelligent responses to reviews</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Generate and post intelligent responses to reviews</p>
           </div>
           
-          <div className="border border-gray-200 rounded-lg p-4">
+          <div className="border border-gray-200 dark:border-border rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">📊</span>
-              <h4 className="font-medium text-gray-900">Performance Tracking</h4>
+              <h4 className="font-medium text-gray-900 dark:text-card-foreground">Performance Tracking</h4>
             </div>
-            <p className="text-sm text-gray-600">Track individual barber review performance and ratings</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Track individual barber review performance and ratings</p>
           </div>
         </div>
       </div>
 
       {/* Recent Reviews with AI Attribution */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border">
+      <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">📝 Recent Reviews & AI Attribution</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">📝 Recent Reviews & AI Attribution</h3>
           <button className="text-olive-600 hover:text-olive-700 text-sm font-medium">
             View All Reviews
           </button>
@@ -201,7 +201,7 @@ function GMBIntegrationTab() {
 
         <div className="space-y-4">
           {mockReviews.map((review) => (
-            <div key={review.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
+            <div key={review.id} className="border border-gray-200 dark:border-border rounded-lg p-4 hover:bg-gray-50 dark:bg-muted">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-olive-100 rounded-full flex items-center justify-center">
@@ -210,12 +210,12 @@ function GMBIntegrationTab() {
                     </span>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900">{review.reviewer_name}</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-card-foreground">{review.reviewer_name}</h4>
                     <div className="flex items-center gap-2">
                       <div className="flex text-yellow-400">
                         {'★'.repeat(review.star_rating)}{'☆'.repeat(5 - review.star_rating)}
                       </div>
-                      <span className="text-sm text-gray-500">{review.review_date}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-300">{review.review_date}</span>
                     </div>
                   </div>
                 </div>
@@ -224,17 +224,17 @@ function GMBIntegrationTab() {
                   <div className={`px-2 py-1 rounded-full text-xs font-medium ${getConfidenceBadge(review.confidence)}`}>
                     {review.confidence} confidence
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                     Attributed to: <span className="font-medium">{review.attributed_barber}</span>
                   </p>
                 </div>
               </div>
               
-              <p className="text-gray-700 leading-relaxed">{review.review_text}</p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{review.review_text}</p>
               
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">AI Analysis:</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-300">AI Analysis:</span>
                   <span className="text-sm text-olive-600">
                     {review.attributed_barber !== 'Unknown' 
                       ? `Detected "${review.attributed_barber.split(' ')[0]}" mentioned in review`
@@ -253,45 +253,45 @@ function GMBIntegrationTab() {
       </div>
 
       {/* Barber Performance Summary */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">👥 Barber Review Performance</h3>
+      <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-6">👥 Barber Review Performance</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="border border-gray-200 rounded-lg p-4">
+          <div className="border border-gray-200 dark:border-border rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-gray-900">Marcus Johnson</h4>
-                <p className="text-sm text-gray-600">Senior Barber</p>
+                <h4 className="font-medium text-gray-900 dark:text-card-foreground">Marcus Johnson</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Senior Barber</p>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-green-600">4.9</div>
-                <div className="text-sm text-gray-500">12 reviews</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">12 reviews</div>
               </div>
             </div>
           </div>
           
-          <div className="border border-gray-200 rounded-lg p-4">
+          <div className="border border-gray-200 dark:border-border rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-gray-900">Tony Martinez</h4>
-                <p className="text-sm text-gray-600">Barber</p>
+                <h4 className="font-medium text-gray-900 dark:text-card-foreground">Tony Martinez</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Barber</p>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-green-600">4.7</div>
-                <div className="text-sm text-gray-500">8 reviews</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">8 reviews</div>
               </div>
             </div>
           </div>
           
-          <div className="border border-gray-200 rounded-lg p-4">
+          <div className="border border-gray-200 dark:border-border rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-medium text-gray-900">Alex Kim</h4>
-                <p className="text-sm text-gray-600">Junior Barber</p>
+                <h4 className="font-medium text-gray-900 dark:text-card-foreground">Alex Kim</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Junior Barber</p>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-amber-800">4.5</div>
-                <div className="text-sm text-gray-500">5 reviews</div>
+                <div className="text-sm text-gray-500 dark:text-gray-300">5 reviews</div>
               </div>
             </div>
           </div>
@@ -412,26 +412,26 @@ export default function SEODashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-olive-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 text-lg">Loading AI SEO Dashboard...</p>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">Loading AI SEO Dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-card shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-card-foreground flex items-center gap-3">
                 📊 AI SEO Dashboard
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-gray-600 dark:text-gray-300 mt-1">
                 Automated SEO optimization and competitive intelligence
               </p>
             </div>
@@ -458,11 +458,11 @@ export default function SEODashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Organic Traffic</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Organic Traffic</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {formatNumber(seoData.overview.organic_traffic)}
                 </p>
               </div>
@@ -472,11 +472,11 @@ export default function SEODashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Keywords Ranking</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Keywords Ranking</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {seoData.overview.ranking_keywords}
                 </p>
               </div>
@@ -484,11 +484,11 @@ export default function SEODashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Avg Position</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Avg Position</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {seoData.overview.avg_position}
                 </p>
               </div>
@@ -496,11 +496,11 @@ export default function SEODashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Content Pieces</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Content Pieces</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground">
                   {seoData.overview.content_pieces}
                 </p>
               </div>
@@ -508,11 +508,11 @@ export default function SEODashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow-sm border">
+          <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Review Score</p>
-                <p className="text-2xl font-bold text-gray-900 flex items-center gap-1">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Review Score</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-card-foreground flex items-center gap-1">
                   {seoData.overview.review_score} ⭐
                 </p>
               </div>
@@ -522,7 +522,7 @@ export default function SEODashboard() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-8">
+        <div className="border-b border-gray-200 dark:border-border mb-8">
           <nav className="-mb-px flex space-x-8">
             {[
               { id: 'overview', name: 'Overview', emoji: '📊' },
@@ -552,9 +552,9 @@ export default function SEODashboard() {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* AI Recommendations */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border">
+            <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground flex items-center gap-2">
                   🤖 AI Recommendations
                 </h3>
                 <button className="text-olive-600 hover:text-olive-700 text-sm font-medium">
@@ -567,8 +567,8 @@ export default function SEODashboard() {
                   <div key={index} className="border-l-4 border-indigo-400 pl-4 py-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-gray-900">{rec.title}</h4>
-                        <p className="text-gray-600 text-sm">{rec.description}</p>
+                        <h4 className="font-medium text-gray-900 dark:text-card-foreground">{rec.title}</h4>
+                        <p className="text-gray-600 dark:text-gray-300 text-sm">{rec.description}</p>
                       </div>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(rec.priority)}`}>
                         {rec.priority}
@@ -609,19 +609,19 @@ export default function SEODashboard() {
         )}
 
         {activeTab === 'keywords' && (
-          <div className="bg-white rounded-xl shadow-sm border">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">🔍 Keyword Rankings</h3>
-              <p className="text-gray-600">Track your most important keyword positions</p>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border">
+            <div className="p-6 border-b border-gray-200 dark:border-border">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground">🔍 Keyword Rankings</h3>
+              <p className="text-gray-600 dark:text-gray-300">Track your most important keyword positions</p>
             </div>
             
             <div className="p-6">
               <div className="space-y-4">
                 {seoData.keyword_rankings.map((keyword, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <div key={index} className="flex items-center justify-between p-4 border border-gray-200 dark:border-border rounded-lg hover:bg-gray-50 dark:bg-muted">
                     <div>
-                      <h4 className="font-medium text-gray-900">{keyword.keyword}</h4>
-                      <p className="text-sm text-gray-600">Volume: {keyword.volume} • Difficulty: {keyword.difficulty}</p>
+                      <h4 className="font-medium text-gray-900 dark:text-card-foreground">{keyword.keyword}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">Volume: {keyword.volume} • Difficulty: {keyword.difficulty}</p>
                     </div>
                     <div className="text-right">
                       <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
@@ -646,8 +646,8 @@ export default function SEODashboard() {
         )}
 
         {activeTab === 'content' && (
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">📅 AI Content Calendar</h3>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">📅 AI Content Calendar</h3>
             <div className="bg-olive-50 border border-olive-200 rounded-lg p-4">
               <h4 className="font-medium text-olive-800 mb-2">🎯 Content Strategy Generated</h4>
               <p className="text-olive-700">AI has planned 30+ content pieces including blog posts, GMB updates, and social media content optimized for local SEO.</p>
@@ -661,8 +661,8 @@ export default function SEODashboard() {
         )}
 
         {activeTab === 'competitors' && (
-          <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">👁️ Competitive Analysis</h3>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">👁️ Competitive Analysis</h3>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <h4 className="font-medium text-yellow-800 mb-2">🕵️ Competitors Analyzed</h4>
               <p className="text-yellow-700">AI analyzed 8 local competitors and identified key opportunities for ranking improvements and content gaps.</p>
@@ -681,8 +681,8 @@ export default function SEODashboard() {
 
         {activeTab === 'opportunities' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm border">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">🚀 SEO Opportunities</h3>
+            <div className="bg-white dark:bg-card rounded-xl p-6 shadow-sm border">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-card-foreground mb-4">🚀 SEO Opportunities</h3>
               
               <div className="space-y-4">
                 <div className="border-l-4 border-red-500 pl-4 py-2 bg-red-50">
