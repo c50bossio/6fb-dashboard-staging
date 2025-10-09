@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import React, { useState, useEffect } from 'react'
 import { validateRulesWithRealData } from '@/lib/booking-rules-engine/RealDataRuleValidator'
 import { getCurrentUserShopAnalytics } from '@/lib/business-analytics'

@@ -226,7 +226,7 @@ export default function BookingRulesPage() {
     }
   }
 
-  const handleSelectClient = (_clientId) => {
+  const handleSelectClient = (clientId) => {
     const newSelection = new Set(selectedClients)
     if (newSelection.has(clientId)) {
       newSelection.delete(clientId)
