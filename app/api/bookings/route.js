@@ -47,12 +47,12 @@ export async function GET(request) {
       .from('appointments')
       .select(`
         *,
-        customer:customers!appointments_customer_id_fkey(id, full_name, email, phone),
+        client:profiles!appointments_client_id_fkey(id, full_name, email, phone),
         barber:profiles!appointments_barber_id_fkey(id, full_name, email),
         service:services(id, name, description, duration_minutes, price),
         barbershop:barbershops(id, name, address, phone)
       `)
-      .order('start_time', { ascending: true })
+      .order('scheduled_at', { ascending: true })
       .range(offset, offset + limit - 1)
 
     if (barbershop_id) {
@@ -62,13 +62,13 @@ export async function GET(request) {
       query = query.eq('barber_id', barber_id)
     }
     if (client_id) {
-      query = query.eq('customer_id', client_id)
+      query = query.eq('client_id', client_id)
     }
     if (start_date) {
-      query = query.gte('start_time', start_date)
+      query = query.gte('scheduled_at', start_date)
     }
     if (end_date) {
-      query = query.lte('start_time', end_date)
+      query = query.lte('scheduled_at', end_date)
     }
     if (status) {
       query = query.eq('status', status.toUpperCase())
@@ -90,9 +90,9 @@ export async function GET(request) {
 
     if (barbershop_id) countQuery = countQuery.eq('barbershop_id', barbershop_id)
     if (barber_id) countQuery = countQuery.eq('barber_id', barber_id)
-    if (client_id) countQuery = countQuery.eq('customer_id', client_id)
-    if (start_date) countQuery = countQuery.gte('start_time', start_date)
-    if (end_date) countQuery = countQuery.lte('start_time', end_date)
+    if (client_id) countQuery = countQuery.eq('client_id', client_id)
+    if (start_date) countQuery = countQuery.gte('scheduled_at', start_date)
+    if (end_date) countQuery = countQuery.lte('scheduled_at', end_date)
     if (status) countQuery = countQuery.eq('status', status.toUpperCase())
 
     const { count, error: countError } = await countQuery
@@ -142,7 +142,7 @@ export async function POST(request) {
 
     const conflictCheck = await supabase
       .from('appointments')
-      .select('id, start_time, duration_minutes')
+      .select('id, scheduled_at, duration_minutes')
       .eq('barber_id', appointmentData.barber_id)
       .eq('status', 'CONFIRMED')
       .neq('id', 'ignore') // For future use in updates
@@ -156,9 +156,9 @@ export async function POST(request) {
     const newEnd = new Date(newStart.getTime() + appointmentData.duration_minutes * 60000)
 
     const hasConflict = conflictCheck.data.some(existing => {
-      const existingStart = new Date(existing.start_time)
+      const existingStart = new Date(existing.scheduled_at)
       const existingEnd = new Date(existingStart.getTime() + existing.duration_minutes * 60000)
-      
+
       return (newStart < existingEnd && newEnd > existingStart)
     })
 
@@ -173,10 +173,10 @@ export async function POST(request) {
       .from('appointments')
       .insert({
         barbershop_id: appointmentData.barbershop_id,
-        customer_id: appointmentData.client_id,
+        client_id: appointmentData.client_id,
         barber_id: appointmentData.barber_id,
         service_id: appointmentData.service_id,
-        start_time: appointmentData.scheduled_at,
+        scheduled_at: appointmentData.scheduled_at,
         duration_minutes: appointmentData.duration_minutes,
         price: total_amount,
         status: 'PENDING',
@@ -186,7 +186,7 @@ export async function POST(request) {
       })
       .select(`
         *,
-        customer:customers!appointments_customer_id_fkey(id, full_name, email, phone),
+        client:profiles!appointments_client_id_fkey(id, full_name, email, phone),
         barber:profiles!appointments_barber_id_fkey(id, full_name, email),
         service:services(id, name, description, duration_minutes, price),
         barbershop:barbershops(id, name, address, phone)
