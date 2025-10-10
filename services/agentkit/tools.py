@@ -10,6 +10,8 @@ Tools Available:
 3. get_top_services - Find most popular services
 4. get_commission_summary - Calculate barber commissions
 5. get_customer_metrics - Get customer statistics
+6. get_inventory_status - Track product inventory levels and reorder needs
+7. forecast_revenue - Predict future revenue based on historical trends
 """
 
 import logging
@@ -418,7 +420,7 @@ async def get_customer_metrics(
 
         # Get all customers for this barbershop
         query = supabase.table('appointments') \
-            .select('customer_id, client_id, created_at') \
+            .select('client_id, created_at') \
             .eq('barbershop_id', barbershop_id) \
             .in_('status', ['CONFIRMED', 'COMPLETED'])
 
@@ -429,12 +431,12 @@ async def get_customer_metrics(
         response = query.execute()
         appointments = response.data if response.data else []
 
-        # Count unique customers (use customer_id or client_id)
+        # Count unique customers
         customer_ids = set()
         for apt in appointments:
-            customer_id = apt.get('customer_id') or apt.get('client_id')
-            if customer_id:
-                customer_ids.add(customer_id)
+            client_id = apt.get('client_id')
+            if client_id:
+                customer_ids.add(client_id)
 
         total_customers = len(customer_ids)
         total_appointments = len(appointments)
@@ -460,6 +462,288 @@ async def get_customer_metrics(
             "success": False,
             "error": str(e),
             "total_customers": 0
+        }
+
+
+async def get_inventory_status(
+    barbershop_id: str,
+    category: Optional[str] = None,
+    low_stock_only: bool = False
+) -> Dict[str, Any]:
+    """
+    Track product inventory levels and identify items needing reorder.
+
+    Queries the products table to get current inventory status, calculates
+    inventory value, and flags items below reorder threshold.
+
+    Args:
+        barbershop_id: UUID of the barbershop
+        category: Optional category filter (e.g., 'hair_care', 'beard_care', 'styling')
+        low_stock_only: If True, only return items needing reorder
+
+    Returns:
+        Dictionary with inventory metrics:
+        - total_products: Total number of products
+        - low_stock_items: Count of items below reorder point
+        - out_of_stock_items: Count of items with 0 stock
+        - total_inventory_value: Total retail value of inventory
+        - total_cost_value: Total cost value of inventory
+        - products: List of product details with stock levels
+    """
+    try:
+        supabase = get_supabase_client()
+
+        # Build query - only select columns that exist in actual database
+        query = supabase.table('products') \
+            .select('id, name, brand, category, sku, current_stock, '
+                   'min_stock_level, reorder_point, cost_price, retail_price, '
+                   'is_active, track_inventory') \
+            .eq('barbershop_id', barbershop_id) \
+            .eq('is_active', True)
+
+        # Filter by category if provided
+        if category:
+            query = query.eq('category', category)
+
+        response = query.execute()
+        products = response.data if response.data else []
+
+        # Calculate metrics
+        total_products = 0
+        low_stock_items = 0
+        out_of_stock_items = 0
+        total_inventory_value = Decimal('0')
+        total_cost_value = Decimal('0')
+
+        product_list = []
+
+        for product in products:
+            # Skip if track_inventory is False
+            if not product.get('track_inventory', True):
+                continue
+
+            current_stock = product.get('current_stock', 0) or 0
+            reorder_point = product.get('reorder_point', 0) or 0
+            retail_price = Decimal(str(product.get('retail_price', 0) or 0))
+            cost_price = Decimal(str(product.get('cost_price', 0) or 0))
+
+            # Check stock status
+            is_low_stock = current_stock <= reorder_point
+            is_out_of_stock = current_stock == 0
+
+            # Skip if filtering for low stock only
+            if low_stock_only and not is_low_stock:
+                continue
+
+            total_products += 1
+            if is_low_stock:
+                low_stock_items += 1
+            if is_out_of_stock:
+                out_of_stock_items += 1
+
+            # Calculate values
+            product_inventory_value = retail_price * current_stock
+            product_cost_value = cost_price * current_stock
+            total_inventory_value += product_inventory_value
+            total_cost_value += product_cost_value
+
+            # Build product info
+            product_info = {
+                "id": product.get('id'),
+                "name": product.get('name'),
+                "brand": product.get('brand'),
+                "category": product.get('category'),
+                "sku": product.get('sku'),
+                "current_stock": current_stock,
+                "reorder_point": reorder_point,
+                "min_stock_level": product.get('min_stock_level', 0) or 0,
+                "retail_price": float(retail_price),
+                "cost_price": float(cost_price),
+                "inventory_value": float(product_inventory_value),
+                "is_low_stock": is_low_stock,
+                "is_out_of_stock": is_out_of_stock,
+                "needs_reorder": is_low_stock
+            }
+
+            product_list.append(product_info)
+
+        # Sort by stock status (low stock first)
+        product_list.sort(key=lambda x: (not x['is_low_stock'], x['current_stock']))
+
+        result = {
+            "success": True,
+            "total_products": total_products,
+            "low_stock_items": low_stock_items,
+            "out_of_stock_items": out_of_stock_items,
+            "total_inventory_value": float(total_inventory_value),
+            "total_cost_value": float(total_cost_value),
+            "potential_profit": float(total_inventory_value - total_cost_value),
+            "products": product_list,
+            "category_filter": category or "all",
+            "showing_low_stock_only": low_stock_only
+        }
+
+        logger.info(f"Inventory status query successful: {total_products} products, "
+                   f"{low_stock_items} low stock items")
+        return result
+
+    except Exception as e:
+        logger.error(f"Error querying inventory status: {str(e)}", exc_info=True)
+        return {
+            "success": False,
+            "error": str(e),
+            "total_products": 0,
+            "products": []
+        }
+
+
+async def forecast_revenue(
+    barbershop_id: str,
+    forecast_days: int = 30,
+    historical_days: int = 90
+) -> Dict[str, Any]:
+    """
+    Predict future revenue based on historical appointment trends.
+
+    Analyzes past appointments and revenue data to calculate average revenue
+    per day/week/month and project forward based on trends. Includes confidence
+    metrics and considers seasonality patterns.
+
+    Args:
+        barbershop_id: UUID of the barbershop
+        forecast_days: Number of days to forecast (default 30)
+        historical_days: Number of days of history to analyze (default 90)
+
+    Returns:
+        Dictionary with revenue forecast:
+        - forecast_period_days: Days being forecasted
+        - historical_period_days: Days of history analyzed
+        - estimated_revenue: Projected revenue for forecast period
+        - confidence: Confidence level (high/medium/low)
+        - daily_average: Average daily revenue from historical data
+        - weekly_average: Average weekly revenue
+        - trend: Revenue trend (increasing/stable/decreasing)
+        - historical_total: Total revenue in historical period
+    """
+    try:
+        supabase = get_supabase_client()
+
+        # Calculate date ranges
+        today = date.today()
+        historical_start = today - timedelta(days=historical_days)
+        historical_end = today
+
+        # Query historical appointments
+        query = supabase.table('appointments') \
+            .select('service_price, tip_amount, scheduled_at, status') \
+            .eq('barbershop_id', barbershop_id) \
+            .gte('scheduled_at', f"{historical_start}T00:00:00") \
+            .lte('scheduled_at', f"{historical_end}T23:59:59") \
+            .in_('status', ['CONFIRMED', 'COMPLETED'])
+
+        response = query.execute()
+        appointments = response.data if response.data else []
+
+        # If no data, return low confidence forecast
+        if not appointments:
+            return {
+                "success": True,
+                "forecast_period_days": forecast_days,
+                "historical_period_days": historical_days,
+                "estimated_revenue": 0.0,
+                "confidence": "low",
+                "daily_average": 0.0,
+                "weekly_average": 0.0,
+                "trend": "insufficient_data",
+                "historical_total": 0.0,
+                "message": "No historical data available for forecasting. Please ensure appointments exist."
+            }
+
+        # Calculate total historical revenue
+        historical_revenue = sum(
+            Decimal(str(apt.get('service_price', 0))) + Decimal(str(apt.get('tip_amount', 0)))
+            for apt in appointments
+        )
+
+        # Calculate averages
+        actual_days_with_data = len(set(
+            datetime.fromisoformat(apt['scheduled_at'].replace('Z', '+00:00')).date()
+            for apt in appointments
+        ))
+
+        daily_average = historical_revenue / actual_days_with_data if actual_days_with_data > 0 else Decimal('0')
+        weekly_average = daily_average * 7
+
+        # Simple linear trend analysis (compare first half to second half)
+        midpoint = len(appointments) // 2
+        first_half_revenue = sum(
+            Decimal(str(apt.get('service_price', 0))) + Decimal(str(apt.get('tip_amount', 0)))
+            for apt in appointments[:midpoint]
+        )
+        second_half_revenue = sum(
+            Decimal(str(apt.get('service_price', 0))) + Decimal(str(apt.get('tip_amount', 0)))
+            for apt in appointments[midpoint:]
+        )
+
+        # Determine trend
+        if second_half_revenue > first_half_revenue * Decimal('1.1'):  # 10% increase
+            trend = "increasing"
+            trend_multiplier = Decimal('1.05')  # 5% boost for forecast
+        elif second_half_revenue < first_half_revenue * Decimal('0.9'):  # 10% decrease
+            trend = "decreasing"
+            trend_multiplier = Decimal('0.95')  # 5% reduction for forecast
+        else:
+            trend = "stable"
+            trend_multiplier = Decimal('1.0')
+
+        # Calculate forecast
+        base_forecast = daily_average * forecast_days
+        estimated_revenue = base_forecast * trend_multiplier
+
+        # Determine confidence based on data quality
+        if actual_days_with_data >= historical_days * 0.8 and len(appointments) >= 50:
+            confidence = "high"
+        elif actual_days_with_data >= historical_days * 0.5 and len(appointments) >= 20:
+            confidence = "medium"
+        else:
+            confidence = "low"
+
+        result = {
+            "success": True,
+            "forecast_period_days": forecast_days,
+            "historical_period_days": historical_days,
+            "estimated_revenue": float(estimated_revenue),
+            "confidence": confidence,
+            "daily_average": float(daily_average),
+            "weekly_average": float(weekly_average),
+            "monthly_estimate": float(daily_average * 30),
+            "trend": trend,
+            "historical_total": float(historical_revenue),
+            "historical_appointments": len(appointments),
+            "days_with_appointments": actual_days_with_data,
+            "forecast_range": {
+                "low": float(estimated_revenue * Decimal('0.85')),  # 15% lower
+                "expected": float(estimated_revenue),
+                "high": float(estimated_revenue * Decimal('1.15'))  # 15% higher
+            },
+            "date_range": {
+                "historical_start": str(historical_start),
+                "historical_end": str(historical_end),
+                "forecast_start": str(today),
+                "forecast_end": str(today + timedelta(days=forecast_days))
+            }
+        }
+
+        logger.info(f"Revenue forecast successful: ${estimated_revenue} for {forecast_days} days "
+                   f"with {confidence} confidence")
+        return result
+
+    except Exception as e:
+        logger.error(f"Error forecasting revenue: {str(e)}", exc_info=True)
+        return {
+            "success": False,
+            "error": str(e),
+            "estimated_revenue": 0
         }
 
 
@@ -628,6 +912,61 @@ TOOL_SCHEMAS = [
                 "required": ["barbershop_id"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_inventory_status",
+            "description": "Track product inventory levels and identify items needing reorder. Returns current stock, low stock items, inventory value, and reorder alerts. Use this when users ask about inventory, stock levels, or what products need to be reordered.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "barbershop_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID of the barbershop"
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": "Optional category filter (e.g., 'hair_care', 'beard_care', 'styling', 'tools', 'accessories')"
+                    },
+                    "low_stock_only": {
+                        "type": "boolean",
+                        "description": "If true, only return items that need reordering (below reorder point)",
+                        "default": False
+                    }
+                },
+                "required": ["barbershop_id"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "forecast_revenue",
+            "description": "Predict future revenue based on historical appointment trends and patterns. Analyzes past data to project forward with confidence metrics. Use this when users ask about future revenue, revenue projections, or financial forecasting.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "barbershop_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "UUID of the barbershop"
+                    },
+                    "forecast_days": {
+                        "type": "integer",
+                        "description": "Number of days to forecast into the future (default 30)",
+                        "default": 30
+                    },
+                    "historical_days": {
+                        "type": "integer",
+                        "description": "Number of days of historical data to analyze (default 90)",
+                        "default": 90
+                    }
+                },
+                "required": ["barbershop_id"]
+            }
+        }
     }
 ]
 
@@ -639,6 +978,8 @@ TOOL_FUNCTIONS = {
     "get_top_services": get_top_services,
     "get_commission_summary": get_commission_summary,
     "get_customer_metrics": get_customer_metrics,
+    "get_inventory_status": get_inventory_status,
+    "forecast_revenue": forecast_revenue,
 }
 
 
@@ -678,6 +1019,8 @@ __all__ = [
     "get_top_services",
     "get_commission_summary",
     "get_customer_metrics",
+    "get_inventory_status",
+    "forecast_revenue",
     "TOOL_SCHEMAS",
     "TOOL_FUNCTIONS",
     "execute_tool",

@@ -1,22 +1,12 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-// Simple console logging to prevent circular dependencies
-const dbLogger = {
-  error: (...args) => console.error('[DB]', ...args),
-  warn: (...args) => console.warn('[DB]', ...args),
-  info: (...args) => console.info('[DB]', ...args)
-}
 
-const apiLogger = {
-  error: (...args) => console.error('[API]', ...args),
-  warn: (...args) => console.warn('[API]', ...args),
-  info: (...args) => console.info('[API]', ...args)
-}
-
+// Force Node.js runtime to support Supabase dependencies
 export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
-const bookingSchema = z.object({
+
+// Validation schemas
+const appointmentSchema = z.object({
   barbershop_id: z.string().uuid(),
   client_id: z.string().uuid().optional(),
   barber_id: z.string().uuid(),
@@ -33,18 +23,21 @@ const bookingSchema = z.object({
   is_walk_in: z.boolean().optional().default(false),
 })
 
-const updateBookingSchema = bookingSchema.partial()
+const updateAppointmentSchema = appointmentSchema.partial()
 
+// GET /api/appointments - Fetch appointments with filters
 export async function GET(request) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const { searchParams } = new URL(request.url)
     
+    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Extract query parameters
     const barbershop_id = searchParams.get('barbershop_id')
     const barber_id = searchParams.get('barber_id')
     const client_id = searchParams.get('client_id')
@@ -55,13 +48,20 @@ export async function GET(request) {
     const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
     const offset = (page - 1) * limit
 
-    // CRITICAL FIX: Use separate queries to avoid PostgREST syntax failures
+    // Build query - use correct table name and columns
     let query = supabase
       .from('appointments')
-      .select('*')
+      .select(`
+        *,
+        client:profiles!appointments_client_id_fkey(id, email, full_name),
+        barber:profiles!appointments_barber_id_fkey(id, email, full_name),
+        service:services(id, name, description, duration_minutes, price, category),
+        barbershop:barbershops(id, name, address, phone)
+      `)
       .order('scheduled_at', { ascending: true })
       .range(offset, offset + limit - 1)
 
+    // Apply filters
     if (barbershop_id) {
       query = query.eq('barbershop_id', barbershop_id)
     }
@@ -84,52 +84,23 @@ export async function GET(request) {
     const { data: appointments, error } = await query
 
     if (error) {
-      dbLogger.error('Database query failed in appointments GET', error, {
-        context: 'appointments_query',
-        barbershop_id,
-        barber_id,
-        client_id
-      })
-      return NextResponse.json({ 
-        error: 'Failed to fetch appointments',
-        details: error.message 
-      }, { status: 500 })
+      console.error('Database query failed:', error.message)
+      return NextResponse.json(
+        { 
+          error: 'Failed to fetch appointments', 
+          details: error.message,
+          hint: 'Ensure database schema is properly migrated and tables exist'
+        }, 
+        { status: 500 }
+      )
     }
 
-    // CRITICAL FIX: Fetch related data separately to ensure reliability
-    if (appointments && appointments.length > 0) {
-      const clientIds = [...new Set(appointments.map(a => a.customer_id).filter(Boolean))]
-      const barberIds = [...new Set(appointments.map(a => a.barber_id).filter(Boolean))]
-      const serviceIds = [...new Set(appointments.map(a => a.service_id).filter(Boolean))]
-      const barbershopIds = [...new Set(appointments.map(a => a.barbershop_id).filter(Boolean))]
-
-      // Fetch related data in parallel
-      const [clientsData, barbersData, servicesData, barbershopsData] = await Promise.all([
-        clientIds.length > 0 ? supabase.from('customers').select('id, full_name, email, phone').in('id', clientIds) : { data: [] },
-        barberIds.length > 0 ? supabase.from('profiles').select('id, full_name, email').in('id', barberIds) : { data: [] },
-        serviceIds.length > 0 ? supabase.from('services').select('id, name, description, duration_minutes, price, category').in('id', serviceIds) : { data: [] },
-        barbershopIds.length > 0 ? supabase.from('barbershops').select('id, name, address, phone').in('id', barbershopIds) : { data: [] }
-      ])
-
-      // Create lookup maps for better performance
-      const clientsMap = new Map((clientsData.data || []).map(c => [c.id, c]))
-      const barbersMap = new Map((barbersData.data || []).map(b => [b.id, b]))
-      const servicesMap = new Map((servicesData.data || []).map(s => [s.id, s]))
-      const barbershopsMap = new Map((barbershopsData.data || []).map(bs => [bs.id, bs]))
-
-      // Merge related data with appointments
-      appointments.forEach(appointment => {
-        appointment.customer = clientsMap.get(appointment.customer_id) || null
-        appointment.barber = barbersMap.get(appointment.barber_id) || null
-        appointment.service = servicesMap.get(appointment.service_id) || null
-        appointment.barbershop = barbershopsMap.get(appointment.barbershop_id) || null
-      })
-    }
-
+    // Get total count for pagination
     let countQuery = supabase
       .from('appointments')
       .select('*', { count: 'exact', head: true })
 
+    // Apply same filters for count
     if (barbershop_id) countQuery = countQuery.eq('barbershop_id', barbershop_id)
     if (barber_id) countQuery = countQuery.eq('barber_id', barber_id)
     if (client_id) countQuery = countQuery.eq('client_id', client_id)
@@ -140,37 +111,35 @@ export async function GET(request) {
     const { count, error: countError } = await countQuery
 
     if (countError) {
-      dbLogger.error('Error getting appointments count', countError, {
-        context: 'appointments_count',
-        barbershop_id,
-        barber_id,
-        client_id
-      })
+      console.error('Error getting appointments count:', countError)
     }
 
+    // Return real data from database
     return NextResponse.json({
-      appointments,
+      data: appointments || [],
       pagination: {
         page,
         limit,
         total: count || 0,
-        pages: Math.ceil((count || 0) / limit)
+        totalPages: Math.ceil((count || 0) / limit)
       }
     })
 
-  } catch (error) {
-    apiLogger.error('Unexpected error in appointments GET', error, {
-      context: 'appointments_get_exception',
-      endpoint: 'GET /api/appointments'
-    })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (err) {
+    console.error('Error in GET /api/appointments:', err)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
 
+// POST /api/appointments - Create new appointment
 export async function POST(request) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     
+    // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -178,122 +147,29 @@ export async function POST(request) {
 
     const body = await request.json()
     
-    const validationResult = bookingSchema.safeParse(body)
-    if (!validationResult.success) {
-      return NextResponse.json({
-        error: 'Validation failed',
-        details: validationResult.error.errors
-      }, { status: 400 })
-    }
-
-    const appointmentData = validationResult.data
-
-    // VALIDATION: Check if barber can take appointments
-    const { data: barberProfile, error: barberError } = await supabase
-      .from('profiles')
-      .select('can_take_appointments, is_active, role, full_name')
-      .eq('id', appointmentData.barber_id)
-      .single()
-
-    if (barberError || !barberProfile) {
-      return NextResponse.json({ 
-        error: 'Barber not found' 
-      }, { status: 404 })
-    }
-
-    if (!barberProfile.can_take_appointments) {
-      return NextResponse.json({ 
-        error: `${barberProfile.full_name || 'This staff member'} cannot take appointments. Please select a different service provider.`,
-        details: 'Staff member has appointment capability disabled'
-      }, { status: 403 })
-    }
-
-    if (!barberProfile.is_active) {
-      return NextResponse.json({ 
-        error: `${barberProfile.full_name || 'This staff member'} is currently inactive and cannot take appointments.`,
-        details: 'Staff member is inactive'
-      }, { status: 403 })
-    }
-
-    // CRITICAL FIX: Handle customer creation for walk-ins and new clients
-    let finalClientId = appointmentData.client_id
-
-    // If no client_id but we have client details, create a new customer
-    if (!finalClientId && (appointmentData.client_name || appointmentData.client_phone || appointmentData.client_email)) {
-      // Check if customer already exists by phone or email
-      let existingCustomer = null
-      
-      if (appointmentData.client_phone) {
-        const { data: customerByPhone } = await supabase
-          .from('users')
-          .select('id')
-          .eq('phone', appointmentData.client_phone)
-          .single()
-        existingCustomer = customerByPhone
-      }
-      
-      if (!existingCustomer && appointmentData.client_email) {
-        const { data: customerByEmail } = await supabase
-          .from('users')
-          .select('id')
-          .eq('email', appointmentData.client_email)
-          .single()
-        existingCustomer = customerByEmail
-      }
-
-      if (existingCustomer) {
-        finalClientId = existingCustomer.id
-      } else if (appointmentData.client_name) {
-        // Create new customer
-        const { data: newCustomer, error: customerError } = await supabase
-          .from('customers')
-          .insert({
-            name: appointmentData.client_name,
-            email: appointmentData.client_email,
-            phone: appointmentData.client_phone,
-            created_at: new Date().toISOString()
-          })
-          .select('id')
-          .single()
-
-        if (customerError) {
-          dbLogger.error('Error creating customer during appointment creation', customerError, {
-            context: 'customer_creation',
-            client_email: validatedData.client_email,
-            barbershop_id: validatedData.barbershop_id
-          })
-          return NextResponse.json({ 
-            error: 'Failed to create customer record',
-            details: customerError.message 
-          }, { status: 500 })
-        }
-
-        finalClientId = newCustomer.id
-      }
-    }
-
-    const total_amount = appointmentData.service_price + (appointmentData.tip_amount || 0)
-
+    // Validate input
+    const validatedData = appointmentSchema.parse(body)
+    
+    // Calculate total amount
+    const totalAmount = validatedData.service_price + (validatedData.tip_amount || 0)
+    
+    // Check for time conflicts
     const conflictCheck = await supabase
       .from('appointments')
       .select('id, scheduled_at, duration_minutes')
-      .eq('barber_id', appointmentData.barber_id)
-      .eq('status', 'CONFIRMED')
-      .neq('id', 'ignore') // For future use in updates
+      .eq('barber_id', validatedData.barber_id)
+      .in('status', ['CONFIRMED', 'PENDING'])
 
     if (conflictCheck.error) {
-      dbLogger.error('Error checking appointment conflicts', conflictCheck.error, {
-        context: 'appointment_conflict_check',
-        barber_id: validatedData.barber_id,
-        scheduled_at: validatedData.scheduled_at
-      })
+      console.error('Error checking conflicts:', conflictCheck.error)
       return NextResponse.json({ error: 'Failed to check time conflicts' }, { status: 500 })
     }
 
-    const newStart = new Date(appointmentData.scheduled_at)
-    const newEnd = new Date(newStart.getTime() + appointmentData.duration_minutes * 60000)
+    // Check for overlapping appointments
+    const newStart = new Date(validatedData.scheduled_at)
+    const newEnd = new Date(newStart.getTime() + validatedData.duration_minutes * 60000)
 
-    const hasConflict = conflictCheck.data.some(existing => {
+    const hasConflict = conflictCheck.data?.some(existing => {
       const existingStart = new Date(existing.scheduled_at)
       const existingEnd = new Date(existingStart.getTime() + existing.duration_minutes * 60000)
       
@@ -301,70 +177,215 @@ export async function POST(request) {
     })
 
     if (hasConflict) {
-      return NextResponse.json({
-        error: 'Time conflict detected',
-        message: 'The selected time slot conflicts with an existing appointment'
-      }, { status: 409 })
+      return NextResponse.json(
+        { error: 'Time conflict with existing appointment' },
+        { status: 409 }
+      )
     }
-
-    // CRITICAL FIX: Use proper customer_id and avoid PostgREST syntax issues
-    const appointmentToInsert = {
-      barbershop_id: appointmentData.barbershop_id,
-      customer_id: finalClientId,
-      barber_id: appointmentData.barber_id,
-      service_id: appointmentData.service_id,
-      scheduled_at: appointmentData.scheduled_at,
-      duration_minutes: appointmentData.duration_minutes,
-      service_price: appointmentData.service_price,
-      tip_amount: appointmentData.tip_amount || 0,
-      total_amount,
-      notes: appointmentData.client_notes,
-      status: 'CONFIRMED' // CRITICAL: Start as CONFIRMED for immediate business use
-    }
-
-    const { data: appointment, error } = await supabase
+    
+    // Insert appointment
+    const { data: newAppointment, error } = await supabase
       .from('appointments')
-      .insert(appointmentToInsert)
-      .select('*')
-      .single()
-
-    if (error) {
-      dbLogger.error('Error creating appointment', error, {
-        context: 'appointment_creation',
-        barbershop_id: validatedData.barbershop_id,
-        barber_id: validatedData.barber_id
+      .insert({
+        ...validatedData,
+        total_amount: totalAmount,
+        status: 'PENDING',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
-      return NextResponse.json({ error: 'Failed to create appointment', details: error.message }, { status: 500 })
+      .select(`
+        *,
+        client:profiles!appointments_client_id_fkey(id, email, full_name),
+        barber:profiles!appointments_barber_id_fkey(id, email, full_name),
+        service:services(id, name, description, duration_minutes, price, category),
+        barbershop:barbershops(id, name, address, phone)
+      `)
+      .single()
+    
+    if (error) {
+      console.error('Failed to create appointment:', error)
+      return NextResponse.json(
+        { 
+          error: 'Failed to create appointment',
+          details: error.message
+        },
+        { status: 400 }
+      )
     }
 
-    // CRITICAL FIX: Fetch related data separately for reliable response
-    if (appointment) {
-      const [clientData, barberData, serviceData, barbershopData] = await Promise.all([
-        finalClientId ? supabase.from('customers').select('id, full_name, email, phone').eq('id', finalClientId).single() : { data: null },
-        supabase.from('profiles').select('id, full_name, email').eq('id', appointment.barber_id).single(),
-        supabase.from('services').select('id, name, description, duration_minutes, price, category').eq('id', appointment.service_id).single(),
-        supabase.from('barbershops').select('id, name, address, phone').eq('id', appointment.barbershop_id).single()
-      ])
+    return NextResponse.json(
+      { 
+        data: newAppointment,
+        message: 'Appointment created successfully'
+      },
+      { status: 201 }
+    )
 
-      appointment.client = clientData.data
-      appointment.barber = barberData.data
-      appointment.service = serviceData.data
-      appointment.barbershop = barbershopData.data
+  } catch (err) {
+    if (err.name === 'ZodError') {
+      return NextResponse.json(
+        { 
+          error: 'Invalid input data',
+          details: err.errors
+        },
+        { status: 400 }
+      )
+    }
+    
+    console.error('Error in POST /api/appointments:', err)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// PUT /api/appointments - Update appointment 
+export async function PUT(request) {
+  try {
+    const supabase = createClient()
+    
+    // Get user session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { id, ...updateData } = body
+    
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Appointment ID is required' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate input
+    const validatedData = updateAppointmentSchema.parse(updateData)
+    
+    // Calculate total amount if price fields changed
+    if (validatedData.service_price || validatedData.tip_amount !== undefined) {
+      const currentAppointment = await supabase
+        .from('appointments')
+        .select('service_price, tip_amount')
+        .eq('id', id)
+        .single()
+        
+      if (currentAppointment.data) {
+        const newServicePrice = validatedData.service_price || currentAppointment.data.service_price
+        const newTipAmount = validatedData.tip_amount !== undefined 
+          ? validatedData.tip_amount 
+          : currentAppointment.data.tip_amount || 0
+        validatedData.total_amount = newServicePrice + newTipAmount
+      }
+    }
+    
+    // Update appointment
+    const { data: updatedAppointment, error } = await supabase
+      .from('appointments')
+      .update({
+        ...validatedData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select(`
+        *,
+        client:profiles!appointments_client_id_fkey(id, email, full_name),
+        barber:profiles!appointments_barber_id_fkey(id, email, full_name),
+        service:services(id, name, description, duration_minutes, price, category),
+        barbershop:barbershops(id, name, address, phone)
+      `)
+      .single()
+    
+    if (error) {
+      console.error('Failed to update appointment:', error)
+      return NextResponse.json(
+        { 
+          error: 'Failed to update appointment',
+          details: error.message
+        },
+        { status: 400 }
+      )
     }
 
     return NextResponse.json({
-      message: 'Appointment created successfully',
-      appointment,
-      // CRITICAL: Return info for immediate business operations
-      status: 'confirmed',
-      next_steps: 'Appointment is confirmed and ready for the customer'
-    }, { status: 201 })
-
-  } catch (error) {
-    apiLogger.error('Unexpected error in appointments POST', error, {
-      context: 'appointments_post_exception',
-      endpoint: 'POST /api/appointments'
+      data: updatedAppointment,
+      message: 'Appointment updated successfully'
     })
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+
+  } catch (err) {
+    if (err.name === 'ZodError') {
+      return NextResponse.json(
+        { 
+          error: 'Invalid input data',
+          details: err.errors
+        },
+        { status: 400 }
+      )
+    }
+    
+    console.error('Error in PUT /api/appointments:', err)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE /api/appointments - Delete appointment
+export async function DELETE(request) {
+  try {
+    const supabase = createClient()
+    
+    // Get user session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const appointmentId = searchParams.get('id')
+    
+    if (!appointmentId) {
+      return NextResponse.json(
+        { error: 'Appointment ID is required' },
+        { status: 400 }
+      )
+    }
+    
+    // Update status to cancelled instead of hard delete
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ 
+        status: 'CANCELLED',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', appointmentId)
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Failed to cancel appointment:', error)
+      return NextResponse.json(
+        { 
+          error: 'Failed to cancel appointment',
+          details: error.message
+        },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json({
+      data,
+      message: 'Appointment cancelled successfully'
+    })
+
+  } catch (err) {
+    console.error('Error in DELETE /api/appointments:', err)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }

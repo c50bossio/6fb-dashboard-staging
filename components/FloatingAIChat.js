@@ -1,37 +1,21 @@
 'use client'
 
-import {
-  SparklesIcon,
-  XMarkIcon,
+import React, { useState, useRef, useEffect } from 'react'
+import { 
+  SparklesIcon, 
+  XMarkIcon, 
   PaperAirplaneIcon,
   ChatBubbleLeftRightIcon,
   ArrowsPointingOutIcon,
   MicrophoneIcon
 } from '@heroicons/react/24/outline'
-import { useState, useRef, useEffect } from 'react'
-import { useAIChat } from '../hooks/useAISDK'
-import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useAuth } from './SupabaseAuthProvider'
+import { createClient } from '../lib/supabase/client'
 
-export default function FloatingAIChat() {
-  const { user: _user } = useAuth()
-  
-  // Modern AI SDK integration
-  const {
-    messages: aiMessages,
-    input: aiInput,
-    handleInputChange: handleAIInputChange,
-    handleSubmit: handleAISubmit,
-    isLoading: aiIsLoading,
-    currentAgent,
-    agentInfo,
-    totalCost,
-    sendMessage: sendAIMessage,
-    switchAgent,
-    clearMessages: clearAIMessages
-  } = useAIChat('auto') // Let system choose best agent
-  
+const FloatingAIChat = React.memo(function FloatingAIChat() {
+  const { user } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
+  const [message, setMessage] = useState('')
   const [position, setPosition] = useState('bottom-right') // bottom-right, bottom-left, top-right, top-left
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
@@ -40,6 +24,7 @@ export default function FloatingAIChat() {
   const [realTimeMetrics, setRealTimeMetrics] = useState(null)
   const [businessContext, setBusinessContext] = useState(null)
   const [contextLoaded, setContextLoaded] = useState(false)
+  // Helper function for currency formatting
   const formatCurrency = (value) => {
     if (!value) return '$0'
     return new Intl.NumberFormat('en-US', {
@@ -79,42 +64,24 @@ export default function FloatingAIChat() {
     return `${greeting} ${proactiveSuggestion}`
   }
   
-  // Combine AI messages with emotion analysis and automation features
-  const [emotionMessages, setEmotionMessages] = useState([
+  const [messages, setMessages] = useState([
     {
-      id: 'welcome-floating',
+      id: 1,
       type: 'assistant',
       content: getProactiveGreeting(),
-      timestamp: new Date(),
-      agent: 'AI Assistant'
+      timestamp: new Date()
     }
   ])
-  
-  // Unified messages combining AI responses with emotion/automation features
-  const allMessages = [
-    ...aiMessages.map(msg => ({
-      id: msg.id,
-      type: msg.role === 'user' ? 'user' : 'assistant', 
-      content: msg.content,
-      timestamp: new Date(msg.timestamp || new Date()),
-      agent: agentInfo?.name || 'AI Assistant',
-      agentId: currentAgent,
-      model: msg.model,
-      cost: msg.cost,
-      toolsUsed: msg.toolsUsed || []
-    })),
-    ...emotionMessages
-  ].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-  
-  // Use AI SDK loading state
-  const isLoading = aiIsLoading || isAnalyzingEmotion
+  const [isLoading, setIsLoading] = useState(false)
   const [showRating, setShowRating] = useState(null)
   const [sessionId, setSessionId] = useState(null)
   const messagesEndRef = useRef(null)
   const getQuickActions = () => {
     if (contextLoaded && businessContext) {
+      // Enhanced quick actions based on actual business context
       const actions = []
       
+      // Revenue-based actions
       if (businessContext.analytics?.revenue) {
         actions.push({
           icon: '💰',
@@ -123,6 +90,7 @@ export default function FloatingAIChat() {
         })
       }
       
+      // Booking-based actions
       if (businessContext.analytics?.bookings?.today) {
         actions.push({
           icon: '📅',
@@ -131,6 +99,7 @@ export default function FloatingAIChat() {
         })
       }
       
+      // Alert-based actions
       if (businessContext.alerts?.active_alerts?.length > 0) {
         actions.push({
           icon: '⚠️',
@@ -139,6 +108,7 @@ export default function FloatingAIChat() {
         })
       }
       
+      // Prediction-based actions
       if (businessContext.predictions?.revenue_forecast) {
         actions.push({
           icon: '🔮',
@@ -147,6 +117,7 @@ export default function FloatingAIChat() {
         })
       }
       
+      // Customer insights
       if (businessContext.analytics?.customers) {
         actions.push({
           icon: '👥',
@@ -158,6 +129,7 @@ export default function FloatingAIChat() {
       return actions.slice(0, 5) // Limit to 5 actions
     }
     
+    // Fallback basic actions
     return [
       { icon: '💰', text: "Today's Revenue", query: "How much revenue have I made today?" },
       { icon: '📅', text: 'Next Appointments', query: "Show me my next appointments" },
@@ -168,87 +140,56 @@ export default function FloatingAIChat() {
   }
   const [isVoiceListening, setIsVoiceListening] = useState(false)
   const recognitionRef = useRef(null)
-  
-  const [emotionAnalysis, setEmotionAnalysis] = useState(null)
-  const [userEmotionHistory, setUserEmotionHistory] = useState([])
-  const [currentMood, setCurrentMood] = useState('neutral')
-  const [isAnalyzingEmotion, setIsAnalyzingEmotion] = useState(false)
 
+  // Fetch comprehensive business context from enhanced APIs
   useEffect(() => {
     const fetchShopData = async () => {
-      if (!_user) return
+      if (!user) return
       
-      // Check if we're in dev mode with mock auth
-      const isDevMode = process.env.NEXT_PUBLIC_ENABLE_DEV_AUTH === 'true'
-      
-      if (isDevMode && _user?.id === 'dev-user-123') {
-        // Use mock data in dev mode
-        setShopData({
-          shopName: 'Dev Barbershop',
-          shopId: 'dev-barbershop-123',
-          totalRevenue: 15420,
-          totalCustomers: 127,
-          todayAppointments: 8,
-          upcomingAppointments: [
-            { start_time: '10:00 AM', service_name: 'Haircut', price: 30 },
-            { start_time: '11:30 AM', service_name: 'Beard Trim', price: 20 }
-          ],
-          analytics: {
-            revenueGrowth: 12.5,
-            customerGrowth: 8.3,
-            averageServicePrice: 45
-          },
-          predictions: {
-            nextMonthRevenue: 18500,
-            expectedBookings: 245,
-            peakDays: ['Monday', 'Friday', 'Saturday']
-          },
-          alerts: []
-        })
-        return
-      }
-      
-      const _supabase = createClient()
+      const supabase = createClient()
       
       try {
-        const { data: profileData, error: profileError } = await _supabase
+        // Get user's shop data
+        const { data: profileData } = await supabase
           .from('profiles')
-          .select('id, role, barbershop_id, barbershop_id, email')
-          .eq('id', _user.id)
-          .maybeSingle()
+          .select('shop_id, role, barbershop_name')
+          .eq('id', user.id)
+          .single()
         
-        if (profileError) {
-          console.warn('Profile query warning:', profileError.message)
-        }
-        
-        const shopId = profileData?.barbershop_id || profileData?.barbershop_id
-        
-        if (shopId) {
+        if (profileData?.shop_id) {
+          console.log('🔄 Loading comprehensive business context...')
           
+          // Load multiple data sources concurrently for better performance
           const [shopInfo, analytics, predictions, alerts] = await Promise.allSettled([
-            _supabase.from('barbershops').select('*').eq('id', shopId).single(),
+            // Basic shop info
+            supabase.from('barbershops').select('*').eq('id', profileData.shop_id).single(),
             
-            fetch(`/api/analytics/live-data?barbershop_id=${shopId}`).then(r => r.json()),
+            // Analytics data from our enhanced API
+            fetch(`/api/analytics/live-data?barbershop_id=${profileData.shop_id}`).then(r => r.json()),
             
-            fetch(`/api/ai/predictive?type=comprehensive&barbershopId=${shopId}`).then(r => r.json()),
+            // Predictive analytics with seasonal/customer insights
+            fetch(`/api/ai/predictive?type=comprehensive&shopId=${profileData.shop_id}`).then(r => r.json()),
             
-            fetch(`/api/alerts/intelligent?barbershop_id=${shopId}`).then(r => r.json())
+            // Intelligent alerts
+            fetch(`/api/alerts/intelligent?barbershop_id=${profileData.shop_id}`).then(r => r.json())
           ])
 
+          // Process results and set up comprehensive business context
           const shopData = shopInfo.status === 'fulfilled' ? shopInfo.value.data : null
           const analyticsData = analytics.status === 'fulfilled' && analytics.value.success ? analytics.value.data : null
           const predictionsData = predictions.status === 'fulfilled' && predictions.value.success ? predictions.value.predictions : null
           const alertsData = alerts.status === 'fulfilled' && alerts.value.success ? alerts.value : null
 
-          const { data: customers } = await _supabase
+          // Get basic metrics for fallback
+          const { data: customers } = await supabase
             .from('customers')
             .select('total_spent, total_visits, created_at')
-            .eq('barbershop_id', shopId)
+            .eq('shop_id', profileData.shop_id)
           
-          const { data: bookings } = await _supabase
+          const { data: bookings } = await supabase
             .from('bookings')
             .select('price, status, service_name, start_time, created_at')
-            .eq('barbershop_id', shopId)
+            .eq('shop_id', profileData.shop_id)
             .gte('start_time', new Date().toISOString().split('T')[0])
           
           const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
@@ -258,9 +199,9 @@ export default function FloatingAIChat() {
           
           setShopData({
             ...shopData,
-            shop_name: shopData?.name || 'My Barbershop',
-            barbershop_id: shopId,
-            user_role: profileData?.role,
+            shop_name: shopData?.name || profileData.barbershop_name,
+            shop_id: profileData.shop_id,
+            user_role: profileData.role,
             location: shopData?.location || shopData?.address || 'Main Location',
             staff_count: shopData?.staff_count || 1
           })
@@ -276,10 +217,11 @@ export default function FloatingAIChat() {
             capacity_utilization: analyticsData?.capacity_utilization || 0.75
           })
 
+          // Set comprehensive business context for AI
           setBusinessContext({
             shop: {
-              name: shopData?.name || 'My Barbershop',
-              id: shopId,
+              name: shopData?.name || profileData.barbershop_name,
+              id: profileData.shop_id,
               location: shopData?.location || 'Main Location',
               staff_count: shopData?.staff_count || 1,
               operating_hours: shopData?.operating_hours || '9 AM - 7 PM',
@@ -320,6 +262,15 @@ export default function FloatingAIChat() {
           })
           
           setContextLoaded(true)
+          console.log('✅ Comprehensive business context loaded:', {
+            shopName: shopData?.name || profileData.barbershop_name,
+            metricsLoaded: !!analyticsData,
+            predictionsLoaded: !!predictionsData,
+            alertsLoaded: !!alertsData,
+            totalCustomers,
+            todayAppointments,
+            totalRevenue: formatCurrency(totalRevenue)
+          })
         }
       } catch (error) {
         console.error('Error fetching shop data:', error)
@@ -327,8 +278,9 @@ export default function FloatingAIChat() {
     }
     
     fetchShopData()
-  }, [_user])
+  }, [user])
 
+  // Initialize persistent session ID and position
   useEffect(() => {
     let existingSession = null
     let savedPosition = 'bottom-right'
@@ -340,6 +292,7 @@ export default function FloatingAIChat() {
       console.warn('LocalStorage not available')
     }
     
+    // Set saved position
     setPosition(savedPosition)
     
     if (existingSession) {
@@ -361,8 +314,9 @@ export default function FloatingAIChat() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [allMessages])
+  }, [messages])
 
+  // Position utilities
   const getPositionClasses = (pos) => {
     switch(pos) {
       case 'top-left':
@@ -386,6 +340,7 @@ export default function FloatingAIChat() {
     }
   }
 
+  // Drag handling
   const handleMouseDown = (e) => {
     if (e.target.closest('.drag-handle')) {
       setIsDragging(true)
@@ -416,6 +371,7 @@ export default function FloatingAIChat() {
     if (isDragging) {
       setIsDragging(false)
       
+      // Snap to nearest corner
       const windowWidth = window.innerWidth
       const windowHeight = window.innerHeight
       const rect = widgetRef.current?.getBoundingClientRect()
@@ -438,6 +394,7 @@ export default function FloatingAIChat() {
         
         savePosition(newPosition)
         
+        // Reset inline styles to use CSS classes
         widgetRef.current.style.left = ''
         widgetRef.current.style.top = ''
         widgetRef.current.style.right = ''
@@ -446,6 +403,7 @@ export default function FloatingAIChat() {
     }
   }
 
+  // Add event listeners for dragging
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove)
@@ -458,265 +416,155 @@ export default function FloatingAIChat() {
     }
   }, [isDragging, dragOffset])
 
-  const analyzeMessageEmotion = async (messageText) => {
-    if (!messageText.trim()) return null
-    if (!_user?.id) {
-      console.warn('Cannot analyze emotion without user ID')
-      return null
-    }
+  const handleSendMessage = async () => {
+    if (!message.trim() || isLoading || !sessionId) return
 
-    setIsAnalyzingEmotion(true)
-    
-    try {
-      const response = await fetch('/api/ai/emotion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: messageText,
-          action: 'analyze',
-          userId: _user.id,
-          context: {
-            sessionId: sessionId,
-            previousEmotion: currentMood,
-            businessContext: businessContext
-          },
-          businessContext: {
-            shopName: shopData?.shop_name,
-            isOwner: shopData?.user_role === 'owner',
-            isStaff: shopData?.user_role !== 'owner'
-          }
-        })
-      })
-
-      const data = await response.json()
-      
-      if (data.success) {
-        const analysis = data.analysis
-        setEmotionAnalysis(analysis)
-        setCurrentMood(analysis.emotion)
-        
-        setUserEmotionHistory(prev => [...prev, {
-          emotion: analysis.emotion,
-          confidence: analysis.confidence,
-          timestamp: new Date(),
-          message: messageText.substring(0, 50)
-        }].slice(-10)) // Keep last 10 emotions
-        
-        return analysis
-      }
-    } catch (error) {
-      console.warn('Emotion analysis failed:', error)
-    } finally {
-      setIsAnalyzingEmotion(false)
-    }
-    
-    return null
-  }
-
-  const getEmotionIcon = (emotion) => {
-    const icons = {
-      happy: '😊',
-      satisfied: '😌',
-      excited: '🤩',
-      frustrated: '😤',
-      angry: '😠',
-      confused: '😕',
-      anxious: '😰',
-      neutral: '😐'
-    }
-    return icons[emotion] || '😐'
-  }
-
-  const getEmotionColor = (emotion) => {
-    const colors = {
-      happy: 'text-green-600',
-      satisfied: 'text-blue-600',
-      excited: 'text-orange-600',
-      frustrated: 'text-yellow-600',
-      angry: 'text-red-600',
-      confused: 'text-gray-600',
-      anxious: 'text-purple-600',
-      neutral: 'text-gray-400'
-    }
-    return colors[emotion] || 'text-gray-400'
-  }
-
-  const processAutomatedTriggers = async (emotionAnalysis, messageText) => {
-    try {
-      
-      const triggerContext = {
-        message: messageText,
-        emotion: emotionAnalysis.emotion,
-        emotionConfidence: emotionAnalysis.confidence,
-        userId: _user?.id,
-        timestamp: new Date().toISOString(),
-        businessEvent: detectBusinessEvent(messageText, emotionAnalysis)
-      }
-
-      const response = await fetch('/api/ai/task-execution', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'process_triggers',
-          context: triggerContext,
-          userId: _user?.id,
-          businessContext: businessContext
-        })
-      })
-
-      const result = await response.json()
-      
-      if (result.success) {
-        
-        if (result.result.triggers_processed > 0) {
-          showAutomationNotification(result.result.triggers_processed, emotionAnalysis.emotion)
-        }
-      } else {
-        console.warn('⚠️ Automated trigger processing failed:', result.error)
-      }
-      
-    } catch (error) {
-      console.error('❌ Error processing automated triggers:', error)
-    }
-  }
-
-  const detectBusinessEvent = (messageText, emotionAnalysis) => {
-    const text = messageText.toLowerCase()
-    
-    if (text.includes('cancel') && (text.includes('appointment') || text.includes('booking'))) {
-      return {
-        type: 'appointment_cancellation',
-        data: {
-          message: messageText,
-          emotion: emotionAnalysis.emotion,
-          confidence: emotionAnalysis.confidence
-        }
-      }
-    }
-    
-    if ((text.includes('payment') || text.includes('pay') || text.includes('bill')) && 
-        (emotionAnalysis.emotion === 'frustrated' || emotionAnalysis.emotion === 'angry')) {
-      return {
-        type: 'payment_issue',
-        data: {
-          message: messageText,
-          emotion: emotionAnalysis.emotion,
-          confidence: emotionAnalysis.confidence
-        }
-      }
-    }
-    
-    if ((text.includes('service') || text.includes('quality') || text.includes('disappointed')) && 
-        (emotionAnalysis.emotion === 'angry' || emotionAnalysis.emotion === 'frustrated')) {
-      return {
-        type: 'service_complaint',
-        data: {
-          message: messageText,
-          emotion: emotionAnalysis.emotion,
-          confidence: emotionAnalysis.confidence
-        }
-      }
-    }
-    
-    if ((text.includes('love') || text.includes('amazing') || text.includes('excellent')) && 
-        (emotionAnalysis.emotion === 'happy' || emotionAnalysis.emotion === 'excited')) {
-      return {
-        type: 'positive_feedback',
-        data: {
-          message: messageText,
-          emotion: emotionAnalysis.emotion,
-          confidence: emotionAnalysis.confidence
-        }
-      }
-    }
-    
-    return null
-  }
-
-  const showAutomationNotification = (triggerCount, emotion) => {
-    const notification = {
+    const userMessage = {
       id: Date.now(),
-      type: 'automation',
-      content: `🤖 ${triggerCount} automated action${triggerCount > 1 ? 's' : ''} triggered based on your ${emotion} message`,
-      timestamp: new Date(),
-      icon: '⚡'
+      type: 'user',
+      content: message,
+      timestamp: new Date()
     }
-    
-    setEmotionMessages(prev => [...prev, notification])
-    
-    setTimeout(() => {
-      setEmotionMessages(prev => prev.filter(msg => msg.id !== notification.id))
-    }, 5000)
-  }
 
-  const analyzeVoiceEmotion = async (transcript, speechEvent) => {
+    setMessages(prev => [...prev, userMessage])
+    const currentMessage = message
+    setMessage('')
+    setIsLoading(true)
+
     try {
-      const confidence = speechEvent.results?.[0]?.[0]?.confidence || 0.8
+      const startTime = Date.now()
       
-      const voiceFeatures = {
-        confidence: confidence,
-        transcript: transcript,
-        pitch: 'normal',
-        tempo: 'normal', 
-        volume: 'normal'
-      }
-
-      const response = await fetch('/api/ai/emotion', {
+      // Call the AI chat API with persistent session
+      const response = await fetch('/api/ai/unified-chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          action: 'voice_emotion',
-          voiceData: voiceFeatures
+          message: currentMessage,
+          provider: 'enhanced', // Use enhanced mode for Python backend integration
+          sessionId: sessionId,
+          includeBusinessContext: true,
+          storeConversation: true,
+          businessContext: businessContext && contextLoaded ? {
+            // Enhanced comprehensive business context
+            shop: businessContext.shop,
+            analytics: businessContext.analytics,
+            predictions: businessContext.predictions,
+            alerts: businessContext.alerts,
+            
+            // Legacy compatibility for existing API
+            shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
+            customer_count: realTimeMetrics?.total_customers || 0,
+            monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
+            location: shopData?.location || 'Main Location',
+            staff_count: shopData?.staff_count || 1,
+            barbershop_id: shopData?.shop_id || user?.id,
+            user_role: shopData?.user_role || 'owner',
+            today_appointments: realTimeMetrics?.today_appointments || 0,
+            total_revenue: realTimeMetrics?.total_revenue || 0,
+            
+            // Enhanced context indicators
+            context_version: '2.0',
+            context_loaded: contextLoaded,
+            last_updated: businessContext.last_updated,
+            data_sources: {
+              analytics: !!businessContext.analytics,
+              predictions: !!businessContext.predictions,
+              alerts: !!businessContext.alerts,
+              real_time_metrics: !!realTimeMetrics
+            }
+          } : {
+            // Fallback basic context
+            shop_name: shopData?.shop_name || user?.email?.split('@')[0] + "'s Shop",
+            customer_count: realTimeMetrics?.total_customers || 0,
+            monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
+            location: shopData?.location || 'Main Location',
+            staff_count: shopData?.staff_count || 1,
+            barbershop_id: shopData?.shop_id || user?.id,
+            user_role: shopData?.user_role || 'owner',
+            today_appointments: realTimeMetrics?.today_appointments || 0,
+            total_revenue: realTimeMetrics?.total_revenue || 0,
+            context_version: '1.0',
+            context_loaded: false
+          },
+          barbershop_id: shopData?.shop_id || user?.id
         })
       })
 
       const data = await response.json()
+      const responseTime = (Date.now() - startTime) / 1000 // Convert to seconds
       
-      if (data.success) {
-        return data.voice_emotion
+      // Parse response for smart actions
+      const responseText = data.response || data.message || "I'm here to help! What would you like to know about your business?"
+      const smartActions = []
+      
+      // Detect mentions of specific features and add action buttons
+      if (responseText.toLowerCase().includes('appointment') || responseText.toLowerCase().includes('booking')) {
+        smartActions.push({ text: 'Open Calendar', link: '/dashboard/calendar', icon: '📅' })
+      }
+      if (responseText.toLowerCase().includes('revenue') || responseText.toLowerCase().includes('money') || responseText.toLowerCase().includes('earnings')) {
+        smartActions.push({ text: 'View Analytics', link: '/dashboard/analytics-enhanced', icon: '📊' })
+      }
+      if (responseText.toLowerCase().includes('customer') || responseText.toLowerCase().includes('client')) {
+        smartActions.push({ text: 'Customer List', link: '/dashboard/customers', icon: '👥' })
+      }
+      if (responseText.toLowerCase().includes('marketing') || responseText.toLowerCase().includes('promotion')) {
+        smartActions.push({ text: 'Marketing Tools', link: '/dashboard/campaigns', icon: '🎯' })
+      }
+      
+      const aiMessage = {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: responseText,
+        timestamp: new Date(),
+        actions: smartActions
+      }
+
+      setMessages(prev => [...prev, aiMessage])
+      
+      // Track analytics
+      try {
+        await fetch('/api/ai/analytics/usage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'track_conversation',
+            data: {
+              agent: data.agent_details?.primary_agent || 'FloatingChat',
+              topic: data.message_type || 'general',
+              userId: 'demo_user',
+              sessionId: `floating_${Date.now()}`
+            }
+          })
+        })
+        
+        await fetch('/api/ai/analytics/usage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'track_response_time',
+            data: {
+              responseTime: responseTime,
+              agent: data.agent_details?.primary_agent || 'FloatingChat'
+            }
+          })
+        })
+      } catch (analyticsError) {
+        console.warn('Analytics tracking failed:', analyticsError)
       }
     } catch (error) {
-      console.warn('Voice emotion analysis failed:', error)
-    }
-    
-    return null
-  }
-
-  const handleSendMessage = async (e) => {
-    if (!aiInput.trim() || isLoading || !sessionId) return
-
-    // Analyze emotion for the current message before sending
-    const emotionAnalysis = await analyzeMessageEmotion(aiInput)
-    
-    if (emotionAnalysis) {
-      // Add emotion to the next user message via context
-      const emotionContext = {
-        type: emotionAnalysis.emotion,
-        confidence: emotionAnalysis.confidence,
-        icon: getEmotionIcon(emotionAnalysis.emotion)
+      console.error('AI Chat error:', error)
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: "I'm having trouble connecting right now. Try asking me about your bookings, revenue, or customer insights!",
+        timestamp: new Date()
       }
-      
-      // Add emotional context to the existing business context
-      const enhancedContext = {
-        ...businessContext,
-        current_emotion: {
-          emotion: emotionAnalysis.emotion,
-          confidence: emotionAnalysis.confidence,
-          empathetic_strategy: emotionAnalysis.empathetic_response?.strategy
-        },
-        emotion_history: userEmotionHistory.slice(-3),
-        mood_trend: currentMood,
-        barbershopId: shopData?.barbershop_id || 'floating-chat',
-        sessionId: sessionId,
-        userId: user?.id
-      }
-      
-      // Process automated triggers in the background
-      await processAutomatedTriggers(emotionAnalysis, aiInput)
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
+      setIsLoading(false)
     }
-
-    // Use the AI SDK's submit handler which handles the API call automatically
-    await handleAISubmit(e)
   }
 
   const handleKeyPress = (e) => {
@@ -726,9 +574,9 @@ export default function FloatingAIChat() {
     }
   }
 
-  const handleQuickAction = async (query) => {
-    // Use the AI SDK's sendMessage function directly with the query
-    await sendAIMessage(query)
+  const handleQuickAction = (query) => {
+    setMessage(query)
+    handleSendMessage()
   }
 
   const startVoiceRecognition = () => {
@@ -748,16 +596,10 @@ export default function FloatingAIChat() {
       setIsVoiceListening(true)
     }
     
-    recognition.onresult = async (event) => {
+    recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript
-      // Use the AI SDK's input change handler
-      handleAIInputChange({ target: { value: transcript } })
+      setMessage(transcript)
       setIsVoiceListening(false)
-      
-      const voiceEmotionHint = await analyzeVoiceEmotion(transcript, event)
-      if (voiceEmotionHint) {
-        // Voice emotion analysis could enhance the context
-      }
     }
     
     recognition.onerror = (event) => {
@@ -797,8 +639,8 @@ export default function FloatingAIChat() {
       
       setShowRating(null)
       
-      // Update the rated status in emotion messages if it exists there
-      setEmotionMessages(prev => prev.map(msg => 
+      // Update the message to show it was rated
+      setMessages(prev => prev.map(msg => 
         msg.id === messageId 
           ? { ...msg, rated: rating }
           : msg
@@ -826,7 +668,7 @@ export default function FloatingAIChat() {
           </div>
           
           {/* Drag handle indicator */}
-          <div className="drag-handle absolute -top-1 -right-1 bg-gray-300 hover:bg-gray-400 text-gray-600 rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-move">
+          <div className="drag-handle absolute -top-1 -right-1 bg-muted hover:bg-muted/80 text-muted-foreground rounded-full w-4 h-4 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-move">
             <ArrowsPointingOutIcon className="h-2 w-2" />
           </div>
           
@@ -843,7 +685,7 @@ export default function FloatingAIChat() {
 
       {/* Chat Widget */}
       {isOpen && (
-        <div className={`fixed ${getPositionClasses(position)} w-80 h-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 flex flex-col`}>
+        <div className={`fixed ${getPositionClasses(position)} w-80 h-96 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col`}>
           {/* Header */}
           <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-t-xl">
             <div className="flex items-center space-x-2">
@@ -857,15 +699,6 @@ export default function FloatingAIChat() {
                   Enhanced
                 </div>
               )}
-              {currentMood !== 'neutral' && (
-                <div 
-                  className="bg-purple-400 text-purple-900 text-xs px-2 py-0.5 rounded-full font-bold flex items-center space-x-1" 
-                  title={`Current mood: ${currentMood}`}
-                >
-                  <span>{getEmotionIcon(currentMood)}</span>
-                  <span className="capitalize">{currentMood}</span>
-                </div>
-              )}
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -877,7 +710,7 @@ export default function FloatingAIChat() {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
-            {allMessages.map((msg) => (
+            {messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -886,43 +719,14 @@ export default function FloatingAIChat() {
                   className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
                     msg.type === 'user'
                       ? 'bg-amber-700 text-white rounded-br-sm'
-                      : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-sm'
                   }`}
                 >
-                  {msg.type === 'assistant' && msg.agent && (
-                    <div className="flex items-center space-x-1 mb-1 text-xs text-gray-500">
-                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                      </svg>
-                      <span className="font-medium">{msg.agent}</span>
-                      {msg.toolsUsed && msg.toolsUsed.length > 0 && (
-                        <span className="text-green-600">• {msg.toolsUsed.length} tools used</span>
-                      )}
-                    </div>
-                  )}
-                  <div className="flex items-start space-x-2">
-                    <div className="flex-1">
-                      {msg.content}
-                    </div>
-                    {/* Emotion Indicator for User Messages */}
-                    {msg.type === 'user' && msg.emotion && (
-                      <div className="flex-shrink-0">
-                        <div 
-                          className="flex items-center space-x-1 bg-white/20 rounded-full px-2 py-1"
-                          title={`Detected emotion: ${msg.emotion.type} (${Math.round(msg.emotion.confidence * 100)}% confidence)`}
-                        >
-                          <span className="text-xs">{msg.emotion.icon}</span>
-                          <span className={`text-xs ${getEmotionColor(msg.emotion.type)}`}>
-                            {msg.emotion.type}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  {msg.content}
                   
                   {/* Smart Actions */}
                   {msg.actions && msg.actions.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                       <div className="flex flex-wrap gap-1">
                         {msg.actions.map((action, idx) => (
                           <button
@@ -939,18 +743,18 @@ export default function FloatingAIChat() {
                   )}
                   
                   {msg.type === 'assistant' && msg.id > 1 && !msg.rated && showRating !== msg.id && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                       <button
                         onClick={() => setShowRating(msg.id)}
-                        className="text-xs text-gray-500 hover:text-gray-700"
+                        className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                       >
                         Rate this response
                       </button>
                     </div>
                   )}
                   {showRating === msg.id && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <p className="text-xs text-gray-600 mb-2">How helpful was this response?</p>
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">How helpful was this response?</p>
                       <div className="flex space-x-1">
                         {[1, 2, 3, 4, 5].map(rating => (
                           <button
@@ -965,8 +769,8 @@ export default function FloatingAIChat() {
                     </div>
                   )}
                   {msg.rated && (
-                    <div className="mt-2 pt-2 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">
+                    <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         Rated: {Array(msg.rated).fill('⭐').join('')} Thanks for your feedback!
                       </p>
                     </div>
@@ -976,7 +780,7 @@ export default function FloatingAIChat() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 px-3 py-2 rounded-lg rounded-bl-sm">
+                <div className="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded-lg rounded-bl-sm">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -989,15 +793,15 @@ export default function FloatingAIChat() {
           </div>
 
           {/* Quick Actions */}
-          {allMessages.length === 1 && (
+          {messages.length === 1 && (
             <div className="px-3 pb-2">
-              <p className="text-xs text-gray-500 mb-2">Quick Actions:</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Quick Actions:</p>
               <div className="flex flex-wrap gap-1">
                 {getQuickActions().map((action, index) => (
                   <button
                     key={index}
                     onClick={() => handleQuickAction(action.query)}
-                    className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full transition-colors flex items-center space-x-1"
+                    className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-2 py-1 rounded-full transition-colors flex items-center space-x-1"
                     disabled={isLoading}
                   >
                     <span>{action.icon}</span>
@@ -1009,15 +813,15 @@ export default function FloatingAIChat() {
           )}
 
           {/* Input */}
-          <div className="p-3 border-t border-gray-200">
+          <div className="p-3 border-t border-gray-200 dark:border-gray-700">
             <div className="flex space-x-2">
               <input
                 type="text"
-                value={aiInput}
-                onChange={handleAIInputChange}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ask about your business..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 disabled={isLoading || isVoiceListening}
               />
               <button
@@ -1033,7 +837,7 @@ export default function FloatingAIChat() {
               </button>
               <button
                 onClick={handleSendMessage}
-                disabled={!aiInput.trim() || isLoading}
+                disabled={!message.trim() || isLoading}
                 className="bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 text-white rounded-lg p-2 transition-colors"
               >
                 <PaperAirplaneIcon className="h-4 w-4" />
@@ -1053,4 +857,6 @@ export default function FloatingAIChat() {
       )}
     </>
   )
-}
+})
+
+export default FloatingAIChat

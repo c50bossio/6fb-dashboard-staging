@@ -50,14 +50,14 @@ export default function BrandOwnershipSection() {
   ]
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-foreground mb-4">
             Own Your Brand, Not Be a Listing
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Stop paying marketplaces for visibility. Stop competing with paid ads. 
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Stop paying marketplaces for visibility. Stop competing with paid ads.
             Start building a business that's truly yours.
           </p>
         </div>
@@ -66,16 +66,16 @@ export default function BrandOwnershipSection() {
           {features.map((feature, index) => {
             const Icon = feature.icon
             return (
-              <div 
+              <div
                 key={index}
-                className="relative p-6 bg-gray-50 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300 border border-gray-100"
+                className="relative p-6 bg-muted/50 dark:bg-card rounded-xl hover:bg-card dark:hover:bg-card/80 hover:shadow-lg transition-all duration-300 border border-border"
               >
                 <div className="absolute -top-3 -right-3">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-olive-100 text-olive-800">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-olive-100 dark:bg-olive-900/30 text-olive-800 dark:text-olive-300">
                     {feature.highlight}
                   </span>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br from-olive-500 to-gold-600 text-white">
@@ -83,10 +83,10 @@ export default function BrandOwnershipSection() {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       {feature.title}
                     </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       {feature.description}
                     </p>
                   </div>
@@ -96,7 +96,7 @@ export default function BrandOwnershipSection() {
           })}
         </div>
 
-        <div className="mt-16 bg-gradient-to-r from-olive-600 to-gold-600 rounded-2xl p-8 text-white">
+        <div className="mt-16 bg-gradient-to-r from-olive-600 to-gold-600 dark:from-olive-700 dark:to-gold-700 rounded-2xl p-8 text-white">
           <div className="text-center">
             <h3 className="text-2xl font-bold mb-4">
               The Marketplace Model is Broken for Barbers
@@ -104,15 +104,15 @@ export default function BrandOwnershipSection() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
               <div className="text-center">
                 <div className="text-3xl font-bold mb-2">$0</div>
-                <div className="text-olive-100">Marketplace fees with 6FB</div>
+                <div className="text-white/80">Marketplace fees with 6FB</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold mb-2">100%</div>
-                <div className="text-olive-100">Your brand, your control</div>
+                <div className="text-white/80">Your brand, your control</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold mb-2">24/7</div>
-                <div className="text-olive-100">AI working for your business</div>
+                <div className="text-white/80">AI working for your business</div>
               </div>
             </div>
           </div>

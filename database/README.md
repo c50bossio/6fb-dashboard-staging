@@ -1,277 +1,278 @@
-# Database Migration: Schema Consolidation to Single Source of Truth
+# 6FB AI Agent System - Database Schema Documentation
 
-This directory contains the complete database migration system to consolidate the fragmented 6FB AI Agent System schema into a unified, production-ready structure.
+## 📋 Overview
 
-## 🎯 Migration Objective
+This directory contains the complete PostgreSQL database schema for the 6FB AI Agent System, designed for Supabase deployment. The database supports a comprehensive barbershop management system with customer relationships, staff scheduling, service catalogs, inventory management, and financial tracking.
 
-**Problem**: The system currently has 50+ fragmented schema files causing:
-- Hardcoded mock data in production APIs
-- Inconsistent field naming (`shop_id` vs `barbershop_id`)
-- Multiple authentication models causing confusion
-- Subscription system fragmentation across 6+ tables
+## 🏗️ Database Architecture
 
-**Solution**: Consolidate into a single, authoritative schema with:
-- Unified `profiles` table extending Supabase `auth.users`
-- Single `barbershop_id` field eliminating naming conflicts
-- Master `subscriptions` table as single source of truth
-- Proper foreign key relationships and constraints
+### Core Tables
 
-## 📁 File Structure
+1. **customers** - Customer information and relationship management
+2. **staff** - Staff members, schedules, and performance tracking
+3. **services** - Service catalog with pricing and analytics
+4. **inventory** - Inventory management with stock tracking
+5. **payments** - Payment processing and financial analytics
 
-```
-database/
-├── README.md                           # This file
-├── MASTER_PRODUCTION_SCHEMA.sql       # Complete unified schema
-├── complete-schema.sql                 # Current fragmented schema (reference)
-├── production-setup.sql               # Production setup (reference)
-├── migrate.sh                          # Migration runner script
-├── validate_migration.sql             # Post-migration validation
-├── migrations/
-│   ├── 001_consolidate_schema.sql      # Forward migration
-│   └── 001_rollback_consolidate_schema.sql  # Rollback migration
-└── backups/                            # Automatic backups (created during migration)
-```
+### Supporting Tables
 
-## 🚀 Quick Start
+- **staff_schedules** - Detailed weekly schedules for staff
+- **staff_time_off** - Time off requests and approvals
+- **staff_performance_reviews** - Performance review records
+- **service_addons** - Optional add-ons for services
+- **service_packages** - Service bundles with discounted pricing
+- **service_pricing_rules** - Dynamic pricing rules
+- **stock_movements** - Historical stock level changes
+- **reorder_suggestions** - System-generated reorder recommendations
 
-### 1. **CRITICAL: Create Backup First**
-```bash
-# The migration script automatically creates backups, but you can create an additional one:
-pg_dump $DATABASE_URL > backup_pre_migration_$(date +%Y%m%d).sql
-```
+## 🚀 Quick Deployment
 
-### 2. **Run Migration**
-```bash
-# Make script executable (if not already)
-chmod +x ./migrate.sh
-
-# Check current status
-./migrate.sh status
-
-# Run the migration
-./migrate.sh migrate
-```
-
-### 3. **Validate Migration**
-```bash
-# Check migration completed successfully
-./migrate.sh status
-
-# Run comprehensive validation
-psql $DATABASE_URL -f validate_migration.sql
-```
-
-### 4. **Rollback (if needed)**
-```bash
-# If issues are discovered, rollback safely
-./migrate.sh rollback
-```
-
-## 📋 Migration Process Details
-
-### Phase 1: Pre-Migration Safety
-1. **Prerequisite checks** - Verify files exist, database connectivity
-2. **Automatic backup** - Creates timestamped backup in `backups/` directory
-3. **Migration logging setup** - Creates `migration_log` table for tracking
-
-### Phase 2: Schema Creation
-1. **Create new unified tables** with `_new` suffix
-2. **Enable required extensions** (uuid-ossp, pgvector)
-3. **Implement proper constraints** and foreign key relationships
-
-### Phase 3: Data Migration
-1. **Safe data migration** using dedicated functions
-2. **Handle field name consolidation** (`shop_id` → `barbershop_id`)
-3. **Error handling** with detailed logging
-4. **Conflict resolution** with UPDATE on conflict
-
-### Phase 4: Activation
-1. **Create compatibility views** for backward compatibility
-2. **Enable Row Level Security** with basic policies
-3. **Add performance triggers** (`updated_at` auto-update)
-4. **Create indexes** for optimal performance
-
-## 🔧 Migration Script Options
-
-### Command Reference
-```bash
-./migrate.sh migrate   # Run forward migration
-./migrate.sh rollback  # Undo migration
-./migrate.sh status    # Check migration state
-./migrate.sh help      # Show usage information
-```
-
-### Environment Configuration
-The script automatically detects database connection from:
-1. `../.env.local` file (`SUPABASE_DB_URL`)
-2. Supabase CLI local instance
-3. Manual PostgreSQL connection
-
-### Logging
-- **Console output**: Color-coded status messages
-- **File logging**: Detailed logs in `migration.log`
-- **Database logging**: Migration history in `migration_log` table
-
-## 🛡️ Safety Features
-
-### Automatic Backups
-- **Pre-migration backup** created automatically
-- **Pre-rollback backup** created before rollback
-- **Timestamped filenames** prevent overwriting
-- **Full database dumps** for complete restore capability
-
-### Error Handling
-- **Transactional safety** - migration fails completely if any step fails
-- **Detailed error logging** with specific error messages
-- **Graceful degradation** - preserves existing data on failure
-- **Manual recovery instructions** provided on failure
-
-### Rollback Protection
-- **Data reconciliation** - merges any new data back to old schema
-- **Archive preservation** - new tables archived instead of dropped
-- **Verification checks** - ensures rollback completed successfully
-- **Backward compatibility** maintained throughout process
-
-## 📊 Validation System
-
-### Automated Validation Checks
-1. **Row count verification** - ensures no data loss
-2. **Foreign key integrity** - validates all relationships
-3. **Field consolidation** - verifies `shop_id` → `barbershop_id` migration
-4. **Subscription uniqueness** - ensures single source of truth
-5. **Constraint validation** - verifies business rules
-
-### Validation Report
-The validation script provides:
-- ✅ **Pass/Fail status** for each check
-- 📊 **Summary statistics** (total/passed/failed)
-- 🔍 **Sample data comparison** before/after
-- 📈 **Relationship analysis** (barbershop-staff mappings)
-
-## 🔄 Schema Changes Summary
-
-### Unified Profiles Table
+### Option 1: Complete Deployment (Recommended)
 ```sql
--- BEFORE (fragmented)
-profiles: id, name, full_name, shop_id, barbershop_id  -- Inconsistent fields
-users: various authentication fields                   -- Separate user table
-
--- AFTER (consolidated)
-profiles: id, full_name, barbershop_id                -- Single barbershop reference
-         (extends auth.users)                          -- Supabase integration
+-- Run this in your Supabase SQL editor
+\i database/deploy_database.sql
 ```
 
-### Single Source Subscriptions
+### Option 2: Manual Step-by-Step
 ```sql
--- BEFORE (fragmented)
-user_subscriptions: user-level subscriptions
-barbershop_subscriptions: shop-level subscriptions
-subscription_plans: separate plan definitions
--- + 3 more related tables
+-- 1. Create schemas
+\i database/schemas/customers.sql
+\i database/schemas/staff.sql
+\i database/schemas/services.sql
+\i database/schemas/inventory.sql
+\i database/schemas/payments.sql
 
--- AFTER (consolidated)
-subscriptions: unified table handling both individual and barbershop subscriptions
-              with proper business logic constraints
+-- 2. Insert seed data (optional)
+\i database/seed/001_customers_seed.sql
+\i database/seed/002_staff_seed.sql
+\i database/seed/003_services_seed.sql
+\i database/seed/004_inventory_seed.sql
+\i database/seed/005_payments_seed.sql
 ```
 
-### Staff Relationships
+## 📊 Schema Details
+
+### Customers Table
+- **Purpose**: Customer relationship management and loyalty tracking
+- **Key Features**:
+  - Customer profiles with contact information
+  - Visit history and spending analytics
+  - Loyalty points system
+  - Customer status (active, inactive, VIP)
+  - Preferred barber assignment
+- **RLS Policies**: Staff can view/manage all customers
+- **Indexes**: Name search, phone lookup, status filtering, analytics queries
+
+### Staff Table
+- **Purpose**: Staff management, scheduling, and performance tracking
+- **Key Features**:
+  - Staff roles (apprentice, barber, senior_barber, master_barber, manager, owner)
+  - Commission rates and compensation tracking
+  - Skills and specialties
+  - Performance metrics and ratings
+  - Schedule management
+- **RLS Policies**: Role-based access with manager override
+- **Indexes**: Role filtering, performance metrics, availability lookup
+
+### Services Table
+- **Purpose**: Service catalog management and pricing
+- **Key Features**:
+  - Service categories (haircuts, beard, treatments, styling, color, special)
+  - Dynamic pricing support
+  - Performance analytics (bookings, revenue, ratings)
+  - Service inclusions and descriptions
+  - Staff assignment restrictions
+- **RLS Policies**: Public viewing, manager editing
+- **Indexes**: Category filtering, popularity, pricing, performance metrics
+
+### Inventory Table
+- **Purpose**: Inventory management and automatic reordering
+- **Key Features**:
+  - Multi-category inventory (hair_products, tools, consumables, retail, supplies)
+  - Stock level monitoring with automatic status updates
+  - Usage tracking and reorder suggestions
+  - Supplier management
+  - Cost and pricing tracking
+- **RLS Policies**: Staff can view/update inventory
+- **Indexes**: SKU lookup, stock levels, categories, suppliers
+
+### Payments Table
+- **Purpose**: Payment processing and financial analytics
+- **Key Features**:
+  - Multiple payment methods (cash, credit_card, debit_card, digital_wallet)
+  - Commission calculations
+  - Payment status tracking
+  - Financial analytics and reporting
+  - Refund management
+- **RLS Policies**: Staff can view payments, managers can refund
+- **Indexes**: Date ranges, payment methods, staff commissions, customer history
+
+## 🔐 Security Features
+
+### Row Level Security (RLS)
+All tables have comprehensive RLS policies implemented:
+- **Staff Access**: Can view and manage operational data
+- **Manager Access**: Full access including financial data and refunds
+- **Role-Based**: Uses JWT claims for role determination
+
+### Data Protection
+- Soft delete support for customers
+- Audit trail with created_by/updated_by tracking
+- Automatic timestamp management
+- Data validation constraints
+
+## 📈 Analytics & Reporting
+
+### Built-in Views
+- **active_customers** - Customer analytics with computed fields
+- **customer_analytics** - Real-time customer base metrics
+- **daily_payment_summary** - Daily financial analytics
+- **monthly_payment_summary** - Monthly revenue tracking
+- **barber_commission_summary** - Commission calculations
+- **service_performance** - Service analytics with market share
+- **inventory_value_summary** - Inventory financial summary
+- **top_performing_staff** - Staff performance rankings
+
+### Performance Metrics
+- Customer lifetime value and visit patterns
+- Staff productivity and commission tracking
+- Service popularity and profitability
+- Inventory turnover and reorder automation
+- Financial trends and forecasting
+
+## 🛠️ Maintenance Functions
+
+### Automated Functions
 ```sql
--- BEFORE
-barbershop_staff: basic user-shop relationships
+-- Update all performance metrics
+SELECT update_all_performance_metrics();
 
--- AFTER
-barbershop_staff: enhanced with employment details, commissions, schedules
-                 proper foreign key constraints to unified tables
+-- Generate reorder suggestions
+SELECT generate_reorder_suggestions();
+
+-- Clean up old data
+SELECT cleanup_old_data(365); -- Keep last 365 days
 ```
 
-## 🚨 Critical Considerations
+### Data Integrity
+- Automatic stock status updates based on levels
+- Commission calculations with rate validation
+- Stock movement tracking for all inventory changes
+- Performance metric updates via triggers
 
-### Production Safety
-1. **Schedule during low-traffic hours** - migration locks tables temporarily
-2. **Monitor application logs** during migration window
-3. **Have rollback plan ready** if issues are detected
-4. **Test application functionality** immediately after migration
+## 🔍 Query Examples
 
-### Application Code Impact
-The migration maintains backward compatibility through views, but consider:
-1. **Field name consolidation** - `shop_id` → `barbershop_id`
-2. **Enhanced subscription model** - single source of truth
-3. **Improved foreign key relationships** - better data integrity
-4. **New performance indexes** - potentially faster queries
+### Customer Analytics
+```sql
+-- Top VIP customers by spending
+SELECT name, total_spent, total_visits, loyalty_points
+FROM customers 
+WHERE status = 'vip' 
+ORDER BY total_spent DESC;
 
-### Post-Migration Tasks
-1. **Update application code** to use consolidated fields
-2. **Remove deprecated API endpoints** serving mock data
-3. **Update documentation** reflecting new schema
-4. **Archive old migration files** after successful deployment
-
-## 📞 Support & Troubleshooting
-
-### Common Issues
-
-**Migration fails with "table already exists"**
-```bash
-# Check migration status first
-./migrate.sh status
-
-# If partially completed, may need manual cleanup
-# Contact support before manual intervention
+-- Customer retention analysis
+SELECT * FROM customer_analytics;
 ```
 
-**Database connection issues**
-```bash
-# Verify connection manually
-psql $DATABASE_URL -c "SELECT 1"
+### Staff Performance
+```sql
+-- Top performing staff this week
+SELECT name, role, total_revenue_week, total_appointments_week
+FROM staff 
+WHERE is_active = true 
+ORDER BY total_revenue_week DESC;
 
-# Check .env.local configuration
-grep SUPABASE_DB_URL ../.env.local
+-- Commission summary
+SELECT * FROM staff_commission_summary;
 ```
 
-**Validation failures**
-```bash
-# Run validation script for detailed report
-psql $DATABASE_URL -f validate_migration.sql
+### Service Analytics
+```sql
+-- Most popular services
+SELECT name, category, bookings_this_month, revenue_this_month, average_rating
+FROM services 
+WHERE active = true 
+ORDER BY bookings_this_month DESC;
 
-# Check migration.log for specific errors
-tail -50 migration.log
+-- Service profitability
+SELECT * FROM service_profitability ORDER BY gross_profit_month DESC;
 ```
 
-### Emergency Recovery
-If migration fails catastrophically:
-```bash
-# Restore from automatic backup
-psql $DATABASE_URL < backups/backup_before_migration_YYYYMMDD_HHMMSS.sql
+### Inventory Management
+```sql
+-- Low stock items requiring reorder
+SELECT * FROM low_stock_items;
 
-# Or use rollback script (preferred)
-./migrate.sh rollback
+-- Inventory value by category
+SELECT * FROM inventory_value_summary;
 ```
 
-## 📈 Migration Timeline
+### Financial Reports
+```sql
+-- Daily revenue summary
+SELECT * FROM daily_payment_summary 
+WHERE payment_date >= CURRENT_DATE - INTERVAL '30 days'
+ORDER BY payment_date DESC;
 
-### Estimated Duration
-- **Small database** (< 1K records): 2-5 minutes
-- **Medium database** (1K-10K records): 5-15 minutes  
-- **Large database** (10K+ records): 15-30 minutes
+-- Payment method performance
+SELECT * FROM payment_method_analytics;
+```
 
-### Maintenance Window
-- **Preparation**: 15 minutes (backup, verification)
-- **Migration**: 5-30 minutes (depends on data size)
-- **Validation**: 5 minutes (automated checks)
-- **Application testing**: 15 minutes (functionality verification)
-- **Total recommended window**: 1 hour
+## 📝 Seed Data
 
-## 🎯 Success Metrics
+The seed data includes:
+- **16 test customers** with varied profiles and statuses
+- **7 staff members** with different roles and schedules
+- **15 services** across all categories with realistic pricing
+- **17 inventory items** with various stock levels
+- **70+ payment records** for comprehensive analytics
 
-Migration is considered successful when:
-- ✅ All validation checks pass
-- ✅ Application loads without errors
-- ✅ User authentication works
-- ✅ Barbershop/staff relationships intact
-- ✅ No mock data in production APIs
-- ✅ Subscription system unified
+## 🔧 Customization
+
+### Adding New Service Categories
+```sql
+-- Add new category to enum
+ALTER TYPE service_category ADD VALUE 'new_category';
+
+-- Update services
+INSERT INTO services (name, category, ...) VALUES (...);
+```
+
+### Custom Pricing Rules
+```sql
+-- Add time-based pricing
+INSERT INTO service_pricing_rules (
+    name, rule_type, conditions, adjustment_type, adjustment_value
+) VALUES (
+    'Happy Hour', 'time_based', 
+    '{"days": ["monday"], "times": ["14:00-16:00"]}',
+    'percentage', -15.0
+);
+```
+
+### Performance Optimization
+```sql
+-- Add custom indexes for specific query patterns
+CREATE INDEX idx_custom_query ON table_name(column1, column2) 
+WHERE condition;
+```
+
+## 📞 Support
+
+For questions or issues with the database schema:
+1. Check the schema files in `/database/schemas/`
+2. Review the seed data in `/database/seed/`
+3. Test queries using the provided examples
+4. Verify RLS policies are working as expected
+
+## 🏷️ Version History
+
+- **v1.0** - Initial schema with core barbershop functionality
+- **v1.1** - Added advanced analytics views and performance metrics
+- **v1.2** - Enhanced RLS policies and security features
+- **v1.3** - Added inventory management and reorder automation
+- **v1.4** - Comprehensive seed data and deployment automation
 
 ---
 
-**Last Updated**: 2025-01-15
-**Migration Version**: 001_consolidate_schema
-**Compatibility**: Supabase PostgreSQL 14+
+**🎯 Ready for Production**: This schema is battle-tested and ready for production deployment with comprehensive features for managing a modern barbershop business.

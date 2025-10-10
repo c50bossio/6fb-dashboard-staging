@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect, Fragment, useMemo, useCallback } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { 
   ChevronDownIcon,
@@ -8,7 +9,6 @@ import {
   ArrowPathIcon,
   CheckIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect, Fragment } from 'react'
 import { useAuth } from './SupabaseAuthProvider'
 
 export default function ViewSwitcher() {
@@ -17,24 +17,24 @@ export default function ViewSwitcher() {
   const [availableContexts, setAvailableContexts] = useState([])
   const [loading, setLoading] = useState(false)
 
-  const userRole = profile?.role || user?.user_metadata?.role || 'CLIENT'
+  // Memoize user role to prevent recalculation on every render
+  const userRole = useMemo(() => {
+    return profile?.role || user?.user_metadata?.role || 'CLIENT'
+  }, [profile?.role, user?.user_metadata?.role])
 
-  useEffect(() => {
-    if (userRole) {
-      loadAvailableContexts()
-    }
-  }, [userRole])
-
-  const loadAvailableContexts = async () => {
+  // Memoize loadAvailableContexts to prevent infinite loops
+  const loadAvailableContexts = useCallback(async () => {
     try {
       const contexts = []
       
       if (userRole === 'SHOP_OWNER') {
+        // Fetch actual barbers from the API
         const response = await fetch('/api/shop/barbers')
         
         if (response.ok) {
           const { barbers } = await response.json()
           
+          // Format barbers as contexts
           if (barbers && barbers.length > 0) {
             barbers.forEach(barber => {
               if (barber.users) {
@@ -53,11 +53,13 @@ export default function ViewSwitcher() {
           console.error('Failed to fetch barbers:', response.status)
         }
       } else if (userRole === 'ENTERPRISE_OWNER') {
+        // Fetch actual shops from the API
         const response = await fetch('/api/enterprise/shops')
         
         if (response.ok) {
           const { shops } = await response.json()
           
+          // Format shops as contexts
           if (shops && shops.length > 0) {
             shops.forEach(shop => {
               contexts.push({
@@ -79,12 +81,20 @@ export default function ViewSwitcher() {
       console.error('Error loading contexts:', error)
       setAvailableContexts([])
     }
-  }
+  }, [userRole]) // Only re-create when userRole actually changes
+
+  // Load available contexts when userRole changes
+  useEffect(() => {
+    if (userRole && userRole !== 'CLIENT' && userRole !== 'BARBER') {
+      loadAvailableContexts()
+    }
+  }, [userRole, loadAvailableContexts]) // Include both dependencies
 
   const switchContext = async (context) => {
     setLoading(true)
     
     try {
+      // Call the API to switch context
       const response = await fetch('/api/auth/switch-context', {
         method: 'POST',
         headers: {
@@ -98,91 +108,53 @@ export default function ViewSwitcher() {
       
       if (response.ok) {
         const result = await response.json()
+        console.log('Context switch result:', result)
         
-        // Update client state to match server
         if (context === 'primary') {
+          // Return to primary view
           setActiveContext(null)
           localStorage.removeItem('activeContext')
         } else {
+          // Switch to different context
           setActiveContext(context)
           localStorage.setItem('activeContext', JSON.stringify(context))
         }
         
-        // Verify server state matches client state
-        await syncWithServerState()
+        // Show success message
+        console.log('Switched context to:', context === 'primary' ? 'Primary View' : context.name)
         
-        // Show success message (optional - could add toast notification)
-
+        // Optional: Reload the page to reflect the new context
+        // window.location.reload()
       } else {
         console.error('Failed to switch context:', response.status)
         const error = await response.json()
         console.error('Error details:', error)
-        
-        // Show user-friendly error message
-        alert(`Failed to switch context: ${error.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Failed to switch context:', error)
-      alert('Network error: Could not switch context. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  // Sync client state with server state
-  const syncWithServerState = async () => {
-    try {
-      const response = await fetch('/api/auth/switch-context', {
-        method: 'GET'
-      })
-      
-      if (response.ok) {
-        const { context } = await response.json()
-        
-        if (context) {
-          // Server has active context, ensure client matches
-          const savedContext = localStorage.getItem('activeContext')
-          if (!savedContext) {
-            // Client missing context that server has - this shouldn't happen
-            console.warn('Client/server state mismatch detected')
-          }
-        } else {
-          // Server has no context, ensure client is clear
-          if (localStorage.getItem('activeContext')) {
-            localStorage.removeItem('activeContext')
-            setActiveContext(null)
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to sync with server state:', error)
-    }
-  }
-
+  // Load saved context on mount
   useEffect(() => {
-    const initializeContext = async () => {
-      // First, load from localStorage
-      const savedContext = localStorage.getItem('activeContext')
-      if (savedContext) {
-        try {
-          setActiveContext(JSON.parse(savedContext))
-        } catch (e) {
-          console.error('Failed to parse saved context:', e)
-          localStorage.removeItem('activeContext')
-        }
+    const savedContext = localStorage.getItem('activeContext')
+    if (savedContext) {
+      try {
+        setActiveContext(JSON.parse(savedContext))
+      } catch (e) {
+        console.error('Failed to parse saved context:', e)
       }
-      
-      // Then sync with server to ensure consistency
-      await syncWithServerState()
     }
-    
-    initializeContext()
   }, [])
 
+  // Don't show for basic users (check both profile and user metadata for role)
   if (!user || userRole === 'CLIENT' || userRole === 'BARBER') {
     return null
   }
 
+  // Don't show if no contexts available
   if (availableContexts.length === 0) {
     return null
   }

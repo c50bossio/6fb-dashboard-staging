@@ -1,639 +1,535 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createOptimizedClient } from '@/lib/supabase-connection-pool'
 
-export async function GET(request) {
+// Demo barbershop ID constant - matches Supabase UUID
+const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+
+// Inline notification handler (can be moved to external service later)
+const sendBookingNotification = async (appointmentData, customerData, preferences) => {
   try {
-    const supabase = await createClient()
-    
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get user profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, full_name, role, barbershop_id, barbershop_id')
-      .eq('id', user.id)
-      .single()
-    
-    if (!profile) {
-      return NextResponse.json({ 
-        appointments: [],
-        message: 'No profile found' 
-      })
-    }
-
-    // Determine barbershop ID
-    let barbershopId = profile.barbershop_id || profile.barbershop_id
-    
-    // Skip barbershop_staff query to avoid 406 errors
-    // Staff associations should be managed through profiles table
-    // If no barbershopId in profile, will return empty appointments below
-
-    // If still no barbershop, return empty
-    if (!barbershopId) {
-      return NextResponse.json({ 
-        appointments: [],
-        message: 'No barbershop associated' 
-      })
-    }
-
-    // Get URL parameters for date range optimization
-    const { searchParams } = new URL(request.url)
-    const start = searchParams.get('start') // FullCalendar sends these automatically
-    const end = searchParams.get('end')
-    const locationIds = searchParams.get('location_ids')
-    const barbershopIdParam = searchParams.get('barbershop_id')
-    
-    // Use FullCalendar date range if provided, otherwise default to today + 30 days for performance
-    let dateRange = { startDate: null, endDate: null }
-    if (start && end) {
-      dateRange.startDate = new Date(start)
-      dateRange.endDate = new Date(end)
-      console.log(`[Calendar API] Using FullCalendar date range: ${start} to ${end}`)
-    } else {
-      // Fallback: today + 30 days ahead for reasonable data fetch
-      dateRange.startDate = new Date()
-      startDate.setHours(0, 0, 0, 0)
-      dateRange.endDate = new Date(dateRange.startDate)
-      endDate.setDate(endDate.getDate() + 30)
-      console.log(`[Calendar API] Using default date range: ${startDate.toISOString()} to ${endDate.toISOString()}`)
-    }
-
-    // Handle multi-location requests
-    let targetbarbershopIds = []
-    if (locationIds) {
-      targetbarbershopIds = locationIds.split(',')
-      console.log(`[Calendar API] Multi-location request for shops: ${targetbarbershopIds.join(', ')}`)
-    } else if (barbershopIdParam) {
-      targetbarbershopIds = [barbershopIdParam]
-      console.log(`[Calendar API] Single shop request: ${barbershopIdParam}`)
-    } else {
-      targetbarbershopIds = [barbershopId]
-      console.log(`[Calendar API] Using user's barbershop: ${barbershopId}`)
-    }
-
-    // Build optimized query with date range filtering
-    let query = supabase
-      .from('bookings')
-      .select(`
-        id,
-        customer_name,
-        customer_email,
-        customer_phone,
-        date,
-        time,
-        service_name,
-        service_price,
-        duration_minutes,
-        status,
-        barber_id,
-        barbershop_id,
-        notes,
-        created_at,
-        updated_at
-      `)
-      .gte('date', startDate.toISOString())
-      .lt('date', endDate.toISOString())
-      .order('date', { ascending: true })
-      .order('time', { ascending: true })
-
-    // Apply barbershop filter
-    if (targetbarbershopIds.length === 1) {
-      query = query.eq('barbershop_id', targetbarbershopIds[0])
-    } else if (targetbarbershopIds.length > 1) {
-      query = query.in('barbershop_id', targetbarbershopIds)
-    }
-
-    const { data: bookings, error: bookingsError } = await query
-
-    if (bookingsError) {
-      console.error('Error fetching bookings:', bookingsError)
-      return NextResponse.json({ 
-        appointments: [],
-        error: 'Failed to fetch bookings' 
-      })
-    }
-
-    // Query walk-in appointments from the appointments table
-    let walkInQuery = supabase
-      .from('appointments')
-      .select(`
-        id,
-        date,
-        time,
-        status,
-        barber_id,
-        barbershop_id,
-        service_id,
-        customer_id,
-        notes,
-        created_at,
-        updated_at,
-        customers (
-          id,
-          full_name,
-          phone,
-          email
-        )
-      `)
-      .gte('date', startDate.toISOString().split('T')[0])
-      .lt('date', endDate.toISOString().split('T')[0])
-      .in('status', ['WALK_IN_WAITING', 'IN_SERVICE']) // Include both waiting and in-service
-      .order('created_at', { ascending: true })
-
-    // Apply barbershop filter to walk-ins
-    if (targetbarbershopIds.length === 1) {
-      walkInQuery = walkInQuery.eq('barbershop_id', targetbarbershopIds[0])
-    } else if (targetbarbershopIds.length > 1) {
-      walkInQuery = walkInQuery.in('barbershop_id', targetbarbershopIds)
-    }
-
-    const { data: walkIns, error: walkInsError } = await walkInQuery
-
-    if (walkInsError) {
-      console.error('Error fetching walk-ins:', walkInsError)
-      // Don't fail completely if walk-ins fail, just log and continue
-    }
-
-    // Get barber details for both bookings and walk-ins
-    const bookingBarberIds = bookings?.map(b => b.barber_id).filter(Boolean) || []
-    const walkInBarberIds = walkIns?.map(w => w.barber_id).filter(Boolean) || []
-    const barberIds = [...new Set([...bookingBarberIds, ...walkInBarberIds])]
-    let barberMap = {}
-    
-    if (barberIds.length > 0) {
-      const { data: barbers } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .in('id', barberIds)
-      
-      if (barbers) {
-        barberMap = barbers.reduce((acc, barber) => {
-          acc[barber.id] = barber.full_name
-          return acc
-        }, {})
-      }
-    }
-
-    // Get service details for walk-ins
-    const walkInServiceIds = walkIns?.map(w => w.service_id).filter(Boolean) || []
-    let serviceMap = {}
-    
-    if (walkInServiceIds.length > 0) {
-      const { data: services } = await supabase
-        .from('services')
-        .select('id, name, duration_minutes, price')
-        .in('id', walkInServiceIds)
-      
-      if (services) {
-        serviceMap = services.reduce((acc, service) => {
-          acc[service.id] = service
-          return acc
-        }, {})
-      }
-    }
-
-    // Transform bookings to calendar appointments format
-    const appointments = (bookings || []).map(booking => {
-      // Parse time to create full datetime
-      const [hours, minutes] = (booking.time || '09:00').split(':')
-      const startDateTime = new Date(booking.date)
-      startDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
-      
-      // Calculate end time based on duration
-      const endDateTime = new Date(startDateTime)
-      const duration = booking.duration_minutes || 30
-      endDateTime.setMinutes(endDateTime.getMinutes() + duration)
-      
-      // Determine color based on status
-      let backgroundColor = '#10b981' // Default green
-      let borderColor = '#059669'
-      const textColor = '#ffffff'
-      
-      if (booking.status === 'cancelled') {
-        backgroundColor = '#ef4444'
-        borderColor = '#dc2626'
-      } else if (booking.status === 'completed') {
-        backgroundColor = '#6b7280'
-        borderColor = '#4b5563'
-      } else if (booking.status === 'no_show') {
-        backgroundColor = '#f59e0b'
-        borderColor = '#d97706'
-      }
-
-      const title = booking.status === 'cancelled' 
-        ? `❌ ${booking.customer_name || 'Customer'} - ${booking.service_name || 'Service'}`
-        : `${booking.customer_name || 'Customer'} - ${booking.service_name || 'Service'}`
-
-      return {
-        id: booking.id,
-        title,
-        start: startDateTime.toISOString(),
-        end: endDateTime.toISOString(),
-        backgroundColor,
-        borderColor,
-        textColor,
-        classNames: booking.status === 'cancelled' ? ['cancelled-appointment'] : [],
-        extendedProps: {
-          customer: booking.customer_name,
-          email: booking.customer_email,
-          phone: booking.customer_phone,
-          service: booking.service_name,
-          price: booking.service_price,
-          duration: duration,
-          status: booking.status,
-          notes: booking.notes,
-          barberId: booking.barber_id,
-          barberName: barberMap[booking.barber_id] || 'Unassigned',
-          barbershopId: booking.barbershop_id
-        }
-      }
+    console.log('📱 Booking notification would be sent:', {
+      customer: customerData.name,
+      appointment: appointmentData.scheduled_at,
+      channels: Object.entries(preferences).filter(([k, v]) => v && ['sms', 'email'].includes(k)).map(([k]) => k)
     })
-
-    // Transform walk-in appointments to calendar format
-    const walkInAppointments = (walkIns || []).map(walkIn => {
-      // Parse time to create full datetime
-      const [hours, minutes] = (walkIn.time || '09:00').split(':')
-      const startDateTime = new Date(walkIn.date)
-      startDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0)
-      
-      // Get service details
-      const service = serviceMap[walkIn.service_id]
-      const serviceName = service?.name || 'Walk-in Service'
-      const duration = service?.duration_minutes || 30
-      
-      // Calculate end time based on duration
-      const endDateTime = new Date(startDateTime)
-      endDateTime.setMinutes(endDateTime.getMinutes() + duration)
-      
-      // Walk-in specific colors - orange/amber theme
-      let backgroundColor = '#f59e0b' // Amber for waiting
-      let borderColor = '#d97706'
-      const textColor = '#ffffff'
-      
-      if (walkIn.status === 'IN_SERVICE') {
-        backgroundColor = '#3b82f6' // Blue for in-service
-        borderColor = '#2563eb'
-      }
-
-      // Calculate queue position for display
-      const queuePosition = walkIns.findIndex(w => w.id === walkIn.id) + 1
-      const customerName = walkIn.customers?.full_name || 'Walk-in Customer'
-      
-      const title = walkIn.status === 'WALK_IN_WAITING' 
-        ? `🚶 #${queuePosition} ${customerName} - ${serviceName}`
-        : `🔄 ${customerName} - ${serviceName}`
-
-      return {
-        id: `walkin_${walkIn.id}`, // Prefix to distinguish from regular appointments
-        title,
-        start: startDateTime.toISOString(),
-        end: endDateTime.toISOString(),
-        backgroundColor,
-        borderColor,
-        textColor,
-        classNames: ['walk-in-appointment'],
-        extendedProps: {
-          customer: customerName,
-          email: walkIn.customers?.email || '',
-          phone: walkIn.customers?.phone || '',
-          service: serviceName,
-          price: service?.price || 0,
-          duration: duration,
-          status: walkIn.status,
-          notes: walkIn.notes,
-          barberId: walkIn.barber_id,
-          barberName: barberMap[walkIn.barber_id] || 'Available',
-          barbershopId: walkIn.barbershop_id,
-          isWalkIn: true,
-          queuePosition: walkIn.status === 'WALK_IN_WAITING' ? queuePosition : null,
-          createdAt: walkIn.created_at
-        }
-      }
-    })
-
-    // Combine regular appointments and walk-ins
-    const allAppointments = [...appointments, ...walkInAppointments]
-
-    // Performance and debugging metrics
-    const performanceEnd = Date.now()
-    const performanceMetrics = {
-      totalRecords: allAppointments.length,
-      regularAppointments: appointments.length,
-      walkInAppointments: walkInAppointments.length,
-      dateRange: {
-        start: startDate.toISOString(),
-        end: endDate.toISOString(),
-        daysSpan: Math.ceil((endDate - dateRange.startDate) / (1000 * 60 * 60 * 24))
-      },
-      barbershops: targetbarbershopIds,
-      queryOptimization: start && end ? 'FullCalendar date range used' : 'Default 30-day range used'
-    }
     
-    console.log(`[Calendar API] Performance metrics:`, performanceMetrics)
-    console.log(`[Calendar API] Integrated ${walkInAppointments.length} walk-in appointments with ${appointments.length} regular appointments`)
-
-    return NextResponse.json({
-      appointments: allAppointments,
-      count: allAppointments.length,
-      barbershopId,
-      meta: {
-        dateRange: {
-          start: startDate.toISOString(),
-          end: endDate.toISOString()
-        },
-        optimization: {
-          rangeOptimized: !!(start && end),
-          recordsReturned: appointments.length,
-          barbershopsQueried: targetbarbershopIds.length
-        }
-      }
-    })
-
+    return {
+      success: true,
+      notifications: [],
+      summary: { sent: 0, total: 0, success_rate: '0%' }
+    }
   } catch (error) {
-    console.error('Error in appointments endpoint:', error)
-    return NextResponse.json({ 
-      error: 'Failed to fetch appointments',
-      appointments: []
-    }, { status: 500 })
+    console.error('Notification error:', error)
+    return { success: false, error: error.message, notifications: [] }
   }
 }
 
-export async function PATCH(request) {
+// 🚨 CONNECTION POOL FIX: Use optimized client with connection pooling
+const supabase = createOptimizedClient({ serviceRole: true })
+
+export async function GET(request) {
   try {
-    const supabase = await createClient()
-    
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { searchParams } = new URL(request.url)
-    const action = searchParams.get('action')
+    const startDate = searchParams.get('start_date')
+    const endDate = searchParams.get('end_date')
+    const barberId = searchParams.get('barber_id')
+    const shopId = searchParams.get('shop_id')
     
-    const body = await request.json()
-
-    // Handle different actions
-    if (action === 'block') {
-      // Block time slot
-      const { 
-        date, 
-        start_time, 
-        end_time, 
-        barber_id,
-        reason = 'Blocked',
-        recurring = false,
-        recurrence_pattern
-      } = body
-
-      // Create a blocked time entry
-      const { data: blockedTime, error: blockError } = await supabase
-        .from('bookings')
-        .insert({
-          barbershop_id: body.barbershop_id || body.barbershop_id,
-          barber_id: barber_id || user.id,
-          customer_name: 'BLOCKED',
-          customer_email: 'blocked@system.local',
-          customer_phone: '0000000000',
-          date: date,
-          time: start_time,
-          service_name: reason || 'Time Blocked',
-          duration_minutes: calculateDuration(start_time, end_time),
-          service_price: 0,
-          status: 'blocked',
-          notes: body.notes || 'Time blocked by staff',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single()
-
-      if (blockError) {
-        console.error('Error blocking time:', blockError)
-        return NextResponse.json({ 
-          error: 'Failed to block time slot',
-          details: blockError.message 
-        }, { status: 400 })
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: 'Time slot blocked successfully',
-        data: blockedTime
-      })
-
-    } else if (action === 'reschedule') {
-      // Reschedule appointment
-      const { id, start_time, end_time, date, barber_id } = body
-
-      const { data: updated, error: updateError } = await supabase
-        .from('bookings')
-        .update({
-          date: date,
-          time: start_time,
-          barber_id: barber_id,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (updateError) {
-        console.error('Error rescheduling appointment:', updateError)
-        return NextResponse.json({ 
-          error: 'Failed to reschedule appointment' 
-        }, { status: 400 })
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: 'Appointment rescheduled successfully',
-        data: updated
-      })
-
-    } else if (action === 'cancel') {
-      // Cancel appointment
-      const { id, reason } = body
-
-      const { data: cancelled, error: cancelError } = await supabase
-        .from('bookings')
-        .update({
-          status: 'cancelled',
-          notes: reason || 'Cancelled by user',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (cancelError) {
-        console.error('Error cancelling appointment:', cancelError)
-        return NextResponse.json({ 
-          error: 'Failed to cancel appointment' 
-        }, { status: 400 })
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: 'Appointment cancelled successfully',
-        data: cancelled
-      })
-
-    } else {
-      // Default update action
-      const { id, ...updates } = body
-
-      const { data: updated, error: updateError } = await supabase
-        .from('bookings')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (updateError) {
-        console.error('Error updating appointment:', updateError)
-        return NextResponse.json({ 
-          error: 'Failed to update appointment' 
-        }, { status: 400 })
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: 'Appointment updated successfully',
-        data: updated
-      })
+    console.log('🚨 API CRITICAL: Received parameters:', {
+      startDate,
+      endDate,
+      barberId,
+      shopId,
+      allParams: Object.fromEntries(searchParams.entries())
+    })
+    
+    // Use bookings table with new recurring fields
+    let query = supabase.from('bookings').select('*')
+    
+    // 🚨 CRITICAL FIX: Add shop_id filter to prevent returning entire database
+    // Default to demo shop if no shop_id provided
+    const filterShopId = shopId || DEMO_BARBERSHOP_ID
+    query = query.eq('shop_id', filterShopId)
+    console.log('🔒 FILTERED by shop_id:', filterShopId)
+    
+    // Add other filters
+    if (startDate) {
+      query = query.gte('start_time', startDate)
     }
-
-  } catch (error) {
-    console.error('Error in PATCH appointments endpoint:', error)
+    if (endDate) {
+      query = query.lte('end_time', endDate)
+    }
+    if (barberId) {
+      query = query.eq('barber_id', barberId)
+    }
+    
+    // Execute query
+    const { data: bookings, error } = await query.order('start_time')
+    
+    if (error) {
+      console.log('Error fetching from bookings table:', error.message)
+      return NextResponse.json(
+        { error: 'Failed to fetch appointments', details: error.message },
+        { status: 500 }
+      )
+    }
+    
+    // Fetch related data for better display
+    const serviceIds = [...new Set(bookings.map(b => b.service_id).filter(Boolean))]
+    const customerIds = [...new Set(bookings.map(b => b.customer_id).filter(Boolean))]
+    const barberIds = [...new Set(bookings.map(b => b.barber_id).filter(Boolean))]
+    
+    // Fetch services
+    let servicesMap = {}
+    if (serviceIds.length > 0) {
+      const { data: services } = await supabase
+        .from('services')
+        .select('id, name, duration_minutes, price')
+        .in('id', serviceIds)
+      
+      if (services) {
+        services.forEach(s => {
+          servicesMap[s.id] = s
+        })
+      }
+    }
+    
+    // Fetch customers
+    let customersMap = {}
+    if (customerIds.length > 0) {
+      const { data: customers } = await supabase
+        .from('customers')
+        .select('id, name, phone, email')
+        .in('id', customerIds)
+      
+      if (customers) {
+        customers.forEach(c => {
+          customersMap[c.id] = c
+        })
+      }
+    }
+    
+    // Fetch barbers
+    let barbersMap = {}
+    if (barberIds.length > 0) {
+      const { data: barbers } = await supabase
+        .from('barbers')
+        .select('id, name, color')
+        .in('id', barberIds)
+      
+      if (barbers) {
+        barbers.forEach(b => {
+          barbersMap[b.id] = b
+        })
+      }
+    }
+    
+    // Transform bookings to FullCalendar event format with RRule support
+    const events = bookings.map(booking => {
+      // Get related data
+      const customer = customersMap[booking.customer_id] || {}
+      const service = servicesMap[booking.service_id] || {}
+      const barber = barbersMap[booking.barber_id] || {}
+      
+      // Build title with actual names
+      const customerName = customer.name || booking.customer_name || 'Customer'
+      const serviceName = service.name || booking.service_name || 'Unknown Service'
+      
+      // Check if appointment is cancelled or blocked for proper styling
+      const isCancelled = booking.status === 'cancelled'
+      const isBlocked = booking.status === 'blocked' || booking.customer_id === null
+      
+      // Build title based on appointment type
+      let title = ''
+      if (isBlocked) {
+        title = `🚫 ${booking.notes || 'Blocked'}`
+      } else if (isCancelled) {
+        title = `❌ ${customerName} - ${serviceName}`
+      } else {
+        title = `${customerName} - ${serviceName}`
+      }
+      
+      // Build event object with RRule support at the top level
+      const event = {
+        id: booking.id,
+        resourceId: booking.barber_id,
+        title: title,
+        start: booking.start_time,
+        end: booking.end_time,
+        backgroundColor: isBlocked ? '#9ca3af' : (isCancelled ? '#ef4444' : (barber.color || '#546355')),
+        borderColor: isBlocked ? '#6b7280' : (isCancelled ? '#dc2626' : (barber.color || '#546355')),
+        classNames: isBlocked ? ['blocked-slot'] : (isCancelled ? ['cancelled-appointment'] : []),
+        display: 'auto',
+        extendedProps: {
+          customer: customerName,
+          customerPhone: customer.phone || booking.customer_phone,
+          customerEmail: customer.email || booking.customer_email,
+          service: serviceName,
+          service_id: booking.service_id,
+          barber_id: booking.barber_id,
+          duration: booking.duration_minutes || service.duration_minutes,
+          price: booking.price || service.price,
+          status: booking.status,
+          notes: booking.notes,
+          isRecurring: booking.is_recurring,
+          isTest: booking.is_test,
+          isBlocked: isBlocked,
+          recurring_pattern: booking.recurring_pattern
+        }
+      }
+      
+      // Add RRule at the top level for FullCalendar native support
+      if (booking.is_recurring && booking.recurring_pattern && booking.recurring_pattern.rrule) {
+        // Keep the original start and end times
+        event.start = booking.recurring_pattern.dtstart || booking.start_time
+        event.end = booking.recurring_pattern.dtend || booking.end_time
+        
+        // Parse the RRule and add explicit DTSTART for FullCalendar compatibility
+        // This ensures the time is preserved in recurring instances
+        const startDate = new Date(event.start)
+        const dtstart = startDate.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+        
+        // If RRule doesn't have DTSTART, add it as a separate line (RFC 5545 format)
+        if (!booking.recurring_pattern.rrule.includes('DTSTART')) {
+          event.rrule = `DTSTART:${dtstart}\n${booking.recurring_pattern.rrule}`
+        } else {
+          event.rrule = booking.recurring_pattern.rrule
+        }
+        
+        console.log('🔧 Recurring event configured:', {
+          title: event.title,
+          start: event.start,
+          end: event.end,
+          rrule: event.rrule,
+          startTime: new Date(event.start).toLocaleTimeString(),
+          endTime: new Date(event.end).toLocaleTimeString()
+        })
+      }
+      
+      return event
+    })
+    
     return NextResponse.json({ 
-      error: 'Failed to update appointment',
-      details: error.message
-    }, { status: 500 })
+      appointments: events, 
+      source: 'bookings_table_with_rrule',
+      count: events.length 
+    })
+    
+  } catch (error) {
+    console.error('Error fetching appointments:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch appointments', details: error.message },
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(request) {
   try {
-    const supabase = await createClient()
-    
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const body = await request.json()
     
-    // Create new appointment
-    const { data: newBooking, error: createError } = await supabase
+    console.log('Creating new appointment:', body)
+    
+    // Check if this is a blocked time slot
+    const isBlockedTime = body.status === 'blocked' || body.is_blocked_time || body.customer_id === 'BLOCKED'
+    
+    // Calculate end_time from scheduled_at and duration_minutes if not provided
+    if (!body.end_time && body.scheduled_at && body.duration_minutes) {
+      const startDate = new Date(body.scheduled_at)
+      const endDate = new Date(startDate.getTime() + body.duration_minutes * 60000)
+      body.end_time = endDate.toISOString()
+      body.start_time = body.scheduled_at
+    }
+    
+    // Validate required fields (relaxed for blocked time)
+    if (!body.barber_id || (!body.start_time && !body.scheduled_at) || (!body.end_time && !body.duration_minutes)) {
+      return NextResponse.json(
+        { error: 'Missing required fields: barber_id, start_time/scheduled_at, end_time/duration_minutes' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate date format
+    const startTime = new Date(body.start_time || body.scheduled_at)
+    const endTime = new Date(body.end_time || new Date(startTime.getTime() + (body.duration_minutes || 30) * 60000))
+    
+    if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+      return NextResponse.json(
+        { error: 'Invalid date format for start_time or end_time' },
+        { status: 400 }
+      )
+    }
+
+    // 🚨 RACE CONDITION FIX: Check for double booking before proceeding
+    const shopId = body.shop_id || body.barbershop_id || DEMO_BARBERSHOP_ID
+    
+    // Check for overlapping appointments (prevents double booking)
+    const { data: overlapping, error: overlapError } = await supabase
       .from('bookings')
-      .insert({
-        barbershop_id: body.barbershop_id || body.barbershop_id,
-        barber_id: body.barber_id || user.id,
-        customer_name: body.customer_name,
-        customer_email: body.customer_email,
-        customer_phone: body.customer_phone,
-        date: body.date,
-        time: body.time || body.start_time,
-        service_name: body.service_name || body.service,
-        duration_minutes: body.service_duration || body.duration || body.duration_minutes || 30,
-        service_price: body.service_price || body.price || 0,
-        status: body.status || 'confirmed',
-        notes: body.notes,
+      .select('id, start_time, end_time, status, customer_id')
+      .eq('shop_id', shopId)
+      .eq('barber_id', body.barber_id)
+      .neq('status', 'cancelled')
+      .or(`and(start_time.lt.${endTime.toISOString()},end_time.gt.${startTime.toISOString()})`)
+      .limit(1)
+      .single()
+    
+    if (!overlapError && overlapping) {
+      return NextResponse.json(
+        { 
+          error: 'Time slot conflict detected',
+          details: `Appointment already exists from ${overlapping.start_time} to ${overlapping.end_time}`,
+          conflict_id: overlapping.id
+        },
+        { status: 409 }
+      )
+    }
+    
+    // 🚨 RACE CONDITION FIX: Handle customer creation/linking with retry logic
+    let customerId = body.customer_id
+    let customerData = null
+    
+    // Skip customer handling for blocked time slots
+    if (isBlockedTime) {
+      customerId = null  // Set to null instead of 'BLOCKED' to avoid foreign key constraint
+      customerData = { name: 'BLOCKED', email: '', phone: '' }
+    } else if (customerId) {
+      // If customer_id provided, fetch existing customer data
+      const { data: existingCustomer, error: fetchError } = await supabase
+        .from('customers')
+        .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
+        .eq('id', customerId)
+        .single()
+      
+      if (!fetchError && existingCustomer) {
+        customerData = existingCustomer
+      }
+    } else if (body.customer_mode === 'new' && (body.client_name || body.customer_name)) {
+      // 🚨 RACE CONDITION FIX: Check for duplicate customers by phone/email first
+      const customerName = body.client_name || body.customer_name
+      const customerPhone = body.client_phone || body.customer_phone  
+      const customerEmail = body.client_email || body.customer_email
+      
+      // Check if customer already exists to prevent duplicates
+      let existingQuery = supabase
+        .from('customers')
+        .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
+        .eq('shop_id', shopId)
+      
+      if (customerPhone) {
+        existingQuery = existingQuery.eq('phone', customerPhone)
+      } else if (customerEmail) {
+        existingQuery = existingQuery.eq('email', customerEmail)
+      }
+      
+      const { data: existingCustomerCheck, error: checkError } = await existingQuery.single()
+      
+      if (!checkError && existingCustomerCheck) {
+        // Use existing customer
+        customerId = existingCustomerCheck.id
+        customerData = existingCustomerCheck
+        console.log('Using existing customer:', existingCustomerCheck.id)
+      } else {
+        // Create new customer with retry logic
+        const newCustomerData = {
+          name: customerName,
+          email: customerEmail,
+          phone: customerPhone,
+          shop_id: shopId,
+          notification_preferences: body.notification_preferences || {
+            sms: true,
+            email: true,
+            confirmations: true,
+            reminders: true
+          }
+        }
+
+        const { data: customer, error: customerError } = await supabase
+          .from('customers')
+          .insert([newCustomerData])
+          .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
+          .single()
+        
+        if (!customerError && customer) {
+          customerId = customer.id
+          customerData = customer
+          console.log('Created new customer:', customer.id)
+        } else if (customerError?.code === '23505') {
+          // Handle unique constraint violation - customer was created by another request
+          console.log('Customer already exists (concurrent creation), fetching...')
+          const { data: concurrentCustomer } = await supabase
+            .from('customers')
+            .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
+            .eq('shop_id', shopId)
+            .or(`phone.eq.${customerPhone},email.eq.${customerEmail}`)
+            .single()
+          
+          if (concurrentCustomer) {
+            customerId = concurrentCustomer.id
+            customerData = concurrentCustomer
+          }
+        } else {
+          console.error('Error creating customer:', customerError)
+          // Continue without customer_id if creation fails
+        }
+      }
+    }
+    
+    // Prepare booking data for new schema
+    const bookingData = {
+      shop_id: body.shop_id || body.barbershop_id || DEMO_BARBERSHOP_ID,
+      barber_id: body.barber_id,
+      customer_id: customerId,
+      service_id: isBlockedTime ? null : body.service_id,
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
+      status: isBlockedTime ? 'blocked' : (body.status || 'confirmed'),
+      price: isBlockedTime ? 0 : (body.service_price || body.price),
+      notes: isBlockedTime ? (body.notes || 'Time blocked') : (body.client_notes || body.notes),
+      is_test: body.is_test || false
+      // Note: customer_name, customer_phone, customer_email columns don't exist in bookings table
+      // Customer data is stored in the customers table and linked via customer_id
+    }
+    
+    // Handle recurring appointments with native RRule support
+    if (body.is_recurring && body.recurrence_rule) {
+      // Add DTSTART to RRule for FullCalendar compatibility
+      const dtstart = startTime.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+      let enhancedRRule = body.recurrence_rule
+      if (!body.recurrence_rule.includes('DTSTART')) {
+        enhancedRRule = `DTSTART:${dtstart}\n${body.recurrence_rule}`
+      }
+      
+      // Build the recurring pattern object
+      const recurringPattern = {
+        rrule: enhancedRRule,
+        dtstart: startTime.toISOString(),
+        dtend: endTime.toISOString(),
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
+        created_by: 'booking_api'
+      }
+      
+      bookingData.is_recurring = true
+      bookingData.recurring_pattern = recurringPattern
+    }
+    
+    // 🚨 RACE CONDITION FIX: Final check for conflicts before inserting
+    // Double-check for overlapping appointments right before insert
+    const { data: finalOverlapCheck } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('shop_id', bookingData.shop_id)
+      .eq('barber_id', bookingData.barber_id)
+      .neq('status', 'cancelled')
+      .or(`and(start_time.lt.${bookingData.end_time},end_time.gt.${bookingData.start_time})`)
+      .limit(1)
+    
+    if (finalOverlapCheck && finalOverlapCheck.length > 0) {
+      return NextResponse.json(
+        { 
+          error: 'Time slot conflict detected during booking creation',
+          details: 'Another appointment was created at the same time',
+          conflict_id: finalOverlapCheck[0].id
+        },
+        { status: 409 }
+      )
+    }
+
+    // Insert the single booking record (FullCalendar will handle recurring instances)
+    const { data: newBooking, error: bookingError } = await supabase
+      .from('bookings')
+      .insert([bookingData])
       .select()
       .single()
-
-    if (createError) {
-      console.error('Error creating appointment:', createError)
-      return NextResponse.json({ 
-        error: 'Failed to create appointment',
-        details: createError.message
-      }, { status: 400 })
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Appointment created successfully',
-      data: newBooking
-    })
-
-  } catch (error) {
-    console.error('Error in POST appointments endpoint:', error)
-    return NextResponse.json({ 
-      error: 'Failed to create appointment',
-      details: error.message
-    }, { status: 500 })
-  }
-}
-
-export async function DELETE(request) {
-  try {
-    const supabase = await createClient()
     
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (bookingError) {
+      console.error('Error creating booking:', bookingError)
+      return NextResponse.json(
+        { error: 'Failed to create appointment', details: bookingError.message },
+        { status: 500 }
+      )
+    }
+
+    // Handle notifications if requested
+    let notificationResults = null
+    const notificationPreferences = body.notification_preferences || {}
     
-    if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if ((notificationPreferences.sms || notificationPreferences.email) && notificationPreferences.confirmations) {
+      try {
+        // Prepare appointment data for notifications
+        const appointmentDataForNotification = {
+          id: newBooking.id,
+          scheduled_at: newBooking.start_time,
+          client_name: customerData?.name || body.client_name || body.customer_name,
+          client_phone: customerData?.phone || body.client_phone || body.customer_phone,
+          client_email: customerData?.email || body.client_email || body.customer_email,
+          barber_name: body.barber_name || 'Your Barber',
+          service_name: body.service_name || 'Your Service'
+        }
+
+        // Use customer data if available, otherwise use data from request body
+        const customerDataForNotification = customerData || {
+          name: body.client_name || body.customer_name,
+          phone: body.client_phone || body.customer_phone,
+          email: body.client_email || body.customer_email
+        }
+
+        // Send booking confirmation
+        notificationResults = await sendBookingNotification(
+          appointmentDataForNotification,
+          customerDataForNotification,
+          notificationPreferences
+        )
+
+        // Schedule reminder if enabled (placeholder for now)
+        if (notificationPreferences.reminders) {
+          console.log('⏰ Reminder scheduling requested for:', {
+            customer: customerDataForNotification.name,
+            appointmentTime: appointmentDataForNotification.scheduled_at
+          })
+        }
+
+        console.log('📱 Notifications sent:', notificationResults)
+      } catch (notificationError) {
+        console.error('Notification failed:', notificationError)
+        // Don't fail the appointment creation if notifications fail
+      }
+    }
+    
+    // Return success response
+    const response = {
+      appointment: newBooking,
+      message: bookingData.is_recurring 
+        ? 'Recurring appointment created with RRule pattern' 
+        : 'Single appointment created successfully',
+      is_recurring: bookingData.is_recurring || false,
+      customer_id: customerId,
+      customer_created: !body.customer_id && customerId ? true : false
+    }
+    
+    if (bookingData.is_recurring) {
+      response.rrule = body.recurrence_rule
+      response.recurring_pattern = bookingData.recurring_pattern
     }
 
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
-
-    if (!id) {
-      return NextResponse.json({ 
-        error: 'Appointment ID is required' 
-      }, { status: 400 })
+    // Include notification results if applicable
+    if (notificationResults) {
+      response.notifications = {
+        success: notificationResults.success,
+        summary: notificationResults.summary,
+        channels_attempted: notificationResults.notifications?.map(n => n.channel) || []
+      }
     }
-
-    const { error: deleteError } = await supabase
-      .from('bookings')
-      .delete()
-      .eq('id', id)
-
-    if (deleteError) {
-      console.error('Error deleting appointment:', deleteError)
-      return NextResponse.json({ 
-        error: 'Failed to delete appointment',
-        details: deleteError.message
-      }, { status: 400 })
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Appointment deleted successfully'
-    })
-
+    
+    console.log('Successfully created appointment:', response)
+    
+    return NextResponse.json(response, { status: 201 })
+    
   } catch (error) {
-    console.error('Error in DELETE appointments endpoint:', error)
-    return NextResponse.json({ 
-      error: 'Failed to delete appointment',
-      details: error.message
-    }, { status: 500 })
+    console.error('Error creating appointment:', error)
+    return NextResponse.json(
+      { error: 'Failed to create appointment', details: error.message },
+      { status: 500 }
+    )
   }
-}
-
-// Helper function to calculate duration in minutes
-function calculateDuration(startTime, endTime) {
-  const [startHours, startMinutes] = startTime.split(':').map(Number)
-  const [endHours, endMinutes] = endTime.split(':').map(Number)
-  
-  const startTotalMinutes = startHours * 60 + startMinutes
-  const endTotalMinutes = endHours * 60 + endMinutes
-  
-  return endTotalMinutes - startTotalMinutes
 }

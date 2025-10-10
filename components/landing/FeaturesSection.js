@@ -62,14 +62,14 @@ const FeaturesSection = () => {
   ]
 
   return (
-    <section className="py-24 bg-white" id="features">
+    <section className="py-24 bg-background" id="features">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-4">
             Everything You Need to Run Your Barbershop
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             From bookings to payments to analytics - we've got you covered with a complete business platform.
           </p>
         </div>
@@ -79,7 +79,7 @@ const FeaturesSection = () => {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="group relative bg-gray-50 rounded-xl p-8 hover:bg-white hover:shadow-xl transition-all duration-300"
+              className="group relative bg-muted/50 dark:bg-card rounded-xl p-8 hover:bg-card dark:hover:bg-card/80 hover:shadow-xl transition-all duration-300 border border-transparent hover:border-border"
             >
               <div className="flex items-start">
                 <div className="flex-shrink-0">
@@ -88,10 +88,10 @@ const FeaturesSection = () => {
                   </div>
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     {feature.description}
                   </p>
                 </div>

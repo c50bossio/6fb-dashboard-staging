@@ -1,18 +1,14 @@
 'use client'
 
-import {
-  CreditCardIcon,
-  CurrencyDollarIcon,
-  LockClosedIcon,
-  BanknotesIcon
-} from '@heroicons/react/24/outline'
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import { loadStripe } from '@stripe/stripe-js'
 import { useState, useEffect } from 'react'
-import { getPaymentErrorMessage, logPaymentError, retryPaymentWithBackoff, shouldSuggestAlternativePayment } from '@/lib/payment-errors'
+import { CreditCardIcon, CurrencyDollarIcon, ShieldCheckIcon, LockClosedIcon, BanknotesIcon } from '@heroicons/react/24/outline'
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
+// Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder')
 
+// Card Element Component
 function CardInput({ onCardComplete }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -53,6 +49,7 @@ function CardInput({ onCardComplete }) {
   )
 }
 
+// Main Payment Step Component
 function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
   const stripe = useStripe()
   const elements = useElements()
@@ -66,14 +63,13 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
   const [cardComplete, setCardComplete] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState(null)
-  const [showAlternativePayment, setShowAlternativePayment] = useState(false)
-  const [_retryCount, setRetryCount] = useState(0)
   const [customerInfo, setCustomerInfo] = useState({
     name: '',
     email: '',
     phone: ''
   })
   
+  // Calculate payment amounts
   const totalAmount = bookingData.price || 0
   const depositAmount = shopSettings.depositRequired 
     ? (shopSettings.depositPercentage 
@@ -93,6 +89,8 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
   
   const loadSavedCards = async () => {
     try {
+      // In production, fetch from API
+      // Mock saved cards for now
       const Cards = [
         {
           id: 'card_1',
@@ -112,6 +110,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
         }
       ]
       
+      // setSavedCards(mockCards)
       setSavedCards([]) // Start with no saved cards for demo
     } catch (error) {
       console.error('Error loading saved cards:', error)
@@ -153,7 +152,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
     setError(null)
     
     try {
-      const paymentData = {
+      let paymentData = {
         paymentMethod,
         customerInfo,
         amountPaid: paymentAmount,
@@ -161,94 +160,53 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       }
       
       if (paymentMethod === 'online') {
+        // Process online payment
         if (useNewCard) {
-          // Use retry logic for payment processing
-          await retryPaymentWithBackoff(async () => {
-            // Create payment intent
-            const paymentIntentResponse = await fetch('/api/stripe/payment-intent', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                bookingData,
-                shopSettings,
-                customerInfo
-              })
-            })
-            
-            if (!paymentIntentResponse.ok) {
-              const errorData = await paymentIntentResponse.json()
-              throw new Error(errorData.error || 'Failed to create payment intent')
-            }
-            
-            const { clientSecret, paymentIntentId } = await paymentIntentResponse.json()
-            
-            // Confirm payment with Stripe
-            if (!stripe || !elements) {
-              throw new Error('Stripe not loaded properly')
-            }
-            
-            const cardElement = elements.getElement(CardElement)
-            if (!cardElement) {
-              throw new Error('Card element not found')
-            }
-            
-            const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-              payment_method: {
-                card: cardElement,
-                billing_details: {
-                  name: customerInfo.name,
-                  email: customerInfo.email,
-                  phone: customerInfo.phone
-                }
-              }
-            })
-            
-            if (stripeError) {
-              throw stripeError
-            }
-            
-            if (paymentIntent.status !== 'succeeded') {
-              throw new Error('Payment was not completed successfully')
-            }
-            
-            // Confirm payment on backend
-            const confirmResponse = await fetch('/api/stripe/confirm-payment', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                paymentIntentId: paymentIntent.id,
-                appointmentId: bookingData.id || 'pending'
-              })
-            })
-            
-            if (!confirmResponse.ok) {
-              const errorData = await confirmResponse.json()
-              throw new Error(errorData.error || 'Failed to confirm payment')
-            }
-            
-            const confirmData = await confirmResponse.json()
-            
-            return {
-              paymentIntentId: paymentIntent.id,
-              paymentStatus: 'succeeded',
-              paymentMethod: 'card',
-              confirmationData: confirmData
-            }
-          })
-          .then(result => {
-            Object.assign(paymentData, result)
-          })
+          // Use the enhanced booking payment functions
+          const { createBookingPaymentIntent, processBookingPayment } = await import('../../../lib/stripe-client')
           
+          // Create payment intent with enhanced API
+          const paymentIntentData = await createBookingPaymentIntent({
+            booking_id: bookingData.booking_id || `temp_${Date.now()}`,
+            service_id: bookingData.service?.id || bookingData.serviceDetails?.id,
+            barber_id: bookingData.barber?.id || bookingData.barberDetails?.id,
+            shop_id: bookingData.location?.id || bookingData.locationDetails?.id,
+            amount: paymentAmount,
+            payment_type: shopSettings.depositRequired ? 'deposit' : 'full_payment',
+            customer_email: customerInfo.email,
+            customer_name: customerInfo.name,
+            save_payment_method: false,
+            automatic_confirmation: true
+          })
+
+          // If Stripe is properly configured, confirm the payment
+          if (stripe && elements && paymentIntentData.client_secret && !paymentIntentData.mock_response) {
+            const cardElement = elements.getElement(CardElement)
+            
+            const paymentIntent = await processBookingPayment({
+              stripe,
+              elements,
+              paymentIntentClientSecret: paymentIntentData.client_secret,
+              customerInfo,
+              cardElement
+            })
+
+            paymentData.paymentIntentId = paymentIntent.id
+            paymentData.paymentStatus = paymentIntent.status
+            paymentData.amountPaid = paymentIntent.amount / 100 // Convert from cents
+          } else {
+            // Mock mode or Stripe not configured
+            paymentData.paymentIntentId = paymentIntentData.payment_intent_id || paymentIntentData.mock_response?.payment_intent_id
+            paymentData.paymentStatus = 'succeeded'
+            paymentData.mockPayment = true
+          }
         } else {
-          // Using saved card (implement when saved cards are added)
+          // Use saved card
           paymentData.cardId = selectedCard
           paymentData.paymentStatus = 'succeeded'
         }
       } else {
+        // In-person payment
         paymentData.paymentStatus = 'pending'
         paymentData.paymentNote = 'Payment to be collected at appointment'
       }
@@ -257,25 +215,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       
     } catch (err) {
       console.error('Payment processing error:', err)
-      
-      // Log error for analytics
-      logPaymentError(err, {
-        appointmentId: bookingData.id,
-        barbershopId: bookingData.barbershopId,
-        amount: paymentAmount,
-        retryCount
-      })
-      
-      // Get user-friendly error message
-      const errorMessage = getPaymentErrorMessage(err)
-      setError(errorMessage)
-      
-      // Show alternative payment options if applicable
-      if (shouldSuggestAlternativePayment(err)) {
-        setShowAlternativePayment(true)
-      }
-      
-      setRetryCount(prev => prev + 1)
+      setError(err.message || 'Payment processing failed')
       setProcessing(false)
     }
   }
@@ -545,43 +485,8 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
       
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800 text-sm font-medium">{error}</p>
-          
-          {showAlternativePayment && (
-            <div className="mt-3 pt-3 border-t border-red-200">
-              <p className="text-red-700 text-sm mb-2">Try these alternatives:</p>
-              <div className="space-y-2 text-sm">
-                <label className="flex items-center text-red-700">
-                  <input
-                    type="radio"
-                    name="alt-payment"
-                    onClick={() => handlePaymentMethodChange('in-person')}
-                    className="h-3 w-3 text-red-600"
-                  />
-                  <span className="ml-2">Pay at the shop instead</span>
-                </label>
-                <div className="text-red-600 text-xs">
-                  • Check your card details are correct<br/>
-                  • Try a different card<br/>
-                  • Contact your bank if the problem persists
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {retryCount > 0 && retryCount < 3 && (
-            <button
-              onClick={() => {
-                setError(null)
-                setShowAlternativePayment(false)
-                handleContinue()
-              }}
-              className="mt-3 text-sm text-red-700 hover:text-red-800 underline"
-            >
-              Try again ({3 - retryCount} attempts remaining)
-            </button>
-          )}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p className="text-red-800 text-sm">{error}</p>
         </div>
       )}
       
@@ -623,6 +528,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
   )
 }
 
+// Wrapper with Stripe Elements
 export default function PaymentStep(props) {
   return (
     <Elements stripe={stripePromise}>

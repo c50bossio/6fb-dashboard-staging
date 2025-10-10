@@ -2,467 +2,605 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## 🚀 Quick Start
+## Project Overview
 
-**What this is**: Enterprise barbershop platform - Next.js 14 (port 9999) + FastAPI (port 8001) + Supabase  
-**Production**: bookedbarber.com | **Development**: localhost:9999
+The 6FB AI Agent System is an enterprise-grade barbershop management platform combining traditional booking management with advanced AI capabilities for business intelligence, customer insights, and operational automation. The system features a hierarchical barber operations structure that scales from individual barbers to multi-location enterprises.
 
+**Architecture**: Full-stack application with Next.js 14 frontend (port 9999), FastAPI backend (port 8001), and Supabase PostgreSQL database for ALL environments (no SQLite, no mock data).
+
+**Barber Operations Hierarchy**:
+- **Individual Barbers**: Personal landing pages at `barbershop.com/barber-name`, custom services, pricing, and branding
+- **Shop Owners**: Multi-barber management, financial oversight (commission/booth rent), product inventory
+- **Enterprise Owners**: Multi-location management, cross-shop analytics, franchise operations
+
+## 🚨 CRITICAL: SUPABASE PRODUCTION DATABASE RULE
+
+**MANDATORY**: This application MUST use Supabase PostgreSQL as the database for ALL features. We are building for a REAL barbershop going live soon.
+
+### Absolute Requirements:
+- **USE SUPABASE ONLY**: PostgreSQL via Supabase for all data storage
+- **NO MOCK DATA**: Never create fake data generators or fallbacks
+- **NO SQLITE**: Not for production, not for development, not for testing
+- **NO LOCAL DATABASES**: Always connect to Supabase, even during development
+- **PRODUCTION READY**: Every feature must work with real Supabase tables
+
+See `SUPABASE_PRODUCTION_RULE.md` for complete enforcement details.
+
+## 🚨 CRITICAL: Full-Stack Development Protocol
+
+**MANDATORY**: Every feature MUST be implemented as a complete full-stack solution. See `FULLSTACK_DEVELOPMENT_PROTOCOL.md` for detailed requirements.
+
+### Key Rules:
+- **NEVER create frontend without connecting backend**
+- **NEVER create backend without frontend UI**
+- **NEVER create APIs without corresponding dashboard representation**
+- **ALWAYS implement complete user workflows**
+- **ALWAYS test end-to-end functionality before marking complete**
+
+This prevents half-done features and ensures every implementation provides immediate user value.
+
+## 🚨 CRITICAL: NO MOCK DATA POLICY
+
+**MANDATORY**: This application NEVER uses mock data. All data must come from real database operations.
+
+### Absolute Rules:
+- **NO MOCK DATA GENERATORS**: Never create `generateMock*()` functions
+- **NO FALLBACK MOCK DATA**: APIs must query database, not return hardcoded data
+- **DATABASE FIRST**: If database table doesn't exist, create it with proper schema
+- **SEED TEST DATA**: Use database seed scripts to populate realistic test data
+- **REAL QUERIES ONLY**: Every API endpoint must perform actual database operations
+
+### When Database is Empty:
+- **Create the missing tables** using proper SQL schema
+- **Seed with realistic test data** using database insert operations  
+- **Never generate mock objects** as a shortcut
+
+### Enforcement:
+- **Zero tolerance**: Mock data indicates incomplete implementation
+- **Performance impact**: Mock data generation causes loading delays
+- **Data integrity**: Only real database operations ensure consistent behavior
+
+**If you need test data, create it in the database. If you need missing functionality, implement the real database operations.**
+
+## Key Technologies & Architecture
+
+### Frontend Stack
+- **Framework**: Next.js 14 (App Router) with React 18
+- **Styling**: Tailwind CSS with Headless UI components
+- **Calendar**: FullCalendar.io Premium with resource management
+- **Charts**: Recharts for analytics visualization
+- **Real-time**: Pusher for live updates and WebSocket connections
+- **Reviews**: Google Reviews embeds/widgets only (no internal reviews)
+
+### Backend Stack
+- **API**: Next.js API Routes + FastAPI Python backend
+- **Database**: Supabase (PostgreSQL) for production, SQLite for development
+- **Authentication**: Supabase Auth with OAuth provider support
+- **AI Integration**: OpenAI GPT-5 (Default), Anthropic Claude Opus 4.1, Google Gemini 2.0
+- **Payment Processing**: Stripe with subscription management
+- **Notifications**: Internal notification system
+- **Reviews**: Google My Business API integration (no internal review storage)
+
+### Development Infrastructure
+- **Containerization**: Docker Compose with frontend:9999, backend:8001
+- **Testing**: Triple-tool approach (Playwright + Puppeteer MCP + Computer Use AI)
+- **Error Tracking**: Sentry integration
+- **Analytics**: Vercel Analytics with performance monitoring
+- **Feature Flags**: Vercel Edge Config
+- **Rate Limiting**: Middleware-based API protection with fallback to in-memory storage
+- **Security**: GDPR compliance services and comprehensive audit logging
+- **MCP Integration**: Supabase MCP server configured in Claude Desktop with 19+ database tools
+
+#### 🤖 Model Context Protocol (MCP) Setup
+**Claude Desktop**: Full Supabase MCP server access configured with:
+- **Server**: `@supabase/mcp-server-supabase@latest` 
+- **Project**: `dfhqjdoydihajmjxniee.supabase.co`
+- **Access**: Personal Access Token with read-only permissions
+- **Tools**: 19+ database management and query tools
+
+**Claude Code**: Direct database access via `lib/supabase-query.js` utility (bypasses MCP tool limitations)
+
+## AI Model Configuration (Updated August 2025)
+
+### Available Models
+- **GPT-5** (OpenAI) - Default & Recommended
+  - Most capable model with advanced reasoning
+  - Best for complex business analysis and general queries
+  - Variants: GPT-5, GPT-5-mini (faster), GPT-5-nano (lightweight)
+  
+- **Claude Opus 4.1** (Anthropic) - Released August 5, 2025
+  - Superior for coding, technical analysis, and detailed research
+  - 74.5% on SWE-bench Verified (state-of-the-art coding performance)
+  - Best for software engineering and data analysis tasks
+  
+- **Gemini 2.0 Flash** (Google)
+  - Most cost-effective option
+  - Good balance of performance and price
+  - Suitable for high-volume, simple queries
+
+### Model Selection
+Users can select their preferred AI model through:
+1. Model selector dropdown in the AI chat interface
+2. API endpoint: `GET /api/v1/ai/models` (list all available models)
+3. Default model: GPT-5 (automatically selected for new sessions)
+
+### API Endpoints
+- `GET /api/v1/ai/models` - Get all available AI models
+- `GET /api/v1/ai/models/{provider}` - Get models for specific provider
+
+## Common Development Commands
+
+### Docker Development (Recommended)
 ```bash
-# Start everything (RECOMMENDED)
-./docker-dev-start.sh        # Starts all services with Docker
-# OR manually:
-npm run dev                  # Frontend only (port 9999)
-python simple_backend.py     # Backend (port 8001) - use when FastAPI has issues
+# Start development environment (creates data directory and handles containers)
+./docker-dev-start.sh
 
-# Before ANY commit - MANDATORY
-npm run lint                 # Must pass
-npm run build               # Must pass (generates 300+ static pages)
-npm run test:all            # Must pass
+# Stop services
+./docker-stop.sh
+# or
+docker compose down
 
-# Quick validation
-npm run claude:validate      # Runs lint + type-check + build
+# View logs
+docker compose logs -f
+
+# Restart services
+docker compose restart
+
+# Check service health
+docker compose ps
 ```
 
-## ⚠️ Critical Rules - READ FIRST
-
-1. **NO MOCK DATA** - Always use real Supabase database
-2. **100% FEATURE COMPLETION** - Every feature must work end-to-end (DB → API → UI → Tests)
-3. **COMPLETE DEPENDENCY ARRAYS** - Missing deps cause infinite loops
-4. **USE EXISTING COMPONENTS** - Check `components/ui/` before creating new ones
-5. **SEPARATE QUERIES** - PostgREST foreign key syntax fails, use JavaScript merging
-
-## 🏗️ Architecture Overview
-
-### Stack: Next.js 14 (9999) + FastAPI (8001) + Supabase + Multi-AI
-- **Frontend**: Next.js 14 App Router, SSR, TypeScript, path aliases
-- **Backend**: FastAPI modular routers, memory management, WebSocket support
-- **Database**: Supabase PostgreSQL + Auth + RLS + Real-time
-- **AI**: Multi-provider (OpenAI, Anthropic, Google) with Redis caching (-60% costs)
-- **Integrations**: Stripe Connect, Google Calendar, CIN7, SendGrid, Pusher
-- **Production**: CloudFlare CDN → AWS ALB → Kubernetes (10K+ users)
-
-### File Structure
-```
-app/
-├── api/                     # Next.js API routes (100+ endpoints)
-│   ├── auth/               # Authentication endpoints
-│   ├── services/           # Service management
-│   ├── cin7/              # CIN7 inventory integration
-│   ├── stripe/            # Payment processing
-│   └── ai/                # AI agent endpoints
-├── (protected)/            # Authenticated pages (requires login)
-│   ├── dashboard/         # Main dashboard with sub-pages
-│   ├── shop/             # Shop management (products, services)
-│   └── onboarding/       # Step-by-step onboarding flow
-└── (public)/              # Public pages (no auth required)
-
-components/
-├── ui/                    # ⚠️ BASE COMPONENTS - USE THESE FIRST
-├── dashboard/             # Dashboard features  
-├── onboarding/           # Complete onboarding system
-├── booking/              # Booking flow components
-├── settings/             # Settings management (UnifiedSettingsInterface)
-└── navigation/           # Multi-location navigation system
-
-lib/
-├── supabase-query.js     # ⚠️ CRITICAL - All DB operations
-├── dashboard-aggregation.js # Dashboard data utilities
-├── ai-config.js          # AI model configuration
-├── financial-service.js  # Financial arrangements & Stripe Connect
-└── utils.js              # Common utilities (cn, formatters)
-
-services/
-├── memory_manager.py     # ⚠️ CRITICAL - OAuth memory management
-├── ai_service.py        # AI agent orchestration
-├── SmartSuggestionsAPI.js # AI recommendations
-├── shop_service.py       # Shop management backend
-└── staff-service.js     # Staff management & payroll
-
-routers/                  # FastAPI modules
-├── ai.py                # AI endpoints
-├── auth.py              # Authentication
-├── dashboard.py         # Dashboard APIs
-├── shop_management.py   # Shop operations
-└── franchise.py         # Multi-location management
-```
-
-
-## 🔧 Common Tasks & Solutions
-
-### Database Operations Pattern
-```javascript
-// ❌ NEVER - PostgREST syntax fails
-const { data } = await supabase
-  .from('barbershop_staff')
-  .select('*, profiles:user_id(full_name, email)')
-
-// ✅ ALWAYS - Separate queries + merge
-const staff = await supabase.from('barbershop_staff').select('*')
-const profiles = await supabase.from('profiles').select('*').in('id', userIds)
-// Merge in JavaScript
-```
-
-### Shop ID Resolution (CRITICAL)
-```javascript
-// Two subscription models require different lookups:
-const shopId = profile.shop_id           // Individual barber
-  || profile.barbershop_id              // Alt field name  
-  || (await getStaffShopId(profile.id)) // Employee via barbershop_staff
-  || DEFAULT_SHOP_ID;                   // Fallback
-```
-
-### useEffect Dependencies (PREVENTS CRASHES)
-```javascript
-// ❌ WRONG - Causes "Maximum update depth exceeded"
-useEffect(() => {
-  if (selectedService) { /* uses selectedService */ }
-}, [selectedDate]) // Missing dependency!
-
-// ✅ CORRECT - Include ALL dependencies
-useEffect(() => {
-  if (selectedService) { /* uses selectedService */ }
-}, [selectedDate, selectedService])
-```
-
-## 🚨 Known Issues & Fixes
-
-| Issue | Solution |
-|-------|----------|
-| **"Maximum update depth exceeded"** | Add ALL useEffect dependencies |
-| **400 Bad Request on queries** | RLS blocking - use service role key in dev |
-| **PostgREST syntax errors** | Use separate queries + JS merge |
-| **Port 9999 blocked** | `lsof -ti:9999 \| xargs kill -9` |
-| **FastAPI TypeError with proxy** | Use `python simple_backend.py` instead |
-| **OAuth memory issues** | Check `services/memory_manager.py` |
-| **Build fails with missing component** | Check imports match actual file paths |
-| **Settings duplication** | Use UnifiedSettingsInterface.js |
-
-## 📋 Environment Variables
-
+### Manual Development
 ```bash
-# Required - Database
-NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...  # ⚠️ Critical for dev
+# Install dependencies
+npm install
 
-# Required - AI
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
+# Start frontend (port 9999)
+npm run dev
 
-# Required - Payments (production)
-STRIPE_SECRET_KEY=sk_live_... or sk_test_...
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_... or pk_test_...
-STRIPE_CONNECT_CLIENT_ID=ca_...
-
-# Required - Notifications  
-SENDGRID_API_KEY=SG...
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=...
-
-# Optional - Features
-PUSHER_APP_ID=
-PUSHER_KEY=
-PUSHER_SECRET=
-PUSHER_CLUSTER=us2
+# Start backend separately if needed
+python main.py  # Simple HTTP server (port 8000)
+# or
+python fastapi_backend.py  # Full FastAPI server with AI endpoints (port 8000)
 ```
 
-## 🧪 Commands & Testing
-
+### Quick Development Workflow
 ```bash
-# Core development
-npm run dev                    # Next.js dev server (port 9999)
-./docker-dev-start.sh          # Start all services
-npm run lint && npm run build  # Pre-commit validation
+# 1. Start development environment
+./docker-dev-start.sh
 
-# Testing (Jest + Playwright)
-npm run test:all               # Full test suite
-npm run test:e2e:booking       # Booking flow
-npm run test:e2e:payment       # Payment processing
-npm run test:nuclear           # High-impact scenarios
-
-# Database & setup
-npm run setup-db              # Initialize schema
-npm run cleanup-test-data     # Clean test data
-npm run claude:health         # System health check
-
-# Production & deployment
-npm run deploy:production     # Full deployment
-npm run performance:analyze  # Bundle analysis
-```
-
-## 🛠️ Troubleshooting & Debug Guide
-
-### Port Conflicts & Service Issues
-```bash
-# Kill processes on default ports
-sudo lsof -ti:9999 | xargs kill -9  # Frontend port
-sudo lsof -ti:8001 | xargs kill -9  # Backend port
-
-# Check service status
+# 2. Verify services are running
 curl http://localhost:9999/api/health  # Frontend health
 curl http://localhost:8001/health      # Backend health
 
-# Docker troubleshooting
-docker compose down && docker compose up --build
-docker compose logs -f frontend        # View frontend logs
-docker compose logs -f backend         # View backend logs
+# 3. Run tests before making changes
+npm run test:nuclear    # Critical component tests
+npm run test:e2e       # End-to-end tests
+
+# 4. After making changes, run quality checks
+npm run quality-check   # Linting and formatting
+npm run test:all       # Full test suite
 ```
 
-### Memory & Performance Issues
+### Testing Commands
 ```bash
-# Complete environment reset
-rm -rf .next/ node_modules/ && npm install
+# Run all tests
+npm run test:all
 
-# Memory issues (OAuth failures)
-# Check memory_manager.py logs in FastAPI backend
+# Unit tests with Jest
+npm run test
+npm run test:watch
+npm run test:coverage
+npm run test:nuclear  # Critical component testing
 
-# Performance profiling
-npm run performance:analyze     # Bundle analysis
-npm run performance:lighthouse  # Core Web Vitals
+# E2E tests with Playwright
+npm run test:e2e
+npm run test:e2e:headed
+npm run test:e2e:debug
+npm run test:nuclear-e2e  # Nuclear Input component E2E tests
+
+# Cross-browser testing
+npm run test:cross-browser
+
+# Security testing
+npm run test:security
+npm run test:security:quick
+npm run test:security:api
+npm run test:security:gdpr
+
+# Test utilities
+npm run playwright:install
+npm run playwright:install-deps
+
+# Database access testing
+node test-supabase-access.js  # Test Claude Code Supabase connection
 ```
 
-### Database & Authentication Debug
+### Health Checks & Debugging
 ```bash
-# Row Level Security debugging
-# Use SUPABASE_SERVICE_ROLE_KEY in development
-# Check RLS policies if getting 400 errors
+# Check application health
+npm run health
+# or
+curl http://localhost:9999/api/health
 
-# Supabase connection test
-npx supabase status            # Check local Supabase
-npx supabase db reset          # Reset local database
+# Environment validation
+npm run check-env
+
+# Database setup
+npm run setup-db
+
+# Quality checks
+npm run quality-check
+npm run lint:fix
 ```
 
-## 🛡️ Security Approach
+## Architecture Patterns
 
-**This is a barbershop app, not a bank.** We use:
-- Supabase Auth (handles security)
-- Row Level Security (database protection)
-- Stripe (payment security)
-- Basic input validation
+### API Structure
+- **Next.js API Routes**: `/app/api/` - Frontend API endpoints with comprehensive routing (health, auth, etc.)
+- **Primary Backend**: `/fastapi_backend.py` - Full-featured FastAPI server with middleware stack (used in Docker)
+- **Fallback Backend**: `/main.py` - Simple HTTP server for deployment scenarios with limited dependencies
+- **Health Monitoring**: Service health checks at both `/api/health` (Next.js) and `/health` (FastAPI)
+- **Authentication**: Token-based auth with Supabase integration and development bypass for testing
+- **Middleware Stack**: Rate limiting, security headers, and CORS handling
 
-**DO NOT ADD**: CSRF tokens, complex headers, custom sessions - they break auth.
+### Database Architecture
+- **Development**: SQLite database stored in `/data/agent_system.db` (Docker volume mounted)
+- **Production**: PostgreSQL via Supabase with Row Level Security (RLS)
+- **Schema Management**: Complete schemas in `/database/` directory including multi-tenant, GDPR compliance
+- **Migrations**: Supabase migrations for production deployments
+- **Vector Storage**: pgvector extension support for RAG system embeddings
 
-## 📂 Recent Work & Patterns
+#### 🔗 Claude Code Database Access
+Claude Code has **direct Supabase database access** through a custom utility:
 
-### Production Deployment Focus (Latest)
-- Settings deduplication with UnifiedSettingsInterface
-- Mobile UI optimization and text overflow fixes
-- Removed all mock/demo data for production
-- Enterprise location management
-- Service management with image support
+- **Location**: `lib/supabase-query.js` - Direct database query utility
+- **Test Script**: `test-supabase-access.js` - Validates connection and functionality
+- **Authentication**: Uses `SUPABASE_SERVICE_ROLE_KEY` for full database permissions
+- **Capabilities**: Query tables, filter data, get schemas, execute read-only SQL
+- **Tables Available**: 15+ tables including profiles, agents, tenants, notifications, analytics
 
-### Critical Patterns to Follow
+**Usage Example:**
 ```javascript
-// ✅ ALWAYS: Check user barbershop association
-const barbershopId = await getUserBarbershop(userId);
-if (!barbershopId) return { error: 'No barbershop found' };
+import supabaseQuery from './lib/supabase-query.js'
 
-// ✅ ALWAYS: Handle loading states properly
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState(null);
+// Query profiles table with filters
+const profiles = await supabaseQuery.queryTable('profiles', { 
+  select: 'id, email, role',
+  filter: { role: 'user' },
+  limit: 10 
+})
 
-// ✅ ALWAYS: Clean up subscriptions
-useEffect(() => {
-  const subscription = supabase.from('table').on('*', callback).subscribe();
-  return () => subscription.unsubscribe();
-}, []);
-
-// ✅ ALWAYS: Use try-catch in API routes
-export async function POST(request) {
-  try {
-    const session = await getServerSession();
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
-    const body = await request.json();
-    // ... process request
-    
-    return NextResponse.json({ success: true, data });
-  } catch (error) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+// Get table schema
+const schema = await supabaseQuery.getTableSchema('agents')
 ```
 
-### Key Components to Use
-```javascript
-// Dashboard - Multi-location support
-import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+**Note**: This provides Claude Code with the same database access as the Supabase MCP server, bypassing MCP tool limitations.
 
-// Onboarding - Complete system
-import { AdaptiveFlowEngine } from '@/components/onboarding/AdaptiveFlowEngine'
-import EverboardingSystem from '@/components/onboarding/EverboardingSystem'
+### AI Agent System
+- **Agent Types**: Master Coach, Financial, Client Acquisition, Operations, Brand, Growth, Strategic Mindset
+- **Intelligence Services**: Located in `/services/` with real LLM integration
+- **Context Management**: AI agents maintain business context across sessions
+- **Multi-Model Support**: OpenAI, Anthropic, and Google AI integration
 
-// Data Operations
-import { aggregateDashboardData } from '@/lib/dashboard-aggregation'
-import { SmartSuggestionsAPI } from '@/services/SmartSuggestionsAPI'
+### Component Organization
+```
+components/
+├── ai/              # AI chat and agent components
+├── analytics/       # Custom analytics and reporting components  
+├── calendar/        # FullCalendar booking components
+├── chat/           # Real-time chat components
+├── dashboard/       # Dashboard components (header, metrics, actions)
+├── notifications/   # Internal notification center
+├── providers/      # Context providers and wrappers
+├── ui/             # Base UI components (Alert, Badge, Card, etc.)
+└── [Critical]      # NuclearInput.js - bulletproof form input with 95% test coverage
 ```
 
-## 📊 Database Schema (Key Tables)
+### Key Components
+- **NuclearInput.js**: Critical form input component with comprehensive error handling and 95% test coverage requirement
+- **ProtectedRoute.js**: Authentication wrapper for secure pages
+- **SupabaseAuthProvider.js**: Authentication context provider
+- **ErrorBoundary.js**: Application-wide error handling
 
-### Core Architecture Tables
-```sql
--- Core user/shop relationship
-profiles (id, email, shop_id, barbershop_id, role, subscription_tier)
-barbershops (id, owner_id, name, address, business_hours)
-barbershop_staff (barbershop_id, user_id, role, is_active)
+### Authentication Flow
+- **Provider**: Supabase Auth with OAuth support
+- **Protected Routes**: `ProtectedRoute` component wrapper
+- **User Roles**: CLIENT, BARBER, SHOP_OWNER, ENTERPRISE_OWNER, SUPER_ADMIN
+- **Session Management**: Server-side session handling with middleware
 
--- Business operations
-services (id, shop_id, name, price, duration_minutes, image_url)
-appointments (id, barbershop_id, customer_id, service_id, date, status, barber_id)
-customers (id, barbershop_id, name, email, phone, loyalty_points)
+## Environment Configuration
 
--- Enterprise features
-organizations (id, name, tier, created_at) -- Multi-location management
-organization_members (org_id, user_id, role, permissions)
-financial_arrangements (barbershop_id, barber_id, arrangement_type, commission_rate)
-
--- Integration systems
-settings_hierarchy (id, context_type, context_id, category, settings)
-stripe_accounts (barbershop_id, account_id, onboarding_completed)
-staff_invitations (id, barbershop_id, email, status, invitation_token)
-```
-
-### Key Patterns
-- **Multi-Location**: Organizations manage multiple barbershops via `organization_id`
-- **RBAC**: CLIENT → BARBER → SHOP_OWNER → ENTERPRISE_OWNER → SUPER_ADMIN hierarchy
-- **AI Fallback**: OpenAI → Anthropic → Google with automatic provider switching
-
-## 🏗️ Testing & Architecture
-
-### Core Dependencies
-- **AI**: OpenAI, Anthropic, Google (multi-provider with Redis caching -60% costs)
-- **Infrastructure**: Supabase (DB/Auth), Sentry (monitoring), Pusher (real-time)
-- **Business**: Stripe (payments), PostHog (analytics), FullCalendar (scheduling)
-- **Testing**: Jest (unit), Playwright (E2E), 80%+ coverage requirement
-
-## 🔍 Verification Protocol
-
-Before claiming missing functionality:
+### Required Environment Variables
 ```bash
-# Check for existing implementation
-grep -r "feature_name" . --include="*.js"
-ls -la app/api/feature/
-ls -la components/feature/
+# Core Services (Required)
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
-# Verify services running
-npm run claude:health
-python -c "import fastapi_backend; print('OK')"
-lsof -i :9999  # Check if port is in use
-lsof -i :8001  # Check backend port
+# AI Services
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
 
-# Check recent work
-git status
-git log --oneline -10
+# Payment Processing
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+
+# Real-time Features
+PUSHER_APP_ID=
+NEXT_PUBLIC_PUSHER_KEY=
+PUSHER_SECRET=
+NEXT_PUBLIC_PUSHER_CLUSTER=
 ```
 
-## 📋 Development Workflows
+### Optional Services
+```bash
+# Error Tracking & Analytics
+NEXT_PUBLIC_SENTRY_DSN=
 
-### Before Making Changes
-1. Start dev environment: `./docker-dev-start.sh`
-2. Check system health: `npm run claude:health`
-3. Verify no lint/type errors: `npm run lint && npm run build`
+# Internal Notification System
+# (No external API keys required - handled internally)
 
-### After Making Changes
-1. Fix any linting issues: `npm run lint:fix`
-2. Run full test suite: `npm run test:all`
-3. Verify production build: `npm run build`
-4. Check security if needed: `npm run test:security:quick`
-
-### Feature Development Checklist
-- [ ] Database schema with RLS policies
-- [ ] Backend API endpoint (FastAPI router)
-- [ ] Frontend UI with error handling
-- [ ] Tests written and passing
-- [ ] Real data integration (no mocks)
-- [ ] Authentication/authorization implemented
-
-## 🏗️ Core Subscription Model
-
-### Two Subscription Types:
-1. **Individual Barber Subscription**
-   - Barber subscribes directly (solo practitioner)
-   - Has `shop_id` directly in their `profiles` record
-   - They ARE the barbershop
-
-2. **Barbershop Subscription**  
-   - Barbershop owner has the subscription
-   - Owner has `shop_id` in their profile
-   - Employee barbers linked via `barbershop_staff` table
-   - Employees get shop access through `barbershop_staff` lookup
-
-### Shop ID Resolution Logic:
-1. Check `profiles.shop_id` first (individual barbers)
-2. If null, check `barbershop_staff` table (employees)
-3. Fallback to default shop for demos/testing
-
-**CRITICAL**: Never assume all users have `shop_id` - always check both paths!
-
-## 🚀 Production Architecture
-
-### Scale Targets
-- **Users**: 10,000+ concurrent with auto-scaling
-- **Performance**: <3s load times, 99.9% uptime
-- **Multi-region**: AWS (primary), GCP (AI), Azure (enterprise)
-- **Security**: AES-256 at rest, TLS 1.3 in transit
-
-### Infrastructure Stack
-- **Containers**: Kubernetes with 50-200 auto-scaling nodes
-- **Database**: PostgreSQL Multi-AZ + Redis cluster + Elasticsearch
-- **CDN**: CloudFlare global edge network
-- **Storage**: S3 multi-region with versioned backups
-
-## 🗄️ Database Patterns
-
-### Multi-Tenant Strategy
-- **Sharding**: By `franchise_id` for 10,000+ locations
-- **RLS**: Row Level Security for tenant isolation
-- **Extensions**: pgvector, pg_partman, timescaledb
-
-### Critical Pattern
-```javascript
-// ❌ WRONG - Breaks RLS and performance
-const { data } = await supabase
-  .from('appointments')
-  .select('*, customers(*), services(*)')
-
-// ✅ CORRECT - Separate queries + JS merge
-const appointments = await supabase.from('appointments').select('*')
-const customerIds = appointments.map(apt => apt.customer_id)
-const customers = await supabase.from('customers').select('*').in('id', customerIds)
+# Feature Flags & AI Services
+EDGE_CONFIG=
+GOOGLE_AI_API_KEY=
 ```
 
-## 📊 Monitoring & Compliance
+## 🎯 Important Architectural Decisions
 
-### Production Stack
-- **Errors**: Sentry for aggregation & alerting
-- **Analytics**: PostHog (self-hosted, GDPR-compliant)
-- **Health**: Prometheus + Grafana + `/api/health`
-- **Performance**: Web Vitals + Core Performance Metrics
+### Data Philosophy - STRICTLY ENFORCED
+- **ZERO MOCK DATA**: System NEVER uses mock/fake data. All data comes from real database operations
+- **DATABASE OPERATIONS ONLY**: Every API call must query actual database tables
+- **CREATE MISSING TABLES**: If table doesn't exist, create proper SQL schema immediately  
+- **SEED REALISTIC DATA**: Use database INSERT statements to populate test data, never hardcoded objects
+- **EMPTY STATES**: Show loading/empty UI states when no data exists, never fake placeholder data
+- **PERFORMANCE REQUIREMENT**: Mock data generation causes 10+ second loading delays - absolutely prohibited
 
-### Security & Compliance
-- **Encryption**: AES-256 at rest, TLS 1.3 in transit
-- **GDPR**: Automated deletion, data portability, consent management
-- **Auth**: Supabase Auth (JWT), MFA via TOTP, OAuth with PKCE
-- **Retention**: 7 years (business), 30 days (logs)
+### Reviews System
+- **GOOGLE REVIEWS ONLY**: All reviews come from Google My Business/Google Reviews API
+- **NO INTERNAL REVIEWS**: No reviews table in database, no custom review system
+- **BENEFITS**: Better SEO, customer trust, Google handles verification/spam
+- **IMPLEMENTATION**: Google Reviews widgets/embeds or Google My Business API
 
-### SLA Targets
-- Page Load: <3s (95th percentile)
-- API Response: <500ms (99th percentile) 
-- Uptime: 99.9%
-- DB Queries: <100ms (95th percentile)
+### Database Tables
+**Required Tables**:
+- `appointments` - Booking management and scheduling
+- `transactions` - Financial tracking and commissions
+- `barbershops` - Shop information
+- `barbershop_staff` - Staff and barber management
+- `customers` - Customer profiles
+- `services` - Service catalog
+- `barber_availability` - Schedule management
 
-## 🎯 Business Model Context
+**NOT Required**:
+- ❌ `reviews` - Use Google Reviews instead
+- ❌ `ratings` - Part of Google Reviews
+- ❌ Mock data tables - Use real data only
 
-### Freemium Strategy: "Insights Free, Agents Paid"
-- **Free**: Business insights, analytics, basic booking, reminders
-- **Paid**: AI agents ($0.04/1K tokens), SMS ($0.01/msg), Email ($0.001/msg)
-- **Strategy**: Just-in-time billing modals, strategic upgrade CTAs
+### Financial Models
+- **Commission Model**: Barber receives percentage (e.g., 60%) of service revenue
+- **Booth Rent Model**: Barber pays fixed weekly/monthly rent
+- **Tips**: Can go 100% to barber or split with shop
 
-### Implementation Approach
-- Remove billing from onboarding → focus on value delivery
-- "Launch Agent" buttons throughout dashboard trigger billing setup
-- Value-first messaging shows ROI before payment requests
+## Testing Strategy
 
----
-**Remember**: Complete features only. No mocks. Test everything. Real data only.
+### Triple-Tool Testing Approach
+1. **Playwright**: Primary E2E testing framework with cross-browser support
+2. **Puppeteer MCP Tools**: Quick debugging and Chrome-specific automation
+3. **Computer Use AI**: Visual validation and UX analysis
+
+### Test Categories
+- **Unit Tests**: Jest with React Testing Library
+- **Integration Tests**: API endpoint and database operation testing
+- **E2E Tests**: Complete user workflow validation
+- **Visual Regression**: Screenshot comparison testing
+- **Performance Tests**: Core Web Vitals and load time monitoring
+- **Accessibility Tests**: WCAG 2.2 AA compliance validation
+
+### Test Configuration
+- **Coverage Thresholds**: 85% minimum for components
+- **Critical Components**: 95% coverage (e.g., NuclearInput.js)
+- **Multi-Browser**: Chrome, Firefox, Safari, Mobile Chrome, Mobile Safari
+- **Parallel Execution**: Full parallelization for faster test runs
+
+## Deployment & Production
+
+### Docker Production Setup
+```bash
+# Production containers with PostgreSQL + Redis + Nginx
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Vercel Deployment (Recommended)
+```bash
+# Deploy to Vercel
+vercel
+
+# Environment-specific deployments
+vercel --prod  # Production
+vercel         # Preview/staging
+```
+
+### Health Monitoring
+- **Health Endpoint**: `/api/health` with detailed service status
+- **Service Dependencies**: Automatic health checks for all integrated services
+- **Error Tracking**: Sentry integration for production error monitoring
+- **Performance Monitoring**: Vercel Analytics and Core Web Vitals
+
+## Development Guidelines
+
+### Code Quality Standards
+- **Linting**: ESLint with Next.js configuration (never disable linting)
+- **TypeScript**: Optional typing with IntelliSense support
+- **Code Formatting**: Automatic formatting via ESLint --fix
+- **Testing**: Comprehensive test coverage with triple-tool approach
+
+### Security Practices
+- **Authentication**: Row Level Security (RLS) on all database tables
+- **API Security**: Rate limiting and input validation
+- **Environment Variables**: Never commit secrets, use .env.local
+- **CORS Configuration**: Proper CORS handling for API endpoints
+
+### AI Integration Patterns
+- **Multi-Model Support**: Graceful fallback between AI providers
+- **Context Management**: Maintain business context across AI interactions
+- **Real-time Intelligence**: AI-powered insights with live data updates
+- **Error Handling**: Robust error handling for AI service failures
+
+## Critical Architecture Knowledge
+
+### Database Schema Patterns
+- **User Roles**: CLIENT, BARBER, SHOP_OWNER, ENTERPRISE_OWNER, SUPER_ADMIN
+- **Multi-tenant Architecture**: Tenants table with Row Level Security (RLS)
+- **Appointment System**: Complex booking state management with status tracking
+- **AI Context Storage**: Vector embeddings for RAG system using pgvector extension
+- **Payment Integration**: Stripe customer and subscription management
+- **Barber Customization**: Individual barber landing pages, services, and branding
+- **Financial Arrangements**: Commission, booth rent, and hybrid payment models
+- **Product Inventory**: POS system with inventory tracking and commission management
+- **View Switching**: Shop owners can view barber dashboards (read-only)
+
+### Service Integration Patterns
+- **AI Orchestrator**: Central service at `/services/ai_orchestrator_service.py` coordinates all AI agents
+- **Vector Knowledge**: RAG system with embeddings stored in PostgreSQL
+- **Real-time Updates**: Pusher integration for live dashboard updates
+- **Notification Queue**: Async notification processing with multiple channels
+- **Alert System**: Intelligent monitoring with configurable thresholds
+
+### Critical Files & Locations
+```
+/app/api/health/route.js              # Comprehensive health checks for all services
+/fastapi_backend.py                   # Full-featured FastAPI backend with AI endpoints
+/main.py                              # Simple HTTP server for basic deployment
+/services/ai_orchestrator_service.py  # Central AI coordination
+/database/complete-schema.sql         # Full PostgreSQL schema with pgvector support
+/database/barber-operations-schema.sql # Barber hierarchy and customization schema
+/components/NuclearInput.js           # Critical form component (95% coverage)
+/playwright.config.js                 # Testing configuration with multi-browser support
+/docker-compose.yml                   # Development container orchestration
+/docker-dev-start.sh                  # Development environment startup script
+/middleware/                          # Rate limiting and security middleware
+/services/                            # AI agents, business logic, and integrations
+
+# Barber Operations Files
+/app/[barbershop]/[barber]/page.js   # Dynamic barber landing pages
+/app/(protected)/barber/profile/     # Barber profile management
+/components/barber-landing/          # Barber page components
+/components/pos/                     # Point of sale components
+```
+
+### Common Development Patterns
+
+#### Adding New API Endpoints
+1. **Next.js API Route**: Create in `/app/api/[endpoint]/route.js`
+2. **FastAPI Endpoint**: Add to `/fastapi_backend.py` or create service module
+3. **Frontend Integration**: Add API call in `/lib/api.js`
+4. **Type Safety**: Define interfaces in relevant component files
+5. **Testing**: Add tests in `/__tests__/api/` directory
+
+#### Creating New Components
+1. **Component Location**: `/components/[category]/ComponentName.js`
+2. **Styling**: Use Tailwind CSS classes with design system tokens
+3. **State Management**: Use React hooks or context providers
+4. **Accessibility**: Include ARIA labels and keyboard navigation
+5. **Testing**: Add unit tests in `/__tests__/components/`
+
+#### Database Operations
+1. **Development**: SQLite operations via direct file access
+2. **Production**: Supabase operations via `lib/supabase-query.js`
+3. **Schema Changes**: Update `/database/complete-schema.sql`
+4. **Migrations**: Use Supabase migration system for production
+
+#### AI Integration
+1. **Service Creation**: Add to `/services/` directory
+2. **API Integration**: Import in `/fastapi_backend.py`
+3. **Error Handling**: Use graceful fallbacks between providers
+4. **Context Management**: Store conversation context for session continuity
+
+### Development Workflow
+1. **Environment Setup**: Use Docker development for consistency
+2. **Database**: SQLite for dev, PostgreSQL for production via Supabase
+3. **Testing**: Triple-tool approach mandatory for critical components
+4. **Security**: Rate limiting, input validation, and comprehensive monitoring
+5. **AI Integration**: Multi-model support with graceful fallbacks
+
+### Production Considerations
+- **Monitoring**: Comprehensive health checks at `/api/health`
+- **Error Tracking**: Sentry integration for production error monitoring
+- **Performance**: Vercel Analytics with Core Web Vitals tracking
+- **Infrastructure**: Kubernetes configs in `/infrastructure/kubernetes/`
+- **Security**: GDPR compliance services and security audit logging
+
+## Important Development Notes
+
+### Docker Considerations
+- **Frontend Port**: Always runs on 9999 (exposed as 9999:9999)
+- **Backend Port**: FastAPI on 8000 internally, exposed as 8001:8000
+- **Database Path**: SQLite stored in `/data/agent_system.db` with persistent volume
+- **Volume Mounts**: Live code reloading enabled for components, app, lib, and public directories
+- **Networks**: Services communicate via `agent-network` bridge
+- **Health Checks**: Both frontend and backend have healthcheck configurations
+
+### Backend Architecture
+- **Primary Server**: `fastapi_backend.py` - Full FastAPI server with comprehensive AI endpoints (Docker default)
+- **Fallback Server**: `main.py` - Minimal HTTP server for constrained deployment environments
+- **AI Services**: Comprehensive integration with OpenAI, Anthropic, and Google AI with graceful fallbacks
+- **Middleware Stack**: Rate limiting, security headers, and CORS handling with environment-based configuration
+- **Service Integration**: Alert system, business recommendations engine, performance monitoring, and GDPR compliance
+- **Dynamic Loading**: Services are imported dynamically with availability flags for graceful degradation
+
+### Testing Philosophy
+- **Nuclear Input Component**: Requires 95% test coverage due to critical nature
+- **Triple-Tool Approach**: Playwright for E2E, Puppeteer for debugging, Computer Use for visual validation
+- **Cross-Browser Testing**: Chrome, Firefox, Safari, and mobile variants
+- **Security Testing**: Comprehensive GDPR, API security, and penetration testing suites
+
+## Troubleshooting Common Issues
+
+### Docker Issues
+```bash
+# Container startup failures
+docker compose down && docker compose up --build -d
+
+# Database connection issues
+rm -rf data/agent_system.db && ./docker-dev-start.sh
+
+# Port conflicts
+docker compose down && docker system prune -f
+```
+
+### Frontend Issues
+```bash
+# Build failures
+rm -rf .next/ node_modules/ && npm install && npm run build
+
+# Hot reload not working
+docker compose restart frontend
+
+# TypeScript errors
+npx tsc --noEmit  # Check types without building
+```
+
+### Backend Issues
+```bash
+# FastAPI startup failures
+docker compose logs backend  # Check error logs
+
+# Database migration issues
+python -c "import database.async_database_init; database.async_database_init.init_database()"
+
+# AI service connection issues
+curl http://localhost:8001/ai/health  # Check AI service status
+```
+
+### Database Access
+```bash
+# Test Supabase connection (Claude Code)
+node test-supabase-access.js
+
+# SQLite operations (Development)
+sqlite3 data/agent_system.db ".tables"  # List tables
+sqlite3 data/agent_system.db ".schema profiles"  # View schema
+```
+
+This system emphasizes enterprise-grade reliability, comprehensive testing, and advanced AI integration while maintaining developer productivity through Docker containerization and modern tooling.

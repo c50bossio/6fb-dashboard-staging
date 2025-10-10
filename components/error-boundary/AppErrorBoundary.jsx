@@ -3,23 +3,40 @@
  * Should be used at the top level of the application
  */
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import ErrorBoundary from './ErrorBoundary'
 import RouteErrorBoundary from './RouteErrorBoundary'
 
-// Global error event handler for unhandled promise rejections
-if (typeof window !== 'undefined') {
-  window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection:', event.reason)
-    
-    // Prevent the default browser behavior
-    event.preventDefault()
-    
-    // Report to error tracking service
-    if (window.Sentry) {
-      window.Sentry.captureException(event.reason)
+// Global error handler component with proper cleanup
+const GlobalErrorHandler = ({ children }) => {
+  useEffect(() => {
+    // Define the error handler function
+    const handleUnhandledRejection = (event) => {
+      console.error('Unhandled promise rejection:', event.reason)
+      
+      // Prevent the default browser behavior
+      event.preventDefault()
+      
+      // Report to error tracking service
+      if (window.Sentry) {
+        window.Sentry.captureException(event.reason)
+      }
     }
-  })
+
+    // Add event listener only on mount
+    if (typeof window !== 'undefined') {
+      window.addEventListener('unhandledrejection', handleUnhandledRejection)
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+      }
+    }
+  }, []) // Empty dependency array ensures this runs once
+
+  return children
 }
 
 class AppErrorBoundary extends React.Component {
@@ -84,13 +101,15 @@ class AppErrorBoundary extends React.Component {
   }
 
   render() {
-    // Delegate to specific error boundaries
+    // Delegate to specific error boundaries with global error handler
     return (
-      <ErrorBoundary>
-        <RouteErrorBoundary>
-          {this.props.children}
-        </RouteErrorBoundary>
-      </ErrorBoundary>
+      <GlobalErrorHandler>
+        <ErrorBoundary>
+          <RouteErrorBoundary>
+            {this.props.children}
+          </RouteErrorBoundary>
+        </ErrorBoundary>
+      </GlobalErrorHandler>
     )
   }
 }

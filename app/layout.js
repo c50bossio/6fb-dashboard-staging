@@ -17,15 +17,12 @@ export const metadata = {
   formatDetection: {
     telephone: false,
   },
+  // Add modern PWA meta tag to replace deprecated apple-mobile-web-app-capable
   other: {
     'mobile-web-app-capable': 'yes',
-    'cache-bust': 'TDZ-FIX-2025-09-04-21-55-' + Date.now().toString(),
-    'pragma': 'no-cache',
-    'cache-control': 'no-cache, no-store, must-revalidate',
-    'expires': '0',
-    'x-deployment-id': 'TDZ-VIOLATIONS-FIX-' + Date.now(),
-    'x-cache-version': 'v2.0-' + Date.now(),
   },
+  // Removed dynamic cache-bust to prevent hydration mismatch
+  // Cache control is handled by Next.js and middleware
 }
 
 export const viewport = {
@@ -39,8 +36,8 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className="bg-gray-50 antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-background antialiased">
         <ClientWrapper>
           {children}
         </ClientWrapper>

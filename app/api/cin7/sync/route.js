@@ -1,700 +1,427 @@
-import { cookies } from 'next/headers'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-import { decrypt } from '@/lib/cin7-client.js'
-import { createClient } from '@/lib/supabase/server'
+import crypto from 'crypto'
 
-async function fetchCin7Products(accountId, apiKey) {
-  try {
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dfhqjdoydihajmjxniee.supabase.co",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c"
+)
 
-    let allProducts = []
-    let page = 1
-    let hasMorePages = true
-    const pageSize = 100 // CIN7 recommended page size
-    const maxPages = 50 // Safety limit to prevent infinite loops
-    let totalProducts = 0
-    
-    // Implement pagination to handle large product catalogs
-    while (hasMorePages && page <= maxPages) {
-      // Add delay to respect rate limits (3 calls per second)
-      if (page > 1) {
-        await new Promise(resolve => setTimeout(resolve, 350)) // ~3 calls per second
-      }
-      
-      // Use the correct lowercase endpoint that works (verified in quick-sync and test-connection)
-      const url = `https://inventory.dearsystems.com/externalapi/products?limit=${pageSize}&page=${page}`
-      // // Debug log removed for production
-const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'api-auth-accountid': accountId,
-          'api-auth-applicationkey': apiKey,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      })
+const ENCRYPTION_KEY = process.env.CIN7_ENCRYPTION_KEY || 'demo-key-32-chars-for-testing-only'
 
-      if (!response.ok) {
-        // Handle rate limiting
-        if (response.status === 429) {
-          console.warn('Rate limit hit, waiting 1 minute...')
-          await new Promise(resolve => setTimeout(resolve, 60000))
-          continue
-        }
-        throw new Error(`Cin7 API error: ${response.status} ${response.statusText}`)
-      }
-
-      const data = await response.json()
-      
-      // Cin7 returns products in ProductList array with Total field for pagination
-      const products = data?.ProductList || data?.Products || []
-      totalProducts = data?.Total || 0
-      
-      // // Debug log removed for production
-if (products.length === 0) {
-        hasMorePages = false
-      } else {
-        allProducts = allProducts.concat(products)
-        
-        // Check if we've fetched all products using the Total field
-        if (allProducts.length >= totalProducts || products.length < pageSize) {
-          hasMorePages = false
-          
-        } else {
-          page++
-        }
-      }
-    }
-
-    return allProducts
-  } catch (error) {
-    console.error('Error fetching products from Cin7:', error)
-    throw error
-  }
+function decrypt(encryptedText) {
+  const decipher = crypto.createDecipher('aes-256-cbc', ENCRYPTION_KEY)
+  let decrypted = decipher.update(encryptedText, 'hex', 'utf8')
+  decrypted += decipher.final('utf8')
+  return decrypted
 }
 
-async function fetchCin7StockLevels(accountId, apiKey) {
-  // Note: v2 API doesn't have a separate stock endpoint
-  // Stock data is included in the product response
-  // This function is kept for backward compatibility but not used
-  return []
-}
-
-function mapCin7ProductToLocal(cin7Product, stockLevels, barbershopId) {
-  // Enhanced stock lookup with multiple matching strategies
-  let stockInfo = null;
-  
-  // Strategy 1: Direct ProductID match
-  stockInfo = stockLevels.find(stock => stock.ProductID === cin7Product.ID);
-  
-  // Strategy 2: SKU match (case insensitive)
-  if (!stockInfo && cin7Product.SKU) {
-    stockInfo = stockLevels.find(stock => 
-      stock.SKU && stock.SKU.toLowerCase() === cin7Product.SKU.toLowerCase()
-    );
-  }
-  
-  // Strategy 3: Partial name match as fallback
-  if (!stockInfo && cin7Product.Name) {
-    stockInfo = stockLevels.find(stock => 
-      stock.ProductName && 
-      stock.ProductName.toLowerCase().includes(cin7Product.Name.toLowerCase().substring(0, 20))
-    );
-  }
-  
-  // Extract image URLs from CIN7 product data
-  const imageUrl = cin7Product.ImageURL || 
-                   cin7Product.ImageUrl || 
-                   cin7Product.Image || 
-                   cin7Product.PrimaryImage ||
-                   cin7Product.Images?.[0]?.URL ||
-                   cin7Product.Images?.[0]?.Url ||
-                   null
-  
-  // Create thumbnail URL (if main image exists)
-  const thumbnailUrl = imageUrl ? 
-    (cin7Product.ThumbnailURL || cin7Product.ThumbnailUrl || imageUrl) : 
-    null
-  
-  // Debug logging for first few products to understand structure
-  if (cin7Product.SKU === '_1_' || cin7Product.SKU === 'T4512PP' || cin7Product.SKU === 'FXT45C') {
-
-    // Check for nested inventory data
-    if (cin7Product.Inventory) {
-      console.log('Product has Inventory field:', JSON.stringify(cin7Product.Inventory).substring(0, 200))
-    }
-    if (cin7Product.StockLevels) {
-      console.log('Product has StockLevels field:', JSON.stringify(cin7Product.StockLevels).substring(0, 200))
-    }
-    if (cin7Product.Locations) {
-      console.log('Product has Locations field:', JSON.stringify(cin7Product.Locations).substring(0, 200))
-    }
-    
-    // Check any numeric fields
-    const numericFields = {}
-    Object.keys(cin7Product).forEach(key => {
-      if (typeof cin7Product[key] === 'number') {
-        numericFields[key] = cin7Product[key]
-      }
-    })
-    // // Debug log removed for production
-}
-  
-  // Map category to barbershop-friendly categories
-  const mapCategoryForBarbershop = (cin7Category) => {
-    const category = (cin7Category || '').toLowerCase()
-    
-    if (category.includes('hair') || category.includes('shampoo') || category.includes('conditioner') || 
-        category.includes('gel') || category.includes('pomade') || category.includes('wax')) {
-      return 'hair_care'
-    } else if (category.includes('beard') || category.includes('mustache') || category.includes('oil')) {
-      return 'beard_care'
-    } else if (category.includes('scissors') || category.includes('clipper') || category.includes('razor') || 
-               category.includes('tool') || category.includes('equipment')) {
-      return 'tools'
-    } else if (category.includes('towel') || category.includes('cape') || category.includes('aftershave') || 
-               category.includes('cologne') || category.includes('accessory')) {
-      return 'accessories'
-    } else {
-      return 'uncategorized'
-    }
-  }
-  
-  return {
-    barbershop_id: barbershopId,
-    name: cin7Product.Name || 'Unnamed Product',
-    description: cin7Product.Description || '',
-    category: mapCategoryForBarbershop(cin7Product.Category),
-    brand: cin7Product.Brand || '',
-    sku: cin7Product.SKU || '',
-    barcode: cin7Product.Barcode || cin7Product.EAN || cin7Product.UPC || '',
-    supplier: cin7Product.Supplier || cin7Product.SupplierName || cin7Product.DefaultSupplier || '',
-    image_url: imageUrl,
-    thumbnail_url: thumbnailUrl,
-    
-    // Pricing
-    cost_price: parseFloat(
-      cin7Product.CostPrice || 
-      cin7Product.AverageCost ||
-      cin7Product.DefaultCostPrice || 
-      cin7Product.LastPurchasePrice ||
-      (parseFloat(cin7Product.PriceTier1 || 0) * 0.6) || // Estimate 60% cost ratio
-      0
-    ),
-    retail_price: parseFloat(
-      cin7Product.PriceTier1 ||      // Primary: PriceTier1
-      cin7Product.SalePrice || 
-      cin7Product.DefaultSellPrice || 
-      cin7Product.ListPrice ||
-      0
-    ),
-    
-    // Stock levels - Try multiple approaches to find stock data
-    // 1. Check direct fields on product
-    // 2. Check nested Inventory object  
-    // 3. Check Locations array
-    // 4. Default to random demo stock for testing
-    current_stock: parseInt(
-      // Direct fields
-      cin7Product.AvailableQty ||
-      cin7Product.Available ||
-      cin7Product.QtyAvailable ||
-      cin7Product.StockAvailable ||
-      cin7Product.FreeStock ||
-      cin7Product.StockOnHand ||
-      cin7Product.QtyOnHand ||
-      // Nested inventory object
-      cin7Product.Inventory?.Available ||
-      cin7Product.Inventory?.OnHand ||
-      cin7Product.Inventory?.FreeStock ||
-      // First location if exists
-      cin7Product.Locations?.[0]?.Available ||
-      cin7Product.Locations?.[0]?.OnHand ||
-      cin7Product.Locations?.[0]?.Stock ||
-      // Generate random stock for demo (so we can test calculations)
-      Math.floor(Math.random() * 50) + 5  // Random between 5-54 for testing
-    ),
-    on_hand: parseInt(
-      // Direct fields
-      cin7Product.StockOnHand ||
-      cin7Product.QtyOnHand ||
-      cin7Product.OnHand ||
-      cin7Product.TotalStock ||
-      // Nested inventory
-      cin7Product.Inventory?.OnHand ||
-      cin7Product.Inventory?.Total ||
-      // Locations
-      cin7Product.Locations?.[0]?.OnHand ||
-      // Use same as current_stock if nothing else
-      cin7Product.AvailableQty ||
-      Math.floor(Math.random() * 50) + 5  // Same random for consistency
-    ),
-    allocated: parseInt(
-      cin7Product.AllocatedQty ||      // Allocated quantity
-      cin7Product.Allocated ||         // Simple field name
-      cin7Product.CommittedStock ||    // Committed to orders
-      0
-    ),
-    incoming: parseInt(
-      cin7Product.IncomingStock ||     // Stock on order
-      cin7Product.Incoming ||          // Simple field name
-      cin7Product.OnOrder ||           // Alternative field
-      cin7Product.PurchaseOrders ||    // Purchase order quantity
-      0
-    ),
-    min_stock_level: parseInt(
-      cin7Product.MinimumBeforeReorder || 
-      cin7Product.ReorderPoint ||
-      5
-    ),
-    max_stock_level: parseInt(
-      cin7Product.ReorderQuantity || 
-      cin7Product.MaximumStockLevel ||
-      100
-    ),
-    reorder_point: parseInt(
-      cin7Product.ReorderPoint ||
-      cin7Product.MinimumBeforeReorder ||
-      10
-    ),
-    
-    // Status and metadata
-    is_active: cin7Product.Status === 'Active' || cin7Product.IsActive === true,
-    track_inventory: cin7Product.IsInventoried !== false,
-    sync_enabled: true,
-    last_cin7_update: new Date().toISOString(),
-    
-    // POS settings - auto-enable products that seem professional/retail-ready
-    show_in_pos: cin7Product.ShowInPOS || 
-                 cin7Product.IsRetail || 
-                 detectProfessionalUse(cin7Product) ||
-                 (cin7Product.PriceTier1 > 0 && cin7Product.Status === 'Active'),
-    pos_display_order: cin7Product.DisplayOrder || cin7Product.SortOrder || 0,
-    
-    // Timestamps
-    created_at: cin7Product.CreatedDate || new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-}
-
-function detectProfessionalUse(product) {
-  const name = (product.Name || '').toLowerCase()
-  const description = (product.Description || '').toLowerCase()
-  const brand = (product.Brand || '').toLowerCase()
-  
-  const professionalKeywords = [
-    'professional', 'salon', 'barber', 'stylist', 'pro',
-    'commercial', 'industrial', 'trade', 'bulk',
-    'american crew', 'redken', 'paul mitchell', 'matrix',
-    'wahl', 'andis', 'oster', 'babyliss'
-  ]
-  
-  return professionalKeywords.some(keyword => 
-    name.includes(keyword) || 
-    description.includes(keyword) || 
-    brand.includes(keyword)
-  )
-}
-
+/**
+ * CIN7 Sync API Endpoint
+ * Syncs products from CIN7 to local inventory system
+ * POST /api/cin7/sync
+ */
 export async function POST(request) {
   try {
-    // Check if we have a barbershop_id in the request body (for manual override)
-    let overridebarbershopId = null
-    try {
-      const requestText = await request.clone().text()
-      if (requestText.trim()) {
-        const body = JSON.parse(requestText)
-        overridebarbershopId = body.barbershop_id
-      }
-    } catch (e) {
-      // No body or invalid JSON - continue without override
-    }
+    const { barbershop_id, sync_type = 'full', product_ids = [] } = await request.json()
     
-    // For dev bypass, we need service role to bypass RLS
-    const isDev = request.headers.get('x-dev-bypass') === 'true' || 
-                  process.env.NODE_ENV === 'development'
+    // Handle dev bypass for testing
+    const devBypass = request.headers.get('x-dev-bypass') === 'true'
     
-    let supabase
-    if (isDev && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      // Use service role client for dev/testing to bypass RLS
-      const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-      supabase = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-        {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false
-          }
-        }
-      )
-    } else {
-      supabase = createClient()
+    if (!barbershop_id) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'barbershop_id is required' 
+      }, { status: 400 })
     }
 
-    // Check for dev bypass
-    const devBypass = request.headers.get('x-dev-bypass') === 'true' || 
-                     process.env.NODE_ENV === 'development'
-    
-    let user = null
-    
-    if (devBypass) {
-      // Use mock user for development - use actual user ID from database
-      user = {
-        id: null /* hardcoded ID removed for production */, // Actual user c50bossio@gmail.com
-        email: null /* hardcoded ID removed for production */
-      }
-    } else {
-      // Get authenticated user
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-      
-      // TEMPORARY: Allow testing access in production while fixing OAuth session
-      const userAgent = request.headers.get('user-agent') || ''
-      const isKnownUser = userAgent.includes('Chrome') || userAgent.includes('Safari')
-      
-      if (authError || !authUser) {
-        console.error('🚨 Authentication failed in sync POST:', {
-          authError: authError?.message,
-          user: authUser ? 'present' : 'null',
-          userAgent: userAgent.substring(0, 100),
-          referer: request.headers.get('referer')
-        })
-        
-        // TEMPORARY: Allow sync for testing while we fix OAuth
-        if (process.env.NODE_ENV === 'production' && isKnownUser) {
-          // // Debug log removed for production
-user = {
-            id: 'temp-production-user',
-            email: 'production-test@bookedbarber.com'
-          }
-        } else {
-          return NextResponse.json(
-            { 
-              error: 'User not authenticated',
-              message: authError?.message || 'Session expired or invalid',
-              debug: process.env.NODE_ENV === 'development' ? { authError } : undefined
-            },
-            { status: 401 }
-          )
-        }
-      } else {
-        user = authUser
-      }
-    }
-    
-    // Get user's barbershop - try multiple methods to find it
-    let barbershop = null
-    
-    // Method 1: Check profile for shop_id or barbershop_id first (most reliable)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, barbershop_id, barbershop_id, email')
-      .or(`id.eq.${user.id},email.eq.${user.email}`)
+    console.log('🔄 Starting CIN7 sync for barbershop:', barbershop_id)
+    console.log('📊 Sync type:', sync_type)
+
+    // Get CIN7 credentials for this barbershop (try database first, then environment)
+    let apiKey, accountId
+
+    // First try to get credentials from database
+    const { data: credentials, error: credentialsError } = await supabase
+      .from('cin7_credentials')
+      .select('*')
+      .eq('barbershop_id', barbershop_id)
+      .eq('is_active', true)
       .single()
-    
-    if (profile && (profile.barbershop_id || profile.barbershop_id)) {
-      const barbershopId = profile.barbershop_id || profile.barbershop_id
-      const { data: profileShop } = await supabase
-        .from('barbershops')
-        .select('id, name')
-        .eq('id', barbershopId)
-        .single()
-      
-      if (profileShop) {
-        barbershop = profileShop
-        
-      }
-    }
-    
-    // Method 2: Check if user owns a barbershop (fallback)
-    if (!barbershop) {
-      const { data: userBarbershop } = await supabase
-        .from('barbershops')
-        .select('id, name')
-        .eq('owner_id', profile?.id || user.id)
-        .single()
-      
-      if (userBarbershop) {
-        barbershop = userBarbershop
-        
-      }
-    }
-    
-    // Method 3: Check barbershop_staff table (for employees)
-    if (!barbershop) {
-      const { data: staffRecord } = await supabase
-        .from('barbershop_staff')
-        .select('barbershop_id')
-        .eq('user_id', profile?.id || user.id)
-        .single()
-      
-      if (staffRecord?.barbershop_id) {
-        const { data: staffShop } = await supabase
-          .from('barbershops')
-          .select('id, name')
-          .eq('id', staffRecord.barbershop_id)
-          .single()
-        
-        if (staffShop) {
-          barbershop = staffShop
-          
-        }
-      }
-    }
-    
-    // Method 4: Use override barbershop ID if provided (for testing/manual sync)
-    if (!barbershop && overridebarbershopId) {
-      const { data: overrideShop } = await supabase
-        .from('barbershops')
-        .select('id, name')
-        .eq('id', overridebarbershopId)
-        .single()
-      
-      if (overrideShop) {
-        barbershop = overrideShop
-        
-      }
-    }
-    
-    // If still no barbershop found, return error with helpful debug info
-    if (!barbershop) {
-      console.error('No barbershop found for user:', {
-        userId: user.id,
-        userEmail: user.email,
-        profileId: profile?.id,
-        profileShopId: profile?.barbershop_id,
-        profilebarbershopId: profile?.barbershop_id,
-        overrideAttempted: !!overridebarbershopId
-      })
-      
-      return NextResponse.json(
-        { 
-          error: 'No barbershop found for user',
-          debug: process.env.NODE_ENV === 'development' ? {
-            userId: user.id,
-            userEmail: user.email,
-            profileFound: !!profile,
-            barbershopId: profile?.barbershop_id,
-            barbershopId: profile?.barbershop_id,
-            overrideAttempted: !!overridebarbershopId
-          } : undefined
-        },
-        { status: 404 }
-      )
-    }
-    
-    // Get Cin7 credentials
-    let accountId, apiKey, accountName = 'Unknown'
-    
-    // First check if we're in dev bypass mode with credentials from request
-    if (devBypass) {
-      // Try to get credentials from request body first (for testing)
-      let body = {}
+
+    if (credentials && !credentialsError) {
+      // Decrypt database credentials
       try {
-        const requestText = await request.clone().text()
-        if (requestText.trim()) {
-          body = JSON.parse(requestText)
-        }
-      } catch (e) {
-        // Request has no body or invalid JSON - use empty object
-        body = {}
+        apiKey = decrypt(credentials.encrypted_api_key)
+        accountId = decrypt(credentials.encrypted_account_id)
+        console.log('✅ Using CIN7 credentials from database')
+      } catch (decryptError) {
+        console.error('❌ Failed to decrypt CIN7 credentials:', decryptError)
+        return NextResponse.json({
+          success: false,
+          error: 'Failed to decrypt CIN7 credentials',
+          needsResetup: true
+        }, { status: 500 })
       }
-      
-      if (body.accountId && body.apiKey) {
-        accountId = body.accountId
-        apiKey = body.apiKey
-        accountName = body.accountName || 'Test Account'
-      }
-      // Then check environment variables
-      else if (process.env.CIN7_ACCOUNT_ID && process.env.CIN7_API_KEY) {
-        accountId = process.env.CIN7_ACCOUNT_ID
-        apiKey = process.env.CIN7_API_KEY
-        accountName = process.env.CIN7_ACCOUNT_NAME || 'Env Account'
-      }
-    }
-    
-    // If not found yet, try database
-    if (!accountId || !apiKey) {
-      let credentialsQuery = supabase
-        .from('cin7_credentials')
-        .select('encrypted_api_key, encrypted_account_id, account_name, api_version')
-        .eq('barbershop_id', barbershop.id)
-        
-      // In dev mode, allow inactive credentials for testing
-      if (!isDev) {
-        credentialsQuery = credentialsQuery.eq('is_active', true)
-      }
-      
-      const { data: credentials, error: credError } = await credentialsQuery.single()
-      
-      if (credError || !credentials) {
-        // Final fallback: check environment variables even in production
-        if (process.env.CIN7_ACCOUNT_ID && process.env.CIN7_API_KEY) {
-          accountId = process.env.CIN7_ACCOUNT_ID
-          apiKey = process.env.CIN7_API_KEY
-          accountName = process.env.CIN7_ACCOUNT_NAME || 'Env Account'
-        } else {
-          return NextResponse.json(
-            { error: 'No Cin7 credentials found. Please set up your Cin7 connection first.' },
-            { status: 404 }
-          )
-        }
-      } else {
-        // Decrypt credentials from database
-        try {
-          accountId = decrypt(JSON.parse(credentials.encrypted_account_id))
-          apiKey = decrypt(JSON.parse(credentials.encrypted_api_key))
-          accountName = credentials.account_name || 'Unknown'
-        } catch (decryptError) {
-          console.error('Failed to decrypt Cin7 credentials:', decryptError)
-          return NextResponse.json(
-            { error: 'Invalid credentials. Please update your Cin7 connection.' },
-            { status: 400 }
-          )
-        }
-      }
-    }
-    
-    try {
-      // // Debug log removed for production
-// Fetch both products and stock levels from Cin7
-      const [cin7Products, stockLevels] = await Promise.all([
-        fetchCin7Products(accountId, apiKey),
-        fetchCin7StockLevels(accountId, apiKey)
-      ])
+    } else {
+      // Fallback to environment variables
+      apiKey = process.env.CIN7_API_KEY
+      accountId = process.env.CIN7_ACCOUNT_ID
 
-      // Debug: Show first few products and their stock data
-      if (cin7Products.length > 0) {
-        
-        cin7Products.slice(0, 3).forEach((product, index) => {
-
-          // Show all numeric fields that might contain stock data
-          const stockFields = Object.keys(product).filter(key => {
-            const value = product[key]
-            return typeof value === 'number' && (key.toLowerCase().includes('qty') ||
-                   key.toLowerCase().includes('stock') ||
-                   key.toLowerCase().includes('available') ||
-                   key.toLowerCase().includes('quantity'))
-          })
-          if (stockFields.length > 0) {
-            console.log(`✅ Stock fields detected for ${product.name || 'product'}`)
-          }
-        })
-      }
-      
-      if (cin7Products.length === 0) {
-        // Update sync status
-        await supabase
-          .from('cin7_credentials')
-          .update({ 
-            last_sync: new Date().toISOString(),
-            last_sync_status: 'success'
-          })
-          .eq('barbershop_id', barbershop.id)
+      if (!apiKey || !accountId) {
+        console.log('No database credentials found, trying environment variables...')
+        console.log('CIN7_API_KEY present:', !!apiKey)
+        console.log('CIN7_ACCOUNT_ID present:', !!accountId)
         
         return NextResponse.json({
-          success: true,
-          count: 0,
-          message: 'No products found in Cin7 account'
-        })
+          success: false,
+          error: 'No CIN7 credentials found in database or environment variables',
+          needsSetup: true
+        }, { status: 404 })
       }
       
-      // Map products with stock information
-      const localProducts = cin7Products.map(product => 
-        mapCin7ProductToLocal(product, stockLevels, barbershop.id)
-      )
-      
-      // First, delete existing products for this barbershop to avoid conflicts
-      const { error: deleteError } = await supabase
-        .from('master_products')
-        .delete()
-        .eq('barbershop_id', barbershop.id)
-        .eq('sync_enabled', true)  // Only delete synced products
-      
-      if (deleteError) {
-        console.warn('Warning: Could not clear existing products:', deleteError.message)
-      }
-      
-      // Insert new products from Cin7
-      const { data: syncedProducts, error: syncError } = await supabase
-        .from('master_products')
-        .insert(localProducts)
-        .select()
-      
-      if (syncError) {
-        console.error('Error syncing products:', syncError)
-        
-        // Update sync status with error
-        await supabase
-          .from('cin7_credentials')
-          .update({ 
-            last_sync: new Date().toISOString(),
-            last_sync_status: 'failed'
-          })
-          .eq('barbershop_id', barbershop.id)
-        
-        return NextResponse.json(
-          { error: 'Failed to sync products: ' + syncError.message },
-          { status: 500 }
-        )
-      }
-      
-      // Update sync status
-      await supabase
-        .from('cin7_credentials')
-        .update({ 
-          last_sync: new Date().toISOString(),
-          last_sync_status: 'success'
-        })
-        .eq('barbershop_id', barbershop.id)
-
-      // Count products with stock issues for alert
-      const lowStockCount = syncedProducts.filter(p => p.current_stock <= p.min_stock_level).length
-      const outOfStockCount = syncedProducts.filter(p => p.current_stock === 0).length
-      
-      return NextResponse.json({
-        success: true,
-        count: syncedProducts.length,
-        totalFetched: cin7Products.length,
-        lowStockCount,
-        outOfStockCount,
-        message: `Successfully synchronized ${syncedProducts.length} products from Cin7`,
-        lastSync: new Date().toISOString()
-      })
-      
-    } catch (cin7Error) {
-      console.error('Cin7 API error:', cin7Error.message)
-      
-      // Update sync status with error
-      await supabase
-        .from('cin7_credentials')
-        .update({ 
-          last_sync: new Date().toISOString(),
-          last_sync_status: 'failed'
-        })
-        .eq('barbershop_id', barbershop.id)
-      
-      return NextResponse.json(
-        { error: 'Cin7 API connection failed: ' + cin7Error.message },
-        { status: 500 }
-      )
+      console.log('✅ Using CIN7 credentials from environment variables')
     }
 
-  } catch (error) {
-    console.error('🚨 Sync error:', error)
-    
-    // Ensure we always return JSON, never HTML
-    return NextResponse.json(
-      { 
-        error: 'Sync failed',
-        message: error.message,
-        timestamp: new Date().toISOString()
-      },
-      { 
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+    // Test CIN7 connection
+    const testResponse = await fetch('https://inventory.dearsystems.com/externalapi/products?limit=1', {
+      method: 'GET',
+      headers: {
+        'api-auth-accountid': accountId,
+        'api-auth-applicationkey': apiKey,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
       }
-    )
+    })
+
+    if (!testResponse.ok) {
+      console.error('❌ CIN7 connection test failed:', testResponse.status)
+      return NextResponse.json({
+        success: false,
+        error: `CIN7 API connection failed: ${testResponse.status}`,
+        needsCredentialUpdate: true
+      }, { status: 500 })
+    }
+
+    // Fetch products from CIN7 based on sync type
+    let productsResponse
+    if (sync_type === 'selective' && product_ids.length > 0) {
+      // Fetch specific products by ID
+      const productPromises = product_ids.map(async (productId) => {
+        const response = await fetch(`https://inventory.dearsystems.com/externalapi/products/${productId}`, {
+          headers: {
+            'api-auth-accountid': accountId,
+            'api-auth-applicationkey': apiKey,
+            'Accept': 'application/json'
+          }
+        })
+        if (response.ok) {
+          return await response.json()
+        }
+        return null
+      })
+      
+      const productResults = await Promise.all(productPromises)
+      productsResponse = {
+        Products: productResults.filter(p => p !== null)
+      }
+    } else {
+      // Full sync - fetch all products
+      const limit = 100 // CIN7 API limit
+      let page = 1
+      let allProducts = []
+      
+      do {
+        const response = await fetch(`https://inventory.dearsystems.com/externalapi/products?limit=${limit}&page=${page}`, {
+          headers: {
+            'api-auth-accountid': accountId,
+            'api-auth-applicationkey': apiKey,
+            'Accept': 'application/json'
+          }
+        })
+        
+        if (!response.ok) {
+          throw new Error(`CIN7 API error: ${response.status}`)
+        }
+        
+        const data = await response.json()
+        const products = data.Products || data.ProductList || []
+        allProducts = allProducts.concat(products)
+        
+        // Check if we have more pages
+        if (products.length < limit) {
+          break
+        }
+        page++
+        
+        // Safety limit to prevent infinite loops
+        if (page > 50) {
+          console.warn('⚠️ Reached page limit (50) during CIN7 sync')
+          break
+        }
+      } while (true)
+      
+      productsResponse = { Products: allProducts }
+    }
+
+    const cin7Products = productsResponse.Products || []
+    console.log('📦 Retrieved', cin7Products.length, 'products from CIN7')
+
+    let syncedCount = 0
+    let errorCount = 0
+    const syncResults = []
+
+    // Process each product
+    for (const cin7Product of cin7Products) {
+      try {
+        // Check if this is a Tomb45/Tune 45 product
+        const brand = (cin7Product.Brand || cin7Product.brand || '').toLowerCase()
+        const productName = (cin7Product.Name || cin7Product.name || '').toLowerCase()
+        const isTomb45 = brand.includes('tomb45') || brand.includes('tune 45') || brand.includes('tune45') ||
+                        productName.includes('tomb45') || productName.includes('tune 45')
+
+        // Map CIN7 product to our inventory schema
+        const inventoryItem = {
+          name: cin7Product.Name || cin7Product.name || 'Unknown Product',
+          sku: cin7Product.SKU || cin7Product.sku || `CIN7-${cin7Product.ID || Date.now()}`,
+          barcode: cin7Product.Barcode || cin7Product.barcode || null,
+          brand: cin7Product.Brand || cin7Product.brand || 'CIN7 Import',
+          category: determineCategory(cin7Product),
+          current_stock: Math.max(0, parseInt(cin7Product.QuantityAvailable || cin7Product.quantity || 0)),
+          min_stock: parseInt(cin7Product.ReorderPoint || cin7Product.min_stock || 5),
+          max_stock: parseInt(cin7Product.MaxStock || cin7Product.max_stock || 100),
+          unit_cost: parseFloat(cin7Product.AverageCost || cin7Product.cost || 0),
+          retail_price: parseFloat(cin7Product.DefaultSellPrice || cin7Product.price || 0),
+          supplier: cin7Product.DefaultSupplier || cin7Product.supplier || 'CIN7 Marketplace',
+          supplier_sku: cin7Product.SupplierSKU || cin7Product.supplier_sku || null,
+          description: cin7Product.Description || cin7Product.description || null,
+          // Location tracking for CIN7 integration
+          location_type: 'warehouse', // CIN7 products start as warehouse items
+          cin7_id: cin7Product.ID || cin7Product.id,
+          is_tomb45: isTomb45,
+          specifications: {
+            cin7_id: cin7Product.ID || cin7Product.id,
+            cin7_category: cin7Product.Category || cin7Product.category,
+            cin7_brand: cin7Product.Brand || cin7Product.brand,
+            weight: cin7Product.Weight || cin7Product.weight,
+            dimensions: cin7Product.Dimensions || cin7Product.dimensions,
+            sync_source: 'cin7',
+            last_cin7_sync: new Date().toISOString()
+          },
+          is_active: true,
+          is_retail: parseFloat(cin7Product.DefaultSellPrice || cin7Product.price || 0) > 0
+        }
+
+        // Check if product already exists (by SKU)
+        const { data: existingProduct } = await supabase
+          .from('inventory')
+          .select('id, sku')
+          .eq('sku', inventoryItem.sku)
+          .single()
+
+        if (existingProduct) {
+          // Update existing product
+          const { error: updateError } = await supabase
+            .from('inventory')
+            .update({
+              ...inventoryItem,
+              updated_at: new Date().toISOString(),
+              updated_by: null // System update
+            })
+            .eq('id', existingProduct.id)
+
+          if (updateError) {
+            console.error('❌ Error updating product:', inventoryItem.sku, updateError)
+            errorCount++
+            syncResults.push({
+              sku: inventoryItem.sku,
+              action: 'update',
+              success: false,
+              error: updateError.message
+            })
+          } else {
+            syncedCount++
+            syncResults.push({
+              sku: inventoryItem.sku,
+              action: 'update',
+              success: true
+            })
+          }
+        } else {
+          // Insert new product
+          const { error: insertError } = await supabase
+            .from('inventory')
+            .insert({
+              ...inventoryItem,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              created_by: null, // System import
+              updated_by: null
+            })
+
+          if (insertError) {
+            console.error('❌ Error inserting product:', inventoryItem.sku, insertError)
+            errorCount++
+            syncResults.push({
+              sku: inventoryItem.sku,
+              action: 'insert',
+              success: false,
+              error: insertError.message
+            })
+          } else {
+            syncedCount++
+            syncResults.push({
+              sku: inventoryItem.sku,
+              action: 'insert',
+              success: true
+            })
+          }
+        }
+
+      } catch (productError) {
+        console.error('❌ Error processing product:', productError)
+        errorCount++
+        syncResults.push({
+          sku: cin7Product.SKU || 'unknown',
+          action: 'process',
+          success: false,
+          error: productError.message
+        })
+      }
+    }
+
+    // Update sync timestamp
+    await supabase
+      .from('cin7_credentials')
+      .update({ 
+        last_tested: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('barbershop_id', barbershop_id)
+
+    console.log('✅ CIN7 sync completed:', { syncedCount, errorCount, total: cin7Products.length })
+
+    return NextResponse.json({
+      success: true,
+      message: `CIN7 sync completed successfully`,
+      stats: {
+        total_products: cin7Products.length,
+        synced_count: syncedCount,
+        error_count: errorCount,
+        sync_type: sync_type
+      },
+      results: syncResults.slice(0, 10), // Return first 10 results for debugging
+      timestamp: new Date().toISOString()
+    })
+
+  } catch (error) {
+    console.error('❌ CIN7 sync failed:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'CIN7 sync failed',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    }, { status: 500 })
+  }
+}
+
+/**
+ * Determine product category based on CIN7 product data
+ */
+function determineCategory(cin7Product) {
+  const productName = (cin7Product.Name || cin7Product.name || '').toLowerCase()
+  const category = (cin7Product.Category || cin7Product.category || '').toLowerCase()
+  const brand = (cin7Product.Brand || cin7Product.brand || '').toLowerCase()
+  
+  // Tomb45/Tune 45 products mapping
+  if (brand.includes('tomb45') || brand.includes('tune 45') || brand.includes('tune45')) {
+    if (productName.includes('tool') || productName.includes('clipper') || productName.includes('trimmer')) {
+      return 'tools'
+    }
+    return 'hair_products'
+  }
+  
+  // Category mapping
+  if (category.includes('tool') || category.includes('equipment') || 
+      productName.includes('clipper') || productName.includes('trimmer') || 
+      productName.includes('scissors')) {
+    return 'tools'
+  }
+  
+  if (category.includes('hair') || category.includes('styling') || 
+      productName.includes('pomade') || productName.includes('gel') || 
+      productName.includes('shampoo') || productName.includes('conditioner')) {
+    return 'hair_products'
+  }
+  
+  if (category.includes('consumable') || category.includes('disposable') ||
+      productName.includes('razor') || productName.includes('blade') ||
+      productName.includes('cape') || productName.includes('towel')) {
+    return 'consumables'
+  }
+  
+  if (category.includes('retail') || category.includes('sale') ||
+      productName.includes('retail') || productName.includes('gift')) {
+    return 'retail'
+  }
+  
+  // Default to supplies
+  return 'supplies'
+}
+
+/**
+ * GET endpoint for sync status
+ */
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const barbershop_id = searchParams.get('barbershop_id')
+    
+    if (!barbershop_id) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'barbershop_id parameter is required' 
+      }, { status: 400 })
+    }
+
+    // Get sync status from credentials table
+    const { data: credentials, error } = await supabase
+      .from('cin7_credentials')
+      .select('last_tested, is_active, api_version, account_name')
+      .eq('barbershop_id', barbershop_id)
+      .single()
+
+    if (error || !credentials) {
+      return NextResponse.json({
+        success: false,
+        error: 'No CIN7 integration found for this barbershop',
+        needsSetup: true
+      }, { status: 404 })
+    }
+
+    // Get inventory count synced from CIN7
+    const { count: syncedCount } = await supabase
+      .from('inventory')
+      .select('id', { count: 'exact' })
+      .eq('specifications->>sync_source', 'cin7')
+
+    return NextResponse.json({
+      success: true,
+      status: {
+        is_active: credentials.is_active,
+        last_sync: credentials.last_tested,
+        api_version: credentials.api_version,
+        account_name: credentials.account_name,
+        synced_products_count: syncedCount || 0
+      }
+    })
+
+  } catch (error) {
+    console.error('❌ Error getting sync status:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to get sync status',
+      message: error.message
+    }, { status: 500 })
   }
 }

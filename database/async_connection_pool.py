@@ -148,6 +148,8 @@ class AsyncConnectionPool:
             f"PRAGMA temp_store = {self.config.temp_store}",
             f"PRAGMA mmap_size = {self.config.mmap_size}",
             f"PRAGMA busy_timeout = {self.config.busy_timeout}",
+            "PRAGMA wal_autocheckpoint = 1000",  # Optimize WAL checkpointing
+            "PRAGMA optimize",  # Update query planner statistics
         ]
         
         if self.config.enable_foreign_keys:

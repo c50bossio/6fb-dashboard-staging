@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { useState } from 'react'
 import { 
   ArrowLeftIcon, 
   EnvelopeIcon, 
@@ -8,8 +10,6 @@ import {
   ChatBubbleLeftRightIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
-import Link from 'next/link'
-import { useState } from 'react'
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -20,12 +20,44 @@ export default function ContactUs() {
     message: ''
   })
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 5000)
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setSubmitted(true)
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: 'general',
+          message: ''
+        })
+        setTimeout(() => setSubmitted(false), 10000)
+      } else {
+        setError(result.message || 'Failed to send message. Please try again.')
+      }
+    } catch (err) {
+      console.error('Contact form error:', err)
+      setError('Something went wrong. Please try again or contact us directly.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleChange = (e) => {
@@ -158,11 +190,19 @@ export default function ContactUs() {
             <div className="bg-white rounded-lg shadow-sm p-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6">Send Us a Message</h2>
               
-              {submitted ? (
+              {submitted && (
                 <div className="bg-green-50 border border-green-400 text-green-800 px-4 py-3 rounded-lg mb-6">
-                  Thank you for contacting us! We'll respond within 24-48 hours.
+                  <div className="font-semibold">Thank you for contacting us!</div>
+                  <div className="text-sm mt-1">We'll respond within 24-48 hours. Check your email for confirmation.</div>
                 </div>
-              ) : null}
+              )}
+              
+              {error && (
+                <div className="bg-red-50 border border-red-400 text-red-800 px-4 py-3 rounded-lg mb-6">
+                  <div className="font-semibold">Error sending message</div>
+                  <div className="text-sm mt-1">{error}</div>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -272,9 +312,21 @@ export default function ContactUs() {
                 <div className="flex justify-end">
                   <button
                     type="submit"
-                    className="bg-olive-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-olive-700 transition-colors"
+                    disabled={loading}
+                    className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
+                      loading 
+                        ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
+                        : 'bg-olive-600 text-white hover:bg-olive-700'
+                    }`}
                   >
-                    Send Message
+                    {loading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        Sending...
+                      </div>
+                    ) : (
+                      'Send Message'
+                    )}
                   </button>
                 </div>
               </form>

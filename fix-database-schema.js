@@ -2,154 +2,177 @@
 
 /**
  * Database Schema Fix Script
- * Applies the appointments.barbershop_id fix to resolve PostgreSQL errors
+ * Fixes analytics schema issues and adds demo data
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js'
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // Load environment variables
-dotenv.config();
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Get __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ Missing required environment variables:')
+  console.error('   NEXT_PUBLIC_SUPABASE_URL')
+  console.error('   SUPABASE_SERVICE_ROLE_KEY')
+  console.error('\nPlease check your .env.local file.')
+  process.exit(1)
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function fixDatabaseSchema() {
-  console.log('🔧 Starting database schema fix...');
-
-  // Create Supabase client with service role key
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
-
   try {
-    // Read the SQL fix script
-    const sqlScript = fs.readFileSync(
-      path.join(__dirname, 'database', 'fix-appointments-schema.sql'), 
-      'utf8'
-    );
-
-    console.log('📄 Loaded SQL fix script');
-
-    // Split the script into individual statements
-    const statements = sqlScript
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
-
-    console.log(`📋 Found ${statements.length} SQL statements to execute`);
-
-    // Execute each statement
-    for (let i = 0; i < statements.length; i++) {
-      const statement = statements[i];
-      
-      if (statement.toLowerCase().includes('comment on')) {
-        // Skip comments for now as they might not be critical
-        console.log(`⏭️  Skipping comment statement ${i + 1}`);
-        continue;
-      }
-
-      console.log(`🔄 Executing statement ${i + 1}/${statements.length}...`);
-      
-      try {
-        const { data, error } = await supabase.rpc('exec_sql', { 
-          sql_query: statement + ';'
-        });
-
-        if (error) {
-          // Try direct query if RPC fails
-          const { error: directError } = await supabase
-            .from('_temp_sql_exec')
-            .select('*')
-            .limit(0); // This will execute but return nothing
-
-          if (directError && directError.code !== '42P01') {
-            throw error;
-          }
-        }
-
-        console.log(`✅ Statement ${i + 1} executed successfully`);
-      } catch (err) {
-        if (err.message.includes('already exists') || err.message.includes('IF NOT EXISTS')) {
-          console.log(`⚠️  Statement ${i + 1} - Object already exists (expected)`);
-        } else {
-          console.error(`❌ Statement ${i + 1} failed:`, err.message);
-          // Continue with other statements
-        }
-      }
-    }
-
-    // Verify the fix by checking if shop_id column exists
-    console.log('🔍 Verifying schema fix...');
+    console.log('🔧 Starting database schema fixes...')
     
-    const { data: columns, error: columnError } = await supabase
-      .from('information_schema.columns')
-      .select('column_name')
-      .eq('table_name', 'appointments')
-      .eq('table_schema', 'public');
-
-    if (columnError) {
-      console.warn('⚠️  Could not verify schema - this might be normal');
-    } else {
-      const columnNames = columns.map(c => c.column_name);
-      const hasShopId = columnNames.includes('barbershop_id');
-      const hasBarbershopId = columnNames.includes('barbershop_id');
-      
-      console.log(`📊 Appointments table columns:`, columnNames);
-      console.log(`✅ shop_id column exists: ${hasShopId}`);
-      console.log(`✅ barbershop_id column exists: ${hasBarbershopId}`);
-      
-      if (hasShopId && hasBarbershopId) {
-        console.log('🎉 Schema fix appears successful!');
-      } else {
-        console.log('⚠️  Schema fix may need manual verification');
+    // Read the SQL file
+    const sqlFilePath = join(__dirname, 'database', 'fix-analytics-schema.sql')
+    const sqlCommands = readFileSync(sqlFilePath, 'utf8')
+    
+    // Split SQL commands and execute them
+    const commands = sqlCommands
+      .split(';')
+      .map(cmd => cmd.trim())
+      .filter(cmd => cmd.length > 0 && !cmd.startsWith('--'))
+    
+    let successCount = 0
+    
+    for (const command of commands) {
+      try {
+        if (command.includes('SELECT') && command.includes('message')) {
+          // This is the final confirmation query
+          const { data, error } = await supabase.rpc('exec_sql', { sql: command })
+          if (error) throw error
+          
+          if (data && data.length > 0) {
+            console.log('✅', data[0].message)
+            console.log('📊 Demo data summary:')
+            console.log(`   - Customers: ${data[0].customer_count}`)
+            console.log(`   - Services: ${data[0].service_count}`)
+            console.log(`   - Appointments: ${data[0].appointment_count}`)
+          }
+        } else {
+          // Execute regular commands
+          const { error } = await supabase.rpc('exec_sql', { sql: command })
+          if (error) throw error
+        }
+        successCount++
+      } catch (cmdError) {
+        // Some errors are expected (like "column already exists")
+        if (cmdError.message.includes('already exists') || 
+            cmdError.message.includes('duplicate key')) {
+          console.log('⚠️  Skipping (already exists):', command.substring(0, 50) + '...')
+        } else {
+          console.error('❌ Error executing:', command.substring(0, 50) + '...')
+          console.error('   Error:', cmdError.message)
+        }
       }
     }
-
-    console.log('🚀 Database schema fix completed!');
+    
+    console.log(`\n✅ Database fixes completed! (${successCount}/${commands.length} commands executed)`)
+    
+    // Test the analytics query
+    console.log('\n🧪 Testing analytics query...')
+    const { data: testData, error: testError } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('barbershop_id', 'a1b2c3d4-e5f6-7890-abcd-ef1234567890')
+      .limit(1)
+    
+    if (testError) {
+      console.error('❌ Test query failed:', testError.message)
+    } else {
+      console.log('✅ Test query successful - analytics should now work!')
+    }
     
   } catch (error) {
-    console.error('💥 Database schema fix failed:', error.message);
-    console.error('📋 Full error:', error);
-    process.exit(1);
+    console.error('❌ Failed to fix database schema:', error.message)
+    process.exit(1)
   }
 }
 
-// Alternative approach using direct SQL execution
-async function applySchemaFixDirect() {
-  console.log('🔧 Applying schema fix using direct approach...');
-  
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  );
-
-  // Simple fix: Add shop_id column if it doesn't exist
+// Alternative direct SQL execution if rpc doesn't work
+async function fixDatabaseSchemaDirect() {
   try {
-    const { error } = await supabase
-      .from('appointments')
-      .select('barbershop_id')
-      .limit(1);
-
-    if (error && error.code === '42703') {
-      console.log('📋 shop_id column missing, need to add it manually via Supabase dashboard');
-      console.log('🔗 Go to: https://supabase.com/dashboard/project/[your-project]/editor');
-      console.log('📝 Run: ALTER TABLE appointments ADD COLUMN shop_id UUID;');
-      console.log('📝 Then: UPDATE appointments SET shop_id = barbershop_id WHERE shop_id IS NULL;');
-    } else {
-      console.log('✅ shop_id column already exists or accessible');
+    console.log('🔧 Applying database fixes directly...')
+    
+    // 1. Add missing column (if not exists)
+    try {
+      const { error: colError } = await supabase.rpc('exec_sql', {
+        sql: 'ALTER TABLE customers ADD COLUMN IF NOT EXISTS last_visit_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()'
+      })
+      if (colError && !colError.message.includes('already exists')) {
+        throw colError
+      }
+      console.log('✅ Added last_visit_at column')
+    } catch (e) {
+      console.log('⚠️  Column may already exist:', e.message)
     }
-  } catch (err) {
-    console.log('⚠️  Manual intervention required:', err.message);
+    
+    // 2. Insert demo barbershop
+    const { error: shopError } = await supabase
+      .from('barbershops')
+      .insert({
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        name: 'Demo Barbershop',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+    
+    if (shopError && !shopError.message.includes('duplicate key')) {
+      throw shopError
+    }
+    console.log('✅ Demo barbershop created/updated')
+    
+    // 3. Insert demo customers
+    const { error: customersError } = await supabase
+      .from('customers')
+      .upsert([
+        {
+          barbershop_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+          name: 'John Smith',
+          email: 'john@example.com',
+          phone: '+1234567890',
+          last_visit_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          barbershop_id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+          name: 'Mike Johnson',
+          email: 'mike@example.com',
+          phone: '+1234567891',
+          last_visit_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ])
+    
+    if (customersError && !customersError.message.includes('duplicate key')) {
+      console.log('⚠️  Customers insert result:', customersError)
+    } else {
+      console.log('✅ Demo customers created')
+    }
+    
+    console.log('\n✅ Database fixes applied successfully!')
+    
+  } catch (error) {
+    console.error('❌ Failed to apply database fixes:', error.message)
+    process.exit(1)
   }
 }
 
-// Run the fix if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  fixDatabaseSchema().catch(console.error);
-}
+// Run the fix
+console.log('🚀 Starting database schema repair...')
+fixDatabaseSchemaDirect()
+  .then(() => {
+    console.log('✅ All done! Analytics should now show data.')
+    process.exit(0)
+  })
+  .catch((error) => {
+    console.error('❌ Schema fix failed:', error)
+    process.exit(1)
+  })

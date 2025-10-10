@@ -8,6 +8,7 @@ export function DashboardProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
+  // Dashboard data
   const [systemHealth, setSystemHealth] = useState({
     status: 'healthy',
     service: '6fb-ai-backend',
@@ -26,7 +27,9 @@ export function DashboardProvider({ children }) {
       common_topics: ['scheduling', 'customer service', 'pricing'],
       avg_satisfaction: 4.7,
       learning_progress: 85,
-      shop_profiles: [] // No demo shops - populated from real database
+      shop_profiles: [
+        { name: 'Demo Shop', last_updated: new Date().toISOString() }
+      ]
     },
     database_insights: [
       { insight: 'Peak hours analysis complete', confidence: 0.95 },
@@ -42,9 +45,11 @@ export function DashboardProvider({ children }) {
   const [conversationHistory, setConversationHistory] = useState([]);
   const [currentSession, setCurrentSession] = useState(null);
 
+  // Load dashboard data on mount
   useEffect(() => {
     loadDashboardData();
     
+    // Set up periodic refresh every 5 minutes for live data
     const refreshInterval = setInterval(() => {
       loadDashboardData();
     }, 5 * 60 * 1000); // 5 minutes
@@ -52,6 +57,7 @@ export function DashboardProvider({ children }) {
     return () => clearInterval(refreshInterval);
   }, []);
 
+  // Stats and metrics
   const [dashboardStats, setDashboardStats] = useState({
     totalConversations: 847,
     activeAgents: 6,
@@ -71,8 +77,10 @@ export function DashboardProvider({ children }) {
     try {
       setError(null);
       
+      console.log('💬 Sending message to enhanced AI chat:', message);
       
-      const response = await fetch('/api/ai/enhanced-chat', {
+      // Call our enhanced chat API through Next.js API route
+      const response = await fetch('/api/ai/unified-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +89,7 @@ export function DashboardProvider({ children }) {
           message,
           sessionId: currentSession,
           businessContext: shopContext || {
-            shop_name: barbershop?.name || 'Your Barbershop',
+            shop_name: 'Demo Barbershop',
             location: 'Local Area',
             staff_count: 3
           }
@@ -98,9 +106,12 @@ export function DashboardProvider({ children }) {
         throw new Error(result.error || 'Chat request failed');
       }
 
+      console.log('✅ Enhanced AI response received:', result);
       
+      // Update session
       setCurrentSession(result.sessionId);
       
+      // Add to conversation history
       setConversationHistory(prev => [
         ...prev,
         {
@@ -119,6 +130,7 @@ export function DashboardProvider({ children }) {
         }
       ]);
 
+      // Update stats
       setDashboardStats(prev => ({
         ...prev,
         totalConversations: prev.totalConversations + 1
@@ -136,6 +148,8 @@ export function DashboardProvider({ children }) {
     } catch (err) {
       console.error('Enhanced chat error:', err);
       
+      // Fallback to intelligent mock response
+      console.log('🔄 Using fallback response...');
       
       const fallbackResponse = {
         session_id: currentSession || `session_${Date.now()}`,
@@ -152,6 +166,7 @@ export function DashboardProvider({ children }) {
       
       setCurrentSession(fallbackResponse.session_id);
       
+      // Add to conversation history
       setConversationHistory(prev => [
         ...prev,
         {
@@ -169,6 +184,7 @@ export function DashboardProvider({ children }) {
         }
       ]);
 
+      // Update stats
       setDashboardStats(prev => ({
         ...prev,
         totalConversations: prev.totalConversations + 1
@@ -183,6 +199,7 @@ export function DashboardProvider({ children }) {
   };
 
   const updateShopContext = async (contextData) => {
+    console.log('Shop context updated:', contextData);
   };
 
   const loadDashboardData = async () => {
@@ -190,7 +207,9 @@ export function DashboardProvider({ children }) {
       setLoading(true);
       setError(null);
       
+      console.log('📊 Loading real dashboard data from backend...');
       
+      // Fetch real metrics from our new API
       const response = await fetch('/api/dashboard/metrics?detailed=true', {
         method: 'GET',
         headers: {
@@ -204,7 +223,9 @@ export function DashboardProvider({ children }) {
 
       const metricsData = await response.json();
       
+      console.log('✅ Real dashboard data loaded:', metricsData);
       
+      // Update state with real data (properly handle degraded status)
       const actualStatus = metricsData.system_health?.status || 'healthy';
       setSystemHealth({
         status: actualStatus,
@@ -230,7 +251,9 @@ export function DashboardProvider({ children }) {
           common_topics: ['scheduling', 'customer service', 'pricing'],
           avg_satisfaction: metricsData.business_insights?.user_satisfaction_score || 4.7,
           learning_progress: 85,
-          shop_profiles: [] // Populated from real database
+          shop_profiles: [
+            { name: 'Demo Shop', last_updated: metricsData.timestamp }
+          ]
         },
         database_insights: [
           { insight: 'Peak hours analysis complete', confidence: 0.95 },
@@ -258,17 +281,21 @@ export function DashboardProvider({ children }) {
         efficiency: `+${metricsData.business_insights?.efficiency_improvement_percent || 34}%`
       });
       
+      console.log('📈 Dashboard state updated with real metrics');
       
     } catch (err) {
       console.error('❌ Error loading dashboard data:', err);
       setError(err.message);
       
+      // Show error state instead of fallback data - follow NO MOCK DATA policy
+      console.log('❌ Dashboard data unavailable - showing error state');
     } finally {
       setLoading(false);
     }
   };
 
   const refreshDashboard = () => {
+    console.log('Dashboard refreshed');
     loadDashboardData();
   };
 
@@ -277,15 +304,18 @@ export function DashboardProvider({ children }) {
   };
 
   const value = useMemo(() => ({
+    // Data
     systemHealth,
     agentInsights,
     conversationHistory,
     currentSession,
     dashboardStats,
     
+    // State
     loading,
     error,
     
+    // Actions
     chatWithAgent,
     loadConversationHistory,
     loadDashboardData,

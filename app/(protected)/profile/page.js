@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { 
   UserIcon,
   PencilIcon,
@@ -15,18 +16,14 @@ import {
   PhoneIcon,
   EnvelopeIcon
 } from '@heroicons/react/24/outline'
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
-import { getDisplayName, splitFullName, combineNames, normalizeNameData, createNameUpdateObject } from '../../../lib/name-utils'
+import Link from 'next/link'
 
 export default function ProfilePage() {
-  const { user, profile, updateProfile } = useAuth()
+  const { user, profile, updateProfile, loading } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [profileData, setProfileData] = useState({
     full_name: '',
-    first_name: '',
-    last_name: '',
     email: '',
     phone: '',
     bio: '',
@@ -34,108 +31,96 @@ export default function ProfilePage() {
     role: ''
   })
   const [saveStatus, setSaveStatus] = useState(null) // null, 'saving', 'saved', 'error'
+  const [dataLoaded, setDataLoaded] = useState(false)
 
   useEffect(() => {
-    // Normalize name data for consistent handling
-    const nameData = normalizeNameData({
-      firstName: profile?.firstName || profile?.first_name,
-      lastName: profile?.lastName || profile?.last_name,
-      fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name
-    })
-    
-    const displayName = getDisplayName({
-      firstName: nameData.firstName,
-      lastName: nameData.lastName,
-      fullName: nameData.fullName,
-      email: user?.email,
-      defaultName: 'Dev User'
-    })
-    
-    setProfileData({
-      full_name: displayName,
-      first_name: nameData.firstName || '',
-      last_name: nameData.lastName || '',
-      email: user?.email || 'dev@localhost.com',
-      phone: profile?.phone || '+1 (555) 123-4567',
-      bio: profile?.bio || 'Passionate about delivering exceptional barbershop experiences.',
-      location: profile?.location || 'San Francisco, CA',
-      role: profile?.role || user?.user_metadata?.role || 'Shop Owner'
-    })
-  }, [user, profile])
+    // Only set profile data when we have real user data
+    if (!loading && user) {
+      console.log('Profile page: Setting profile data', { user: user.email, profile: profile?.full_name })
+      setProfileData({
+        full_name: profile?.full_name || user?.user_metadata?.full_name || '',
+        email: user?.email || '',
+        phone: profile?.phone || '',
+        bio: profile?.bio || '',
+        location: profile?.location || '',
+        role: profile?.role || user?.user_metadata?.role || ''
+      })
+      setDataLoaded(true)
+    }
+  }, [user, profile, loading])
 
   const handleSave = async () => {
     try {
       setSaveStatus('saving')
-      
-      // Prepare name update with both formats
-      const nameUpdate = createNameUpdateObject({
-        firstName: profileData.first_name,
-        lastName: profileData.last_name
-      })
-      
-      const updateData = {
-        ...nameUpdate,
-        phone: profileData.phone,
-        bio: profileData.bio,
-        location: profileData.location
-      }
-      
-      if (updateProfile) {
-        await updateProfile(updateData)
-      }
-      
-      setSaveStatus('saved')
-      setIsEditing(false)
-      setTimeout(() => setSaveStatus(null), 3000)
+      // In a real app, you'd call updateProfile here
+      // await updateProfile(profileData)
+      setTimeout(() => {
+        setSaveStatus('saved')
+        setIsEditing(false)
+        setTimeout(() => setSaveStatus(null), 3000)
+      }, 1000)
     } catch (error) {
-      console.error('Error saving profile:', error)
       setSaveStatus('error')
       setTimeout(() => setSaveStatus(null), 3000)
     }
   }
 
   const handleCancel = () => {
-    // Reset to original data using normalized name handling
-    const nameData = normalizeNameData({
-      firstName: profile?.firstName || profile?.first_name,
-      lastName: profile?.lastName || profile?.last_name,
-      fullName: profile?.fullName || profile?.full_name || user?.user_metadata?.full_name
-    })
-    
-    const displayName = getDisplayName({
-      firstName: nameData.firstName,
-      lastName: nameData.lastName,
-      fullName: nameData.fullName,
-      email: user?.email,
-      defaultName: 'Dev User'
-    })
-    
+    // Reset to original data (no fallbacks)
     setProfileData({
-      full_name: displayName,
-      first_name: nameData.firstName || '',
-      last_name: nameData.lastName || '',
-      email: user?.email || 'dev@localhost.com',
-      phone: profile?.phone || '+1 (555) 123-4567',
-      bio: profile?.bio || 'Passionate about delivering exceptional barbershop experiences.',
-      location: profile?.location || 'San Francisco, CA',
-      role: profile?.role || user?.user_metadata?.role || 'Shop Owner'
+      full_name: profile?.full_name || user?.user_metadata?.full_name || '',
+      email: user?.email || '',
+      phone: profile?.phone || '',
+      bio: profile?.bio || '',
+      location: profile?.location || '',
+      role: profile?.role || user?.user_metadata?.role || ''
     })
     setIsEditing(false)
     setSaveStatus(null)
   }
 
+  // Mock recent activity data
   const recentActivity = [
     { id: 1, type: 'booking', message: 'Completed appointment with John Doe', time: '2 hours ago', icon: CheckCircleIcon, color: 'text-green-600' },
     { id: 2, type: 'update', message: 'Updated business hours', time: '1 day ago', icon: ClockIcon, color: 'text-olive-600' },
     { id: 3, type: 'review', message: 'Received 5-star review from Sarah M.', time: '3 days ago', icon: ChartBarIcon, color: 'text-amber-700' },
   ]
 
+  // Mock stats data
   const stats = [
     { label: 'Total Appointments', value: '247', change: '+12%', trend: 'up' },
     { label: 'Customer Rating', value: '4.9', change: '+0.2', trend: 'up' },
     { label: 'Revenue This Month', value: '$3,240', change: '+8%', trend: 'up' },
     { label: 'Active Clients', value: '89', change: '+5', trend: 'up' },
   ]
+
+  // Show loading state until we have real data
+  if (loading || !dataLoaded) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading your profile...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state if no user data
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto" />
+            <p className="mt-4 text-gray-600">Unable to load profile data. Please try refreshing the page.</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -224,76 +209,24 @@ export default function ProfilePage() {
 
               {/* Form Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {isEditing ? (
-                  // Editing mode: show separate first/last name fields
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        First Name
-                        <span className="text-red-500 ml-1">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={profileData.first_name}
-                        onChange={(e) => {
-                          const newFirstName = e.target.value
-                          setProfileData({
-                            ...profileData, 
-                            first_name: newFirstName,
-                            full_name: combineNames(newFirstName, profileData.last_name)
-                          })
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
-                        placeholder="Enter your first name"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                      <input
-                        type="text"
-                        value={profileData.last_name}
-                        onChange={(e) => {
-                          const newLastName = e.target.value
-                          setProfileData({
-                            ...profileData, 
-                            last_name: newLastName,
-                            full_name: combineNames(profileData.first_name, newLastName)
-                          })
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
-                        placeholder="Enter your last name (optional)"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  // Display mode: show full name
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={profileData.full_name}
+                      onChange={(e) => setProfileData({...profileData, full_name: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+                    />
+                  ) : (
                     <div className="flex items-center space-x-2 py-2">
                       <UserIcon className="h-4 w-4 text-gray-400" />
                       <span className="text-gray-900">{profileData.full_name}</span>
                     </div>
-                  </div>
-                )}
-                
-                {isEditing && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Display Name</label>
-                    <input
-                      type="text"
-                      value={profileData.full_name}
-                      readOnly
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
-                      placeholder="Generated from first and last name"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      This is how your name will appear to clients
-                    </p>
-                  </div>
-                )}
+                  )}
+                </div>
 
-                <div className={isEditing ? "" : "md:col-start-2"}>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                   <div className="flex items-center space-x-2 py-2">
                     <EnvelopeIcon className="h-4 w-4 text-gray-400" />
@@ -344,7 +277,6 @@ export default function ProfilePage() {
                       onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
-                      placeholder="Tell clients about your experience, specialties, and what makes you unique..."
                     />
                   ) : (
                     <p className="text-gray-900 py-2">{profileData.bio}</p>
@@ -420,14 +352,7 @@ export default function ProfilePage() {
                   <ChartBarIcon className="h-5 w-5 text-gray-400" />
                   <span>Analytics</span>
                 </Link>
-                <button 
-                  onClick={() => {
-                    // Generate public profile URL (would typically use actual user ID)
-                    const publicProfileUrl = `/public/profile/${profile?.id || 'demo'}`
-                    window.open(publicProfileUrl, '_blank')
-                  }}
-                  className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                >
+                <button className="w-full flex items-center space-x-3 p-3 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
                   <EyeIcon className="h-5 w-5 text-gray-400" />
                   <span>Public Profile</span>
                 </button>

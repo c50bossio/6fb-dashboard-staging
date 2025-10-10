@@ -24,14 +24,17 @@ export default function RealtimeChat({ className = '' }) {
   const [streamingResponse, setStreamingResponse] = useState('')
   const messagesEndRef = useRef(null)
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatHistory, streamingResponse])
 
+  // Handle incoming AI responses from real-time stream
   useEffect(() => {
     if (aiResponses.length > 0) {
       const latestResponse = aiResponses[0]
       
+      // Add to chat history if it's a new response
       const isNewResponse = !chatHistory.find(msg => 
         msg.timestamp === latestResponse.timestamp && msg.role === 'assistant'
       )
@@ -56,6 +59,7 @@ export default function RealtimeChat({ className = '' }) {
     
     if (!message.trim()) return
     
+    // Add user message to history
     const userMessage = {
       role: 'user',
       content: message.trim(),
@@ -67,7 +71,8 @@ export default function RealtimeChat({ className = '' }) {
     setIsTyping(true)
     
     try {
-      const response = await fetch('/api/ai/enhanced-chat', {
+      // Send message to enhanced AI chat API
+      const response = await fetch('/api/ai/unified-chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -85,6 +90,8 @@ export default function RealtimeChat({ className = '' }) {
       const data = await response.json()
 
       if (data.success) {
+        // Response will be handled by the real-time stream
+        // But add it immediately for better UX
         setChatHistory(prev => [...prev, {
           role: 'assistant',
           content: data.response,

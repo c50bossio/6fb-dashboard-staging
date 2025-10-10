@@ -15,7 +15,9 @@ import {
   ChartBarIcon,
   CurrencyDollarIcon,
   XMarkIcon,
-  CheckIcon
+  CheckIcon,
+  Squares2X2Icon,
+  ListBulletIcon
 } from '@heroicons/react/24/outline'
 
 import { useState, useEffect } from 'react'
@@ -38,6 +40,7 @@ export default function CustomersEnhancedPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
+  const [viewMode, setViewMode] = useState('cards') // 'cards' or 'table'
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     total: 0,
@@ -568,6 +571,24 @@ export default function CustomersEnhancedPage() {
                 )
               })}
             </div>
+
+            {/* View Toggle */}
+            <div className="flex items-center space-x-2 ml-4">
+              <button
+                onClick={() => setViewMode('cards')}
+                className={`p-2 rounded-md ${viewMode === 'cards' ? 'bg-olive-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                title="Card View"
+              >
+                <Squares2X2Icon className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('table')}
+                className={`p-2 rounded-md ${viewMode === 'table' ? 'bg-olive-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                title="Table View"
+              >
+                <ListBulletIcon className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -591,7 +612,7 @@ export default function CustomersEnhancedPage() {
               </p>
             )}
           </div>
-        ) : (
+        ) : viewMode === 'cards' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredCustomers.map(customer => (
               <div
@@ -659,6 +680,88 @@ export default function CustomersEnhancedPage() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <table className="min-w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Segment</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visits</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Visit</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredCustomers.map(customer => (
+                  <tr 
+                    key={customer.id} 
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setSelectedCustomer(customer)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                          <UserIcon className="h-5 w-5 text-gray-600" />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                          <div className="text-sm text-gray-500">
+                            Joined {new Date(customer.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{customer.email}</div>
+                      <div className="text-sm text-gray-500">{customer.phone}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-${SEGMENTS[customer.segment].color}-100 text-${SEGMENTS[customer.segment].color}-800`}>
+                        {SEGMENTS[customer.segment].name.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {customer.total_visits}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {customer.last_visit ? new Date(customer.last_visit).toLocaleDateString() : 'Never'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      ${customer.total_spent}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedCustomer(customer)
+                            setShowEditModal(true)
+                          }}
+                          className="text-olive-600 hover:text-olive-900"
+                          title="Edit Customer"
+                        >
+                          <PencilSquareIcon className="h-4 w-4" />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteCustomer(customer.id)
+                          }}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete Customer"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

@@ -1,15 +1,15 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
-import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
+import { createClient } from "@/lib/supabase/client"
 
 const AuthContext = createContext({})
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error('useAuth must be used within a SupabaseAuthProvider')
   }
   return context
 }
@@ -18,331 +18,178 @@ function SupabaseAuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const router = useRouter()
-  
-  // Auth subscription ref for cleanup
-  const authSubscriptionRef = useRef(null)
-  
-  // Tab switch tracking refs - prevent unwanted refreshes
-  const hasUserNavigatedRef = useRef(false)
-  const pageLoadTimeRef = useRef(Date.now())
-  const lastPathRef = useRef(null)
-  
-  // Session comparison refs - prevent duplicate events
-  const currentSessionRef = useRef(null)
-  const lastAccessTokenRef = useRef(null)
-  
-  // Single Supabase client instance - use singleton from UNIFIED_CLIENT
-  const supabase = createClient()
-  
-  // Emergency timeout to prevent infinite loading
-  React.useEffect(() => {
-    const emergencyTimeout = setTimeout(() => {
-      if (loading) {
-        console.warn('Authentication timeout - forcing load completion')
-        setLoading(false)
-      }
-    }, 5000)
-    
-    return () => clearTimeout(emergencyTimeout)
-  }, [])
 
-  // Fetch user profile 
-  const fetchProfile = async (userId) => {
-    if (!userId) return null
-    
-    try {
-      const { data: profileData, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
+  // Create Supabase client once (singleton pattern in client.js ensures single instance)
+  const supabase = useMemo(() => createClient(), [])
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('🔐 Auth: Error fetching profile:', error)
-        return null
-      }
-      
+  // Profile fetch with retry logic
+  const fetchProfile = useCallback(async (userId, retries = 3) => {
+    console.log(`🔍 [fetchProfile] Fetching profile for user: ${userId}`)
 
-      if (profileData) {
-        // Check for shop association issues
-        const hasShopId = profileData.barbershop_id
-        
-        setProfile(profileData)
-        return profileData
-      }
-
-      // Create profile if it doesn't exist
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) {
-        console.error('🔐 Auth: Cannot create profile - no authenticated user')
-        return null
-      }
-
-      // Extract metadata from the auth user
-      const metadata = authUser.user_metadata || {}
-      const appMetadata = authUser.app_metadata || {}
-      
-      // Determine full name from various OAuth sources
-      const fullName = metadata.full_name || 
-                      metadata.name ||
-                      `${metadata.given_name || ''} ${metadata.family_name || ''}`.trim() ||
-                      authUser.email?.split('@')[0] ||
-                      'User'
-
-      const profileToCreate = {
-        id: userId,
-        email: authUser.email,
-        full_name: fullName,
-        avatar_url: metadata.avatar_url || metadata.picture || null,
-        phone: metadata.phone || null,
-        subscription_tier: 'individual',
-        subscription_status: 'active',
-        role: metadata.role || 'CLIENT',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        
-        // Shop fields (set during onboarding)
-        barbershop_id: null,
-        
-        // Onboarding
-        onboarding_completed: false,
-        onboarding_step: 'welcome',
-        
-        // OAuth info
-        oauth_provider: appMetadata.provider || 'email',
-        last_sign_in_at: authUser.last_sign_in_at || new Date().toISOString()
-      }
-
-
-      const { data: newProfile, error: createError } = await supabase
-        .from('profiles')
-        .upsert(profileToCreate, {
-          onConflict: 'id',
-          ignoreDuplicates: false
-        })
-        .select()
-        .single()
-
-      if (createError) {
-        console.error('🔐 Auth: Profile creation failed:', createError)
-        console.error('Error details:', {
-          code: createError.code,
-          message: createError.message,
-          details: createError.details,
-          hint: createError.hint
-        })
-        
-        // Try simpler fallback
-        const { data: fallbackProfile, error: fallbackError } = await supabase
-          .from('profiles')
-          .insert({
-            id: userId,
-            email: authUser.email,
-            full_name: fullName,
-            role: 'CLIENT'
-          })
-          .select()
-          .single()
-          
-        if (fallbackError) {
-          console.error('🔐 Auth: Fallback profile creation also failed:', fallbackError)
-          return null
-        }
-        
-        setProfile(fallbackProfile)
-        return fallbackProfile
-      }
-
-      if (newProfile) {
-        setProfile(newProfile)
-        return newProfile
-      }
-
-      return null
-    } catch (error) {
-      console.error('Profile fetch error:', error)
-      return null
-    }
-  }
-
-  // Initialize auth state using Supabase best practices
-  useEffect(() => {
-    let isMounted = true
-    let authTimeout = null
-
-    // Add visibility change monitoring for tab switch debugging
-    const handleVisibilityChange = () => {
-      console.log('👁️ [TAB DEBUG] Visibility changed:', {
-        hidden: document.hidden,
-        visibilityState: document.visibilityState,
-        timestamp: new Date().toISOString()
-      })
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-
-    const initAuth = async () => {
+    for (let attempt = 0; attempt < retries; attempt++) {
       try {
-        console.log('🔐 [AUTH DEBUG] Starting auth initialization...')
-        
-        // Set up timeout to prevent infinite loading
-        authTimeout = setTimeout(() => {
-          if (isMounted) {
-            console.log('🔐 [AUTH DEBUG] Auth initialization timeout - forcing loading=false')
-            setUser(null)
-            setProfile(null)
-            setLoading(false)
-          }
-        }, 5000) // 5 second timeout (reduced for faster debugging)
-        
-        // Get initial session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
-        console.log('🔐 [AUTH DEBUG] Session check result:', {
-          hasSession: !!session,
-          hasUser: !!session?.user,
-          userId: session?.user?.id,
-          email: session?.user?.email,
-          sessionError,
-          isMounted
-        })
-        
-        if (session?.user && isMounted) {
-          console.log('🔐 [AUTH DEBUG] Setting user from session:', session.user.id)
-          setUser(session.user)
-          
-          try {
-            const profileData = await fetchProfile(session.user.id)
-            if (profileData) {
-              setProfile(profileData)
-            }
-          } catch (profileError) {
-            console.error('🔐 [AUTH DEBUG] Profile fetch failed, continuing without profile:', profileError)
-            // Continue with just the user, don't block loading
-          }
-        } else {
-          console.log('🔐 [AUTH DEBUG] No session or user found:', { hasSession: !!session, hasUser: !!session?.user, isMounted })
-        }
-        
-        // Clear timeout and set loading false
-        if (authTimeout) {
-          clearTimeout(authTimeout)
-          authTimeout = null
-        }
-        
-        if (isMounted) {
-          console.log('🔐 [AUTH DEBUG] Setting loading to false')
-          setLoading(false)
-        }
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single()
 
-        // Set up auth state listener with advanced tab switch protection
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if (!isMounted) return
-          
-          // Session comparison - prevent duplicate events
-          const newAccessToken = session?.access_token
-          const currentAccessToken = lastAccessTokenRef.current
-          const sessionId = session?.user?.id
-          const currentSessionId = currentSessionRef.current?.user?.id
-          
-          // Check if this is a duplicate event with same session data
-          if (newAccessToken && newAccessToken === currentAccessToken && sessionId === currentSessionId) {
-            console.log('🔄 [AUTH DEBUG] Duplicate event filtered:', event)
-            return // Skip duplicate events
-          }
-          
-          // Update session tracking
-          currentSessionRef.current = session
-          lastAccessTokenRef.current = newAccessToken
-          
-          // Track navigation vs tab switching
-          const currentPath = window.location.pathname
-          const pathChanged = lastPathRef.current !== null && lastPathRef.current !== currentPath
-          if (pathChanged && lastPathRef.current !== null) {
-            hasUserNavigatedRef.current = true
-          }
-          lastPathRef.current = currentPath
-          
-          console.log(`🔐 [AUTH DEBUG] Event: ${event}, hasNavigated: ${hasUserNavigatedRef.current}, pathChanged: ${pathChanged}, sessionChanged: ${sessionId !== currentSessionId}`)
-          
-          if (event === 'SIGNED_IN' && session?.user) {
-            setUser(session.user)
-            const profileData = await fetchProfile(session.user.id)
-            if (profileData) {
-              setProfile(profileData)
-            }
-            setLoading(false)
-          } else if (event === 'SIGNED_OUT') {
-            // Reset session tracking on logout
-            currentSessionRef.current = null
-            lastAccessTokenRef.current = null
-            setUser(null)
-            setProfile(null)
-            setLoading(false)
-            router.push('/login')
-          } else if (event === 'TOKEN_REFRESHED') {
-            console.log('✅ [AUTH DEBUG] Token refreshed (background) - NO REDIRECT')
-            // Handle token refresh silently - DO NOT REDIRECT
-            if (session?.user) {
-              setUser(session.user)
-            }
-            return // Critical: prevent any redirect logic
-          } else if (event === 'INITIAL_SESSION' && !hasUserNavigatedRef.current) {
-            console.log('✅ [AUTH DEBUG] Initial session without navigation - NO REDIRECT')
-            // Page load or tab switch, not actual navigation
-            if (session?.user) {
-              setUser(session.user)
-              const profileData = await fetchProfile(session.user.id)
-              if (profileData) {
-                setProfile(profileData)
-              }
-            }
-            setLoading(false)
-            return // Critical: prevent any redirect logic
-          }
-        })
-
-        authSubscriptionRef.current = subscription
-
+        if (error) throw error
+        if (data) {
+          console.log(`✅ [fetchProfile] Profile loaded:`, {
+            full_name: data.full_name,
+            role: data.role,
+            organization_id: data.organization_id,
+            barbershop_id: data.barbershop_id
+          })
+          return data
+        }
       } catch (error) {
-        console.error('Auth initialization error:', error)
-        if (isMounted) {
+        console.error(`❌ [fetchProfile] Attempt ${attempt + 1}/${retries} failed:`, error.message)
+
+        // Wait before retry (exponential backoff)
+        if (attempt < retries - 1) {
+          const waitMs = 500 * Math.pow(2, attempt)
+          console.log(`⏳ [fetchProfile] Retrying in ${waitMs}ms...`)
+          await new Promise(resolve => setTimeout(resolve, waitMs))
+        }
+      }
+    }
+
+    console.error(`❌ [fetchProfile] Failed to load profile after ${retries} attempts`)
+    return null
+  }, [supabase])
+
+  // Set up auth - Hybrid pattern for reliability
+  // 1. Get initial user immediately (fast, local JWT validation)
+  // 2. Set up listener for real-time auth changes
+  useEffect(() => {
+    let mounted = true
+    let timeoutId = null
+
+    console.log('🔐 [SupabaseAuthProvider] Initializing auth...')
+
+    // Get initial user state - getUser() is fast (local JWT validation, no network call)
+    const initializeAuth = async () => {
+      try {
+        console.log('🔍 [SupabaseAuthProvider] Getting initial user...')
+
+        // Set timeout fallback in case getUser hangs (defensive)
+        timeoutId = setTimeout(() => {
+          if (mounted && loading) {
+            console.warn('⏰ [SupabaseAuthProvider] getUser() timeout, assuming no user')
+            setUser(null)
+            setLoading(false)
+          }
+        }, 3000)
+
+        const { data: { user }, error } = await supabase.auth.getUser()
+
+        // Clear timeout since we got a response
+        if (timeoutId) clearTimeout(timeoutId)
+
+        if (!mounted) return
+
+        if (error) {
+          console.warn('⚠️ [SupabaseAuthProvider] Auth error:', error.message)
+          setUser(null)
+        } else if (user) {
+          console.log('✅ [SupabaseAuthProvider] User authenticated:', user.email)
+          setUser(user)
+        } else {
+          console.log('ℹ️ [SupabaseAuthProvider] No authenticated user')
+          setUser(null)
+        }
+
+        setLoading(false)
+      } catch (err) {
+        console.error('❌ [SupabaseAuthProvider] Failed to initialize auth:', err.message)
+        if (mounted) {
+          setUser(null)
           setLoading(false)
         }
       }
     }
 
-    initAuth()
+    initializeAuth()
+
+    // Set up listener for auth state changes (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+
+      console.log('🔐 [SupabaseAuthProvider] Auth event:', event, session?.user?.email || 'no user')
+
+      // Handle auth events
+      if (event === 'SIGNED_IN') {
+        console.log('👤 [SupabaseAuthProvider] User signed in:', session?.user?.email)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      } else if (event === 'SIGNED_OUT') {
+        console.log('👋 [SupabaseAuthProvider] User signed out')
+        setUser(null)
+        setProfile(null)
+        setLoading(false)
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 [SupabaseAuthProvider] Token refreshed:', session?.user?.email)
+        setUser(session?.user ?? null)
+      } else if (event === 'USER_UPDATED') {
+        console.log('📝 [SupabaseAuthProvider] User updated:', session?.user?.email)
+        setUser(session?.user ?? null)
+      }
+    })
+
+    return () => {
+      mounted = false
+      if (timeoutId) clearTimeout(timeoutId)
+      subscription?.unsubscribe()
+    }
+  }, [supabase])
+
+  // Separate effect to fetch profile when user changes
+  // This keeps async operations OUT of the onAuthStateChange listener
+  useEffect(() => {
+    if (!user) {
+      // No user, clear profile
+      console.log('🚫 [Profile Effect] No user, clearing profile')
+      setProfile(null)
+      return
+    }
+
+    console.log('👤 [Profile Effect] User detected, loading profile...', {
+      userId: user.id,
+      email: user.email,
+      provider: user.app_metadata?.provider
+    })
+
+    // User exists, fetch their profile
+    let isMounted = true
+
+    const loadProfile = async () => {
+      const profileData = await fetchProfile(user.id)
+      if (isMounted) {
+        if (profileData) {
+          console.log('✅ [Profile Effect] Profile set in state')
+          setProfile(profileData)
+          setError(null)
+        } else {
+          console.error('❌ [Profile Effect] Profile not found in database')
+          setError('Profile not found. Please contact support.')
+        }
+      }
+    }
+
+    loadProfile()
 
     return () => {
       isMounted = false
-      if (authTimeout) {
-        clearTimeout(authTimeout)
-      }
-      authSubscriptionRef.current?.unsubscribe()
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [router, supabase])
+  }, [user, fetchProfile])
 
   // Auth methods
-  const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`
-      }
-    })
-    
-    if (error) throw error
-  }
-
   const signIn = async ({ email, password }) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-    
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     return data
   }
@@ -351,11 +198,17 @@ function SupabaseAuthProvider({ children }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: metadata
-      }
+      options: { data: metadata }
     })
-    
+    if (error) throw error
+    return data
+  }
+
+  const signInWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/api/auth/callback?next=/dashboard` }
+    })
     if (error) throw error
     return data
   }
@@ -363,85 +216,66 @@ function SupabaseAuthProvider({ children }) {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
+    router.push('/login')
   }
 
   const updateProfile = async (updates) => {
-    if (!user?.id) return null
-    
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
-        .select()
-        .single()
-      
-      if (error) throw error
-      
-      setProfile(data)
-      return data
-    } catch (error) {
-      console.error('Error updating profile:', error)
-      throw error
-    }
+    if (!user) throw new Error('No user logged in')
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .single()
+
+    if (error) throw error
+    setProfile(data)
+    return data
   }
 
-  // Background token refresh function
-  const refreshTokensInBackground = async () => {
-    try {
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        credentials: 'include'
-      })
-      
-      if (!response.ok) {
-        console.warn('Background token refresh failed:', response.status)
-        return false
-      }
-      
-      const result = await response.json()
-      console.log('✅ [AUTH DEBUG] Background token refresh successful')
-      return true
-    } catch (error) {
-      console.error('Background token refresh error:', error)
-      return false
-    }
-  }
+  const resetAndRetry = useCallback(async () => {
+    console.log('🔄 Resetting auth state...')
+    setError(null)
+    setLoading(true)
 
-  // Tier access helper function
-  const hasTierAccess = (requiredTier) => {
-    if (!profile) return false
-    
-    const tierHierarchy = {
-      'individual': 1,
-      'pro': 2,
-      'enterprise': 3
-    }
-    
-    const userTier = profile.subscription_tier || 'individual'
-    const userLevel = tierHierarchy[userTier] || 0
-    const requiredLevel = tierHierarchy[requiredTier] || 0
-    
-    return userLevel >= requiredLevel
-  }
+    // Force re-check by triggering a new auth state change
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user ?? null
 
-  const value = {
+    setUser(user)
+    if (user) {
+      const profileData = await fetchProfile(user.id)
+      setProfile(profileData)
+    } else {
+      setProfile(null)
+    }
+    setLoading(false)
+  }, [supabase, fetchProfile])
+
+  const clearAuthAndRedirect = useCallback(() => {
+    console.log('🚨 Clearing all auth state and redirecting to login...')
+    setUser(null)
+    setProfile(null)
+    setError(null)
+    router.push('/login?error=Session expired. Please log in again.')
+  }, [router])
+
+  const value = useMemo(() => ({
     user,
     profile,
     loading,
-    supabase,
-    signInWithGoogle,
+    error,
     signIn,
     signUp,
+    signInWithGoogle,
     signOut,
     updateProfile,
-    refreshTokensInBackground,
-    hasTierAccess
-  }
-  
+    resetAndRetry,
+    clearAuthAndRedirect,
+  }), [user, profile, loading, error, resetAndRetry, clearAuthAndRedirect])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export default SupabaseAuthProvider
 export { SupabaseAuthProvider }

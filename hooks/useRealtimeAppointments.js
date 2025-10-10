@@ -1,185 +1,661 @@
 'use client'
 
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
+
+// Create Supabase client outside component to prevent recreation
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabase = supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null
 
 export function useRealtimeAppointments(barbershopId) {
+  console.log('🔥 HOOK CALLED: useRealtimeAppointments with barbershopId:', barbershopId)
+  
+  // Immediate debug to window - should always run
+  if (typeof window !== 'undefined') {
+    window.hookCalled = true
+    window.hookCallTimestamp = new Date().toISOString()
+    window.hookBarbershopId = barbershopId
+  }
+  
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isConnected, setIsConnected] = useState(false)
   const [lastUpdate, setLastUpdate] = useState(null)
-  const [stats, setStats] = useState({})
-  const [log, setLog] = useState([])
   const [connectionAttempts, setConnectionAttempts] = useState(0)
-  const [retryTimer, setRetryTimer] = useState(null)
-  
-  if (typeof window !== 'undefined') {
-    window.realtimeHookDebug = {
-      called: true,
-      barbershopId,
-      timestamp: new Date().toISOString()
-    }
-  }
-
-  const refresh = async () => {
-    if (!barbershopId) return
-    
-    try {
-      const response = await fetch('/api/calendar/appointments')
-      const data = await response.json()
-      
-      if (data.appointments) {
-        setAppointments(data.appointments)
-        setLastUpdate(new Date().toISOString())
-      }
-      
-      setLoading(false)
-    } catch (err) {
-      console.error('❌ Error fetching appointments:', err)
-      setError(err.message)
-      setLoading(false)
-    }
-  }
+  const [diagnostics, setDiagnostics] = useState({
+    subscriptionStatus: 'initializing',
+    channelStatus: null,
+    supabaseConfigured: false,
+    lastConnectionAttempt: null,
+    errorHistory: [],
+    eventCounts: { INSERT: 0, UPDATE: 0, DELETE: 0 },
+    shopIdMatches: { INSERT: 0, UPDATE: 0, DELETE: 0 },
+    dataSourceBreakdown: { database: 0, mock: 0, optimistic: 0 },
+    lastEvents: [],
+    connectionHealth: 'unknown',
+    appointmentHistory: []
+  })
 
   useEffect(() => {
-    if (!barbershopId) {
-      setLoading(false)
-      return
-    }
-
+    console.log('🔥 SIMPLIFIED HOOK: useEffect running for shop:', barbershopId)
+    const startTime = Date.now() // ✅ FIX: Define startTime for connection timing
+    
+    // Set immediate debug
     if (typeof window !== 'undefined') {
-      window.realtimeHookDebug = {
-        ...window.realtimeHookDebug,
-        useEffectRan: true,
-        useEffectTimestamp: new Date().toISOString()
+      window.useEffectRan = true
+      window.useEffectTimestamp = new Date().toISOString()
+      window.realtimeDebugSimple = {
+        useEffectCalled: true,
+        barbershopId,
+        timestamp: new Date().toISOString()
       }
     }
     
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('❌ Missing Supabase environment variables')
-      setError('Missing Supabase configuration')
+    // Check if Supabase client is available
+    console.log('🔐 Supabase client check:', {
+      hasClient: !!supabase,
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseAnonKey
+    })
+    
+    // Store debug info in localStorage for inspection
+    if (typeof window !== 'undefined') {
+      const debugInfo = {
+        hookCalled: true,
+        barbershopId,
+        supabaseUrl,
+        hasAnonKey: !!supabaseAnonKey,
+        hasSupabaseClient: !!supabase,
+        timestamp: new Date().toISOString(),
+        windowDefined: typeof window !== 'undefined'
+      }
+      
+      localStorage.setItem('realtimeDebug', JSON.stringify(debugInfo))
+      window.realtimeDebugInfo = debugInfo  // Also store on window for easy access
+    }
+    
+    setDiagnostics(prev => ({
+      ...prev,
+      subscriptionStatus: 'attempting',
+      lastConnectionAttempt: new Date().toISOString(),
+      supabaseConfigured: !!supabase
+    }))
+    setConnectionAttempts(prev => prev + 1)
+    
+    if (!supabase) {
+      console.log('❌ Supabase client not available')
       setLoading(false)
+      setAppointments([])
       return
     }
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey)
     
-    // Initial fetch
-    refresh()
+    console.log('🔄 Initializing real-time connection for shop:', barbershopId)
 
+    // Function to fetch appointments
+    const fetchAppointments = async () => {
+      try {
+        console.log('📡 Fetching initial appointments...')
+        
+        const { data, error } = await supabase
+          .from('bookings')
+          .select(`
+            *,
+            barbers:barber_id (*),
+            services:service_id (*),
+            customers:customer_id (*)
+          `)
+          .eq('shop_id', barbershopId)
+          .order('start_time')
+        
+        if (error) throw error
+
+        console.log('📡 Found', data?.length || 0, 'appointments')
+
+        // Transform to FullCalendar format
+        const events = data.map(booking => {
+          const isCancelled = booking.status === 'cancelled'
+          return {
+            id: booking.id,
+            resourceId: booking.barber_id,
+            title: `${isCancelled ? '❌ ' : ''}${booking.customers?.name || booking.customer_name || 'Customer'} - ${booking.services?.name || booking.service_name || "Unknown Service"}`,
+            start: booking.start_time,
+            end: booking.end_time,
+            backgroundColor: isCancelled ? '#ef4444' : (booking.barbers?.color || '#3b82f6'),
+            borderColor: isCancelled ? '#dc2626' : (booking.barbers?.color || '#3b82f6'),
+            classNames: isCancelled ? ['cancelled-appointment'] : [],
+            extendedProps: {
+              customer: booking.customers?.name || booking.customer_name,
+              customerPhone: booking.customers?.phone || booking.customer_phone,
+              customerEmail: booking.customers?.email || booking.customer_email,
+              service: booking.services?.name || booking.service_name,
+              service_id: booking.service_id,
+              barber_id: booking.barber_id,
+              duration: booking.services?.duration || booking.duration_minutes,
+              price: booking.price || booking.services?.price,
+              status: booking.status,
+              notes: booking.notes,
+              cancelled_at: booking.cancelled_at
+            }
+          }
+        })
+
+        setAppointments(events)
+        setLoading(false)
+        
+        // Track data source breakdown
+        const dataSourceBreakdown = {
+          database: events.filter(e => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(e.id)).length,
+          mock: events.filter(e => e.id?.toString().startsWith('mock-') || e.extendedProps?.isMockData).length,
+          optimistic: events.filter(e => e.id?.toString().includes('temp-')).length
+        }
+        
+        setDiagnostics(prev => ({ 
+          ...prev, 
+          subscriptionStatus: 'data_loaded',
+          appointmentCount: events.length,
+          dataSourceBreakdown,
+          appointmentHistory: [{
+            action: 'initial_load',
+            count: events.length,
+            timestamp: new Date().toISOString(),
+            breakdown: dataSourceBreakdown
+          }, ...prev.appointmentHistory.slice(0, 4)] // Keep last 5 history entries
+        }))
+        
+      } catch (err) {
+        console.error('❌ Error fetching appointments:', err)
+        setError(err.message)
+        setLoading(false)
+      }
+    }
+
+    // Common handler for real-time events
+    const handleRealtimeEvent = async (eventType, payload) => {
+      const eventTime = new Date().toISOString()
+      const appointmentId = payload.new?.id || payload.old?.id
+      const shopId = payload.new?.shop_id || payload.old?.shop_id
+      const isOurShop = shopId === barbershopId
+      
+      console.log(`📡 Real-time ${eventType} event:`, {
+        appointmentId,
+        timestamp: eventTime,
+        shopId,
+        isOurShop,
+        hasShopId: !!shopId
+      })
+      
+      setLastUpdate(eventTime)
+      
+      // Enhanced diagnostics tracking
+      const eventRecord = {
+        type: eventType,
+        appointmentId,
+        timestamp: eventTime,
+        shopId,
+        isOurShop,
+        hasShopId: !!shopId,
+        status: payload.new?.status || payload.old?.status
+      }
+      
+      setDiagnostics(prev => ({
+        ...prev,
+        eventCounts: {
+          ...prev.eventCounts,
+          [eventType]: (prev.eventCounts[eventType] || 0) + 1
+        },
+        shopIdMatches: {
+          ...prev.shopIdMatches,
+          [eventType]: (prev.shopIdMatches[eventType] || 0) + (isOurShop ? 1 : 0)
+        },
+        lastEvents: [eventRecord, ...prev.lastEvents.slice(0, 9)], // Keep last 10 events
+        lastEventReceived: eventTime,
+        subscriptionStatus: 'active',
+        connectionHealth: 'healthy'
+      }))
+      
+      if (eventType === 'INSERT' && payload.new) {
+        console.log('📡 Processing INSERT for appointment:', payload.new.id, {
+          hasShopId: !!payload.new.shop_id,
+          shopId: payload.new.shop_id,
+          ourShopId: barbershopId
+        })
+        
+        // Verify this INSERT belongs to our shop
+        if (payload.new.shop_id && payload.new.shop_id !== barbershopId) {
+          console.log('📡 Ignoring INSERT - different shop:', payload.new.shop_id)
+          return
+        }
+        
+        try {
+          // Fetch complete record for INSERT with retry logic
+          const { data: newBooking, error } = await supabase
+            .from('bookings')
+            .select(`
+              *,
+              barbers:barber_id (*),
+              services:service_id (*),
+              customers:customer_id (*)
+            `)
+            .eq('id', payload.new.id)
+            .single()
+
+          if (error) {
+            console.error('📡 Error fetching INSERT data:', error)
+            // Fallback: Use payload data if available
+            if (payload.new.shop_id === barbershopId) {
+              console.log('📡 Using fallback INSERT data from payload')
+              // Create minimal event from payload
+              const fallbackEvent = {
+                id: payload.new.id,
+                resourceId: payload.new.barber_id,
+                title: `${payload.new.customer_name || 'Customer'} - ${payload.new.service_name || "Unknown Service"}`,
+                start: payload.new.start_time,
+                end: payload.new.end_time,
+                backgroundColor: '#3b82f6',
+                borderColor: '#3b82f6',
+                classNames: payload.new.status === 'cancelled' ? ['cancelled-appointment'] : [],
+                extendedProps: {
+                  customer: payload.new.customer_name,
+                  service: payload.new.service_name,
+                  status: payload.new.status,
+                  notes: payload.new.notes
+                }
+              }
+              
+              setAppointments(prev => {
+                if (!prev.find(apt => apt.id === fallbackEvent.id)) {
+                  console.log('📡 Added fallback appointment:', fallbackEvent.id)
+                  return [...prev, fallbackEvent]
+                }
+                return prev
+              })
+            }
+            return
+          }
+
+          if (newBooking && newBooking.shop_id === barbershopId) {
+            const isCancelled = newBooking.status === 'cancelled'
+            const newEvent = {
+              id: newBooking.id,
+              resourceId: newBooking.barber_id,
+              title: `${isCancelled ? '❌ ' : ''}${newBooking.customers?.name || newBooking.customer_name || 'Customer'} - ${newBooking.services?.name || newBooking.service_name || "Unknown Service"}`,
+              start: newBooking.start_time,
+              end: newBooking.end_time,
+              backgroundColor: isCancelled ? '#ef4444' : (newBooking.barbers?.color || '#3b82f6'),
+              borderColor: isCancelled ? '#dc2626' : (newBooking.barbers?.color || '#3b82f6'),
+              classNames: isCancelled ? ['cancelled-appointment'] : [],
+              extendedProps: {
+                customer: newBooking.customers?.name || newBooking.customer_name,
+                customerPhone: newBooking.customers?.phone || newBooking.customer_phone,
+                customerEmail: newBooking.customers?.email || newBooking.customer_email,
+                service: newBooking.services?.name || newBooking.service_name,
+                service_id: newBooking.service_id,
+                barber_id: newBooking.barber_id,
+                duration: newBooking.services?.duration || newBooking.duration_minutes,
+                price: newBooking.price || newBooking.services?.price,
+                status: newBooking.status,
+                notes: newBooking.notes
+              }
+            }
+            
+            setAppointments(prev => {
+              const existingIndex = prev.findIndex(apt => apt.id === newEvent.id)
+              if (existingIndex !== -1) {
+                console.log('📡 Appointment exists, updating:', newEvent.id)
+                const updated = [...prev]
+                updated[existingIndex] = newEvent
+                return updated
+              }
+              console.log('📡 Adding new appointment:', newEvent.id, {
+                customer: newEvent.extendedProps.customer,
+                status: newEvent.extendedProps.status
+              })
+              return [...prev, newEvent]
+            })
+          } else {
+            console.log('📡 Ignoring INSERT - wrong shop or missing data:', {
+              hasData: !!newBooking,
+              shopId: newBooking?.shop_id
+            })
+          }
+        } catch (err) {
+          console.error('📡 Unexpected error in INSERT handler:', err)
+        }
+      } else if (eventType === 'UPDATE' && payload.new) {
+        // Store UPDATE event in window for debugging
+        if (typeof window !== 'undefined') {
+          window.lastWebSocketUpdate = {
+            timestamp: new Date().toISOString(),
+            appointmentId: payload.new?.id,
+            status: payload.new?.status,
+            shopId: payload.new?.shop_id
+          }
+          console.log('🚨 WINDOW DEBUG: WebSocket UPDATE stored in window.lastWebSocketUpdate')
+        }
+        
+        console.log('🔥 REALTIME DEBUG: UPDATE event received:', {
+          appointmentId: payload.new?.id,
+          oldStatus: payload.old?.status,
+          newStatus: payload.new?.status,
+          shopId: payload.new.shop_id,
+          ourShopId: barbershopId,
+          timestamp: new Date().toISOString(),
+          payloadKeys: Object.keys(payload),
+          newKeys: payload.new ? Object.keys(payload.new) : [],
+          oldKeys: payload.old ? Object.keys(payload.old) : []
+        })
+        
+        // Enhanced debugging for WebSocket connectivity
+        console.log('🔥 WEBSOCKET STATUS CHECK:', {
+          channelConnected: isConnected,
+          subscriptionDiagnostics: diagnostics.subscriptionStatus,
+          eventReceived: true,
+          willProcess: payload.new?.shop_id === barbershopId
+        })
+        
+        // Verify this UPDATE belongs to our shop
+        if (payload.new.shop_id && payload.new.shop_id !== barbershopId) {
+          console.log('📡 REALTIME DEBUG: Ignoring UPDATE - different shop:', payload.new.shop_id)
+          return
+        }
+        
+        // Update the appointment in our state directly (no database re-fetch needed)
+        setAppointments(prev => {
+          console.log('🔥 REALTIME DEBUG: About to update appointments state, current count:', prev.length)
+          
+          const updated = prev.map(appointment => {
+            if (appointment.id === payload.new.id) {
+              const isCancelled = payload.new.status === 'cancelled'
+              
+              console.log('✅ REALTIME DEBUG: Found matching appointment, updating:', {
+                id: payload.new.id,
+                oldTitle: appointment.title,
+                newStatus: payload.new.status,
+                isCancelled,
+                willHaveXSymbol: isCancelled,
+                willBeRed: isCancelled
+              })
+              
+              const updatedAppointment = {
+                ...appointment,
+                title: isCancelled 
+                  ? `❌ ${appointment.extendedProps?.customer || 'Customer'} - ${appointment.extendedProps?.service || "Unknown Service"}`
+                  : appointment.title.replace('❌ ', ''),
+                backgroundColor: isCancelled ? '#ef4444' : appointment.backgroundColor,
+                borderColor: isCancelled ? '#dc2626' : appointment.borderColor,
+                classNames: isCancelled ? ['cancelled-appointment'] : [],
+                extendedProps: {
+                  ...appointment.extendedProps,
+                  status: payload.new.status,
+                  notes: payload.new.notes || appointment.extendedProps.notes
+                }
+              }
+              
+              console.log('🔥 REALTIME DEBUG: Updated appointment object:', {
+                id: updatedAppointment.id,
+                title: updatedAppointment.title,
+                backgroundColor: updatedAppointment.backgroundColor,
+                status: updatedAppointment.extendedProps.status
+              })
+              
+              return updatedAppointment
+            }
+            return appointment
+          })
+          
+          console.log('🔥 REALTIME DEBUG: Returning updated state with count:', updated.length)
+          console.log('🔥 REALTIME DEBUG: Cancelled appointments in updated state:', updated.filter(a => a.extendedProps?.status === 'cancelled').length)
+          
+          return updated
+        })
+        
+        setLastUpdate(new Date().toISOString())
+        console.log('🎉 REALTIME DEBUG: Real-time update completed, state should be updated')
+      } else if (eventType === 'DELETE' && payload.old) {
+        const deletedId = payload.old.id
+        console.log('📡 DELETE received for:', deletedId, {
+          hasShopId: !!payload.old.shop_id,
+          shopId: payload.old.shop_id,
+          ourShopId: barbershopId
+        })
+        
+        // SAFETY CHECK: Only process DELETEs for our shop if shop_id is available
+        // If shop_id is not available (despite REPLICA IDENTITY FULL), be more cautious
+        if (payload.old.shop_id && payload.old.shop_id !== barbershopId) {
+          console.log('📡 Ignoring DELETE - different shop:', payload.old.shop_id)
+          return
+        }
+        
+        // Additional safety: Only remove if this appointment exists in our current state
+        // AND either we have shop_id confirmation OR it's a cancelled appointment
+        setAppointments(prev => {
+          const existingAppointment = prev.find(event => event.id === deletedId)
+          if (!existingAppointment) {
+            console.log('📡 Ignoring DELETE - appointment not in our current state')
+            return prev
+          }
+          
+          // Extra safety: Only remove cancelled appointments or confirmed shop matches
+          const isCancelled = existingAppointment.extendedProps?.status === 'cancelled'
+          const hasShopConfirmation = payload.old.shop_id === barbershopId
+          
+          if (isCancelled || hasShopConfirmation || !payload.old.shop_id) {
+            const filtered = prev.filter(event => event.id !== deletedId)
+            console.log('📡 Removed appointment:', {
+              id: deletedId,
+              reason: isCancelled ? 'cancelled' : hasShopConfirmation ? 'shop_confirmed' : 'legacy_delete',
+              count: `${prev.length} → ${filtered.length}`
+            })
+            return filtered
+          } else {
+            console.log('📡 Refusing DELETE - safety check failed:', {
+              isCancelled,
+              hasShopConfirmation,
+              appointmentStatus: existingAppointment.extendedProps?.status
+            })
+            return prev
+          }
+        })
+      }
+    }
+
+    // Initial fetch
+    fetchAppointments()
+
+    // Set up realtime subscription with separate handlers for each event type
+    console.log('📡 Setting up real-time subscription for shop:', barbershopId)
+    
     const channel = supabase
       .channel(`bookings-${barbershopId}`)
+      // TEST: Listen for ALL events on bookings table
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to all events
+          event: '*',
           schema: 'public',
-          table: 'bookings',
-          filter: `barbershop_id=eq.${barbershopId}`
+          table: 'bookings'
         },
         (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setAppointments(prev => {
-              const updated = prev.map(appointment => {
-                if (appointment.id === payload.new.id) {
-                  const isCancelled = payload.new.status === 'cancelled'
-
-                  return {
-                    ...appointment,
-                    title: isCancelled 
-                      ? `❌ ${appointment.extendedProps?.customer || 'Customer'} - ${appointment.extendedProps?.service || "Unknown Service"}`
-                      : appointment.title.replace('❌ ', ''),
-                    backgroundColor: isCancelled ? '#ef4444' : appointment.backgroundColor,
-                    borderColor: isCancelled ? '#dc2626' : appointment.borderColor,
-                    classNames: isCancelled ? ['cancelled-appointment'] : [],
-                    extendedProps: {
-                      ...appointment.extendedProps,
-                      status: payload.new.status
-                    }
-                  }
-                }
-                return appointment
-              })
-              
-              return updated
-            })
-            
-            setLastUpdate(new Date().toISOString())
-          }
-          
-          if (payload.eventType === 'INSERT') {
-            refresh() // Refresh to get the new appointment with proper styling
-          }
-          
-          if (payload.eventType === 'DELETE') {
-            setAppointments(prev => prev.filter(apt => apt.id !== payload.old.id))
-            setLastUpdate(new Date().toISOString())
+          console.log('🚨🚨🚨 ANY EVENT RECEIVED:', {
+            eventType: payload.eventType,
+            table: payload.table,
+            id: payload.new?.id || payload.old?.id,
+            timestamp: new Date().toISOString()
+          })
+          if (typeof window !== 'undefined') {
+            window.lastAnyEvent = {
+              eventType: payload.eventType,
+              timestamp: new Date().toISOString()
+            }
           }
         }
       )
-      .subscribe((status) => {
-        console.log('🔄 Subscription status:', status)
+      // INSERT events WITHOUT filter to test
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'bookings'
+          // REMOVED filter temporarily to debug
+        },
+        (payload) => {
+          // Manual filter in handler
+          if (payload.new?.shop_id === barbershopId) {
+            handleRealtimeEvent('INSERT', payload)
+          }
+        }
+      )
+      // UPDATE events WITHOUT filter to test
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bookings'
+          // REMOVED filter temporarily to debug
+        },
+        (payload) => {
+          console.log('🚨 RAW UPDATE EVENT:', {
+            id: payload.new?.id,
+            shop_id: payload.new?.shop_id,
+            ourShop: barbershopId,
+            matches: payload.new?.shop_id === barbershopId
+          })
+          // Manual filter in handler
+          if (payload.new?.shop_id === barbershopId) {
+            handleRealtimeEvent('UPDATE', payload)
+          }
+        }
+      )
+      // DELETE events - Supabase doesn't include shop_id even with REPLICA IDENTITY FULL
+      // So we track appointment IDs and only delete ones we know about
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'bookings'
+        },
+        (payload) => {
+          // Since shop_id isn't available in DELETE payload, we check if this appointment
+          // exists in our current state (which means it belongs to our shop)
+          const appointmentId = payload.old?.id
+          if (appointmentId) {
+            console.log('📡 DELETE event for appointment:', appointmentId)
+            // We'll handle the delete since we can't filter by shop_id
+            handleRealtimeEvent('DELETE', payload)
+          }
+        }
+      )
+      .subscribe((status, error) => {
+        const statusTimestamp = new Date().toISOString()
+        console.log('📡 ENHANCED Subscription status:', {
+          status,
+          error: error || 'none',
+          timestamp: statusTimestamp,
+          barbershopId,
+          channelName: `bookings-${barbershopId}`,
+          connectionTime: Date.now() - startTime
+        })
+        
+        // Store subscription status in window for debugging
+        if (typeof window !== 'undefined') {
+          window.websocketStatus = {
+            status,
+            error,
+            timestamp: statusTimestamp,
+            channelName: `bookings-${barbershopId}`
+          }
+        }
+        
+        setDiagnostics(prev => ({
+          ...prev,
+          channelStatus: status,
+          lastStatusUpdate: statusTimestamp
+        }))
         
         if (status === 'SUBSCRIBED') {
           setIsConnected(true)
-          setConnectionAttempts(0)
-          setError(null)
-          console.log('✅ Real-time connected successfully')
+          setDiagnostics(prev => ({
+            ...prev,
+            subscriptionStatus: 'connected',
+            connectionTime: Date.now() - startTime,
+            connectedAt: statusTimestamp
+          }))
+          console.log('✅ WEBSOCKET CONNECTED! Real-time subscription established for shop:', barbershopId)
+          console.log('🎉 WebSocket should now receive INSERT/UPDATE/DELETE events')
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('❌ Real-time connection failed:', status)
           setIsConnected(false)
-          
-          // Implement retry with exponential backoff
-          const attempts = connectionAttempts + 1
-          setConnectionAttempts(attempts)
-          
-          if (attempts < 5) {
-            const delay = Math.min(1000 * Math.pow(2, attempts - 1), 10000)
-            console.log(`⏳ Retrying connection in ${delay}ms (attempt ${attempts})`)
-            
-            const timer = setTimeout(() => {
-              supabase.removeChannel(channel)
-              // Re-subscribe will happen on next useEffect cycle
-              setConnectionAttempts(attempts)
-            }, delay)
-            
-            setRetryTimer(timer)
-          } else {
-            setError('Unable to establish real-time connection after 5 attempts')
-          }
+          setError('Real-time connection failed')
+          console.error('❌ WEBSOCKET ERROR:', { status, barbershopId, timestamp: statusTimestamp })
         } else if (status === 'CLOSED') {
           setIsConnected(false)
-          console.log('📡 Real-time connection closed')
+          console.warn('⚠️ WEBSOCKET CLOSED:', { barbershopId, timestamp: statusTimestamp })
         }
       })
 
+    // Cleanup subscription on unmount
     return () => {
-      if (retryTimer) {
-        clearTimeout(retryTimer)
+      console.log('🧹 ENHANCED Cleaning up real-time subscription:', {
+        channelName: `bookings-${barbershopId}`,
+        timestamp: new Date().toISOString(),
+        hadChannel: !!channel
+      })
+      
+      if (channel) {
+        try {
+          supabase.removeChannel(channel)
+          console.log('✅ Channel successfully removed')
+        } catch (error) {
+          console.error('❌ Error removing channel:', error)
+        }
+      } else {
+        console.warn('⚠️ No channel to clean up')
       }
-      supabase.removeChannel(channel)
+      
+      // Reset connection state
+      setIsConnected(false)
+      setDiagnostics(prev => ({
+        ...prev,
+        subscriptionStatus: 'disconnected',
+        channelStatus: 'CLOSED'
+      }))
     }
-  }, [barbershopId])
+  }, [barbershopId, supabase])
 
-  return {
-    appointments,
-    loading,
-    error,
-    isConnected,
+  // Debug log periodically and on updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('📊 Real-time diagnostics:', {
+        connected: isConnected,
+        appointments: appointments.length,
+        events: diagnostics.eventCounts
+      })
+    }, 30000)
+    
+    return () => clearInterval(interval)
+  }, [isConnected, appointments.length, diagnostics.eventCounts])
+  
+  // Log when appointments change
+  useEffect(() => {
+    console.log('🚨 HOOK: Appointments updated!', {
+      count: appointments.length,
+      timestamp: new Date().toISOString(),
+      lastUpdate: lastUpdate
+    })
+  }, [appointments, lastUpdate])
+
+  return { 
+    appointments, 
+    loading, 
+    error, 
+    isConnected, 
     lastUpdate,
-    stats,
-    refresh,
-    log,
     connectionAttempts,
-    diagnostics: {
-      subscriptionStatus: isConnected ? 'connected' : connectionAttempts > 0 ? 'retrying' : 'attempting'
-    }
+    diagnostics,
+    refetch: () => window.location.reload() 
   }
 }
-
-// Export for backward compatibility
-export default useRealtimeAppointments

@@ -1,0 +1,146 @@
+{
+  "timestamp": "2025-09-09T12:48:19.692357",
+  "database_path": "/Users/bossio/6FB AI Agent System/database/agent_system.db",
+  "verification_results": {
+    "pragma_settings": {
+      "cache_size": -65536,
+      "journal_mode": "wal",
+      "synchronous": 1,
+      "mmap_size": 268435456,
+      "temp_store": 2,
+      "foreign_keys": 1,
+      "busy_timeout": 30000
+    },
+    "indexes": {
+      "idx_ai_scheduling_barbershop_id": "CREATE INDEX idx_ai_scheduling_barbershop_id ON ai_scheduling_recommendations(barbershop_id)",
+      "idx_ai_scheduling_confidence": "CREATE INDEX idx_ai_scheduling_confidence ON ai_scheduling_recommendations(confidence_score)",
+      "idx_appointments_barber_id": "CREATE INDEX idx_appointments_barber_id ON appointments(barber_id)",
+      "idx_appointments_barber_time": "CREATE INDEX idx_appointments_barber_time ON appointments(barber_id, start_time, status)",
+      "idx_appointments_barbershop_id": "CREATE INDEX idx_appointments_barbershop_id ON appointments(barbershop_id)",
+      "idx_appointments_barbershop_time": "CREATE INDEX idx_appointments_barbershop_time ON appointments(barbershop_id, start_time)",
+      "idx_appointments_client_id": "CREATE INDEX idx_appointments_client_id ON appointments(client_id)",
+      "idx_appointments_client_time": "CREATE INDEX idx_appointments_client_time ON appointments(client_id, start_time, status)",
+      "idx_appointments_conflict": "CREATE INDEX idx_appointments_conflict ON appointments(barbershop_id, start_time, end_time, status) WHERE status != 'cancelled'",
+      "idx_appointments_created_at": "CREATE INDEX idx_appointments_created_at ON appointments(created_at)",
+      "idx_appointments_duration": "CREATE INDEX idx_appointments_duration ON appointments(service_id, start_time, end_time)",
+      "idx_appointments_end_time": "CREATE INDEX idx_appointments_end_time ON appointments(end_time)",
+      "idx_appointments_recent_barbershop": "CREATE INDEX idx_appointments_recent_barbershop ON appointments(barbershop_id, start_time, status)",
+      "idx_appointments_service_id": "CREATE INDEX idx_appointments_service_id ON appointments(service_id)",
+      "idx_appointments_service_time": "CREATE INDEX idx_appointments_service_time ON appointments(service_id, start_time)",
+      "idx_appointments_start_time": "CREATE INDEX idx_appointments_start_time ON appointments(start_time)",
+      "idx_appointments_status": "CREATE INDEX idx_appointments_status ON appointments(status)",
+      "idx_barber_performance_barber_id": "CREATE INDEX idx_barber_performance_barber_id ON barber_performance(barber_id)",
+      "idx_barber_performance_barbershop_id": "CREATE INDEX idx_barber_performance_barbershop_id ON barber_performance(barbershop_id)",
+      "idx_barber_performance_date": "CREATE INDEX idx_barber_performance_date ON barber_performance(date)",
+      "idx_barbershops_created_at": "CREATE INDEX idx_barbershops_created_at ON barbershops(created_at)",
+      "idx_barbershops_location": "CREATE INDEX idx_barbershops_location ON barbershops(location)",
+      "idx_barbershops_name": "CREATE INDEX idx_barbershops_name ON barbershops(name)",
+      "idx_booking_patterns_barbershop_id": "CREATE INDEX idx_booking_patterns_barbershop_id ON booking_patterns(barbershop_id)",
+      "idx_business_recommendations_barbershop_id": "CREATE INDEX idx_business_recommendations_barbershop_id ON business_recommendations(barbershop_id)",
+      "idx_business_recommendations_confidence": "CREATE INDEX idx_business_recommendations_confidence ON business_recommendations(confidence_score)",
+      "idx_business_recommendations_generated_at": "CREATE INDEX idx_business_recommendations_generated_at ON business_recommendations(generated_at)",
+      "idx_business_recommendations_recent": "CREATE INDEX idx_business_recommendations_recent ON business_recommendations(barbershop_id, generated_at, confidence_score)",
+      "idx_business_recommendations_status": "CREATE INDEX idx_business_recommendations_status ON business_recommendations(implementation_status)",
+      "idx_payments_amount": "CREATE INDEX idx_payments_amount ON payments(amount)",
+      "idx_payments_appointment_id": "CREATE INDEX idx_payments_appointment_id ON payments(appointment_id)",
+      "idx_payments_created_at": "CREATE INDEX idx_payments_created_at ON payments(created_at)",
+      "idx_payments_payment_type": "CREATE INDEX idx_payments_payment_type ON payments(payment_type)",
+      "idx_payments_revenue_analysis": "CREATE INDEX idx_payments_revenue_analysis ON payments(status, amount, created_at)\n  WHERE status = 'COMPLETED'",
+      "idx_payments_status": "CREATE INDEX idx_payments_status ON payments(status)",
+      "idx_payments_type_amount": "CREATE INDEX idx_payments_type_amount ON payments(payment_type, amount, status)",
+      "idx_services_duration": "CREATE INDEX idx_services_duration ON services(duration_minutes)",
+      "idx_services_name": "CREATE INDEX idx_services_name ON services(name)",
+      "idx_services_price": "CREATE INDEX idx_services_price ON services(price)",
+      "idx_services_price_duration": "CREATE INDEX idx_services_price_duration ON services(price, duration_minutes)",
+      "idx_users_created_at": "CREATE INDEX idx_users_created_at ON users(created_at)",
+      "idx_users_email": "CREATE INDEX idx_users_email ON users(email)",
+      "idx_users_full_name": "CREATE INDEX idx_users_full_name ON users(full_name)",
+      "idx_users_role": "CREATE INDEX idx_users_role ON users(role)",
+      "idx_users_role_created": "CREATE INDEX idx_users_role_created ON users(role, created_at)",
+      "_summary": {
+        "total_indexes": 45,
+        "critical_indexes_present": 6,
+        "missing_critical_indexes": []
+      }
+    },
+    "database_stats": {
+      "page_count": 489,
+      "page_size": 4096,
+      "database_size_mb": 1.91015625,
+      "table_counts": {
+        "business_recommendations": 24,
+        "barbershops": 1,
+        "users": 56,
+        "services": 5,
+        "appointments": 737,
+        "payments": 981,
+        "barbershop_barbers": 4,
+        "payment_intents": 0,
+        "service_prices": 6,
+        "payment_history": 0,
+        "customer_payment_methods": 0,
+        "booking_patterns": 0,
+        "ai_scheduling_recommendations": 0,
+        "barber_performance": 0,
+        "optimal_time_slots": 0
+      },
+      "total_rows": 1814
+    },
+    "query_benchmarks": {
+      "Total appointments count": {
+        "avg_time": 0.00010819435119628907,
+        "min_time": 5.888938903808594e-05,
+        "max_time": 0.00048804283142089844,
+        "iterations": 10
+      },
+      "Total users count": {
+        "avg_time": 6.351470947265624e-05,
+        "min_time": 5.507469177246094e-05,
+        "max_time": 9.107589721679688e-05,
+        "iterations": 10
+      },
+      "Total payments count": {
+        "avg_time": 5.6624412536621094e-05,
+        "min_time": 5.2928924560546875e-05,
+        "max_time": 8.106231689453125e-05,
+        "iterations": 10
+      },
+      "Total barbershops count": {
+        "avg_time": 5.6290626525878905e-05,
+        "min_time": 5.1975250244140625e-05,
+        "max_time": 7.605552673339844e-05,
+        "iterations": 10
+      },
+      "Total services count": {
+        "avg_time": 5.4717063903808594e-05,
+        "min_time": 5.245208740234375e-05,
+        "max_time": 6.508827209472656e-05,
+        "iterations": 10
+      },
+      "Recent appointments": {
+        "avg_time": 9.2315673828125e-05,
+        "min_time": 6.079673767089844e-05,
+        "max_time": 0.0003609657287597656,
+        "iterations": 10
+      },
+      "Client users lookup": {
+        "avg_time": 6.577968597412109e-05,
+        "min_time": 5.698204040527344e-05,
+        "max_time": 0.00011801719665527344,
+        "iterations": 10
+      },
+      "Completed payments": {
+        "avg_time": 6.899833679199218e-05,
+        "min_time": 5.7220458984375e-05,
+        "max_time": 0.00014019012451171875,
+        "iterations": 10
+      },
+      "Appointments with client names": {
+        "avg_time": 8.919239044189454e-05,
+        "min_time": 5.698204040527344e-05,
+        "max_time": 0.0003497600555419922,
+        "iterations": 10
+      }
+    }
+  }
+}

@@ -1,0 +1,619 @@
+{
+  "/Users/bossio/6FB AI Agent System/database/agent_system.db": {
+    "timestamp": "2025-09-09T12:43:42.029219",
+    "database_path": "/Users/bossio/6FB AI Agent System/database/agent_system.db",
+    "current_settings": {
+      "cache_size": 2000,
+      "journal_mode": "wal",
+      "synchronous": 1,
+      "mmap_size": 0,
+      "temp_store": 0,
+      "foreign_keys": 0,
+      "busy_timeout": 5000,
+      "page_size": 4096,
+      "database_info": [
+        [
+          0,
+          "main",
+          "/Users/bossio/6FB AI Agent System/database/agent_system.db"
+        ]
+      ],
+      "schema_objects": [
+        [
+          "sqlite_autoindex_ai_scheduling_recommendations_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_appointments_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_barber_performance_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_barber_performance_2",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_barbershop_barbers_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_barbershops_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_booking_patterns_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_customer_payment_methods_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_customer_payment_methods_2",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_optimal_time_slots_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_payment_history_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_payment_intents_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_payments_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_service_prices_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_services_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_users_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_users_2",
+          "index"
+        ],
+        [
+          "ai_scheduling_recommendations",
+          "table"
+        ],
+        [
+          "appointments",
+          "table"
+        ],
+        [
+          "barber_performance",
+          "table"
+        ],
+        [
+          "barbershop_barbers",
+          "table"
+        ],
+        [
+          "barbershops",
+          "table"
+        ],
+        [
+          "booking_patterns",
+          "table"
+        ],
+        [
+          "business_recommendations",
+          "table"
+        ],
+        [
+          "customer_payment_methods",
+          "table"
+        ],
+        [
+          "optimal_time_slots",
+          "table"
+        ],
+        [
+          "payment_history",
+          "table"
+        ],
+        [
+          "payment_intents",
+          "table"
+        ],
+        [
+          "payments",
+          "table"
+        ],
+        [
+          "service_prices",
+          "table"
+        ],
+        [
+          "services",
+          "table"
+        ],
+        [
+          "sqlite_sequence",
+          "table"
+        ],
+        [
+          "users",
+          "table"
+        ]
+      ],
+      "page_count": 229,
+      "freelist_count": 0
+    },
+    "optimized_settings": {
+      "cache_size": 2000,
+      "journal_mode": "wal",
+      "synchronous": 1,
+      "mmap_size": 0,
+      "temp_store": 0,
+      "foreign_keys": 0,
+      "busy_timeout": 5000,
+      "page_size": 4096,
+      "database_info": [
+        [
+          0,
+          "main",
+          "/Users/bossio/6FB AI Agent System/database/agent_system.db"
+        ]
+      ],
+      "schema_objects": [
+        [
+          "idx_services_price",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_ai_scheduling_recommendations_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_appointments_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_barber_performance_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_barber_performance_2",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_barbershop_barbers_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_barbershops_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_booking_patterns_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_customer_payment_methods_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_customer_payment_methods_2",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_optimal_time_slots_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_payment_history_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_payment_intents_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_payments_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_service_prices_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_services_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_users_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_users_2",
+          "index"
+        ],
+        [
+          "ai_scheduling_recommendations",
+          "table"
+        ],
+        [
+          "appointments",
+          "table"
+        ],
+        [
+          "barber_performance",
+          "table"
+        ],
+        [
+          "barbershop_barbers",
+          "table"
+        ],
+        [
+          "barbershops",
+          "table"
+        ],
+        [
+          "booking_patterns",
+          "table"
+        ],
+        [
+          "business_recommendations",
+          "table"
+        ],
+        [
+          "customer_payment_methods",
+          "table"
+        ],
+        [
+          "optimal_time_slots",
+          "table"
+        ],
+        [
+          "payment_history",
+          "table"
+        ],
+        [
+          "payment_intents",
+          "table"
+        ],
+        [
+          "payments",
+          "table"
+        ],
+        [
+          "service_prices",
+          "table"
+        ],
+        [
+          "services",
+          "table"
+        ],
+        [
+          "sqlite_sequence",
+          "table"
+        ],
+        [
+          "sqlite_stat1",
+          "table"
+        ],
+        [
+          "users",
+          "table"
+        ]
+      ],
+      "page_count": 231,
+      "freelist_count": 0
+    },
+    "optimizations_applied": {
+      "applied_settings": {
+        "PRAGMA cache_size = -65536": "Set cache size to 64MB",
+        "PRAGMA mmap_size = 268435456": "Enable 256MB memory mapping for fast I/O",
+        "PRAGMA temp_store = MEMORY": "Use memory for temporary storage",
+        "PRAGMA journal_mode = WAL": "Enable WAL mode for better concurrency",
+        "PRAGMA synchronous = NORMAL": "Balance between safety and performance",
+        "PRAGMA busy_timeout = 30000": "Set busy timeout to 30 seconds",
+        "PRAGMA foreign_keys = ON": "Enable foreign key constraints",
+        "PRAGMA wal_autocheckpoint = 1000": "Optimize WAL checkpoint frequency",
+        "PRAGMA optimize": "Optimize query planner statistics"
+      },
+      "errors": []
+    },
+    "indexes_applied": {
+      "indexes_applied": [
+        "EXISTS"
+      ],
+      "errors": [
+        "Failed to apply index: no such table: main.customers",
+        "Failed to apply index: no such table: main.customers",
+        "Failed to apply index: no such table: main.customers",
+        "Failed to apply index: no such table: main.customers",
+        "Failed to apply index: no such column: shop_id",
+        "Failed to apply index: no such table: main.customers",
+        "Failed to apply index: no such table: main.barbers"
+      ]
+    },
+    "maintenance_results": {
+      "operations": [
+        "ANALYZE completed in 0.01s",
+        "VACUUM skipped (freelist_count: 0)"
+      ],
+      "errors": []
+    },
+    "benchmarks": {
+      "Count all appointments": "0.0004s",
+      "Recent payments count": "0.0002s",
+      "Weekly service popularity": "Error: no such column: service_name",
+      "Top customers by booking count": "Error: no such column: customer_id"
+    },
+    "summary": {
+      "cache_size_before": 2000,
+      "cache_size_after": 2000,
+      "mmap_size_before": 0,
+      "mmap_size_after": 0,
+      "temp_store_before": 0,
+      "temp_store_after": 0
+    }
+  },
+  "/Users/bossio/6FB AI Agent System/data/vector_knowledge.db": {
+    "timestamp": "2025-09-09T12:43:42.037625",
+    "database_path": "/Users/bossio/6FB AI Agent System/data/vector_knowledge.db",
+    "current_settings": {
+      "cache_size": 2000,
+      "journal_mode": "delete",
+      "synchronous": 2,
+      "mmap_size": 0,
+      "temp_store": 0,
+      "foreign_keys": 0,
+      "busy_timeout": 5000,
+      "page_size": 4096,
+      "database_info": [
+        [
+          0,
+          "main",
+          "/Users/bossio/6FB AI Agent System/data/vector_knowledge.db"
+        ]
+      ],
+      "schema_objects": [
+        [
+          "idx_knowledge_type",
+          "index"
+        ],
+        [
+          "idx_source",
+          "index"
+        ],
+        [
+          "idx_updated_at",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_knowledge_documents_1",
+          "index"
+        ],
+        [
+          "knowledge_documents",
+          "table"
+        ]
+      ],
+      "page_count": 19,
+      "freelist_count": 0
+    },
+    "optimized_settings": {
+      "cache_size": 2000,
+      "journal_mode": "wal",
+      "synchronous": 1,
+      "mmap_size": 0,
+      "temp_store": 0,
+      "foreign_keys": 0,
+      "busy_timeout": 5000,
+      "page_size": 4096,
+      "database_info": [
+        [
+          0,
+          "main",
+          "/Users/bossio/6FB AI Agent System/data/vector_knowledge.db"
+        ]
+      ],
+      "schema_objects": [
+        [
+          "idx_knowledge_type",
+          "index"
+        ],
+        [
+          "idx_source",
+          "index"
+        ],
+        [
+          "idx_updated_at",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_knowledge_documents_1",
+          "index"
+        ],
+        [
+          "knowledge_documents",
+          "table"
+        ],
+        [
+          "sqlite_stat1",
+          "table"
+        ]
+      ],
+      "page_count": 20,
+      "freelist_count": 0
+    },
+    "optimizations_applied": {
+      "applied_settings": {
+        "PRAGMA cache_size = -65536": "Set cache size to 64MB",
+        "PRAGMA mmap_size = 268435456": "Enable 256MB memory mapping for fast I/O",
+        "PRAGMA temp_store = MEMORY": "Use memory for temporary storage",
+        "PRAGMA journal_mode = WAL": "Enable WAL mode for better concurrency",
+        "PRAGMA synchronous = NORMAL": "Balance between safety and performance",
+        "PRAGMA busy_timeout = 30000": "Set busy timeout to 30 seconds",
+        "PRAGMA foreign_keys = ON": "Enable foreign key constraints",
+        "PRAGMA wal_autocheckpoint = 1000": "Optimize WAL checkpoint frequency",
+        "PRAGMA optimize": "Optimize query planner statistics"
+      },
+      "errors": []
+    },
+    "indexes_applied": {
+      "indexes_applied": [],
+      "errors": []
+    },
+    "maintenance_results": {
+      "operations": [
+        "ANALYZE completed in 0.00s",
+        "VACUUM skipped (freelist_count: 0)"
+      ],
+      "errors": []
+    },
+    "benchmarks": {
+      "Count all appointments": "Error: no such table: appointments",
+      "Recent payments count": "Error: no such table: payments",
+      "Weekly service popularity": "Error: no such table: appointments",
+      "Top customers by booking count": "Error: no such table: appointments"
+    },
+    "summary": {
+      "cache_size_before": 2000,
+      "cache_size_after": 2000,
+      "mmap_size_before": 0,
+      "mmap_size_after": 0,
+      "temp_store_before": 0,
+      "temp_store_after": 0
+    }
+  },
+  "/Users/bossio/6FB AI Agent System/data/ai_insights.db": {
+    "timestamp": "2025-09-09T12:43:42.047179",
+    "database_path": "/Users/bossio/6FB AI Agent System/data/ai_insights.db",
+    "current_settings": {
+      "cache_size": 2000,
+      "journal_mode": "delete",
+      "synchronous": 2,
+      "mmap_size": 0,
+      "temp_store": 0,
+      "foreign_keys": 0,
+      "busy_timeout": 5000,
+      "page_size": 4096,
+      "database_info": [
+        [
+          0,
+          "main",
+          "/Users/bossio/6FB AI Agent System/data/ai_insights.db"
+        ]
+      ],
+      "schema_objects": [
+        [
+          "sqlite_autoindex_ai_insights_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_insight_metrics_1",
+          "index"
+        ],
+        [
+          "ai_insights",
+          "table"
+        ],
+        [
+          "insight_metrics",
+          "table"
+        ]
+      ],
+      "page_count": 5,
+      "freelist_count": 0
+    },
+    "optimized_settings": {
+      "cache_size": 2000,
+      "journal_mode": "wal",
+      "synchronous": 1,
+      "mmap_size": 0,
+      "temp_store": 0,
+      "foreign_keys": 0,
+      "busy_timeout": 5000,
+      "page_size": 4096,
+      "database_info": [
+        [
+          0,
+          "main",
+          "/Users/bossio/6FB AI Agent System/data/ai_insights.db"
+        ]
+      ],
+      "schema_objects": [
+        [
+          "sqlite_autoindex_ai_insights_1",
+          "index"
+        ],
+        [
+          "sqlite_autoindex_insight_metrics_1",
+          "index"
+        ],
+        [
+          "ai_insights",
+          "table"
+        ],
+        [
+          "insight_metrics",
+          "table"
+        ],
+        [
+          "sqlite_stat1",
+          "table"
+        ]
+      ],
+      "page_count": 6,
+      "freelist_count": 0
+    },
+    "optimizations_applied": {
+      "applied_settings": {
+        "PRAGMA cache_size = -65536": "Set cache size to 64MB",
+        "PRAGMA mmap_size = 268435456": "Enable 256MB memory mapping for fast I/O",
+        "PRAGMA temp_store = MEMORY": "Use memory for temporary storage",
+        "PRAGMA journal_mode = WAL": "Enable WAL mode for better concurrency",
+        "PRAGMA synchronous = NORMAL": "Balance between safety and performance",
+        "PRAGMA busy_timeout = 30000": "Set busy timeout to 30 seconds",
+        "PRAGMA foreign_keys = ON": "Enable foreign key constraints",
+        "PRAGMA wal_autocheckpoint = 1000": "Optimize WAL checkpoint frequency",
+        "PRAGMA optimize": "Optimize query planner statistics"
+      },
+      "errors": []
+    },
+    "indexes_applied": {
+      "indexes_applied": [],
+      "errors": []
+    },
+    "maintenance_results": {
+      "operations": [
+        "ANALYZE completed in 0.00s",
+        "VACUUM skipped (freelist_count: 0)"
+      ],
+      "errors": []
+    },
+    "benchmarks": {
+      "Count all appointments": "Error: no such table: appointments",
+      "Recent payments count": "Error: no such table: payments",
+      "Weekly service popularity": "Error: no such table: appointments",
+      "Top customers by booking count": "Error: no such table: appointments"
+    },
+    "summary": {
+      "cache_size_before": 2000,
+      "cache_size_after": 2000,
+      "mmap_size_before": 0,
+      "mmap_size_after": 0,
+      "temp_store_before": 0,
+      "temp_store_after": 0
+    }
+  }
+}

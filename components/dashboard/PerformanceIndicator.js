@@ -5,44 +5,52 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   BoltIcon,
   ClockIcon,
   ServerIcon,
+  ChartBarIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon
-} from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react';
+} from '@heroicons/react/24/outline';
 
-export default function PerformanceIndicator({ className = '' }) {
+export default function PerformanceIndicator({ className = '', barbershop_id = null }) {
   const [performanceData, setPerformanceData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadPerformanceData();
-    
+
+    // Update every 30 seconds
     const interval = setInterval(loadPerformanceData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [barbershop_id]);
 
   const loadPerformanceData = async () => {
     try {
+      // Load cache statistics
       const cacheResponse = await fetch('/api/cache/stats?detailed=true');
       const cacheData = await cacheResponse.json();
 
-      const startTime = Date.now();
-      // Test API response time with a basic health check instead of specific barbershop
-      const apiResponse = await fetch('/api/health');
-      const apiResponseTime = Date.now() - startTime;
-      const apiData = await apiResponse.json();
+      // Test API response time only if barbershop_id is provided
+      let apiPerformance = null;
+      if (barbershop_id) {
+        const startTime = Date.now();
+        const apiResponse = await fetch(`/api/analytics/live-data?barbershop_id=${barbershop_id}`);
+        const apiResponseTime = Date.now() - startTime;
+        const apiData = await apiResponse.json();
 
-      setPerformanceData({
-        cache: cacheData.success ? cacheData : null,
-        api: {
+        apiPerformance = {
           responseTime: apiResponseTime,
           cached: apiData.meta?.cache_info?.hit || false,
           success: apiResponse.ok
-        },
+        };
+      }
+
+      setPerformanceData({
+        cache: cacheData.success ? cacheData : null,
+        api: apiPerformance,
         timestamp: new Date()
       });
     } catch (error) {
@@ -81,6 +89,7 @@ export default function PerformanceIndicator({ className = '' }) {
   const cachePerf = performanceData?.cache?.cache_performance;
   const apiPerf = performanceData?.api;
 
+  // Determine overall performance status
   const getPerformanceStatus = () => {
     const cacheHitRate = cachePerf ? parseInt(cachePerf.hit_rate) : 0;
     const apiSpeed = apiPerf?.responseTime || 1000;

@@ -6,11 +6,10 @@
 
 'use client'
 
-import { useRouter } from 'next/navigation'
-import posthog from 'posthog-js'
 import { useEffect, useRef, useCallback } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useRouter } from 'next/navigation'
 import { metricsTracker } from '@/lib/metrics-tracker'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export function ConversionTracker({ 
   children,
@@ -23,19 +22,21 @@ export function ConversionTracker({
   customProperties = {}
 }) {
   const router = useRouter()
-  const { user: _user } = useAuth()
+  const { user } = useAuth()
   const timeTrackers = useRef({})
   const visibilityObserver = useRef(null)
   const scrollDepthTracked = useRef(new Set())
   const pageLoadTime = useRef(Date.now())
   const interactionObserver = useRef(null)
 
+  // Track page view on mount
   useEffect(() => {
     if (!trackingEnabled) return
 
     const startTime = Date.now()
     pageLoadTime.current = startTime
 
+    // Track page view with comprehensive context
     const pageViewData = {
       page: page,
       referrer: typeof window !== 'undefined' ? document.referrer : '',
@@ -49,12 +50,12 @@ export function ConversionTracker({
       ...customProperties
     }
 
+    // Track with metrics tracker
     metricsTracker.track('page_viewed', pageViewData)
 
-    if (typeof window !== 'undefined' && window.posthog) {
-      posthog.capture('page_viewed', pageViewData)
-    }
+    // PostHog tracking removed
 
+    // Page-specific tracking
     switch (page) {
       case 'register':
         trackRegistrationPageView()
@@ -70,12 +71,14 @@ export function ConversionTracker({
 
   }, [page, trackingEnabled, user, customProperties])
 
+  // Helper function to get URL parameters
   const getURLParam = (param) => {
     if (typeof window === 'undefined') return null
     const urlParams = new URLSearchParams(window.location.search)
     return urlParams.get(param)
   }
 
+  // Page-specific tracking functions
   const trackRegistrationPageView = () => {
     metricsTracker.track('registration_page_viewed', {
       funnel_stage: 'registration',
@@ -109,6 +112,7 @@ export function ConversionTracker({
     })
   }
 
+  // Track scroll depth milestones
   const trackScrollDepth = useCallback(() => {
     if (!autoTrackScrollDepth || !trackingEnabled) return
 
@@ -117,6 +121,7 @@ export function ConversionTracker({
     const documentHeight = document.documentElement.scrollHeight - windowHeight
     const scrollPercent = Math.round((scrollTop / documentHeight) * 100)
 
+    // Track major scroll milestones
     const milestones = [25, 50, 75, 90, 100]
     milestones.forEach(milestone => {
       if (scrollPercent >= milestone && !scrollDepthTracked.current.has(milestone)) {
@@ -132,17 +137,12 @@ export function ConversionTracker({
           viewport_height: windowHeight
         })
 
-        if (typeof window !== 'undefined' && window.posthog) {
-          posthog.capture(`scroll_depth_${milestone}`, {
-            page: page,
-            scroll_depth: milestone,
-            time_to_scroll: timeOnPage
-          })
-        }
+        // PostHog tracking removed
       }
     })
   }, [autoTrackScrollDepth, trackingEnabled, page])
 
+  // Track time on page milestones
   useEffect(() => {
     if (!autoTrackTimeOnPage || !trackingEnabled) return
 
@@ -159,19 +159,14 @@ export function ConversionTracker({
           page_url: window.location.href
         })
 
-        if (typeof window !== 'undefined' && window.posthog) {
-          posthog.capture(`time_on_page_${seconds}s`, {
-            page: page,
-            time_spent: seconds,
-            scroll_depth: scrollDepth
-          })
-        }
+        // PostHog tracking removed
       }, seconds * 1000)
     )
 
     return () => timers.forEach(clearTimeout)
   }, [autoTrackTimeOnPage, trackingEnabled, page])
 
+  // Initialize element visibility tracking
   useEffect(() => {
     if (!autoTrackElementVisibility || !trackingEnabled) return
 
@@ -192,10 +187,9 @@ export function ConversionTracker({
 
           metricsTracker.track('element_viewed', trackingData)
 
-          if (typeof window !== 'undefined' && window.posthog) {
-            posthog.capture('element_viewed', trackingData)
-          }
+          // PostHog tracking removed
 
+          // Unobserve after tracking to avoid duplicate events
           visibilityObserver.current?.unobserve(element)
         }
       })
@@ -206,6 +200,7 @@ export function ConversionTracker({
       rootMargin: '0px 0px -10% 0px'
     })
 
+    // Observe elements with tracking attributes
     const elementsToTrack = document.querySelectorAll('[data-track-view], .pricing-card, .cta-button, .form-field')
     elementsToTrack.forEach(element => {
       visibilityObserver.current?.observe(element)
@@ -216,6 +211,7 @@ export function ConversionTracker({
     }
   }, [autoTrackElementVisibility, trackingEnabled, page])
 
+  // Initialize scroll tracking
   useEffect(() => {
     if (!autoTrackScrollDepth || !trackingEnabled) return
 
@@ -232,6 +228,7 @@ export function ConversionTracker({
     }
   }, [trackScrollDepth])
 
+  // Initialize form interaction tracking
   useEffect(() => {
     if (!autoTrackFormInteractions || !trackingEnabled) return
 
@@ -249,6 +246,7 @@ export function ConversionTracker({
           time_on_page: Date.now() - pageLoadTime.current
         })
 
+        // Store focus time for blur tracking
         e.target.dataset.focusTime = Date.now()
       }
     }
@@ -309,12 +307,14 @@ export function ConversionTracker({
     }
   }, [autoTrackFormInteractions, trackingEnabled, page, user])
 
+  // Calculate form completion percentage
   const calculateFormCompletion = (form) => {
     const fields = form.querySelectorAll('input, select, textarea')
     const filledFields = Array.from(fields).filter(field => field.value.trim() !== '')
     return fields.length > 0 ? Math.round((filledFields.length / fields.length) * 100) : 0
   }
 
+  // Track page exit
   useEffect(() => {
     if (!trackingEnabled) return
 
@@ -362,6 +362,7 @@ export function ConversionTracker({
   return children
 }
 
+// Specific tracking hooks for different page types
 
 export function useRegistrationTracking() {
   return {

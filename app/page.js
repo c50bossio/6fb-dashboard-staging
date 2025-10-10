@@ -1,5 +1,9 @@
 'use client'
 
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { 
   RocketLaunchIcon,
   ArrowRightIcon,
@@ -9,74 +13,92 @@ import {
   ChartBarIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
-import BarberSuccessStories from '../components/landing/BarberSuccessStories'
-import PlatformPreview from '../components/landing/PlatformPreview'
-import PricingSection from '../components/landing/PricingSection'
-import ProblemSection from '../components/landing/ProblemSection'
-import SolutionOverview from '../components/landing/SolutionOverview'
 import Logo, { LogoHeader } from '../components/ui/Logo'
+import VideoModal from '../components/ui/VideoModal'
+import ScheduleDemoModal from '../components/ui/ScheduleDemoModal'
+import BrandOwnershipSection from '../components/landing/BrandOwnershipSection'
+import AIAgentsShowcase from '../components/landing/AIAgentsShowcase'
+import AnalyticsPreview from '../components/landing/AnalyticsPreview'
+import BarberSuccessStories from '../components/landing/BarberSuccessStories'
+import PricingCalculator from '../components/landing/PricingCalculator'
+import PricingSection from '../components/landing/PricingSection'
+import FeaturesSection from '../components/landing/FeaturesSection'
 
 export default function HomePage() {
   const router = useRouter()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [showVideoModal, setShowVideoModal] = useState(false)
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+
+    // Initialize Supabase client
+    const supabase = createClient()
+
+    // Check initial auth state
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsAuthenticated(!!session)
+    }
+
     checkAuth()
+
+    // Subscribe to auth state changes
+    // This ensures the UI updates when user logs in/out
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🏠 [Homepage] Auth state changed:', event, { hasSession: !!session })
+      setIsAuthenticated(!!session)
+    })
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
-  const checkAuth = async () => {
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    setIsAuthenticated(!!session)
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <header className="bg-card border-b border-border sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-20">
-              <div className="flex items-center py-3">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center">
                 <Link href="/" className="block">
-                  <LogoHeader size="medium" />
+                  <LogoHeader size="small" />
                 </Link>
               </div>
-              
+
               {/* Navigation Links */}
               <nav className="hidden md:flex items-center space-x-8">
                 <Link
                   href="#features"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   Features
                 </Link>
                 <Link
                   href="#pricing"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   Pricing
                 </Link>
                 <Link
                   href="#how-it-works"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   How It Works
                 </Link>
                 <Link
                   href="#testimonials"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   Testimonials
                 </Link>
                 <Link
                   href="/contact"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  className="text-muted-foreground hover:text-foreground font-medium transition-colors"
                 >
                   Contact
                 </Link>
@@ -88,7 +110,7 @@ export default function HomePage() {
                   <>
                     <Link
                       href="/dashboard"
-                      className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+                      className="flex items-center space-x-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 font-medium"
                     >
                       <Cog6ToothIcon className="h-4 w-4" />
                       <span>Dashboard</span>
@@ -100,7 +122,7 @@ export default function HomePage() {
                         setIsAuthenticated(false)
                         router.refresh()
                       }}
-                      className="text-gray-600 hover:text-gray-900 font-medium"
+                      className="text-muted-foreground hover:text-foreground font-medium"
                     >
                       Sign Out
                     </button>
@@ -109,12 +131,12 @@ export default function HomePage() {
                   <>
                     <Link
                       href="/login"
-                      className="text-gray-600 hover:text-gray-900 font-medium"
+                      className="text-muted-foreground hover:text-foreground font-medium"
                     >
                       Sign In
                     </Link>
                     <Link
-                      href="/subscribe"
+                      href="/register"
                       className="bg-gradient-to-r from-brand-600 to-brand-500 text-white px-5 py-2 rounded-lg hover:shadow-lg transition-all font-medium"
                     >
                       Sign Up
@@ -127,10 +149,10 @@ export default function HomePage() {
         </header>
 
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-br from-brand-600 via-brand-500 to-brand-700 text-white pt-36 pb-32 overflow-hidden">
-          <div className="absolute inset-0 bg-black opacity-10"></div>
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white opacity-5 rounded-full"></div>
+        <section className="relative bg-gradient-to-br from-brand-600 via-brand-500 to-brand-700 dark:from-brand-700 dark:via-brand-600 dark:to-brand-800 text-white py-32 overflow-hidden">
+          <div className="absolute inset-0 bg-black/10 dark:bg-black/30"></div>
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 dark:bg-white/10 rounded-full"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-white/5 dark:bg-white/10 rounded-full"></div>
           
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
@@ -146,21 +168,22 @@ export default function HomePage() {
                 </span>
               </h1>
               
-              <p className="text-xl lg:text-2xl text-olive-100 max-w-3xl mx-auto mb-16 leading-relaxed">
-                The AI-powered platform where barbers own their brand, automate their business, 
-                and grow with real data. No marketplace fees. No competing for visibility. 
+              <p className="text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto mb-16 leading-relaxed">
+                The AI-powered platform where barbers own their brand, automate their business,
+                and grow with real data. No marketplace fees. No competing for visibility.
                 100% your business.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
                 <Link
-                  href="/subscribe"
+                  href="/register"
                   className="bg-white text-gray-900 px-8 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
                 >
                   <RocketLaunchIcon className="h-5 w-5 mr-2" />
                   Start Building Your Brand
                 </Link>
                 <button
+                  onClick={() => setShowVideoModal(true)}
                   className="bg-transparent border-2 border-white hover:bg-white hover:text-gray-900 text-white px-8 py-4 rounded-xl text-lg font-bold transition-all duration-300 inline-flex items-center justify-center"
                 >
                   <PlayIcon className="h-5 w-5 mr-2" />
@@ -186,58 +209,71 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Problem Section - Establish marketplace pain points */}
-        <ProblemSection />
-
-        {/* Solution Overview - Why 6FB is different */}
+        {/* Features Section - What you get */}
         <section id="features">
-          <SolutionOverview />
+          <FeaturesSection />
         </section>
 
-        {/* Success Stories / Testimonials - Build early trust */}
-        <section id="testimonials">
-          <BarberSuccessStories />
+        {/* How It Works Section */}
+        <section id="how-it-works">
+          <BrandOwnershipSection />
         </section>
 
-        {/* Platform Preview - Combined AI & Analytics */}
-        <PlatformPreview />
+        {/* AI Agents Showcase */}
+        <AIAgentsShowcase />
+
+        {/* Analytics Preview */}
+        <AnalyticsPreview />
 
         {/* Pricing Section - Clear pricing tiers */}
         <section id="pricing">
           <PricingSection />
         </section>
 
-        {/* Final CTA Section - Simplified */}
-        <section className="py-16 bg-gradient-to-r from-brand-600 to-brand-500 text-white">
+        {/* Success Stories / Testimonials */}
+        <section id="testimonials">
+          <BarberSuccessStories />
+        </section>
+
+        {/* Pricing Calculator - ROI Calculator */}
+        <PricingCalculator />
+
+        {/* Final CTA Section */}
+        <section className="py-24 bg-gradient-to-br from-gray-900 to-black dark:from-gray-950 dark:to-black text-white">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">
-              Ready to Own Your Success?
+            <h2 className="text-4xl font-bold mb-6">
+              Ready to Take Control of Your Business?
             </h2>
-            <p className="text-lg text-brand-100 mb-8">
-              Join 500+ barbers building their empires, not renting space in marketplaces.
+            <p className="text-xl text-gray-300 dark:text-gray-400 mb-12 leading-relaxed">
+              Join 500+ barbers who've stopped renting space in marketplaces
+              and started building their own empires.
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10">
               <Link
-                href="/subscribe"
-                className="bg-white text-brand-600 px-8 py-3 rounded-lg text-lg font-bold hover:shadow-lg transition-all duration-300 inline-flex items-center justify-center"
+                href="/register"
+                className="bg-gradient-to-r from-brand-600 to-brand-500 dark:from-brand-500 dark:to-brand-400 text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300 inline-flex items-center justify-center"
               >
-                Start Free Trial
+                Sign Up
                 <ArrowRightIcon className="h-5 w-5 ml-2" />
               </Link>
-              
-              <Link
-                href="/pricing-calculator"
-                className="bg-transparent border-2 border-white hover:bg-white hover:text-brand-600 text-white px-8 py-3 rounded-lg text-lg font-bold transition-all duration-300"
+
+              <button
+                onClick={() => setShowScheduleModal(true)}
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-10 py-4 rounded-xl text-lg font-bold hover:shadow-2xl transition-all duration-300"
               >
-                Calculate Savings
-              </Link>
+                Schedule a Demo
+              </button>
+            </div>
+
+            <div className="text-sm text-gray-400 dark:text-gray-500">
+              No credit card required • Cancel anytime • Full support included
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="bg-black text-white py-16">
+        <footer className="bg-gray-950 dark:bg-black text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
               {/* Brand */}
@@ -245,15 +281,15 @@ export default function HomePage() {
                 <div className="mb-4">
                   <Logo size="medium" />
                 </div>
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-400 dark:text-gray-500 text-sm">
                   The AI-powered platform where barbers own their brand and grow their business.
                 </p>
-                <div className="mt-4 text-sm text-gray-400">
+                <div className="mt-4 text-sm text-gray-400 dark:text-gray-500">
                   <p className="font-semibold text-white mb-2">SMS Opt-In</p>
-                  <p>Text START to <a href="sms:+18135483884&body=START" className="text-white font-medium hover:text-gray-300 transition-colors">813-548-3884</a> to subscribe</p>
-                  <p>Text STOP to <a href="sms:+18135483884&body=STOP" className="text-white font-medium hover:text-gray-300 transition-colors">813-548-3884</a> to unsubscribe</p>
-                  <p>Text HELP to <a href="sms:+18135483884&body=HELP" className="text-white font-medium hover:text-gray-300 transition-colors">813-548-3884</a> for assistance</p>
-                  <p className="text-xs mt-2 text-gray-500">A2P Compliant Messaging Service</p>
+                  <p>Text START to <a href="sms:+18135483884&body=START" className="text-white font-medium hover:text-gray-300 dark:hover:text-gray-400 transition-colors">813-548-3884</a> to subscribe</p>
+                  <p>Text STOP to <a href="sms:+18135483884&body=STOP" className="text-white font-medium hover:text-gray-300 dark:hover:text-gray-400 transition-colors">813-548-3884</a> to unsubscribe</p>
+                  <p>Text HELP to <a href="sms:+18135483884&body=HELP" className="text-white font-medium hover:text-gray-300 dark:hover:text-gray-400 transition-colors">813-548-3884</a> for assistance</p>
+                  <p className="text-xs mt-2 text-gray-500 dark:text-gray-600">A2P Compliant Messaging Service</p>
                 </div>
               </div>
 
@@ -347,6 +383,20 @@ export default function HomePage() {
             </div>
           </div>
         </footer>
+
+        {/* Modals */}
+        <VideoModal
+          isOpen={showVideoModal}
+          onClose={() => setShowVideoModal(false)}
+          videoUrl="/demo/6fb-demo-video.mp4"
+          title="6FB AI Agent System Demo"
+          autoplay={true}
+        />
+
+        <ScheduleDemoModal
+          isOpen={showScheduleModal}
+          onClose={() => setShowScheduleModal(false)}
+        />
       </div>
   )
 }

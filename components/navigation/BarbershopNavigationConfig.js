@@ -11,13 +11,15 @@ import {
   BellIcon,
   CogIcon,
   SparklesIcon,
+  MapPinIcon,
+  ArrowTrendingUpIcon,
   PresentationChartLineIcon,
+  DevicePhoneMobileIcon,
   MegaphoneIcon,
-  LinkIcon,
-  ExclamationTriangleIcon,
-  FunnelIcon
+  LinkIcon
 } from '@heroicons/react/24/outline'
 
+// Barbershop-focused navigation structure
 export const BARBERSHOP_NAVIGATION = [
   {
     id: 'dashboard',
@@ -43,12 +45,6 @@ export const BARBERSHOP_NAVIGATION = [
         badge: 'Live'
       },
       {
-        name: 'Check-In & Queue',
-        href: '/dashboard/check-in',
-        icon: UserGroupIcon,
-        badge: 'Live'
-      },
-      {
         name: 'Book Appointment',
         href: '/dashboard/bookings-mobile',
         icon: PhoneIcon
@@ -57,6 +53,11 @@ export const BARBERSHOP_NAVIGATION = [
         name: 'Recurring Clients',
         href: '/dashboard/bookings-recurring',
         icon: ClockIcon
+      },
+      {
+        name: 'Walk-ins',
+        href: '/dashboard/walk-ins',
+        icon: UserGroupIcon
       },
       {
         name: 'Calendar Sync',
@@ -75,32 +76,14 @@ export const BARBERSHOP_NAVIGATION = [
   {
     id: 'customers',
     name: 'Customers',
-    href: '/dashboard/customers',
+    href: '/dashboard/customers-enhanced',
     icon: UserGroupIcon,
-    description: 'Advanced customer intelligence & management',
-    badge: 'AI',
+    description: 'Client profiles & history',
     children: [
       {
-        name: 'Intelligence Dashboard',
-        href: '/dashboard/customers?tab=intelligence',
-        icon: ChartBarIcon,
-        badge: 'AI'
-      },
-      {
-        name: 'Customer Directory',
-        href: '/dashboard/customers?tab=customers',
+        name: 'All Customers',
+        href: '/dashboard/customers-enhanced',
         icon: UserGroupIcon
-      },
-      {
-        name: 'Churn Monitor',
-        href: '/dashboard/customers?tab=churn',
-        icon: ExclamationTriangleIcon,
-        badge: 'Live'
-      },
-      {
-        name: 'Segment Builder',
-        href: '/dashboard/customers?tab=segments',
-        icon: FunnelIcon
       },
       {
         name: 'Loyalty Program',
@@ -134,7 +117,7 @@ export const BARBERSHOP_NAVIGATION = [
       {
         name: 'Performance',
         href: '/dashboard/performance',
-        icon: ChartBarIcon
+        icon: ArrowTrendingUpIcon
       }
     ]
   },
@@ -168,7 +151,7 @@ export const BARBERSHOP_NAVIGATION = [
       {
         name: 'Forecasting',
         href: '/dashboard/forecasting',
-        icon: ChartBarIcon,
+        icon: ArrowTrendingUpIcon,
         badge: 'Predict'
       },
       {
@@ -184,25 +167,17 @@ export const BARBERSHOP_NAVIGATION = [
     name: 'Operations',
     href: '/dashboard/operations',
     icon: CogIcon,
-    description: 'POS, inventory & shop management',
+    description: 'Staff, inventory & settings',
     children: [
       {
-        name: 'Point of Sales',
-        href: '/dashboard/pos',
-        icon: CurrencyDollarIcon,
-        description: 'Customer checkout and payment processing',
-        badge: 'POS'
-      },
-      {
-        name: 'Inventory & Marketplace',
-        href: '/dashboard/inventory',
-        icon: ScissorsIcon,
-        description: 'Stock tracking with smart wholesale reordering'
-      },
-      {
         name: 'Staff Schedule',
-        href: '/shop/settings/staff',
+        href: '/dashboard/staff',
         icon: UserGroupIcon
+      },
+      {
+        name: 'Inventory',
+        href: '/dashboard/inventory',
+        icon: ScissorsIcon
       },
       {
         name: 'Shop Settings',
@@ -218,6 +193,7 @@ export const BARBERSHOP_NAVIGATION = [
   }
 ]
 
+// Quick Actions for the navigation
 export const QUICK_ACTIONS = [
   {
     name: 'Book Walk-in',
@@ -227,18 +203,18 @@ export const QUICK_ACTIONS = [
     description: 'Quick booking for walk-in customer'
   },
   {
-    name: 'Check-In & Queue',
-    href: '/dashboard/check-in',
+    name: 'Check-in Customer',
+    href: '/dashboard/checkin',
     icon: UserGroupIcon,
     color: 'bg-green-600 hover:bg-green-700',
-    description: 'Check-in customers and manage walk-in queue'
+    description: 'Mark customer as arrived'
   },
   {
-    name: 'Process Sale',
-    href: '/dashboard/pos',
+    name: 'Quick Payment',
+    href: '/dashboard/payment',
     icon: CurrencyDollarIcon,
     color: 'bg-gold-600 hover:bg-gold-700',
-    description: 'Customer checkout and payment'
+    description: 'Process payment'
   },
   {
     name: 'AI Chat',
@@ -249,12 +225,15 @@ export const QUICK_ACTIONS = [
   }
 ]
 
+// Navigation utility functions
 export function getActiveNavItem(pathname) {
+  // Find main nav item
   for (const item of BARBERSHOP_NAVIGATION) {
     if (pathname === item.href) {
       return { main: item, sub: null }
     }
     
+    // Check children
     if (item.children) {
       for (const child of item.children) {
         if (pathname === child.href || pathname.startsWith(child.href + '/')) {
@@ -263,6 +242,7 @@ export function getActiveNavItem(pathname) {
       }
     }
     
+    // Check if path starts with main item
     if (pathname.startsWith(item.href + '/')) {
       return { main: item, sub: null }
     }
@@ -287,6 +267,7 @@ export function getBreadcrumbs(pathname) {
   return breadcrumbs
 }
 
+// Color themes for different sections
 export const NAVIGATION_THEMES = {
   dashboard: {
     bg: 'bg-amber-50',

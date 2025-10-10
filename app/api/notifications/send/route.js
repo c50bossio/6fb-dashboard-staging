@@ -1,567 +1,572 @@
-import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+/**
+ * Notification Send API
+ * 
+ * Unified endpoint for sending all types of notifications including:
+ * - Booking confirmations and reminders
+ * - Cancellation and rescheduling notifications
+ * - Payment confirmations
+ * - Custom notifications
+ * 
+ * Integrates with all notification services:
+ * - BookingConfirmationService
+ * - ReminderScheduler
+ * - PushNotificationService
+ * - Enhanced SendGrid and Twilio services
+ */
 
-// Inline phone utilities to fix module resolution issue
-function normalizePhoneForTwilio(phoneNumber, defaultCountryCode = 'US') {
-  if (!phoneNumber) return null
-  
-  // Remove all non-numeric characters
-  let digits = phoneNumber.replace(/[^\d]/g, '')
-  
-  if (!digits) return null
-  
-  // Handle US/Canada phone numbers
-  if (digits.length === 10) {
-    // Standard 10-digit US number, add +1
-    return `+1${digits}`
-  } else if (digits.length === 11 && digits.startsWith('1')) {
-    // 11-digit number starting with 1, add +
-    return `+${digits}`
-  } else if (digits.length === 11 && !digits.startsWith('1')) {
-    // Assume first digit is country code
-    return `+${digits}`
-  } else if (digits.length > 11) {
-    // International number, add + if not present
-    return phoneNumber.startsWith('+') ? phoneNumber : `+${digits}`
-  }
-  
-  // Fallback: if we can't determine format, try adding +1 for US
-  if (digits.length === 10) {
-    return `+1${digits}`
-  }
-  
-  return phoneNumber.startsWith('+') ? phoneNumber : `+${digits}`
-}
-
-function validatePhoneNumber(phoneNumber) {
-  if (!phoneNumber) {
-    return { isValid: false, error: 'Phone number is required' }
-  }
-  
-  const digits = phoneNumber.replace(/[^\d]/g, '')
-  
-  if (digits.length < 10) {
-    return { isValid: false, error: 'Phone number must be at least 10 digits' }
-  }
-  
-  if (digits.length > 15) {
-    return { isValid: false, error: 'Phone number cannot exceed 15 digits' }
-  }
-  
-  return { isValid: true, error: null }
-}
-
-function isSMSCapable(phoneNumber) {
-  const normalized = normalizePhoneForTwilio(phoneNumber)
-  if (!normalized) return false
-  
-  // Twilio supports SMS for most mobile numbers
-  return normalized.startsWith('+') && normalized.length >= 12
-}
+import { bookingConfirmationService } from '../../../../services/booking-confirmation-service.js';
+import { reminderScheduler } from '../../../../services/reminder-scheduler.js';
+import { pushNotificationService } from '../../../../services/push-notification-service.js';
 
 export async function POST(request) {
   try {
-    const body = await request.json()
-    const { type, appointment_id, customer_name, barber_id, barbershop_id, message, phone, email } = body
+    const body = await request.json();
+    const { type, data, options = {} } = body;
 
-    if (!type) {
-      return NextResponse.json({
-        success: false,
-        error: 'Notification type is required'
-      }, { status: 400 })
+    if (!type || !data) {
+      return Response.json(
+        { error: 'Missing type or data parameters' },
+        { status: 400 }
+      );
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    console.log(`📤 Processing notification request: ${type}`);
 
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return NextResponse.json({
-        success: false,
-        error: 'Service configuration error'
-      }, { status: 500 })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
-
-    // Get barbershop notification settings
-    const { data: barbershop, error: barbershopError } = await supabase
-      .from('barbershops')
-      .select('id, name, notification_settings, business_phone, email')
-      .eq('id', barbershop_id)
-      .single()
-
-    if (barbershopError) {
-      console.warn('Barbershop lookup error:', barbershopError, 'for ID:', barbershop_id)
-    }
-
-    const notificationSettings = barbershop?.notification_settings || {}
-    
-    // Process different notification types
-    const results = []
+    let result;
 
     switch (type) {
-      case 'customer_checked_in':
-        await handleCustomerCheckedIn({
-          supabase,
-          appointment_id,
-          customer_name,
-          barber_id,
-          barbershop,
-          notificationSettings,
-          results
-        })
-        break
+      case 'booking_confirmation':
+        result = await handleBookingConfirmation(data, options);
+        break;
+        
+      case 'booking_cancellation':
+        result = await handleBookingCancellation(data, options);
+        break;
+        
+      case 'booking_rescheduled':
+        result = await handleBookingRescheduled(data, options);
+        break;
+        
+      case 'booking_reminder':
+        result = await handleBookingReminder(data, options);
+        break;
+        
+      case 'payment_confirmation':
+        result = await handlePaymentConfirmation(data, options);
+        break;
+        
+      case 'custom_notification':
+        result = await handleCustomNotification(data, options);
+        break;
+        
+      case 'bulk_notification':
+        result = await handleBulkNotification(data, options);
+        break;
 
-      case 'appointment_reminder':
-        await handleAppointmentReminder({
-          supabase,
-          appointment_id,
-          customer_name,
-          phone,
-          email,
-          barbershop,
-          notificationSettings,
-          results
-        })
-        break
-
-      case 'appointment_confirmed':
-        await handleAppointmentConfirmed({
-          supabase,
-          appointment_id,
-          customer_name,
-          phone,
-          email,
-          barbershop,
-          notificationSettings,
-          results
-        })
-        break
-
-      case 'custom_message':
-        await handleCustomMessage({
-          message,
-          phone,
-          email,
-          barbershop,
-          results
-        })
-        break
-
-      case 'walk_in_added':
-        await handleWalkInAdded({
-          supabase,
-          customer_name,
-          phone,
-          queue_position: body.queue_position,
-          estimated_wait: body.estimated_wait,
-          appointment_id,
-          barbershop,
-          notificationSettings,
-          results
-        })
-        break
-
-      case 'queue_update':
-        await handleQueueUpdate({
-          message,
-          phone,
-          email,
-          barbershop,
-          results
-        })
-        break
-
-      case 'walk_in_status_update':
-        await handleWalkInStatusUpdate({
-          message,
-          phone,
-          email,
-          barbershop,
-          results
-        })
-        break
-
+      case 'test_notification':
+        result = await handleTestNotification(data, options);
+        break;
+        
       default:
-        throw new Error(`Unknown notification type: ${type}`)
+        return Response.json(
+          { error: `Unknown notification type: ${type}` },
+          { status: 400 }
+        );
     }
 
-    // Log notification attempts for tracking
-    try {
-      await supabase
-        .from('notification_logs')
-        .insert({
-          barbershop_id,
-          appointment_id,
-          type,
-          results: results,
-          created_at: new Date().toISOString()
-        })
-    } catch (logError) {
-      console.warn('Failed to log notification:', logError)
-      // Don't fail the notification if logging fails
-    }
-
-    return NextResponse.json({
+    return Response.json({
       success: true,
-      results,
-      message: 'Notifications processed'
-    })
+      type,
+      timestamp: new Date().toISOString(),
+      result
+    });
 
   } catch (error) {
-    console.error('Notification API error:', error)
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Internal server error'
-    }, { status: 500 })
-  }
-}
-
-async function handleCustomerCheckedIn({ supabase, appointment_id, customer_name, barber_id, barbershop, notificationSettings, results }) {
-  // Notify barber about customer check-in
-  if (notificationSettings.check_in_alerts !== false && barber_id) {
-    try {
-      const { data: barber } = await supabase
-        .from('profiles')
-        .select('phone, email, full_name')
-        .eq('id', barber_id)
-        .single()
-
-      if (barber?.phone) {
-        const message = `${customer_name} has checked in for their appointment. Ready when you are! 💈`
-        await sendSMS(barber.phone, message)
-        results.push({ type: 'sms', recipient: 'barber', status: 'sent' })
-      }
-
-      // Optional: Send push notification if implemented
-      // await sendPushNotification(barber_id, { title: 'Customer Checked In', body: `${customer_name} is ready` })
-      
-    } catch (error) {
-      console.error('Error notifying barber:', error)
-      results.push({ type: 'barber_notification', status: 'failed', error: error.message })
-    }
-  }
-}
-
-async function handleAppointmentReminder({ supabase, appointment_id, customer_name, phone, email, barbershop, notificationSettings, results }) {
-  // Get appointment details
-  const { data: appointment } = await supabase
-    .from('appointments')
-    .select('date, start_time, service_name, barber_name')
-    .eq('id', appointment_id)
-    .single()
-
-  if (!appointment) {
-    throw new Error('Appointment not found')
-  }
-
-  const appointmentTime = new Date(`${appointment.date} ${appointment.start_time}`).toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit'
-  })
-
-  // Send SMS reminder
-  if (notificationSettings.sms_reminders !== false && phone) {
-    try {
-      const message = `Hi ${customer_name}! Reminder: You have an appointment for ${appointment.service_name} tomorrow at ${appointmentTime} with ${appointment.barber_name}. See you then! 💈 - ${barbershop?.name || 'Your Barber'}`
-      await sendSMS(phone, message)
-      results.push({ type: 'sms', recipient: 'customer', status: 'sent' })
-    } catch (error) {
-      console.error('Error sending SMS reminder:', error)
-      results.push({ type: 'sms', status: 'failed', error: error.message })
-    }
-  }
-
-  // Send email reminder  
-  if (notificationSettings.email_reminders !== false && email) {
-    try {
-      const emailContent = {
-        to: email,
-        subject: `Appointment Reminder - ${barbershop?.name || 'Your Barber'}`,
-        html: generateReminderEmail(customer_name, appointment, barbershop)
-      }
-      await sendEmail(emailContent)
-      results.push({ type: 'email', recipient: 'customer', status: 'sent' })
-    } catch (error) {
-      console.error('Error sending email reminder:', error)
-      results.push({ type: 'email', status: 'failed', error: error.message })
-    }
-  }
-}
-
-async function handleAppointmentConfirmed({ appointment_id, customer_name, phone, email, barbershop, notificationSettings, results }) {
-  // Send confirmation SMS
-  if (notificationSettings.confirmation_sms !== false && phone) {
-    try {
-      const message = `✅ Appointment confirmed! We'll see you soon, ${customer_name}. Reply STOP to opt out. - ${barbershop?.name || 'Your Barber'}`
-      await sendSMS(phone, message)
-      results.push({ type: 'sms', recipient: 'customer', status: 'sent' })
-    } catch (error) {
-      console.error('Error sending confirmation SMS:', error)
-      results.push({ type: 'sms', status: 'failed', error: error.message })
-    }
-  }
-}
-
-async function handleCustomMessage({ message, phone, email, barbershop, results }) {
-  // Send custom SMS
-  if (phone && message) {
-    try {
-      await sendSMS(phone, `${message} - ${barbershop?.name || 'Your Barber'}`)
-      results.push({ type: 'sms', recipient: 'custom', status: 'sent' })
-    } catch (error) {
-      console.error('Error sending custom SMS:', error)
-      results.push({ type: 'sms', status: 'failed', error: error.message })
-    }
-  }
-
-  // Send custom email
-  if (email && message) {
-    try {
-      const emailContent = {
-        to: email,
-        subject: `Message from ${barbershop?.name || 'Your Barber'}`,
-        html: `<p>${message}</p><br><p>Best regards,<br>${barbershop?.name || 'Your Barber'}</p>`
-      }
-      await sendEmail(emailContent)
-      results.push({ type: 'email', recipient: 'custom', status: 'sent' })
-    } catch (error) {
-      console.error('Error sending custom email:', error)
-      results.push({ type: 'email', status: 'failed', error: error.message })
-    }
-  }
-}
-
-async function handleWalkInAdded({ supabase, customer_name, phone, queue_position, estimated_wait, appointment_id, barbershop, notificationSettings, results }) {
-  // Send welcome SMS to walk-in customer
-  if (phone && notificationSettings.walk_in_notifications !== false) {
-    try {
-      const businessName = barbershop?.name || 'Your Barbershop'
-      const message = `Welcome to ${businessName}! 👋\n\nYou're #${queue_position} in line\nEstimated wait: ${estimated_wait} minutes\n\nWe'll text you when you're next!\n\nTrack status: ${process.env.NEXT_PUBLIC_BASE_URL || 'https://app.bookedbarber.com'}/walk-in-status/${appointment_id}`
-      
-      await sendSMS(phone, message)
-      results.push({ type: 'sms', recipient: 'customer', status: 'sent', queue_position, estimated_wait })
-      
-      console.log(`Walk-in welcome SMS sent to ${customer_name} at ${phone}`)
-    } catch (error) {
-      console.error('Error sending walk-in welcome SMS:', error)
-      results.push({ type: 'sms', recipient: 'customer', status: 'failed', error: error.message })
-    }
-  }
-  
-  // Optional: Send welcome email if email address is available
-  // This could be extended to collect email during walk-in check-in
-}
-
-async function handleQueueUpdate({ message, phone, email, barbershop, results }) {
-  // Send queue update SMS
-  if (phone && message) {
-    try {
-      const smsResult = await sendSMS(phone, `${message} - ${barbershop?.name || 'Your Barber'}`)
-      results.push({ 
-        type: 'sms', 
-        recipient: 'customer', 
-        status: 'sent',
-        phone: phone,
-        message_sid: smsResult.sid,
-        details: `SMS sent successfully to ${phone}`
-      })
-    } catch (error) {
-      console.error('Error sending queue update SMS:', error)
-      results.push({ 
-        type: 'sms', 
-        status: 'failed', 
-        error: error.message,
-        phone: phone,
-        details: `Failed to send SMS to ${phone}: ${error.message}`
-      })
-    }
-  }
-
-  // Send queue update email if provided
-  if (email && message) {
-    try {
-      const emailContent = {
-        to: email,
-        subject: `Queue Update - ${barbershop?.name || 'Your Barber'}`,
-        html: `<p>${message}</p><br><p>Best regards,<br>${barbershop?.name || 'Your Barber'}</p>`
-      }
-      await sendEmail(emailContent)
-      results.push({ type: 'email', recipient: 'customer', status: 'sent' })
-    } catch (error) {
-      console.error('Error sending queue update email:', error)
-      results.push({ type: 'email', status: 'failed', error: error.message })
-    }
-  }
-}
-
-async function handleWalkInStatusUpdate({ message, phone, email, barbershop, results }) {
-  // Send walk-in status update SMS
-  if (phone && message) {
-    try {
-      const smsResult = await sendSMS(phone, `${message} - ${barbershop?.name || 'Your Barber'}`)
-      results.push({ 
-        type: 'sms', 
-        recipient: 'customer', 
-        status: 'sent',
-        phone: phone,
-        message_sid: smsResult.sid,
-        details: `SMS sent successfully to ${phone}`
-      })
-    } catch (error) {
-      console.error('Error sending walk-in status SMS:', error)
-      results.push({ 
-        type: 'sms', 
-        status: 'failed', 
-        error: error.message,
-        phone: phone,
-        details: `Failed to send SMS to ${phone}: ${error.message}`
-      })
-    }
-  }
-
-  // Send walk-in status email if provided
-  if (email && message) {
-    try {
-      const emailContent = {
-        to: email,
-        subject: `Service Update - ${barbershop?.name || 'Your Barber'}`,
-        html: `<p>${message}</p><br><p>Best regards,<br>${barbershop?.name || 'Your Barber'}</p>`
-      }
-      await sendEmail(emailContent)
-      results.push({ type: 'email', recipient: 'customer', status: 'sent' })
-    } catch (error) {
-      console.error('Error sending walk-in status email:', error)
-      results.push({ type: 'email', status: 'failed', error: error.message })
-    }
-  }
-}
-
-async function sendSMS(phone, message) {
-  const twilioSid = process.env.TWILIO_ACCOUNT_SID
-  const twilioToken = process.env.TWILIO_AUTH_TOKEN
-  const twilioFrom = process.env.TWILIO_FROM_NUMBER
-
-  if (!twilioSid || !twilioToken || !twilioFrom) {
-    const error = 'Twilio credentials not configured in environment variables'
-    console.warn(error)
-    throw new Error(error)
-  }
-
-  // Validate phone number format
-  const phoneValidation = validatePhoneNumber(phone)
-  if (!phoneValidation.isValid) {
-    throw new Error(`Invalid phone number: ${phoneValidation.error}`)
-  }
-
-  // Normalize phone number for Twilio (add country code if missing)
-  const normalizedPhone = normalizePhoneForTwilio(phone)
-  if (!normalizedPhone) {
-    throw new Error('Unable to format phone number for SMS delivery')
-  }
-
-  // Check if number is SMS capable
-  if (!isSMSCapable(normalizedPhone)) {
-    throw new Error('Phone number is not capable of receiving SMS messages')
-  }
-
-  console.log(`[SMS] Sending to normalized phone: ${normalizedPhone} (original: ${phone})`)
-
-  const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${Buffer.from(`${twilioSid}:${twilioToken}`).toString('base64')}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: new URLSearchParams({
-      From: twilioFrom,
-      To: normalizedPhone, // Use normalized phone number
-      Body: message
-    })
-  })
-
-  if (!response.ok) {
-    let errorDetails = 'Unknown Twilio error'
-    try {
-      const errorResponse = await response.json()
-      // Extract meaningful error information from Twilio
-      if (errorResponse.message) {
-        errorDetails = errorResponse.message
-      } else if (errorResponse.more_info) {
-        errorDetails = `Twilio Error: ${errorResponse.more_info}`
-      } else {
-        errorDetails = await response.text()
-      }
-    } catch (parseError) {
-      errorDetails = await response.text()
-    }
+    console.error('❌ Notification send error:', error);
     
-    console.error(`[SMS] Twilio API error for ${normalizedPhone}:`, errorDetails)
-    throw new Error(`SMS delivery failed: ${errorDetails}`)
-  }
-
-  const result = await response.json()
-  console.log(`[SMS] Successfully sent to ${normalizedPhone}, SID: ${result.sid}`)
-  
-  return result
-}
-
-async function sendEmail(emailContent) {
-  const sendgridKey = process.env.SENDGRID_API_KEY
-  const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@bookedbarber.com'
-
-  if (!sendgridKey) {
-    console.warn('SendGrid not configured, skipping email')
-    return
-  }
-
-  const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${sendgridKey}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      personalizations: [{ to: [{ email: emailContent.to }] }],
-      from: { email: fromEmail, name: 'BookedBarber' },
-      subject: emailContent.subject,
-      content: [{ type: 'text/html', value: emailContent.html }]
-    })
-  })
-
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`Email failed: ${error}`)
+    return Response.json(
+      { 
+        success: false,
+        error: 'Internal server error', 
+        message: error.message,
+        timestamp: new Date().toISOString()
+      },
+      { status: 500 }
+    );
   }
 }
 
-function generateReminderEmail(customerName, appointment, barbershop) {
-  const appointmentDate = new Date(appointment.date).toLocaleDateString()
-  const appointmentTime = new Date(`${appointment.date} ${appointment.start_time}`).toLocaleTimeString([], {
-    hour: 'numeric',
-    minute: '2-digit'
-  })
+/**
+ * Handle booking confirmation notification
+ */
+async function handleBookingConfirmation(data, options) {
+  try {
+    const result = await bookingConfirmationService.sendBookingConfirmation(
+      data,
+      'booking_confirmed'
+    );
 
-  return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #333;">Appointment Reminder</h2>
-      <p>Hi ${customerName},</p>
-      <p>This is a friendly reminder about your upcoming appointment:</p>
-      
-      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <p><strong>Service:</strong> ${appointment.service_name}</p>
-        <p><strong>Date:</strong> ${appointmentDate}</p>
-        <p><strong>Time:</strong> ${appointmentTime}</p>
-        <p><strong>Barber:</strong> ${appointment.barber_name}</p>
-      </div>
-      
-      <p>We look forward to seeing you!</p>
-      <p>Best regards,<br>${barbershop?.name || 'Your Barber'}</p>
-      
-      <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-      <p style="font-size: 12px; color: #666;">
-        Need to reschedule? Please call us as soon as possible.
-      </p>
-    </div>
-  `
+    // Also schedule reminder notifications
+    if (options.schedule_reminders !== false) {
+      try {
+        await reminderScheduler.scheduleBookingReminders(data);
+      } catch (reminderError) {
+        console.warn('Failed to schedule reminders:', reminderError);
+        // Don't fail confirmation for reminder scheduling failure
+      }
+    }
+
+    return result;
+
+  } catch (error) {
+    console.error('Error handling booking confirmation:', error);
+    throw error;
+  }
+}
+
+/**
+ * Handle booking cancellation notification
+ */
+async function handleBookingCancellation(data, options) {
+  try {
+    const { booking_data, cancellation_reason, cancelled_by } = data;
+
+    // Send cancellation confirmation
+    const confirmationResult = await bookingConfirmationService.sendCancellationConfirmation(
+      booking_data,
+      cancellation_reason
+    );
+
+    // Cancel scheduled reminders
+    try {
+      await reminderScheduler.cancelBookingReminders(
+        booking_data.id,
+        `Cancelled by ${cancelled_by || 'customer'}: ${cancellation_reason || 'No reason provided'}`
+      );
+    } catch (reminderError) {
+      console.warn('Failed to cancel reminders:', reminderError);
+    }
+
+    // Send push notification if enabled
+    if (options.send_push !== false) {
+      try {
+        await pushNotificationService.sendPushNotification(
+          booking_data.customer_email,
+          {
+            title: '❌ Booking Cancelled',
+            body: `Your ${booking_data.service_name} appointment has been cancelled.`,
+            icon: '/icons/cancel-icon-192.png',
+            tag: 'booking-cancelled',
+            data: {
+              type: 'booking_cancelled',
+              booking_id: booking_data.id,
+              url: '/bookings'
+            },
+            actions: [
+              {
+                action: 'rebook',
+                title: 'Book Again',
+                icon: '/icons/calendar-icon.png'
+              },
+              {
+                action: 'view',
+                title: 'View Details',
+                icon: '/icons/view-icon.png'
+              }
+            ]
+          }
+        );
+      } catch (pushError) {
+        console.warn('Failed to send cancellation push notification:', pushError);
+      }
+    }
+
+    return {
+      ...confirmationResult,
+      reminders_cancelled: true,
+      cancellation_reason
+    };
+
+  } catch (error) {
+    console.error('Error handling booking cancellation:', error);
+    throw error;
+  }
+}
+
+/**
+ * Handle booking rescheduled notification
+ */
+async function handleBookingRescheduled(data, options) {
+  try {
+    const { old_booking_data, new_booking_data, reschedule_reason } = data;
+
+    // Send rescheduling confirmation
+    const confirmationResult = await bookingConfirmationService.sendRescheduleConfirmation(
+      old_booking_data,
+      new_booking_data
+    );
+
+    // Reschedule reminders
+    try {
+      await reminderScheduler.rescheduleBookingReminders(
+        old_booking_data.id,
+        new_booking_data
+      );
+    } catch (reminderError) {
+      console.warn('Failed to reschedule reminders:', reminderError);
+    }
+
+    // Send push notification if enabled
+    if (options.send_push !== false) {
+      try {
+        const newAppointmentTime = new Date(new_booking_data.appointment_datetime);
+        
+        await pushNotificationService.sendPushNotification(
+          new_booking_data.customer_email,
+          {
+            title: '🔄 Booking Rescheduled',
+            body: `Your ${new_booking_data.service_name} appointment has been moved to ${newAppointmentTime.toLocaleDateString()} at ${newAppointmentTime.toLocaleTimeString()}.`,
+            icon: '/icons/reschedule-icon-192.png',
+            tag: 'booking-rescheduled',
+            data: {
+              type: 'booking_rescheduled',
+              booking_id: new_booking_data.id,
+              url: `/bookings/${new_booking_data.id}`
+            },
+            actions: [
+              {
+                action: 'view',
+                title: 'View New Booking',
+                icon: '/icons/view-icon.png'
+              },
+              {
+                action: 'calendar',
+                title: 'Add to Calendar',
+                icon: '/icons/calendar-icon.png'
+              }
+            ]
+          }
+        );
+      } catch (pushError) {
+        console.warn('Failed to send rescheduled push notification:', pushError);
+      }
+    }
+
+    return {
+      ...confirmationResult,
+      reminders_rescheduled: true,
+      reschedule_reason
+    };
+
+  } catch (error) {
+    console.error('Error handling booking rescheduled:', error);
+    throw error;
+  }
+}
+
+/**
+ * Handle booking reminder notification
+ */
+async function handleBookingReminder(data, options) {
+  try {
+    const { booking_data, reminder_type = 'day_of_reminder' } = data;
+
+    // Send reminder through all configured channels
+    const reminderResult = await reminderScheduler.sendReminder({
+      booking_id: booking_data.id,
+      customer_email: booking_data.customer_email,
+      customer_phone: booking_data.customer_phone,
+      reminder_type: reminder_type,
+      reminder_data: booking_data,
+      channels: options.channels || ['email', 'sms'],
+      scheduled_for: new Date(),
+      status: 'processing'
+    });
+
+    return reminderResult;
+
+  } catch (error) {
+    console.error('Error handling booking reminder:', error);
+    throw error;
+  }
+}
+
+/**
+ * Handle payment confirmation notification
+ */
+async function handlePaymentConfirmation(data, options) {
+  try {
+    const { booking_data, payment_data } = data;
+
+    const enhancedBookingData = {
+      ...booking_data,
+      payment_method: payment_data.payment_method,
+      payment_status: payment_data.status,
+      payment_amount: payment_data.amount,
+      payment_id: payment_data.id
+    };
+
+    const result = await bookingConfirmationService.sendBookingConfirmation(
+      enhancedBookingData,
+      'payment_confirmed'
+    );
+
+    // Send payment confirmation push notification
+    if (options.send_push !== false) {
+      try {
+        await pushNotificationService.sendPushNotification(
+          booking_data.customer_email,
+          {
+            title: '💳 Payment Confirmed',
+            body: `Your payment of $${payment_data.amount} has been processed successfully.`,
+            icon: '/icons/payment-success-icon-192.png',
+            tag: 'payment-confirmed',
+            data: {
+              type: 'payment_confirmed',
+              booking_id: booking_data.id,
+              payment_id: payment_data.id,
+              url: `/bookings/${booking_data.id}`
+            },
+            actions: [
+              {
+                action: 'view',
+                title: 'View Receipt',
+                icon: '/icons/receipt-icon.png'
+              }
+            ]
+          }
+        );
+      } catch (pushError) {
+        console.warn('Failed to send payment confirmation push:', pushError);
+      }
+    }
+
+    return result;
+
+  } catch (error) {
+    console.error('Error handling payment confirmation:', error);
+    throw error;
+  }
+}
+
+/**
+ * Handle custom notification
+ */
+async function handleCustomNotification(data, options) {
+  try {
+    const { recipients, title, message, channels = ['email'], notification_data = {} } = data;
+
+    if (!Array.isArray(recipients) || recipients.length === 0) {
+      throw new Error('Recipients array is required and must not be empty');
+    }
+
+    const results = [];
+
+    for (const recipient of recipients) {
+      try {
+        let result = { recipient, channels: {} };
+
+        // Send email if requested
+        if (channels.includes('email') && recipient.email) {
+          const emailResult = await sendCustomEmail(recipient, title, message, notification_data);
+          result.channels.email = emailResult;
+        }
+
+        // Send SMS if requested
+        if (channels.includes('sms') && recipient.phone) {
+          const smsResult = await sendCustomSMS(recipient, message, notification_data);
+          result.channels.sms = smsResult;
+        }
+
+        // Send push notification if requested
+        if (channels.includes('push') && recipient.email) {
+          const pushResult = await pushNotificationService.sendPushNotification(
+            recipient.email,
+            {
+              title: title,
+              body: message,
+              data: {
+                type: 'custom',
+                ...notification_data
+              }
+            }
+          );
+          result.channels.push = pushResult;
+        }
+
+        results.push(result);
+
+      } catch (recipientError) {
+        console.error(`Error sending to ${recipient.email || recipient.phone}:`, recipientError);
+        results.push({
+          recipient,
+          error: recipientError.message
+        });
+      }
+    }
+
+    return {
+      total_recipients: recipients.length,
+      results
+    };
+
+  } catch (error) {
+    console.error('Error handling custom notification:', error);
+    throw error;
+  }
+}
+
+/**
+ * Handle bulk notification
+ */
+async function handleBulkNotification(data, options) {
+  try {
+    const { user_emails, notification, channels = ['push'] } = data;
+
+    if (!Array.isArray(user_emails) || user_emails.length === 0) {
+      throw new Error('User emails array is required and must not be empty');
+    }
+
+    const results = {};
+
+    // Send push notifications
+    if (channels.includes('push')) {
+      try {
+        const pushResult = await pushNotificationService.sendBulkPushNotifications(
+          user_emails,
+          notification,
+          options
+        );
+        results.push = pushResult;
+      } catch (pushError) {
+        console.error('Bulk push notification error:', pushError);
+        results.push = { success: false, error: pushError.message };
+      }
+    }
+
+    // TODO: Add bulk email and SMS support here if needed
+
+    return results;
+
+  } catch (error) {
+    console.error('Error handling bulk notification:', error);
+    throw error;
+  }
+}
+
+/**
+ * Handle test notification
+ */
+async function handleTestNotification(data, options) {
+  try {
+    const { recipient_email, test_type = 'booking_confirmation' } = data;
+
+    const testBookingData = {
+      id: 'test-booking-' + Date.now(),
+      customer_email: recipient_email,
+      customer_name: 'Test Customer',
+      service_name: 'Premium Haircut',
+      appointment_datetime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+      barber_name: 'Test Barber',
+      shop_name: 'Test Barbershop',
+      total_price: 45.00
+    };
+
+    let result;
+
+    switch (test_type) {
+      case 'booking_confirmation':
+        result = await bookingConfirmationService.sendBookingConfirmation(testBookingData);
+        break;
+        
+      case 'booking_reminder':
+        result = await handleBookingReminder({ 
+          booking_data: testBookingData, 
+          reminder_type: 'day_of_reminder' 
+        }, options);
+        break;
+        
+      case 'push_notification':
+        result = await pushNotificationService.sendPushNotification(
+          recipient_email,
+          {
+            title: '🧪 Test Notification',
+            body: 'This is a test push notification from BookedBarber.',
+            icon: '/icons/test-icon-192.png',
+            data: { type: 'test', timestamp: Date.now() }
+          }
+        );
+        break;
+        
+      default:
+        throw new Error(`Unknown test type: ${test_type}`);
+    }
+
+    return {
+      test_type,
+      recipient_email,
+      result
+    };
+
+  } catch (error) {
+    console.error('Error handling test notification:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send custom email
+ */
+async function sendCustomEmail(recipient, title, message, data) {
+  try {
+    // This would integrate with the SendGrid service
+    // For now, return a simulated result
+    console.log(`📧 Sending custom email to ${recipient.email}: ${title}`);
+    
+    return {
+      success: true,
+      message_id: 'custom-email-' + Date.now(),
+      recipient: recipient.email
+    };
+  } catch (error) {
+    throw new Error(`Custom email failed: ${error.message}`);
+  }
+}
+
+/**
+ * Send custom SMS
+ */
+async function sendCustomSMS(recipient, message, data) {
+  try {
+    // This would integrate with the Twilio service
+    // For now, return a simulated result
+    console.log(`📱 Sending custom SMS to ${recipient.phone}: ${message}`);
+    
+    return {
+      success: true,
+      message_sid: 'custom-sms-' + Date.now(),
+      recipient: recipient.phone
+    };
+  } catch (error) {
+    throw new Error(`Custom SMS failed: ${error.message}`);
+  }
+}
+
+export async function GET(request) {
+  return Response.json({
+    service: 'notification-send-api',
+    status: 'healthy',
+    supported_types: [
+      'booking_confirmation',
+      'booking_cancellation', 
+      'booking_rescheduled',
+      'booking_reminder',
+      'payment_confirmation',
+      'custom_notification',
+      'bulk_notification',
+      'test_notification'
+    ],
+    supported_channels: ['email', 'sms', 'push', 'in_app'],
+    timestamp: new Date().toISOString()
+  });
 }

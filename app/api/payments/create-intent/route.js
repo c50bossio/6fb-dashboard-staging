@@ -1,20 +1,58 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '../../../../lib/supabase/server'
 
+// Safe Stripe initialization - only initialize when needed at runtime
 const getStripeInstance = () => {
   if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'your_stripe_secret_key_here') {
     return null
   }
   return new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2023-10-16'
+    apiVersion: '2024-06-20'
   })
+}
+
+// Business logic constants
+const DEPOSIT_PERCENTAGE = 0.25 // 25% deposit for new clients
+const COMMISSION_RATES = {
+  barber: 0.60,    // 60% to barber
+  shop: 0.35,      // 35% to shop
+  platform: 0.05   // 5% platform fee
+}
+
+// Payment type configurations
+const PAYMENT_CONFIGS = {
+  deposit: {
+    capture_method: 'manual', // Capture later when service is completed
+    description_suffix: 'Deposit'
+  },
+  full_payment: {
+    capture_method: 'automatic',
+    description_suffix: 'Payment'
+  },
+  subscription: {
+    capture_method: 'automatic',
+    description_suffix: 'VIP Membership'
+  }
 }
 
 export async function POST(request) {
   try {
-    const { booking_id, customer_id, barber_id, service_id, payment_type, amount, barbershop_id, tip_amount = 0 } = await request.json()
+    const { 
+      booking_id, 
+      customer_id, 
+      barber_id, 
+      service_id, 
+      payment_type = 'full_payment',
+      amount,
+      shop_id,
+      customer_email,
+      customer_name,
+      save_payment_method = false,
+      automatic_confirmation = true
+    } = await request.json()
 
+    // Enhanced validation
     if (!booking_id || !service_id || !amount) {
       return NextResponse.json({
         success: false,
@@ -22,26 +60,83 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    const serviceInfo = {
-      id: service_id,
-      name: 'Barbershop Service',
-      price: amount
+    if (!['deposit', 'full_payment', 'subscription'].includes(payment_type)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid payment_type. Must be: deposit, full_payment, or subscription'
+      }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    // Initialize Supabase client
+    const supabase = createClient()
     
-    // Get barbershop fee settings
-    let customerPaysProcessingFee = false
-    if (barbershop_id) {
-      const { data: barbershop } = await supabase
-        .from('barbershops')
-        .select('customer_pays_processing_fee')
-        .eq('id', barbershop_id)
+    // Get service information for enhanced payment details
+    const { data: serviceData, error: serviceError } = await supabase
+      .from('services')
+      .select(`
+        id,
+        name,
+        price,
+        duration_minutes,
+        category,
+        barbershop_id,
+        barbershops(
+          id,
+          name,
+          owner_id
+        )
+      `)
+      .eq('id', service_id)
+      .single()
+
+    if (serviceError || !serviceData) {
+      return NextResponse.json({
+        success: false,
+        error: 'Service not found or invalid service_id'
+      }, { status: 404 })
+    }
+
+    // Get barber information if provided
+    let barberData = null
+    if (barber_id) {
+      const { data: barber, error: barberError } = await supabase
+        .from('users')
+        .select('id, name, email, stripe_account_id')
+        .eq('id', barber_id)
         .single()
       
-      customerPaysProcessingFee = barbershop?.customer_pays_processing_fee || false
+      if (!barberError && barber) {
+        barberData = barber
+      }
     }
 
+    // Calculate payment amounts
+    const servicePrice = parseFloat(serviceData.price)
+    const finalAmount = payment_type === 'deposit' ? 
+      Math.round(servicePrice * DEPOSIT_PERCENTAGE * 100) : // Convert to cents
+      Math.round(amount * 100) // Use provided amount in cents
+
+    // Calculate commission splits for metadata
+    const commissionData = {
+      barber_amount: Math.round(finalAmount * COMMISSION_RATES.barber),
+      shop_amount: Math.round(finalAmount * COMMISSION_RATES.shop),
+      platform_fee: Math.round(finalAmount * COMMISSION_RATES.platform),
+      total_amount: finalAmount
+    }
+
+    // Enhanced service information
+    const serviceInfo = {
+      id: serviceData.id,
+      name: serviceData.name,
+      category: serviceData.category,
+      duration_minutes: serviceData.duration_minutes,
+      price: serviceData.price,
+      shop_name: serviceData.barbershops?.name,
+      payment_amount: finalAmount / 100, // Convert back to dollars for display
+      is_deposit: payment_type === 'deposit'
+    }
+
+    // Get Stripe instance
     const stripe = getStripeInstance()
     if (!stripe) {
       return NextResponse.json({
@@ -58,199 +153,173 @@ export async function POST(request) {
       }, { status: 200 })
     }
 
-    // Look up the barbershop's Stripe Connect account
-    let stripeConnectAccountId = null
+    // Get payment configuration
+    const paymentConfig = PAYMENT_CONFIGS[payment_type]
     
-    // Try to get Connect account ID based on available information
-    if (barbershop_id) {
-      // If barbershop_id is provided directly
-      const { data: connectAccount } = await supabase
-        .from('stripe_connected_accounts')
-        .select('stripe_account_id, charges_enabled, payouts_enabled')
-        .eq('barbershop_id', barbershop_id)
-        .single()
-      
-      if (connectAccount) {
-        if (!connectAccount.charges_enabled) {
-          return NextResponse.json({
-            success: false,
-            error: 'This barbershop has not completed payment setup. Please complete Stripe onboarding first.'
-          }, { status: 400 })
-        }
-        stripeConnectAccountId = connectAccount.stripe_account_id
-      }
-    } else if (barber_id) {
-      // If only barber_id is provided, look up their barbershop
-      const { data: barber } = await supabase
-        .from('barbers')
-        .select('barbershop_id')
-        .eq('id', barber_id)
-        .single()
-      
-      if (barber?.barbershop_id) {
-        const { data: connectAccount } = await supabase
-          .from('stripe_connected_accounts')
-          .select('stripe_account_id, charges_enabled, payouts_enabled')
-          .eq('barbershop_id', barber.barbershop_id)
-          .single()
-        
-        if (connectAccount) {
-          if (!connectAccount.charges_enabled) {
-            return NextResponse.json({
-              success: false,
-              error: 'This barbershop has not completed payment setup. Please complete Stripe onboarding first.'
-            }, { status: 400 })
-          }
-          stripeConnectAccountId = connectAccount.stripe_account_id
-        }
-      }
-    }
-
-    // Get financial arrangement for commission calculation
-    let arrangementData = null
-    if (barber_id && (barbershop_id || (barber_id && typeof barber_id === 'string'))) {
-      const barbershopId = barbershop_id || (await supabase
-        .from('barbers')
-        .select('barbershop_id')
-        .eq('id', barber_id)
-        .single())?.data?.barbershop_id
-
-      if (barbershopId) {
-        const { data: arrangement } = await supabase
-          .from('financial_arrangements')
-          .select('*')
-          .eq('barbershop_id', barbershopId)
-          .eq('barber_id', barber_id)
-          .eq('is_active', true)
-          .single()
-        
-        if (arrangement) {
-          arrangementData = arrangement
-        }
-      }
-    }
-
-    // Calculate fees based on barbershop settings
-    const serviceAndTip = amount + tip_amount
-    let finalAmount = serviceAndTip
-    let processingFee = 0
-    let barbershopReceives = amount  // Service amount goes to barbershop
-    let barberReceivesTip = tip_amount  // Tip goes directly to barber (FLSA compliance)
-    
-    if (customerPaysProcessingFee) {
-      // Customer pays the Stripe fee (2.9% + $0.30) on the total
-      processingFee = Math.round((serviceAndTip * 0.029 + 0.30) * 100) / 100
-      finalAmount = serviceAndTip + processingFee
-      barbershopReceives = amount // Barbershop gets full service amount
-      barberReceivesTip = tip_amount // Barber gets full tip amount
-    } else {
-      // Barbershop absorbs the fee on service amount only (tips are protected)
-      processingFee = Math.round((amount * 0.029 + 0.30) * 100) / 100
-      barbershopReceives = amount - processingFee
-      barberReceivesTip = tip_amount // Tips always go 100% to barber
-    }
-
-    // Create payment intent with proper routing and commission metadata
-    const paymentIntentParams = {
-      amount: Math.round(finalAmount * 100), // Convert to cents (with fee if applicable)
+    // Create comprehensive payment intent
+    const paymentIntentData = {
+      amount: finalAmount,
       currency: 'usd',
+      capture_method: paymentConfig.capture_method,
+      confirmation_method: automatic_confirmation ? 'automatic' : 'manual',
+      
+      // Enhanced metadata for business logic
       metadata: {
         booking_id,
         customer_id: customer_id || 'guest',
-        barber_id: barber_id || 'staff',
-        barbershop_id: barbershop_id || '',
+        barber_id: barber_id || '',
         service_id,
-        payment_type: payment_type || 'full_payment',
-        // Fee information
-        service_amount: amount,
-        tip_amount: tip_amount,
-        processing_fee: processingFee,
-        fee_paid_by: customerPaysProcessingFee ? 'customer' : 'barbershop',
-        barbershop_receives: barbershopReceives,
-        barber_receives_tip: barberReceivesTip,
-        // Add arrangement data for commission processing
-        arrangement_id: arrangementData?.id || '',
-        arrangement_type: arrangementData?.type || '',
-        commission_percentage: arrangementData?.commission_percentage || '',
-        product_commission_percentage: arrangementData?.product_commission_percentage || ''
+        shop_id: shop_id || serviceData.barbershop_id,
+        payment_type,
+        service_name: serviceData.name,
+        service_price: serviceData.price.toString(),
+        barber_name: barberData?.name || '',
+        commission_barber: commissionData.barber_amount.toString(),
+        commission_shop: commissionData.shop_amount.toString(),
+        platform_fee: commissionData.platform_fee.toString(),
+        shop_name: serviceData.barbershops?.name || ''
       },
-      description: `Payment for ${serviceInfo.name}`,
+      
+      description: `${serviceData.name} ${paymentConfig.description_suffix} - ${serviceData.barbershops?.name || 'Barbershop'}`,
+      
+      // Enhanced payment methods
       automatic_payment_methods: {
-        enabled: true
+        enabled: true,
+        allow_redirects: 'never' // Keep in-app experience
+      },
+      
+      // Customer information
+      receipt_email: customer_email || undefined,
+      
+      // Save payment method for future use if requested
+      setup_future_usage: save_payment_method ? 'on_session' : undefined
+    }
+    
+    // Add transfer data for connected accounts (barber payouts)
+    if (barberData?.stripe_account_id && payment_type !== 'deposit') {
+      paymentIntentData.transfer_data = {
+        destination: barberData.stripe_account_id,
+        amount: commissionData.barber_amount
       }
     }
+    
+    // Create the payment intent
+    const paymentIntent = await stripe.paymentIntents.create(paymentIntentData)
 
-    // Add Stripe's native tip handling for FLSA compliance
-    // This ensures tips are properly tracked and reported
-    if (tip_amount > 0) {
-      paymentIntentParams.amount_details = {
-        tip: {
-          amount: Math.round(tip_amount * 100) // Convert to cents
-        }
-      }
-    }
-
-    // If barbershop has a Connect account, route the payment to them
-    if (stripeConnectAccountId) {
-      // Simple pass-through model - no platform markup
-      paymentIntentParams.application_fee_amount = 0 // No platform fee
-      paymentIntentParams.transfer_data = {
-        destination: stripeConnectAccountId
-      }
-    } else {
-      // No Connect account - payment goes to platform (for now)
-      console.warn('No Connect account found - payment will go to platform account')
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams)
-
+    // Store payment intent in database with comprehensive tracking
     try {
-      // Store payment intent in database
-      await supabase
-        .from('payment_intents')
+      const { error: paymentInsertError } = await supabase
+        .from('payments')
         .insert({
-          id: paymentIntent.id,
+          stripe_payment_intent_id: paymentIntent.id,
           booking_id,
-          customer_id,
-          amount,
-          status: 'pending'
+          customer_id: customer_id || null,
+          barber_id: barber_id || null,
+          service_id,
+          shop_id: shop_id || serviceData.barbershop_id,
+          amount: finalAmount, // Store in cents
+          currency: 'usd',
+          payment_type,
+          status: 'pending',
+          service_name: serviceData.name,
+          customer_name: customer_name || null,
+          customer_email: customer_email || null,
+          barber_name: barberData?.name || null,
+          commission_barber: commissionData.barber_amount,
+          commission_shop: commissionData.shop_amount,
+          platform_fee: commissionData.platform_fee,
+          metadata: {
+            stripe_metadata: paymentIntent.metadata,
+            service_info: serviceInfo,
+            commission_breakdown: commissionData
+          },
+          transaction_date: new Date().toISOString()
         })
+      
+      if (paymentInsertError) {
+        console.error('Failed to store payment record:', paymentInsertError)
+        // Continue - payment processing can work without DB record
+      }
+      
+      // Update booking status if booking exists
+      if (booking_id) {
+        await supabase
+          .from('appointments')
+          .update({ 
+            payment_status: 'pending',
+            stripe_payment_intent_id: paymentIntent.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', booking_id)
+      }
+      
     } catch (dbError) {
-      console.warn('Database operation failed:', dbError.message)
+      console.warn('Database operations failed:', dbError.message)
+      // Continue - Stripe integration works without DB
     }
 
+    // Return comprehensive payment information
     return NextResponse.json({
       success: true,
       client_secret: paymentIntent.client_secret,
-      amount: finalAmount, // Total amount customer pays
-      service_amount: amount, // Original service amount
-      tip_amount: tip_amount, // Tip amount
-      processing_fee: processingFee, // Fee amount
       payment_intent_id: paymentIntent.id,
+      amount_cents: finalAmount,
+      amount_dollars: finalAmount / 100,
+      payment_type,
+      capture_method: paymentConfig.capture_method,
       service_info: serviceInfo,
-      metadata: paymentIntent.metadata,
-      fee_configuration: {
-        model: customerPaysProcessingFee ? 'customer_pays' : 'barbershop_absorbs',
-        customer_pays_total: finalAmount,
-        barbershop_receives: barbershopReceives,
-        barber_receives_tip: barberReceivesTip,
-        processing_fee: processingFee,
-        stripe_rate: '2.9% + $0.30'
+      commission_breakdown: {
+        barber_amount: commissionData.barber_amount / 100,
+        shop_amount: commissionData.shop_amount / 100,
+        platform_fee: commissionData.platform_fee / 100
       },
-      routing: {
-        destination: stripeConnectAccountId || 'platform',
-        barbershop_receives: barbershopReceives.toFixed(2),
-        barber_tip: barberReceivesTip.toFixed(2),
-        stripe_fee: processingFee.toFixed(2),
-        fee_paid_by: customerPaysProcessingFee ? 'customer' : 'barbershop'
+      metadata: paymentIntent.metadata,
+      requires_capture: paymentConfig.capture_method === 'manual',
+      setup_future_usage: save_payment_method,
+      webhook_enabled: !!process.env.STRIPE_WEBHOOK_SECRET,
+      // Additional fields for frontend handling
+      shop_settings: {
+        accepts_deposits: payment_type === 'deposit',
+        capture_method: paymentConfig.capture_method,
+        commission_rates: COMMISSION_RATES
       }
     })
 
   } catch (error) {
     console.error('Payment intent creation error:', error)
+    
+    // Enhanced error handling with specific error types
+    let errorMessage = 'Internal server error'
+    let statusCode = 500
+    
+    if (error.type === 'StripeCardError') {
+      errorMessage = 'Your card was declined. Please try a different payment method.'
+      statusCode = 402
+    } else if (error.type === 'StripeInvalidRequestError') {
+      errorMessage = 'Invalid payment information. Please check your details and try again.'
+      statusCode = 400
+    } else if (error.type === 'StripeAPIError') {
+      errorMessage = 'Payment processing is temporarily unavailable. Please try again later.'
+      statusCode = 503
+    } else if (error.type === 'StripeConnectionError') {
+      errorMessage = 'Network error. Please check your connection and try again.'
+      statusCode = 503
+    }
+    
+    // Log detailed error for debugging
+    console.error('Detailed payment error:', {
+      type: error.type,
+      code: error.code,
+      message: error.message,
+      param: error.param,
+      stack: error.stack
+    })
+    
     return NextResponse.json({
       success: false,
-      error: 'Internal server error'
-    }, { status: 500 })
+      error: errorMessage,
+      error_type: error.type || 'unknown',
+      error_code: error.code || null
+    }, { status: statusCode })
   }
 }

@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { apiLogger } from '@/lib/logger'
 export const runtime = 'nodejs'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+const BACKEND_URL = process.env.FASTAPI_BASE_URL || process.env.PYTHON_BACKEND_URL || 'http://localhost:8002'
 
 export async function GET(request) {
   try {
-    const backendResponse = await fetch(`${BACKEND_URL}/api/v1/health`, {
+    const backendResponse = await fetch(`${BACKEND_URL}/health`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'

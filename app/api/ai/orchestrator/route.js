@@ -7,28 +7,34 @@ export const maxDuration = 30
 
 export async function POST(request) {
   try {
-    const supabase = await createClient()
+    // Check authentication
+    const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
+    // Allow demo access in development mode
     const isDemoMode = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEV_MODE === 'true'
     
     if (!user && !isDemoMode) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
+    // Use demo user in development if no real user
     const effectiveUser = user || { id: 'demo-user', email: 'demo@barbershop.com' }
 
-    const { message, sessionId, businessContext } = await request.json()
+    const { message, sessionId, businessContext, selectedAgent } = await request.json()
 
     if (!message || !message.trim()) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
     }
 
+    // Generate session ID if not provided
     const currentSession = sessionId || `session_${Date.now()}_${effectiveUser.id}`
 
     try {
-      const orchestratorResponse = await callPythonAIOrchestrator(message, currentSession, businessContext)
+      // Call Python AI Orchestrator Service
+      const orchestratorResponse = await callPythonAIOrchestrator(message, currentSession, businessContext, selectedAgent)
       
+      // Store conversation in Supabase (skip in demo mode)
       if (user) {
         await storeConversation(supabase, effectiveUser.id, currentSession, message, orchestratorResponse)
       }
@@ -39,14 +45,17 @@ export async function POST(request) {
         message: orchestratorResponse.response, // Compatibility with frontend
         sessionId: currentSession,
         
+        // Agent information
         agent_name: orchestratorResponse.agent_name,
         agent_personality: orchestratorResponse.agent_personality,
         
+        // Enhanced response data
         recommendations: orchestratorResponse.recommendations || [],
         action_items: orchestratorResponse.action_items || [],
         follow_up_questions: orchestratorResponse.follow_up_questions || [],
         executed_actions: orchestratorResponse.executed_actions || [],
         
+        // System information
         provider: orchestratorResponse.provider || 'rag_enhanced_agents',
         confidence: orchestratorResponse.confidence,
         messageType: orchestratorResponse.message_type,
@@ -60,6 +69,7 @@ export async function POST(request) {
     } catch (aiError) {
       console.error('AI Orchestrator error:', aiError)
       
+      // Fallback to JavaScript AI providers
       const fallbackResponse = await generateFallbackResponse(message, currentSession, businessContext)
       
       return NextResponse.json({
@@ -83,344 +93,179 @@ export async function POST(request) {
   }
 }
 
-async function callPythonAIOrchestrator(message, sessionId, businessContext = {}) {
-  // Direct AI orchestration implementation - no Python backend dependency
+async function callPythonAIOrchestrator(message, sessionId, businessContext = {}, selectedAgent = null) {
+  const fastAPIUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8002'
+  
   try {
-    const agentResponse = await generateDirectAIResponse(message, sessionId, businessContext)
+    // Use explicitly selected agent or auto-route based on message content
+    const agentToUse = selectedAgent || routeMessageToAgent(message)
     
+    // Call the specific FastAPI agent directly
+    const response = await fetch(`${fastAPIUrl}/agents/${agentToUse}/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        agent_type: agentToUse,
+        message: message,
+        context: {
+          ...businessContext,
+          business_name: businessContext.business_name || 'Elite Cuts Barbershop',
+          user_preferences: businessContext.user_preferences || {},
+          conversation_history: businessContext.conversation_history || [],
+          requested_actions: detectExecutableActions(message),
+          agent_routing_preferences: businessContext.agent_routing || 'auto',
+          session_id: sessionId
+        },
+        priority: 'medium',
+        request_type: 'analysis',
+        structured_output: false,
+        include_knowledge: true,
+        user_id: businessContext.user_id || 'anonymous',
+        session_id: sessionId
+      }),
+      timeout: 30000
+    })
+
+    if (!response.ok) {
+      throw new Error(`FastAPI agent responded with status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    
+    if (!data.success) {
+      throw new Error(data.message || 'Agent request failed')
+    }
+
+    // Transform FastAPI response to match frontend expectations
     return {
       success: true,
-      response: agentResponse.response,
-      agent_name: agentResponse.agent_name || 'AI Agent',
-      agent_personality: agentResponse.agent_personality || 'strategic_mindset',
-      recommendations: agentResponse.recommendations || [],
-      action_items: agentResponse.action_items || [],
-      follow_up_questions: agentResponse.follow_up_questions || [],
-      executed_actions: detectExecutableActions(message),
-      knowledge_enhanced: true,
-      confidence: agentResponse.confidence || 0.85,
-      provider: 'enhanced_local_ai',
-      message_type: 'direct_ai_response',
+      response: typeof data.result === 'string' ? data.result : JSON.stringify(data.result),
+      agent_name: getAgentDisplayName(agentToUse),
+      agent_personality: getAgentPersonality(agentToUse),
+      confidence: data.confidence || 0.8,
+      recommendations: extractRecommendations(data.result),
+      action_items: extractActionItems(data.result),
+      follow_up_questions: [],
+      executed_actions: [],
+      knowledge_enhanced: data.knowledge_used > 0,
+      provider: 'fastapi_agents',
       timestamp: new Date().toISOString(),
-      usage: {
-        provider: 'local_implementation',
-        tokens: Math.ceil(message.length / 4)
-      }
+      execution_time: data.execution_time,
+      tokens_used: data.tokens_used,
+      request_id: data.request_id
     }
     
   } catch (error) {
-    console.error('Direct AI orchestrator error:', error)
-    throw new Error(`AI Orchestrator processing failed: ${error.message}`)
+    console.error('Failed to call FastAPI Agent:', error)
+    throw new Error(`AI Agent unavailable: ${error.message}`)
   }
 }
 
-async function generateDirectAIResponse(message, sessionId, businessContext = {}) {
+// Intelligent agent routing function
+function routeMessageToAgent(message) {
   const messageLower = message.toLowerCase()
-  const businessName = businessContext.business_name || 'Elite Cuts Barbershop'
   
-  // Route to appropriate AI agent based on message content
-  if (['revenue', 'money', 'profit', 'pricing', 'financial'].some(keyword => messageLower.includes(keyword))) {
-    return generateFinancialAgentResponse(message, businessName, businessContext)
-  }
-  
-  if (['marketing', 'social', 'instagram', 'promotion', 'customers'].some(keyword => messageLower.includes(keyword))) {
-    return generateMarketingAgentResponse(message, businessName, businessContext)
+  // Financial keywords -> Financial Agent
+  if (['revenue', 'money', 'profit', 'pricing', 'cost', 'budget', 'financial', 'income', 'expense', 'roi', 'investment'].some(keyword => messageLower.includes(keyword))) {
+    return 'financial'
   }
   
-  if (['schedule', 'appointment', 'booking', 'staff', 'operations'].some(keyword => messageLower.includes(keyword))) {
-    return generateOperationsAgentResponse(message, businessName, businessContext)
+  // Marketing keywords -> Marketing Agent
+  if (['marketing', 'customers', 'social', 'instagram', 'promotion', 'campaign', 'ads', 'advertising', 'branding', 'social media', 'acquisition'].some(keyword => messageLower.includes(keyword))) {
+    return 'marketing'
   }
   
-  if (['growth', 'strategy', 'business', 'expansion', 'scale'].some(keyword => messageLower.includes(keyword))) {
-    return generateStrategyAgentResponse(message, businessName, businessContext)
+  // Operations keywords -> Technical Operations Agent
+  if (['schedule', 'staff', 'operations', 'efficiency', 'appointment', 'booking', 'workflow', 'process', 'system', 'time management'].some(keyword => messageLower.includes(keyword))) {
+    return 'technical_operations'
   }
   
-  // Default strategic response
-  return generateGeneralAgentResponse(message, businessName, businessContext)
-}
-
-function generateFinancialAgentResponse(message, businessName, context) {
-  const hasStripe = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('sk_')
+  // Customer service keywords -> Customer Success Agent
+  if (['customer', 'client', 'service', 'satisfaction', 'retention', 'loyalty', 'feedback', 'review', 'experience', 'support'].some(keyword => messageLower.includes(keyword))) {
+    return 'customer_success'
+  }
   
-  return {
-    agent_name: 'Marcus',
-    agent_personality: 'financial_coach', 
-    response: `💰 **Financial Strategy Analysis for ${businessName}**
-
-${hasStripe 
-  ? "I have access to your payment data and can provide comprehensive insights:" 
-  : "I can provide financial guidance based on industry best practices:"}
-
-**Revenue Optimization Framework:**
-• **Target Metrics**: $500+ daily revenue ($15,000+ monthly)
-• **Average Ticket**: Increase service value 15-20% vs. volume
-• **Premium Services**: Introduce high-margin offerings (hot towel, beard oil treatments)
-• **Peak Hour Pricing**: Charge 15-20% premium during high-demand times
-
-**Immediate Action Plan:**
-1. Calculate your current average service price
-2. Identify your top 3 most profitable services  
-3. Review competitor pricing in your local market
-4. Create service packages that increase transaction value
-
-**Financial Health Indicators to Track:**
-• Daily cash flow consistency
-• Customer acquisition cost vs lifetime value
-• Service profitability margins
-• Equipment ROI and replacement planning
-
-Would you like me to help calculate specific revenue targets or create a pricing strategy for your services?`,
-    recommendations: [
-      'Implement dynamic pricing for peak vs off-peak hours',
-      'Create premium service packages to increase average ticket value',
-      'Set up daily revenue tracking to identify trends and opportunities'
-    ],
-    action_items: [
-      { task: 'Calculate current average service price and compare to industry benchmarks', priority: 'high' },
-      { task: 'Research competitor pricing within 5-mile radius', priority: 'medium' },
-      { task: 'Design 2-3 service packages for upselling opportunities', priority: 'medium' }
-    ],
-    follow_up_questions: [
-      'What is your current average service price?',
-      'Which services have the highest profit margins?',
-      'Are you interested in implementing premium service packages?'
-    ],
-    confidence: 0.88
-  }
+  // Default to Master Coach for strategic/general questions
+  return 'master_coach'
 }
 
-function generateMarketingAgentResponse(message, businessName, context) {
-  return {
-    agent_name: 'Sophia',
-    agent_personality: 'marketing_expert',
-    response: `📱 **Marketing Growth Strategy for ${businessName}**
-
-**Content Strategy That Converts:**
-• **40% Transformations**: Before/after photos (with client permission)
-• **30% Behind-the-Scenes**: Your techniques, setup, daily routine
-• **20% Educational**: Grooming tips, product recommendations
-• **10% Community**: Client features, shop culture, team moments
-
-**Platform Prioritization:**
-1. **Instagram** - Visual transformations drive bookings
-2. **Google My Business** - Critical for local discovery
-3. **Facebook** - Community building and event promotion
-4. **TikTok** - Younger demographic engagement
-
-**Local SEO Optimization:**
-• Optimize Google My Business with fresh photos weekly
-• Encourage reviews with post-service follow-up
-• Use local keywords: "[City] barbershop", "best barber near me"
-• Post regular business updates and special offers
-
-**This Week's Marketing Actions:**
-1. Take 5 before/after photos of client transformations
-2. Update Google My Business hours and add new photos
-3. Respond to all Google reviews from the past 30 days
-4. Create simple referral program ($15 credit for referrals)
-
-**Content Calendar Ideas:**
-• Monday: Transformation Monday (before/after)
-• Wednesday: Technique Wednesday (skills showcase)
-• Friday: Feature Friday (highlight loyal customers)`,
-    recommendations: [
-      'Focus on visual content showing client transformations',
-      'Optimize Google My Business listing for maximum local visibility',
-      'Implement systematic review collection process'
-    ],
-    action_items: [
-      { task: 'Set up Instagram Business account with booking integration', priority: 'high' },
-      { task: 'Create content calendar for next 4 weeks', priority: 'medium' },
-      { task: 'Design referral program with trackable incentives', priority: 'medium' }
-    ],
-    follow_up_questions: [
-      'Do you currently ask clients for permission to share their transformations?',
-      'Which social media platform brings you the most bookings currently?',
-      'Would you like help setting up automated review collection?'
-    ],
-    confidence: 0.85
+// Get display name for agent
+function getAgentDisplayName(agentType) {
+  const agentNames = {
+    'master_coach': 'Marcus - Master Coach',
+    'financial': 'Marcus - Financial Coach', 
+    'marketing': 'Sophia - Marketing Expert',
+    'technical_operations': 'David - Operations Manager',
+    'customer_success': 'Sarah - Customer Relations'
   }
+  return agentNames[agentType] || 'AI Agent'
 }
 
-function generateOperationsAgentResponse(message, businessName, context) {
-  return {
-    agent_name: 'David',
-    agent_personality: 'operations_manager',
-    response: `⚙️ **Operational Excellence Framework for ${businessName}**
-
-**Scheduling Optimization:**
-• **Buffer Time**: 15-minute buffers between appointments prevent cascading delays
-• **Service Time Standards**: Haircut (30-45min), Beard (15-25min), Full Service (60-75min)
-• **Capacity Management**: 90% capacity during peak, 75% during standard hours
-• **No-Show Prevention**: Automated confirmation texts/calls 24 hours prior
-
-**Daily Operations Checklist:**
-**Morning Prep (15 minutes):**
-• Sanitize all tools and workstations
-• Check appointment schedule and prepare client files
-• Verify product inventory levels
-• Set up music and ambiance
-
-**Service Flow Optimization:**
-• Streamline tool organization for minimal movement
-• Standardize consultation questions (2-3 minutes max)
-• Create clear traffic patterns to avoid congestion
-• Maintain supplies within arm's reach
-
-**End-of-Day Protocol (20 minutes):**
-• Deep clean all equipment
-• Restock supplies for next day
-• Review daily performance metrics
-• Prepare for tomorrow's first appointments
-
-**Key Performance Indicators:**
-• Average service time by type
-• Daily appointment utilization rate
-• Client wait time (target: <5 minutes)
-• Equipment downtime tracking`,
-    recommendations: [
-      'Implement standardized opening and closing procedures',
-      'Track service time averages to optimize scheduling accuracy',
-      'Create appointment buffer system to handle unexpected delays'
-    ],
-    action_items: [
-      { task: 'Time your next 10 services to establish baseline averages', priority: 'high' },
-      { task: 'Create laminated opening/closing checklists', priority: 'medium' },
-      { task: 'Set up appointment confirmation automation system', priority: 'medium' }
-    ],
-    follow_up_questions: [
-      'What is your current average service time for different service types?',
-      'Do you experience frequent appointment delays or client wait times?',
-      'Would you like help creating standardized procedures for your team?'
-    ],
-    confidence: 0.87
+// Get agent personality for UI
+function getAgentPersonality(agentType) {
+  const personalities = {
+    'master_coach': 'strategic_mindset',
+    'financial': 'financial_coach',
+    'marketing': 'marketing_expert', 
+    'technical_operations': 'operations_manager',
+    'customer_success': 'customer_relations'
   }
+  return personalities[agentType] || 'strategic_mindset'
 }
 
-function generateStrategyAgentResponse(message, businessName, context) {
-  return {
-    agent_name: 'Emma',
-    agent_personality: 'strategic_mindset',
-    response: `🧠 **Strategic Business Development for ${businessName}**
-
-**Business Health Assessment:**
-• **Revenue Stability**: Consistent $500+ daily revenue streams
-• **Customer Retention**: 70%+ repeat client rate
-• **Operational Efficiency**: Minimal wait times, optimized workflow
-• **Growth Readiness**: Scalable systems without quality compromise
-
-**Strategic Growth Pillars:**
-
-**1. Value Optimization (Month 1-2)**
-• Increase average transaction value before expanding volume
-• Introduce premium services and product sales
-• Implement tiered pricing structure
-
-**2. System Documentation (Month 2-3)**
-• Document all procedures so quality doesn't depend solely on you
-• Create training materials for potential staff
-• Establish quality control standards
-
-**3. Customer Relationship Deepening (Ongoing)**
-• Develop loyalty programs and retention strategies
-• Create personalized service experiences
-• Build predictable revenue through repeat customers
-
-**4. Strategic Expansion Planning (Month 4+)**
-• Analyze market capacity for additional services/staff
-• Evaluate location expansion opportunities
-• Consider franchise or partnership models
-
-**Weekly Business Review Framework:**
-1. What were your top 3 wins this week?
-2. What operational challenges did you encounter?
-3. How many new vs. returning customers did you serve?
-4. What was your daily average revenue?
-5. What strategic initiative will you focus on next week?`,
-    recommendations: [
-      'Establish weekly business review routine to track strategic progress',
-      'Focus on increasing customer value before expanding volume',
-      'Document all business processes for scalability and consistency'
-    ],
-    action_items: [
-      { task: 'Set up weekly 30-minute strategic business review sessions', priority: 'high' },
-      { task: 'List your top 3 business challenges and prioritize solutions', priority: 'high' },
-      { task: 'Create customer retention strategy with measurable goals', priority: 'medium' }
-    ],
-    follow_up_questions: [
-      'What are your biggest business challenges right now?',
-      'Do you have clear revenue and growth targets for the next 6 months?',
-      'Are you interested in expanding your services or location in the future?'
-    ],
-    confidence: 0.82
+// Extract recommendations from agent response
+function extractRecommendations(result) {
+  if (typeof result !== 'string') return []
+  
+  const recommendations = []
+  const lines = result.split('\n')
+  
+  for (const line of lines) {
+    // Look for bullet points, numbered lists, or recommendation sections
+    if (line.match(/^[\-\*\d+\.]\s+/) || line.toLowerCase().includes('recommend')) {
+      const clean = line.replace(/^[\-\*\d+\.]\s*/, '').trim()
+      if (clean.length > 10 && clean.length < 200) {
+        recommendations.push(clean)
+      }
+    }
   }
+  
+  return recommendations.slice(0, 5) // Limit to 5 recommendations
 }
 
-function generateGeneralAgentResponse(message, businessName, context) {
-  return {
-    agent_name: 'AI Business Advisor',
-    agent_personality: 'strategic_mindset',
-    response: `🤖 **Comprehensive Business Guidance for ${businessName}**
-
-I'm analyzing your question: "${message.slice(0, 150)}${message.length > 150 ? '...' : ''}"
-
-**Multi-Area Business Assessment:**
-
-**💰 Financial Health**
-• Daily revenue consistency and growth tracking
-• Service profitability analysis and optimization
-• Cost management and profit margin improvement
-
-**📱 Marketing & Customer Acquisition**
-• Digital presence optimization (Google, Instagram)
-• Customer retention and referral systems
-• Local community engagement strategies
-
-**⚙️ Operational Excellence**
-• Scheduling efficiency and customer flow
-• Service quality standardization
-• Staff productivity and training systems
-
-**🚀 Strategic Growth**
-• Market expansion opportunities
-• Service diversification potential
-• Long-term business sustainability planning
-
-**Immediate Recommended Actions:**
-1. Identify which area needs the most attention based on your current challenges
-2. Set up basic tracking systems for key metrics in that area
-3. Create a 30-day improvement plan with specific, measurable goals
-
-**Areas I Can Help With:**
-• Revenue optimization and pricing strategies
-• Marketing and customer acquisition campaigns
-• Operational workflow improvements
-• Strategic planning and business development
-• Staff management and training protocols
-
-Please let me know which specific area you'd like to focus on, and I can provide detailed, actionable guidance tailored to your ${businessName} needs.`,
-    recommendations: [
-      'Focus on one business area at a time for maximum impact',
-      'Establish baseline metrics before implementing changes',
-      'Create systematic approach to business improvement'
-    ],
-    action_items: [
-      { task: 'Identify your top business priority area (revenue, marketing, operations, or strategy)', priority: 'high' },
-      { task: 'Set up basic tracking for 2-3 key performance indicators', priority: 'medium' }
-    ],
-    follow_up_questions: [
-      'What specific business area would you like to focus on improving?',
-      'What are your main business goals for the next 3 months?',
-      'What challenges are preventing you from reaching those goals?'
-    ],
-    confidence: 0.78
+// Extract action items from agent response  
+function extractActionItems(result) {
+  if (typeof result !== 'string') return []
+  
+  const actionItems = []
+  const lines = result.split('\n')
+  
+  for (const line of lines) {
+    // Look for action-oriented language
+    if (line.match(/\b(implement|create|develop|establish|set up|start|begin|launch)\b/i)) {
+      const clean = line.replace(/^[\-\*\d+\.]\s*/, '').trim()
+      if (clean.length > 15 && clean.length < 150) {
+        actionItems.push({
+          task: clean,
+          priority: 'medium',
+          type: 'general_action'
+        })
+      }
+    }
   }
+  
+  return actionItems.slice(0, 3) // Limit to 3 action items
 }
 
+// Helper function to detect executable actions
 function detectExecutableActions(message) {
   const messageLower = message.toLowerCase()
   const actions = []
   
+  // SMS/Email campaigns
   if (messageLower.includes('send text') || messageLower.includes('sms') || messageLower.includes('text blast')) {
     actions.push({ type: 'sms_campaign', priority: 'high' })
   }
@@ -428,10 +273,12 @@ function detectExecutableActions(message) {
     actions.push({ type: 'email_campaign', priority: 'high' })
   }
   
+  // Follow-up actions
   if (messageLower.includes('follow up') || messageLower.includes('contact customer')) {
     actions.push({ type: 'customer_followup', priority: 'medium' })
   }
   
+  // Social media
   if (messageLower.includes('post on social') || messageLower.includes('social media')) {
     actions.push({ type: 'social_media_post', priority: 'medium' })
   }
@@ -440,8 +287,10 @@ function detectExecutableActions(message) {
 }
 
 async function generateFallbackResponse(message, sessionId, businessContext) {
+  console.log('🔄 Generating enhanced fallback response for:', message)
   
   try {
+    // Enhanced fallback with agent routing logic
     const agentResponse = routeAndGenerateFallback(message, businessContext)
     
     return {
@@ -458,6 +307,7 @@ async function generateFallbackResponse(message, sessionId, businessContext) {
   } catch (fallbackError) {
     console.error('Enhanced fallback generation failed:', fallbackError)
     
+    // Final emergency fallback with agent personality
     return {
       response: `🤖 **AI Command Center - Temporary Service Mode**
 
@@ -492,9 +342,11 @@ Please try rephrasing your question, and I'll do my best to help!`,
   }
 }
 
+// Enhanced fallback routing with intelligent responses
 function routeAndGenerateFallback(message, businessContext) {
   const messageLower = message.toLowerCase()
   
+  // Financial fallback - Check if Stripe is configured
   if (['revenue', 'money', 'profit', 'pricing', 'cost'].some(keyword => messageLower.includes(keyword))) {
     const stripeConfigured = process.env.STRIPE_SECRET_KEY && 
                             process.env.STRIPE_SECRET_KEY.startsWith('sk_')
@@ -537,6 +389,7 @@ Would you like me to help you calculate specific revenue targets or pricing stra
     }
   }
   
+  // Marketing fallback
   if (['marketing', 'customers', 'social', 'instagram', 'promotion'].some(keyword => messageLower.includes(keyword))) {
     return {
       agent_name: 'Sophia (Fallback Mode)',
@@ -575,6 +428,7 @@ I'm in fallback mode but can provide core marketing guidance:
     }
   }
   
+  // Operations fallback
   if (['schedule', 'staff', 'operations', 'efficiency', 'appointment'].some(keyword => messageLower.includes(keyword))) {
     return {
       agent_name: 'David (Fallback Mode)', 
@@ -613,6 +467,7 @@ I'm operating in fallback mode but can share operational best practices:
     }
   }
   
+  // General business fallback
   return {
     agent_name: 'Emma (Fallback Mode)',
     agent_personality: 'strategic_mindset',
@@ -674,5 +529,6 @@ async function storeConversation(supabase, userId, sessionId, message, response)
       })
   } catch (error) {
     console.error('Failed to store conversation:', error)
+    // Don't fail the request if storage fails
   }
 }

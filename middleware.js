@@ -1,117 +1,95 @@
-import { createServerClient } from '@supabase/ssr'
+// 🚨 SECURITY AUDIT FIX: Re-enable middleware with proper CORS configuration + Auth
 import { NextResponse } from 'next/server'
+import { handlePreflightRequest, addCorsHeaders } from './lib/cors-config'
+import { updateSession } from './lib/supabase/middleware'
 
 export async function middleware(request) {
-  const { pathname } = request.nextUrl
-  
-  // Create a response object that we can modify
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  const origin = request.headers.get('origin')
+  const pathname = request.nextUrl.pathname
 
-  // Create Supabase client for middleware following best practices
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            // Only set cookie in request if not already set
-            if (!request.cookies.get(name)) {
-              request.cookies.set(name, value)
-            }
-          })
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, options)
-          })
-        },
-      },
-    }
-  )
-  
-  // API routes should never be protected - they handle their own logic  
-  const isApiRoute = pathname.startsWith('/api/')
-  
-  // Public routes that don't need auth
-  const publicRoutes = ['/login', '/signup', '/', '/auth', '/terms', '/privacy', '/contact']
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
-  
-  // OAuth callback routes that need special handling
-  const isAuthCallback = pathname.includes('/callback') || pathname.includes('/auth/')
-  
-  // Protected routes that require authentication
-  const protectedRoutes = ['/dashboard', '/(protected)']
-  
-  // Specific enterprise routes that should be protected (not public enterprise portals)
-  const protectedEnterpriseRoutes = ['/enterprise/locations', '/enterprise/organization', '/enterprise/settings']
-  
-  const isProtectedRoute = protectedRoutes.some(route => 
-    pathname.startsWith(route.replace('(protected)', '')) || 
-    pathname.includes('/(protected)/')
-  ) || protectedEnterpriseRoutes.some(route => pathname.startsWith(route))
-  
-  // Allow OAuth callbacks to proceed without authentication check
-  if (isAuthCallback) {
-    return supabaseResponse
+  // Handle preflight OPTIONS requests
+  if (request.method === 'OPTIONS') {
+    return handlePreflightRequest(request)
   }
-  
-  // Skip auth check for public routes and API routes - MAJOR PERFORMANCE OPTIMIZATION
-  if (isPublicRoute || isApiRoute || !isProtectedRoute) {
-    return supabaseResponse
+
+  // Skip middleware for static files and Next.js internals
+  if (
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/api/_next/') ||
+    pathname.includes('.')
+  ) {
+    return NextResponse.next()
   }
-  
-  // ONLY call getUser() for protected routes that actually need it
-  // This eliminates the blocking network call for most requests
-  let user = null
-  let userError = null
-  
-  try {
-    const result = await supabase.auth.getUser()
-    user = result.data?.user
-    userError = result.error
-    
-    // Only log unexpected authentication errors
-    if (userError && userError.message !== 'Auth session missing!') {
-      console.error('Middleware auth error:', userError.message, 'for path:', pathname)
-    }
-  } catch (error) {
-    console.error('Middleware auth check failed:', error.message)
-    userError = error
-  }
-  
-  // If accessing a protected route without user, redirect to login
+
+  // CRITICAL: Call Supabase middleware FIRST to refresh session and validate user
+  // This follows Supabase 2025 best practices for Next.js 14 App Router
+  const { response: supabaseResponse, user, error } = await updateSession(request)
+
+  // Define protected routes that require authentication
+  const protectedPaths = [
+    '/dashboard',
+    '/shop',
+    '/admin',
+    '/barber',
+    '/settings',
+    '/profile'
+  ]
+
+  // Check if current path is protected
+  const isProtectedRoute = protectedPaths.some(path => pathname.startsWith(path))
+
+  // Redirect unauthenticated users trying to access protected routes
   if (isProtectedRoute && !user) {
-    const redirectUrl = new URL('/login', request.url)
-    redirectUrl.searchParams.set('next', pathname)
-    return NextResponse.redirect(redirectUrl)
+    console.log(`🚫 [Middleware] Blocking unauthenticated access to: ${pathname}`)
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirectTo', pathname) // Remember where they wanted to go
+    return NextResponse.redirect(loginUrl)
   }
 
-  // If user is authenticated and trying to access login page, redirect to dashboard
-  if (user && pathname === '/login') {
-    const urlSearchParams = new URLSearchParams(request.nextUrl.search)
-    const next = urlSearchParams.get('next') || '/dashboard'
-    return NextResponse.redirect(new URL(next, request.url))
+  // Redirect authenticated users away from auth pages
+  const authPaths = ['/login', '/register', '/forgot-password']
+  const isAuthRoute = authPaths.some(path => pathname.startsWith(path))
+
+  if (isAuthRoute && user) {
+    console.log(`↪️ [Middleware] Redirecting authenticated user from ${pathname} to /dashboard`)
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
+  // For API routes, ensure CORS headers are set
+  if (pathname.startsWith('/api/')) {
+    return addCorsHeaders(supabaseResponse, origin, {
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+      headers: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'X-API-Key',
+        'X-Client-Version',
+        'X-Request-ID'
+      ]
+    })
+  }
+
+  // Add security headers to all responses
+  supabaseResponse.headers.set('X-Frame-Options', 'DENY')
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff')
+  supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  supabaseResponse.headers.set('X-XSS-Protection', '1; mode=block')
+
+  // Add CORS headers if origin is present
+  if (origin) {
+    return addCorsHeaders(supabaseResponse, origin)
+  }
+
   return supabaseResponse
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js).*)',
-  ],
+    // Match all request paths except static files and Next.js internals
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*).)*',
+    // Include all API routes
+    '/api/(.*)',
+  ]
 }

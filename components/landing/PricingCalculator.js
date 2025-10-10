@@ -88,30 +88,30 @@ export default function PricingCalculator() {
   ]
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-gold-100 text-gold-800 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-gold-100 dark:bg-gold-900/30 text-gold-800 dark:text-gold-300 rounded-full text-sm font-semibold mb-4">
             <CalculatorIcon className="h-4 w-4 mr-2" />
             TRANSPARENT PRICING
           </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-foreground mb-4">
             Stop Paying Percentage Fees Forever
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            One flat monthly fee. No percentages. No surprises. 
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            One flat monthly fee. No percentages. No surprises.
             Keep 100% of your hard-earned revenue.
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-olive-50 to-gold-50 rounded-2xl p-8 mb-16">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+        <div className="bg-gradient-to-br from-olive-50 to-gold-50 dark:from-olive-900/20 dark:to-gold-900/20 rounded-2xl p-8 mb-16">
+          <h3 className="text-2xl font-bold text-foreground mb-6 text-center">
             Calculate Your Savings
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Monthly Bookings
               </label>
               <input
@@ -122,15 +122,15 @@ export default function PricingCalculator() {
                 onChange={(e) => setMonthlyBookings(Number(e.target.value))}
                 className="w-full"
               />
-              <div className="flex justify-between text-sm text-gray-600 mt-1">
+              <div className="flex justify-between text-sm text-muted-foreground mt-1">
                 <span>50</span>
-                <span className="font-bold text-lg text-olive-600">{monthlyBookings}</span>
+                <span className="font-bold text-lg text-olive-600 dark:text-olive-500">{monthlyBookings}</span>
                 <span>500</span>
               </div>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Average Ticket Price
               </label>
               <input
@@ -141,41 +141,41 @@ export default function PricingCalculator() {
                 onChange={(e) => setAverageTicket(Number(e.target.value))}
                 className="w-full"
               />
-              <div className="flex justify-between text-sm text-gray-600 mt-1">
+              <div className="flex justify-between text-sm text-muted-foreground mt-1">
                 <span>$20</span>
-                <span className="font-bold text-lg text-olive-600">${averageTicket}</span>
+                <span className="font-bold text-lg text-olive-600 dark:text-olive-500">${averageTicket}</span>
                 <span>$150</span>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-xl p-4 text-center">
-              <div className="text-sm text-gray-600 mb-1">Your Monthly Revenue</div>
-              <div className="text-3xl font-bold text-gray-900">
+            <div className="bg-card rounded-xl p-4 text-center">
+              <div className="text-sm text-muted-foreground mb-1">Your Monthly Revenue</div>
+              <div className="text-3xl font-bold text-foreground">
                 ${monthlyRevenue.toLocaleString()}
               </div>
             </div>
-            <div className="bg-red-50 rounded-xl p-4 text-center border-2 border-red-200">
-              <div className="text-sm text-red-600 mb-1">Marketplace Fees (15%)</div>
-              <div className="text-3xl font-bold text-red-600">
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center border-2 border-red-200 dark:border-red-900/50">
+              <div className="text-sm text-red-600 dark:text-red-400 mb-1">Marketplace Fees (15%)</div>
+              <div className="text-3xl font-bold text-red-600 dark:text-red-400">
                 -${marketplaceCost.toLocaleString()}
               </div>
             </div>
-            <div className="bg-green-50 rounded-xl p-4 text-center border-2 border-green-200">
-              <div className="text-sm text-green-600 mb-1">You Save with 6FB</div>
-              <div className="text-3xl font-bold text-green-600">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center border-2 border-green-200 dark:border-green-900/50">
+              <div className="text-sm text-green-600 dark:text-green-400 mb-1">You Save with 6FB</div>
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400">
                 +${savings > 0 ? savings.toLocaleString() : '0'}
               </div>
             </div>
           </div>
 
           {savings > 0 && (
-            <div className="mt-6 text-center p-4 bg-gradient-to-r from-green-100 to-olive-100 rounded-xl">
-              <p className="text-lg font-semibold text-gray-900">
-                That's <span className="text-green-600 text-2xl">${yearlySavings.toLocaleString()}</span> saved per year!
+            <div className="mt-6 text-center p-4 bg-gradient-to-r from-green-100 to-olive-100 dark:from-green-900/20 dark:to-olive-900/20 rounded-xl">
+              <p className="text-lg font-semibold text-foreground">
+                That's <span className="text-green-600 dark:text-green-400 text-2xl">${yearlySavings.toLocaleString()}</span> saved per year!
               </p>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Money that stays in YOUR pocket, not a marketplace's
               </p>
             </div>
@@ -184,13 +184,13 @@ export default function PricingCalculator() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
           {plans.map((plan, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`relative rounded-2xl border-2 ${
-                plan.highlight 
-                  ? 'border-olive-500 shadow-2xl' 
-                  : 'border-gray-200'
-              } bg-white p-8`}
+                plan.highlight
+                  ? 'border-olive-500 dark:border-olive-600 shadow-2xl'
+                  : 'border-border'
+              } bg-card p-8`}
             >
               {plan.badge && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -199,29 +199,29 @@ export default function PricingCalculator() {
                   </span>
                 </div>
               )}
-              
+
               <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+                <h3 className="text-2xl font-bold text-foreground mb-2">{plan.name}</h3>
                 <div className="flex items-baseline justify-center">
-                  <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                  <span className="text-gray-500 ml-2">/{plan.period}</span>
+                  <span className="text-4xl font-bold text-foreground">{plan.price}</span>
+                  <span className="text-muted-foreground ml-2">/{plan.period}</span>
                 </div>
-                <p className="text-gray-600 mt-3">{plan.description}</p>
+                <p className="text-muted-foreground mt-3">{plan.description}</p>
               </div>
 
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start">
-                    <CheckIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="ml-3 text-gray-700">{feature}</span>
+                    <CheckIcon className="h-5 w-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="ml-3 text-foreground">{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <button className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${
                 plan.highlight
-                  ? 'bg-gradient-to-r from-olive-600 to-gold-600 text-white hover:shadow-lg'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-gradient-to-r from-olive-600 to-gold-600 dark:from-olive-500 dark:to-gold-500 text-white hover:shadow-lg'
+                  : 'bg-muted text-foreground hover:bg-muted/80'
               }`}>
                 {plan.name === "Enterprise" ? "Contact Sales" : "Sign Up"}
               </button>
@@ -229,31 +229,31 @@ export default function PricingCalculator() {
           ))}
         </div>
 
-        <div className="bg-gray-50 rounded-2xl p-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+        <div className="bg-muted/30 rounded-2xl p-8">
+          <h3 className="text-2xl font-bold text-foreground mb-8 text-center">
             6FB vs. Traditional Marketplaces
           </h3>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Feature</th>
-                  <th className="text-center py-3 px-4 font-semibold text-red-600">Marketplaces</th>
-                  <th className="text-center py-3 px-4 font-semibold text-green-600">6FB Platform</th>
+                <tr className="border-b border-border">
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">Feature</th>
+                  <th className="text-center py-3 px-4 font-semibold text-red-600 dark:text-red-400">Marketplaces</th>
+                  <th className="text-center py-3 px-4 font-semibold text-green-600 dark:text-green-400">6FB Platform</th>
                 </tr>
               </thead>
               <tbody>
                 {comparisonPoints.map((point, index) => (
-                  <tr key={index} className="border-b border-gray-100">
-                    <td className="py-4 px-4 text-gray-700 font-medium">{point.feature}</td>
+                  <tr key={index} className="border-b border-border/50">
+                    <td className="py-4 px-4 text-foreground font-medium">{point.feature}</td>
                     <td className="py-4 px-4 text-center">
-                      <span className="inline-flex items-center text-red-600">
+                      <span className="inline-flex items-center text-red-600 dark:text-red-400">
                         <XMarkIcon className="h-5 w-5 mr-2" />
                         {point.marketplace}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <span className="inline-flex items-center text-green-600">
+                      <span className="inline-flex items-center text-green-600 dark:text-green-400">
                         <CheckIcon className="h-5 w-5 mr-2" />
                         {point.sixfb}
                       </span>
@@ -266,11 +266,11 @@ export default function PricingCalculator() {
         </div>
 
         <div className="mt-12 text-center">
-          <div className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-full mb-6">
+          <div className="inline-flex items-center px-6 py-3 bg-gray-900 dark:bg-gray-950 text-white rounded-full mb-6">
             <SparklesIcon className="h-5 w-5 mr-2" />
             <span className="font-medium">No credit card required • Cancel anytime</span>
           </div>
-          <button className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300 inline-flex items-center">
+          <button className="bg-gradient-to-r from-olive-600 to-gold-600 dark:from-olive-500 dark:to-gold-500 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300 inline-flex items-center">
             Start Building Your Brand
             <ArrowRightIcon className="h-5 w-5 ml-2" />
           </button>

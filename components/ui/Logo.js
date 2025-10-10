@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useTheme } from 'next-themes';
 
 /**
  * BookedBarber Logo Component
@@ -25,24 +26,41 @@ const Logo = ({
   onClick = null,
   showText = true 
 }) => {
+  const { theme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  // Avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Size configurations for responsive design - optimized for new logos
   const sizeConfig = {
-    xsmall: { width: 100, height: 24, textClass: 'text-xs' }, // Mobile header/sidebar
-    small: { width: 120, height: 32, textClass: 'text-sm' },   // Compact navigation
-    medium: { width: 160, height: 40, textClass: 'text-base' }, // Website header
-    large: { width: 200, height: 50, textClass: 'text-lg' },   // Large displays
-    xlarge: { width: 240, height: 60, textClass: 'text-xl' },  // Hero sections
-    hero: { width: 300, height: 75, textClass: 'text-2xl' }    // Landing pages
+    small: { width: 100, height: 80, textClass: 'text-sm' },
+    medium: { width: 150, height: 120, textClass: 'text-base' },
+    large: { width: 200, height: 160, textClass: 'text-lg' },
+    xlarge: { width: 250, height: 200, textClass: 'text-xl' },
+    hero: { width: 300, height: 240, textClass: 'text-2xl' }
   };
 
+  // Logo variant mapping based on theme and preferences
   const getLogoVariant = () => {
-    return 'bookedbarber-transparent.png';
+    // Use the transparent background logos based on theme
+    const isDarkMode = resolvedTheme === 'dark';
+
+    if (isDarkMode) {
+      // Use gold logo for dark mode (better contrast)
+      return 'bookedbarber-logo-gold.png';
+    }
+    // Use green logo for light mode
+    return 'bookedbarber-logo-green.png';
   };
 
   const config = sizeConfig[size] || sizeConfig.medium;
   const logoSrc = `/assets/logos/${getLogoVariant()}`;
 
+  // Loading fallback component
   const LoadingLogo = () => (
     <div 
       className={`
@@ -57,6 +75,7 @@ const Logo = ({
     </div>
   );
 
+  // Error fallback component with barber pole design
   const ErrorLogo = () => (
     <div 
       className={`
@@ -65,18 +84,26 @@ const Logo = ({
         flex items-center justify-center text-white font-bold
         ${config.textClass} ${className}
       `}
-      style={{ width: showText === false || size === 'small' || size === 'xsmall' ? config.width : 180, height: showText === false || size === 'small' || size === 'xsmall' ? config.height : 60 }}
+      style={{ width: showText === false || size === 'small' ? 40 : 180, height: showText === false || size === 'small' ? 40 : 60 }}
     >
-      {showText === false || size === 'small' || size === 'xsmall' ? (
+      {showText === false || size === 'small' ? (
+        // Icon only - show barber pole stripes
         <div className="w-6 h-8 bg-white/20 rounded relative overflow-hidden">
           <div className="absolute inset-0 bg-repeating-linear-gradient(45deg, #C5A35B 0px, #C5A35B 4px, white 4px, white 8px)"></div>
         </div>
       ) : (
+        // Full text fallback
         <span>BookedBarber</span>
       )}
     </div>
   );
 
+  // Show loading state during SSR/hydration
+  if (!mounted) {
+    return <LoadingLogo />;
+  }
+
+  // Show error fallback if image failed to load
   if (imageError) {
     return <ErrorLogo />;
   }
@@ -98,11 +125,10 @@ const Logo = ({
           width={config.width}
           height={config.height}
           priority={priority}
-          className={`object-contain ${className ? 'max-w-full max-h-full' : ''}`}
-          style={{ width: 'auto', height: 'auto', maxWidth: '100%', maxHeight: '100%' }}
+          className="object-contain"
+          style={{ width: 'auto', height: 'auto' }}
           onError={() => setImageError(true)}
           onLoad={() => setImageError(false)}
-          placeholder="empty" // Prevent blur placeholder
         />
         
       </div>
@@ -112,12 +138,13 @@ const Logo = ({
   );
 };
 
+// Convenience components for common use cases
 export const LogoIcon = (props) => (
   <Logo {...props} showText={false} size={props.size || 'medium'} />
 );
 
 export const LogoHeader = (props) => (
-  <Logo {...props} size={props.size || "medium"} animated priority />
+  <Logo {...props} size="medium" animated priority />
 );
 
 export const LogoHero = (props) => (

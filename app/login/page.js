@@ -1,368 +1,310 @@
 'use client'
 
 import { 
-  EnvelopeIcon, 
-  LockClosedIcon, 
-  UserIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon
+  EyeIcon,
+  EyeSlashIcon,
+  LockClosedIcon,
+  EnvelopeIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { LogoHeader } from '@/components/ui/Logo'
-import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
+
+import { useAuth } from '../../components/SupabaseAuthProvider'
+import ConversionTracker, { useLoginTracking } from '@/components/analytics/ConversionTracker'
+import Logo from '../../components/ui/Logo'
+
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
+  const router = useRouter()
+  const { user, signIn, signInWithGoogle } = useAuth()
+  const loginTracking = useLoginTracking()
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  })
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [isSignUp, setIsSignUp] = useState(false)
-  const router = useRouter()
-  const { user, loading, supabase, signIn, signUp, resetPassword, sessionRecovered } = useAuth()
   
-  // Check for existing authentication and handle OAuth callbacks
+  // Redirect if already logged in
   useEffect(() => {
-    // If user is already authenticated, redirect to dashboard
-    if (user && !loading) {
-      const urlParams = new URLSearchParams(window.location.search)
-      const next = urlParams.get('next') || '/dashboard'
-      router.push(next)
-      return
+    if (user) {
+      router.push('/dashboard')
     }
+  }, [user, router])
 
-    // Handle OAuth callback errors and success
-    const handleOAuthCallback = () => {
-      const urlParams = new URLSearchParams(window.location.search)
-      const error = urlParams.get('error')
-      const errorDescription = urlParams.get('error_description')
-      
-      if (error) {
-        const errorMsg = errorDescription ? `${error}: ${errorDescription}` : `Authentication error: ${error}`
-        setError(errorMsg)
-        // Clean up URL parameters
-        window.history.replaceState({}, document.title, window.location.pathname)
-        return
-      }
-      
-      // Check for OAuth success indicators
-      const code = urlParams.get('code')
-      if (code && !user) {
-        setSuccess('Processing authentication...')
-        // Clean up URL parameters
-        window.history.replaceState({}, document.title, window.location.pathname)
-      }
-    }
-    
-    // Only handle OAuth callback if session hasn't been recovered yet
-    if (sessionRecovered) {
-      handleOAuthCallback()
-    }
-  }, [user, loading, sessionRecovered, router])
-  
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true)
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
     setError('')
-    setSuccess('')
-    
-    try {
-      // Get the intended redirect destination
-      const urlParams = new URLSearchParams(window.location.search)
-      const next = urlParams.get('next') || '/dashboard'
-      
-      // Use the OAuth API route for proper server-side handling
-      const oauthUrl = `/api/auth/google?next=${encodeURIComponent(next)}`
-      setSuccess('Redirecting to Google...')
-      
-      // Small delay to show the loading state
-      setTimeout(() => {
-        window.location.href = oauthUrl
-      }, 500)
-    } catch (err) {
-      console.error('OAuth initiation error:', err)
-      setError('Failed to connect with Google. Please try again.')
-      setIsLoading(false)
-    }
   }
-  
-  const handleEmailAuth = async (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
-    setSuccess('')
-    
-    // Validation
-    if (!email || !email.includes('@')) {
-      setError('Please enter a valid email address')
+
+    // Track login attempt
+    loginTracking.trackLoginAttempt('email')
+
+    try {
+      const result = await signIn({ 
+        email: formData.email, 
+        password: formData.password 
+      })
+      
+      // Track successful login
+      loginTracking.trackLoginSuccess('email', result?.user?.id)
+      
+      // The auth provider will handle the redirect
+    } catch (err) {
+      // Track login failure
+      loginTracking.trackLoginFailure('email', err.message || 'Unknown error')
+      
+      setError(err.message || 'Login failed. Please try again.')
       setIsLoading(false)
-      return
     }
-    
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
-      setIsLoading(false)
-      return
-    }
-    
-    if (isSignUp && (!firstName.trim() || !lastName.trim())) {
-      setError('Please enter your first and last name')
-      setIsLoading(false)
-      return
-    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    console.log('🔍 handleGoogleSignIn called')
+    console.log('🔍 Current loading state:', isLoading)
     
     try {
-      if (isSignUp) {
-        // Prepare name data using utility functions
-        const nameData = normalizeNameData({
-          firstName: firstName.trim(),
-          lastName: lastName.trim()
-        })
-        
-        // Sign up new user with metadata using centralized auth
-        const data = await signUp({
-          email,
-          password,
-          metadata: {
-            first_name: nameData.first_name,
-            last_name: nameData.last_name,
-            full_name: nameData.full_name,
-            role: 'CLIENT'
-          }
-        })
-        
-        if (data?.user) {
-          // Check if email confirmation is required
-          if (data.user.identities?.length === 0) {
-            setSuccess('Account created! Please check your email to confirm your account before signing in.')
-          } else {
-            // Auto sign-in if email confirmation not required - auth provider will handle redirect
-            setSuccess('Account created successfully! Redirecting to dashboard...')
-          }
-        }
-      } else {
-        // Sign in existing user using centralized auth
-        const data = await signIn({ email, password })
-        
-        if (data?.user) {
-          setSuccess('Sign in successful! Redirecting to dashboard...')
-          // Auth provider will handle the redirect to dashboard
-        }
+      setIsLoading(true)
+      setError('')
+      
+      // Track OAuth attempt
+      loginTracking.trackOAuthAttempt('google')
+      
+      // Use the Supabase client directly - it handles PKCE properly
+      if (!signInWithGoogle) {
+        throw new Error('Google sign-in not available. Please refresh the page.')
       }
+      
+      console.log('🚀 Calling signInWithGoogle from SupabaseAuthProvider...')
+      const result = await signInWithGoogle()
+      console.log('✅ signInWithGoogle completed')
+      
+      // Track successful login (if we get here without redirect)
+      if (result?.user?.id) {
+        loginTracking.trackLoginSuccess('google', result.user.id)
+      }
+      
+      // The redirect happens automatically via Supabase
+      
     } catch (err) {
-      console.error('Auth error:', err)
-      setError(err.message || 'Authentication failed. Please try again.')
-    } finally {
+      console.error('❌ Google sign-in error:', err)
+      
+      // Track login failure
+      loginTracking.trackLoginFailure('google', err.message || 'Unknown error')
+      
+      setError(err.message || 'Google sign-in failed.')
       setIsLoading(false)
     }
-  }
-  
-  const handleMagicLink = async () => {
-    if (!email) {
-      setError('Please enter your email')
-      return
-    }
-    
-    setIsLoading(true)
-    setError('')
-    
-    try {
-      // Use centralized auth provider for magic link
-      await resetPassword(email)
-      setSuccess('Check your email for the login link!')
-    } catch (err) {
-      setError('Failed to send magic link. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-  
-  // Show loading spinner if auth is still loading
-  if (loading && !sessionRecovered) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-sand-200 via-white to-sand-100 flex items-center justify-center p-4">
-        <div className="w-full max-w-md text-center">
-          <div className="flex justify-center mb-4">
-            <LogoHeader size="large" />
-          </div>
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-sand-300">
-            <div className="flex items-center justify-center space-x-2">
-              <div className="animate-spin rounded-full h-6 w-6 border-2 border-brand-600 border-t-transparent"></div>
-              <span className="text-olive-600">Loading...</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sand-200 via-white to-sand-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo and Title */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <LogoHeader size="large" />
-          </div>
-          <p className="text-olive-600 font-medium">Professional Barbershop Management Platform</p>
+    <ConversionTracker 
+      page="login"
+      customProperties={{
+        has_error: !!error,
+        loading_state: isLoading,
+        form_filled: !!(formData.email && formData.password)
+      }}
+    >
+      <div className="min-h-screen bg-background hero-gradient flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center mb-4">
+          <Logo size="medium" priority />
         </div>
-        
-        {/* Main Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-sand-300">
-          
-          {/* Success/Error Messages */}
-          {success && (
-            <div className="mb-6 p-4 bg-moss-50 border border-moss-300 rounded-lg flex items-start gap-3">
-              <CheckCircleIcon className="h-5 w-5 text-moss-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-moss-800">{success}</div>
-            </div>
-          )}
-          
-          {error && (
-            <div className="mb-6 p-4 bg-softred-50 border border-softred-300 rounded-lg flex items-start gap-3">
-              <ExclamationCircleIcon className="h-5 w-5 text-softred-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-softred-800">{error}</div>
-            </div>
-          )}
-          
-          {/* Page Title */}
-          <h2 className="text-2xl font-bold text-olive-700 text-center mb-8">
-            {isSignUp ? 'Create Your Account' : 'Welcome Back'}
-          </h2>
-          
-          {/* Google Sign In - Primary CTA */}
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-brand-600 to-brand-500 text-white py-3 px-4 rounded-lg font-semibold hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-3 mb-6 disabled:opacity-50"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#ffffff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#ffffff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#ffffff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#ffffff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            {isLoading ? 'Connecting...' : 'Continue with Google'}
-          </button>
-          
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-sand-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-olive-500">or continue with email</span>
-            </div>
-          </div>
-          
-          {/* Email/Password Form */}
-          <form onSubmit={handleEmailAuth} className="space-y-4">
-            {isSignUp && (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <UserIcon className="h-5 w-5 text-olive-400" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="First Name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-sand-50 border border-sand-300 text-olive-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder-olive-400"
-                    required
-                  />
-                </div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Last Name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="w-full pl-4 pr-4 py-3 bg-sand-50 border border-sand-300 text-olive-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder-olive-400"
-                    required
-                  />
-                </div>
+        <h2 className="text-center text-3xl font-bold text-foreground gradient-text">
+          Welcome Back
+        </h2>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          Sign in to your BookedBarber account or{' '}
+          <Link href="/register" className="font-medium text-primary hover:text-primary/80 transition-colors duration-200">
+            create a new account
+          </Link>
+        </p>
+      </div>
+
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="card-elevated backdrop-blur-sm">
+          <form className="space-y-6" onSubmit={handleSubmit} data-track-form="login-form" data-track-view="login-form">
+            {error && (
+              <div className="status-error px-4 py-3 rounded-xl text-sm font-medium border border-destructive/20">
+                {error}
               </div>
             )}
-            
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <EnvelopeIcon className="h-5 w-5 text-olive-400" />
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Email address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <EnvelopeIcon className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className="input-field pl-10 pr-3 focus:ring-primary focus:border-primary disabled:opacity-50"
+                  placeholder="Enter your email"
+                />
               </div>
-              <input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                className="w-full pl-10 pr-4 py-3 bg-sand-50 border border-sand-300 text-olive-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder-olive-400"
-              />
             </div>
-            
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <LockClosedIcon className="h-5 w-5 text-olive-400" />
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <LockClosedIcon className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  className="input-field pl-10 pr-10 focus:ring-primary focus:border-primary disabled:opacity-50"
+                  placeholder="Enter your password"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={isLoading}
+                    className="text-muted-foreground hover:text-foreground focus:outline-none disabled:opacity-50 transition-colors duration-200"
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
               </div>
-              <input
-                type="password"
-                placeholder="Password (min 6 characters)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required={!isSignUp}
-                minLength={6}
-                autoComplete={isSignUp ? "new-password" : "current-password"}
-                className="w-full pl-10 pr-4 py-3 bg-sand-50 border border-sand-300 text-olive-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 placeholder-olive-400"
-              />
             </div>
-            
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-olive-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-olive-700 transition-all duration-200 disabled:opacity-50"
-            >
-              {isLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
-            </button>
+
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <Link 
+                  href="/forgot-password" 
+                  className="font-medium text-primary hover:text-primary/80 transition-colors duration-200"
+                  onClick={() => loginTracking.trackPasswordReset()}
+                  data-track-click="password-reset-link"
+                >
+                  Forgot your password?
+                </Link>
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`btn-primary w-full transition-all duration-200 ${
+                  isLoading
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:shadow-xl hover:-translate-y-0.5'
+                }`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    <span>Signing in...</span>
+                  </div>
+                ) : (
+                  'Sign in'
+                )}
+              </button>
+            </div>
           </form>
-          
-          {/* Magic Link Option */}
-          <button
-            onClick={handleMagicLink}
-            disabled={isLoading || !email}
-            className="w-full mt-3 text-olive-500 hover:text-olive-700 text-sm font-medium transition-colors disabled:opacity-50"
-          >
-            Send magic link instead
-          </button>
-          
-          {/* Toggle Sign Up/In */}
-          <div className="mt-6 pt-6 border-t border-sand-200 text-center">
-            <button
-              onClick={() => {
-                setIsSignUp(!isSignUp)
-                setError('')
-                setSuccess('')
-              }}
-              className="text-olive-600 hover:text-olive-700 text-sm font-medium"
-            >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
-            </button>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <button
+                type="button"
+                disabled={isLoading}
+                className={`btn-outline w-full flex items-center justify-center transition-all duration-200 ${
+                  isLoading
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:shadow-lg hover:-translate-y-0.5'
+                }`}
+                onClick={(e) => {
+                  console.log('🖱️ Google OAuth button clicked!')
+                  e.preventDefault()
+                  handleGoogleSignIn()
+                }}
+                data-track-click="oauth-google-signin"
+                data-track-view="oauth-signin-button"
+              >
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full mr-2"></div>
+                    Connecting...
+                  </span>
+                ) : (
+                  <span>Sign in with Google</span>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <div className="text-center p-4 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Demo credentials for testing:</p>
+              <div className="font-mono text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-gray-900 dark:text-gray-100">
+                <div><strong>Email:</strong> demo@barbershop.com</div>
+                <div><strong>Password:</strong> demo123</div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        {/* Footer */}
-        <div className="mt-8 text-center text-olive-500 text-xs">
-          <p>© 2025 BookedBarber. All rights reserved.</p>
-          <p className="mt-2">
-            <a href="/terms" className="hover:text-olive-700 transition-colors">Terms</a>
-            {' • '}
-            <a href="/privacy" className="hover:text-olive-700 transition-colors">Privacy</a>
-            {' • '}
-            <a href="/contact" className="hover:text-olive-700 transition-colors">Support</a>
-          </p>
+      </div>
+
+        <div className="mt-8 text-center">
+          <Link 
+            href="/" 
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors duration-200"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to home page
+          </Link>
         </div>
       </div>
-    </div>
+    </ConversionTracker>
   )
 }

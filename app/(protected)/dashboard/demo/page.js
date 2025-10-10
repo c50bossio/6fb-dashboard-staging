@@ -1,9 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { ArrowLeftIcon, PlayIcon, CheckIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import VideoModal from '../../../../components/ui/VideoModal'
 
 export default function DemoPage() {
+  const [showVideoModal, setShowVideoModal] = useState(false)
+  
   const demoFeatures = [
     "Live AI agent interactions",
     "Real-time customer segmentation",
@@ -59,7 +63,10 @@ export default function DemoPage() {
           <div className="max-w-4xl mx-auto">
             <div className="relative bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
               <div className="aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                <button className="bg-white/10 hover:bg-white/20 rounded-full p-6 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-white/20">
+                <button 
+                  onClick={() => setShowVideoModal(true)}
+                  className="bg-white/10 hover:bg-white/20 rounded-full p-6 transition-all duration-300 transform hover:scale-110 backdrop-blur-sm border border-white/20"
+                >
                   <PlayIcon className="w-16 h-16 text-white ml-2" />
                 </button>
               </div>
@@ -160,6 +167,15 @@ export default function DemoPage() {
           </div>
         </div>
       </div>
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        videoUrl="/demo/6fb-demo-video.mp4"
+        title="6FB AI Agent System Demo"
+        autoplay={true}
+      />
     </div>
   )
 }

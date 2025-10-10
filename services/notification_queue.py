@@ -311,7 +311,7 @@ async def process_push_notification(item: NotificationQueueItem):
 # Global notification queue instance
 notification_queue = NotificationQueue()
 
-# Register default processors (worker will be started by FastAPI)
+# Register default processors  
 notification_queue.register_processor("in_app", process_in_app_notification)
 notification_queue.register_processor("email", process_email_notification)
 notification_queue.register_processor("sms", process_sms_notification)

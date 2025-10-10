@@ -83,7 +83,7 @@ export default function ExecutiveSummary({ data }) {
       </div>
 
       {/* Strategic Insights */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-card rounded-xl shadow-sm border border-border p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <LightBulbIcon className="h-6 w-6 text-amber-700" />
           Strategic Insights
@@ -134,9 +134,9 @@ export default function ExecutiveSummary({ data }) {
 }
 
 const MetricCard = ({ icon: Icon, title, value, change, trend, subtitle }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
     <div className="flex items-start justify-between mb-4">
-      <div className="p-2 bg-indigo-50 rounded-lg">
+      <div className="p-2 bg-muted rounded-lg">
         <Icon className="h-6 w-6 text-olive-600" />
       </div>
       <div className={`flex items-center gap-1 text-sm font-medium ${
@@ -166,9 +166,9 @@ const InsightCard = ({ insight }) => {
   }
   
   const colors = {
-    opportunity: 'bg-amber-50 border-amber-200 text-amber-800',
-    alert: 'bg-red-50 border-red-200 text-red-800',
-    success: 'bg-green-50 border-green-200 text-green-800'
+    opportunity: 'bg-muted border-border text-amber-800',
+    alert: 'bg-muted border-border text-red-800',
+    success: 'bg-muted border-border text-green-800'
   }
   
   const Icon = icons[insight.type] || LightBulbIcon
@@ -181,9 +181,9 @@ const InsightCard = ({ insight }) => {
           <p className="text-sm font-medium">{insight.message}</p>
           <div className="mt-2 flex items-center gap-2">
             <span className={`text-xs px-2 py-1 rounded-full ${
-              insight.priority === 'high' ? 'bg-softred-100 text-softred-800' :
-              insight.priority === 'medium' ? 'bg-amber-100 text-amber-900' :
-              'bg-gray-100 text-gray-700'
+              insight.priority === 'high' ? 'bg-muted text-softred-800' :
+              insight.priority === 'medium' ? 'bg-muted text-amber-900' :
+              'bg-muted text-gray-700'
             }`}>
               {insight.priority} priority
             </span>
@@ -195,7 +195,7 @@ const InsightCard = ({ insight }) => {
 }
 
 const TrendCard = ({ title, data }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+  <div className="bg-card rounded-xl shadow-sm border border-border p-6">
     <h4 className="text-lg font-semibold text-gray-900 mb-4">{title}</h4>
     <div className="h-48 flex items-end justify-between gap-2">
       {data.map((item, index) => {

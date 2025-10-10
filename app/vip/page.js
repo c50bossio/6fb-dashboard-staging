@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { useState } from 'react'
 import { 
   SparklesIcon,
   StarIcon,
@@ -11,13 +13,13 @@ import {
   GiftIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
-import Link from 'next/link'
-import { useState } from 'react'
 
 export default function VIPPage() {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [smsConsent, setSmsConsent] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const vipBenefits = [
     { icon: ClockIcon, title: 'Priority Booking', description: 'Skip the wait with instant booking access' },
@@ -30,7 +32,34 @@ export default function VIPPage() {
     e.preventDefault()
     if (!phoneNumber || !smsConsent) return
 
-    setSubmitted(true)
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/vip-signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber,
+          smsConsent
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setSubmitted(true)
+      } else {
+        setError(result.message || 'Failed to process VIP signup. Please try again.')
+      }
+    } catch (err) {
+      console.error('VIP signup error:', err)
+      setError('Something went wrong. Please try again or contact us directly.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (submitted) {
@@ -120,6 +149,13 @@ export default function VIPPage() {
               </p>
             </div>
 
+            {error && (
+              <div className="bg-red-50 border border-red-400 text-red-800 px-4 py-3 rounded-lg mb-6">
+                <div className="font-semibold">Error processing VIP signup</div>
+                <div className="text-sm mt-1">{error}</div>
+              </div>
+            )}
+
             <div className="space-y-4">
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
@@ -182,15 +218,24 @@ export default function VIPPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={!phoneNumber || !smsConsent}
+                disabled={!phoneNumber || !smsConsent || loading}
                 className={`w-full py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center ${
-                  phoneNumber && smsConsent
+                  phoneNumber && smsConsent && !loading
                     ? 'bg-gradient-to-r from-gold-600 to-gold-700 text-white hover:from-gold-700 hover:to-gold-800'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                <StarIconSolid className="h-5 w-5 mr-2" />
-                Activate VIP Status
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                    Processing VIP Signup...
+                  </>
+                ) : (
+                  <>
+                    <StarIconSolid className="h-5 w-5 mr-2" />
+                    Activate VIP Status
+                  </>
+                )}
               </button>
 
               {(!phoneNumber || !smsConsent) && (

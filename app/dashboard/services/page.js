@@ -12,12 +12,16 @@ import {
   SparklesIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
-
+import { useState, useEffect } from 'react'
 
 import ProtectedRoute from '../../../components/ProtectedRoute'
+import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
+import { createClient } from '../../../lib/supabase/browser-client'
+import LoadingSpinner, { TableLoadingSkeleton, CardLoadingSkeleton } from '../../../components/LoadingSpinner'
+import Button from '../../../components/Button'
 
+// Service categories
 const SERVICE_CATEGORIES = [
   { id: 'haircuts', name: 'Haircuts', icon: ScissorsIcon, color: 'blue' },
   { id: 'beard', name: 'Beard & Shave', icon: ScissorsIcon, color: 'green' },
@@ -27,128 +31,79 @@ const SERVICE_CATEGORIES = [
   { id: 'special', name: 'Special Services', icon: SparklesIcon, color: 'indigo' }
 ]
 
-const Services = [
-  {
-    id: 'classic-cut',
-    name: 'Classic Haircut',
-    category: 'haircuts',
-    description: 'Traditional haircut with precision cutting and styling',
-    duration: 30,
-    price: 35.00,
-    popular: true,
-    active: true,
-    bookings_this_month: 142,
-    revenue_this_month: 4970.00,
-    average_rating: 4.8,
-    includes: ['Consultation', 'Shampoo', 'Cut', 'Style', 'Product finish']
-  },
-  {
-    id: 'premium-cut',
-    name: 'Premium Haircut',
-    category: 'haircuts',
-    description: 'Executive haircut with hot towel service and premium styling',
-    duration: 45,
-    price: 55.00,
-    popular: true,
-    active: true,
-    bookings_this_month: 87,
-    revenue_this_month: 4785.00,
-    average_rating: 4.9,
-    includes: ['Consultation', 'Shampoo', 'Cut', 'Style', 'Hot towel', 'Scalp massage', 'Premium products']
-  },
-  {
-    id: 'beard-trim',
-    name: 'Beard Trim & Shape',
-    category: 'beard',
-    description: 'Professional beard trimming and shaping',
-    duration: 20,
-    price: 25.00,
-    popular: true,
-    active: true,
-    bookings_this_month: 98,
-    revenue_this_month: 2450.00,
-    average_rating: 4.7,
-    includes: ['Beard consultation', 'Trim', 'Shape', 'Beard oil treatment']
-  },
-  {
-    id: 'hot-shave',
-    name: 'Traditional Hot Shave',
-    category: 'beard',
-    description: 'Classic hot towel shave with straight razor',
-    duration: 40,
-    price: 45.00,
-    popular: false,
-    active: true,
-    bookings_this_month: 34,
-    revenue_this_month: 1530.00,
-    average_rating: 4.95,
-    includes: ['Pre-shave oil', 'Hot towel', 'Straight razor shave', 'Aftershave treatment', 'Face moisturizer']
-  },
-  {
-    id: 'kids-cut',
-    name: 'Kids Haircut (Under 12)',
-    category: 'haircuts',
-    description: 'Gentle haircut service for children',
-    duration: 25,
-    price: 20.00,
-    popular: false,
-    active: true,
-    bookings_this_month: 56,
-    revenue_this_month: 1120.00,
-    average_rating: 4.6,
-    includes: ['Fun consultation', 'Cut', 'Style', 'Lollipop']
-  },
-  {
-    id: 'hair-color',
-    name: 'Hair Color Service',
-    category: 'color',
-    description: 'Professional hair coloring and highlights',
-    duration: 90,
-    price: 85.00,
-    popular: false,
-    active: true,
-    bookings_this_month: 12,
-    revenue_this_month: 1020.00,
-    average_rating: 4.8,
-    includes: ['Color consultation', 'Application', 'Processing', 'Wash', 'Style']
-  },
-  {
-    id: 'scalp-treatment',
-    name: 'Scalp Treatment',
-    category: 'treatments',
-    description: 'Rejuvenating scalp treatment for healthy hair',
-    duration: 30,
-    price: 40.00,
-    popular: false,
-    active: true,
-    bookings_this_month: 23,
-    revenue_this_month: 920.00,
-    average_rating: 4.85,
-    includes: ['Scalp analysis', 'Deep cleansing', 'Treatment application', 'Massage', 'Conditioning']
-  },
-  {
-    id: 'hair-design',
-    name: 'Creative Hair Design',
-    category: 'styling',
-    description: 'Custom hair designs and patterns',
-    duration: 60,
-    price: 75.00,
-    popular: false,
-    active: true,
-    bookings_this_month: 8,
-    revenue_this_month: 600.00,
-    average_rating: 5.0,
-    includes: ['Design consultation', 'Custom pattern', 'Precision cutting', 'Detailing', 'Photo finish']
-  }
-]
-
 export default function ServicesPage() {
   const { user, profile } = useAuth()
-  const [services, setServices] = useState(Services)
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingService, setEditingService] = useState(null)
+
+  // Fetch services data from Supabase
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true)
+        const supabase = createClient()
+        
+        const { data, error } = await supabase
+          .from('services')
+          .select('*')
+          .eq('active', true)
+          .order('created_at', { ascending: false })
+        
+        if (error) {
+          console.error('Error fetching services:', error)
+          throw error
+        }
+        
+        setServices(data || [])
+        setError(null)
+      } catch (err) {
+        console.error('Failed to fetch services:', err)
+        setError(err.message || 'Failed to load services')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user) {
+      fetchServices()
+    }
+  }, [user])
+
+  // Delete service handler
+  const handleDeleteService = async (service) => {
+    if (!confirm(`Are you sure you want to delete "${service.name}"? This action cannot be undone.`)) {
+      return
+    }
+    
+    try {
+      const supabase = createClient()
+      
+      // Soft delete by setting active to false
+      const { error } = await supabase
+        .from('services')
+        .update({ active: false })
+        .eq('id', service.id)
+      
+      if (error) {
+        console.error('Error deleting service:', error)
+        alert(`Failed to delete service: ${error.message}`)
+        return
+      }
+      
+      // Remove from local state
+      setServices(prev => prev.filter(s => s.id !== service.id))
+      alert(`${service.name} has been deleted successfully`)
+      
+    } catch (err) {
+      console.error('Failed to delete service:', err)
+      alert('Failed to delete service. Please try again.')
+    }
+  }
 
   const filteredServices = services.filter(service => {
     const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -188,6 +143,7 @@ export default function ServicesPage() {
     return colors[category.color] || colors.blue
   }
 
+  // Calculate totals
   const totalServices = services.length
   const activeServices = services.filter(s => s.active).length
   const totalMonthlyBookings = services.reduce((sum, s) => sum + s.bookings_this_month, 0)
@@ -408,7 +364,9 @@ export default function ServicesPage() {
                                   Edit
                                 </button>
                                 <button
-                                  className="inline-flex justify-center items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-white hover:text-red-600 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                  onClick={() => handleDeleteService(service)}
+                                  className="inline-flex justify-center items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-white hover:text-red-600 hover:border-red-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                  title="Delete Service"
                                 >
                                   <TrashIcon className="h-4 w-4" />
                                 </button>

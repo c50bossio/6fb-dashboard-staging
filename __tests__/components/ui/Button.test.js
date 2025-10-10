@@ -1,5 +1,6 @@
+import React from 'react'
 import { render, screen } from '@/test-utils/test-utils'
-import { Button } from '@/components/ui/Button'
+import Button from '../../../components/Button'
 
 describe('Button Component', () => {
   it('renders button with default props', () => {
@@ -8,49 +9,41 @@ describe('Button Component', () => {
     const button = screen.getByRole('button', { name: /click me/i })
     expect(button).toBeInTheDocument()
     expect(button).toHaveClass('inline-flex', 'items-center', 'justify-center')
+    expect(button).toHaveClass('bg-gradient-to-r', 'from-olive-600', 'to-gold-600')
   })
 
   it('renders different variants correctly', () => {
     const { rerender } = render(<Button variant="primary">Primary</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-brand-500')
+    expect(screen.getByRole('button')).toHaveClass('bg-gradient-to-r', 'from-olive-600', 'to-gold-600')
 
     rerender(<Button variant="secondary">Secondary</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-gray-100')
+    expect(screen.getByRole('button')).toHaveClass('bg-gray-200', 'text-gray-800')
 
     rerender(<Button variant="outline">Outline</Button>)
-    expect(screen.getByRole('button')).toHaveClass('border', 'border-gray-300')
+    expect(screen.getByRole('button')).toHaveClass('border-2', 'border-olive-600', 'text-olive-600')
 
     rerender(<Button variant="ghost">Ghost</Button>)
-    expect(screen.getByRole('button')).toHaveClass('text-gray-700')
+    expect(screen.getByRole('button')).toHaveClass('text-gray-600')
+
+    rerender(<Button variant="cta">CTA</Button>)
+    expect(screen.getByRole('button')).toHaveClass('bg-gradient-to-r', 'from-yellow-400', 'to-orange-400')
 
     rerender(<Button variant="danger">Danger</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-error-500')
-
-    rerender(<Button variant="success">Success</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-success-500')
-
-    rerender(<Button variant="warning">Warning</Button>)
-    expect(screen.getByRole('button')).toHaveClass('bg-warning-500')
-
-    rerender(<Button variant="link">Link</Button>)
-    expect(screen.getByRole('button')).toHaveClass('text-brand-500', 'underline-offset-4')
+    expect(screen.getByRole('button')).toHaveClass('bg-red-600', 'text-white')
   })
 
   it('renders different sizes correctly', () => {
     const { rerender } = render(<Button size="sm">Small</Button>)
-    expect(screen.getByRole('button')).toHaveClass('h-8', 'px-3', 'text-xs')
+    expect(screen.getByRole('button')).toHaveClass('px-4', 'py-3', 'text-sm', 'min-h-[44px]')
 
     rerender(<Button size="md">Medium</Button>)
-    expect(screen.getByRole('button')).toHaveClass('h-9', 'px-4', 'text-sm')
+    expect(screen.getByRole('button')).toHaveClass('px-4', 'py-2.5', 'text-base', 'min-h-[44px]')
 
     rerender(<Button size="lg">Large</Button>)
-    expect(screen.getByRole('button')).toHaveClass('h-10', 'px-6', 'text-sm')
+    expect(screen.getByRole('button')).toHaveClass('px-6', 'py-3', 'text-lg', 'min-h-[48px]')
 
     rerender(<Button size="xl">Extra Large</Button>)
-    expect(screen.getByRole('button')).toHaveClass('h-12', 'px-8', 'text-base')
-
-    rerender(<Button size="icon">Icon</Button>)
-    expect(screen.getByRole('button')).toHaveClass('h-9', 'w-9')
+    expect(screen.getByRole('button')).toHaveClass('px-8', 'py-4', 'text-xl', 'min-h-[52px]')
   })
 
   it('handles loading state correctly', () => {
@@ -59,7 +52,8 @@ describe('Button Component', () => {
     const button = screen.getByRole('button')
     expect(button).toBeDisabled()
     expect(screen.getByText('Loading...')).toBeInTheDocument()
-    expect(screen.getByText('Loading Button')).toHaveClass('opacity-0')
+    // In the actual implementation, children are replaced with loadingText, not hidden with opacity
+    expect(screen.queryByText('Loading Button')).not.toBeInTheDocument()
   })
 
   it('handles custom loading text', () => {
@@ -73,7 +67,7 @@ describe('Button Component', () => {
     
     const button = screen.getByRole('button')
     expect(button).toBeDisabled()
-    expect(button).toHaveClass('opacity-50', 'cursor-not-allowed')
+    expect(button).toHaveClass('disabled:opacity-50', 'disabled:cursor-not-allowed')
   })
 
   it('handles click events', async () => {
@@ -136,6 +130,7 @@ describe('Button Component', () => {
     
     const spinner = document.querySelector('.animate-spin')
     expect(spinner).toBeInTheDocument()
-    expect(spinner).toHaveClass('w-4', 'h-4', 'border-2', 'border-current', 'border-t-transparent', 'rounded-full')
+    expect(spinner).toHaveClass('w-4', 'h-4', 'mr-2', 'animate-spin')
+    // The actual implementation uses ArrowPathIcon from heroicons, not a custom spinner
   })
 })

@@ -47,7 +47,7 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
   ]
 
   return (
-    <div className="bg-white border-b border-gray-200 lg:ml-72">
+    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 lg:ml-72">
       {/* Main Header */}
       <div className="px-4 py-3 sm:px-6">
         <div className="flex items-center justify-between">
@@ -67,7 +67,7 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
               <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg p-1.5">
                 <ScissorsIcon className="h-5 w-5 text-white" />
               </div>
-              <span className="font-bold text-gray-900">6FB</span>
+              <span className="font-bold text-gray-900 dark:text-gray-100">6FB</span>
             </div>
 
             {/* Breadcrumbs (Desktop) */}
@@ -79,8 +79,8 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
                   )}
                   <span className={`${
                     index === breadcrumbs.length - 1
-                      ? 'text-gray-900 font-medium'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'text-gray-900 dark:text-gray-100 font-medium'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                   }`}>
                     {crumb.name}
                   </span>
@@ -128,10 +128,10 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
 
               {/* Notifications Dropdown */}
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  <div className="px-4 py-3 border-b border-gray-200">
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                  <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
                       <button className="text-xs text-olive-600 hover:text-olive-800 font-medium">
                         Mark all read
                       </button>
@@ -153,13 +153,13 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
                             'bg-olive-500'
                           }`}></div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                               {notification.title}
                             </p>
-                            <p className="text-sm text-gray-600 mt-1">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                               {notification.message}
                             </p>
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                               {notification.time}
                             </p>
                           </div>
@@ -170,8 +170,8 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
                       </div>
                     ))}
                   </div>
-                  
-                  <div className="px-4 py-3 border-t border-gray-200">
+
+                  <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                     <button className="text-sm text-olive-600 hover:text-olive-800 font-medium">
                       View all notifications
                     </button>
@@ -201,8 +201,8 @@ export default function MobileHeader({ onMenuClick, showSearch = false }) {
               )}
               <span className={`${
                 index === breadcrumbs.length - 1
-                  ? 'text-gray-900 font-medium'
-                  : 'text-gray-500'
+                  ? 'text-gray-900 dark:text-gray-100 font-medium'
+                  : 'text-gray-500 dark:text-gray-400'
               }`}>
                 {crumb.name}
               </span>
