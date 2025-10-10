@@ -27,16 +27,16 @@ export default function ProfileCompletionPrompt() {
   }
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-lg p-4 mb-6">
       <div className="flex items-start">
         <div className="flex-shrink-0">
-          <ExclamationTriangleIcon className="h-5 w-5 text-amber-400" />
+          <ExclamationTriangleIcon className="h-5 w-5 text-amber-400 dark:text-amber-500" />
         </div>
         <div className="ml-3 flex-1">
-          <h3 className="text-sm font-medium text-amber-800">
+          <h3 className="text-sm font-medium text-amber-800 dark:text-amber-300">
             Complete Your Profile
           </h3>
-          <div className="mt-2 text-sm text-amber-700">
+          <div className="mt-2 text-sm text-amber-700 dark:text-amber-400">
             <p>
               Help us personalize your experience by completing your profile information.
               Your profile currently shows a generic name instead of your actual name.
@@ -45,7 +45,7 @@ export default function ProfileCompletionPrompt() {
           <div className="mt-4 flex flex-col sm:flex-row gap-2">
             <Link
               href="/settings/profile"
-              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-amber-800 bg-amber-100 hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200"
+              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-800/40 hover:bg-amber-200 dark:hover:bg-amber-800/60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 dark:focus:ring-amber-600 transition-colors duration-200"
             >
               <UserIcon className="h-4 w-4 mr-2" />
               Complete Profile
@@ -53,7 +53,7 @@ export default function ProfileCompletionPrompt() {
             <button
               type="button"
               onClick={() => setIsDismissed(true)}
-              className="inline-flex items-center px-3 py-2 border border-amber-300 text-sm leading-4 font-medium rounded-md text-amber-700 bg-transparent hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200"
+              className="inline-flex items-center px-3 py-2 border border-amber-300 dark:border-amber-700 text-sm leading-4 font-medium rounded-md text-amber-700 dark:text-amber-400 bg-transparent hover:bg-amber-50 dark:hover:bg-amber-900/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 dark:focus:ring-amber-600 transition-colors duration-200"
             >
               Dismiss
             </button>
@@ -63,7 +63,7 @@ export default function ProfileCompletionPrompt() {
           <button
             type="button"
             onClick={() => setIsDismissed(true)}
-            className="bg-amber-50 rounded-md p-1.5 text-amber-500 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-amber-50 focus:ring-amber-600"
+            className="bg-amber-50 dark:bg-amber-900/20 rounded-md p-1.5 text-amber-500 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-amber-50 dark:focus:ring-offset-amber-900/20 focus:ring-amber-600"
           >
             <span className="sr-only">Dismiss</span>
             <XMarkIcon className="h-4 w-4" />

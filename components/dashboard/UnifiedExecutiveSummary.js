@@ -94,17 +94,17 @@ export default function UnifiedExecutiveSummary({ data }) {
   return (
     <div className="card-modern overflow-hidden">
       {/* Header */}
-      <div className="gradient-gold-header text-white px-6 py-4 shadow-gold-glow">
+      <div className="bg-gradient-to-r from-brand-600 via-gold-500 to-brand-600 dark:from-brand-700 dark:via-gold-600 dark:to-brand-700 text-white px-6 py-4 shadow-gold-glow dark:shadow-none">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold">Executive Overview</h2>
-            <p className="text-white/90 text-sm mt-1">
+            <p className="text-white/90 dark:text-white/80 text-sm mt-1">
               {greeting} • {formatDate(currentTime)}
             </p>
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-shadow-subtle">{currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-            <div className="text-sm text-white/80">Local Time</div>
+            <div className="text-sm text-white/80 dark:text-white/70">Local Time</div>
           </div>
         </div>
       </div>
@@ -175,14 +175,14 @@ export default function UnifiedExecutiveSummary({ data }) {
             </h3>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="metric-card-gold">
+              <div className="card-modern p-6 hover:scale-[1.02] hover:-translate-y-1 bg-gradient-to-br from-brand-50/40 to-gold-50/30 dark:from-brand-900/20 dark:to-gold-900/10 border-brand-200/50 dark:border-brand-700/30">
                 <div className="text-2xl font-bold text-foreground">
                   ${todayMetrics.revenue}
                 </div>
                 <div className="text-sm text-muted-foreground">Today's Revenue</div>
               </div>
 
-              <div className="metric-card-gold">
+              <div className="card-modern p-6 hover:scale-[1.02] hover:-translate-y-1 bg-gradient-to-br from-brand-50/40 to-gold-50/30 dark:from-brand-900/20 dark:to-gold-900/10 border-brand-200/50 dark:border-brand-700/30">
                 <div className="text-2xl font-bold text-foreground">
                   {todayMetrics.bookings}
                 </div>
