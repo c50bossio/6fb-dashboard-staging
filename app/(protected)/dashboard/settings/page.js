@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   CogIcon,
   BellIcon,
   UserCircleIcon,
@@ -12,7 +12,8 @@ import {
   ClockIcon,
   ExclamationCircleIcon,
   CalendarDaysIcon,
-  PencilIcon
+  PencilIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useCallback, useRef, memo } from 'react'
@@ -164,7 +165,7 @@ export default function SettingsPage() {
   // Initialize from URL hash after component mounts (client-side only)
   useEffect(() => {
     const hash = window.location.hash.replace('#', '')
-    const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
+    const validSections = ['general', 'hours', 'staff', 'notifications', 'security', 'billing', 'system']
     
     // Explicitly block API section access
     if (hash === 'api') {
@@ -192,7 +193,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '')
-      const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
+      const validSections = ['general', 'hours', 'staff', 'notifications', 'security', 'billing', 'system']
       
       // Explicitly block API section access
       if (hash === 'api') {
@@ -510,6 +511,7 @@ export default function SettingsPage() {
   const settingSections = [
     { id: 'general', name: 'General', icon: BuildingOfficeIcon },
     { id: 'hours', name: 'Business Hours', icon: CalendarDaysIcon },
+    { id: 'staff', name: 'Staff Management', icon: UserCircleIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'security', name: 'Security & MFA', icon: KeyIcon },
     { id: 'billing', name: 'Billing & Usage', icon: CreditCardIcon },
@@ -1107,6 +1109,72 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Staff Management */}
+            {activeSection === 'staff' && (
+              <div className="space-y-6">
+                <div className="card">
+                  <div className="flex items-center mb-6">
+                    <UserCircleIcon className="h-6 w-6 text-olive-600 mr-3" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Staff & Team Management</h3>
+                      <p className="text-sm text-gray-600">Manage barbers, permissions, and roles</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-olive-50 border border-olive-200 rounded-lg p-6">
+                    <div className="flex items-start">
+                      <InformationCircleIcon className="h-6 w-6 text-olive-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="text-lg font-semibold text-olive-900 mb-2">Staff Management</h4>
+                        <p className="text-olive-800 mb-4">
+                          Manage your team members, assign roles, and control permissions for barbers and staff.
+                        </p>
+                        <a
+                          href="/shop/settings/staff"
+                          className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
+                        >
+                          <UserCircleIcon className="h-5 w-5 mr-2" />
+                          Go to Staff Management
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <div className="w-8 h-8 bg-olive-100 rounded-lg flex items-center justify-center mr-3">
+                          <UserCircleIcon className="h-5 w-5 text-olive-600" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900">Team Members</h4>
+                      </div>
+                      <p className="text-sm text-gray-600">Invite and manage your barbers and staff</p>
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <div className="w-8 h-8 bg-olive-100 rounded-lg flex items-center justify-center mr-3">
+                          <ShieldCheckIcon className="h-5 w-5 text-olive-600" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900">Permissions</h4>
+                      </div>
+                      <p className="text-sm text-gray-600">Control access levels and capabilities</p>
+                    </div>
+
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <div className="w-8 h-8 bg-olive-100 rounded-lg flex items-center justify-center mr-3">
+                          <BuildingOfficeIcon className="h-5 w-5 text-olive-600" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900">Roles & Templates</h4>
+                      </div>
+                      <p className="text-sm text-gray-600">Quick setup with pre-defined roles</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

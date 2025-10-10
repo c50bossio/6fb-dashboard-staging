@@ -5,7 +5,8 @@ import { Menu, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
   BuildingStorefrontIcon,
-  CheckIcon
+  CheckIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
@@ -90,37 +91,32 @@ export default function ShopSelector() {
 
   const switchShop = async (shop) => {
     try {
-      // Get auth session for API request
+      console.log('🔄 [ShopSelector] Switching to shop:', { id: shop.id, name: shop.name })
+
+      // Update shop_id directly in profiles table (this is what TenantContext reads)
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          shop_id: shop.id,
+          last_selected_shop_id: shop.id,  // Also update this for compatibility
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
 
-      const headers = {
-        'Content-Type': 'application/json'
+      if (updateError) {
+        console.error('❌ [ShopSelector] Failed to update profile:', updateError)
+        return
       }
 
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`
-      }
+      console.log('✅ [ShopSelector] Shop switched successfully')
+      setSelectedShop(shop)
 
-      // Update in database
-      const response = await fetch('/api/profile/update-shop', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ shop_id: shop.id })
-      })
-
-      if (response.ok) {
-        setSelectedShop(shop)
-        // Optionally reload the page to reflect new shop context
-        window.location.reload()
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to switch shop:', response.status)
-        }
-      }
+      // Reload page to refresh TenantContext with new shop
+      window.location.reload()
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Error switching shop:', error)
+        console.error('❌ [ShopSelector] Error switching shop:', error)
       }
     }
   }
@@ -231,6 +227,23 @@ export default function ShopSelector() {
                   )}
                 </Menu.Item>
               ))}
+
+              {/* Add Location Button - Always visible for enterprise/shop owners */}
+              <div className="border-t border-border mt-1 pt-1">
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      onClick={() => window.location.href = '/enterprise/website'}
+                      className={`${
+                        active ? 'bg-olive-50 dark:bg-olive-900/20' : ''
+                      } group flex items-center w-full px-4 py-3 text-sm text-olive-700 dark:text-olive-300 hover:text-olive-900 dark:hover:text-olive-100`}
+                    >
+                      <PlusIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                      <span className="font-medium">Add Location</span>
+                    </button>
+                  )}
+                </Menu.Item>
+              </div>
             </div>
           </Menu.Items>
         </Transition>
