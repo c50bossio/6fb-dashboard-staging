@@ -192,18 +192,23 @@ const marketingOperations = [
 
 // Enterprise operations
 const enterpriseOperations = [
-  { 
-    name: 'Enterprise Portal', 
-    href: '/enterprise/website', 
+  {
+    name: 'Enterprise Dashboard',
+    href: '/enterprise/dashboard',
+    icon: ChartPieIcon,
+    description: 'Multi-location overview, analytics, and performance comparison',
+    badge: 'NEW ✨'
+  },
+  {
+    name: 'Enterprise Portal',
+    href: '/enterprise/website',
     icon: BuildingOffice2Icon,
-    description: 'Manage multi-location website and portal',
-    badge: 'NEW'
+    description: 'Manage multi-location website and portal'
   }
 ]
 // Future features:
-// - Enterprise Dashboard (multi-location overview)
 // - Location Management (manage all shops)
-// - Cross-Shop Analytics (performance comparison)
+// - Staff Optimization (AI-powered scheduling)
 
 const legacyPages = [
   { 
