@@ -27,10 +27,10 @@ export async function GET(request) {
       )
     }
 
-    // Get user's profile with organization_id
+    // Get user's profile with organization_id, role, and subscription info
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, organization_id, role')
+      .select('id, organization_id, role, subscription_tier, subscription_status')
       .eq('id', user.id)
       .single()
 
@@ -38,6 +38,24 @@ export async function GET(request) {
       return NextResponse.json(
         { success: false, error: 'Organization not found for user' },
         { status: 404 }
+      )
+    }
+
+    // Check authorization: Must have enterprise role OR enterprise subscription
+    const hasEnterpriseRole = ['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)
+    const hasEnterpriseSubscription =
+      profile.subscription_tier === 'enterprise' &&
+      profile.subscription_status === 'active' &&
+      profile.organization_id
+
+    if (!hasEnterpriseRole && !hasEnterpriseSubscription) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Enterprise access required',
+          details: 'Upgrade to enterprise tier or contact your organization admin'
+        },
+        { status: 403 }
       )
     }
 

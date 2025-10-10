@@ -211,16 +211,6 @@ const enterpriseOperations = [
 // - Location Management (manage all shops)
 // - Staff Optimization (AI-powered scheduling)
 
-const legacyPages = [
-  { 
-    name: 'Legacy Dashboard', 
-    href: '/', 
-    icon: HomeIcon,
-    description: 'Original dashboard (deprecated)',
-    isLegacy: true
-  }
-]
-
 export default function Navigation() {
   const pathname = usePathname()
   const { isCollapsed, setIsCollapsed } = useNavigation()
@@ -436,7 +426,7 @@ export default function Navigation() {
                       <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
-                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                          isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100'
                         }`}>
                           {item.name}
                         </p>
@@ -663,8 +653,11 @@ export default function Navigation() {
         </div>
       )}
 
-      {/* Enterprise Operations - Only show for enterprise owners */}
-      {['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) && (
+      {/* Enterprise Operations - Show for enterprise owners OR enterprise subscription holders */}
+      {(
+        ['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) ||
+        (profile?.subscription_tier === 'enterprise' && profile?.organization_id)
+      ) && (
         <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
           {!collapsed && (
             <div className="mb-4">
@@ -673,11 +666,11 @@ export default function Navigation() {
               </h2>
             </div>
           )}
-          
+
           <ul className="space-y-2">
             {enterpriseOperations.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href)
-            
+
             return (
               <li key={item.name}>
                 <Link
@@ -728,46 +721,6 @@ export default function Navigation() {
         </ul>
         </div>
       )}
-
-      {/* Legacy Pages */}
-      <div className={`${collapsed ? 'px-2' : 'px-4'} py-2`}>
-        <ul className="space-y-1">
-          {legacyPages.map((item) => {
-            const isActive = pathname === item.href
-            
-            return (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-2'} rounded-lg transition-colors opacity-60 ${isActive ? 'bg-muted shadow-sm' : 'hover:bg-muted'}`}
-                >
-                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
-                    <item.icon className={`${collapsed ? '' : 'mt-0.5'} h-4 w-4 flex-shrink-0 text-gray-400`} title={collapsed ? item.name : undefined} />
-                    {!collapsed && (
-                      <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium truncate text-gray-600 dark:text-gray-400">
-                          {item.name}
-                        </p>
-                        <span className="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
-                          Legacy
-                        </span>
-                      </div>
-                      {item.description && (
-                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500 leading-tight">
-                          {item.description}
-                        </p>
-                      )}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
     </>
   )
 
