@@ -37,6 +37,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useNavigation } from '../contexts/NavigationContext'
+import { useAuth } from './SupabaseAuthProvider'
 import Logo, { LogoHeader } from './ui/Logo'
 import ShopSelector from './navigation/ShopSelector'
 
@@ -227,10 +228,10 @@ export default function Navigation() {
   const [isMobile, setIsMobile] = useState(true) // Default to mobile for SSR consistency
   const [currentTime, setCurrentTime] = useState('--:--') // Consistent initial state
   const [isClient, setIsClient] = useState(false)
-  
-  // For development, we'll assume SHOP_OWNER role
-  // In production, this would come from useAuth() context
-  const userRole = 'SHOP_OWNER' // This would normally be: const { user } = useAuth() and user.role
+
+  // Get user role from auth context
+  const { profile } = useAuth()
+  const userRole = profile?.role || 'CLIENT' // Default to CLIENT if no role found
 
   // Client-side only initialization
   useEffect(() => {
