@@ -74,7 +74,7 @@ This prevents half-done features and ensures every implementation provides immed
 
 ### Backend Stack
 - **API**: Next.js API Routes + FastAPI Python backend
-- **Database**: Supabase (PostgreSQL) for production, SQLite for development
+- **Database**: Supabase (PostgreSQL) for all environments
 - **Authentication**: Supabase Auth with OAuth provider support
 - **AI Integration**: OpenAI GPT-5 (Default), Anthropic Claude Opus 4.1, Google Gemini 2.0
 - **Payment Processing**: Stripe with subscription management
@@ -82,7 +82,7 @@ This prevents half-done features and ensures every implementation provides immed
 - **Reviews**: Google My Business API integration (no internal review storage)
 
 ### Development Infrastructure
-- **Containerization**: Docker Compose with frontend:9999, backend:8001
+- **Development**: Simple npm + Python workflow (no Docker required)
 - **Testing**: Triple-tool approach (Playwright + Puppeteer MCP + Computer Use AI)
 - **Error Tracking**: Sentry integration
 - **Analytics**: Vercel Analytics with performance monitoring
@@ -130,44 +130,33 @@ Users can select their preferred AI model through:
 
 ## Common Development Commands
 
-### Docker Development (Recommended)
+### Quick Start (Recommended)
 ```bash
-# Start development environment (creates data directory and handles containers)
-./docker-dev-start.sh
+# Start both frontend and backend with one command
+./dev-start.sh
 
-# Stop services
-./docker-stop.sh
-# or
-docker compose down
-
-# View logs
-docker compose logs -f
-
-# Restart services
-docker compose restart
-
-# Check service health
-docker compose ps
+# Stop both services
+./dev-stop.sh
+# or press CTRL+C in the terminal
 ```
 
 ### Manual Development
 ```bash
-# Install dependencies
+# Install dependencies (first time only)
 npm install
+pip3 install -r requirements.txt
 
-# Start frontend (port 9999)
+# Terminal 1: Start Next.js frontend (port 9999)
 npm run dev
 
-# Start backend separately if needed
-python main.py  # Simple HTTP server (port 8000)
-# or
-python fastapi_backend.py  # Full FastAPI server with AI endpoints (port 8000)
+# Terminal 2: Start FastAPI backend (port 8001)
+python3 fastapi_backend.py
 ```
 
-### Quick Development Workflow
+### Development Workflow
 ```bash
-# 1. Start development environment
-./docker-dev-start.sh
+# 1. Start services
+./dev-start.sh
 
 # 2. Verify services are running
 curl http://localhost:9999/api/health  # Frontend health
@@ -180,6 +169,16 @@ npm run test:e2e       # End-to-end tests
 # 4. After making changes, run quality checks
 npm run quality-check   # Linting and formatting
 npm run test:all       # Full test suite
+
+# 5. Stop services when done
+./dev-stop.sh
+```
+
+### Docker Development (Optional)
+```bash
+# If you prefer Docker (not required):
+docker compose up -d
+docker compose down
 ```
 
 ### Testing Commands
@@ -245,10 +244,10 @@ npm run lint:fix
 - **Middleware Stack**: Rate limiting, security headers, and CORS handling
 
 ### Database Architecture
-- **Development**: SQLite database stored in `/data/agent_system.db` (Docker volume mounted)
-- **Production**: PostgreSQL via Supabase with Row Level Security (RLS)
+- **All Environments**: PostgreSQL via Supabase with Row Level Security (RLS)
+- **No Local Database**: Direct Supabase connection for development and production
 - **Schema Management**: Complete schemas in `/database/` directory including multi-tenant, GDPR compliance
-- **Migrations**: Supabase migrations for production deployments
+- **Migrations**: Supabase migrations for schema changes
 - **Vector Storage**: pgvector extension support for RAG system embeddings
 
 #### 🔗 Claude Code Database Access
@@ -472,13 +471,13 @@ vercel         # Preview/staging
 /app/api/health/route.js              # Comprehensive health checks for all services
 /fastapi_backend.py                   # Full-featured FastAPI backend with AI endpoints
 /main.py                              # Simple HTTP server for basic deployment
+/dev-start.sh                         # Simple development startup script
+/dev-stop.sh                          # Stop development servers
 /services/ai_orchestrator_service.py  # Central AI coordination
 /database/complete-schema.sql         # Full PostgreSQL schema with pgvector support
 /database/barber-operations-schema.sql # Barber hierarchy and customization schema
 /components/NuclearInput.js           # Critical form component (95% coverage)
 /playwright.config.js                 # Testing configuration with multi-browser support
-/docker-compose.yml                   # Development container orchestration
-/docker-dev-start.sh                  # Development environment startup script
 /middleware/                          # Rate limiting and security middleware
 /services/                            # AI agents, business logic, and integrations
 
@@ -506,10 +505,10 @@ vercel         # Preview/staging
 5. **Testing**: Add unit tests in `/__tests__/components/`
 
 #### Database Operations
-1. **Development**: SQLite operations via direct file access
-2. **Production**: Supabase operations via `lib/supabase-query.js`
-3. **Schema Changes**: Update `/database/complete-schema.sql`
-4. **Migrations**: Use Supabase migration system for production
+1. **All Environments**: Supabase operations via `lib/supabase-query.js`
+2. **Schema Changes**: Update `/database/complete-schema.sql`
+3. **Migrations**: Use Supabase migration system (`supabase db push`)
+4. **Testing**: Use Supabase for test data with cleanup scripts
 
 #### AI Integration
 1. **Service Creation**: Add to `/services/` directory
@@ -518,8 +517,8 @@ vercel         # Preview/staging
 4. **Context Management**: Store conversation context for session continuity
 
 ### Development Workflow
-1. **Environment Setup**: Use Docker development for consistency
-2. **Database**: SQLite for dev, PostgreSQL for production via Supabase
+1. **Environment Setup**: Simple npm + Python3 development (./dev-start.sh)
+2. **Database**: Supabase PostgreSQL for all environments (no local DB)
 3. **Testing**: Triple-tool approach mandatory for critical components
 4. **Security**: Rate limiting, input validation, and comprehensive monitoring
 5. **AI Integration**: Multi-model support with graceful fallbacks
@@ -533,16 +532,14 @@ vercel         # Preview/staging
 
 ## Important Development Notes
 
-### Docker Considerations
-- **Frontend Port**: Always runs on 9999 (exposed as 9999:9999)
-- **Backend Port**: FastAPI on 8000 internally, exposed as 8001:8000
-- **Database Path**: SQLite stored in `/data/agent_system.db` with persistent volume
-- **Volume Mounts**: Live code reloading enabled for components, app, lib, and public directories
-- **Networks**: Services communicate via `agent-network` bridge
-- **Health Checks**: Both frontend and backend have healthcheck configurations
+### Port Configuration
+- **Frontend**: Next.js runs on port 9999
+- **Backend**: FastAPI runs on port 8001
+- **Database**: Supabase remote connection (no local ports)
+- **Hot Reload**: Automatic for both frontend and backend during development
 
 ### Backend Architecture
-- **Primary Server**: `fastapi_backend.py` - Full FastAPI server with comprehensive AI endpoints (Docker default)
+- **Primary Server**: `fastapi_backend.py` - Full FastAPI server with comprehensive AI endpoints
 - **Fallback Server**: `main.py` - Minimal HTTP server for constrained deployment environments
 - **AI Services**: Comprehensive integration with OpenAI, Anthropic, and Google AI with graceful fallbacks
 - **Middleware Stack**: Rate limiting, security headers, and CORS handling with environment-based configuration
@@ -557,16 +554,17 @@ vercel         # Preview/staging
 
 ## Troubleshooting Common Issues
 
-### Docker Issues
+### Port Conflicts
 ```bash
-# Container startup failures
-docker compose down && docker compose up --build -d
+# Check what's using port 9999 (frontend)
+lsof -ti:9999
 
-# Database connection issues
-rm -rf data/agent_system.db && ./docker-dev-start.sh
+# Check what's using port 8001 (backend)
+lsof -ti:8001
 
-# Port conflicts
-docker compose down && docker system prune -f
+# Kill processes and restart
+./dev-stop.sh
+./dev-start.sh
 ```
 
 ### Frontend Issues
@@ -575,7 +573,8 @@ docker compose down && docker system prune -f
 rm -rf .next/ node_modules/ && npm install && npm run build
 
 # Hot reload not working
-docker compose restart frontend
+# Stop and restart the frontend
+pkill -f "next dev" && npm run dev
 
 # TypeScript errors
 npx tsc --noEmit  # Check types without building
@@ -583,24 +582,34 @@ npx tsc --noEmit  # Check types without building
 
 ### Backend Issues
 ```bash
-# FastAPI startup failures
-docker compose logs backend  # Check error logs
-
-# Database migration issues
-python -c "import database.async_database_init; database.async_database_init.init_database()"
+# FastAPI won't start
+pip3 install -r requirements.txt  # Reinstall dependencies
+python3 fastapi_backend.py        # Check error output
 
 # AI service connection issues
-curl http://localhost:8001/ai/health  # Check AI service status
+curl http://localhost:8001/health  # Check backend health
+curl http://localhost:8001/docs    # Open API docs
 ```
 
-### Database Access
+### Database Connection
 ```bash
-# Test Supabase connection (Claude Code)
+# Test Supabase connection
 node test-supabase-access.js
 
-# SQLite operations (Development)
-sqlite3 data/agent_system.db ".tables"  # List tables
-sqlite3 data/agent_system.db ".schema profiles"  # View schema
+# Check environment variables
+grep SUPABASE .env.local
+
+# Verify credentials in Supabase dashboard
+echo $NEXT_PUBLIC_SUPABASE_URL
 ```
 
-This system emphasizes enterprise-grade reliability, comprehensive testing, and advanced AI integration while maintaining developer productivity through Docker containerization and modern tooling.
+### Clean Restart
+```bash
+# Complete fresh start
+./dev-stop.sh
+rm -rf .next/ node_modules/.cache
+npm install
+./dev-start.sh
+```
+
+This system emphasizes enterprise-grade reliability, comprehensive testing, and advanced AI integration while maintaining developer productivity through a simple, no-Docker workflow.
