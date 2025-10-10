@@ -6,11 +6,77 @@ import { createClient } from '@/lib/supabase/server'
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
+/**
+ * Detect if a query requires real database access
+ */
+function checkIfDatabaseQuery(message) {
+  const messageLower = message.toLowerCase()
+
+  const databaseKeywords = [
+    // Revenue & Financial
+    'revenue', 'earned', 'made', 'income', 'sales', 'profit', 'commission',
+
+    // Appointments & Bookings
+    'appointments', 'bookings', 'scheduled', 'booked',
+
+    // Customers
+    'customers', 'clients', 'client list',
+
+    // Services
+    'services', 'most popular', 'top services',
+
+    // Questions requiring data
+    'how much', 'how many', 'what is my', 'show me', 'give me',
+
+    // Time periods
+    'this month', 'last week', 'today', 'yesterday', 'this year'
+  ]
+
+  return databaseKeywords.some(keyword => messageLower.includes(keyword))
+}
+
+/**
+ * Call Python AgentKit backend for database queries
+ */
+async function callAgentKitBackend(message, context) {
+  const fastApiUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8001'
+
+  try {
+    const response = await fetch(`${fastApiUrl}/api/v1/agents/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${context.user_id}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        context: {
+          barbershop_id: context.barbershop_id,
+          user_id: context.user_id
+        }
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`AgentKit backend returned ${response.status}: ${errorText}`)
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('❌ AgentKit backend error:', error)
+    throw new Error(`Failed to query AgentKit backend: ${error.message}`)
+  }
+}
+
 export async function POST(request) {
   try {
-    const supabase = await createClient()
+    // Check authentication (temporary bypass for testing - placeholder config detected)
+    const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
+    // Temporary bypass for cross-browser testing and development
     const isDevelopment = process.env.NODE_ENV === 'development'
     const usingPlaceholderAuth = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
     const allowDevelopmentBypass = isDevelopment || usingPlaceholderAuth
@@ -19,6 +85,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
+    // For placeholder auth, create a test user
     const effectiveUser = user || { id: 'test-user-' + Date.now(), email: 'test@example.com' }
 
     const { message, businessContext, sessionId, request_collaboration } = await request.json()
@@ -31,6 +98,31 @@ export async function POST(request) {
     }
 
     try {
+      // Detect if query requires database access
+      const requiresDatabaseQuery = checkIfDatabaseQuery(message)
+
+      // Route database queries to Python AgentKit backend for real data access
+      if (requiresDatabaseQuery) {
+        console.log('🔗 Routing to AgentKit backend for database query')
+        const agentKitResponse = await callAgentKitBackend(message, {
+          user_id: effectiveUser.id,
+          barbershop_id: businessContext?.barbershop_id || 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+        })
+
+        return NextResponse.json({
+          success: true,
+          message: agentKitResponse.response,
+          agent_id: agentKitResponse.agent_used,
+          provider: 'agentkit_backend',
+          data_sources: ['database', 'supabase'],
+          tokens_used: agentKitResponse.tokens_used,
+          cost_usd: agentKitResponse.cost_usd,
+          response_time_ms: agentKitResponse.response_time_ms,
+          timestamp: agentKitResponse.metadata?.timestamp
+        })
+      }
+
+      // Use Enhanced AI Orchestrator for general queries
       const response = await aiOrchestrator.processMessage(message, {
         businessContext: businessContext || {},
         sessionId: sessionId || `session_${Date.now()}`,
@@ -45,6 +137,7 @@ export async function POST(request) {
         data_sources: response.data_sources,
         actions_taken: response.actions_taken,
         business_context: response.business_context,
+        // Collaboration data for the hook
         primary_agent: response.agent,
         collaborative_responses: response.actions_taken || [],
         coordination_summary: `${response.agent} analyzed your business data and provided personalized recommendations.`,
@@ -57,6 +150,7 @@ export async function POST(request) {
     } catch (aiError) {
       console.error('AI Agent error:', aiError)
       
+      // Fallback response
       return NextResponse.json({
         success: true,
         provider: 'fallback',
@@ -80,9 +174,11 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const supabase = await createClient()
+    // Check authentication (temporary bypass for testing - placeholder config detected)
+    const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
+    // Temporary bypass for cross-browser testing and development
     const isDevelopment = process.env.NODE_ENV === 'development'
     const usingPlaceholderAuth = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder')
     const allowDevelopmentBypass = isDevelopment || usingPlaceholderAuth
@@ -92,6 +188,7 @@ export async function GET(request) {
     }
 
     try {
+      // Get agent system status
       const status = await getAgentSystemStatus()
       
       return NextResponse.json({
@@ -128,25 +225,36 @@ export async function GET(request) {
 }
 
 async function getAgentResponse(options) {
+  // AI agents with integrated analytics data for enhanced business context
+  console.log('🤖 Using analytics-enhanced AI agents')
   
   try {
+    // Initialize memory system
     const { agentMemory } = await import('@/lib/agentMemory')
     await agentMemory.initialize()
     
+    // Get conversation context and learning profile
+    console.log('🧠 Loading conversation context and learning profile...')
     const conversationContext = await agentMemory.getConversationContext(options.userId, options.sessionId)
     
+    // Fetch comprehensive analytics data for enhanced context
+    console.log('📊 Fetching analytics data for enhanced context...')
     const analyticsData = await fetchAnalyticsContext(options.userId, options.businessContext)
     
+    // Initialize OpenAI client
     const OpenAI = require('openai')
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY
     })
     
+    // Determine if this requires multi-agent collaboration
     const collaborationNeeded = shouldUseMultiAgentApproach(options.message)
     
     if (collaborationNeeded) {
+      console.log('🤝 Using Multi-Agent Collaboration System')
       const response = await getMultiAgentResponse(options, analyticsData, openai, conversationContext)
       
+      // Store conversation in memory for learning
       await agentMemory.storeConversation(options.userId, options.sessionId, {
         message: options.message,
         response: response.response,
@@ -161,10 +269,13 @@ async function getAgentResponse(options) {
       return response
     }
     
+    // Single agent approach for simpler queries
     const agentType = classifyMessageForAgent(options.message)
     const agent = getAgentPersonality(agentType)
     
+    console.log(`🎯 Using ${agent.name} (${agentType}) with analytics-enhanced context`)
     
+    // Create enhanced prompt with real analytics data and memory context
     const personalizedContext = agentMemory.generatePersonalizedContext(options.userId, conversationContext)
     
     const systemPrompt = `You are ${agent.name}, ${agent.description}.
@@ -206,11 +317,14 @@ Respond as ${agent.name} with data-driven insights that reference the actual ana
     
     const aiResponse = response.choices[0].message.content
     
+    // Extract recommendations and action items from the response
     const recommendations = extractRecommendations(aiResponse)
     const actionItems = extractActionItems(aiResponse)
     const followUpQuestions = extractFollowUpQuestions(aiResponse)
     
+    console.log('✅ Memory-enhanced AI agent response generated successfully')
     
+    // Store conversation in memory for learning
     await agentMemory.storeConversation(options.userId, options.sessionId, {
       message: options.message,
       response: aiResponse,
@@ -248,6 +362,7 @@ Respond as ${agent.name} with data-driven insights that reference the actual ana
   } catch (error) {
     console.error('JavaScript AI agent failed:', error)
     
+    // Fallback to Anthropic if OpenAI fails
     try {
       const Anthropic = require('@anthropic-ai/sdk')
       const anthropic = new Anthropic({
@@ -257,6 +372,7 @@ Respond as ${agent.name} with data-driven insights that reference the actual ana
       const agentType = classifyMessageForAgent(options.message)
       const agent = getAgentPersonality(agentType)
       
+      console.log(`🔄 Fallback: Using ${agent.name} via Anthropic`)
       
       const systemPrompt = `You are ${agent.name}, ${agent.description}. ${agent.expertise}
       
@@ -299,36 +415,48 @@ Respond as ${agent.name} with specific advice, recommendations, and action items
 function shouldUseMultiAgentApproach(message) {
   const messageLower = message.toLowerCase()
   
+  // Multi-agent triggers (complex business questions requiring multiple perspectives)
   const multiAgentKeywords = [
+    // Growth and strategy questions
     'grow my business', 'increase revenue', 'expand', 'scale up', 'business strategy',
     
+    // Comprehensive analysis requests
     'analyze my business', 'improve my business', 'optimize everything', 'comprehensive',
     
+    // Cross-functional challenges
     'struggling with', 'not working', 'having issues', 'problems with',
     
+    // Planning and decision making
     'should i', 'help me decide', 'what would you recommend', 'best approach',
     
+    // Performance improvement
     'performance', 'efficiency', 'productivity', 'better results'
   ]
   
+  // Check for multi-agent indicators
   const hasMultiAgentKeywords = multiAgentKeywords.some(keyword => messageLower.includes(keyword))
   
+  // Also trigger for questions that mention multiple business areas
   const businessAreas = ['marketing', 'finance', 'operations', 'staff', 'customer', 'revenue', 'scheduling']
   const mentionedAreas = businessAreas.filter(area => messageLower.includes(area))
   const hasMultipleAreas = mentionedAreas.length >= 2
   
+  // Long, detailed questions often benefit from multi-agent approach
   const isDetailedQuery = message.length > 100
   
   return hasMultiAgentKeywords || hasMultipleAreas || isDetailedQuery
 }
 
 async function getMultiAgentResponse(options, analyticsData, openai, conversationContext) {
+  console.log('🤝 Initiating multi-agent collaboration...')
   
   try {
+    // Step 1: Get individual agent perspectives
     const agents = ['financial', 'marketing', 'operations']
     const agentResponses = []
     
     for (const agentType of agents) {
+      console.log(`💬 Getting ${agentType} agent perspective...`)
       const agent = getAgentPersonality(agentType)
       
       const agentPrompt = `You are ${agent.name}, ${agent.description}.
@@ -366,6 +494,8 @@ Include 1-2 specific recommendations with estimated impact.`
       })
     }
     
+    // Step 2: Synthesize collaborative response with memory context
+    console.log('🧠 Synthesizing collaborative response with memory context...')
     
     const { agentMemory } = await import('@/lib/agentMemory')
     const personalizedContext = agentMemory.generatePersonalizedContext(options.userId, conversationContext)
@@ -406,11 +536,13 @@ Respond as the Master Coach coordinating this expert team consultation with full
       max_tokens: 1000
     })
     
+    // Step 3: Extract comprehensive recommendations and action items
     const collaborativeResponse = masterResponse.choices[0].message.content
     const recommendations = extractRecommendations(collaborativeResponse)
     const actionItems = extractActionItems(collaborativeResponse)
     const followUpQuestions = extractFollowUpQuestions(collaborativeResponse)
     
+    console.log('✅ Multi-agent collaboration completed successfully')
     
     return {
       success: true,
@@ -442,14 +574,17 @@ Respond as the Master Coach coordinating this expert team consultation with full
     
   } catch (error) {
     console.error('Multi-agent collaboration failed:', error)
+    // Fallback to single agent approach
     const agentType = classifyMessageForAgent(options.message)
     const agent = getAgentPersonality(agentType)
     
+    console.log(`🔄 Falling back to ${agent.name} (single agent)`)
     return await getSingleAgentResponse(options, analyticsData, openai, agentType, agent)
   }
 }
 
 function extractKeyInsights(response) {
+  // Extract the most important 2-3 insights from an agent's response
   const sentences = response.split(/[.!?]+/).filter(s => s.trim().length > 20)
   const insights = []
   
@@ -463,9 +598,11 @@ function extractKeyInsights(response) {
 }
 
 function calculateCollaborationStrength(agentResponses) {
+  // Calculate how well the agents complement each other
   const overlapScore = 0
   let diversityScore = 0
   
+  // Check for topic diversity
   const topics = ['revenue', 'customer', 'efficiency', 'marketing', 'retention', 'utilization']
   const mentionedTopics = new Set()
   
@@ -479,12 +616,14 @@ function calculateCollaborationStrength(agentResponses) {
   
   diversityScore = mentionedTopics.size / topics.length
   
+  // Calculate collaboration strength (0.0 to 1.0)
   const strength = (diversityScore * 0.7) + (agentResponses.length / 3 * 0.3)
   
   return Math.round(strength * 100) / 100
 }
 
 async function getSingleAgentResponse(options, analyticsData, openai, agentType, agent) {
+  // Existing single agent logic (extracted for fallback)
   const systemPrompt = `You are ${agent.name}, ${agent.description}.
     
 ${agent.expertise}
@@ -547,18 +686,22 @@ Respond as ${agent.name} with data-driven insights that reference the actual ana
 function classifyMessageForAgent(message) {
   const messageLower = message.toLowerCase()
   
+  // Financial keywords -> Marcus
   if (/\b(revenue|money|profit|price|cost|financial|budget|income|pricing|payment)\b/.test(messageLower)) {
     return 'financial'
   }
   
+  // Marketing keywords -> Sophia  
   if (/\b(marketing|social|customer|promotion|brand|instagram|facebook|advertising|attract)\b/.test(messageLower)) {
     return 'marketing'
   }
   
+  // Operations keywords -> David
   if (/\b(schedule|staff|operation|efficiency|manage|appointment|booking|workflow|time)\b/.test(messageLower)) {
     return 'operations'
   }
   
+  // Default to financial for general business questions
   return 'financial'
 }
 
@@ -655,8 +798,10 @@ function extractFollowUpQuestions(response) {
 
 async function fetchAnalyticsContext(userId, businessContext) {
   try {
+    console.log('📊 Fetching comprehensive analytics data...')
     
-    const analyticsUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/ai/predictive?type=comprehensive&advanced=true`
+    // Fetch predictive analytics data
+    const analyticsUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/api/analytics/predictive?advanced=true`
     
     let analyticsData = {}
     
@@ -672,6 +817,7 @@ async function fetchAnalyticsContext(userId, businessContext) {
       if (analyticsResponse.ok) {
         const data = await analyticsResponse.json()
         analyticsData = data.data || {}
+        console.log('✅ Analytics data fetched successfully')
       } else {
         console.warn('⚠️ Analytics API returned non-OK status, using fallback data')
       }
@@ -679,7 +825,9 @@ async function fetchAnalyticsContext(userId, businessContext) {
       console.warn('⚠️ Analytics fetch failed, using fallback data:', fetchError.message)
     }
     
+    // Generate comprehensive context from analytics
     const context = {
+      // Revenue Analytics
       currentRevenue: analyticsData.revenue_forecast?.current || 5247,
       revenueForecasts: {
         daily: analyticsData.revenue_forecast?.predictions?.['1_day']?.value || 5510,
@@ -688,21 +836,26 @@ async function fetchAnalyticsContext(userId, businessContext) {
       },
       revenueTrend: analyticsData.revenue_forecast?.predictions?.['1_month']?.trend || 'increasing',
       
+      // Demand & Utilization Analytics
       currentUtilization: analyticsData.demand_forecast?.current_utilization || 0.78,
       peakHours: analyticsData.demand_forecast?.peak_periods?.daily || ['10:00-12:00', '14:00-16:00', '17:00-19:00'],
       peakDays: analyticsData.demand_forecast?.peak_periods?.weekly || ['Friday', 'Saturday'],
       
+      // Customer Analytics
       customerRetention: analyticsData.customer_behavior_forecast?.retention_rate?.current || 0.73,
       avgVisitFrequency: analyticsData.customer_behavior_forecast?.visit_frequency?.current || 3.2,
       customerLifetimeValue: analyticsData.customer_behavior_forecast?.customer_lifetime_value?.current || 385,
       noShowRate: analyticsData.customer_behavior_forecast?.booking_patterns?.no_show_rate || 0.08,
       
+      // AI Insights
       topInsights: analyticsData.ai_insights?.slice(0, 3) || [],
       recommendations: analyticsData.recommendations || [],
       
+      // Performance Metrics
       confidence: analyticsData.confidence_level || 0.85,
       modelAccuracy: analyticsData.model_performance?.accuracy_score || 0.84,
       
+      // Data Sources
       dataSources: [
         'revenue_forecast',
         'demand_analysis', 
@@ -711,11 +864,13 @@ async function fetchAnalyticsContext(userId, businessContext) {
         'predictive_models'
       ],
       
+      // Enhanced calculations
       revenueGrowthPotential: calculateRevenueGrowthPotential(analyticsData),
       utilizationOptimization: calculateUtilizationOptimization(analyticsData),
       customerValueOptimization: calculateCustomerValueOptimization(analyticsData)
     }
     
+    console.log('📈 Analytics context prepared with', Object.keys(context).length, 'data points')
     return context
     
   } catch (error) {
@@ -727,6 +882,7 @@ async function fetchAnalyticsContext(userId, businessContext) {
 function formatAnalyticsForPrompt(analyticsData, agentType) {
   let formattedData = ''
   
+  // Financial Agent gets comprehensive revenue data
   if (agentType === 'financial') {
     formattedData = `
 REVENUE PERFORMANCE:
@@ -747,6 +903,7 @@ CUSTOMER VALUE METRICS:
 - Visit Frequency: ${analyticsData.avgVisitFrequency} visits/month`
   }
   
+  // Marketing Agent gets customer and demand data  
   else if (agentType === 'marketing') {
     formattedData = `
 CUSTOMER BEHAVIOR ANALYTICS:
@@ -766,6 +923,7 @@ ${analyticsData.topInsights.filter(i => i.type === 'customer_retention' || i.des
   .join('\n') || '- Customer behavior data shows opportunities for improved retention and acquisition'}`
   }
   
+  // Operations Agent gets utilization and efficiency data
   else if (agentType === 'operations') {
     formattedData = `
 OPERATIONAL PERFORMANCE:
@@ -784,6 +942,7 @@ ${analyticsData.topInsights.filter(i => i.type === 'operational_efficiency' || i
   .join('\n') || '- Operations data indicates opportunities for improved scheduling and resource allocation'}`
   }
   
+  // Add common context for all agents
   formattedData += `
 
 STRATEGIC RECOMMENDATIONS (From Analytics):
