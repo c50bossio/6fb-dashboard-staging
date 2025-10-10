@@ -311,7 +311,7 @@ export default function UnifiedBarbershopDashboard({ barbershopId, staffId, user
                               {formatTime(appointment.scheduled_at)}
                             </p>
                             <p className="text-sm text-gray-600">
-                              {appointment.customer?.name || 'Walk-in'} - {appointment.service?.name}
+                              {appointment.client_name || appointment.client?.full_name || 'Walk-in'} - {appointment.service?.name}
                             </p>
                           </div>
                         </div>

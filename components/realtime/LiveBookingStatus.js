@@ -73,7 +73,7 @@ const BookingCard = ({ booking, onStatusChange, isUpdating }) => {
             
             <div>
               <h3 className="font-medium text-gray-900">
-                {booking.customer_name || 'Unknown Customer'}
+                {booking.client_name || booking.client?.full_name || 'Walk-in'}
               </h3>
               <p className="text-sm text-gray-500">
                 {booking.service_name || 'General Service'} with {booking.barber_name || 'Staff'}
@@ -243,7 +243,7 @@ const BookingFilters = ({ filters, onFiltersChange }) => {
       <div className="flex items-center space-x-2">
         <input
           type="text"
-          placeholder="Search customer..."
+          placeholder="Search client..."
           value={filters.search}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
           className="border border-gray-300 rounded px-3 py-1 text-sm w-48 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -345,10 +345,10 @@ export function LiveBookingStatus({ className = '', barbershopId = null }) {
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase()
-      const customerName = (booking.customer_name || '').toLowerCase()
+      const clientName = (booking.client_name || booking.client?.full_name || '').toLowerCase()
       const serviceName = (booking.service_name || '').toLowerCase()
-      
-      if (!customerName.includes(searchLower) && !serviceName.includes(searchLower)) {
+
+      if (!clientName.includes(searchLower) && !serviceName.includes(searchLower)) {
         return false
       }
     }

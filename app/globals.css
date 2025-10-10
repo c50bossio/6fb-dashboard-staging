@@ -47,10 +47,10 @@
   .dark {
     /* Dark Mode - Brand-Matched Professional Theme */
     /* Logo charcoal variant optimized for dark mode elegance */
-    
+
     --background: 120 7% 18%; /* Brand Charcoal base */
     --foreground: 32 21% 90%; /* Light Sand text */
-    --card: 120 7% 22%; /* Elevated charcoal cards */
+    --card: 120 7% 16%; /* Darker charcoal cards for better contrast */
     --card-foreground: 32 21% 90%; /* Light Sand text */
     --popover: 120 7% 20%; /* Charcoal popovers */
     --popover-foreground: 32 21% 90%; /* Light Sand text */
@@ -332,6 +332,20 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: hsl(120 7% 18%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(120 7% 35%);
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(120 7% 45%);
 }
 
 /* Animations */

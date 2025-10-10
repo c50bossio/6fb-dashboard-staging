@@ -190,7 +190,7 @@ export default function CustomerManagementInterface({ barbershopId, staffId }) {
     
     try {
       // Load customer appointment history
-      const response = await fetch(`/api/appointments?barbershop_id=${barbershopId}&customer_id=${customer.id}`);
+      const response = await fetch(`/api/appointments?barbershop_id=${barbershopId}&client_id=${customer.id}`);
       if (response.ok) {
         const appointments = await response.json();
         setCustomerAppointments(appointments || []);
@@ -200,8 +200,8 @@ export default function CustomerManagementInterface({ barbershopId, staffId }) {
         const completedAppointments = appointments.filter(apt => apt.status === 'completed');
         const totalSpent = completedAppointments.reduce((sum, apt) => sum + (parseFloat(apt.price) || 0), 0);
         const averageSpent = totalSpent / (completedAppointments.length || 1);
-        const lastVisit = completedAppointments.length > 0 
-          ? new Date(Math.max(...completedAppointments.map(apt => new Date(apt.start_time))))
+        const lastVisit = completedAppointments.length > 0
+          ? new Date(Math.max(...completedAppointments.map(apt => new Date(apt.scheduled_at))))
           : null;
 
         setCustomerStats({
@@ -566,7 +566,7 @@ export default function CustomerManagementInterface({ barbershopId, staffId }) {
                     <Clock className="h-4 w-4 text-gray-500" />
                     <div>
                       <p className="font-medium">
-                        {formatDate(appointment.start_time)}
+                        {formatDate(appointment.scheduled_at)}
                       </p>
                       <p className="text-sm text-gray-600">
                         {appointment.service?.name || 'Service'}

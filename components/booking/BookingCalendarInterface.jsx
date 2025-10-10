@@ -34,9 +34,9 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
   const [loading, setLoading] = useState(true);
   
   // Booking Form State
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
+  const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
   const [selectedService, setSelectedService] = useState('');
   const [appointmentNotes, setAppointmentNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -106,8 +106,9 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
 
   const isSlotBooked = (slotDateTime) => {
     return appointments.some(appointment => {
-      const appointmentStart = new Date(appointment.start_time);
-      const appointmentEnd = new Date(appointment.end_time);
+      const appointmentStart = new Date(appointment.scheduled_at);
+      const duration = appointment.duration_minutes || 30;
+      const appointmentEnd = new Date(appointmentStart.getTime() + duration * 60000);
       return slotDateTime >= appointmentStart && slotDateTime < appointmentEnd;
     });
   };
@@ -131,18 +132,18 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
     if (appointment) {
       // Editing existing appointment
       setEditingAppointment(appointment);
-      setCustomerName(appointment.customer?.name || '');
-      setCustomerPhone(appointment.customer?.phone || '');
-      setCustomerEmail(appointment.customer?.email || '');
+      setClientName(appointment.client_name || appointment.client?.full_name || '');
+      setClientPhone(appointment.client_phone || appointment.client?.phone || '');
+      setClientEmail(appointment.client_email || appointment.client?.email || '');
       setSelectedService(appointment.service_id?.toString() || '');
       setAppointmentNotes(appointment.notes || '');
     } else {
       // Creating new appointment
       setEditingAppointment(null);
       setSelectedSlot(slot);
-      setCustomerName('');
-      setCustomerPhone('');
-      setCustomerEmail('');
+      setClientName('');
+      setClientPhone('');
+      setClientEmail('');
       setSelectedService('');
       setAppointmentNotes('');
     }
@@ -153,16 +154,16 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
     setShowBookingModal(false);
     setSelectedSlot(null);
     setEditingAppointment(null);
-    setCustomerName('');
-    setCustomerPhone('');
-    setCustomerEmail('');
+    setClientName('');
+    setClientPhone('');
+    setClientEmail('');
     setSelectedService('');
     setAppointmentNotes('');
   };
 
   const submitBooking = async () => {
-    if (!customerName.trim() || !selectedService) {
-      toast.error('Please fill in customer name and service');
+    if (!clientName.trim() || !selectedService) {
+      toast.error('Please fill in client name and service');
       return;
     }
 
@@ -174,22 +175,21 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
         return;
       }
 
-      const startTime = editingAppointment 
-        ? new Date(editingAppointment.start_time)
+      const startTime = editingAppointment
+        ? new Date(editingAppointment.scheduled_at)
         : selectedSlot.dateTime;
-        
-      const endTime = new Date(startTime);
-      endTime.setMinutes(startTime.getMinutes() + (selectedServiceData.duration_minutes || 30));
+
+      const duration = selectedServiceData.duration_minutes || 30;
 
       const appointmentData = {
         barbershop_id: barbershopId,
         staff_id: staffId,
         service_id: parseInt(selectedService),
-        customer_name: customerName.trim(),
-        customer_phone: customerPhone.trim() || null,
-        customer_email: customerEmail.trim() || null,
-        start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
+        client_name: clientName.trim(),
+        client_phone: clientPhone.trim() || null,
+        client_email: clientEmail.trim() || null,
+        scheduled_at: startTime.toISOString(),
+        duration_minutes: duration,
         notes: appointmentNotes.trim() || null,
         status: 'scheduled'
       };
@@ -329,7 +329,7 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {timeSlots.map((slot, index) => {
               const appointment = appointments.find(apt => {
-                const appointmentStart = new Date(apt.start_time);
+                const appointmentStart = new Date(apt.scheduled_at);
                 return appointmentStart.getHours() === slot.dateTime.getHours() &&
                        appointmentStart.getMinutes() === slot.dateTime.getMinutes();
               });
@@ -338,13 +338,13 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
                 <div key={index} className="relative">
                   {appointment ? (
                     <Card className="cursor-pointer hover:shadow-md transition-shadow bg-blue-50 border-blue-200">
-                      <div 
+                      <div
                         className="p-3 text-center"
                         onClick={() => openBookingModal(null, appointment)}
                       >
                         <p className="font-medium text-blue-800">{slot.time}</p>
                         <p className="text-xs text-blue-600 mt-1">
-                          {appointment.customer?.name || 'Customer'}
+                          {appointment.client_name || appointment.client?.full_name || 'Walk-in'}
                         </p>
                         <p className="text-xs text-gray-500">
                           {appointment.service?.name || 'Service'}
@@ -409,13 +409,13 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
                 >
                   <div className="flex items-center gap-3">
                     <div className="text-sm font-medium">
-                      {new Date(appointment.start_time).toLocaleTimeString('en-US', {
+                      {new Date(appointment.scheduled_at).toLocaleTimeString('en-US', {
                         hour: 'numeric',
                         minute: '2-digit'
                       })}
                     </div>
                     <div>
-                      <p className="font-medium">{appointment.customer?.name || 'Customer'}</p>
+                      <p className="font-medium">{appointment.client_name || appointment.client?.full_name || 'Walk-in'}</p>
                       <p className="text-sm text-gray-600">{appointment.service?.name || 'Service'}</p>
                     </div>
                   </div>
@@ -479,8 +479,8 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-blue-600" />
                 <span className="font-medium">
-                  {editingAppointment 
-                    ? new Date(editingAppointment.start_time).toLocaleTimeString('en-US', {
+                  {editingAppointment
+                    ? new Date(editingAppointment.scheduled_at).toLocaleTimeString('en-US', {
                         hour: 'numeric',
                         minute: '2-digit'
                       })
@@ -510,18 +510,18 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
             </select>
           </div>
 
-          {/* Customer Information */}
+          {/* Client Information */}
           <div className="grid grid-cols-1 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
                 <User className="h-4 w-4 inline mr-1" />
-                Customer Name *
+                Client Name *
               </label>
               <Input
                 type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Enter customer name"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                placeholder="Enter client name"
                 required
               />
             </div>
@@ -533,8 +533,8 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
               </label>
               <Input
                 type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
+                value={clientPhone}
+                onChange={(e) => setClientPhone(e.target.value)}
                 placeholder="(555) 123-4567"
               />
             </div>
@@ -546,9 +546,9 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
               </label>
               <Input
                 type="email"
-                value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
-                placeholder="customer@example.com"
+                value={clientEmail}
+                onChange={(e) => setClientEmail(e.target.value)}
+                placeholder="client@example.com"
               />
             </div>
           </div>
@@ -576,7 +576,7 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
             </Button>
             <Button
               onClick={submitBooking}
-              disabled={isSubmitting || !customerName.trim() || !selectedService}
+              disabled={isSubmitting || !clientName.trim() || !selectedService}
               className="flex-1"
             >
               {isSubmitting ? (

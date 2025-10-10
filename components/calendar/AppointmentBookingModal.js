@@ -380,7 +380,7 @@ export default function AppointmentBookingModal({
     switch (name) {
       case 'client_name':
         if (!value.trim()) {
-          errors.client_name = 'Customer name is required'
+          errors.client_name = 'Client name is required'
         } else if (value.trim().length < 2) {
           errors.client_name = 'Name must be at least 2 characters'
         }
@@ -580,9 +580,9 @@ export default function AppointmentBookingModal({
       if (!formData.barber_id || !formData.service_id || !formData.scheduled_at) {
         throw new Error('Please fill in all required fields')
       }
-      
+
       if (!formData.client_name && !user) {
-        throw new Error('Customer name is required')
+        throw new Error('Client name is required')
       }
       
       // Calculate start and end times for API validation
@@ -612,13 +612,9 @@ export default function AppointmentBookingModal({
         customer_id: selectedCustomer?.id || null,
         customer_mode: customerMode,
         is_new_customer: customerMode === 'new',
-        
+
         notification_preferences: notificationPreferences,
-        send_notifications: notificationPreferences.confirmations || notificationPreferences.reminders,
-        
-        customer_name: formData.client_name,
-        customer_phone: formData.client_phone, 
-        customer_email: formData.client_email
+        send_notifications: notificationPreferences.confirmations || notificationPreferences.reminders
       }
       
       if (isEditing) {
@@ -1419,19 +1415,19 @@ export default function AppointmentBookingModal({
                         </div>
                       )}
 
-                      {/* Enhanced Customer Management */}
+                      {/* Enhanced Client Management */}
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold text-gray-900">Customer Information</h4>
+                          <h4 className="text-sm font-semibold text-gray-900">Client Information</h4>
                           {customerSearchLoading && (
                             <div className="flex items-center text-xs text-olive-600">
                               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-olive-600 mr-1"></div>
-                              Finding customer...
+                              Finding client...
                             </div>
                           )}
                         </div>
-                        
-                        {/* Customer Mode Toggle */}
+
+                        {/* Client Mode Toggle */}
                         <div className="flex items-center space-x-4">
                           <label className="flex items-center">
                             <input
@@ -1442,7 +1438,7 @@ export default function AppointmentBookingModal({
                               onChange={() => handleCustomerModeChange('new')}
                               className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
                             />
-                            <span className="ml-2 text-sm text-gray-700">New Customer</span>
+                            <span className="ml-2 text-sm text-gray-700">New Client</span>
                           </label>
                           <label className="flex items-center">
                             <input
@@ -1453,11 +1449,11 @@ export default function AppointmentBookingModal({
                               onChange={() => handleCustomerModeChange('existing')}
                               className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
                             />
-                            <span className="ml-2 text-sm text-gray-700">Existing Customer</span>
+                            <span className="ml-2 text-sm text-gray-700">Existing Client</span>
                           </label>
                         </div>
 
-                        {/* Existing Customer Display */}
+                        {/* Existing Client Display */}
                         {customerMode === 'existing' && selectedCustomer && (
                           <div className="p-4 bg-olive-50 border border-olive-200 rounded-lg">
                             <div className="flex items-start justify-between">
@@ -1499,7 +1495,7 @@ export default function AppointmentBookingModal({
                           </div>
                         )}
 
-                        {/* Existing Customer Search Button */}
+                        {/* Existing Client Search Button */}
                         {customerMode === 'existing' && !selectedCustomer && (
                           <button
                             type="button"
@@ -1507,11 +1503,11 @@ export default function AppointmentBookingModal({
                             className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-olive-500 hover:bg-olive-50 transition-colors"
                           >
                             <UserIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                            <span className="text-sm text-gray-600">Click to search for existing customer</span>
+                            <span className="text-sm text-gray-600">Click to search for existing client</span>
                           </button>
                         )}
 
-                        {/* New Customer Fields */}
+                        {/* New Client Fields */}
                         {customerMode === 'new' && (
                           <>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1616,10 +1612,10 @@ export default function AppointmentBookingModal({
                           />
                         </div>
 
-                        {/* Customer Notification Preferences */}
+                        {/* Client Notification Preferences */}
                         {(customerMode === 'new' || selectedCustomer) && (
                           <div className="pt-4 border-t border-gray-200">
-                            <h5 className="text-sm font-medium text-gray-900 mb-3">Notify Customer</h5>
+                            <h5 className="text-sm font-medium text-gray-900 mb-3">Notify Client</h5>
                             <div className="space-y-2">
                               <label className="flex items-center">
                                 <input
@@ -1790,7 +1786,7 @@ export default function AppointmentBookingModal({
                                           minute: '2-digit'
                                         })}
                                         {conflict.conflicting_appointments[0] && (
-                                          <span className="text-amber-700"> - {conflict.conflicting_appointments[0].customer_name}</span>
+                                          <span className="text-amber-700"> - {conflict.conflicting_appointments[0].client_name || conflict.conflicting_appointments[0].client?.full_name || conflict.conflicting_appointments[0].customer_name || 'Walk-in'}</span>
                                         )}
                                       </div>
                                     ))}
@@ -2327,7 +2323,7 @@ export default function AppointmentBookingModal({
     </Transition.Root>
     )}
 
-    {/* Customer Search Modal */}
+    {/* Client Search Modal */}
     <CustomerSearchModal
       isOpen={showCustomerSearch}
       onClose={() => setShowCustomerSearch(false)}

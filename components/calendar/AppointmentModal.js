@@ -18,9 +18,9 @@ export default function AppointmentModal({
   existingAppointment = null 
 }) {
   const [formData, setFormData] = useState({
-    customerName: '',
-    customerPhone: '',
-    customerEmail: '',
+    clientName: '',
+    clientPhone: '',
+    clientEmail: '',
     service: '',
     barberId: '',
     notes: '',
@@ -93,9 +93,9 @@ export default function AppointmentModal({
       if (existingAppointment) {
         const appointment = existingAppointment.extendedProps
         setFormData({
-          customerName: appointment.customer || '',
-          customerPhone: appointment.phone || '',
-          customerEmail: appointment.email || '',
+          clientName: appointment.client_name || appointment.client?.full_name || appointment.customer || '',
+          clientPhone: appointment.client_phone || appointment.client?.phone || appointment.phone || '',
+          clientEmail: appointment.client_email || appointment.client?.email || appointment.email || '',
           service: appointment.serviceId || '',
           barberId: existingAppointment.getResources()[0]?.id || '',
           notes: appointment.notes || '',
@@ -110,9 +110,9 @@ export default function AppointmentModal({
       }
     } else {
       setFormData({
-        customerName: '',
-        customerPhone: '',
-        customerEmail: '',
+        clientName: '',
+        clientPhone: '',
+        clientEmail: '',
         service: '',
         barberId: '',
         notes: '',
@@ -149,41 +149,41 @@ export default function AppointmentModal({
 
   const validateForm = () => {
     const errors = {}
-    
+
     // Required fields validation
-    if (!formData.customerName || formData.customerName.trim().length < 1) {
-      errors.customerName = 'Customer name is required'
-    } else if (formData.customerName.length > 255) {
-      errors.customerName = 'Customer name must be less than 255 characters'
+    if (!formData.clientName || formData.clientName.trim().length < 1) {
+      errors.clientName = 'Client name is required'
+    } else if (formData.clientName.length > 255) {
+      errors.clientName = 'Client name must be less than 255 characters'
     }
-    
-    if (!formData.customerPhone || formData.customerPhone.trim().length < 1) {
-      errors.customerPhone = 'Phone number is required'
-    } else if (formData.customerPhone.length > 20) {
-      errors.customerPhone = 'Phone number must be less than 20 characters'
+
+    if (!formData.clientPhone || formData.clientPhone.trim().length < 1) {
+      errors.clientPhone = 'Phone number is required'
+    } else if (formData.clientPhone.length > 20) {
+      errors.clientPhone = 'Phone number must be less than 20 characters'
     }
-    
+
     // Email validation (optional but must be valid if provided)
-    if (formData.customerEmail && formData.customerEmail.trim()) {
+    if (formData.clientEmail && formData.clientEmail.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(formData.customerEmail)) {
-        errors.customerEmail = 'Please enter a valid email address'
+      if (!emailRegex.test(formData.clientEmail)) {
+        errors.clientEmail = 'Please enter a valid email address'
       }
     }
-    
+
     if (!formData.barberId) {
       errors.barberId = 'Please select a barber'
     }
-    
+
     if (!formData.service) {
       errors.service = 'Please select a service'
     }
-    
+
     // Notes validation (optional but limited)
     if (formData.notes && formData.notes.length > 500) {
       errors.notes = 'Notes must be less than 500 characters'
     }
-    
+
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -216,9 +216,9 @@ export default function AppointmentModal({
     
     try {
       const appointmentData = {
-        client_name: formData.customerName,
-        client_phone: formData.customerPhone,
-        client_email: formData.customerEmail || null,
+        client_name: formData.clientName,
+        client_phone: formData.clientPhone,
+        client_email: formData.clientEmail || null,
         client_notes: formData.notes || null,
         barber_id: formData.barberId,
         service_id: formData.service,
@@ -446,24 +446,24 @@ export default function AppointmentModal({
 
                 {!isLoading && (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Customer Information */}
+                  {/* Client Information */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Customer Name *
+                      Client Name *
                     </label>
                     <input
                       type="text"
-                      name="customerName"
-                      value={formData.customerName}
+                      name="clientName"
+                      value={formData.clientName}
                       onChange={handleInputChange}
                       className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500 ${
-                        validationErrors.customerName ? 'border-red-500' : 'border-gray-300'
+                        validationErrors.clientName ? 'border-red-500' : 'border-gray-300'
                       }`}
-                      placeholder="Enter customer name"
+                      placeholder="Enter client name"
                       required
                     />
-                    {validationErrors.customerName && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.customerName}</p>
+                    {validationErrors.clientName && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.clientName}</p>
                     )}
                   </div>
 
@@ -473,17 +473,17 @@ export default function AppointmentModal({
                     </label>
                     <input
                       type="tel"
-                      name="customerPhone"
-                      value={formData.customerPhone}
+                      name="clientPhone"
+                      value={formData.clientPhone}
                       onChange={handleInputChange}
                       className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500 ${
-                        validationErrors.customerPhone ? 'border-red-500' : 'border-gray-300'
+                        validationErrors.clientPhone ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="(555) 123-4567"
                       required
                     />
-                    {validationErrors.customerPhone && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.customerPhone}</p>
+                    {validationErrors.clientPhone && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.clientPhone}</p>
                     )}
                   </div>
 
@@ -493,16 +493,16 @@ export default function AppointmentModal({
                     </label>
                     <input
                       type="email"
-                      name="customerEmail"
-                      value={formData.customerEmail}
+                      name="clientEmail"
+                      value={formData.clientEmail}
                       onChange={handleInputChange}
                       className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500 ${
-                        validationErrors.customerEmail ? 'border-red-500' : 'border-gray-300'
+                        validationErrors.clientEmail ? 'border-red-500' : 'border-gray-300'
                       }`}
-                      placeholder="customer@email.com"
+                      placeholder="client@email.com"
                     />
-                    {validationErrors.customerEmail && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.customerEmail}</p>
+                    {validationErrors.clientEmail && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.clientEmail}</p>
                     )}
                   </div>
 
@@ -548,7 +548,7 @@ export default function AppointmentModal({
                       <option value="">Select a barber</option>
                       {barbers.map(barber => (
                         <option key={barber.id} value={barber.id}>
-                          {barber.title || barber.name}
+                          {barber.full_name || barber.title || barber.name}
                         </option>
                       ))}
                     </select>

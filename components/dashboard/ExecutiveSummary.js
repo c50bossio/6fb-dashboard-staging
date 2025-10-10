@@ -84,8 +84,8 @@ export default function ExecutiveSummary({ data }) {
 
       {/* Strategic Insights */}
       <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <LightBulbIcon className="h-6 w-6 text-amber-700" />
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+          <LightBulbIcon className="h-6 w-6 text-amber-700 dark:text-amber-500" />
           Strategic Insights
         </h3>
         
@@ -95,7 +95,7 @@ export default function ExecutiveSummary({ data }) {
           ))}
           
           {insights.length === 0 && (
-            <p className="text-gray-500 text-center py-8">
+            <p className="text-gray-500 dark:text-gray-400 text-center py-8">
               Analyzing your business data for insights...
             </p>
           )}
@@ -122,9 +122,9 @@ export default function ExecutiveSummary({ data }) {
       
       {/* Show placeholder when no trend data available */}
       {!data?.trends && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-          <div className="text-center text-gray-500">
-            <ChartBarIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+        <div className="bg-card rounded-xl shadow-sm border border-border p-8">
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            <ChartBarIcon className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-500" />
             <p className="text-sm">Performance trends will appear here once we have enough historical data</p>
           </div>
         </div>
@@ -151,9 +151,9 @@ const MetricCard = ({ icon: Icon, title, value, change, trend, subtitle }) => (
       </div>
     </div>
     <div>
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <div className="text-sm text-gray-600 mt-1">{title}</div>
-      {subtitle && <div className="text-xs text-gray-500 mt-1">{subtitle}</div>}
+      <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</div>
+      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">{title}</div>
+      {subtitle && <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{subtitle}</div>}
     </div>
   </div>
 )
@@ -196,19 +196,19 @@ const InsightCard = ({ insight }) => {
 
 const TrendCard = ({ title, data }) => (
   <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-    <h4 className="text-lg font-semibold text-gray-900 mb-4">{title}</h4>
+    <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h4>
     <div className="h-48 flex items-end justify-between gap-2">
       {data.map((item, index) => {
         const maxValue = Math.max(...data.map(d => d.value))
         const height = (item.value / maxValue) * 100
-        
+
         return (
           <div key={index} className="flex-1 flex flex-col items-center">
-            <div 
+            <div
               className="w-full bg-gradient-to-t from-indigo-500 to-indigo-400 rounded-t"
               style={{ height: `${height}%` }}
             />
-            <span className="text-xs text-gray-500 mt-2">{item.month}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">{item.month}</span>
           </div>
         )
       })}

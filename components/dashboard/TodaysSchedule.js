@@ -279,7 +279,7 @@ export default function TodaysSchedule({ barbershopId, data }) {
                   <div>
                     <h3 className="font-semibold text-blue-900">Current Appointment</h3>
                     <p className="text-blue-700">
-                      {currentApt.customer_name} • {currentApt.service_name} • 
+                      {currentApt.client_name || currentApt.client?.full_name || 'Walk-in'} • {currentApt.service?.name || currentApt.service_name} •
                       {format(currentApt.start_time, 'h:mm a')} - {format(currentApt.end_time, 'h:mm a')}
                     </p>
                   </div>
@@ -305,7 +305,7 @@ export default function TodaysSchedule({ barbershopId, data }) {
                   <div>
                     <h3 className="font-semibold text-amber-900">Next Appointment</h3>
                     <p className="text-amber-700">
-                      {nextApt.customer_name} in {minutesUntilNext} minutes • {nextApt.service_name}
+                      {nextApt.client_name || nextApt.client?.full_name || 'Walk-in'} in {minutesUntilNext} minutes • {nextApt.service?.name || nextApt.service_name}
                     </p>
                   </div>
                 </div>
@@ -494,7 +494,7 @@ const AppointmentRow = ({ appointment, onCheckIn, onComplete, checkingIn }) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h4 className={`font-medium truncate ${statusConfig.text}`}>
-                {appointment.customer_name || 'Walk-in Customer'}
+                {appointment.client_name || appointment.client?.full_name || 'Walk-in Customer'}
               </h4>
               <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${statusConfig.badge} flex-shrink-0`}>
                 {statusConfig.badgeText}
@@ -503,10 +503,10 @@ const AppointmentRow = ({ appointment, onCheckIn, onComplete, checkingIn }) => {
             <div className="flex items-center gap-4 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <UserIcon className="h-4 w-4" />
-                {appointment.barber_name || 'Unassigned'}
+                {appointment.barber?.full_name || appointment.barber_name || 'Unassigned'}
               </span>
               <span className="truncate">
-                {appointment.service_name || 'General Service'}
+                {appointment.service?.name || appointment.service_name || 'General Service'}
               </span>
               <span className="flex items-center gap-1">
                 <ClockIcon className="h-4 w-4" />
@@ -520,18 +520,18 @@ const AppointmentRow = ({ appointment, onCheckIn, onComplete, checkingIn }) => {
               )}
             </div>
 
-            {/* Customer Contact Info */}
-            {(appointment.customer_phone || appointment.customer_email) && (
+            {/* Client Contact Info */}
+            {(appointment.client_phone || appointment.client?.phone || appointment.client_email || appointment.client?.email) && (
               <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                {appointment.customer_phone && (
+                {(appointment.client_phone || appointment.client?.phone) && (
                   <span className="flex items-center gap-1">
                     <PhoneIcon className="h-3 w-3" />
-                    {appointment.customer_phone}
+                    {appointment.client_phone || appointment.client?.phone}
                   </span>
                 )}
-                {appointment.customer_email && (
+                {(appointment.client_email || appointment.client?.email) && (
                   <span className="truncate">
-                    {appointment.customer_email}
+                    {appointment.client_email || appointment.client?.email}
                   </span>
                 )}
               </div>
@@ -560,18 +560,18 @@ const AppointmentRow = ({ appointment, onCheckIn, onComplete, checkingIn }) => {
               </button>
             )}
             <button
-              onClick={() => window.open(`tel:${appointment.customer_phone}`, '_self')}
+              onClick={() => window.open(`tel:${appointment.client_phone || appointment.client?.phone}`, '_self')}
               className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-              title="Call customer"
-              disabled={!appointment.customer_phone}
+              title="Call client"
+              disabled={!appointment.client_phone && !appointment.client?.phone}
             >
               <PhoneIcon className="h-4 w-4" />
             </button>
             <button
-              onClick={() => window.open(`sms:${appointment.customer_phone}`, '_self')}
+              onClick={() => window.open(`sms:${appointment.client_phone || appointment.client?.phone}`, '_self')}
               className="p-2 text-gray-400 hover:text-green-600 transition-colors"
-              title="Text customer"
-              disabled={!appointment.customer_phone}
+              title="Text client"
+              disabled={!appointment.client_phone && !appointment.client?.phone}
             >
               <ChatBubbleLeftIcon className="h-4 w-4" />
             </button>

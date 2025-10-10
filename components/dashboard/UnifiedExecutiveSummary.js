@@ -123,7 +123,7 @@ export default function UnifiedExecutiveSummary({ data }) {
             <div className="grid grid-cols-2 gap-4">
               <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
-                  <CurrencyDollarIcon className="h-5 w-5 text-olive-600" />
+                  <CurrencyDollarIcon className="h-5 w-5 text-olive-600 dark:text-olive-400" />
                   {formatChange(12.5)}
                 </div>
                 <div className="text-2xl font-bold text-foreground">
@@ -134,7 +134,7 @@ export default function UnifiedExecutiveSummary({ data }) {
 
               <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
-                  <UserGroupIcon className="h-5 w-5 text-olive-600" />
+                  <UserGroupIcon className="h-5 w-5 text-olive-600 dark:text-olive-400" />
                   {formatChange(8.3)}
                 </div>
                 <div className="text-2xl font-bold text-foreground">
@@ -145,7 +145,7 @@ export default function UnifiedExecutiveSummary({ data }) {
 
               <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
-                  <CalendarDaysIcon className="h-5 w-5 text-green-600" />
+                  <CalendarDaysIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
                   {formatChange(15)}
                 </div>
                 <div className="text-2xl font-bold text-foreground">
@@ -156,7 +156,7 @@ export default function UnifiedExecutiveSummary({ data }) {
 
               <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
-                  <StarIcon className="h-5 w-5 text-amber-800" />
+                  <StarIcon className="h-5 w-5 text-amber-800 dark:text-amber-500" />
                   {formatChange(0.2, '+')}
                 </div>
                 <div className="text-2xl font-bold text-foreground">

@@ -394,7 +394,7 @@ export default function MobileBookingFlow({
           </div>
         )}
 
-        {/* Step 3: Customer Info */}
+        {/* Step 3: Client Info */}
         {currentStep === 3 && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-gray-900">Your Information</h2>

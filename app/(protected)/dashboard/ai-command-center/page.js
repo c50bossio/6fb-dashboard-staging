@@ -28,7 +28,7 @@ import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { Card } from '../../../../components/ui'
 import ExecutableActionButton from '../../../../components/ExecutableActionButton'
-import ModelSelector from '../../../../components/chat/ModelSelector'
+import ModelSelector from '../../../../components/ai/ModelSelector'
 
 // Performance Metrics Widget from AI Intelligent
 function AIPerformanceMetricsWidget({ onRefresh, loading }) {

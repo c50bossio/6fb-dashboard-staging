@@ -179,10 +179,10 @@ const MetricsOverview = React.memo(function MetricsOverview({
       {tenant && (
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {hasRealData ? "Barbershop Analytics" : "Business Analytics"}
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               {hasRealData ? "Real-time business metrics" : "Last 7 days"} • {businessName || tenantName}
             </p>
           </div>
@@ -241,10 +241,10 @@ const MetricsOverview = React.memo(function MetricsOverview({
               </div>
               
               <div className="mb-1 sm:mb-3">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 leading-tight">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1 leading-tight">
                   {metric.value}
                 </div>
-                <div className="text-xs sm:text-sm font-medium text-gray-600 leading-tight">
+                <div className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 leading-tight">
                   {metric.title}
                 </div>
               </div>
@@ -261,25 +261,25 @@ const MetricsOverview = React.memo(function MetricsOverview({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">This Week</h3>
-            <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">This Week</h3>
+            <CalendarDaysIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">New Conversations</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">New Conversations</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.weeklyConversations || 47}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">AI Responses</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">AI Responses</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.weeklyResponses || 156}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Learning Events</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Learning Events</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.weeklyLearning || 23}
               </span>
             </div>
@@ -288,29 +288,29 @@ const MetricsOverview = React.memo(function MetricsOverview({
 
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">User Engagement</h3>
-            <UserGroupIcon className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">User Engagement</h3>
+            <UserGroupIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Active Users</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Active Users</span>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   {dashboardStats?.activeUsers || 12}
                 </span>
                 <Badge variant="success" size="sm">+3</Badge>
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Avg Session</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Avg Session</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.avgSession || '8m 34s'}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Satisfaction</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Satisfaction</span>
               <div className="flex items-center space-x-1">
-                <span className="text-sm font-semibold text-gray-900">4.8/5</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">4.8/5</span>
                 <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => (
                     <span key={i} className="text-xs">★</span>
@@ -323,29 +323,29 @@ const MetricsOverview = React.memo(function MetricsOverview({
 
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Business Impact</h3>
-            <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Business Impact</h3>
+            <CurrencyDollarIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Cost Savings</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Cost Savings</span>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-green-600">
+                <span className="text-sm font-semibold text-green-600 dark:text-green-400">
                   ${dashboardStats?.costSavings || '2,340'}
                 </span>
                 <Badge variant="success" size="sm">↑ 18%</Badge>
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Time Saved</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Time Saved</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.timeSaved || '47 hours'}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Efficiency Gain</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Efficiency Gain</span>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-olive-600">
+                <span className="text-sm font-semibold text-olive-600 dark:text-olive-400">
                   {dashboardStats?.efficiency || '+34%'}
                 </span>
                 <Badge variant="info" size="sm">vs last month</Badge>
