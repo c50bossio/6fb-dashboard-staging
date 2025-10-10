@@ -235,9 +235,9 @@ const UnifiedInput = memo(forwardRef(({
   
   // Base input classes (shadcn/ui design system)
   const baseClasses = `
-    flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm 
-    ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium 
-    placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-olive-500 
+    flex h-10 w-full rounded-md border border-border bg-input text-foreground px-3 py-2 text-sm
+    ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium
+    placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring
     focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50
   `
   
@@ -301,7 +301,7 @@ const UnifiedInput = memo(forwardRef(({
   return (
     <div className="unified-input-container">
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor={inputId} className="block text-sm font-medium text-foreground mb-2">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -336,7 +336,7 @@ const UnifiedInput = memo(forwardRef(({
       
       {/* Helper text */}
       {helper && !error && !validationMessage && (
-        <p className="mt-1 text-xs text-gray-500">{helper}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{helper}</p>
       )}
     </div>
   )

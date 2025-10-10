@@ -49,23 +49,23 @@
     /* Logo charcoal variant optimized for dark mode elegance */
 
     --background: 120 7% 18%; /* Brand Charcoal base */
-    --foreground: 32 21% 90%; /* Light Sand text */
+    --foreground: 0 0% 95%; /* Bright white text for maximum contrast */
     --card: 120 7% 16%; /* Darker charcoal cards for better contrast */
-    --card-foreground: 32 21% 90%; /* Light Sand text */
+    --card-foreground: 0 0% 95%; /* Bright white text */
     --popover: 120 7% 20%; /* Charcoal popovers */
-    --popover-foreground: 32 21% 90%; /* Light Sand text */
+    --popover-foreground: 0 0% 95%; /* Bright white text */
     --primary: 42 38% 60%; /* Enhanced Gold for dark mode visibility */
     --primary-foreground: 120 7% 12%; /* Dark text on gold */
     --secondary: 130 11% 35%; /* Lighter Olive for secondary actions */
-    --secondary-foreground: 32 21% 90%; /* Light Sand text */
-    --muted: 120 7% 25%; /* Muted charcoal */
-    --muted-foreground: 32 21% 70%; /* Muted light text */
+    --secondary-foreground: 0 0% 95%; /* Bright white text */
+    --muted: 120 7% 22%; /* Darker muted charcoal */
+    --muted-foreground: 0 0% 70%; /* Muted light text */
     --accent: 42 38% 60%; /* Enhanced Gold accent */
     --accent-foreground: 120 7% 12%; /* Dark text on gold */
     --destructive: 2 49% 60%; /* Visible error red for dark mode */
     --destructive-foreground: 0 0% 100%; /* White on error */
     --border: 120 7% 32%; /* Visible charcoal border */
-    --input: 120 7% 25%; /* Input field charcoal */
+    --input: 120 7% 12%; /* Much darker input background for better contrast */
     --ring: 42 38% 60%; /* Gold focus ring in dark mode */
     
     /* Enhanced dark mode spacing */
@@ -141,10 +141,21 @@
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-border rounded-xl bg-input
-           focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent 
+    @apply w-full px-4 py-3 border border-border rounded-xl bg-input text-foreground
+           focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
            transition-all duration-200 placeholder:text-muted-foreground
            shadow-sm hover:shadow-md;
+  }
+
+  /* Force input background colors in dark mode (override browser autocomplete) */
+  .input-field:-webkit-autofill,
+  .input-field:-webkit-autofill:hover,
+  .input-field:-webkit-autofill:focus,
+  .input-field:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px hsl(var(--input)) inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    box-shadow: 0 0 0 1000px hsl(var(--input)) inset !important;
+    border-color: hsl(var(--border)) !important;
   }
   
   .gradient-text {
