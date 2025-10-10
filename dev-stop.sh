@@ -7,7 +7,8 @@ echo "🛑 Stopping development servers..."
 pkill -f "next dev"
 
 # Kill FastAPI backend
-pkill -f "fastapi_backend.py"
+pkill -f "fastapi_backend"
+pkill -f "uvicorn"
 
 # Kill any node processes on port 9999
 lsof -ti:9999 | xargs kill -9 2>/dev/null

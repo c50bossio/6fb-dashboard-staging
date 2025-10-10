@@ -52,7 +52,7 @@ sleep 2
 
 # Start FastAPI backend on port 8001 in background
 echo "⚡ Starting FastAPI backend on http://localhost:8001"
-python3 fastapi_backend.py > /dev/null 2>&1 &
+PORT=8001 uvicorn fastapi_backend:app --host 0.0.0.0 --port 8001 --reload > /dev/null 2>&1 &
 BACKEND_PID=$!
 
 echo ""

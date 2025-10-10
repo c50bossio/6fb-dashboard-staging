@@ -40,7 +40,7 @@ class DatabaseConnectionPool:
     
     def __init__(
         self,
-        database_path: str = "/app/data/agent_system.db",
+        database_path: str = "./data/agent_system.db",
         max_connections: int = 10,
         strategy: PoolStrategy = PoolStrategy.ROUND_ROBIN
     ):
@@ -330,7 +330,7 @@ _connection_pool = None
 _pool_lock = Lock()
 
 def initialize_connection_pool(
-    database_path: str = "/app/data/agent_system.db",
+    database_path: str = "./data/agent_system.db",
     max_connections: int = 10,
     strategy: PoolStrategy = PoolStrategy.ROUND_ROBIN,
     database_type: str = "sqlite",
