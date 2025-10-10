@@ -6,6 +6,7 @@ import DashboardHeader from '@/components/DashboardHeader'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { TenantProvider } from '@/contexts/TenantContext'
 import { NavigationProvider, useNavigation } from '@/contexts/NavigationContext'
+import GlobalOnboardingWrapper from '@/components/onboarding/GlobalOnboardingWrapper'
 
 function ProtectedLayoutContent({ children }) {
   const { isCollapsed } = useNavigation()
@@ -36,11 +37,13 @@ function ProtectedLayoutContent({ children }) {
 export default function ProtectedLayout({ children }) {
   return (
     <TenantProvider>
-      <ProtectedRoute>
-        <NavigationProvider>
-          <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
-        </NavigationProvider>
-      </ProtectedRoute>
+      <GlobalOnboardingWrapper>
+        <ProtectedRoute>
+          <NavigationProvider>
+            <ProtectedLayoutContent>{children}</ProtectedLayoutContent>
+          </NavigationProvider>
+        </ProtectedRoute>
+      </GlobalOnboardingWrapper>
     </TenantProvider>
   )
 }
