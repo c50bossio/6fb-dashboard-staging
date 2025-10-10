@@ -16,7 +16,7 @@ import {
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
-import { createClient } from '../../../lib/supabase/browser-client'
+import { createClient } from '../../../lib/supabase/client'
 import LoadingSpinner from '../../../components/LoadingSpinner'
 import POSProductSelector from '../../../components/pos/POSProductSelector'
 import PaymentForm from '../../../components/payment/PaymentForm'

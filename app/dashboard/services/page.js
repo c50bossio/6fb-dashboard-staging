@@ -17,8 +17,8 @@ import { useState, useEffect } from 'react'
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
-import { createClient } from '../../../lib/supabase/browser-client'
-import LoadingSpinner, { TableLoadingSkeleton, CardLoadingSkeleton } from '../../../components/LoadingSpinner'
+import { createClient } from '../../../lib/supabase/client'
+import LoadingSpinner, { TableLoadingSkeleton, CardLoadingSkeleton} from '../../../components/LoadingSpinner'
 import Button from '../../../components/Button'
 
 // Service categories

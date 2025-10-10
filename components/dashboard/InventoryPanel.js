@@ -19,7 +19,7 @@ import {
 import { useState, useEffect } from 'react'
 
 import { useAuth } from '../SupabaseAuthProvider'
-import { createClient } from '../../lib/supabase/browser-client'
+import { createClient } from '../../lib/supabase/client'
 import LoadingSpinner, { TableLoadingSkeleton, CardLoadingSkeleton } from '../LoadingSpinner'
 import Cin7Marketplace from '../marketplace/Cin7Marketplace'
 

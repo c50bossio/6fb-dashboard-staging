@@ -13,7 +13,7 @@ import {
   PlusIcon,
   MinusIcon
 } from '@heroicons/react/24/outline'
-import { createClient } from '../../lib/supabase/browser-client'
+import { createClient } from '../../lib/supabase/client'
 
 export default function POSProductSelector({ onProductSelect, selectedProducts = [], barbershopId }) {
   const [products, setProducts] = useState([])

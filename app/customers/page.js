@@ -16,7 +16,7 @@ import { useState, useEffect } from 'react'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import GlobalNavigation from '../../components/GlobalNavigation'
 import { useAuth } from '../../components/SupabaseAuthProvider'
-import { createClient } from '../../lib/supabase/browser-client'
+import { createClient } from '../../lib/supabase/client'
 import LoadingSpinner, { TableLoadingSkeleton } from '../../components/LoadingSpinner'
 import Button from '../../components/Button'
 
