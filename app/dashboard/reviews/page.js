@@ -1,6 +1,8 @@
 'use client'
 
-import { 
+export const dynamic = 'force-dynamic'
+
+import {
   StarIcon,
   UserGroupIcon,
   ChartBarIcon,
