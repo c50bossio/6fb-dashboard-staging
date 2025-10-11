@@ -216,7 +216,7 @@ export const POST = withAuth(async (request) => {
       { status: 500 }
     )
   }
-}
+})
 
 /**
  * Send welcome email to newly onboarded barber
