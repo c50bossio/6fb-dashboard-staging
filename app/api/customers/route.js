@@ -23,7 +23,7 @@ export async function GET(request) {
     let query = supabase
       .from('customers')
       .select('*')
-      .eq('shop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
       .range(offset, offset + limit - 1)
 
@@ -49,7 +49,7 @@ export async function GET(request) {
     let countQuery = supabase
       .from('customers')
       .select('id', { count: 'exact', head: true })
-      .eq('shop_id', barbershopId)
+      .eq('barbershop_id', barbershopId)
       .eq('is_active', true)
 
     if (search) {
@@ -109,7 +109,7 @@ export async function POST(request) {
     let existingQuery = supabase
       .from('customers')
       .select('id, name, phone, email')
-      .eq('shop_id', barbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .eq('is_active', true)
 
     if (phone && email) {
@@ -136,7 +136,7 @@ export async function POST(request) {
     const { data: customer, error } = await supabase
       .from('customers')
       .insert([{
-        shop_id: barbershop_id,
+        barbershop_id: barbershop_id,
         name,
         phone,
         email,

@@ -1,0 +1,97 @@
+{
+  "registeredClient1": {
+    "id": "test-client-1",
+    "email": "john.doe@test.com",
+    "first_name": "John",
+    "last_name": "Doe",
+    "full_name": "John Doe",
+    "phone": "+15551234567",
+    "role": "CLIENT",
+    "is_active": true,
+    "email_verified": true,
+    "phone_verified": true,
+    "notification_preferences": {
+      "email": true,
+      "sms": true,
+      "marketing": false
+    }
+  },
+  "registeredClient2": {
+    "id": "test-client-2",
+    "email": "jane.smith@test.com",
+    "first_name": "Jane",
+    "last_name": "Smith",
+    "full_name": "Jane Smith",
+    "phone": "+15559876543",
+    "role": "CLIENT",
+    "is_active": true,
+    "email_verified": true,
+    "phone_verified": false,
+    "notification_preferences": {
+      "email": true,
+      "sms": false,
+      "marketing": true
+    }
+  },
+  "registeredClient3": {
+    "id": "test-client-3",
+    "email": "mike.johnson@test.com",
+    "first_name": "Mike",
+    "last_name": "Johnson",
+    "full_name": "Mike Johnson",
+    "phone": "+15552468135",
+    "role": "CLIENT",
+    "is_active": true,
+    "email_verified": true,
+    "phone_verified": true,
+    "notification_preferences": {
+      "email": true,
+      "sms": true,
+      "marketing": true
+    }
+  },
+  "walkInClient": {
+    "first_name": "Walk",
+    "last_name": "In",
+    "full_name": "Walk In Customer",
+    "phone": "+15553692581",
+    "email": null,
+    "role": "CLIENT",
+    "is_active": true,
+    "email_verified": false,
+    "phone_verified": false
+  },
+  "testBarber1": {
+    "id": "test-barber-1",
+    "email": "barber1@test.com",
+    "first_name": "Tony",
+    "last_name": "Barber",
+    "full_name": "Tony Barber",
+    "phone": "+15557894561",
+    "role": "BARBER",
+    "is_active": true,
+    "barbershop_id": "test-barbershop-1"
+  },
+  "testBarber2": {
+    "id": "test-barber-2",
+    "email": "barber2@test.com",
+    "first_name": "Sam",
+    "last_name": "Scissors",
+    "full_name": "Sam Scissors",
+    "phone": "+15557894562",
+    "role": "BARBER",
+    "is_active": true,
+    "barbershop_id": "test-barbershop-1"
+  },
+  "shopOwner": {
+    "id": "test-shop-owner",
+    "email": "owner@test.com",
+    "first_name": "Shop",
+    "last_name": "Owner",
+    "full_name": "Shop Owner",
+    "phone": "+15551112222",
+    "role": "SHOP_OWNER",
+    "is_active": true,
+    "barbershop_id": "test-barbershop-1"
+  }
+}

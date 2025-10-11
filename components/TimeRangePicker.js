@@ -110,7 +110,7 @@ const TimeRangePicker = ({
           {/* Open Time */}
           <div className="flex-1">
             {showLabels && (
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Open
               </label>
             )}
@@ -124,9 +124,9 @@ const TimeRangePicker = ({
 
           {/* Separator with duration */}
           <div className="flex flex-col items-center px-2">
-            <div className="h-px w-8 bg-gray-300 mt-6"></div>
+            <div className="h-px w-8 bg-border mt-6"></div>
             {duration && (
-              <span className="text-xs text-gray-500 mt-1 whitespace-nowrap">
+              <span className="text-xs text-muted-foreground mt-1 whitespace-nowrap">
                 {duration}
               </span>
             )}
@@ -135,7 +135,7 @@ const TimeRangePicker = ({
           {/* Close Time */}
           <div className="flex-1">
             {showLabels && (
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Close
               </label>
             )}
@@ -158,7 +158,7 @@ const TimeRangePicker = ({
 
         {/* Time Range Summary */}
         {!validationError && openTime && closeTime && (
-          <div className="mt-2 text-sm text-gray-600">
+          <div className="mt-2 text-sm text-muted-foreground">
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-olive-50 text-olive-700">
               Open {duration} • {openTime} - {closeTime}
             </span>

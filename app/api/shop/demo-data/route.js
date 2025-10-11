@@ -213,7 +213,7 @@ async function getMetrics(shopId) {
     const { count: totalCustomers } = await supabase
       .from('customers')
       .select('*', { count: 'exact', head: true })
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', shopId)
       .eq('is_active', true)
 
     // Get active barbers count
@@ -258,7 +258,7 @@ async function getMetrics(shopId) {
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
-    const shopId = searchParams.get('shop_id') || DEMO_BARBERSHOP_ID
+    const shopId = searchParams.get('barbershop_id') || DEMO_BARBERSHOP_ID
 
     // Fetch all data concurrently for better performance
     const [shopInfo, barbers, metrics] = await Promise.all([

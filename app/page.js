@@ -63,8 +63,8 @@ export default function HomePage() {
         {/* Header */}
         <header className="bg-card border-b border-border sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center">
+            <div className="flex items-center justify-between h-24">
+              <div className="flex items-center py-3">
                 <Link href="/" className="block">
                   <LogoHeader size="small" />
                 </Link>
@@ -163,7 +163,7 @@ export default function HomePage() {
               
               <h1 className="text-5xl lg:text-7xl font-bold mb-8 leading-tight">
                 Build Your Barbershop Empire,<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-pink-300">
+                <span className="text-yellow-300 font-extrabold drop-shadow-lg">
                   Not Someone Else's
                 </span>
               </h1>

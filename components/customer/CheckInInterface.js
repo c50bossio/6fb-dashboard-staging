@@ -50,9 +50,9 @@ const AppointmentCheckInCard = ({ appointment, onCheckIn, onSendMessage, isCheck
     <div className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-gray-50">
       <div className="flex items-start sm:items-center justify-between mb-3 gap-3">
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-900 truncate">{appointment.customer_name}</h4>
+          <h4 className="font-medium text-gray-900 truncate">{appointment.client_name}</h4>
           <p className="text-sm text-gray-600 truncate">
-            {formatTime(appointment.start_time)} • {appointment.service_name}
+            {formatTime(appointment.scheduled_at)} • {appointment.service_name}
           </p>
           {appointment.barber_name && (
             <p className="text-sm text-gray-500 truncate">
@@ -90,7 +90,7 @@ const AppointmentCheckInCard = ({ appointment, onCheckIn, onSendMessage, isCheck
         
         <div className="flex gap-2 justify-center sm:justify-start">
           <button
-            onClick={() => window.open(`tel:${appointment.customer_phone}`, '_self')}
+            onClick={() => window.open(`tel:${appointment.client_phone}`, '_self')}
             className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
             title="Call customer"
           >
@@ -183,7 +183,7 @@ const CheckInContent = ({
       </div>
       <h2 className="text-lg sm:text-xl font-bold text-gray-900">Customer Check-In</h2>
       <p className="text-gray-600 text-sm mt-1">
-        <span className="hidden sm:inline">Enter customer's phone number to check them in</span>
+        <span className="hidden sm:inline">Enter client's phone number to check them in</span>
         <span className="sm:hidden">Enter phone number</span>
       </p>
     </div>
@@ -211,7 +211,7 @@ const CheckInContent = ({
     {/* Phone Number Input */}
     <div className="mb-6">
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        Customer Phone Number
+        Client Phone Number
       </label>
       <div className="relative">
         <input
@@ -252,7 +252,7 @@ const CheckInContent = ({
         <div className="space-y-3">
           <input
             type="text"
-            placeholder="Customer Name"
+            placeholder="Client Name"
             value={walkInData.name}
             onChange={(e) => setWalkInData({...walkInData, name: e.target.value})}
             className="w-full px-3 py-2 border rounded-lg"
@@ -319,7 +319,7 @@ const CheckInContent = ({
         <ClockIcon className="h-12 w-12 text-gray-300 mx-auto mb-3" />
         <p className="text-gray-600">No appointments found for today</p>
         <p className="text-gray-500 text-sm mt-1">
-          Check the phone number or search for a different customer
+          Check the phone number or search for a different client
         </p>
       </div>
     )}
@@ -408,7 +408,7 @@ export default function CheckInInterface({ barbershopId, mode = 'embedded' }) {
 
       if (result.success) {
         const queueInfo = result.queue_position ? ` Queue position: ${result.queue_position}` : ''
-        setSuccessMessage(`${appointment.customer_name} checked in successfully! ✅${queueInfo}`)
+        setSuccessMessage(`${appointment.client_name} checked in successfully! ✅${queueInfo}`)
         setSelectedAppointment({ ...appointment, status: 'checked_in' })
         
         // Clear search results and phone number
@@ -481,7 +481,7 @@ export default function CheckInInterface({ barbershopId, mode = 'embedded' }) {
         body: JSON.stringify({
           type: 'custom_message',
           message,
-          phone: appointment.customer_phone,
+          phone: appointment.client_phone,
           barbershop_id: barbershopId
         })
       })

@@ -12,7 +12,7 @@ import { useAuth } from '../SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/client'
 
 export default function ShopSelector() {
-  const { user, profile } = useAuth()
+  const { user, profile, refreshProfile } = useAuth()
   const [shops, setShops] = useState([])
   const [selectedShop, setSelectedShop] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -37,6 +37,18 @@ export default function ShopSelector() {
       setLoading(false)
     }
   }, [profile?.organization_id])
+
+  // Update selectedShop when profile.last_selected_shop_id changes (without refetching shops)
+  // This handles shop switching without a page reload
+  useEffect(() => {
+    if (profile?.last_selected_shop_id && shops.length > 0) {
+      const newSelectedShop = shops.find(shop => shop.id === profile.last_selected_shop_id)
+      if (newSelectedShop && newSelectedShop.id !== selectedShop?.id) {
+        console.log('🔄 [ShopSelector] last_selected_shop_id changed, updating selectedShop:', newSelectedShop.name)
+        setSelectedShop(newSelectedShop)
+      }
+    }
+  }, [profile?.last_selected_shop_id, shops, selectedShop])
 
   const loadShops = async () => {
     try {
@@ -66,13 +78,19 @@ export default function ShopSelector() {
         console.log('✅ [ShopSelector] Loaded shops:', shops.map(s => ({ id: s.id, name: s.name })))
 
         // Set the currently selected shop
+        // Prioritize last_selected_shop_id (selected shop) over barbershop_id (home shop)
         const currentShop = shops.find(
-          shop => shop.id === profile.last_selected_shop_id || shop.id === profile.barbershop_id
+          shop => shop.id === profile.last_selected_shop_id ||
+                  shop.id === profile.barbershop_id
         )
         const selected = currentShop || shops[0]
         setSelectedShop(selected)
 
         console.log('🎯 [ShopSelector] Selected shop:', selected ? { id: selected.id, name: selected.name } : 'none')
+        console.log('🔍 [ShopSelector] Profile IDs:', {
+          last_selected_shop_id: profile.last_selected_shop_id,
+          barbershop_id: profile.barbershop_id
+        })
       } else {
         if (process.env.NODE_ENV === 'development') {
           console.error('❌ [ShopSelector] Failed to load shops:', response.status, await response.text())
@@ -93,13 +111,12 @@ export default function ShopSelector() {
     try {
       console.log('🔄 [ShopSelector] Switching to shop:', { id: shop.id, name: shop.name })
 
-      // Update shop_id directly in profiles table (this is what TenantContext reads)
+      // Update last_selected_shop_id in profiles table (this is what TenantContext reads)
       const supabase = createClient()
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
-          shop_id: shop.id,
-          last_selected_shop_id: shop.id,  // Also update this for compatibility
+          last_selected_shop_id: shop.id,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id)
@@ -109,10 +126,25 @@ export default function ShopSelector() {
         return
       }
 
-      console.log('✅ [ShopSelector] Shop switched successfully')
+      console.log('✅ [ShopSelector] Shop switched successfully in database')
+
+      // Clear tenant resolver cache to force fresh lookup
+      console.log('🗑️ [ShopSelector] Clearing tenant cache...')
+      try {
+        await fetch('/api/tenant/clear-cache', { method: 'POST' })
+        console.log('✅ [ShopSelector] Tenant cache cleared')
+      } catch (cacheError) {
+        console.warn('⚠️ [ShopSelector] Failed to clear cache:', cacheError)
+      }
+
+      // Refresh profile cache to get updated shop_id
+      console.log('🔄 [ShopSelector] Refreshing profile cache...')
+      await refreshProfile()
+
       setSelectedShop(shop)
 
       // Reload page to refresh TenantContext with new shop
+      console.log('🔄 [ShopSelector] Reloading page...')
       window.location.reload()
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {

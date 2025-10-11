@@ -108,18 +108,18 @@ export async function GET(request) {
     const amount = parseFloat(searchParams.get('amount') || '0')
     const currency = searchParams.get('currency') || 'usd'
     const customer_id = searchParams.get('customer_id')
-    const shop_id = searchParams.get('shop_id')
+    const barbershop_id = searchParams.get('barbershop_id')
     const payment_type = searchParams.get('payment_type') || 'full_payment'
 
     const supabase = createClient()
 
-    // Get shop-specific payment method configuration if shop_id provided
+    // Get shop-specific payment method configuration if barbershop_id provided
     let shopConfig = null
-    if (shop_id) {
+    if (barbershop_id) {
       const { data: shopSettings } = await supabase
         .from('shop_payment_settings')
         .select('*')
-        .eq('shop_id', shop_id)
+        .eq('barbershop_id', barbershop_id)
         .single()
 
       if (shopSettings) {
@@ -234,7 +234,7 @@ export async function GET(request) {
         amount,
         currency,
         payment_type,
-        shop_id: shop_id || null
+        barbershop_id: barbershop_id || null
       },
       recommendations: {
         fastest: methodsWithFees.find(m => ['apple_pay', 'google_pay', 'link'].includes(m.id)),
@@ -437,17 +437,17 @@ export async function POST(request) {
 export async function PUT(request) {
   try {
     const {
-      shop_id,
+      barbershop_id,
       method_settings = {},
       disabled_methods = [],
       method_priorities = {},
       bnpl_settings = {}
     } = await request.json()
 
-    if (!shop_id) {
+    if (!barbershop_id) {
       return NextResponse.json({
         success: false,
-        error: 'shop_id is required'
+        error: 'barbershop_id is required'
       }, { status: 400 })
     }
 
@@ -457,14 +457,14 @@ export async function PUT(request) {
     const { data: updatedSettings, error } = await supabase
       .from('shop_payment_settings')
       .upsert({
-        shop_id,
+        barbershop_id,
         method_settings,
         disabled_methods,
         method_priorities,
         bnpl_settings,
         updated_at: new Date().toISOString()
       }, {
-        onConflict: 'shop_id'
+        onConflict: 'barbershop_id'
       })
       .select()
       .single()

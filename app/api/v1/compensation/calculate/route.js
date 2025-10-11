@@ -47,15 +47,15 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id')
+      .select('barbershop_id')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.shop_id) {
+    if (!profile?.barbershop_id) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barbershopId = profile.shop_id
+    const barbershopId = profile.barbershop_id
     const engine = new CompensationEngine(barbershopId, barberId)
 
     // Calculate compensation
@@ -141,15 +141,15 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id')
+      .select('barbershop_id')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.shop_id) {
+    if (!profile?.barbershop_id) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barbershopId = profile.shop_id
+    const barbershopId = profile.barbershop_id
     const engine = new CompensationEngine(barbershopId, barberId)
 
     // Calculate for each revenue amount

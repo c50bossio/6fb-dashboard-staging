@@ -28,7 +28,7 @@ const updateAppointmentSchema = appointmentSchema.partial()
 // GET /api/appointments - Fetch appointments with filters
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { searchParams } = new URL(request.url)
     
     // Get user session
@@ -137,8 +137,8 @@ export async function GET(request) {
 // POST /api/appointments - Create new appointment
 export async function POST(request) {
   try {
-    const supabase = createClient()
-    
+    const supabase = await createClient()
+
     // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
@@ -240,11 +240,11 @@ export async function POST(request) {
   }
 }
 
-// PUT /api/appointments - Update appointment 
+// PUT /api/appointments - Update appointment
 export async function PUT(request) {
   try {
-    const supabase = createClient()
-    
+    const supabase = await createClient()
+
     // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
@@ -336,8 +336,8 @@ export async function PUT(request) {
 // DELETE /api/appointments - Delete appointment
 export async function DELETE(request) {
   try {
-    const supabase = createClient()
-    
+    const supabase = await createClient()
+
     // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {

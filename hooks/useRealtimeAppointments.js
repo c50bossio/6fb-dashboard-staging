@@ -106,7 +106,7 @@ export function useRealtimeAppointments(barbershopId) {
             services:service_id (*),
             customers:customer_id (*)
           `)
-          .eq('shop_id', barbershopId)
+          .eq('barbershop_id', barbershopId)
           .order('start_time')
         
         if (error) throw error
@@ -175,7 +175,7 @@ export function useRealtimeAppointments(barbershopId) {
     const handleRealtimeEvent = async (eventType, payload) => {
       const eventTime = new Date().toISOString()
       const appointmentId = payload.new?.id || payload.old?.id
-      const shopId = payload.new?.shop_id || payload.old?.shop_id
+      const shopId = payload.new?.barbershop_id || payload.old?.barbershop_id
       const isOurShop = shopId === barbershopId
       
       console.log(`📡 Real-time ${eventType} event:`, {
@@ -217,14 +217,14 @@ export function useRealtimeAppointments(barbershopId) {
       
       if (eventType === 'INSERT' && payload.new) {
         console.log('📡 Processing INSERT for appointment:', payload.new.id, {
-          hasShopId: !!payload.new.shop_id,
-          shopId: payload.new.shop_id,
+          hasShopId: !!payload.new.barbershop_id,
+          shopId: payload.new.barbershop_id,
           ourShopId: barbershopId
         })
-        
+
         // Verify this INSERT belongs to our shop
-        if (payload.new.shop_id && payload.new.shop_id !== barbershopId) {
-          console.log('📡 Ignoring INSERT - different shop:', payload.new.shop_id)
+        if (payload.new.barbershop_id && payload.new.barbershop_id !== barbershopId) {
+          console.log('📡 Ignoring INSERT - different shop:', payload.new.barbershop_id)
           return
         }
         
@@ -244,7 +244,7 @@ export function useRealtimeAppointments(barbershopId) {
           if (error) {
             console.error('📡 Error fetching INSERT data:', error)
             // Fallback: Use payload data if available
-            if (payload.new.shop_id === barbershopId) {
+            if (payload.new.barbershop_id === barbershopId) {
               console.log('📡 Using fallback INSERT data from payload')
               // Create minimal event from payload
               const fallbackEvent = {
@@ -275,7 +275,7 @@ export function useRealtimeAppointments(barbershopId) {
             return
           }
 
-          if (newBooking && newBooking.shop_id === barbershopId) {
+          if (newBooking && newBooking.barbershop_id === barbershopId) {
             const isCancelled = newBooking.status === 'cancelled'
             const newEvent = {
               id: newBooking.id,
@@ -317,7 +317,7 @@ export function useRealtimeAppointments(barbershopId) {
           } else {
             console.log('📡 Ignoring INSERT - wrong shop or missing data:', {
               hasData: !!newBooking,
-              shopId: newBooking?.shop_id
+              shopId: newBooking?.barbershop_id
             })
           }
         } catch (err) {
@@ -330,16 +330,16 @@ export function useRealtimeAppointments(barbershopId) {
             timestamp: new Date().toISOString(),
             appointmentId: payload.new?.id,
             status: payload.new?.status,
-            shopId: payload.new?.shop_id
+            shopId: payload.new?.barbershop_id
           }
           console.log('🚨 WINDOW DEBUG: WebSocket UPDATE stored in window.lastWebSocketUpdate')
         }
-        
+
         console.log('🔥 REALTIME DEBUG: UPDATE event received:', {
           appointmentId: payload.new?.id,
           oldStatus: payload.old?.status,
           newStatus: payload.new?.status,
-          shopId: payload.new.shop_id,
+          shopId: payload.new.barbershop_id,
           ourShopId: barbershopId,
           timestamp: new Date().toISOString(),
           payloadKeys: Object.keys(payload),
@@ -352,12 +352,12 @@ export function useRealtimeAppointments(barbershopId) {
           channelConnected: isConnected,
           subscriptionDiagnostics: diagnostics.subscriptionStatus,
           eventReceived: true,
-          willProcess: payload.new?.shop_id === barbershopId
+          willProcess: payload.new?.barbershop_id === barbershopId
         })
-        
+
         // Verify this UPDATE belongs to our shop
-        if (payload.new.shop_id && payload.new.shop_id !== barbershopId) {
-          console.log('📡 REALTIME DEBUG: Ignoring UPDATE - different shop:', payload.new.shop_id)
+        if (payload.new.barbershop_id && payload.new.barbershop_id !== barbershopId) {
+          console.log('📡 REALTIME DEBUG: Ignoring UPDATE - different shop:', payload.new.barbershop_id)
           return
         }
         
@@ -416,15 +416,15 @@ export function useRealtimeAppointments(barbershopId) {
       } else if (eventType === 'DELETE' && payload.old) {
         const deletedId = payload.old.id
         console.log('📡 DELETE received for:', deletedId, {
-          hasShopId: !!payload.old.shop_id,
-          shopId: payload.old.shop_id,
+          hasShopId: !!payload.old.barbershop_id,
+          shopId: payload.old.barbershop_id,
           ourShopId: barbershopId
         })
-        
-        // SAFETY CHECK: Only process DELETEs for our shop if shop_id is available
-        // If shop_id is not available (despite REPLICA IDENTITY FULL), be more cautious
-        if (payload.old.shop_id && payload.old.shop_id !== barbershopId) {
-          console.log('📡 Ignoring DELETE - different shop:', payload.old.shop_id)
+
+        // SAFETY CHECK: Only process DELETEs for our shop if barbershop_id is available
+        // If barbershop_id is not available (despite REPLICA IDENTITY FULL), be more cautious
+        if (payload.old.barbershop_id && payload.old.barbershop_id !== barbershopId) {
+          console.log('📡 Ignoring DELETE - different shop:', payload.old.barbershop_id)
           return
         }
         
@@ -439,9 +439,9 @@ export function useRealtimeAppointments(barbershopId) {
           
           // Extra safety: Only remove cancelled appointments or confirmed shop matches
           const isCancelled = existingAppointment.extendedProps?.status === 'cancelled'
-          const hasShopConfirmation = payload.old.shop_id === barbershopId
-          
-          if (isCancelled || hasShopConfirmation || !payload.old.shop_id) {
+          const hasShopConfirmation = payload.old.barbershop_id === barbershopId
+
+          if (isCancelled || hasShopConfirmation || !payload.old.barbershop_id) {
             const filtered = prev.filter(event => event.id !== deletedId)
             console.log('📡 Removed appointment:', {
               id: deletedId,
@@ -503,7 +503,7 @@ export function useRealtimeAppointments(barbershopId) {
         },
         (payload) => {
           // Manual filter in handler
-          if (payload.new?.shop_id === barbershopId) {
+          if (payload.new?.barbershop_id === barbershopId) {
             handleRealtimeEvent('INSERT', payload)
           }
         }
@@ -520,12 +520,12 @@ export function useRealtimeAppointments(barbershopId) {
         (payload) => {
           console.log('🚨 RAW UPDATE EVENT:', {
             id: payload.new?.id,
-            shop_id: payload.new?.shop_id,
+            barbershop_id: payload.new?.barbershop_id,
             ourShop: barbershopId,
-            matches: payload.new?.shop_id === barbershopId
+            matches: payload.new?.barbershop_id === barbershopId
           })
           // Manual filter in handler
-          if (payload.new?.shop_id === barbershopId) {
+          if (payload.new?.barbershop_id === barbershopId) {
             handleRealtimeEvent('UPDATE', payload)
           }
         }
@@ -540,12 +540,12 @@ export function useRealtimeAppointments(barbershopId) {
           table: 'bookings'
         },
         (payload) => {
-          // Since shop_id isn't available in DELETE payload, we check if this appointment
+          // Since barbershop_id isn't available in DELETE payload, we check if this appointment
           // exists in our current state (which means it belongs to our shop)
           const appointmentId = payload.old?.id
           if (appointmentId) {
             console.log('📡 DELETE event for appointment:', appointmentId)
-            // We'll handle the delete since we can't filter by shop_id
+            // We'll handle the delete since we can't filter by barbershop_id
             handleRealtimeEvent('DELETE', payload)
           }
         }

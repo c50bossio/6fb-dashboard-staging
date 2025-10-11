@@ -154,7 +154,7 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
     try {
       let paymentData = {
         paymentMethod,
-        customerInfo,
+        clientInfo: customerInfo,
         amountPaid: paymentAmount,
         remainingAmount
       }
@@ -170,11 +170,11 @@ function PaymentStepContent({ bookingData, shopSettings, onNext, onBack }) {
             booking_id: bookingData.booking_id || `temp_${Date.now()}`,
             service_id: bookingData.service?.id || bookingData.serviceDetails?.id,
             barber_id: bookingData.barber?.id || bookingData.barberDetails?.id,
-            shop_id: bookingData.location?.id || bookingData.locationDetails?.id,
+            barbershop_id: bookingData.location?.id || bookingData.locationDetails?.id,
             amount: paymentAmount,
             payment_type: shopSettings.depositRequired ? 'deposit' : 'full_payment',
-            customer_email: customerInfo.email,
-            customer_name: customerInfo.name,
+            client_email: customerInfo.email,
+            client_name: customerInfo.name,
             save_payment_method: false,
             automatic_confirmation: true
           })

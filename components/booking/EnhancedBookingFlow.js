@@ -688,7 +688,7 @@ export default function EnhancedBookingFlow({
     </motion.div>
   )
 
-  // Step 2: Customer Details
+  // Step 2: Client Details
   const CustomerDetailsStep = () => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

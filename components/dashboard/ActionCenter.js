@@ -358,7 +358,7 @@ const AppointmentCard = ({ appointment }) => (
       </div>
       <div>
         <p className="text-sm font-medium text-foreground">
-          {appointment.customer_name || 'Customer'}
+          {appointment.client_name || appointment.customer_name || 'Customer'}
         </p>
         <p className="text-xs text-muted-foreground">
           {appointment.service_name || "Unknown Service"} with {appointment.barber_name || 'Barber'}

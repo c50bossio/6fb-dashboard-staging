@@ -29,7 +29,7 @@ export async function POST() {
         // First remove any related data (appointments, staff, etc.)
         await supabase.from('appointments').delete().eq('barbershop_id', barbershopId)
         await supabase.from('barbershop_staff').delete().eq('barbershop_id', barbershopId)
-        await supabase.from('services').delete().eq('shop_id', barbershopId)
+        await supabase.from('services').delete().eq('barbershop_id', barbershopId)
         
         // Then remove the barbershop itself
         const { error } = await supabase

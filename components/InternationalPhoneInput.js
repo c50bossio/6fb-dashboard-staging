@@ -4,9 +4,9 @@ import { NuclearInput } from './ui/UnifiedInput'
 
 /**
  * INTERNATIONAL PHONE INPUT WITH COUNTRY CODE SUPPORT
- * 
- * Specifically designed for Twilio SMS integration requiring E.164 format
- * Provides country code dropdown + formatted phone number input
+ *
+ * Provides international phone number input with automatic E.164 formatting
+ * Supports country code selection + formatted phone number input
  */
 
 const COUNTRY_CODES = [
@@ -93,7 +93,7 @@ const formatByCountry = (value, countryCode) => {
 }
 
 /**
- * Generate E.164 format for Twilio SMS
+ * Generate E.164 format for international phone numbers
  */
 const toE164Format = (phoneNumber, countryDialCode) => {
   if (!phoneNumber) return ''
@@ -211,7 +211,7 @@ const InternationalPhoneInput = memo(forwardRef(({
         target: {
           ...e.target,
           value: value, // Formatted display value
-          e164: e164,   // E.164 for Twilio
+          e164: e164,   // E.164 international format
           country: selectedCountryData.code,
           dialCode: selectedCountryData.dialCode
         }
@@ -230,13 +230,13 @@ const InternationalPhoneInput = memo(forwardRef(({
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             disabled={disabled}
             className={`
-              flex items-center px-3 py-2 border border-r-0 rounded-l-md bg-gray-50 
-              hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-olive-500
+              flex items-center px-3 py-2 border border-r-0 rounded-l-md bg-muted
+              hover:bg-accent focus:outline-none focus:ring-2 focus:ring-olive-500
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
           >
             <span className="text-lg mr-1">{selectedCountryData.flag}</span>
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-foreground">
               {selectedCountryData.dialCode}
             </span>
             <svg 
@@ -251,21 +251,21 @@ const InternationalPhoneInput = memo(forwardRef(({
           
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="absolute z-50 top-full left-0 w-80 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-50 top-full left-0 w-80 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
               {COUNTRY_CODES.map((country) => (
                 <button
                   key={country.code}
                   type="button"
                   onClick={() => handleCountrySelect(country.code)}
                   className={`
-                    w-full px-3 py-2 text-left hover:bg-olive-50 flex items-center
-                    ${selectedCountry === country.code ? 'bg-olive-100' : ''}
+                    w-full px-3 py-2 text-left hover:bg-olive-50 dark:hover:bg-olive-900/30 flex items-center
+                    ${selectedCountry === country.code ? 'bg-olive-100 dark:bg-olive-900/50' : ''}
                   `}
                 >
                   <span className="text-lg mr-2">{country.flag}</span>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900">{country.name}</div>
-                    <div className="text-xs text-gray-500">{country.dialCode} • {country.format}</div>
+                    <div className="text-sm font-medium text-popover-foreground">{country.name}</div>
+                    <div className="text-xs text-muted-foreground">{country.dialCode} • {country.format}</div>
                   </div>
                 </button>
               ))}
@@ -307,7 +307,7 @@ const InternationalPhoneInput = memo(forwardRef(({
           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
-          Valid • Twilio format: {toE164Format(phoneNumber, selectedCountryData.dialCode)}
+          Valid • International format: {toE164Format(phoneNumber, selectedCountryData.dialCode)}
         </div>
       )}
     </div>

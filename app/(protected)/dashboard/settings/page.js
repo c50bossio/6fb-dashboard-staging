@@ -41,10 +41,10 @@ import SubscriptionDashboard from '../../../../components/billing/SubscriptionDa
 
 // Lazy load charts to improve initial page load with loading fallback
 const ChartLoadingSpinner = () => (
-  <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
+  <div className="flex items-center justify-center h-64 bg-muted rounded-lg">
     <div className="text-center">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
-      <p className="text-sm text-gray-500 mt-2">Loading chart...</p>
+      <p className="text-sm text-muted-foreground mt-2">Loading chart...</p>
     </div>
   </div>
 )
@@ -92,7 +92,7 @@ function EditableCard({ title, icon: Icon, section, children, className = "", ed
               <button
                 onClick={() => onCancel(section)}
                 disabled={isLoading}
-                className="px-3 py-1.5 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                className="px-3 py-1.5 text-sm border border-border rounded-md text-muted-foreground hover:bg-muted disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -107,7 +107,7 @@ function EditableCard({ title, icon: Icon, section, children, className = "", ed
           ) : (
             <button
               onClick={() => onEdit(section)}
-              className="flex items-center px-3 py-1.5 text-sm border border-gray-300 rounded-md text-foreground hover:bg-accent"
+              className="flex items-center px-3 py-1.5 text-sm border border-border rounded-md text-foreground hover:bg-accent"
             >
               <PencilIcon className="h-4 w-4 mr-1" />
               Edit
@@ -478,7 +478,7 @@ export default function SettingsPage() {
       case 'pending':
         return <ClockIcon className="h-5 w-5 text-amber-800" />
       default:
-        return <ExclamationCircleIcon className="h-5 w-5 text-gray-500" />
+        return <ExclamationCircleIcon className="h-5 w-5 text-muted-foreground" />
     }
   }
 
@@ -770,11 +770,11 @@ export default function SettingsPage() {
   // Show loading briefly while determining correct section from URL
   if (!isInitialized || pageLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4 text-lg">Loading Settings...</p>
-          <p className="text-gray-400 text-sm">Optimizing components for best performance</p>
+          <p className="text-muted-foreground mt-4 text-lg">Loading Settings...</p>
+          <p className="text-muted-foreground text-sm">Optimizing components for best performance</p>
         </div>
       </div>
     )
@@ -979,10 +979,10 @@ export default function SettingsPage() {
                 >
                   <div className="space-y-4">
                     {Object.entries(settings.businessHours).map(([day, config]) => (
-                      <div key={day} className="border border-gray-200 rounded-lg p-4">
+                      <div key={day} className="border border-border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center">
-                            <span className="text-lg font-medium text-gray-900 w-24">
+                            <span className="text-lg font-medium text-card-foreground w-24">
                               {dayNames[day]}
                             </span>
                           </div>
@@ -994,11 +994,11 @@ export default function SettingsPage() {
                                 onChange={() => toggleDay(day)}
                                 className="sr-only peer"
                               />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                              <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                             </label>
                           ) : (
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              config.enabled ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                              config.enabled ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                             }`}>
                               {config.enabled ? 'Open' : 'Closed'}
                             </span>
@@ -1008,7 +1008,7 @@ export default function SettingsPage() {
                         {config.enabled && (
                           <div className="space-y-3">
                             {config.shifts.map((shift, shiftIndex) => (
-                              <div key={shiftIndex} className="bg-gray-50 p-4 rounded-lg">
+                              <div key={shiftIndex} className="bg-muted p-4 rounded-lg">
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
                                     {editStates.businessHours ? (
@@ -1024,15 +1024,15 @@ export default function SettingsPage() {
                                       <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-4">
                                           <div className="text-sm">
-                                            <span className="font-medium text-gray-700">Open:</span>
-                                            <span className="ml-2 text-gray-900">{formatTime12Hour(shift.open)}</span>
+                                            <span className="font-medium text-muted-foreground">Open:</span>
+                                            <span className="ml-2 text-card-foreground">{formatTime12Hour(shift.open)}</span>
                                           </div>
                                           <div className="text-sm">
-                                            <span className="font-medium text-gray-700">Close:</span>
-                                            <span className="ml-2 text-gray-900">{formatTime12Hour(shift.close)}</span>
+                                            <span className="font-medium text-muted-foreground">Close:</span>
+                                            <span className="ml-2 text-card-foreground">{formatTime12Hour(shift.close)}</span>
                                           </div>
                                         </div>
-                                        <div className="text-xs text-gray-500">
+                                        <div className="text-xs text-muted-foreground">
                                           {calculateShiftDuration(shift.open, shift.close)}
                                         </div>
                                       </div>
@@ -1049,8 +1049,8 @@ export default function SettingsPage() {
                                   )}
                                 </div>
                                 {shiftIndex < config.shifts.length - 1 && (
-                                  <div className="mt-2 pt-2 border-t border-gray-200">
-                                    <span className="text-xs text-gray-500">Shift {shiftIndex + 1}</span>
+                                  <div className="mt-2 pt-2 border-t border-border">
+                                    <span className="text-xs text-muted-foreground">Shift {shiftIndex + 1}</span>
                                   </div>
                                 )}
                               </div>
@@ -1059,7 +1059,7 @@ export default function SettingsPage() {
                             {editStates.businessHours && (
                               <button
                                 onClick={() => addShift(day)}
-                                className="flex items-center justify-center w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:text-olive-600 hover:border-olive-300 transition-colors"
+                                className="flex items-center justify-center w-full py-3 border-2 border-dashed border-border rounded-lg text-sm text-muted-foreground hover:text-olive-600 hover:border-olive-300 transition-colors"
                               >
                                 <PlusIcon className="h-4 w-4 mr-1" />
                                 Add another shift
@@ -1069,7 +1069,7 @@ export default function SettingsPage() {
                         )}
 
                         {!config.enabled && (
-                          <div className="text-center py-4 text-gray-500">
+                          <div className="text-center py-4 text-muted-foreground">
                             <span className="text-sm">Closed</span>
                           </div>
                         )}
@@ -1100,11 +1100,11 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: standardHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
+                        className="p-4 border-2 border-border rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Standard 9-5</h4>
-                        <p className="text-sm text-gray-600 mt-1">Mon-Fri • 9:00 AM - 5:00 PM</p>
-                        <p className="text-xs text-gray-500 mt-2">40 hours/week</p>
+                        <h4 className="font-medium text-card-foreground group-hover:text-olive-900">Standard 9-5</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Mon-Fri • 9:00 AM - 5:00 PM</p>
+                        <p className="text-xs text-muted-foreground mt-2">40 hours/week</p>
                       </button>
 
                       <button
@@ -1120,11 +1120,11 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: barbershopHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
+                        className="p-4 border-2 border-border rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Classic Barbershop</h4>
-                        <p className="text-sm text-gray-600 mt-1">Tue-Sun • Closed Mondays</p>
-                        <p className="text-xs text-gray-500 mt-2">56 hours/week</p>
+                        <h4 className="font-medium text-card-foreground group-hover:text-olive-900">Classic Barbershop</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Tue-Sun • Closed Mondays</p>
+                        <p className="text-xs text-muted-foreground mt-2">56 hours/week</p>
                       </button>
 
                       <button
@@ -1140,11 +1140,11 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: extendedHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
+                        className="p-4 border-2 border-border rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Extended Hours</h4>
-                        <p className="text-sm text-gray-600 mt-1">7 days • Early to late</p>
-                        <p className="text-xs text-gray-500 mt-2">75 hours/week</p>
+                        <h4 className="font-medium text-card-foreground group-hover:text-olive-900">Extended Hours</h4>
+                        <p className="text-sm text-muted-foreground mt-1">7 days • Early to late</p>
+                        <p className="text-xs text-muted-foreground mt-2">75 hours/week</p>
                       </button>
 
                       <button
@@ -1160,11 +1160,11 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: weekendHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
+                        className="p-4 border-2 border-border rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Weekend Only</h4>
-                        <p className="text-sm text-gray-600 mt-1">Sat-Sun only</p>
-                        <p className="text-xs text-gray-500 mt-2">15 hours/week</p>
+                        <h4 className="font-medium text-card-foreground group-hover:text-olive-900">Weekend Only</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Sat-Sun only</p>
+                        <p className="text-xs text-muted-foreground mt-2">15 hours/week</p>
                       </button>
                     </div>
 
@@ -1210,34 +1210,34 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="bg-muted p-4 rounded-lg">
                       <div className="flex items-center mb-2">
                         <div className="w-8 h-8 bg-olive-100 rounded-lg flex items-center justify-center mr-3">
                           <UserCircleIcon className="h-5 w-5 text-olive-600" />
                         </div>
-                        <h4 className="font-semibold text-gray-900">Team Members</h4>
+                        <h4 className="font-semibold text-card-foreground">Team Members</h4>
                       </div>
-                      <p className="text-sm text-gray-600">Invite and manage your barbers and staff</p>
+                      <p className="text-sm text-muted-foreground">Invite and manage your barbers and staff</p>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="bg-muted p-4 rounded-lg">
                       <div className="flex items-center mb-2">
                         <div className="w-8 h-8 bg-olive-100 rounded-lg flex items-center justify-center mr-3">
                           <ShieldCheckIcon className="h-5 w-5 text-olive-600" />
                         </div>
-                        <h4 className="font-semibold text-gray-900">Permissions</h4>
+                        <h4 className="font-semibold text-card-foreground">Permissions</h4>
                       </div>
-                      <p className="text-sm text-gray-600">Control access levels and capabilities</p>
+                      <p className="text-sm text-muted-foreground">Control access levels and capabilities</p>
                     </div>
 
-                    <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="bg-muted p-4 rounded-lg">
                       <div className="flex items-center mb-2">
                         <div className="w-8 h-8 bg-olive-100 rounded-lg flex items-center justify-center mr-3">
                           <BuildingOfficeIcon className="h-5 w-5 text-olive-600" />
                         </div>
-                        <h4 className="font-semibold text-gray-900">Roles & Templates</h4>
+                        <h4 className="font-semibold text-card-foreground">Roles & Templates</h4>
                       </div>
-                      <p className="text-sm text-gray-600">Quick setup with pre-defined roles</p>
+                      <p className="text-sm text-muted-foreground">Quick setup with pre-defined roles</p>
                     </div>
                   </div>
                 </div>
@@ -1263,8 +1263,8 @@ export default function SettingsPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <EnvelopeIcon className="h-4 w-4 text-gray-500 mr-2" />
-                        <span className="text-sm font-medium text-gray-700">Email Notifications</span>
+                        <EnvelopeIcon className="h-4 w-4 text-muted-foreground mr-2" />
+                        <span className="text-sm font-medium text-muted-foreground">Email Notifications</span>
                       </div>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -1277,11 +1277,11 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.emailEnabled ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.emailEnabled ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.emailEnabled ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1290,8 +1290,8 @@ export default function SettingsPage() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <PhoneIcon className="h-4 w-4 text-gray-500 mr-2" />
-                        <span className="text-sm font-medium text-gray-700">SMS Notifications</span>
+                        <PhoneIcon className="h-4 w-4 text-muted-foreground mr-2" />
+                        <span className="text-sm font-medium text-muted-foreground">SMS Notifications</span>
                       </div>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -1304,11 +1304,11 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.smsEnabled ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.smsEnabled ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.smsEnabled ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1316,7 +1316,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Campaign Alerts</span>
+                      <span className="text-sm font-medium text-muted-foreground">Campaign Alerts</span>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -1328,11 +1328,11 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.campaignAlerts ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.campaignAlerts ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.campaignAlerts ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1340,7 +1340,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Booking Alerts</span>
+                      <span className="text-sm font-medium text-muted-foreground">Booking Alerts</span>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -1352,11 +1352,11 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.bookingAlerts ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.bookingAlerts ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.bookingAlerts ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1364,7 +1364,7 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">System Alerts</span>
+                      <span className="text-sm font-medium text-muted-foreground">System Alerts</span>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -1376,11 +1376,11 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.systemAlerts ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.systemAlerts ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.systemAlerts ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1401,8 +1401,8 @@ export default function SettingsPage() {
                     >
                       <EnvelopeIcon className="h-8 w-8 text-olive-600" />
                       <div className="text-left">
-                        <p className="font-semibold text-gray-900">Test Email</p>
-                        <p className="text-sm text-gray-600">Send test email</p>
+                        <p className="font-semibold text-card-foreground">Test Email</p>
+                        <p className="text-sm text-muted-foreground">Send test email</p>
                       </div>
                     </button>
 
@@ -1413,8 +1413,8 @@ export default function SettingsPage() {
                     >
                       <PhoneIcon className="h-8 w-8 text-gold-600" />
                       <div className="text-left">
-                        <p className="font-semibold text-gray-900">Test SMS</p>
-                        <p className="text-sm text-gray-600">Send test SMS</p>
+                        <p className="font-semibold text-card-foreground">Test SMS</p>
+                        <p className="text-sm text-muted-foreground">Send test SMS</p>
                       </div>
                     </button>
                   </div>
@@ -1425,53 +1425,53 @@ export default function SettingsPage() {
                   <h3 className="text-lg font-semibold text-card-foreground mb-4">Recent Notifications</h3>
 
                   {notificationHistory.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <BellIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <div className="text-center py-8 text-muted-foreground">
+                      <BellIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                       <p>No notifications sent yet</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                      <table className="min-w-full divide-y divide-border">
+                        <thead className="bg-muted">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Type
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Recipient
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Subject
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Status
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Sent At
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-card divide-y divide-border">
                           {notificationHistory.slice(0, 5).map((notification) => (
                             <tr key={notification.id}>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 {getTypeIcon(notification.type)}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-card-foreground">
                                 {notification.recipient}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                 {notification.subject || '-'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                   {getStatusIcon(notification.status)}
-                                  <span className="ml-2 text-sm text-gray-900">
+                                  <span className="ml-2 text-sm text-card-foreground">
                                     {notification.status}
                                   </span>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                 {new Date(notification.sent_at).toLocaleString()}
                               </td>
                             </tr>
@@ -1488,21 +1488,21 @@ export default function SettingsPage() {
                     <h3 className="text-lg font-semibold text-card-foreground mb-4">Queue Status</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-sm font-medium text-gray-500">Processing</p>
-                        <p className="text-2xl font-bold text-gray-900">
+                      <div className="bg-muted p-4 rounded-lg">
+                        <p className="text-sm font-medium text-muted-foreground">Processing</p>
+                        <p className="text-2xl font-bold text-card-foreground">
                           {queueStatus.processing ? 'Active' : 'Inactive'}
                         </p>
                       </div>
 
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-sm font-medium text-gray-500">Total in Queue</p>
-                        <p className="text-2xl font-bold text-gray-900">{queueStatus.total || 0}</p>
+                      <div className="bg-muted p-4 rounded-lg">
+                        <p className="text-sm font-medium text-muted-foreground">Total in Queue</p>
+                        <p className="text-2xl font-bold text-card-foreground">{queueStatus.total || 0}</p>
                       </div>
 
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-sm font-medium text-gray-500">Next Scheduled</p>
-                        <p className="text-sm font-bold text-gray-900">
+                      <div className="bg-muted p-4 rounded-lg">
+                        <p className="text-sm font-medium text-muted-foreground">Next Scheduled</p>
+                        <p className="text-sm font-bold text-card-foreground">
                           {queueStatus.next_scheduled ?
                             new Date(queueStatus.next_scheduled).toLocaleString() :
                             'None'
@@ -1600,33 +1600,33 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <div>
-                        <div className="font-medium text-gray-900">Session Management</div>
-                        <div className="text-sm text-gray-600">Control how long you stay logged in</div>
+                        <div className="font-medium text-card-foreground">Session Management</div>
+                        <div className="text-sm text-muted-foreground">Control how long you stay logged in</div>
                       </div>
-                      <select className="text-sm border border-gray-300 rounded-md px-3 py-1">
+                      <select className="text-sm border border-border rounded-md px-3 py-1">
                         <option value="24h">24 hours</option>
                         <option value="7d">7 days</option>
                         <option value="30d">30 days</option>
                       </select>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <div>
-                        <div className="font-medium text-gray-900">Login Notifications</div>
-                        <div className="text-sm text-gray-600">Get notified of new login attempts</div>
+                        <div className="font-medium text-card-foreground">Login Notifications</div>
+                        <div className="text-sm text-muted-foreground">Get notified of new login attempts</div>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" defaultChecked className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                        <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <div>
-                        <div className="font-medium text-gray-900">Password Requirements</div>
-                        <div className="text-sm text-gray-600">Enforce strong password policies</div>
+                        <div className="font-medium text-card-foreground">Password Requirements</div>
+                        <div className="text-sm text-muted-foreground">Enforce strong password policies</div>
                       </div>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
                         Enabled
@@ -1644,59 +1644,59 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">Current Month Total</span>
-                      <CreditCardIcon className="h-5 w-5 text-gray-400" />
+                      <span className="text-sm font-medium text-muted-foreground">Current Month Total</span>
+                      <CreditCardIcon className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex items-baseline">
-                      <span className="text-3xl font-bold text-gray-900">${billingData.currentMonth.total}</span>
+                      <span className="text-3xl font-bold text-card-foreground">${billingData?.currentMonth?.total ?? 0}</span>
                     </div>
                     <div className="flex items-center mt-2">
-                      {billingData.currentMonth.comparedToLastMonth > 0 ? (
+                      {(billingData?.currentMonth?.comparedToLastMonth ?? 0) > 0 ? (
                         <>
                           <ArrowTrendingUpIcon className="h-4 w-4 text-red-500 mr-1" />
-                          <span className="text-sm text-red-600">+{billingData.currentMonth.comparedToLastMonth}%</span>
+                          <span className="text-sm text-red-600">+{billingData?.currentMonth?.comparedToLastMonth ?? 0}%</span>
                         </>
                       ) : (
                         <>
                           <ArrowTrendingDownIcon className="h-4 w-4 text-green-500 mr-1" />
-                          <span className="text-sm text-green-600">{billingData.currentMonth.comparedToLastMonth}%</span>
+                          <span className="text-sm text-green-600">{billingData?.currentMonth?.comparedToLastMonth ?? 0}%</span>
                         </>
                       )}
-                      <span className="text-sm text-gray-500 ml-1">vs last month</span>
+                      <span className="text-sm text-muted-foreground ml-1">vs last month</span>
                     </div>
                   </div>
 
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">AI Usage</span>
+                      <span className="text-sm font-medium text-muted-foreground">AI Usage</span>
                       <div className="h-2 w-2 bg-olive-500 rounded-full"></div>
                     </div>
                     <div className="flex items-baseline">
-                      <span className="text-2xl font-bold text-gray-900">${billingData.usage.ai.cost}</span>
+                      <span className="text-2xl font-bold text-card-foreground">${billingData.usage.ai.cost}</span>
                     </div>
-                    <span className="text-sm text-gray-500">{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens</span>
+                    <span className="text-sm text-muted-foreground">{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens</span>
                   </div>
 
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">SMS Usage</span>
+                      <span className="text-sm font-medium text-muted-foreground">SMS Usage</span>
                       <div className="h-2 w-2 bg-gold-500 rounded-full"></div>
                     </div>
                     <div className="flex items-baseline">
-                      <span className="text-2xl font-bold text-gray-900">${billingData.usage.sms.cost}</span>
+                      <span className="text-2xl font-bold text-card-foreground">${billingData.usage.sms.cost}</span>
                     </div>
-                    <span className="text-sm text-gray-500">{billingData.usage.sms.messages.toLocaleString()} messages</span>
+                    <span className="text-sm text-muted-foreground">{billingData.usage.sms.messages.toLocaleString()} messages</span>
                   </div>
 
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">Email Usage</span>
+                      <span className="text-sm font-medium text-muted-foreground">Email Usage</span>
                       <div className="h-2 w-2 bg-green-500 rounded-full"></div>
                     </div>
                     <div className="flex items-baseline">
-                      <span className="text-2xl font-bold text-gray-900">${billingData.usage.email.cost}</span>
+                      <span className="text-2xl font-bold text-card-foreground">${billingData.usage.email.cost}</span>
                     </div>
-                    <span className="text-sm text-gray-500">{billingData.usage.email.sent.toLocaleString()} emails</span>
+                    <span className="text-sm text-muted-foreground">{billingData.usage.email.sent.toLocaleString()} emails</span>
                   </div>
                 </div>
 
@@ -1718,7 +1718,7 @@ export default function SettingsPage() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-muted-foreground mb-2">
                             Card Number
                           </label>
                           <input
@@ -1728,7 +1728,7 @@ export default function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-muted-foreground mb-2">
                             Expiry Date
                           </label>
                           <input
@@ -1738,7 +1738,7 @@ export default function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-muted-foreground mb-2">
                             CVV
                           </label>
                           <input
@@ -1748,7 +1748,7 @@ export default function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-muted-foreground mb-2">
                             Cardholder Name
                           </label>
                           <input
@@ -1760,19 +1760,31 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between p-6 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <CreditCardIcon className="h-10 w-10 text-gray-400 mr-4" />
-                        <div>
-                          <p className="text-lg font-medium text-gray-900">
-                            {billingData.paymentMethod.brand} •••• {billingData.paymentMethod.last4}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Expires {billingData.paymentMethod.expMonth}/{billingData.paymentMethod.expYear}
-                          </p>
+                    <div className="flex items-center justify-between p-6 bg-muted rounded-lg">
+                      {billingData?.paymentMethod ? (
+                        <>
+                          <div className="flex items-center">
+                            <CreditCardIcon className="h-10 w-10 text-muted-foreground mr-4" />
+                            <div>
+                              <p className="text-lg font-medium text-card-foreground">
+                                {billingData.paymentMethod.brand} •••• {billingData.paymentMethod.last4}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Expires {billingData.paymentMethod.expMonth}/{billingData.paymentMethod.expYear}
+                              </p>
+                            </div>
+                          </div>
+                          <CheckCircleIcon className="h-6 w-6 text-green-500" />
+                        </>
+                      ) : (
+                        <div className="flex items-center">
+                          <CreditCardIcon className="h-10 w-10 text-muted-foreground mr-4" />
+                          <div>
+                            <p className="text-lg font-medium text-card-foreground">No payment method on file</p>
+                            <p className="text-sm text-muted-foreground">Add a payment method to enable billing</p>
+                          </div>
                         </div>
-                      </div>
-                      <CheckCircleIcon className="h-6 w-6 text-green-500" />
+                      )}
                     </div>
                   )}
                 </EditableCard>
@@ -1786,7 +1798,7 @@ export default function SettingsPage() {
                         <select
                           value={timeRange}
                           onChange={(e) => setTimeRange(e.target.value)}
-                          className="text-sm border border-gray-300 rounded-md px-3 py-1"
+                          className="text-sm border border-border rounded-md px-3 py-1"
                         >
                           <option value="7days">Last 7 days</option>
                           <option value="30days">Last 30 days</option>
@@ -1816,12 +1828,12 @@ export default function SettingsPage() {
                         <div className="border-b pb-4">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h4 className="font-medium text-gray-900">AI Business Coach</h4>
-                              <p className="text-sm text-gray-600">GPT-4 & Claude API calls</p>
+                              <h4 className="font-medium text-card-foreground">AI Business Coach</h4>
+                              <p className="text-sm text-muted-foreground">GPT-4 & Claude API calls</p>
                             </div>
-                            <span className="font-semibold text-gray-900">${billingData.usage.ai.cost}</span>
+                            <span className="font-semibold text-card-foreground">${billingData.usage.ai.cost}</span>
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-muted-foreground">
                             <p>{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens × $0.06/1K = ${billingData.usage.ai.cost}</p>
                           </div>
                         </div>
@@ -1829,12 +1841,12 @@ export default function SettingsPage() {
                         <div className="border-b pb-4">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h4 className="font-medium text-gray-900">SMS Marketing</h4>
-                              <p className="text-sm text-gray-600">Appointment reminders & campaigns</p>
+                              <h4 className="font-medium text-card-foreground">SMS Marketing</h4>
+                              <p className="text-sm text-muted-foreground">Appointment reminders & campaigns</p>
                             </div>
-                            <span className="font-semibold text-gray-900">${billingData.usage.sms.cost}</span>
+                            <span className="font-semibold text-card-foreground">${billingData.usage.sms.cost}</span>
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-muted-foreground">
                             <p>{billingData.usage.sms.messages} messages × $0.02/msg = ${billingData.usage.sms.cost}</p>
                           </div>
                         </div>
@@ -1842,12 +1854,12 @@ export default function SettingsPage() {
                         <div className="pb-4">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h4 className="font-medium text-gray-900">Email Campaigns</h4>
-                              <p className="text-sm text-gray-600">Marketing emails & newsletters</p>
+                              <h4 className="font-medium text-card-foreground">Email Campaigns</h4>
+                              <p className="text-sm text-muted-foreground">Marketing emails & newsletters</p>
                             </div>
-                            <span className="font-semibold text-gray-900">${billingData.usage.email.cost}</span>
+                            <span className="font-semibold text-card-foreground">${billingData.usage.email.cost}</span>
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-muted-foreground">
                             <p>{billingData.usage.email.sent.toLocaleString()} emails × $0.001/email = ${billingData.usage.email.cost}</p>
                           </div>
                         </div>
@@ -1855,8 +1867,8 @@ export default function SettingsPage() {
 
                       <div className="mt-6 pt-4 border-t">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-gray-900">Total for January</span>
-                          <span className="text-xl font-bold text-gray-900">${billingData.currentMonth.total}</span>
+                          <span className="font-semibold text-card-foreground">Total for January</span>
+                          <span className="text-xl font-bold text-card-foreground">${billingData?.currentMonth?.total ?? 0}</span>
                         </div>
                       </div>
                     </div>
@@ -1890,9 +1902,9 @@ export default function SettingsPage() {
                           <div key={index} className="flex items-center justify-between text-sm">
                             <div className="flex items-center">
                               <div className={`h-3 w-3 rounded-full mr-2`} style={{ backgroundColor: item.color }}></div>
-                              <span className="text-gray-700">{item.name}</span>
+                              <span className="text-muted-foreground">{item.name}</span>
                             </div>
-                            <span className="font-medium text-gray-900">{((item.value / billingData.currentMonth.total) * 100).toFixed(0)}%</span>
+                            <span className="font-medium text-card-foreground">{(billingData?.currentMonth?.total ? ((item.value / billingData.currentMonth.total) * 100).toFixed(0) : 0)}%</span>
                           </div>
                         ))}
                       </div>
@@ -1915,7 +1927,7 @@ export default function SettingsPage() {
                       {editStates.subscription ? (
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-muted-foreground mb-2">
                               Plan
                             </label>
                             <select
@@ -1937,18 +1949,18 @@ export default function SettingsPage() {
                       ) : (
                         <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Plan</span>
-                            <span className="font-medium text-gray-900">{billingData.subscription.plan}</span>
+                            <span className="text-muted-foreground">Plan</span>
+                            <span className="font-medium text-card-foreground">{billingData.subscription.plan}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Status</span>
+                            <span className="text-muted-foreground">Status</span>
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
                               {billingData.subscription.status}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Next billing</span>
-                            <span className="font-medium text-gray-900">{billingData.subscription.nextBilling}</span>
+                            <span className="text-muted-foreground">Next billing</span>
+                            <span className="font-medium text-card-foreground">{billingData.subscription.nextBilling}</span>
                           </div>
                         </div>
                       )}
@@ -1960,14 +1972,14 @@ export default function SettingsPage() {
                       <div className="space-y-3">
                         <button
                           onClick={handleDownloadInvoice}
-                          className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          className="w-full flex items-center justify-center px-4 py-2 border border-border rounded-md text-sm font-medium text-muted-foreground hover:bg-muted"
                         >
                           <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                           Download Invoice
                         </button>
                         <button
                           onClick={handleViewBillingHistory}
-                          className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          className="w-full flex items-center justify-center px-4 py-2 border border-border rounded-md text-sm font-medium text-muted-foreground hover:bg-muted"
                         >
                           <CalendarDaysIcon className="h-4 w-4 mr-2" />
                           View Billing History
@@ -1986,20 +1998,20 @@ export default function SettingsPage() {
                 <h4 className="text-lg font-semibold text-card-foreground mb-4">System Status</h4>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">API Status</span>
+                    <span className="text-sm text-muted-foreground">API Status</span>
                     <span className="badge badge-success">All Connected</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Database</span>
+                    <span className="text-sm text-muted-foreground">Database</span>
                     <span className="badge badge-success">Healthy</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Agents</span>
+                    <span className="text-sm text-muted-foreground">Agents</span>
                     <span className="badge badge-success">6 Active</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Last Backup</span>
-                    <span className="text-sm text-gray-500">2 hours ago</span>
+                    <span className="text-sm text-muted-foreground">Last Backup</span>
+                    <span className="text-sm text-muted-foreground">2 hours ago</span>
                   </div>
                 </div>
               </div>

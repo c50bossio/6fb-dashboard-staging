@@ -71,11 +71,11 @@ export default function GeneralSettingsPage() {
       if (!shop || error) {
         const { data: profile } = await _supabase
           .from('profiles')
-          .select('barbershop_id, barbershop_id')
+          .select('barbershop_id')
           .eq('id', _user.id)
           .single()
-        
-        const barbershopId = profile?.barbershop_id || profile?.barbershop_id
+
+        const barbershopId = profile?.barbershop_id
         if (barbershopId) {
           const { data: shopByProfile } = await _supabase
             .from('barbershops')
@@ -186,9 +186,8 @@ export default function GeneralSettingsPage() {
         if (newShop) {
           await _supabase
             .from('profiles')
-            .update({ 
-              barbershop_id: newShop.id,
-              barbershop_id: newShop.id 
+            .update({
+              barbershop_id: newShop.id
             })
             .eq('id', _user?.id)
         }

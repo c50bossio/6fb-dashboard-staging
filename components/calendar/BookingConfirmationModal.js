@@ -65,12 +65,12 @@ export default function BookingConfirmationModal({
     const details = `
 Appointment Confirmation
 
-📅 ${formatDate(appointmentData.start_time)}
-🕐 ${formatTime(appointmentData.start_time)}
+📅 ${formatDate(appointmentData.scheduled_at || appointmentData.start_time)}
+🕐 ${formatTime(appointmentData.scheduled_at || appointmentData.start_time)}
 💺 Barber: ${barberName}
 ✂️ Service: ${serviceName}
-👤 Customer: ${appointmentData.customer_name || appointmentData.client_name}
-📞 Phone: ${appointmentData.customer_phone || appointmentData.client_phone}
+👤 Customer: ${appointmentData.client_name || appointmentData.customer_name}
+📞 Phone: ${appointmentData.client_phone || appointmentData.customer_phone}
 ${appointmentData.notes ? `📝 Notes: ${appointmentData.notes}` : ''}
 ${appointmentData.price ? `💰 Price: $${appointmentData.price}` : ''}
 ${appointmentData.is_recurring ? '🔄 Recurring: Yes' : ''}
@@ -158,10 +158,10 @@ Booking ID: ${appointmentData.id}
                       <CalendarDaysIcon className="mr-3 h-5 w-5 text-gray-400" />
                       <div>
                         <div className="font-medium text-gray-900">
-                          {formatDate(appointmentData.start_time)}
+                          {formatDate(appointmentData.scheduled_at || appointmentData.start_time)}
                         </div>
                         <div className="text-gray-600">
-                          {formatTime(appointmentData.start_time)} - {formatTime(appointmentData.end_time)}
+                          {formatTime(appointmentData.scheduled_at || appointmentData.start_time)} - {formatTime(appointmentData.end_time || new Date(new Date(appointmentData.scheduled_at).getTime() + (appointmentData.duration_minutes || 60) * 60000).toISOString())}
                         </div>
                       </div>
                     </div>
@@ -193,10 +193,10 @@ Booking ID: ${appointmentData.id}
                       <div>
                         <div className="font-medium text-gray-900">Customer</div>
                         <div className="text-gray-600">
-                          {appointmentData.customer_name || appointmentData.client_name}
-                          {(appointmentData.customer_phone || appointmentData.client_phone) && (
+                          {appointmentData.client_name || appointmentData.customer_name}
+                          {(appointmentData.client_phone || appointmentData.customer_phone) && (
                             <div className="text-xs text-gray-500">
-                              {appointmentData.customer_phone || appointmentData.client_phone}
+                              {appointmentData.client_phone || appointmentData.customer_phone}
                             </div>
                           )}
                         </div>

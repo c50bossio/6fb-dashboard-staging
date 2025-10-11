@@ -61,11 +61,11 @@ export async function POST(request) {
     // Get shop's barbershop ID for validation
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.shop_id) {
+    if (!profile?.barbershop_id) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
@@ -129,7 +129,7 @@ export async function POST(request) {
       description,
       metadata: {
         ...metadata,
-        barbershop_id: profile.shop_id,
+        barbershop_id: profile.barbershop_id,
         barber_id: barberId,
         payment_type: 'booth_rent',
         collected_by: user.id
@@ -140,7 +140,7 @@ export async function POST(request) {
 
     // Record rent payment in our database
     const rentPaymentData = {
-      barbershop_id: profile.shop_id,
+      barbershop_id: profile.barbershop_id,
       barber_id: barberId,
       rent_amount: amount / 100, // Convert cents to dollars
       period: metadata.period || 'monthly',
@@ -329,7 +329,7 @@ export async function PUT(request) {
       .from('booth_rent_payments')
       .update(updateData)
       .eq('id', payment_id)
-      .eq('barbershop_id', profile.shop_id)
+      .eq('barbershop_id', profile.barbershop_id)
       .select()
       .single()
 

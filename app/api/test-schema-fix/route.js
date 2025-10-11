@@ -5,18 +5,18 @@ export async function GET() {
   try {
     const supabase = await createClient()
     
-    // Test the services query with shop_id (our fix)
+    // Test the services query with barbershop_id (our fix)
     const { data: services, error: servicesError } = await supabase
       .from('services')
       .select('*')
-      .eq('shop_id', '1ca6138d-eae8-46ed-abf4-5d6c52fbd21b')
+      .eq('barbershop_id', '1ca6138d-eae8-46ed-abf4-5d6c52fbd21b')
       .limit(1)
-    
-    // Test that would have failed before (barbershop_id doesn't exist in services table)
+
+    // Test that would have failed before (shop_id column is deprecated/empty)
     const { data: oldServices, error: oldError } = await supabase
       .from('services')
       .select('*')
-      .eq('barbershop_id', '1ca6138d-eae8-46ed-abf4-5d6c52fbd21b')
+      .eq('shop_id', '1ca6138d-eae8-46ed-abf4-5d6c52fbd21b')
       .limit(1)
     
     return NextResponse.json({

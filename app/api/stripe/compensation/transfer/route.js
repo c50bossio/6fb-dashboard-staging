@@ -59,11 +59,11 @@ export async function POST(request) {
     // Get shop's barbershop ID for validation
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.shop_id) {
+    if (!profile?.barbershop_id) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
@@ -82,7 +82,7 @@ export async function POST(request) {
           payouts_enabled
         )
       `)
-      .eq('id', profile.shop_id)
+      .eq('id', profile.barbershop_id)
       .single()
 
     if (!shopStripe?.stripe_accounts?.[0]) {
@@ -118,7 +118,7 @@ export async function POST(request) {
         shop_account_id: shopAccountId,
         transfer_type: 'compensation',
         created_by: user.id,
-        barbershop_id: profile.shop_id
+        barbershop_id: profile.barbershop_id
       }
     }
 
@@ -133,7 +133,7 @@ export async function POST(request) {
     const { error: dbError } = await supabase
       .from('compensation_payments')
       .insert({
-        barbershop_id: profile.shop_id,
+        barbershop_id: profile.barbershop_id,
         barber_id: metadata.barber_id,
         amount: amount / 100, // Convert cents to dollars
         stripe_transfer_id: transfer.id,

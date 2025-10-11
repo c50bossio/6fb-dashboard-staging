@@ -46,10 +46,14 @@ export default function StaffPerformanceView({ staff }) {
       // Load appointments for performance metrics
       const { data: appointments } = await supabase
         .from('appointments')
-        .select('*')
+        .select(`
+          *,
+          client:client_id(full_name, avatar_url),
+          barber:barber_id(full_name, avatar_url)
+        `)
         .eq('barbershop_id', barbershopId)
-        .gte('appointment_date', startDate.toISOString())
-        .lte('appointment_date', endDate.toISOString())
+        .gte('scheduled_at', startDate.toISOString())
+        .lte('scheduled_at', endDate.toISOString())
 
       // Load customer feedback/ratings if available
       const { data: reviews } = await supabase
@@ -73,8 +77,8 @@ export default function StaffPerformanceView({ staff }) {
         
         // Time utilization
         const totalMinutesWorked = completedAppointments.reduce((sum, a) => {
-          if (a.appointment_end_date) {
-            const duration = (new Date(a.appointment_end_date) - new Date(a.appointment_date)) / 60000
+          if (a.scheduled_end) {
+            const duration = (new Date(a.scheduled_end) - new Date(a.scheduled_at)) / 60000
             return sum + duration
           }
           return sum + 60 // Default 1 hour if no end time
@@ -87,16 +91,16 @@ export default function StaffPerformanceView({ staff }) {
           : 0
         
         // Client retention (simplified - could be enhanced)
-        const uniqueClients = new Set(completedAppointments.map(a => a.customer_id)).size
-        const repeatClients = completedAppointments.filter((a, i, arr) => 
-          arr.findIndex(x => x.customer_id === a.customer_id) !== i
+        const uniqueClients = new Set(completedAppointments.map(a => a.client_id)).size
+        const repeatClients = completedAppointments.filter((a, i, arr) =>
+          arr.findIndex(x => x.client_id === a.client_id) !== i
         ).length
         const retentionRate = uniqueClients > 0 ? (repeatClients / uniqueClients) * 100 : 0
-        
+
         // Performance trend (compare to previous period)
         const midPoint = new Date((startDate.getTime() + endDate.getTime()) / 2)
-        const firstHalf = completedAppointments.filter(a => new Date(a.appointment_date) < midPoint)
-        const secondHalf = completedAppointments.filter(a => new Date(a.appointment_date) >= midPoint)
+        const firstHalf = completedAppointments.filter(a => new Date(a.scheduled_at) < midPoint)
+        const secondHalf = completedAppointments.filter(a => new Date(a.scheduled_at) >= midPoint)
         const revenueGrowth = firstHalf.length > 0 
           ? ((secondHalf.reduce((s, a) => s + (a.price || 0), 0) - firstHalf.reduce((s, a) => s + (a.price || 0), 0)) / 
              firstHalf.reduce((s, a) => s + (a.price || 0), 0)) * 100
@@ -104,7 +108,7 @@ export default function StaffPerformanceView({ staff }) {
 
         staffMetrics[member.id] = {
           staffId: member.id,
-          name: member.display_name || member.name || 'Unknown Staff',
+          name: member.full_name || member.display_name || 'Unknown Staff',
           role: member.role,
           totalBookings: memberAppointments.length,
           completedBookings: completedAppointments.length,

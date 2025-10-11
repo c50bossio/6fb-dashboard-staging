@@ -26,9 +26,9 @@ export default function PublicBookingPage({ staff, services, barbershop }) {
     dateTime: null,
     duration: null,
     price: null,
-    customerName: '',
-    customerEmail: '',
-    customerPhone: '',
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
     notes: '',
   })
   const [isLoading, setIsLoading] = useState(false)
@@ -60,14 +60,14 @@ export default function PublicBookingPage({ staff, services, barbershop }) {
     setCurrentStep(3)
   }
 
-  const handleCustomerInfoSubmit = (customerInfo) => {
+  const handleClientInfoSubmit = (clientInfo) => {
     setBookingData(prev => ({
       ...prev,
-      ...customerInfo,
+      ...clientInfo,
     }))
     createBooking({
       ...bookingData,
-      ...customerInfo,
+      ...clientInfo,
     })
   }
 
@@ -88,9 +88,9 @@ export default function PublicBookingPage({ staff, services, barbershop }) {
           scheduled_at: data.dateTime,
           duration_minutes: data.duration,
           price: data.price,
-          customer_name: data.customerName,
-          customer_email: data.customerEmail,
-          customer_phone: data.customerPhone,
+          client_name: data.clientName,
+          client_email: data.clientEmail,
+          client_phone: data.clientPhone,
           notes: data.notes,
           booking_source: 'staff_link', // Track that this came from public link
         }),
@@ -132,9 +132,9 @@ export default function PublicBookingPage({ staff, services, barbershop }) {
       dateTime: null,
       duration: null,
       price: null,
-      customerName: '',
-      customerEmail: '',
-      customerPhone: '',
+      clientName: '',
+      clientEmail: '',
+      clientPhone: '',
       notes: '',
     })
     setError(null)
@@ -268,7 +268,7 @@ export default function PublicBookingPage({ staff, services, barbershop }) {
               {currentStep === 3 && (
                 <BookingForm
                   bookingData={bookingData}
-                  onSubmit={handleCustomerInfoSubmit}
+                  onSubmit={handleClientInfoSubmit}
                   onBack={handleBack}
                   isLoading={isLoading}
                 />

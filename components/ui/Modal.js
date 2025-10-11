@@ -55,20 +55,20 @@ export function Modal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div 
-        className={`bg-white rounded-lg w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto ${className}`}
+      <div
+        className={`bg-card rounded-lg w-full ${sizeClasses[size]} max-h-[90vh] overflow-y-auto ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between p-6 border-b border-border">
             {title && (
-              <h3 className="text-lg font-semibold text-gray-900 truncate pr-4">{title}</h3>
+              <h3 className="text-lg font-semibold text-card-foreground truncate pr-4">{title}</h3>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Close modal"
               >
                 <XMarkIcon className="h-6 w-6" />
@@ -123,11 +123,11 @@ export function FormModal({
         {children}
         
         {/* Form Actions */}
-        <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+        <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-border">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
+            className="px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted focus:ring-2 focus:ring-olive-500 focus:border-olive-500"
           >
             {cancelText}
           </button>
@@ -185,15 +185,15 @@ export function ConfirmModal({
       closeOnBackdrop={false}
     >
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 truncate">{title}</h3>
+        <h3 className="text-lg font-semibold text-card-foreground mb-4 truncate">{title}</h3>
         {message && (
-          <p className="text-gray-600 mb-6 break-words">{message}</p>
+          <p className="text-muted-foreground mb-6 break-words">{message}</p>
         )}
-        
+
         <div className="flex justify-center space-x-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-gray-500"
+            className="px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted focus:ring-2 focus:ring-gray-500"
           >
             {cancelText}
           </button>

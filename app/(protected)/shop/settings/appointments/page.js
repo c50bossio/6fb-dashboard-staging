@@ -57,10 +57,10 @@ export default function AppointmentSettingsPage() {
 
   const loadSettings = async () => {
     if (!_user) return
-    
+
     try {
       setLoading(true)
-      const { data: settings } = await supabase
+      const { data: settings } = await _supabase
         .from('business_settings')
         .select('*')
         .eq('user_id', _user.id)
@@ -96,21 +96,21 @@ export default function AppointmentSettingsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
-    
+
     try {
-      const { data: existing } = await supabase
+      const { data: existing } = await _supabase
         .from('business_settings')
         .select('id, booking_rules')
         .eq('user_id', _user.id)
         .single()
-      
+
       const updatedBookingRules = {
         ...(existing?.booking_rules || {}),
         ...formData
       }
-      
+
       if (existing) {
-        await supabase
+        await _supabase
           .from('business_settings')
           .update({
             booking_rules: updatedBookingRules,
@@ -118,7 +118,7 @@ export default function AppointmentSettingsPage() {
           })
           .eq('user_id', _user.id)
       } else {
-        await supabase
+        await _supabase
           .from('business_settings')
           .insert({
             user_id: _user.id,

@@ -62,6 +62,53 @@ This prevents half-done features and ensures every implementation provides immed
 
 **If you need test data, create it in the database. If you need missing functionality, implement the real database operations.**
 
+## 🚨 CRITICAL: DATABASE SCHEMA STANDARD - barbershop_id ONLY
+
+**MANDATORY**: This application uses `barbershop_id` as the **exclusive** shop identifier across all tables, APIs, and components.
+
+### Absolute Requirements:
+- **USE barbershop_id ONLY**: All database queries, API calls, and component props MUST use `barbershop_id`
+- **NEVER USE shop_id**: The `shop_id` column is DEPRECATED and contains stale/incomplete data
+- **NO FALLBACK LOGIC**: Never use `shop_id || barbershop_id` fallback patterns - this causes data loss
+- **DATA LOSS WARNING**: Querying `shop_id` returns empty results because real data is in `barbershop_id` columns
+- **MIGRATION IN PROGRESS**: shop_id columns are being removed from the database
+
+### Why This Matters:
+In 2025, an incomplete migration left duplicate `shop_id` and `barbershop_id` columns in several tables. Code that queries `shop_id` instead of `barbershop_id` returns **zero results** because:
+- customers table: 52 rows in `barbershop_id`, **0 rows in shop_id**
+- services table: 17 rows in `barbershop_id`, only 3 in `shop_id`
+- 100+ tables use `barbershop_id` exclusively vs only ~10 legacy tables with `shop_id`
+
+**Real Production Bug**: Calendar page showed no appointments because profile query used `shop_id` (empty) instead of `barbershop_id` (populated with real data).
+
+### Required Patterns:
+
+**✅ CORRECT - Always use barbershop_id**:
+```javascript
+// Query appointments
+.eq('barbershop_id', barbershopId)
+
+// Get shop from profile
+const shopId = profile?.barbershop_id;
+
+// Component props
+<Calendar barbershopId={barbershopId} />
+```
+
+**❌ WRONG - Never use shop_id**:
+```javascript
+// NEVER DO THIS - Returns empty results
+.eq('shop_id', shopId)
+
+// NEVER DO THIS - Dangerous fallback
+const shopId = profile?.shop_id || profile?.barbershop_id;
+
+// NEVER DO THIS - Wrong prop name
+<Calendar shopId={shopId} />
+```
+
+**Reference**: See `/docs/SCHEMA_STANDARDS.md` for complete schema standards and migration status.
+
 ## Key Technologies & Architecture
 
 ### Frontend Stack

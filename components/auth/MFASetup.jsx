@@ -123,22 +123,22 @@ export default function MFASetup({ onComplete, onCancel }) {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Progress Indicator */}
       <div className="flex items-center justify-center space-x-4 mb-8">
-        <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-olive-600' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-olive-600 text-white' : 'bg-gray-200'}`}>
+        <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-olive-600' : 'text-muted-foreground'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-olive-600 text-white' : 'bg-muted'}`}>
             1
           </div>
           <span className="text-sm font-medium">Setup</span>
         </div>
-        <div className={`w-12 h-0.5 ${step >= 2 ? 'bg-olive-600' : 'bg-gray-200'}`}></div>
-        <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-olive-600' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-olive-600 text-white' : 'bg-gray-200'}`}>
+        <div className={`w-12 h-0.5 ${step >= 2 ? 'bg-olive-600' : 'bg-muted'}`}></div>
+        <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-olive-600' : 'text-muted-foreground'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-olive-600 text-white' : 'bg-muted'}`}>
             2
           </div>
           <span className="text-sm font-medium">Verify</span>
         </div>
-        <div className={`w-12 h-0.5 ${step >= 3 ? 'bg-olive-600' : 'bg-gray-200'}`}></div>
-        <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-olive-600' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-olive-600 text-white' : 'bg-gray-200'}`}>
+        <div className={`w-12 h-0.5 ${step >= 3 ? 'bg-olive-600' : 'bg-muted'}`}></div>
+        <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-olive-600' : 'text-muted-foreground'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-olive-600 text-white' : 'bg-muted'}`}>
             3
           </div>
           <span className="text-sm font-medium">Backup</span>
@@ -162,10 +162,10 @@ export default function MFASetup({ onComplete, onCancel }) {
         <Card className="p-6">
           <div className="text-center space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-card-foreground mb-2">
                 Scan QR Code
               </h3>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Use your authenticator app (Google Authenticator, Authy, etc.) to scan this QR code:
               </p>
             </div>
@@ -177,21 +177,21 @@ export default function MFASetup({ onComplete, onCancel }) {
                   alt="MFA QR Code" 
                   width={256}
                   height={256}
-                  className="border border-gray-200 rounded-lg"
+                  className="border border-border rounded-lg"
                 />
               </div>
             )}
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-xs text-gray-600 mb-2">Manual entry key:</p>
-              <code className="text-sm font-mono bg-white px-2 py-1 rounded border break-all">
+            <div className="bg-muted rounded-lg p-4">
+              <p className="text-xs text-muted-foreground mb-2">Manual entry key:</p>
+              <code className="text-sm font-mono bg-card px-2 py-1 rounded border break-all">
                 {secret}
               </code>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="verification-code" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="verification-code" className="block text-sm font-medium text-muted-foreground mb-2">
                   Enter 6-digit code from your app:
                 </label>
                 <input
@@ -201,7 +201,7 @@ export default function MFASetup({ onComplete, onCancel }) {
                   placeholder="123456"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value.replace(/\\D/g, ''))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-olive-500 focus:border-olive-500 text-center text-lg font-mono"
+                  className="w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-olive-500 focus:border-olive-500 text-center text-lg font-mono"
                   autoFocus
                 />
               </div>
@@ -210,14 +210,14 @@ export default function MFASetup({ onComplete, onCancel }) {
                 <button
                   onClick={handleVerifyCode}
                   disabled={loading || verificationCode.length !== 6}
-                  className="flex-1 bg-olive-600 text-white py-2 px-4 rounded-md hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                  className="flex-1 bg-olive-600 text-white py-2 px-4 rounded-md hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500 disabled:bg-muted disabled:cursor-not-allowed"
                 >
                   {loading ? 'Verifying...' : 'Verify & Enable MFA'}
                 </button>
                 <button
                   onClick={onCancel}
                   disabled={loading}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-olive-500"
+                  className="px-4 py-2 border border-border rounded-md text-muted-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-olive-500"
                 >
                   Cancel
                 </button>
@@ -238,7 +238,7 @@ export default function MFASetup({ onComplete, onCancel }) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">MFA Enabled Successfully!</h3>
+                <h3 className="text-lg font-semibold text-card-foreground">MFA Enabled Successfully!</h3>
                 <Badge className="mt-1 bg-moss-100 text-moss-900">Secure</Badge>
               </div>
             </div>
@@ -259,11 +259,11 @@ export default function MFASetup({ onComplete, onCancel }) {
             </div>
 
             {backupCodes.length > 0 && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-900 mb-3">Your Backup Codes:</h4>
+              <div className="bg-muted rounded-lg p-4">
+                <h4 className="text-sm font-medium text-card-foreground mb-3">Your Backup Codes:</h4>
                 <div className="grid grid-cols-2 gap-2 mb-4">
                   {backupCodes.map((code, index) => (
-                    <code key={index} className="text-sm font-mono bg-white px-2 py-1 rounded border text-center">
+                    <code key={index} className="text-sm font-mono bg-card px-2 py-1 rounded border text-center">
                       {code}
                     </code>
                   ))}
@@ -278,7 +278,7 @@ export default function MFASetup({ onComplete, onCancel }) {
                   </button>
                   <button
                     onClick={downloadBackupCodes}
-                    className="px-3 py-1 text-sm bg-gray-600 text-white rounded hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    className="px-3 py-1 text-sm bg-secondary text-white rounded hover:bg-secondary/90 focus:outline-none focus:ring-2 focus:ring-gray-500"
                   >
                     Download Codes
                   </button>
@@ -312,7 +312,7 @@ export default function MFASetup({ onComplete, onCancel }) {
         <Card className="p-6">
           <div className="text-center space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-            <p className="text-gray-600">Setting up Multi-Factor Authentication...</p>
+            <p className="text-muted-foreground">Setting up Multi-Factor Authentication...</p>
           </div>
         </Card>
       )}

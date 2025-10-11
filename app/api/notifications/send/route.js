@@ -17,6 +17,7 @@
 import { bookingConfirmationService } from '../../../../services/booking-confirmation-service.js';
 import { reminderScheduler } from '../../../../services/reminder-scheduler.js';
 import { pushNotificationService } from '../../../../services/push-notification-service.js';
+import { mapForBookingNotification, validateAppointmentForMapping } from '../../../utils/appointment-field-mapper.js';
 
 export async function POST(request) {
   try {
@@ -98,18 +99,22 @@ export async function POST(request) {
 
 /**
  * Handle booking confirmation notification
+ * Maps database fields to service layer format before sending
  */
 async function handleBookingConfirmation(data, options) {
   try {
+    // Map database fields (client_*, scheduled_at) to service layer fields (customer_*, appointment_datetime)
+    const mappedData = mapForBookingNotification(data, data.barbershop, data.barber);
+
     const result = await bookingConfirmationService.sendBookingConfirmation(
-      data,
+      mappedData,
       'booking_confirmed'
     );
 
     // Also schedule reminder notifications
     if (options.schedule_reminders !== false) {
       try {
-        await reminderScheduler.scheduleBookingReminders(data);
+        await reminderScheduler.scheduleBookingReminders(mappedData);
       } catch (reminderError) {
         console.warn('Failed to schedule reminders:', reminderError);
         // Don't fail confirmation for reminder scheduling failure
@@ -126,14 +131,18 @@ async function handleBookingConfirmation(data, options) {
 
 /**
  * Handle booking cancellation notification
+ * Maps database fields to service layer format before sending
  */
 async function handleBookingCancellation(data, options) {
   try {
     const { booking_data, cancellation_reason, cancelled_by } = data;
 
+    // Map database fields to service layer format
+    const mappedBookingData = mapForBookingNotification(booking_data, booking_data.barbershop, booking_data.barber);
+
     // Send cancellation confirmation
     const confirmationResult = await bookingConfirmationService.sendCancellationConfirmation(
-      booking_data,
+      mappedBookingData,
       cancellation_reason
     );
 
@@ -151,10 +160,10 @@ async function handleBookingCancellation(data, options) {
     if (options.send_push !== false) {
       try {
         await pushNotificationService.sendPushNotification(
-          booking_data.customer_email,
+          mappedBookingData.customer_email,
           {
             title: '❌ Booking Cancelled',
-            body: `Your ${booking_data.service_name} appointment has been cancelled.`,
+            body: `Your ${mappedBookingData.service_name} appointment has been cancelled.`,
             icon: '/icons/cancel-icon-192.png',
             tag: 'booking-cancelled',
             data: {
@@ -195,22 +204,27 @@ async function handleBookingCancellation(data, options) {
 
 /**
  * Handle booking rescheduled notification
+ * Maps database fields to service layer format before sending
  */
 async function handleBookingRescheduled(data, options) {
   try {
     const { old_booking_data, new_booking_data, reschedule_reason } = data;
 
+    // Map both old and new booking data
+    const mappedOldBookingData = mapForBookingNotification(old_booking_data, old_booking_data.barbershop, old_booking_data.barber);
+    const mappedNewBookingData = mapForBookingNotification(new_booking_data, new_booking_data.barbershop, new_booking_data.barber);
+
     // Send rescheduling confirmation
     const confirmationResult = await bookingConfirmationService.sendRescheduleConfirmation(
-      old_booking_data,
-      new_booking_data
+      mappedOldBookingData,
+      mappedNewBookingData
     );
 
     // Reschedule reminders
     try {
       await reminderScheduler.rescheduleBookingReminders(
         old_booking_data.id,
-        new_booking_data
+        mappedNewBookingData
       );
     } catch (reminderError) {
       console.warn('Failed to reschedule reminders:', reminderError);
@@ -219,13 +233,13 @@ async function handleBookingRescheduled(data, options) {
     // Send push notification if enabled
     if (options.send_push !== false) {
       try {
-        const newAppointmentTime = new Date(new_booking_data.appointment_datetime);
-        
+        const newAppointmentTime = new Date(mappedNewBookingData.appointment_datetime);
+
         await pushNotificationService.sendPushNotification(
-          new_booking_data.customer_email,
+          mappedNewBookingData.customer_email,
           {
             title: '🔄 Booking Rescheduled',
-            body: `Your ${new_booking_data.service_name} appointment has been moved to ${newAppointmentTime.toLocaleDateString()} at ${newAppointmentTime.toLocaleTimeString()}.`,
+            body: `Your ${mappedNewBookingData.service_name} appointment has been moved to ${newAppointmentTime.toLocaleDateString()} at ${newAppointmentTime.toLocaleTimeString()}.`,
             icon: '/icons/reschedule-icon-192.png',
             tag: 'booking-rescheduled',
             data: {
@@ -266,18 +280,22 @@ async function handleBookingRescheduled(data, options) {
 
 /**
  * Handle booking reminder notification
+ * Maps database fields to service layer format before sending
  */
 async function handleBookingReminder(data, options) {
   try {
     const { booking_data, reminder_type = 'day_of_reminder' } = data;
 
+    // Map database fields to service layer format
+    const mappedBookingData = mapForBookingNotification(booking_data, booking_data.barbershop, booking_data.barber);
+
     // Send reminder through all configured channels
     const reminderResult = await reminderScheduler.sendReminder({
       booking_id: booking_data.id,
-      customer_email: booking_data.customer_email,
-      customer_phone: booking_data.customer_phone,
+      customer_email: mappedBookingData.customer_email,
+      customer_phone: mappedBookingData.customer_phone,
       reminder_type: reminder_type,
-      reminder_data: booking_data,
+      reminder_data: mappedBookingData,
       channels: options.channels || ['email', 'sms'],
       scheduled_for: new Date(),
       status: 'processing'
@@ -293,13 +311,17 @@ async function handleBookingReminder(data, options) {
 
 /**
  * Handle payment confirmation notification
+ * Maps database fields to service layer format before sending
  */
 async function handlePaymentConfirmation(data, options) {
   try {
     const { booking_data, payment_data } = data;
 
+    // Map database fields to service layer format
+    const mappedBookingData = mapForBookingNotification(booking_data, booking_data.barbershop, booking_data.barber);
+
     const enhancedBookingData = {
-      ...booking_data,
+      ...mappedBookingData,
       payment_method: payment_data.payment_method,
       payment_status: payment_data.status,
       payment_amount: payment_data.amount,
@@ -315,7 +337,7 @@ async function handlePaymentConfirmation(data, options) {
     if (options.send_push !== false) {
       try {
         await pushNotificationService.sendPushNotification(
-          booking_data.customer_email,
+          mappedBookingData.customer_email,
           {
             title: '💳 Payment Confirmed',
             body: `Your payment of $${payment_data.amount} has been processed successfully.`,
@@ -456,21 +478,33 @@ async function handleBulkNotification(data, options) {
 
 /**
  * Handle test notification
+ * Creates test data using NEW database schema field names
  */
 async function handleTestNotification(data, options) {
   try {
     const { recipient_email, test_type = 'booking_confirmation' } = data;
 
-    const testBookingData = {
+    // Test data using NEW schema field names
+    const testAppointmentData = {
       id: 'test-booking-' + Date.now(),
-      customer_email: recipient_email,
-      customer_name: 'Test Customer',
+      client_email: recipient_email,
+      client_name: 'Test Customer',
       service_name: 'Premium Haircut',
-      appointment_datetime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-      barber_name: 'Test Barber',
-      shop_name: 'Test Barbershop',
-      total_price: 45.00
+      scheduled_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+      duration_minutes: 60,
+      price: 45.00,
+      barber: {
+        full_name: 'Test Barber',
+        avatar_url: null
+      },
+      barbershop: {
+        name: 'Test Barbershop',
+        address: '123 Test Street'
+      }
     };
+
+    // Map to service layer format
+    const testBookingData = mapForBookingNotification(testAppointmentData, testAppointmentData.barbershop, testAppointmentData.barber);
 
     let result;
 
@@ -478,14 +512,14 @@ async function handleTestNotification(data, options) {
       case 'booking_confirmation':
         result = await bookingConfirmationService.sendBookingConfirmation(testBookingData);
         break;
-        
+
       case 'booking_reminder':
-        result = await handleBookingReminder({ 
-          booking_data: testBookingData, 
-          reminder_type: 'day_of_reminder' 
+        result = await handleBookingReminder({
+          booking_data: testAppointmentData, // Pass unmapped data, function will map it
+          reminder_type: 'day_of_reminder'
         }, options);
         break;
-        
+
       case 'push_notification':
         result = await pushNotificationService.sendPushNotification(
           recipient_email,
@@ -497,7 +531,7 @@ async function handleTestNotification(data, options) {
           }
         );
         break;
-        
+
       default:
         throw new Error(`Unknown test type: ${test_type}`);
     }

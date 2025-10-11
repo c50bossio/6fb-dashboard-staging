@@ -110,7 +110,7 @@ export async function PATCH(request, { params }) {
     // Get user's profile with all fields needed for smart access control
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, shop_id, barbershop_id, organization_id')
+      .select('role, barbershop_id, organization_id')
       .eq('id', user.id)
       .single()
     
@@ -134,7 +134,7 @@ export async function PATCH(request, { params }) {
         locationName: 'Tomb45 Channelside', // This is the specific location causing issues
         userId: user.id,
         userRole: profile?.role,
-        userShopId: profile?.shop_id || profile?.barbershop_id,
+        userShopId: profile?.barbershop_id,
         userOrgId: profile?.organization_id,
         reason: accessResult.reason,
         checks: accessResult.checks,
@@ -147,7 +147,7 @@ export async function PATCH(request, { params }) {
           accessChecks: accessResult.checks,
           userContext: {
             role: profile?.role,
-            shopId: profile?.shop_id || profile?.barbershop_id,
+            shopId: profile?.barbershop_id,
             orgId: profile?.organization_id
           }
         }
@@ -159,7 +159,7 @@ export async function PATCH(request, { params }) {
       locationName: 'Tomb45 Channelside',
       userId: user.id,
       accessMethod: accessResult.reason,
-      userShopId: profile?.shop_id || profile?.barbershop_id,
+      userShopId: profile?.barbershop_id,
       locationOwnerId: location.owner_id
     })
     
@@ -239,7 +239,7 @@ export async function DELETE(request, { params }) {
     // Get user's profile with all fields needed for smart access control
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, shop_id, barbershop_id, organization_id')
+      .select('role, barbershop_id, organization_id')
       .eq('id', user.id)
       .single()
     
@@ -301,7 +301,7 @@ export async function DELETE(request, { params }) {
       // First, clean up related data
       await Promise.all([
         supabase.from('barbershop_staff').delete().eq('barbershop_id', id),
-        supabase.from('services').delete().eq('shop_id', id),
+        supabase.from('services').delete().eq('barbershop_id', id),
         supabase.from('appointments').delete().eq('barbershop_id', id),
         supabase.from('customers').delete().eq('barbershop_id', id)
       ])

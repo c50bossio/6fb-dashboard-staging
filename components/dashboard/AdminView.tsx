@@ -30,7 +30,8 @@ interface DashboardStats {
 interface RecentBooking {
   id: string
   scheduled_at: string
-  customer_name: string
+  client_name?: string
+  customer_name?: string  // Legacy fallback
   status: string
   total_amount_cents: number
   barber: {
@@ -76,7 +77,7 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
           id,
           scheduled_at,
           status,
-          customer_name,
+          client_name,
           total_amount_cents,
           barber:profiles!bookings_barber_id_fkey(name),
           service:services(name)
@@ -221,7 +222,7 @@ export default function AdminView({ barbershopId, userName }: AdminViewProps) {
                   <div className="flex-1">
                     <div className="flex items-center gap-4">
                       <div>
-                        <h4 className="font-semibold text-gray-900">{booking.customer_name}</h4>
+                        <h4 className="font-semibold text-gray-900">{booking.client_name || booking.customer_name || 'Walk-in'}</h4>
                         <p className="text-sm text-gray-600">
                           {booking.service.name} • {booking.barber.name}
                         </p>

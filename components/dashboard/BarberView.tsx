@@ -18,8 +18,10 @@ interface Booking {
   scheduled_at: string
   duration_minutes: number
   status: string
-  customer_name: string
-  customer_phone: string
+  client_name?: string
+  customer_name?: string  // Legacy fallback
+  client_phone?: string
+  customer_phone?: string  // Legacy fallback
   total_amount_cents: number
   service: {
     name: string
@@ -58,8 +60,8 @@ export default function BarberView({ userId, userName }: BarberViewProps) {
           scheduled_at,
           duration_minutes,
           status,
-          customer_name,
-          customer_phone,
+          client_name,
+          client_phone,
           total_amount_cents,
           service:services(name, price_cents)
         `)
@@ -172,7 +174,7 @@ export default function BarberView({ userId, userName }: BarberViewProps) {
                         <UserCircleIcon className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">{booking.customer_name}</h4>
+                        <h4 className="font-semibold text-gray-900">{booking.client_name || booking.customer_name || 'Walk-in'}</h4>
                         <p className="text-sm text-gray-600">{booking.service.name}</p>
                       </div>
                     </div>

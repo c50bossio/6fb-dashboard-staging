@@ -29,7 +29,7 @@ export default function MobileBookingFlow({
   const [selectedServices, setSelectedServices] = useState(initialServices)
   const [availableSlots, setAvailableSlots] = useState([])
   const [selectedDateTime, setSelectedDateTime] = useState(null)
-  const [customerInfo, setCustomerInfo] = useState({
+  const [clientInfo, setClientInfo] = useState({
     name: '',
     email: '',
     phone: '',
@@ -143,10 +143,10 @@ export default function MobileBookingFlow({
         scheduled_at: selectedDateTime,
         duration_minutes: calculateDuration(),
         service_price: calculateTotal(),
-        client_name: customerInfo.name,
-        client_phone: customerInfo.phone,
-        client_email: customerInfo.email,
-        client_notes: customerInfo.notes,
+        client_name: clientInfo.name,
+        client_phone: clientInfo.phone,
+        client_email: clientInfo.email,
+        client_notes: clientInfo.notes,
         payment_method: 'cash',
         is_walk_in: false,
         all_services: selectedServices
@@ -180,7 +180,7 @@ export default function MobileBookingFlow({
     switch (step) {
       case 1: return selectedServices.length > 0
       case 2: return selectedDateTime !== null
-      case 3: return customerInfo.name && customerInfo.email && customerInfo.phone
+      case 3: return clientInfo.name && clientInfo.email && clientInfo.phone
       case 4: return true
       default: return false
     }
@@ -409,8 +409,8 @@ export default function MobileBookingFlow({
                   <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="text"
-                    value={customerInfo.name}
-                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
+                    value={clientInfo.name}
+                    onChange={(e) => setClientInfo(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                     placeholder="Enter your full name"
                   />
@@ -425,8 +425,8 @@ export default function MobileBookingFlow({
                   <EnvelopeIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="email"
-                    value={customerInfo.email}
-                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
+                    value={clientInfo.email}
+                    onChange={(e) => setClientInfo(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                     placeholder="your@email.com"
                   />
@@ -441,8 +441,8 @@ export default function MobileBookingFlow({
                   <PhoneIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     type="tel"
-                    value={customerInfo.phone}
-                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
+                    value={clientInfo.phone}
+                    onChange={(e) => setClientInfo(prev => ({ ...prev, phone: e.target.value }))}
                     className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                     placeholder="(555) 123-4567"
                   />
@@ -454,8 +454,8 @@ export default function MobileBookingFlow({
                   Special Requests (Optional)
                 </label>
                 <textarea
-                  value={customerInfo.notes}
-                  onChange={(e) => setCustomerInfo(prev => ({ ...prev, notes: e.target.value }))}
+                  value={clientInfo.notes}
+                  onChange={(e) => setClientInfo(prev => ({ ...prev, notes: e.target.value }))}
                   rows={3}
                   className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                   placeholder="Any special instructions..."
@@ -467,8 +467,8 @@ export default function MobileBookingFlow({
                   <input
                     id="smsConsent"
                     type="checkbox"
-                    checked={customerInfo.smsConsent}
-                    onChange={(e) => setCustomerInfo(prev => ({ ...prev, smsConsent: e.target.checked }))}
+                    checked={clientInfo.smsConsent}
+                    onChange={(e) => setClientInfo(prev => ({ ...prev, smsConsent: e.target.checked }))}
                     className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded mt-0.5"
                   />
                   <label htmlFor="smsConsent" className="ml-3 text-sm text-gray-600">

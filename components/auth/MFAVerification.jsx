@@ -87,20 +87,20 @@ export default function MFAVerification({ onVerified, onCancel, userEmail }) {
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-white rounded-lg shadow-md p-6 border">
+      <div className="bg-card rounded-lg shadow-md p-6 border">
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-olive-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-olive-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 0h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold text-card-foreground mb-2">
             Two-Factor Authentication
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {userEmail && `Signing in as ${userEmail}`}
           </p>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {useBackupCode 
               ? 'Enter one of your 8-character backup codes'
               : 'Enter the 6-digit code from your authenticator app'
@@ -126,7 +126,7 @@ export default function MFAVerification({ onVerified, onCancel, userEmail }) {
               value={code}
               onChange={(e) => handleCodeInput(e.target.value)}
               placeholder={useBackupCode ? 'ABCD1234' : '123456'}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500 text-center text-lg font-mono tracking-wider"
+              className="w-full px-4 py-3 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-olive-500 text-center text-lg font-mono tracking-wider"
               autoComplete="one-time-code"
               autoFocus
             />
@@ -135,7 +135,7 @@ export default function MFAVerification({ onVerified, onCancel, userEmail }) {
           <button
             type="submit"
             disabled={loading || (!useBackupCode && code.length !== 6) || (useBackupCode && code.length !== 8)}
-            className="w-full bg-olive-600 text-white py-3 px-4 rounded-md hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
+            className="w-full bg-olive-600 text-white py-3 px-4 rounded-md hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500 disabled:bg-muted disabled:cursor-not-allowed font-medium"
           >
             {loading ? 'Verifying...' : 'Verify'}
           </button>
@@ -175,15 +175,15 @@ export default function MFAVerification({ onVerified, onCancel, userEmail }) {
             <button
               type="button"
               onClick={onCancel}
-              className="w-full text-sm text-gray-600 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-olive-500 rounded py-2"
+              className="w-full text-sm text-muted-foreground hover:text-muted-foreground/80 focus:outline-none focus:ring-2 focus:ring-olive-500 rounded py-2"
             >
               Cancel and sign out
             </button>
           )}
         </div>
 
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <div className="flex items-center space-x-2 text-xs text-gray-500">
+        <div className="mt-6 pt-4 border-t border-border">
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
             </svg>

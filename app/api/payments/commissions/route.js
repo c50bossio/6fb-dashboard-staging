@@ -35,7 +35,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const barber_id = searchParams.get('barber_id')
-    const shop_id = searchParams.get('shop_id')
+    const barbershop_id = searchParams.get('barbershop_id')
     const period = searchParams.get('period') || 'current_month' // current_month, last_month, current_week, custom
     const start_date = searchParams.get('start_date')
     const end_date = searchParams.get('end_date')
@@ -92,7 +92,7 @@ export async function GET(request) {
         transaction_date,
         stripe_payment_intent_id,
         barber_id,
-        shop_id,
+        barbershop_id,
         service_name,
         customer_name,
         payout_status,
@@ -117,8 +117,8 @@ export async function GET(request) {
     if (barber_id) {
       paymentsQuery = paymentsQuery.eq('barber_id', barber_id)
     }
-    if (shop_id) {
-      paymentsQuery = paymentsQuery.eq('shop_id', shop_id)
+    if (barbershop_id) {
+      paymentsQuery = paymentsQuery.eq('barbershop_id', barbershop_id)
     }
     if (dateFilter.gte) {
       paymentsQuery = paymentsQuery.gte('transaction_date', dateFilter.gte)
@@ -228,7 +228,7 @@ export async function GET(request) {
           commission_rate: payment.commission_barber ? (payment.commission_barber / payment.amount) : 0.6
         },
         shop: {
-          id: payment.shop_id,
+          id: payment.barbershop_id,
           commission_amount: (payment.commission_shop || 0) / 100,
           commission_rate: payment.commission_shop ? (payment.commission_shop / payment.amount) : 0.35
         },

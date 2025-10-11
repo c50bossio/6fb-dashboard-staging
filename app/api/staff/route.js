@@ -55,6 +55,10 @@ export async function GET(request) {
     console.log('🏁 Staff API: Starting request processing')
   }
   try {
+    // Get format parameter for FullCalendar resource format support
+    const { searchParams } = new URL(request.url)
+    const format = searchParams.get('format') // 'resources' for FullCalendar
+
     // Step 1: Create Supabase client with detailed logging
     if (process.env.NODE_ENV === 'development') {
       console.log('🔧 Staff API: Creating Supabase client...')
@@ -243,26 +247,34 @@ export async function GET(request) {
       })
     }
     
-    // Step 4: Get barbershop ID with retry logic
+    // Step 4: Get barbershop ID - check URL parameter first, then fall back to tenant resolver
     if (process.env.NODE_ENV === 'development') {
       console.log(`🏪 Staff API: Determining barbershop for user...`)
     }
-    
-    const barbershopId = await retryDatabaseOperation(async () => {
-      const { barbershopId } = await getTenant(profile.id, { supabase })
-      return barbershopId
-    })
-    
+
+    // Check for explicit barbershop_id in URL (shop switching bypass cache)
+    let barbershopId = searchParams.get('barbershop_id')
+    let source = 'URL parameter'
+
+    // If no explicit barbershop_id, use tenant resolver with caching
     if (!barbershopId) {
-      console.error('❌ Staff API: No barbershop found for user profile:', { 
+      barbershopId = await retryDatabaseOperation(async () => {
+        const { barbershopId } = await getTenant(profile.id, { supabase })
+        return barbershopId
+      })
+      source = 'tenant resolver'
+    }
+
+    if (!barbershopId) {
+      console.error('❌ Staff API: No barbershop found for user profile:', {
         profileId: profile.id,
-        message: 'Tenant resolver returned no barbershop association'
+        message: 'Neither URL parameter nor tenant resolver provided barbershop'
       })
       return NextResponse.json({ error: 'No barbershop found for user' }, { status: 404 })
     }
-    
+
     if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ Staff API: Barbershop ID determined: ${barbershopId}`)
+      console.log(`✅ Staff API: Barbershop ID determined: ${barbershopId} (source: ${source})`)
     }
     
     // Step 5: Get staff with profiles using retry logic
@@ -277,7 +289,46 @@ export async function GET(request) {
     if (process.env.NODE_ENV === 'development') {
       console.log(`✅ Staff API: Found ${staffWithProfiles.length} staff members`)
     }
-    
+
+    // Transform to FullCalendar resource format if requested
+    if (format === 'resources') {
+      const resources = staffWithProfiles
+        .filter(member => member.can_take_appointments !== false) // Only include staff who can take appointments
+        .map((member) => {
+          // Generate consistent color based on ID
+          const colors = ['#10b981', '#546355', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#C5A35B', '#B8913A']
+          const colorIndex = member.id ? parseInt(member.id.slice(-2), 16) % colors.length : 0
+
+          return {
+            id: member.id,
+            title: member.full_name || member.display_name || 'Staff Member',
+            eventColor: colors[colorIndex],
+            extendedProps: {
+              staff_id: member.id,
+              email: member.email,
+              phone: member.phone,
+              avatar_url: member.avatar_url,
+              role: member.role,
+              commission_rate: member.commission_rate,
+              is_active: member.is_active,
+              can_take_appointments: member.can_take_appointments,
+              is_visible_for_booking: member.is_visible_for_booking
+            }
+          }
+        })
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ Staff API: Returning ${resources.length} calendar resources`)
+      }
+
+      return NextResponse.json({
+        success: true,
+        resources,
+        barbershop_id: barbershopId,
+        total: resources.length
+      })
+    }
+
     return NextResponse.json({
       success: true,
       staff: staffWithProfiles,

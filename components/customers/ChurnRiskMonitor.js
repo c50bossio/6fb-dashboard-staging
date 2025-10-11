@@ -95,11 +95,11 @@ const CustomerRiskCard = ({ customer, onTakeAction, onDismiss }) => {
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
               <h3 className="font-semibold text-gray-900">
-                {customer.customer_name || `Customer ${customer.customer_id.slice(-8)}`}
+                {customer.client_name || customer.customer_name || `Customer ${customer.customer_id.slice(-8)}`}
               </h3>
-              <RiskLevelIndicator 
-                level={customer.churn_risk_level} 
-                score={Math.round(customer.churn_probability)} 
+              <RiskLevelIndicator
+                level={customer.churn_risk_level}
+                score={Math.round(customer.churn_probability)}
               />
             </div>
             
@@ -237,13 +237,14 @@ const CampaignLaunchModal = ({ isOpen, onClose, customer, actionType }) => {
   const [loading, setLoading] = useState(false)
 
   const getDefaultMessage = () => {
+    const customerName = customer?.client_name || customer?.customer_name || 'there'
     switch (actionType) {
       case 'email':
-        return `Hi ${customer?.customer_name || 'there'}, we miss you! Book your next appointment and get 15% off.`
+        return `Hi ${customerName}, we miss you! Book your next appointment and get 15% off.`
       case 'offer':
         return `Special offer just for you! Get 20% off your next service when you book this week.`
       default:
-        return `Hi ${customer?.customer_name || 'there'}, we'd love to see you back at the shop!`
+        return `Hi ${customerName}, we'd love to see you back at the shop!`
     }
   }
 

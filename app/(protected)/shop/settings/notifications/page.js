@@ -74,10 +74,10 @@ export default function NotificationsPage() {
 
   const loadSettings = async () => {
     if (!_user) return
-    
+
     try {
       setLoading(true)
-      const { data: settings } = await supabase
+      const { data: settings } = await _supabase
         .from('business_settings')
         .select('notification_preferences')
         .eq('user_id', _user.id)
@@ -120,16 +120,16 @@ export default function NotificationsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
-    
+
     try {
-      const { data: existing } = await supabase
+      const { data: existing } = await _supabase
         .from('business_settings')
         .select('id')
         .eq('user_id', _user.id)
         .single()
-      
+
       if (existing) {
-        await supabase
+        await _supabase
           .from('business_settings')
           .update({
             notification_preferences: formData,
@@ -137,10 +137,10 @@ export default function NotificationsPage() {
           })
           .eq('user_id', _user.id)
       } else {
-        await supabase
+        await _supabase
           .from('business_settings')
           .insert({
-            user_id: user.id,
+            user_id: _user.id,
             notification_preferences: formData
           })
       }

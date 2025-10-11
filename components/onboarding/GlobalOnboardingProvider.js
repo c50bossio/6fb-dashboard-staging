@@ -68,8 +68,17 @@ export default function GlobalOnboardingProvider({ children, user }) {
 
     try {
       const response = await fetch('/api/onboarding/checklist/status')
+
+      // Silently handle authentication errors (401) - user session may not be fully established yet
+      if (response.status === 401) {
+        // Don't log error - this is expected during initial page load
+        setChecklistData(null)
+        setCompletedItems([])
+        return
+      }
+
       const result = await response.json()
-      
+
       if (response.ok && result.success) {
         setChecklistData(result.data)
         // Extract completed item IDs
@@ -78,12 +87,12 @@ export default function GlobalOnboardingProvider({ children, user }) {
           ?.map(item => item.id) || []
         setCompletedItems(completedIds)
       } else {
-        // If not authenticated or failed, use empty state
+        // If not authenticated or failed, use empty state silently
         setChecklistData(null)
         setCompletedItems([])
       }
     } catch (error) {
-      console.error('Failed to load global checklist data:', error)
+      // Silently handle network errors - don't spam console with non-critical errors
       setChecklistData(null)
       setCompletedItems([])
     }

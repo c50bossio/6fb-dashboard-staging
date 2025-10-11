@@ -1,0 +1,103 @@
+{
+  "validAppointment": {
+    "barbershop_id": "test-barbershop-1",
+    "client_id": "test-client-1",
+    "barber_id": "test-barber-1",
+    "service_id": "test-service-1",
+    "appointment_date": "2025-10-15",
+    "appointment_time": "14:00:00",
+    "duration_minutes": 45,
+    "status": "CONFIRMED",
+    "total_price_cents": 3500,
+    "client_notes": "Regular haircut with fade",
+    "metadata": {}
+  },
+  "walkInAppointment": {
+    "barbershop_id": "test-barbershop-1",
+    "client_id": "test-client-2",
+    "barber_id": "test-barber-1",
+    "service_id": "test-service-2",
+    "appointment_date": "2025-10-10",
+    "appointment_time": "10:30:00",
+    "duration_minutes": 30,
+    "status": "PENDING",
+    "total_price_cents": 2500,
+    "client_notes": "Walk-in customer, no appointment",
+    "metadata": {
+      "source": "walk-in"
+    }
+  },
+  "futureAppointment": {
+    "barbershop_id": "test-barbershop-1",
+    "client_id": "test-client-1",
+    "barber_id": "test-barber-2",
+    "service_id": "test-service-3",
+    "appointment_date": "2025-10-25",
+    "appointment_time": "15:30:00",
+    "duration_minutes": 60,
+    "status": "PENDING",
+    "total_price_cents": 5000,
+    "client_notes": "Full service with beard trim",
+    "metadata": {
+      "booking_source": "online"
+    }
+  },
+  "completedAppointment": {
+    "barbershop_id": "test-barbershop-1",
+    "client_id": "test-client-3",
+    "barber_id": "test-barber-1",
+    "service_id": "test-service-1",
+    "appointment_date": "2025-10-05",
+    "appointment_time": "11:00:00",
+    "duration_minutes": 45,
+    "status": "COMPLETED",
+    "total_price_cents": 3500,
+    "client_notes": "Regular customer",
+    "barber_notes": "Preferred style applied",
+    "metadata": {
+      "completed_at": "2025-10-05T11:45:00Z",
+      "rating": 5
+    }
+  },
+  "cancelledAppointment": {
+    "barbershop_id": "test-barbershop-1",
+    "client_id": "test-client-4",
+    "barber_id": "test-barber-2",
+    "service_id": "test-service-2",
+    "appointment_date": "2025-10-12",
+    "appointment_time": "16:00:00",
+    "duration_minutes": 30,
+    "status": "CANCELLED",
+    "total_price_cents": 2500,
+    "client_notes": "Changed plans",
+    "metadata": {
+      "cancelled_at": "2025-10-11T09:00:00Z",
+      "cancellation_reason": "Client requested"
+    }
+  },
+  "noShowAppointment": {
+    "barbershop_id": "test-barbershop-1",
+    "client_id": "test-client-5",
+    "barber_id": "test-barber-1",
+    "service_id": "test-service-1",
+    "appointment_date": "2025-10-08",
+    "appointment_time": "13:00:00",
+    "duration_minutes": 45,
+    "status": "NO_SHOW",
+    "total_price_cents": 3500,
+    "barber_notes": "Customer did not arrive",
+    "metadata": {
+      "no_show_marked_at": "2025-10-08T13:15:00Z"
+    }
+  },
+  "invalidAppointment": {
+    "barbershop_id": "test-barbershop-1",
+    "client_id": "invalid-client-id",
+    "barber_id": "test-barber-1",
+    "appointment_date": "invalid-date",
+    "appointment_time": "25:00:00",
+    "duration_minutes": -10,
+    "status": "INVALID_STATUS",
+    "total_price_cents": -100
+  }
+}

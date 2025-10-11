@@ -130,7 +130,7 @@ export async function POST(request) {
       .from('services')
       .select('*')
       .eq('name', service)
-      .eq('shop_id', barbershop_id)
+      .eq('barbershop_id', barbershop_id)
       .single()
 
     // Create walk-in appointment - using consistent local timezone

@@ -132,7 +132,7 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
         const affectedCustomers = updatedQueue.slice(dropIndex + 1, originalIndex + 1)
         
         for (const customer of affectedCustomers) {
-          if (customer.customer_phone && customer.originalId !== movedItem.originalId) {
+          if (customer.client_phone && customer.originalId !== movedItem.originalId) {
             const newPosition = updatedQueue.findIndex(q => q.originalId === customer.originalId) + 1
             const oldPosition = originalQueue.findIndex(q => q.originalId === customer.originalId) + 1
             
@@ -186,10 +186,10 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer_name: editedItem.customer_name,
+          client_name: editedItem.client_name,
           service_name: editedItem.service_name,
           notes: editedItem.notes,
-          phone: editedItem.customer_phone
+          phone: editedItem.client_phone
         })
       })
 
@@ -206,7 +206,7 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
   }
 
   const handleDelete = async (item) => {
-    if (!confirm(`Remove ${item.customer_name} from the queue?`)) return
+    if (!confirm(`Remove ${item.client_name} from the queue?`)) return
 
     try {
       const endpoint = item.type === 'appointment' 
@@ -256,7 +256,7 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
         body: JSON.stringify({
           type: 'queue_update',
           message,
-          phone: item.customer_phone,
+          phone: item.client_phone,
           barbershop_id: barbershopId
         })
       })
@@ -270,14 +270,14 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
           if (smsResult.status === 'sent') {
             showSuccess(
               'Message Sent Successfully!',
-              `Your SMS was delivered to ${item.customer_phone}`,
+              `Your SMS was delivered to ${item.client_phone}`,
               'The customer will receive your message shortly'
             )
           } else if (smsResult.status === 'failed') {
             showError(
               'SMS Failed',
               smsResult.error || 'Unknown error occurred',
-              `Phone: ${item.customer_phone} - Please check the format and try again`
+              `Phone: ${item.client_phone} - Please check the format and try again`
             )
           }
         } else {
@@ -292,7 +292,7 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
         showError(
           'Failed to Send Message',
           errorMessage,
-          `Phone: ${item.customer_phone} - Please try again`
+          `Phone: ${item.client_phone} - Please try again`
         )
       }
     } catch (error) {
@@ -479,11 +479,11 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
                     <TypeIcon className={`h-5 w-5 ${item.type === 'appointment' ? 'text-green-600' : 'text-amber-600'}`} />
                   </div>
 
-                  {/* Customer Info */}
+                  {/* Client Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-3">
                       <p className="font-medium text-gray-900 truncate">
-                        {item.customer_name}
+                        {item.client_name}
                       </p>
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(item.status, item.type)}`}>
                         {item.type === 'appointment' ? 'Appointment' : 'Walk-in'}
@@ -508,7 +508,7 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
 
                   {/* Action Buttons */}
                   <div className="flex items-center space-x-2">
-                    {item.customer_phone && (
+                    {item.client_phone && (
                       <button
                         onClick={() => setConfirmingMessage(item)}
                         className="p-1.5 text-gray-400 hover:text-green-600 rounded"
@@ -572,12 +572,12 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
             <div className="px-6 py-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Customer Name
+                  Client Name
                 </label>
                 <input
                   type="text"
-                  value={editingItem.customer_name}
-                  onChange={(e) => setEditingItem({...editingItem, customer_name: e.target.value})}
+                  value={editingItem.client_name}
+                  onChange={(e) => setEditingItem({...editingItem, client_name: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                 />
               </div>
@@ -598,8 +598,8 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
                 </label>
                 <input
                   type="tel"
-                  value={editingItem.customer_phone || ''}
-                  onChange={(e) => setEditingItem({...editingItem, customer_phone: e.target.value})}
+                  value={editingItem.client_phone || ''}
+                  onChange={(e) => setEditingItem({...editingItem, client_phone: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                 />
               </div>
@@ -639,7 +639,7 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">
-                Start Service for {confirmingStartService.customer_name}?
+                Start Service for {confirmingStartService.client_name}?
               </h3>
             </div>
             <div className="px-6 py-4">
@@ -648,13 +648,13 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
                   This will:
                 </p>
                 <ul className="list-disc list-inside space-y-1 text-sm text-gray-600 ml-4">
-                  <li>Mark {confirmingStartService.customer_name} as being served</li>
+                  <li>Mark {confirmingStartService.client_name} as being served</li>
                   <li>Remove them from the waiting queue</li>
                   <li>Update queue positions for remaining customers</li>
-                  {confirmingStartService.customer_phone && (
+                  {confirmingStartService.client_phone && (
                     <li>Send an SMS notification: "Great news! Your barber is ready for you now. Please come in!"</li>
                   )}
-                  {!confirmingStartService.customer_phone && (
+                  {!confirmingStartService.client_phone && (
                     <li className="text-amber-600">No SMS will be sent (no phone number on file)</li>
                   )}
                 </ul>
@@ -687,7 +687,7 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="px-6 py-4 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900">
-                Send SMS to {confirmingMessage.customer_name}?
+                Send SMS to {confirmingMessage.client_name}?
               </h3>
             </div>
             <div className="px-6 py-4">
@@ -697,7 +697,7 @@ const QueueManagerInterface = ({ barbershopId, onQueueUpdate }) => {
                     Phone Number
                   </label>
                   <p className="text-gray-600 bg-gray-50 px-3 py-2 rounded-md">
-                    {confirmingMessage.customer_phone}
+                    {confirmingMessage.client_phone}
                   </p>
                 </div>
                 <div>

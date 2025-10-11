@@ -1,12 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
 
 export async function GET(request) {
   try {
-    const cookieStore = cookies()
-    const supabase = createClient(cookieStore)
+    const supabase = await createClient()
     
     // Development bypass for testing
     const isDevelopment = process.env.NODE_ENV === 'development'
@@ -56,76 +53,98 @@ export async function GET(request) {
     if (!userId) {
       return NextResponse.json({ barbers: [] })
     }
-    
-    const { data: shops, error: shopError } = await supabase
-      .from('barbershops')
-      .select('id, name')
-      .eq('owner_id', userId)
-    
-    if (shopError) {
-      console.error('Error fetching shops:', shopError)
-      return NextResponse.json(
-        { error: 'Failed to fetch shops' },
-        { status: 500 }
-      )
+
+    // Wrap database queries in try-catch for better error handling
+    let shops
+    try {
+      const { data: shopsData, error: shopError } = await supabase
+        .from('barbershops')
+        .select('id, name')
+        .eq('owner_id', userId)
+
+      if (shopError) {
+        // Log the error but return empty array instead of 500
+        console.warn('⚠️ Error fetching shops (returning empty):', shopError.message)
+        return NextResponse.json({ barbers: [] })
+      }
+
+      shops = shopsData
+    } catch (dbError) {
+      // Handle unexpected database connection errors gracefully
+      console.warn('⚠️ Database connection error (returning empty):', dbError.message)
+      return NextResponse.json({ barbers: [] })
     }
-    
+
     if (!shops || shops.length === 0) {
-      console.log('⚠️ No shops found for user - returning empty barbers array')
+      // Silently return empty - user may not have shops configured yet
       return NextResponse.json({ barbers: [] })
     }
     
     // Get all barbers from the user's shops
     const shopIds = shops.map(shop => shop.id)
-    
-    // Try to fetch from barbershop_staff table
-    const { data: barberStaff, error: staffError } = await supabase
-      .from('barbershop_staff')
-      .select(`
-        id,
-        user_id,
-        role,
-        is_active,
-        users:profiles!barbershop_staff_user_id_fkey (
+
+    // Try to fetch from barbershop_staff table with error handling
+    let barberStaff
+    try {
+      const { data: staffData, error: staffError } = await supabase
+        .from('barbershop_staff')
+        .select(`
           id,
-          email,
-          full_name,
-          avatar_url
-        )
-      `)
-      .in('barbershop_id', shopIds)
-      .eq('role', 'BARBER')
-      .eq('is_active', true)
-    
-    if (staffError) {
-      console.error('Error fetching barber staff:', staffError)
-      
-      // If table doesn't exist, try alternative approach
-      // Look for users with BARBER role in profiles
-      const { data: barberProfiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, avatar_url, role')
+          user_id,
+          role,
+          is_active,
+          users:profiles!barbershop_staff_user_id_fkey (
+            id,
+            email,
+            full_name,
+            avatar_url
+          )
+        `)
+        .in('barbershop_id', shopIds)
         .eq('role', 'BARBER')
-        .limit(10)
-      
-      if (profileError) {
-        console.error('Error fetching barber profiles:', profileError)
-        return NextResponse.json({ barbers: [] })
-      }
-      
-      // Format profiles as barber staff
-      const formattedBarbers = (barberProfiles || []).map(profile => ({
-        id: `profile-${profile.id}`,
-        user_id: profile.id,
-        users: {
-          id: profile.id,
-          email: profile.email,
-          full_name: profile.full_name || 'Barber',
-          avatar_url: profile.avatar_url
+        .eq('is_active', true)
+
+      if (staffError) {
+        // Log warning but try fallback approach
+        console.warn('⚠️ Error fetching barber staff (trying fallback):', staffError.message)
+
+        // Fallback: Look for users with BARBER role in profiles
+        try {
+          const { data: barberProfiles, error: profileError } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, avatar_url, role')
+            .eq('role', 'BARBER')
+            .limit(10)
+
+          if (profileError) {
+            console.warn('⚠️ Error fetching barber profiles (returning empty):', profileError.message)
+            return NextResponse.json({ barbers: [] })
+          }
+
+          // Format profiles as barber staff
+          const formattedBarbers = (barberProfiles || []).map(profile => ({
+            id: `profile-${profile.id}`,
+            user_id: profile.id,
+            users: {
+              id: profile.id,
+              email: profile.email,
+              full_name: profile.full_name || 'Barber',
+              avatar_url: profile.avatar_url
+            }
+          }))
+
+          return NextResponse.json({ barbers: formattedBarbers })
+        } catch (fallbackError) {
+          console.warn('⚠️ Fallback query failed (returning empty):', fallbackError.message)
+          return NextResponse.json({ barbers: [] })
         }
-      }))
-      
-      return NextResponse.json({ barbers: formattedBarbers })
+      }
+
+      barberStaff = staffData
+    } catch (dbError) {
+      // Handle unexpected database errors gracefully
+      console.warn('⚠️ Database error fetching barbers (returning empty):', dbError.message)
+      return NextResponse.json({ barbers: [] })
     }
     
     // Format and return the barber data

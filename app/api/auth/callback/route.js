@@ -133,7 +133,7 @@ export async function GET(request) {
             email: data.user.email,
             ...googleMetadata,
             role: 'CLIENT',
-            shop_id: null,
+            barbershop_id: null,
             subscription_tier: 'FREE',
             subscription_status: 'ACTIVE'
           }
@@ -147,7 +147,7 @@ export async function GET(request) {
           if (newProfile) {
             logger.info('Created profile manually with Google metadata:', { user_id: data.user.id })
 
-            // Query user's barbershops to set correct shop_id
+            // Query user's barbershops to set correct barbershop_id
             const { data: userBarbershops } = await supabase
               .from('barbershops')
               .select('id, name')
@@ -159,10 +159,10 @@ export async function GET(request) {
               const firstShop = userBarbershops[0]
               await supabase
                 .from('profiles')
-                .update({ shop_id: firstShop.id })
+                .update({ barbershop_id: firstShop.id })
                 .eq('id', data.user.id)
 
-              logger.info('Set shop_id for user:', { user_id: data.user.id, shop_id: firstShop.id })
+              logger.info('Set barbershop_id for user:', { user_id: data.user.id, barbershop_id: firstShop.id })
             }
           } else if (profileError) {
             logger.error('Failed to create profile manually:', { error: profileError.message, user_id: data.user.id })

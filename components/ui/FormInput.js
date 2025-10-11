@@ -24,12 +24,12 @@ export function FormInput({
   return (
     <div className={`${className}`}>
       {label && (
-        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor={inputId} className="block text-sm font-medium text-foreground mb-2">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      
+
       <input
         id={inputId}
         name={name}
@@ -40,23 +40,23 @@ export function FormInput({
         onChange={onChange}
         disabled={disabled}
         className={`
-          w-full px-3 py-2 border rounded-md shadow-sm transition-colors
+          w-full px-3 py-2 border rounded-md shadow-sm transition-colors bg-input text-foreground
           focus:ring-olive-500 focus:border-olive-500
-          disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
-          ${error 
-            ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-            : 'border-gray-300'
+          disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed
+          ${error
+            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+            : 'border-border'
           }
         `}
         {...props}
       />
-      
+
       {error && (
         <p className="mt-1 text-sm text-red-600">{error}</p>
       )}
-      
+
       {helper && !error && (
-        <p className="mt-1 text-xs text-gray-500">{helper}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{helper}</p>
       )}
     </div>
   )
@@ -84,12 +84,12 @@ export function FormSelect({
   return (
     <div className={`${className}`}>
       {label && (
-        <label htmlFor={selectId} className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor={selectId} className="block text-sm font-medium text-foreground mb-2">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      
+
       <select
         id={selectId}
         name={name}
@@ -98,12 +98,12 @@ export function FormSelect({
         onChange={onChange}
         disabled={disabled}
         className={`
-          w-full px-3 py-2 border rounded-md shadow-sm transition-colors
+          w-full px-3 py-2 border rounded-md shadow-sm transition-colors bg-input text-foreground
           focus:ring-olive-500 focus:border-olive-500
-          disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
-          ${error 
-            ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-            : 'border-gray-300'
+          disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed
+          ${error
+            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+            : 'border-border'
           }
         `}
         {...props}
@@ -115,13 +115,13 @@ export function FormSelect({
           </option>
         ))}
       </select>
-      
+
       {error && (
         <p className="mt-1 text-sm text-red-600">{error}</p>
       )}
-      
+
       {helper && !error && (
-        <p className="mt-1 text-xs text-gray-500">{helper}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{helper}</p>
       )}
     </div>
   )
@@ -150,12 +150,12 @@ export function FormTextarea({
   return (
     <div className={`${className}`}>
       {label && (
-        <label htmlFor={textareaId} className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor={textareaId} className="block text-sm font-medium text-foreground mb-2">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      
+
       <textarea
         id={textareaId}
         name={name}
@@ -167,35 +167,35 @@ export function FormTextarea({
         disabled={disabled}
         maxLength={maxLength}
         className={`
-          w-full px-3 py-2 border rounded-md shadow-sm transition-colors resize-vertical
+          w-full px-3 py-2 border rounded-md shadow-sm transition-colors resize-vertical bg-input text-foreground
           focus:ring-olive-500 focus:border-olive-500
-          disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
-          ${error 
-            ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-            : 'border-gray-300'
+          disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed
+          ${error
+            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+            : 'border-border'
           }
         `}
         {...props}
       />
-      
+
       {maxLength && value && (
         <div className="flex justify-between mt-1">
           <div>
             {error && <span className="text-sm text-red-600">{error}</span>}
-            {helper && !error && <span className="text-xs text-gray-500">{helper}</span>}
+            {helper && !error && <span className="text-xs text-muted-foreground">{helper}</span>}
           </div>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             {value.length}/{maxLength}
           </span>
         </div>
       )}
-      
+
       {(!maxLength || !value) && error && (
         <p className="mt-1 text-sm text-red-600">{error}</p>
       )}
-      
+
       {(!maxLength || !value) && helper && !error && (
-        <p className="mt-1 text-xs text-gray-500">{helper}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{helper}</p>
       )}
     </div>
   )
@@ -228,27 +228,27 @@ export function FormCheckbox({
           onChange={onChange}
           disabled={disabled}
           className={`
-            h-4 w-4 rounded border-gray-300 text-olive-600 
+            h-4 w-4 rounded border-border text-olive-600
             focus:ring-olive-500 focus:ring-offset-0
             disabled:cursor-not-allowed disabled:opacity-50
             ${error ? 'border-red-300' : ''}
           `}
           {...props}
         />
-        
+
         {label && (
-          <label htmlFor={checkboxId} className="ml-3 text-sm text-gray-700">
+          <label htmlFor={checkboxId} className="ml-3 text-sm text-foreground">
             {label}
           </label>
         )}
       </div>
-      
+
       {error && (
         <p className="mt-1 text-sm text-red-600">{error}</p>
       )}
-      
+
       {helper && !error && (
-        <p className="mt-1 text-xs text-gray-500">{helper}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{helper}</p>
       )}
     </div>
   )

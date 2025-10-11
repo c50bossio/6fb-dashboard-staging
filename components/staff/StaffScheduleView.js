@@ -68,10 +68,14 @@ export default function StaffScheduleView({ staff, onRefresh }) {
 
       const { data: appointments } = await supabase
         .from('appointments')
-        .select('*')
+        .select(`
+          *,
+          client:client_id(full_name, avatar_url),
+          barber:barber_id(full_name, avatar_url)
+        `)
         .eq('barbershop_id', barbershopId)
-        .gte('appointment_date', startDate.toISOString())
-        .lte('appointment_date', endDate.toISOString())
+        .gte('scheduled_at', startDate.toISOString())
+        .lte('scheduled_at', endDate.toISOString())
 
       // Convert to calendar events
       const calendarEvents = []
@@ -145,20 +149,22 @@ export default function StaffScheduleView({ staff, onRefresh }) {
       if (appointments) {
         appointments.forEach(appointment => {
           if (appointment.barber_id) {
+            const clientName = appointment.client_name || appointment.client?.full_name || 'Walk-in'
             calendarEvents.push({
               id: `appt-${appointment.id}`,
-              title: appointment.customer_name || 'Appointment',
+              title: clientName,
               resourceId: appointment.barber_id,
-              start: appointment.appointment_date,
-              end: appointment.appointment_end_date || 
-                    new Date(new Date(appointment.appointment_date).getTime() + 60 * 60 * 1000).toISOString(),
+              start: appointment.scheduled_at,
+              end: appointment.scheduled_end ||
+                    new Date(new Date(appointment.scheduled_at).getTime() + 60 * 60 * 1000).toISOString(),
               backgroundColor: getStatusColor(appointment.status),
               borderColor: getStatusBorderColor(appointment.status),
               extendedProps: {
                 type: 'appointment',
                 status: appointment.status,
                 service: appointment.service_name,
-                price: appointment.price
+                price: appointment.price,
+                clientName
               }
             })
           }

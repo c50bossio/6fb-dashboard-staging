@@ -127,20 +127,19 @@ export default function BlockTimeModal({
       
       const blockData = {
         barbershop_id: barbershopId,
-        barbershop_id: barbershopId, // Some endpoints expect barbershop_id
         barber_id: user?.id,
-        start_time: startDate.toISOString(),
-        end_time: endDate.toISOString(),
+        scheduled_at: startDate.toISOString(),
         duration_minutes: formData.duration_minutes,
-        customer_name: 'BLOCKED',
-        customer_phone: '',
-        customer_email: '',
-        notes: `🚫 Time Blocked - ${formData.block_reason || 'Time Blocked'}`,
+        client_name: 'BLOCKED',
+        client_phone: '',
+        client_email: '',
+        client_notes: `🚫 Time Blocked - ${formData.block_reason || 'Time Blocked'}`,
         status: 'blocked',
         // Only include optional fields if they exist in the database
         service_id: null,
-        service_name: null,
-        price: 0
+        service_price: 0,
+        tip_amount: 0,
+        is_walk_in: false
       }
 
       const url = isEditing 

@@ -23,7 +23,7 @@ export async function GET(request) {
     // Get user's profile to determine shop ID
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('shop_id, barbershop_id')
+      .select('barbershop_id')
       .eq('id', user.id)
       .single()
 
@@ -35,7 +35,7 @@ export async function GET(request) {
       )
     }
 
-    const shopId = profile?.shop_id || profile?.barbershop_id
+    const shopId = profile?.barbershop_id
 
     if (!shopId) {
       return NextResponse.json(

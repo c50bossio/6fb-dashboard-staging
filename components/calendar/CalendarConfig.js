@@ -137,7 +137,7 @@ export const processCalendarEvents = (appointments, timezone = 'America/New_York
     const event = {
       id: appointment.id,
       groupId: appointment.series_id || appointment.id,
-      title: appointment.title || `${appointment.customer_name} - ${appointment.service_name}`,
+      title: appointment.title || `${appointment.client_name || appointment.customer_name || 'Walk-in'} - ${appointment.service_name}`,
       backgroundColor: appointment.barber_color || '#546355',
       borderColor: appointment.barber_color || '#546355',
       textColor: '#ffffff',
@@ -146,11 +146,14 @@ export const processCalendarEvents = (appointments, timezone = 'America/New_York
       extendedProps: {
         appointmentId: appointment.id,
         barber_id: appointment.barber_id,
-        barber_name: appointment.barber_name,
+        barber_name: appointment.barber_name || appointment.barber?.full_name,
         customer_id: appointment.customer_id,
-        customer_name: appointment.customer_name,
-        customer_email: appointment.customer_email,
-        customer_phone: appointment.customer_phone,
+        customer_name: appointment.customer_name, // Keep for backward compatibility
+        client_name: appointment.client_name || appointment.customer_name || appointment.client?.full_name,
+        customer_email: appointment.customer_email, // Keep for backward compatibility
+        client_email: appointment.client_email || appointment.customer_email || appointment.client?.email,
+        customer_phone: appointment.customer_phone, // Keep for backward compatibility
+        client_phone: appointment.client_phone || appointment.customer_phone || appointment.client?.phone,
         service_id: appointment.service_id,
         service_name: appointment.service_name,
         service_duration: appointment.service_duration,
@@ -161,17 +164,19 @@ export const processCalendarEvents = (appointments, timezone = 'America/New_York
         recurring_pattern: appointment.recurring_pattern
       }
     };
-    
+
     if (appointment.is_recurring && appointment.recurring_pattern?.rrule) {
-      event.start = appointment.start_time;
-      if (appointment.end_time) {
-        event.end = appointment.end_time;
-      }
+      event.start = appointment.scheduled_at || appointment.start_time;
+      const duration = appointment.duration_minutes || appointment.service_duration || 60;
+      const startDate = new Date(event.start);
+      event.end = new Date(startDate.getTime() + duration * 60000).toISOString();
     } else {
-      event.start = TimezoneService.fromUTC(appointment.start_time, timezone);
-      event.end = TimezoneService.fromUTC(appointment.end_time, timezone);
+      event.start = TimezoneService.fromUTC(appointment.scheduled_at || appointment.start_time, timezone);
+      const duration = appointment.duration_minutes || appointment.service_duration || 60;
+      const startDate = new Date(appointment.scheduled_at || appointment.start_time);
+      event.end = TimezoneService.fromUTC(new Date(startDate.getTime() + duration * 60000).toISOString(), timezone);
     }
-    
+
     return event;
   });
 };
@@ -186,24 +191,27 @@ export const createCalendarEvent = (formData, timezone = 'America/New_York') => 
     borderColor: formData.barber_color || '#546355',
     extendedProps: {
       barber_id: formData.barber_id,
-      customer_name: formData.client_name,
-      customer_email: formData.client_email,
-      customer_phone: formData.client_phone,
+      customer_name: formData.client_name, // Keep for backward compatibility
+      client_name: formData.client_name,
+      customer_email: formData.client_email, // Keep for backward compatibility
+      client_email: formData.client_email,
+      customer_phone: formData.client_phone, // Keep for backward compatibility
+      client_phone: formData.client_phone,
       service_id: formData.service_id,
       notes: formData.notes,
       is_recurring: formData.is_recurring || false
     }
   };
-  
+
   if (formData.is_recurring && formData.recurrence_pattern) {
     const rrule = RRuleService.createRRuleString(formData.recurrence_pattern);
-    
+
     const { rrule: formattedRRule, duration } = RRuleService.toFullCalendarFormat(
       rrule,
-      formData.start_time,
+      formData.scheduled_at || formData.start_time,
       formData.end_time
     );
-    
+
     event.rrule = formattedRRule;
     event.duration = duration;
     event.extendedProps.recurring_pattern = {
@@ -212,13 +220,13 @@ export const createCalendarEvent = (formData, timezone = 'America/New_York') => 
       timezone: timezone,
       ...formData.recurrence_pattern
     };
-    
-    event.start = formData.start_time;
+
+    event.start = formData.scheduled_at || formData.start_time;
   } else {
-    event.start = formData.start_time;
+    event.start = formData.scheduled_at || formData.start_time;
     event.end = formData.end_time;
   }
-  
+
   return event;
 };
 

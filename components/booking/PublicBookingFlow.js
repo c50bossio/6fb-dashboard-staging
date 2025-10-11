@@ -172,9 +172,9 @@ export default function PublicBookingFlow({ barbershopId, barbershopSlug }) {
         scheduled_at: selectedDateTime.time,
         duration_minutes: selectedService.duration,
         price: selectedService.price,
-        customer_name: customerInfo.name,
-        customer_phone: customerInfo.phone,
-        customer_email: customerInfo.email,
+        client_name: customerInfo.name,
+        client_phone: customerInfo.phone,
+        client_email: customerInfo.email,
         source: 'public_booking'
       }
       

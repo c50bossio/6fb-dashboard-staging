@@ -35,15 +35,15 @@ export async function GET(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id')
+      .select('barbershop_id')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.shop_id) {
+    if (!profile?.barbershop_id) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barbershopId = profile.shop_id
+    const barbershopId = profile.barbershop_id
     const engine = new CompensationEngine(barbershopId, barberId)
 
     let result = {}
@@ -118,11 +118,11 @@ export async function POST(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.shop_id) {
+    if (!profile?.barbershop_id) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
@@ -131,7 +131,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    const barbershopId = profile.shop_id
+    const barbershopId = profile.barbershop_id
     const engine = new CompensationEngine(barbershopId)
 
     let result = {}
@@ -216,15 +216,15 @@ export async function PUT(request) {
     // Get user's barbershop and verify permissions
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.shop_id) {
+    if (!profile?.barbershop_id) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
-    const barbershopId = profile.shop_id
+    const barbershopId = profile.barbershop_id
     const engine = new CompensationEngine(barbershopId)
 
     let result = {}
@@ -284,11 +284,11 @@ export async function DELETE(request) {
     // Get user's barbershop
     const { data: profile } = await supabase
       .from('profiles')
-      .select('shop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
 
-    if (!profile?.shop_id) {
+    if (!profile?.barbershop_id) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })
     }
 
@@ -297,7 +297,7 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    const barbershopId = profile.shop_id
+    const barbershopId = profile.barbershop_id
 
     let result = {}
 

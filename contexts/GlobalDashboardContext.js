@@ -386,7 +386,7 @@ export function GlobalDashboardProvider({ children }) {
             supabase
               .from('services')
               .select('*')
-              .eq('shop_id', context.locationId)
+              .eq('barbershop_id', context.locationId)
               .eq('is_active', true)
               .order('name'),
             3000,

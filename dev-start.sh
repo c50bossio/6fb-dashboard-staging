@@ -50,9 +50,9 @@ FRONTEND_PID=$!
 # Wait a moment for frontend to start
 sleep 2
 
-# Start FastAPI backend on port 8001 in background
-echo "⚡ Starting FastAPI backend on http://localhost:8001"
-PORT=8001 uvicorn fastapi_backend:app --host 0.0.0.0 --port 8001 --reload > /dev/null 2>&1 &
+# Start FastAPI backend on port 8001 in background with development mode
+echo "⚡ Starting FastAPI backend on http://localhost:8001 (Development Mode)"
+DEVELOPMENT_MODE=true PORT=8001 uvicorn fastapi_backend:app --host 0.0.0.0 --port 8001 --reload > /dev/null 2>&1 &
 BACKEND_PID=$!
 
 echo ""

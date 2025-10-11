@@ -146,15 +146,15 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
             <div className="space-y-1">
               <div className="flex items-center text-sm text-gray-600">
                 <UserIcon className="h-4 w-4 mr-2" />
-                {bookingData.customerInfo?.name}
+                {bookingData.clientInfo?.name || bookingData.customerInfo?.name}
               </div>
               <div className="flex items-center text-sm text-gray-600">
                 <EnvelopeIcon className="h-4 w-4 mr-2" />
-                {bookingData.customerInfo?.email}
+                {bookingData.clientInfo?.email || bookingData.customerInfo?.email}
               </div>
               <div className="flex items-center text-sm text-gray-600">
                 <PhoneIcon className="h-4 w-4 mr-2" />
-                {formatPhoneNumber(bookingData.customerInfo?.phone || '')}
+                {formatPhoneNumber(bookingData.clientInfo?.phone || bookingData.customerInfo?.phone || '')}
               </div>
             </div>
           </div>

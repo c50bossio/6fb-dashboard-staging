@@ -7,24 +7,24 @@ const EnhancedAIAgentChat = dynamic(() => import('@/components/ai/EnhancedAIAgen
   ssr: false,
   loading: () => (
     <div className="flex items-center justify-center h-[400px]">
-      <div className="text-gray-500 animate-pulse">Loading AI Agent System...</div>
+      <div className="text-gray-500 dark:text-gray-400 animate-pulse">Loading AI Agent System...</div>
     </div>
   ),
 })
 
 export default function ChatPage() {
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">AI Business Intelligence System</h1>
-          <p className="text-gray-600">
-            Five specialized AI agents powered by comprehensive business knowledge including Six Figure Barber methodology, 
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">AI Business Intelligence System</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Five specialized AI agents powered by comprehensive business knowledge including Six Figure Barber methodology,
             operational excellence, and data-driven insights for your barbershop success.
           </p>
         </div>
-        
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
           <EnhancedAIAgentChat />
         </div>
         

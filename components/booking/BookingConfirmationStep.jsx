@@ -1,6 +1,6 @@
 /**
  * Booking Confirmation Step Component
- * 
+ *
  * Final step in booking flow with:
  * - Booking details review and confirmation
  * - Notification preference selection
@@ -9,8 +9,15 @@
  * - Success state with next steps
  * - Error handling and retry logic
  * - Accessibility-compliant design
- * 
- * @version 1.0.0
+ *
+ * Database Schema Mapping:
+ * - client_name, client_phone, client_email (appointments table)
+ * - scheduled_at (not start_time/end_time)
+ * - barber.full_name (not barber.name) via profiles table
+ * - barber.avatar_url (not barber.image_url) via profiles table
+ * - Safe fallback patterns handle both flat and nested data structures
+ *
+ * @version 1.1.0
  * @author 6FB AI Agent System
  */
 
@@ -80,13 +87,61 @@ const BookingConfirmationStep = ({
   ]);
 
   /**
+   * Get client name with safe fallbacks
+   * Priority: client_name > client.full_name > 'Walk-in'
+   */
+  const getClientName = () => {
+    return bookingData.client_name ||
+           bookingData.client?.full_name ||
+           'Walk-in';
+  };
+
+  /**
+   * Get client phone with safe fallbacks
+   */
+  const getClientPhone = () => {
+    return bookingData.client_phone ||
+           bookingData.client?.phone ||
+           null;
+  };
+
+  /**
+   * Get client email with safe fallbacks
+   */
+  const getClientEmail = () => {
+    return bookingData.client_email ||
+           bookingData.client?.email ||
+           null;
+  };
+
+  /**
+   * Get barber name with safe fallbacks
+   * Priority: barber.full_name > barber_name > 'Your Barber'
+   */
+  const getBarberName = () => {
+    return bookingData.barber?.full_name ||
+           bookingData.barber_name ||
+           'Your Barber';
+  };
+
+  /**
+   * Get barber avatar with safe fallbacks
+   */
+  const getBarberAvatar = () => {
+    return bookingData.barber?.avatar_url ||
+           bookingData.barber_avatar_url ||
+           null;
+  };
+
+  /**
    * Format appointment date and time
+   * Uses scheduled_at field from database schema
    */
   const formatDateTime = (datetime) => {
     const date = new Date(datetime);
     const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
-    
+
     return {
       date: date.toLocaleDateString('en-US', dateOptions),
       time: date.toLocaleTimeString('en-US', timeOptions),
@@ -140,7 +195,8 @@ const BookingConfirmationStep = ({
     );
   }
 
-  const dateTime = formatDateTime(bookingData.appointment_datetime);
+  // Use scheduled_at (correct schema field) with fallback to appointment_datetime
+  const dateTime = formatDateTime(bookingData.scheduled_at || bookingData.appointment_datetime);
 
   return (
     <div className={`bg-white rounded-lg shadow ${className}`}>
@@ -200,11 +256,19 @@ const BookingConfirmationStep = ({
               </div>
 
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <UserIcon className="h-5 w-5 text-green-600" />
-                </div>
+                {getBarberAvatar() ? (
+                  <img
+                    src={getBarberAvatar()}
+                    alt={getBarberName()}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <UserIcon className="h-5 w-5 text-green-600" />
+                  </div>
+                )}
                 <div>
-                  <p className="font-medium text-gray-900">{bookingData.barber_name || 'Your Barber'}</p>
+                  <p className="font-medium text-gray-900">{getBarberName()}</p>
                   <p className="text-sm text-gray-600">Barber</p>
                 </div>
               </div>
@@ -307,7 +371,7 @@ const BookingConfirmationStep = ({
                   </div>
                 </label>
 
-                {bookingData.customer_phone && (
+                {bookingData.client_phone && (
                   <label className="flex items-center space-x-3 cursor-pointer">
                     <input
                       type="checkbox"

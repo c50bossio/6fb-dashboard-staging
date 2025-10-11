@@ -9,9 +9,9 @@ import { validateEmail, validatePhone, validateRequired } from '@/lib/form-valid
  */
 export default function BookingForm({ bookingData, onSubmit, onBack, isLoading }) {
   const [formData, setFormData] = useState({
-    customerName: bookingData.customerName || '',
-    customerEmail: bookingData.customerEmail || '',
-    customerPhone: bookingData.customerPhone || '',
+    customerName: bookingData.client_name || bookingData.customerName || '',
+    customerEmail: bookingData.client_email || bookingData.customerEmail || '',
+    customerPhone: bookingData.client_phone || bookingData.customerPhone || '',
     notes: bookingData.notes || '',
   })
   const [errors, setErrors] = useState({})

@@ -471,10 +471,10 @@ function CustomersPageContent() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Badges for {selectedCustomerForBadges.name}
               </h3>
-              <p className="text-gray-600">Track achievement progress and earned badges</p>
+              <p className="text-gray-600 dark:text-gray-400">Track achievement progress and earned badges</p>
             </div>
             <button
               onClick={() => {
@@ -502,7 +502,7 @@ function CustomersPageContent() {
             barbershopId="demo-barbershop"
             showQuickActions={true}
             onProgressUpdate={(data) => {
-              
+
             }}
           />
         </div>
@@ -513,20 +513,20 @@ function CustomersPageContent() {
       <div className="space-y-6">
         {/* Badges Overview Header */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Achievement Badges System</h3>
-          <p className="text-gray-600">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Achievement Badges System</h3>
+          <p className="text-gray-600 dark:text-gray-400">
             Gamify customer experience with achievement badges. Track customer milestones, spending levels, and special achievements.
           </p>
         </div>
 
         {/* View Toggle */}
-        <div className="flex space-x-4 border-b border-gray-200">
+        <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setBadgeView('overview')}
             className={`pb-2 px-1 text-sm font-medium ${
               badgeView === 'overview'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             System Overview
@@ -535,8 +535,8 @@ function CustomersPageContent() {
             onClick={() => setBadgeView('leaderboard')}
             className={`pb-2 px-1 text-sm font-medium ${
               badgeView === 'leaderboard'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}
           >
             Leaderboard
@@ -548,42 +548,42 @@ function CustomersPageContent() {
             {/* Badge System Statistics */}
             {customers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-blue-50 rounded-lg p-4">
+                <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
                   <div className="flex items-center">
-                    <SparklesIcon className="h-8 w-8 text-blue-600" />
+                    <SparklesIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-blue-600">Active Badges</p>
-                      <p className="text-2xl font-semibold text-gray-900">20</p>
+                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Active Badges</p>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">20</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-green-50 rounded-lg p-4">
+                <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-4">
                   <div className="flex items-center">
-                    <StarIcon className="h-8 w-8 text-green-600" />
+                    <StarIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-green-600">Total Earned</p>
-                      <p className="text-2xl font-semibold text-gray-900">157</p>
+                      <p className="text-sm font-medium text-green-600 dark:text-green-400">Total Earned</p>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">157</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-purple-50 rounded-lg p-4">
+                <div className="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-4">
                   <div className="flex items-center">
-                    <UsersIcon className="h-8 w-8 text-purple-600" />
+                    <UsersIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-purple-600">Participating</p>
-                      <p className="text-2xl font-semibold text-gray-900">{customers.length}</p>
+                      <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Participating</p>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{customers.length}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-orange-50 rounded-lg p-4">
+                <div className="bg-orange-50 dark:bg-orange-900/30 rounded-lg p-4">
                   <div className="flex items-center">
-                    <ChartBarIcon className="h-8 w-8 text-orange-600" />
+                    <ChartBarIcon className="h-8 w-8 text-orange-600 dark:text-orange-400" />
                     <div className="ml-3">
-                      <p className="text-sm font-medium text-orange-600">Avg Progress</p>
-                      <p className="text-2xl font-semibold text-gray-900">72%</p>
+                      <p className="text-sm font-medium text-orange-600 dark:text-orange-400">Avg Progress</p>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">72%</p>
                     </div>
                   </div>
                 </div>
@@ -591,37 +591,37 @@ function CustomersPageContent() {
             ) : (
               <div className="text-center py-16">
                 <div className="max-w-lg mx-auto">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full flex items-center justify-center">
-                    <SparklesIcon className="h-12 w-12 text-blue-500" />
+                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-full flex items-center justify-center">
+                    <SparklesIcon className="h-12 w-12 text-blue-500 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
                     Achievement System Ready!
                   </h3>
-                  <p className="text-gray-600 leading-relaxed mb-6">
-                    Your badge system is set up and ready to gamify the customer experience. 
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
+                    Your badge system is set up and ready to gamify the customer experience.
                     Add customers to start tracking achievements and milestones.
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                    <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg">
                       <div className="text-2xl mb-2">🎯</div>
-                      <div className="text-sm font-medium text-blue-800">First Visit</div>
+                      <div className="text-sm font-medium text-blue-800 dark:text-blue-300">First Visit</div>
                     </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                    <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg">
                       <div className="text-2xl mb-2">⭐</div>
-                      <div className="text-sm font-medium text-green-800">Loyal Client</div>
+                      <div className="text-sm font-medium text-green-800 dark:text-green-300">Loyal Client</div>
                     </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
+                    <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-lg">
                       <div className="text-2xl mb-2">👑</div>
-                      <div className="text-sm font-medium text-purple-800">VIP Status</div>
+                      <div className="text-sm font-medium text-purple-800 dark:text-purple-300">VIP Status</div>
                     </div>
-                    <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
+                    <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 rounded-lg">
                       <div className="text-2xl mb-2">💎</div>
-                      <div className="text-sm font-medium text-orange-800">Top Spender</div>
+                      <div className="text-sm font-medium text-orange-800 dark:text-orange-300">Top Spender</div>
                     </div>
                   </div>
                   <button
                     onClick={() => setShowAddModal(true)}
-                    className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="px-8 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-700 dark:hover:bg-blue-600 transform hover:-translate-y-0.5 transition-all duration-200 shadow-lg hover:shadow-xl"
                   >
                     Start Gamification Journey
                   </button>
@@ -630,16 +630,16 @@ function CustomersPageContent() {
             )}
 
             {/* Customer List with Badge Summary */}
-            <div className="bg-white border border-gray-200 rounded-lg">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h4 className="text-lg font-medium text-gray-900">Customer Badge Progress</h4>
-                <p className="text-sm text-gray-600">Click on a customer to view detailed badge progress</p>
+            <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Customer Badge Progress</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Click on a customer to view detailed badge progress</p>
               </div>
-              <div className="divide-y divide-gray-200">
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {customers.slice(0, 10).map((customer) => (
                   <div
                     key={customer.id}
-                    className="px-6 py-4 hover:bg-gray-50 cursor-pointer"
+                    className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer"
                     onClick={() => {
                       setSelectedCustomerForBadges(customer)
                       setBadgeView('customer-specific')
@@ -648,21 +648,21 @@ function CustomersPageContent() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
-                          <UserIcon className="h-8 w-8 text-gray-400" />
+                          <UserIcon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{customer.name}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             {customer.totalVisits} visits • {customer.segment}
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center space-x-4">
                         <div className="text-right">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                             {Math.floor(Math.random() * 8) + 1} badges
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             {Math.floor(Math.random() * 500) + 100} points
                           </div>
                         </div>
@@ -671,7 +671,7 @@ function CustomersPageContent() {
                             <span key={index} className="text-lg">{icon}</span>
                           ))}
                         </div>
-                        <EyeIcon className="h-5 w-5 text-gray-400" />
+                        <EyeIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                       </div>
                     </div>
                   </div>
@@ -707,8 +707,8 @@ function CustomersPageContent() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Customer Directory</h2>
-          <p className="text-gray-600">Manage your customer database and contact preferences</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Customer Directory</h2>
+          <p className="text-gray-600 dark:text-gray-400">Manage your customer database and contact preferences</p>
         </div>
         <div className="flex items-center space-x-3">
           <button
@@ -735,23 +735,23 @@ function CustomersPageContent() {
 
       {/* Error Message */}
       {finalError && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-800 dark:text-red-400">
           <div className="flex items-start space-x-3">
             <ExclamationTriangleIcon className="h-5 w-5 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
               <p className="font-medium">Unable to load customer data</p>
               <p className="text-sm mt-1">{finalError}</p>
               <div className="mt-3 flex space-x-3">
-                <button 
+                <button
                   onClick={() => refetchCustomers()}
-                  className="text-sm bg-red-100 hover:bg-red-200 px-3 py-1 rounded border border-red-300 transition-colors"
+                  className="text-sm bg-red-100 dark:bg-red-800 hover:bg-red-200 dark:hover:bg-red-700 px-3 py-1 rounded border border-red-300 dark:border-red-700 transition-colors"
                   disabled={isLoadingState || isFetching}
                 >
                   {isFetching ? 'Retrying...' : 'Try Again'}
                 </button>
-                <button 
+                <button
                   onClick={() => window.location.reload()}
-                  className="text-sm text-red-600 hover:text-red-800 underline hover:no-underline"
+                  className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline hover:no-underline"
                 >
                   Refresh Page
                 </button>
@@ -765,27 +765,27 @@ function CustomersPageContent() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="card">
           <div className="flex items-center">
-            <UserIcon className="h-8 w-8 text-olive-600" />
+            <UserIcon className="h-8 w-8 text-olive-600 dark:text-olive-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Customers</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Customers</p>
               {isLoadingState ? (
-                <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-900">{customerCount}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{customerCount}</p>
               )}
             </div>
           </div>
         </div>
-        
+
         <div className="card">
           <div className="flex items-center">
-            <StarIcon className="h-8 w-8 text-gold-600" />
+            <StarIcon className="h-8 w-8 text-gold-600 dark:text-gold-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">VIP Customers</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">VIP Customers</p>
               {isLoadingState ? (
-                <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {customers.filter(c => c.segment === 'vip').length}
                 </p>
               )}
@@ -795,13 +795,13 @@ function CustomersPageContent() {
 
         <div className="card">
           <div className="flex items-center">
-            <CalendarIcon className="h-8 w-8 text-green-600" />
+            <CalendarIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">New Customers</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">New Customers</p>
               {isLoadingState ? (
-                <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {customers.filter(c => c.segment === 'new').length}
                 </p>
               )}
@@ -811,15 +811,15 @@ function CustomersPageContent() {
 
         <div className="card">
           <div className="flex items-center">
-            <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
-              <span className="text-red-600 font-bold">!</span>
+            <div className="h-8 w-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+              <span className="text-red-600 dark:text-red-400 font-bold">!</span>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Lapsed</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Lapsed</p>
               {isLoadingState ? (
-                <div className="h-8 w-16 bg-gray-200 animate-pulse rounded"></div>
+                <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 animate-pulse rounded"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {customers.filter(c => c.segment === 'lapsed').length}
                 </p>
               )}
@@ -836,7 +836,7 @@ function CustomersPageContent() {
             {/* Search Input with Suggestions */}
             <div className="flex-1 relative">
               <div className="relative">
-                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search customers with smart suggestions..."
@@ -845,7 +845,7 @@ function CustomersPageContent() {
                     const value = e.target.value
                     setSearchTerm(value)
                     setShowSearchSuggestions(value.length >= 2)
-                    
+
                     // Reset pagination when searching
                     if (value.length >= 2) {
                       setCurrentPage(0)
@@ -861,7 +861,7 @@ function CustomersPageContent() {
                       setSearchTerm('')
                       setShowSearchSuggestions(false)
                     }}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     <XMarkIcon className="h-4 w-4" />
                   </button>
@@ -955,25 +955,25 @@ function CustomersPageContent() {
         <div className="space-y-4">
           {/* Skeleton loading for customer cards */}
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-6 animate-pulse">
+            <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 animate-pulse bg-white dark:bg-gray-800">
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
-                  <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+                  <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
                 </div>
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-4 bg-gray-200 rounded w-32"></div>
-                    <div className="h-5 bg-gray-200 rounded w-16"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
                   </div>
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
                   <div className="flex space-x-4">
-                    <div className="h-3 bg-gray-200 rounded w-40"></div>
-                    <div className="h-3 bg-gray-200 rounded w-32"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-40"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
                   </div>
                   <div className="flex space-x-4">
-                    <div className="h-3 bg-gray-200 rounded w-20"></div>
-                    <div className="h-3 bg-gray-200 rounded w-24"></div>
-                    <div className="h-3 bg-gray-200 rounded w-28"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-28"></div>
                   </div>
                 </div>
               </div>
@@ -982,15 +982,15 @@ function CustomersPageContent() {
         </div>
       ) : filteredCustomers.length === 0 ? (
         <div className="p-8 text-center">
-          <UserIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500 font-medium">
-            {searchTerm || selectedSegment !== 'all' 
-              ? 'No customers match your filters' 
+          <UserIcon className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+          <p className="text-gray-500 dark:text-gray-400 font-medium">
+            {searchTerm || selectedSegment !== 'all'
+              ? 'No customers match your filters'
               : 'No customers yet'}
           </p>
-          <p className="text-gray-400 text-sm mt-1">
-            {searchTerm || selectedSegment !== 'all' 
-              ? 'Try adjusting your search or filters' 
+          <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+            {searchTerm || selectedSegment !== 'all'
+              ? 'Try adjusting your search or filters'
               : 'Add your first customer to start building your client database'}
           </p>
           {!searchTerm && selectedSegment === 'all' && (
@@ -1008,7 +1008,7 @@ function CustomersPageContent() {
           {/* Background fetch indicator */}
           {isFetching && !isLoadingState && (
             <div className="absolute top-0 right-0 z-10">
-              <div className="flex items-center space-x-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg border border-blue-200 text-sm">
+              <div className="flex items-center space-x-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
                 <ArrowPathIcon className="h-4 w-4 animate-spin" />
                 <span>Updating...</span>
               </div>
@@ -1028,20 +1028,20 @@ function CustomersPageContent() {
             return (
               <div
                 key={customer.id}
-                className={`border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-all duration-200 hover:shadow-md ${
-                  hasMatches ? 'ring-2 ring-olive-200 bg-olive-50/30' : ''
+                className={`border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 transition-all duration-200 hover:shadow-md ${
+                  hasMatches ? 'ring-2 ring-olive-200 dark:ring-olive-700 bg-olive-50/30 dark:bg-olive-900/20' : ''
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0">
-                      <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
-                        <UserIcon className="h-6 w-6 text-gray-600" />
+                      <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                        <UserIcon className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                       </div>
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-medium text-gray-900">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                           {searchTerm ? (
                             <SearchHighlight 
                               text={customer.name}
@@ -1074,11 +1074,11 @@ function CustomersPageContent() {
                         />
                       </div>
                       
-                      <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                         <span className="flex items-center">
                           <EnvelopeIcon className="h-4 w-4 mr-1" />
                           {searchTerm ? (
-                            <SearchHighlight 
+                            <SearchHighlight
                               text={customer.email}
                               searchQuery={searchTerm}
                               highlightColor="green"
@@ -1091,7 +1091,7 @@ function CustomersPageContent() {
                         <span className="flex items-center">
                           <PhoneIcon className="h-4 w-4 mr-1" />
                           {searchTerm ? (
-                            <SearchHighlight 
+                            <SearchHighlight
                               text={customer.phone}
                               searchQuery={searchTerm}
                               highlightColor="orange"
@@ -1102,21 +1102,21 @@ function CustomersPageContent() {
                           )}
                         </span>
                       </div>
-                    <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                    <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                       <span>Visits: {customer.totalVisits}</span>
                       <span>Spent: ${customer.totalSpent}</span>
                       <span>Last visit: {customer.lastVisit || 'Never'}</span>
-                      <QuickRedeemButton 
+                      <QuickRedeemButton
                         customerId={customer.id}
                         barbershopId={customer.barbershopId}
                       />
                     </div>
-                    
+
                     {/* Notes with highlighting */}
                     {customer.notes && (
-                      <div className="mt-3 p-2 bg-gray-50 rounded-md">
-                        <p className="text-sm text-gray-600">
-                          <span className="font-medium text-gray-700">Notes: </span>
+                      <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-900 rounded-md">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="font-medium text-gray-700 dark:text-gray-300">Notes: </span>
                           {searchTerm ? (
                             <SearchHighlight 
                               text={customer.notes}
@@ -1136,7 +1136,7 @@ function CustomersPageContent() {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <SmartRebookButton 
+                  <SmartRebookButton
                     customer={{
                       ...customer,
                       last_visit: customer.lastVisit === 'Never' ? null : new Date(customer.lastVisit).toISOString(),
@@ -1151,14 +1151,14 @@ function CustomersPageContent() {
                   />
                   <button
                     onClick={() => setSelectedCustomer(customer.id)}
-                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+                    className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 text-sm"
                   >
                     <EyeIcon className="h-4 w-4 mr-1 inline" />
                     Profile
                   </button>
                   <button
                     onClick={() => setSelectedJourneyCustomer(customer.id)}
-                    className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 text-sm"
+                    className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 text-sm"
                   >
                     Journey
                   </button>
@@ -1171,12 +1171,12 @@ function CustomersPageContent() {
         
         {/* Pagination */}
         {!searchTerm && customersData && customersData.length >= pageSize && (
-          <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
-            <div className="flex items-center text-sm text-gray-500">
+          <div className="mt-8 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-6">
+            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
               <span>
                 Showing {currentPage * pageSize + 1} to {Math.min((currentPage + 1) * pageSize, customerCount)} of {customerCount} customers
                 {isPlaceholderData && (
-                  <span className="ml-2 text-blue-600">(loading newer data...)</span>
+                  <span className="ml-2 text-blue-600 dark:text-blue-400">(loading newer data...)</span>
                 )}
               </span>
             </div>
@@ -1184,17 +1184,17 @@ function CustomersPageContent() {
               <button
                 onClick={() => setCurrentPage(page => Math.max(0, page - 1))}
                 disabled={currentPage === 0 || isFetching}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
                 Page {currentPage + 1}
               </span>
               <button
                 onClick={() => setCurrentPage(page => page + 1)}
                 disabled={(customersData?.length || 0) < pageSize || isFetching}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
@@ -1207,7 +1207,7 @@ function CustomersPageContent() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Unified Context Header */}
       <CustomersHeader>
         <div className="flex items-center space-x-3">
@@ -1229,11 +1229,11 @@ function CustomersPageContent() {
           </button>
         </div>
       </CustomersHeader>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tab Navigation */}
-        <div className="bg-white shadow rounded-lg mb-6">
-          <div className="border-b border-gray-200">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-6 border border-gray-200 dark:border-gray-700">
+          <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="flex space-x-8 px-6">
               {tabs.map((tab) => {
                 const Icon = tab.icon
@@ -1249,8 +1249,8 @@ function CustomersPageContent() {
                     }}
                     className={`py-4 text-sm font-medium border-b-2 flex items-center gap-2 ${
                       activeTab === tab.id
-                        ? 'border-olive-500 text-olive-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        ? 'border-olive-500 text-olive-600 dark:text-olive-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -1263,7 +1263,7 @@ function CustomersPageContent() {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
           {activeTab === 'customers' ? renderCustomersList() :
            activeTab === 'badges' ? renderBadgesContent() :
            tabs.find(tab => tab.id === activeTab)?.component?.()}
@@ -1285,12 +1285,12 @@ function CustomersPageContent() {
         {selectedJourneyCustomer && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="max-w-6xl w-full max-h-full overflow-y-auto">
-              <div className="bg-white rounded-lg shadow-lg">
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                  <h2 className="text-xl font-semibold text-gray-900">Customer Journey</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+                <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Customer Journey</h2>
                   <button
                     onClick={() => setSelectedJourneyCustomer(null)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     <XMarkIcon className="h-6 w-6" />
                   </button>
@@ -1306,9 +1306,9 @@ function CustomersPageContent() {
         {/* Add Customer Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-4">Add New Customer</h3>
-              
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Add New Customer</h3>
+
               <form onSubmit={(e) => {
                 e.preventDefault()
                 const formData = new FormData(e.target)
@@ -1322,7 +1322,7 @@ function CustomersPageContent() {
               }}>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Full Name *
                     </label>
                     <input
@@ -1334,7 +1334,7 @@ function CustomersPageContent() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Email *
                     </label>
                     <input
@@ -1346,7 +1346,7 @@ function CustomersPageContent() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Phone
                     </label>
                     <input
@@ -1357,7 +1357,7 @@ function CustomersPageContent() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Preferred Contact
                     </label>
                     <select name="preferredContact" className="input-field">
@@ -1368,7 +1368,7 @@ function CustomersPageContent() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Notes
                     </label>
                     <textarea
@@ -1400,18 +1400,18 @@ function CustomersPageContent() {
         {/* Import Customer Modal */}
         {showImportModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4">
-              <div className="p-6 border-b border-gray-200">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto m-4">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-gray-900">Import Company Customers</h2>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Import Company Customers</h2>
                   <button
                     onClick={() => setShowImportModal(false)}
-                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                    className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                   >
                     ×
                   </button>
                 </div>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                   Import customer data for company-wide analytics and management
                 </p>
               </div>

@@ -152,26 +152,26 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
         // Get user's shop data
         const { data: profileData } = await supabase
           .from('profiles')
-          .select('shop_id, role, barbershop_name')
+          .select('barbershop_id, role, barbershop_name')
           .eq('id', user.id)
           .single()
-        
-        if (profileData?.shop_id) {
+
+        if (profileData?.barbershop_id) {
           console.log('🔄 Loading comprehensive business context...')
           
           // Load multiple data sources concurrently for better performance
           const [shopInfo, analytics, predictions, alerts] = await Promise.allSettled([
             // Basic shop info
-            supabase.from('barbershops').select('*').eq('id', profileData.shop_id).single(),
+            supabase.from('barbershops').select('*').eq('id', profileData.barbershop_id).single(),
             
             // Analytics data from our enhanced API
-            fetch(`/api/analytics/live-data?barbershop_id=${profileData.shop_id}`).then(r => r.json()),
+            fetch(`/api/analytics/live-data?barbershop_id=${profileData.barbershop_id}`).then(r => r.json()),
             
             // Predictive analytics with seasonal/customer insights
-            fetch(`/api/ai/predictive?type=comprehensive&shopId=${profileData.shop_id}`).then(r => r.json()),
+            fetch(`/api/ai/predictive?type=comprehensive&shopId=${profileData.barbershop_id}`).then(r => r.json()),
             
             // Intelligent alerts
-            fetch(`/api/alerts/intelligent?barbershop_id=${profileData.shop_id}`).then(r => r.json())
+            fetch(`/api/alerts/intelligent?barbershop_id=${profileData.barbershop_id}`).then(r => r.json())
           ])
 
           // Process results and set up comprehensive business context
@@ -184,13 +184,19 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
           const { data: customers } = await supabase
             .from('customers')
             .select('total_spent, total_visits, created_at')
-            .eq('shop_id', profileData.shop_id)
+            .eq('barbershop_id', profileData.barbershop_id)
           
           const { data: bookings } = await supabase
-            .from('bookings')
-            .select('price, status, service_name, start_time, created_at')
-            .eq('shop_id', profileData.shop_id)
-            .gte('start_time', new Date().toISOString().split('T')[0])
+            .from('appointments')
+            .select(`
+              price,
+              status,
+              scheduled_at,
+              created_at,
+              service:services(name)
+            `)
+            .eq('barbershop_id', profileData.barbershop_id)
+            .gte('scheduled_at', new Date().toISOString().split('T')[0])
           
           const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
           const totalCustomers = customers?.length || 0
@@ -200,7 +206,7 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
           setShopData({
             ...shopData,
             shop_name: shopData?.name || profileData.barbershop_name,
-            shop_id: profileData.shop_id,
+            barbershop_id: profileData.barbershop_id,
             user_role: profileData.role,
             location: shopData?.location || shopData?.address || 'Main Location',
             staff_count: shopData?.staff_count || 1
@@ -221,7 +227,7 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
           setBusinessContext({
             shop: {
               name: shopData?.name || profileData.barbershop_name,
-              id: profileData.shop_id,
+              id: profileData.barbershop_id,
               location: shopData?.location || 'Main Location',
               staff_count: shopData?.staff_count || 1,
               operating_hours: shopData?.operating_hours || '9 AM - 7 PM',
@@ -459,7 +465,7 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
             monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
             location: shopData?.location || 'Main Location',
             staff_count: shopData?.staff_count || 1,
-            barbershop_id: shopData?.shop_id || user?.id,
+            barbershop_id: shopData?.barbershop_id || user?.id,
             user_role: shopData?.user_role || 'owner',
             today_appointments: realTimeMetrics?.today_appointments || 0,
             total_revenue: realTimeMetrics?.total_revenue || 0,
@@ -481,14 +487,14 @@ const FloatingAIChat = React.memo(function FloatingAIChat() {
             monthly_revenue: realTimeMetrics?.monthly_revenue || 0,
             location: shopData?.location || 'Main Location',
             staff_count: shopData?.staff_count || 1,
-            barbershop_id: shopData?.shop_id || user?.id,
+            barbershop_id: shopData?.barbershop_id || user?.id,
             user_role: shopData?.user_role || 'owner',
             today_appointments: realTimeMetrics?.today_appointments || 0,
             total_revenue: realTimeMetrics?.total_revenue || 0,
             context_version: '1.0',
             context_loaded: false
           },
-          barbershop_id: shopData?.shop_id || user?.id
+          barbershop_id: shopData?.barbershop_id || user?.id
         })
       })
 

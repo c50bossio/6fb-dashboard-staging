@@ -5,7 +5,7 @@ import { withAuth, getUserProfile } from '../../../../../lib/auth-middleware'
 export const GET = withAuth(async function(request) {
   try {
     const user = request.user
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Skip auth validation if already handled by middleware
     if (!user) {

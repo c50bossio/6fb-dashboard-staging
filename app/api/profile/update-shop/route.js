@@ -27,11 +27,11 @@ export async function POST(request) {
     }
 
     // Parse request body
-    const { shop_id } = await request.json()
+    const { barbershop_id } = await request.json()
 
-    if (!shop_id) {
+    if (!barbershop_id) {
       return NextResponse.json(
-        { error: 'Shop ID required' },
+        { error: 'Barbershop ID required' },
         { status: 400 }
       )
     }
@@ -83,7 +83,7 @@ export async function POST(request) {
       const { data: shop, error: shopError } = await supabase
         .from('barbershops')
         .select('organization_id')
-        .eq('id', shop_id)
+        .eq('id', barbershop_id)
         .single()
 
       if (shopError || !shop) {
@@ -104,7 +104,7 @@ export async function POST(request) {
     // Update the user's last_selected_shop_id
     const { data: updatedProfile, error: updateError } = await supabase
       .from('profiles')
-      .update({ last_selected_shop_id: shop_id })
+      .update({ last_selected_shop_id: barbershop_id })
       .eq('id', profileUserId)
       .select()
       .single()
@@ -120,7 +120,7 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       message: 'Shop selection updated',
-      last_selected_shop_id: shop_id,
+      last_selected_shop_id: barbershop_id,
       profile: updatedProfile
     })
 

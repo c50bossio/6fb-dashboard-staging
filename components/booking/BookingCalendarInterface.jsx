@@ -132,9 +132,9 @@ export default function BookingCalendarInterface({ barbershopId, staffId, viewMo
     if (appointment) {
       // Editing existing appointment
       setEditingAppointment(appointment);
-      setClientName(appointment.client_name || appointment.client?.full_name || '');
-      setClientPhone(appointment.client_phone || appointment.client?.phone || '');
-      setClientEmail(appointment.client_email || appointment.client?.email || '');
+      setClientName(appointment.client_name || appointment.customer_name || appointment.client?.full_name || '');
+      setClientPhone(appointment.client_phone || appointment.customer_phone || appointment.client?.phone || '');
+      setClientEmail(appointment.client_email || appointment.customer_email || appointment.client?.email || '');
       setSelectedService(appointment.service_id?.toString() || '');
       setAppointmentNotes(appointment.notes || '');
     } else {

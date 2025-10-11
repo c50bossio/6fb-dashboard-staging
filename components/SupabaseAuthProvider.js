@@ -261,6 +261,25 @@ function SupabaseAuthProvider({ children }) {
     router.push('/login?error=Session expired. Please log in again.')
   }, [router])
 
+  const refreshProfile = useCallback(async () => {
+    if (!user) {
+      console.warn('⚠️ [refreshProfile] No user to refresh profile for')
+      return null
+    }
+
+    console.log('🔄 [refreshProfile] Refreshing profile data...')
+    const profileData = await fetchProfile(user.id)
+
+    if (profileData) {
+      setProfile(profileData)
+      console.log('✅ [refreshProfile] Profile refreshed successfully')
+    } else {
+      console.error('❌ [refreshProfile] Failed to refresh profile')
+    }
+
+    return profileData
+  }, [user, fetchProfile])
+
   const value = useMemo(() => ({
     user,
     profile,
@@ -273,7 +292,8 @@ function SupabaseAuthProvider({ children }) {
     updateProfile,
     resetAndRetry,
     clearAuthAndRedirect,
-  }), [user, profile, loading, error, resetAndRetry, clearAuthAndRedirect])
+    refreshProfile,
+  }), [user, profile, loading, error, resetAndRetry, clearAuthAndRedirect, refreshProfile])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

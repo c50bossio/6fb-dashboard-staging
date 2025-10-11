@@ -109,7 +109,7 @@ export default function HighRiskCustomerAlerts({ barbershopId }) {
     for (const customer of customers) {
       try {
         // Get upcoming appointments for this customer
-        const appointmentResponse = await fetch(`/api/appointments?customer_id=${customer.customer_id}&barbershop_id=${barbershopId}&upcoming=true`)
+        const appointmentResponse = await fetch(`/api/appointments?client_id=${customer.customer_id}&barbershop_id=${barbershopId}&upcoming=true`)
         const appointments = appointmentResponse.ok ? (await appointmentResponse.json()).data || [] : []
         
         // Calculate urgency based on next appointment
@@ -154,8 +154,8 @@ export default function HighRiskCustomerAlerts({ barbershopId }) {
   // Generate summary statistics
   const generateSummary = (alerts, upcoming) => {
     const criticalAlerts = alerts.filter(alert => alert.urgency === 'critical').length
-    const todayAppointments = alerts.filter(alert => 
-      alert.next_appointment && isToday(new Date(alert.next_appointment.start_time))
+    const todayAppointments = alerts.filter(alert =>
+      alert.next_appointment && isToday(new Date(alert.next_appointment.scheduled_at))
     ).length
     
     return {
@@ -170,8 +170,8 @@ export default function HighRiskCustomerAlerts({ barbershopId }) {
   // Calculate urgency level
   const calculateUrgency = (appointment, riskScore) => {
     if (!appointment) return 'medium'
-    
-    const appointmentTime = new Date(appointment.start_time)
+
+    const appointmentTime = new Date(appointment.scheduled_at)
     const hoursUntil = (appointmentTime - new Date()) / (1000 * 60 * 60)
     
     if (riskScore >= 80 && hoursUntil <= 2) return 'critical'
@@ -183,8 +183,8 @@ export default function HighRiskCustomerAlerts({ barbershopId }) {
   // Determine alert type
   const determineAlertType = (customer, appointment) => {
     if (!appointment) return 'risk_monitoring'
-    
-    const hoursUntil = (new Date(appointment.start_time) - new Date()) / (1000 * 60 * 60)
+
+    const hoursUntil = (new Date(appointment.scheduled_at) - new Date()) / (1000 * 60 * 60)
     
     if (customer.risk_score >= 80) return 'no_show_likely'
     if (hoursUntil <= 24 && customer.risk_score >= 60) return 'confirmation_needed' 
@@ -445,11 +445,11 @@ function HighRiskCustomerItem({ alert, onViewDetails, onContactCustomer }) {
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  {format(new Date(alert.next_appointment.start_time), 'MMM dd, HH:mm')}
+                  {format(new Date(alert.next_appointment.scheduled_at), 'MMM dd, HH:mm')}
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {formatDistanceToNow(new Date(alert.next_appointment.start_time), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(alert.next_appointment.scheduled_at), { addSuffix: true })}
                 </span>
               </div>
             )}

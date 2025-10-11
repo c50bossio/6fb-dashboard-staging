@@ -110,7 +110,7 @@ export default function BookingConfirmation({ bookingData, staff, barbershop, on
               <EnvelopeIcon className="h-5 w-5 text-muted-foreground mt-0.5 mr-3 flex-shrink-0" />
               <div>
                 <p className="text-sm text-muted-foreground">Confirmation sent to</p>
-                <p className="font-medium text-foreground">{bookingData.customerEmail}</p>
+                <p className="font-medium text-foreground">{bookingData.client_email || bookingData.customerEmail}</p>
               </div>
             </div>
 
@@ -167,7 +167,7 @@ export default function BookingConfirmation({ bookingData, staff, barbershop, on
       {/* Email Notice */}
       <div className="max-w-2xl mx-auto p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
         <p className="text-sm text-blue-900 dark:text-blue-100">
-          📧 A confirmation email has been sent to <strong>{bookingData.customerEmail}</strong>
+          📧 A confirmation email has been sent to <strong>{bookingData.client_email || bookingData.customerEmail}</strong>
           {' '}with all the details and instructions.
         </p>
       </div>

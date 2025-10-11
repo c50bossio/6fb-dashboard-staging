@@ -470,9 +470,183 @@ ALTER TABLE appointments
 ADD COLUMN IF NOT EXISTS recurring_pattern_id UUID;
 
 -- Create missing indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS 
+CREATE INDEX CONCURRENTLY IF NOT EXISTS
 idx_appointments_barber_date ON appointments(barber_id, start_time);
 ```
+
+### 🚨 Issue: Empty Data Results (shop_id vs barbershop_id)
+
+#### Symptoms
+- Calendar shows no appointments despite data existing
+- Services API returns empty array
+- Customer list is empty
+- Barber selection dropdown is empty
+- Dashboard shows zero metrics
+
+#### Root Cause
+**CRITICAL**: Your code is querying the deprecated `shop_id` column instead of `barbershop_id`. This is a schema inconsistency issue from an incomplete 2025 migration.
+
+**Data Distribution**:
+- `customers` table: **52 rows** in `barbershop_id`, **0 rows** in `shop_id`
+- `services` table: **17 rows** in `barbershop_id`, only 3 in `shop_id`
+- `appointments`: 100% of data in `barbershop_id` column
+
+#### Diagnostics
+
+**Quick Check - Profile Table**:
+```sql
+-- Check if user profile has the right shop identifier
+SELECT
+  id,
+  email,
+  shop_id,           -- DEPRECATED - likely NULL or outdated
+  barbershop_id,     -- CORRECT - should have UUID value
+  role
+FROM profiles
+WHERE id = 'your-user-id';
+```
+
+**Expected Result**:
+- `shop_id`: NULL or outdated UUID
+- `barbershop_id`: Valid UUID (e.g., `a1b2c3d4-e5f6-7890-abcd-ef1234567890`)
+
+**Data Validation**:
+```sql
+-- Count data in both columns across critical tables
+SELECT
+  'customers' as table_name,
+  COUNT(*) FILTER (WHERE shop_id IS NOT NULL) as shop_id_count,
+  COUNT(*) FILTER (WHERE barbershop_id IS NOT NULL) as barbershop_id_count
+FROM customers
+UNION ALL
+SELECT
+  'services',
+  COUNT(*) FILTER (WHERE shop_id IS NOT NULL),
+  COUNT(*) FILTER (WHERE barbershop_id IS NOT NULL)
+FROM services
+UNION ALL
+SELECT
+  'appointments',
+  COUNT(*) FILTER (WHERE barbershop_id IS NOT NULL),  -- appointments doesn't have shop_id
+  COUNT(*) FILTER (WHERE barbershop_id IS NOT NULL)
+FROM appointments;
+```
+
+**Check Code for Wrong Column**:
+```bash
+# Find files querying shop_id (WRONG)
+grep -r "shop_id" app/ components/ lib/ | grep -v "node_modules"
+
+# Find files with fallback logic (DANGEROUS)
+grep -r "shop_id || barbershop_id" app/ components/ lib/
+
+# Find correct usage (SHOULD BE MAJORITY)
+grep -r "barbershop_id" app/ components/ lib/ | grep -v "node_modules"
+```
+
+#### Solutions
+
+**Fix 1: Update Profile Query** ✅
+```javascript
+// ❌ WRONG - Returns NULL or outdated ID
+const profile = await supabase
+  .from('profiles')
+  .select('shop_id')  // WRONG COLUMN!
+  .eq('id', userId)
+  .single();
+
+const shopId = profile?.shop_id;  // NULL → no data returned
+
+// ✅ CORRECT - Returns actual shop ID
+const profile = await supabase
+  .from('profiles')
+  .select('barbershop_id')  // CORRECT COLUMN
+  .eq('id', userId)
+  .single();
+
+const shopId = profile?.barbershop_id;  // Valid UUID → data loads
+```
+
+**Fix 2: Update API Queries** ✅
+```javascript
+// ❌ WRONG - Returns empty array
+const { data: services } = await supabase
+  .from('services')
+  .select('*')
+  .eq('shop_id', shopId);  // WRONG - shop_id is empty
+
+// ✅ CORRECT - Returns all services
+const { data: services } = await supabase
+  .from('services')
+  .select('*')
+  .eq('barbershop_id', shopId);  // CORRECT - barbershop_id has data
+```
+
+**Fix 3: Remove Fallback Logic** ✅
+```javascript
+// ❌ DANGEROUS - Masks the real problem
+const shopId = profile?.shop_id || profile?.barbershop_id;
+// This causes inconsistent behavior and data loss
+
+// ✅ CORRECT - Explicit and predictable
+const shopId = profile?.barbershop_id;
+if (!shopId) {
+  console.error('User missing barbershop_id - check profile setup');
+  return;
+}
+```
+
+**Fix 4: Update Component Props** ✅
+```javascript
+// ❌ WRONG - Using old naming
+<Calendar shopId={shopId} />
+<ServiceList shopId={shopId} />
+
+// ✅ CORRECT - Using standard naming
+<Calendar barbershopId={barbershopId} />
+<ServiceList barbershopId={barbershopId} />
+```
+
+#### Real-World Example: Calendar Page Bug
+
+**Problem**: Calendar page showed no appointments
+
+**Root Cause** (found in `app/(protected)/dashboard/calendar/page.js`):
+```javascript
+// Lines 50-58 - WRONG
+const shopId = profile?.shop_id || profile?.barbershop_id;  // shop_id was NULL
+```
+
+**Fix**:
+```javascript
+// CORRECT
+const shopId = profile?.barbershop_id;  // Always use barbershop_id
+```
+
+**Result**: Calendar immediately loaded all appointments
+
+#### Prevention
+
+**Always Use barbershop_id**:
+1. All new code MUST use `barbershop_id`
+2. Never query `shop_id` column
+3. Never use fallback patterns like `shop_id || barbershop_id`
+4. Update any existing code that references `shop_id`
+
+**Code Review Checklist**:
+- [ ] All database queries use `barbershop_id`
+- [ ] No `shop_id` references in new code
+- [ ] No fallback logic with `shop_id`
+- [ ] Component props use `barbershopId` (camelCase)
+- [ ] API endpoints filter by `barbershop_id`
+
+**Migration Status**:
+- ✅ **Phase 1**: Documentation created (`/docs/SCHEMA_STANDARDS.md`)
+- ⏳ **Phase 2**: Data migration in progress
+- ⏳ **Phase 3**: Code cleanup in progress
+- ⏳ **Phase 4**: Drop `shop_id` columns (scheduled)
+
+**Reference**: See `/docs/SCHEMA_STANDARDS.md` for complete field naming standards
 
 ## 🤖 AI Service Issues
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createOptimizedClient } from '@/lib/supabase-connection-pool'
+import { createClient } from '@supabase/supabase-js'
 
 // Demo barbershop ID constant - matches Supabase UUID
 const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
@@ -12,7 +12,7 @@ const sendBookingNotification = async (appointmentData, customerData, preference
       appointment: appointmentData.scheduled_at,
       channels: Object.entries(preferences).filter(([k, v]) => v && ['sms', 'email'].includes(k)).map(([k]) => k)
     })
-    
+
     return {
       success: true,
       notifications: [],
@@ -24,8 +24,11 @@ const sendBookingNotification = async (appointmentData, customerData, preference
   }
 }
 
-// 🚨 CONNECTION POOL FIX: Use optimized client with connection pooling
-const supabase = createOptimizedClient({ serviceRole: true })
+// Create Supabase client for edge runtime
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
 
 export async function GET(request) {
   try {
@@ -33,38 +36,38 @@ export async function GET(request) {
     const startDate = searchParams.get('start_date')
     const endDate = searchParams.get('end_date')
     const barberId = searchParams.get('barber_id')
-    const shopId = searchParams.get('shop_id')
+    const barbershopId = searchParams.get('barbershop_id')
     
     console.log('🚨 API CRITICAL: Received parameters:', {
       startDate,
       endDate,
       barberId,
-      shopId,
+      barbershopId,
       allParams: Object.fromEntries(searchParams.entries())
     })
-    
-    // Use bookings table with new recurring fields
-    let query = supabase.from('bookings').select('*')
-    
-    // 🚨 CRITICAL FIX: Add shop_id filter to prevent returning entire database
-    // Default to demo shop if no shop_id provided
-    const filterShopId = shopId || DEMO_BARBERSHOP_ID
-    query = query.eq('shop_id', filterShopId)
-    console.log('🔒 FILTERED by shop_id:', filterShopId)
-    
+
+    // Use appointments table (correct table with barbershop_id)
+    let query = supabase.from('appointments').select('*')
+
+    // 🚨 CRITICAL FIX: Add barbershop_id filter to prevent returning entire database
+    // Default to demo shop if no barbershop_id provided
+    const filterBarbershopId = barbershopId || DEMO_BARBERSHOP_ID
+    query = query.eq('barbershop_id', filterBarbershopId)
+    console.log('🔒 FILTERED by barbershop_id:', filterBarbershopId)
+
     // Add other filters
     if (startDate) {
-      query = query.gte('start_time', startDate)
+      query = query.gte('scheduled_at', startDate)
     }
     if (endDate) {
-      query = query.lte('end_time', endDate)
+      query = query.lte('scheduled_at', endDate)
     }
     if (barberId) {
       query = query.eq('barber_id', barberId)
     }
-    
+
     // Execute query
-    const { data: bookings, error } = await query.order('start_time')
+    const { data: bookings, error } = await query.order('scheduled_at')
     
     if (error) {
       console.log('Error fetching from bookings table:', error.message)
@@ -149,21 +152,26 @@ export async function GET(request) {
         title = `${customerName} - ${serviceName}`
       }
       
+      // Calculate end time from scheduled_at + duration
+      const startTime = new Date(booking.scheduled_at)
+      const durationMs = (booking.duration_minutes || service.duration_minutes || 30) * 60000
+      const endTime = new Date(startTime.getTime() + durationMs)
+
       // Build event object with RRule support at the top level
       const event = {
         id: booking.id,
         resourceId: booking.barber_id,
         title: title,
-        start: booking.start_time,
-        end: booking.end_time,
+        start: booking.scheduled_at,
+        end: endTime.toISOString(),
         backgroundColor: isBlocked ? '#9ca3af' : (isCancelled ? '#ef4444' : (barber.color || '#546355')),
         borderColor: isBlocked ? '#6b7280' : (isCancelled ? '#dc2626' : (barber.color || '#546355')),
         classNames: isBlocked ? ['blocked-slot'] : (isCancelled ? ['cancelled-appointment'] : []),
         display: 'auto',
         extendedProps: {
           customer: customerName,
-          customerPhone: customer.phone || booking.customer_phone,
-          customerEmail: customer.email || booking.customer_email,
+          customerPhone: customer.phone || booking.client_phone,
+          customerEmail: customer.email || booking.client_email,
           service: serviceName,
           service_id: booking.service_id,
           barber_id: booking.barber_id,
@@ -181,8 +189,8 @@ export async function GET(request) {
       // Add RRule at the top level for FullCalendar native support
       if (booking.is_recurring && booking.recurring_pattern && booking.recurring_pattern.rrule) {
         // Keep the original start and end times
-        event.start = booking.recurring_pattern.dtstart || booking.start_time
-        event.end = booking.recurring_pattern.dtend || booking.end_time
+        event.start = booking.recurring_pattern.dtstart || booking.scheduled_at
+        event.end = booking.recurring_pattern.dtend || endTime.toISOString()
         
         // Parse the RRule and add explicit DTSTART for FullCalendar compatibility
         // This ensures the time is preserved in recurring instances
@@ -261,13 +269,13 @@ export async function POST(request) {
     }
 
     // 🚨 RACE CONDITION FIX: Check for double booking before proceeding
-    const shopId = body.shop_id || body.barbershop_id || DEMO_BARBERSHOP_ID
-    
+    const barbershopId = body.barbershop_id || DEMO_BARBERSHOP_ID
+
     // Check for overlapping appointments (prevents double booking)
     const { data: overlapping, error: overlapError } = await supabase
       .from('bookings')
       .select('id, start_time, end_time, status, customer_id')
-      .eq('shop_id', shopId)
+      .eq('barbershop_id', barbershopId)
       .eq('barber_id', body.barber_id)
       .neq('status', 'cancelled')
       .or(`and(start_time.lt.${endTime.toISOString()},end_time.gt.${startTime.toISOString()})`)
@@ -314,7 +322,7 @@ export async function POST(request) {
       let existingQuery = supabase
         .from('customers')
         .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
-        .eq('shop_id', shopId)
+        .eq('barbershop_id', barbershopId)
       
       if (customerPhone) {
         existingQuery = existingQuery.eq('phone', customerPhone)
@@ -335,7 +343,7 @@ export async function POST(request) {
           name: customerName,
           email: customerEmail,
           phone: customerPhone,
-          shop_id: shopId,
+          barbershop_id: barbershopId,
           notification_preferences: body.notification_preferences || {
             sms: true,
             email: true,
@@ -360,7 +368,7 @@ export async function POST(request) {
           const { data: concurrentCustomer } = await supabase
             .from('customers')
             .select('id, name, phone, email, notification_preferences, vip_status, total_visits')
-            .eq('shop_id', shopId)
+            .eq('barbershop_id', barbershopId)
             .or(`phone.eq.${customerPhone},email.eq.${customerEmail}`)
             .single()
           
@@ -377,7 +385,7 @@ export async function POST(request) {
     
     // Prepare booking data for new schema
     const bookingData = {
-      shop_id: body.shop_id || body.barbershop_id || DEMO_BARBERSHOP_ID,
+      barbershop_id: body.barbershop_id || DEMO_BARBERSHOP_ID,
       barber_id: body.barber_id,
       customer_id: customerId,
       service_id: isBlockedTime ? null : body.service_id,
@@ -418,7 +426,7 @@ export async function POST(request) {
     const { data: finalOverlapCheck } = await supabase
       .from('bookings')
       .select('id')
-      .eq('shop_id', bookingData.shop_id)
+      .eq('barbershop_id', bookingData.barbershop_id)
       .eq('barber_id', bookingData.barber_id)
       .neq('status', 'cancelled')
       .or(`and(start_time.lt.${bookingData.end_time},end_time.gt.${bookingData.start_time})`)
