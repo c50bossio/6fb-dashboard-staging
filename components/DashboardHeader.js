@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { useAuth } from './SupabaseAuthProvider'
-import ViewSwitcher from './ViewSwitcher'
 import ThemeToggle, { ThemeToggleSimple } from './ui/ThemeToggle'
 import {
   BellIcon,
@@ -193,10 +192,8 @@ const DashboardHeader = React.memo(function DashboardHeader() {
 
           {/* Right side - Actions */}
           <div className="flex items-center space-x-4">
-            {/* View Switcher - Only for management roles */}
-            {['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) && (
-              <ViewSwitcher />
-            )}
+            {/* View Switcher - REMOVED: Conflicts with ShopSelector in sidebar */}
+            {/* Location switching is now handled exclusively by ShopSelector in the sidebar */}
 
             {/* Theme Toggle */}
             <ThemeToggleSimple />

@@ -43,9 +43,17 @@ export function GlobalDashboardProvider({ children }) {
   const [selectedLocations, setSelectedLocations] = useState([])
   const [selectedBarbers, setSelectedBarbers] = useState([])
   const [viewMode, setViewMode] = useState('individual') // 'consolidated' | 'comparison' | 'individual'
-  const [timeRange, setTimeRange] = useState({ 
-    start: new Date().toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0]
+  // Default to ±30 days to show more appointments
+  const [timeRange, setTimeRange] = useState(() => {
+    const now = new Date()
+    const start = new Date(now)
+    start.setDate(start.getDate() - 30)
+    const end = new Date(now)
+    end.setDate(end.getDate() + 30)
+    return {
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0]
+    }
   })
   
   // Enhanced unified context state
@@ -53,6 +61,7 @@ export function GlobalDashboardProvider({ children }) {
   const [contextData, setContextData] = useState({})
   const [contextLoading, setContextLoading] = useState(false)
   const [contextCache, setContextCache] = useState(new Map())
+  const [isContextSwitching, setIsContextSwitching] = useState(false)
   
   // Barber color generation helper
   const generateBarberColor = (barberId) => {
@@ -203,20 +212,21 @@ export function GlobalDashboardProvider({ children }) {
         try {
           console.log('[GlobalDashboardContext] Fetching appointments for location:', context.locationId)
           
-          // First, get appointments with customers and services - with timeout
+          // Get appointments with services - client data is embedded in appointments table
+          // NOTE: Using scheduled_at column (timestamp) NOT date column
+          // NOTE: client_id is NULL - client data stored as client_name, client_phone, client_email
           const { data: appointments, error: appError } = await withTimeout(
             supabase
               .from('appointments')
               .select(`
                 *,
-                customers (id, full_name, email, phone),
                 services (id, name, duration_minutes, price)
               `)
               .eq('barbershop_id', context.locationId)
-              .gte('date', timeRange.start)
-              .lte('date', timeRange.end)
+              .gte('scheduled_at', `${timeRange.start}T00:00:00`)
+              .lte('scheduled_at', `${timeRange.end}T23:59:59`)
               .neq('status', 'deleted')
-              .order('date'),
+              .order('scheduled_at'),
             5000,
             'appointments query'
           )
@@ -235,59 +245,40 @@ export function GlobalDashboardProvider({ children }) {
           
           // Get unique barber IDs from appointments
           const barberIds = [...new Set(appointments.map(a => a.barber_id).filter(Boolean))]
-          
+
           if (barberIds.length > 0) {
             try {
-              // Fetch barbershop_staff records with timeout
-              const { data: staffRecords, error: staffError } = await withTimeout(
+              // Fetch staff records from barbershop_staff with profiles join
+              const { data: barbershopStaffRecords, error: staffError } = await withTimeout(
                 supabase
                   .from('barbershop_staff')
-                  .select('*')
-                  .in('id', barberIds),
+                  .select(`
+                    *,
+                    profile:profiles!barbershop_staff_user_id_fkey(
+                      id, email, full_name, first_name, last_name, phone, avatar_url, role
+                    )
+                  `)
+                  .in('user_id', barberIds),
                 3000,
-                'staff records query'
+                'barbershop_staff with profiles query'
               )
-              
+
               if (staffError) {
                 console.warn('[GlobalDashboardContext] Error fetching staff records:', staffError)
                 // Continue without staff data rather than failing entirely
-              } else if (staffRecords && staffRecords.length > 0) {
-                try {
-                  // Get user IDs from staff records
-                  const userIds = [...new Set(staffRecords.map(s => s.user_id).filter(Boolean))]
-                  
-                  if (userIds.length > 0) {
-                    // Fetch profiles for those users with timeout
-                    const { data: profiles, error: profileError } = await withTimeout(
-                      supabase
-                        .from('profiles')
-                        .select('id, full_name, first_name, last_name, email, avatar_url')
-                        .in('id', userIds),
-                      3000,
-                      'profiles query'
-                    )
-                    
-                    if (profileError) {
-                      console.warn('[GlobalDashboardContext] Error fetching profiles:', profileError)
-                    } else if (profiles) {
-                      // Merge data back together
-                      const staffWithProfiles = staffRecords.map(staff => ({
-                        ...staff,
-                        profile: profiles.find(p => p.id === staff.user_id) || null
-                      }))
-                      
-                      // Add staff data to appointments
-                      appointments.forEach(appointment => {
-                        if (appointment.barber_id) {
-                          appointment.barbershop_staff = staffWithProfiles.find(s => s.id === appointment.barber_id) || null
-                        }
-                      })
+              } else if (barbershopStaffRecords && barbershopStaffRecords.length > 0) {
+                // Add staff data to appointments with profile compatibility
+                appointments.forEach(appointment => {
+                  if (appointment.barber_id) {
+                    const staffRecord = barbershopStaffRecords.find(s => s.user_id === appointment.barber_id)
+                    if (staffRecord && staffRecord.profile) {
+                      appointment.barbershop_staff = {
+                        ...staffRecord,
+                        profiles: staffRecord.profile
+                      }
                     }
                   }
-                } catch (profilesError) {
-                  console.warn('[GlobalDashboardContext] Error processing staff profiles:', profilesError)
-                  // Continue without staff profiles rather than failing
-                }
+                })
               }
             } catch (staffLookupError) {
               console.warn('[GlobalDashboardContext] Error in staff lookup:', staffLookupError)
@@ -308,68 +299,57 @@ export function GlobalDashboardProvider({ children }) {
         dataPromises.staff = (async () => {
           try {
             console.log('[GlobalDashboardContext] Fetching staff for location:', context.locationId)
-            
-            // First get staff records with timeout
-            const { data: staffRecords, error: staffError } = await withTimeout(
+
+            // Query barbershop_staff with profiles join
+            const { data: barbershopStaffRecords, error: staffError } = await withTimeout(
               supabase
                 .from('barbershop_staff')
-                .select('*')
+                .select(`
+                  *,
+                  profile:profiles!barbershop_staff_user_id_fkey(
+                    id, email, full_name, first_name, last_name, phone, avatar_url, role
+                  )
+                `)
                 .eq('barbershop_id', context.locationId)
-                .eq('is_active', true),
+                .eq('is_active', true)
+                .order('created_at', { ascending: true }),
               3000,
-              'staff records query'
+              'barbershop_staff with profiles query'
             )
-            
+
             if (staffError) {
               console.error('[GlobalDashboardContext] Error fetching staff records:', staffError)
               return { data: [], error: staffError }
             }
-            
-            if (!staffRecords) {
+
+            if (!barbershopStaffRecords || barbershopStaffRecords.length === 0) {
               console.log('[GlobalDashboardContext] No staff records found')
               return { data: [], error: null }
             }
-            
-            console.log(`[GlobalDashboardContext] Found ${staffRecords.length} staff members`)
-            
-            // Get unique user IDs
-            const userIds = [...new Set(staffRecords.map(s => s.user_id).filter(Boolean))]
-            
-            if (userIds.length > 0) {
-              try {
-                // Fetch profiles for those users with timeout
-                const { data: profiles, error: profileError } = await withTimeout(
-                  supabase
-                    .from('profiles')
-                    .select('id, full_name, first_name, last_name, email, avatar_url')
-                    .in('id', userIds),
-                  3000,
-                  'staff profiles query'
-                )
-                
-                if (profileError) {
-                  console.warn('[GlobalDashboardContext] Error fetching staff profiles:', profileError)
-                  // Return staff without profiles rather than failing
-                  return { data: staffRecords, error: null }
-                }
-                
-                // Merge profiles with staff records
-                const staffWithProfiles = staffRecords.map(staff => ({
-                  ...staff,
-                  profile: profiles?.find(p => p.id === staff.user_id) || null
-                }))
-                
-                return { data: staffWithProfiles, error: null }
-                
-              } catch (profileError) {
-                console.warn('[GlobalDashboardContext] Error processing staff profiles:', profileError)
-                // Return staff without profiles rather than failing
-                return { data: staffRecords, error: null }
+
+            console.log(`[GlobalDashboardContext] Found ${barbershopStaffRecords.length} staff members from barbershop_staff table`)
+
+            // Transform barbershop_staff + profile data for backward compatibility
+            const staffWithProfiles = barbershopStaffRecords.map(staffRecord => {
+              const profile = staffRecord.profile || {}
+
+              return {
+                ...staffRecord,
+                // Flatten profile data for easy access
+                user_id: staffRecord.user_id,
+                full_name: profile.full_name,
+                first_name: profile.first_name,
+                last_name: profile.last_name,
+                email: profile.email,
+                avatar_url: profile.avatar_url,
+                // Keep profile reference for compatibility
+                profile: profile,
+                profiles: profile // Also add as "profiles" for some components
               }
-            }
-            
-            return { data: staffRecords, error: null }
-            
+            })
+
+            return { data: staffWithProfiles, error: null }
+
           } catch (staffFetchError) {
             console.error('[GlobalDashboardContext] Critical error in staff fetching:', staffFetchError)
             return { data: [], error: staffFetchError }
@@ -505,53 +485,55 @@ export function GlobalDashboardProvider({ children }) {
       console.warn('[GlobalDashboardContext] switchContext called with null context')
       return
     }
-    
+
     const switchStartTime = Date.now()
     console.log('[GlobalDashboardContext] Starting context switch to:', {
       locationId: newContext.locationId,
       locationName: newContext.locationName,
       contextType: newContext.contextType
     })
-    
+
+    setIsContextSwitching(true)
     setContextLoading(true)
-    
+
     try {
       // 1. Optimistically update active context for immediate UI response
       setActiveContext(newContext)
-      
+
       // 2. Update legacy state for backward compatibility
       setSelectedLocations([newContext.locationId])
       setSelectedBarbers([]) // Reset barber selection on context change
-      
+
       // 3. Fetch fresh contextual data with timing
       newContext._startTime = Date.now()
       const freshData = await fetchContextualData(newContext)
       setContextData(freshData)
-      
+
       const switchEndTime = Date.now()
       console.log('[GlobalDashboardContext] Context switch completed successfully:', {
         locationId: newContext.locationId,
         totalTime: switchEndTime - switchStartTime,
         dataFetched: Object.keys(freshData).length
       })
-      
+
       // 4. Save context preference
       if (user?.id) {
         localStorage.setItem(`activeContext_${user.id}`, JSON.stringify(newContext))
       }
-      
+
       // 5. Predictive preloading for likely next contexts (non-blocking)
       setTimeout(() => {
         contextAwareCache.preloadPredictedContexts(newContext, fetchContextualData)
           .catch(error => console.warn('Preload failed:', error))
       }, 100) // Small delay to not block current context switch
-      
+
     } catch (error) {
       console.error('Error switching context:', error)
       // Revert context on error
       setActiveContext(null)
     } finally {
       setContextLoading(false)
+      setIsContextSwitching(false)
     }
   }, [fetchContextualData, user?.id])
 
@@ -601,7 +583,7 @@ export function GlobalDashboardProvider({ children }) {
       
       return {
       id: apt.id,
-      title: `${apt.customers?.name || 'Customer'} - ${apt.services?.name || 'Service'}`,
+      title: `${apt.client_name || 'Customer'} - ${apt.services?.name || 'Service'}`,
       start: timeData.startTime,
       end: timeData.endTime,
       resourceId: apt.barber_id,
@@ -609,10 +591,10 @@ export function GlobalDashboardProvider({ children }) {
       borderColor: generateBarberColor(apt.barber_id),
       extendedProps: {
         appointmentId: apt.id,
-        customerId: apt.customer_id,
-        customerName: apt.customers?.name,
-        customerEmail: apt.customers?.email,
-        customerPhone: apt.customers?.phone,
+        customerId: apt.client_id,  // Using client_id (may be NULL)
+        customerName: apt.client_name,  // Using embedded client_name field
+        customerEmail: apt.client_email,  // Using embedded client_email field
+        customerPhone: apt.client_phone,  // Using embedded client_phone field
         serviceId: apt.service_id,
         serviceName: apt.services?.name,
         serviceDuration: apt.services?.duration_minutes,
@@ -780,9 +762,10 @@ export function GlobalDashboardProvider({ children }) {
         
         setAvailableLocations(locations)
         console.log(`[GlobalDashboardContext] Successfully loaded ${locations.length} locations using unified API`)
-        
+
         // Auto-select first location if none selected and this is initial load
-        if (locations.length > 0 && selectedLocations.length === 0 && !initialized) {
+        // Guard: Don't auto-select if we already have an active context (prevents override during context switch)
+        if (locations.length > 0 && selectedLocations.length === 0 && !initialized && !activeContext) {
           setSelectedLocations([locations[0].id])
           console.log(`[GlobalDashboardContext] Auto-selected first location: ${locations[0].name}`)
         }
@@ -795,67 +778,60 @@ export function GlobalDashboardProvider({ children }) {
       console.error('[GlobalDashboardContext] Error loading locations from unified API:', error)
       setAvailableLocations([])
     }
-  }, [user, initialized, selectedLocations.length])
+  }, [user?.id]) // Only depend on user ID, not the whole user object or other state
   
-  // Load barbers for selected locations using unifiedStaffService for consistency
+  // Load barbers for current location using unifiedStaffService for consistency
   const loadAvailableBarbers = useCallback(async () => {
-    if (selectedLocations.length === 0) {
+    // FIXED: Use currentLocationId instead of selectedLocations to prevent cross-location staff contamination
+    const locationToLoad = activeContext?.locationId
+
+    if (!locationToLoad) {
       setAvailableBarbers([])
       return
     }
-    
+
     try {
       // Use unifiedStaffService for consistency with staff management page
-      const allBarbers = []
-      
-      // Load staff for each selected location
-      for (const locationId of selectedLocations) {
-        try {
-          const staffData = await unifiedStaffService.getStaff(locationId, {
-            useCache: true,
-            includeAvailability: false,
-            includeServices: false,
-            forceRefresh: false
-          })
-          
-          if (staffData.staff && staffData.staff.length > 0) {
-            // Transform staff data to barber format for context system
-            const locationBarbers = staffData.staff
-              .filter(staff => staff.is_active)
-              .map(staff => ({
-                id: staff.user_id || staff.id,
-                name: getDisplayName({
-                  firstName: staff.first_name,
-                  lastName: staff.last_name,
-                  fullName: staff.full_name,
-                  email: staff.email,
-                  defaultName: 'Unknown Staff'
-                }),
-                firstName: staff.first_name,
-                lastName: staff.last_name,
-                fullName: staff.full_name,
-                email: staff.email,
-                avatar_url: staff.avatar_url,
-                role: staff.role,
-                location: staff.barbershop_name || staff.metadata?.barbershop_name,
-                barbershop_id: locationId
-              }))
-            
-            allBarbers.push(...locationBarbers)
-          }
-        } catch (locationError) {
-          console.warn(`Error loading staff for location ${locationId}:`, locationError)
-          // Continue with other locations
-        }
+      const staffData = await unifiedStaffService.getStaff(locationToLoad, {
+        useCache: true,
+        includeAvailability: false,
+        includeServices: false,
+        forceRefresh: false
+      })
+
+      if (staffData.staff && staffData.staff.length > 0) {
+        // Transform staff data to barber format for context system
+        const locationBarbers = staffData.staff
+          .filter(staff => staff.is_active)
+          .map(staff => ({
+            id: staff.user_id || staff.id,
+            name: getDisplayName({
+              firstName: staff.first_name,
+              lastName: staff.last_name,
+              fullName: staff.full_name,
+              email: staff.email,
+              defaultName: 'Unknown Staff'
+            }),
+            firstName: staff.first_name,
+            lastName: staff.last_name,
+            fullName: staff.full_name,
+            email: staff.email,
+            avatar_url: staff.avatar_url,
+            role: staff.role,
+            location: staff.barbershop_name || staff.metadata?.barbershop_name,
+            barbershop_id: locationToLoad
+          }))
+
+        setAvailableBarbers(locationBarbers)
+      } else {
+        setAvailableBarbers([])
       }
-      
-      setAvailableBarbers(allBarbers)
-      
+
     } catch (error) {
-      console.error('Error loading barbers:', error)
+      console.error('Error loading barbers for location:', locationToLoad, error)
       setAvailableBarbers([])
     }
-  }, [selectedLocations])
+  }, [activeContext?.locationId])
   
   // Persist context to localStorage
   const saveContext = useCallback(() => {
@@ -908,20 +884,18 @@ export function GlobalDashboardProvider({ children }) {
   // Initialize on mount
   useEffect(() => {
     if (user && user.id && profile) {
-      
+
       loadContext()
       loadAvailableLocations()
     } else {
-      
+
     }
-  }, [user, profile, loadContext, loadAvailableLocations])
+  }, [user?.id, profile?.id]) // Only depend on IDs, not functions
   
-  // Load barbers when locations change
+  // Load barbers when active location changes
   useEffect(() => {
-    if (selectedLocations.length > 0) {
-      loadAvailableBarbers()
-    }
-  }, [selectedLocations, loadAvailableBarbers])
+    loadAvailableBarbers()
+  }, [activeContext?.locationId]) // Remove function dependency
   
   // Save context when it changes
   useEffect(() => {
@@ -948,6 +922,9 @@ export function GlobalDashboardProvider({ children }) {
 
   // Initialize active context on first load
   useEffect(() => {
+    // Guard: Don't re-initialize while a context switch is in progress
+    if (isContextSwitching) return
+
     if (availableContexts.length > 0 && !activeContext && initialized) {
       // Try to load saved context first
       const savedActiveContext = localStorage.getItem(`activeContext_${user?.id}`)
@@ -963,7 +940,7 @@ export function GlobalDashboardProvider({ children }) {
           console.warn('Error loading saved active context:', error)
         }
       }
-      
+
       // Default to first appropriate context based on role
       const defaultContext = availableContexts.find(ctx => {
         if (['SUPER_ADMIN', 'ENTERPRISE_OWNER'].includes(userRole)) {
@@ -977,12 +954,12 @@ export function GlobalDashboardProvider({ children }) {
         }
         return ctx.contextType === 'booking'
       }) || availableContexts[0]
-      
+
       if (defaultContext) {
         switchContext(defaultContext)
       }
     }
-  }, [availableContexts, activeContext, initialized, userRole, user?.id, switchContext])
+  }, [availableContexts, activeContext, initialized, userRole, user?.id, isContextSwitching]) // Add isContextSwitching dependency
 
   // Update loading state
   useEffect(() => {
@@ -1041,7 +1018,7 @@ export function GlobalDashboardProvider({ children }) {
     hasLocations: availableLocations.length > 0,
     isManager: activeContext?.contextType === 'manager' || activeContext?.contextType === 'executive',
     canManageStaff: activeContext?.permissions?.includes('manage_staff') || activeContext?.permissions?.includes('view_all'),
-    currentLocation: activeContext?.locationName,
+    currentLocation: availableLocations.find(loc => loc.id === activeContext?.locationId) || null,
     currentLocationId: activeContext?.locationId,
     
     // Context-aware data getters
