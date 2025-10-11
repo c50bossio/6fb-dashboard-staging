@@ -54,8 +54,18 @@ export default function EnhancedProfessionalCalendar({
   // when events prop changes
   
   const handleDateSelect = useCallback((selectInfo) => {
+    const duration = Math.round((selectInfo.end - selectInfo.start) / 60000)
+    console.log('🎯 [Calendar] SELECT triggered:', selectInfo.view.type, selectInfo.resource?.id, 'duration:', duration, 'minutes')
+
     const viewType = selectInfo.view.type
-    
+
+    // In resource views, clicks also trigger 'select' event with very small duration
+    // Treat selections under 2 minutes as clicks
+    const isClick = duration <= 1
+    const selectionType = isClick ? 'click' : 'drag'
+
+    console.log(`🎯 [Calendar] Detected as: ${selectionType}`)
+
     const slotData = {
       start: selectInfo.start,
       end: selectInfo.end,
@@ -66,9 +76,11 @@ export default function EnhancedProfessionalCalendar({
       resource: selectInfo.resource,  // Premium feature enabled
       resourceId: selectInfo.resource?.id,  // Premium feature enabled
       resourceTitle: selectInfo.resource?.title,  // Premium feature enabled
+      selectedBarber: selectInfo.resource?.id,  // For modal pre-population
+      selectedBarberName: selectInfo.resource?.title,  // For modal pre-population
       jsEvent: selectInfo.jsEvent,
-      selectionType: 'drag',
-      duration: Math.round((selectInfo.end - selectInfo.start) / 60000)
+      selectionType: selectionType,
+      duration: isClick ? 30 : duration  // Default to 30 minutes for clicks
     }
     
     if (viewType === 'dayGridMonth') {
@@ -238,28 +250,293 @@ export default function EnhancedProfessionalCalendar({
   return (
     <div className="enhanced-professional-calendar-wrapper">
       <style jsx global>{`
-        /* Essential calendar styling - keep minimal for stability */
-        .fc-event {
-          border-radius: 4px !important;
-          cursor: pointer !important;
+        /* ===== BRAND THEME STYLING ===== */
+        /* Calendar container background */
+        .fc {
+          background: transparent;
         }
-        .fc-timegrid-now-indicator-line {
-          border-color: #ef4444 !important;
-          border-width: 2px !important;
+
+        /* Header toolbar with solid brand color */
+        .fc-toolbar {
+          background: #546355 !important;
+          padding: 1.25rem !important;
+          border-radius: 0.75rem 0.75rem 0 0;
+          margin-bottom: 0 !important;
+          border-bottom: 3px solid #3C4A3E !important;
         }
-        /* Premium resource area styling enabled */
-        .fc-resource-area {
-          min-width: 120px !important;
+
+        .fc-toolbar-title {
+          color: white !important;
+          font-size: 1.5rem !important;
+          font-weight: 700 !important;
+          letter-spacing: -0.025em !important;
         }
-        .fc-resource-area-header {
-          background: #f3f4f6 !important;
+
+        /* Toolbar buttons with improved solid styling */
+        .fc-button {
+          background: rgba(255, 255, 255, 0.15) !important;
+          border: 2px solid rgba(255, 255, 255, 0.25) !important;
+          color: white !important;
+          border-radius: 0.5rem !important;
+          padding: 0.625rem 1.25rem !important;
+          font-weight: 600 !important;
+          font-size: 0.875rem !important;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .fc-button:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.25) !important;
+          border-color: rgba(255, 255, 255, 0.35) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .fc-button:active {
+          background: rgba(255, 255, 255, 0.2) !important;
+          transform: translateY(0) !important;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .fc-button-active {
+          background: rgba(255, 255, 255, 0.3) !important;
+          border-color: rgba(255, 255, 255, 0.4) !important;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .fc-button:disabled {
+          opacity: 0.4 !important;
+          cursor: not-allowed !important;
+        }
+
+        /* Day/week headers with dark theme */
+        .fc-col-header {
+          background: #3C4A3E !important;
+          border-bottom: 2px solid #546355 !important;
+        }
+
+        .fc-col-header-cell {
+          padding: 0.75rem 0.5rem !important;
+          font-weight: 600 !important;
+          color: #E5E7EB !important;
+          border-color: #546355 !important;
+        }
+
+        .fc-col-header-cell-cushion {
+          color: #E5E7EB !important;
           font-weight: 600 !important;
         }
-        .fc-resource-cell {
-          border-right: 1px solid #e5e7eb !important;
+
+        /* Time grid styling */
+        .fc-timegrid-slot {
+          height: 3rem !important;
+          border-color: #546355 !important;
         }
+
+        .fc-timegrid-slot-label {
+          color: #6b7280 !important;
+          font-size: 0.875rem !important;
+          padding-right: 0.5rem !important;
+        }
+
+        /* Business hours highlighting with olive tint */
+        .fc-non-business {
+          background: rgba(243, 244, 246, 0.5) !important;
+        }
+
+        .fc-timegrid-col.fc-day-today {
+          background: rgba(84, 99, 85, 0.03) !important;
+        }
+
+        /* Current time indicator - gold accent */
+        .fc-timegrid-now-indicator-line {
+          border-color: #C5A35B !important;
+          border-width: 2px !important;
+          box-shadow: 0 0 8px rgba(197, 163, 91, 0.5);
+        }
+
+        .fc-timegrid-now-indicator-arrow {
+          border-color: #C5A35B !important;
+        }
+
+        /* Events with improved styling */
+        .fc-event {
+          border-radius: 0.375rem !important;
+          cursor: pointer !important;
+          border-width: 1px !important;
+          padding: 0.25rem 0.5rem !important;
+          font-size: 0.875rem !important;
+          font-weight: 500 !important;
+          transition: all 0.2s ease !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .fc-event:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
+          z-index: 10 !important;
+        }
+
+        .fc-event-title {
+          font-weight: 600 !important;
+          color: white !important;
+        }
+
+        .fc-event-time {
+          font-weight: 500 !important;
+          opacity: 0.9;
+        }
+
+        /* Resource area styling */
+        .fc-resource-area {
+          min-width: 140px !important;
+          background: linear-gradient(to right, #2D3630, #3C4A3E);
+        }
+
+        .fc-resource-area-header {
+          background: #546355 !important;
+          color: white !important;
+          font-weight: 700 !important;
+          padding: 1rem !important;
+          text-align: center !important;
+        }
+
+        .fc-resource-cell {
+          border-right: 2px solid #546355 !important;
+          background: #3C4A3E !important;
+        }
+
         .fc-resource {
-          padding: 8px !important;
+          padding: 0.75rem !important;
+          font-weight: 600 !important;
+          color: #E5E7EB !important;
+          transition: background 0.2s ease !important;
+        }
+
+        .fc-resource:hover {
+          background: rgba(84, 99, 85, 0.25) !important;
+        }
+
+        /* Timeline view specific styling */
+        .fc-timeline-header-row {
+          background: linear-gradient(to bottom, #3C4A3E, #2D3630) !important;
+        }
+
+        .fc-timeline-slot {
+          border-color: #546355 !important;
+        }
+
+        .fc-timeline-slot-label {
+          color: #6b7280 !important;
+        }
+
+        /* Scrollbars with brand theme */
+        .fc-scroller::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+
+        .fc-scroller::-webkit-scrollbar-track {
+          background: #2D3630;
+          border-radius: 4px;
+        }
+
+        .fc-scroller::-webkit-scrollbar-thumb {
+          background: #C5A35B;
+          border-radius: 4px;
+        }
+
+        .fc-scroller::-webkit-scrollbar-thumb:hover {
+          background: #B8913A;
+        }
+
+        /* Selection overlay with olive tint */
+        .fc-highlight {
+          background: rgba(84, 99, 85, 0.15) !important;
+          border: 2px dashed #546355 !important;
+        }
+
+        /* More events link */
+        .fc-more-link {
+          color: #546355 !important;
+          font-weight: 600 !important;
+          text-decoration: none !important;
+        }
+
+        .fc-more-link:hover {
+          color: #C5A35B !important;
+        }
+
+        /* Popover styling */
+        .fc-popover {
+          border: 2px solid #546355 !important;
+          border-radius: 0.75rem !important;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .fc-popover-header {
+          background: linear-gradient(135deg, #546355, #C5A35B) !important;
+          color: white !important;
+          font-weight: 700 !important;
+          padding: 0.75rem 1rem !important;
+          border-radius: 0.5rem 0.5rem 0 0 !important;
+        }
+
+        .fc-popover-body {
+          background: #2D3630 !important;
+          padding: 0.5rem !important;
+        }
+
+        /* Border colors */
+        .fc-theme-standard td,
+        .fc-theme-standard th {
+          border-color: #546355 !important;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+          .fc-col-header {
+            background: linear-gradient(to bottom, #1f2937, #111827);
+          }
+
+          .fc-col-header-cell-cushion {
+            color: #9ca3af !important;
+          }
+
+          .fc-timegrid-slot-label {
+            color: #9ca3af !important;
+          }
+
+          .fc-theme-standard td,
+          .fc-theme-standard th {
+            border-color: #374151 !important;
+          }
+
+          .fc-non-business {
+            background: rgba(17, 24, 39, 0.5) !important;
+          }
+
+          .fc-resource-area {
+            background: linear-gradient(to right, #111827, #1f2937);
+          }
+
+          .fc-resource {
+            color: #e5e7eb !important;
+          }
+
+          .fc-scroller::-webkit-scrollbar-track {
+            background: #1f2937;
+          }
+        }
+
+        /* Drag and drop feedback */
+        .fc-event-dragging {
+          opacity: 0.75 !important;
+          transform: scale(1.05);
+        }
+
+        .fc-event-resizing {
+          opacity: 0.8 !important;
         }
       `}</style>
       <FullCalendar
@@ -354,12 +631,13 @@ export default function EnhancedProfessionalCalendar({
         editable={true}
         selectable={true}
         selectMirror={true}
-        selectMinDistance={0}  // Remove distance requirement for better long drag selection
+        selectMinDistance={0}  // Allow clicks to trigger select event (duration-based detection in handler)
         selectLongPressDelay={250}  // Touch device long-press delay
         unselectAuto={true}  // Auto-unselect when clicking elsewhere
         unselectCancel=".fc-event,.modal"  // Don't unselect when clicking events or modals
         select={handleDateSelect}
         dateClick={(info) => {
+          console.log('👆 [Calendar] CLICK detected:', info.view.type, info.resource?.id, info.date)
           if (info.view.type.includes('timeGrid')) {
             const provisionalEnd = new Date(info.date)
             provisionalEnd.setMinutes(provisionalEnd.getMinutes() + 30) // Default to 30-minute slot duration
@@ -371,15 +649,15 @@ export default function EnhancedProfessionalCalendar({
               endStr: provisionalEnd.toISOString(),
               allDay: false,
               viewType: info.view.type,
-              // resource: info.resource,  // Removed due to license compliance
-              // resourceId: info.resource?.id,  // Removed due to license compliance
-              // resourceTitle: info.resource?.title,  // Removed due to license compliance
+              resource: info.resource,  // Premium feature enabled with GPL license
+              resourceId: info.resource?.id,  // Premium feature enabled with GPL license
+              resourceTitle: info.resource?.title,  // Premium feature enabled with GPL license
+              selectedBarber: info.resource?.id,  // For modal pre-population
+              selectedBarberName: info.resource?.title,  // For modal pre-population
               jsEvent: info.jsEvent,
               selectionType: 'click',
               duration: 30, // Default to 30 minutes matching the calendar slot duration
-              isProvisional: true, // Indicates duration can be changed by service selection
-              barberId: null, // Removed due to license compliance
-              barberName: null // Removed due to license compliance
+              isProvisional: true // Indicates duration can be changed by service selection
             }
             
             if (onSlotClick) {

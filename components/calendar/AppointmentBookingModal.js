@@ -25,7 +25,9 @@ export default function AppointmentBookingModal({
   services,
   onBookingComplete,
   barbershopId,
-  editingAppointment = null
+  editingAppointment = null,
+  isDragRescheduling = false,
+  pendingDropInfo = null
 }) {
   const { user: _user } = useAuth()
   const { activeContext, contextualData } = useGlobalDashboard()
@@ -46,27 +48,33 @@ export default function AppointmentBookingModal({
   
   // Smart barber auto-selection logic
   const getSmartBarberId = () => {
-    // Priority 1: If selectedSlot has barberId (from calendar click), use it
-    if (selectedSlot?.barberId) {
-      return selectedSlot.barberId
+    // Priority 1: If selectedSlot has barber info (from calendar click/drag), use it
+    // Check multiple possible field names defensively (calendar can send any of these)
+    const slotBarberId = selectedSlot?.barberId || selectedSlot?.selectedBarber || selectedSlot?.resourceId
+    if (slotBarberId) {
+      console.log('[Modal] Using barber from calendar slot:', slotBarberId)
+      return slotBarberId
     }
-    
+
     // Priority 2: If single barber in context (solo practitioner), auto-select them
     if (contextualData?.availableBarbers?.length === 1) {
+      console.log('[Modal] Auto-selecting solo barber:', contextualData.availableBarbers[0].id)
       return contextualData.availableBarbers[0].id
     }
-    
+
     // Priority 3: If current user is in available barbers, auto-select current user
-    if (user?.id && contextualData?.availableBarbers) {
+    if (_user?.id && contextualData?.availableBarbers) {
       const currentUserBarber = contextualData.availableBarbers.find(
-        barber => barber.user_id === user.id || barber.id === user.id
+        barber => barber.user_id === _user.id || barber.id === _user.id
       )
       if (currentUserBarber) {
+        console.log('[Modal] Auto-selecting current user as barber:', currentUserBarber.id)
         return currentUserBarber.id || currentUserBarber.user_id
       }
     }
-    
+
     // Priority 4: Fallback to empty for manual selection
+    console.log('[Modal] No auto-select criteria met, leaving barber selection empty')
     return ''
   }
   
@@ -191,11 +199,22 @@ export default function AppointmentBookingModal({
         recurrence_end_date: ''
       })
     } else if (selectedSlot && !isEditing) {
+      // 🔍 DEBUG: Log the complete slot data to see what we're receiving
+      console.log('[Modal Init] Selected slot data:', {
+        barberId: selectedSlot.barberId,
+        selectedBarber: selectedSlot.selectedBarber,
+        resourceId: selectedSlot.resourceId,
+        resourceTitle: selectedSlot.resourceTitle,
+        viewType: selectedSlot.viewType,
+        selectionType: selectedSlot.selectionType,
+        fullSlot: selectedSlot
+      })
+
       let dateTime
-      const slotDate = selectedSlot.start instanceof Date 
-        ? selectedSlot.start 
+      const slotDate = selectedSlot.start instanceof Date
+        ? selectedSlot.start
         : new Date(selectedSlot.start)
-      
+
       if (selectedSlot.needsTimePicker) {
         const year = slotDate.getFullYear()
         const month = String(slotDate.getMonth() + 1).padStart(2, '0')
@@ -210,17 +229,18 @@ export default function AppointmentBookingModal({
         const minutes = String(slotDate.getMinutes()).padStart(2, '0')
         dateTime = `${year}-${month}-${day}T${hours}:${minutes}`
       }
-      
+
       // Get smart barber ID
       const smartBarberId = getSmartBarberId()
+      console.log('[Modal Init] Smart barber selection result:', smartBarberId)
       
       // Check if barber was auto-populated
       const wasBarberAutoPopulated = !selectedSlot.barberId && smartBarberId && (
         // Single barber scenario
         contextualData?.availableBarbers?.length === 1 ||
         // Current user is a barber scenario
-        (user?.id && contextualData?.availableBarbers?.some(
-          b => b.user_id === user.id || b.id === user.id
+        (_user?.id && contextualData?.availableBarbers?.some(
+          b => b.user_id === _user.id || b.id === _user.id
         ))
       )
       
@@ -1078,7 +1098,7 @@ export default function AppointmentBookingModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/75 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -1092,11 +1112,11 @@ export default function AppointmentBookingModal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+              <Dialog.Panel className="relative transform rounded-lg bg-card text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="min-h-[44px] min-w-[44px] p-3 rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2 flex items-center justify-center"
+                    className="min-h-[44px] min-w-[44px] p-3 rounded-md bg-card text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2 flex items-center justify-center"
                     onClick={onClose}
                   >
                     <span className="sr-only">Close</span>
@@ -1107,10 +1127,15 @@ export default function AppointmentBookingModal({
                 <div className="px-4 pb-4 pt-5 sm:p-6">
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                    <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900 mb-6">
-                      {isBlockMode ? 'Block Time Slots' : isEditing ? 'Edit Appointment' : 'Book New Appointment'}
-                      {isEditing && editingAppointment?.recurrence_rule && (
-                        <div className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-3">
+                    <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-card-foreground mb-6">
+                      {isBlockMode ? 'Block Time Slots' : isDragRescheduling ? 'Reschedule Appointment' : isEditing ? 'Edit Appointment' : 'Book New Appointment'}
+                      {isDragRescheduling && pendingDropInfo && (
+                        <div className="mt-2 text-sm text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                          📅 Rescheduling appointment to new time. Review the details below and confirm the changes. You can also make this a recurring appointment if needed.
+                        </div>
+                      )}
+                      {isEditing && editingAppointment?.recurrence_rule && !isDragRescheduling && (
+                        <div className="mt-2 text-sm text-amber-700 dark:text-amber-300 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3">
                           🔄 This is a recurring appointment. Changes will only apply to this specific occurrence.
                         </div>
                       )}
@@ -1129,11 +1154,11 @@ export default function AppointmentBookingModal({
                         <>
                           {/* Time and Duration for Block Mode */}
                           <div className="space-y-4">
-                            <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="bg-muted rounded-lg p-4">
                               <div className="flex items-center space-x-4 mb-3">
-                                <CalendarIcon className="h-5 w-5 text-gray-500" />
+                                <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                                 <div>
-                                  <p className="text-sm font-medium text-gray-900">
+                                  <p className="text-sm font-medium text-card-foreground">
                                     {selectedSlot && new Date(selectedSlot.start).toLocaleDateString('en-US', {
                                       weekday: 'long',
                                       year: 'numeric',
@@ -1141,7 +1166,7 @@ export default function AppointmentBookingModal({
                                       day: 'numeric'
                                     })}
                                   </p>
-                                  <p className="text-sm text-gray-600">
+                                  <p className="text-sm text-muted-foreground">
                                     {selectedSlot && new Date(selectedSlot.start).toLocaleTimeString('en-US', {
                                       hour: 'numeric',
                                       minute: '2-digit'
@@ -1162,14 +1187,14 @@ export default function AppointmentBookingModal({
                               
                               {/* Duration Selector */}
                               <div>
-                                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="duration" className="block text-sm font-medium text-foreground mb-2">
                                   Duration
                                 </label>
                                 <select
                                   id="duration"
                                   value={formData.duration_minutes}
                                   onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-                                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
+                                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
                                 >
                                   {/* If the current duration is not in the standard options, add it as the first option */}
                                   {formData.duration_minutes && 
@@ -1202,7 +1227,7 @@ export default function AppointmentBookingModal({
                             
                             {/* Reason for Blocking */}
                             <div>
-                              <label htmlFor="blockReason" className="block text-sm font-medium text-gray-700 mb-2">
+                              <label htmlFor="blockReason" className="block text-sm font-medium text-foreground mb-2">
                                 Reason (optional)
                               </label>
                               <input
@@ -1211,12 +1236,12 @@ export default function AppointmentBookingModal({
                                 value={blockReason}
                                 onChange={(e) => setBlockReason(e.target.value)}
                                 placeholder="e.g., Lunch break, Meeting, Personal time"
-                                className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder-muted-foreground focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
                               />
                             </div>
                             
-                            <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
-                              <p className="text-sm text-amber-800">
+                            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+                              <p className="text-sm text-amber-800 dark:text-amber-300">
                                 🚫 This time will be blocked and unavailable for customer bookings.
                               </p>
                             </div>
@@ -1227,12 +1252,34 @@ export default function AppointmentBookingModal({
                       {/* Regular Booking Form Fields */}
                       {/* Barber Selection */}
                       <div>
+                        {/* Debug Info - Only shown in development */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded text-xs">
+                            <div className="text-blue-700 dark:text-blue-300 font-medium">
+                              🔍 Debug: {barbers.length} barber{barbers.length !== 1 ? 's' : ''} loaded
+                            </div>
+                            <div className="mt-1 text-blue-600 dark:text-blue-400">
+                              Current user: {_user?.email || 'Not logged in'} (ID: {_user?.id?.slice(0, 8) || 'N/A'}...)
+                            </div>
+                            {barbers.length > 0 && (
+                              <div className="mt-1 text-blue-600 dark:text-blue-400">
+                                Available: {barbers.map(b => `${b.title || b.id?.slice(0, 8)}${b.id === _user?.id ? ' (You)' : ''}`).join(', ')}
+                              </div>
+                            )}
+                            {barbers.length === 0 && (
+                              <div className="mt-1 text-amber-600 dark:text-amber-400">
+                                ⚠️ No barbers loaded - check /api/staff endpoint
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         <div className="flex items-center justify-between mb-1">
-                          <label htmlFor="barber_id" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="barber_id" className="block text-sm font-medium text-foreground">
                             Barber <span className="text-red-500">*</span>
                           </label>
                           {autoPopulated.barber && formData.barber_id && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-950/30 text-green-800 dark:text-green-400">
                               <CheckIcon className="w-3 h-3 mr-1" />
                               Auto-selected
                             </span>
@@ -1254,17 +1301,17 @@ export default function AppointmentBookingModal({
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
                               : autoPopulated.barber && formData.barber_id
                               ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
-                              : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                          } ${loading ? 'bg-gray-50' : ''}`}
+                              : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                          } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                           disabled={loading}
                           required
                         >
                           <option value="">Select a barber</option>
                           {barbers.map(barber => (
                             <option key={barber.id} value={barber.id}>
-                              {barber.name}
-                              {/* Show indicator if this is the current user */}
-                              {(barber.user_id === user?.id || barber.id === user?.id) && ' (You)'}
+                              {barber.title || barber.extendedProps?.full_name || barber.full_name || barber.name || 'Staff Member'}
+                              {/* Show indicator only if this barber IS the current logged-in user */}
+                              {barber.id === _user?.id && ' (You)'}
                             </option>
                           ))}
                         </select>
@@ -1275,7 +1322,26 @@ export default function AppointmentBookingModal({
 
                       {/* Service Selection */}
                       <div>
-                        <label htmlFor="service_id" className="block text-sm font-medium text-gray-700">
+                        {/* Debug Info - Only shown in development */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <div className="mb-2 p-2 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded text-xs">
+                            <div className="text-purple-700 dark:text-purple-300 font-medium">
+                              🔍 Debug: {services.length} service{services.length !== 1 ? 's' : ''} available
+                            </div>
+                            {services.length > 0 && (
+                              <div className="mt-1 text-purple-600 dark:text-purple-400">
+                                Services: {services.map(s => `${s.name} ($${s.price})`).join(', ')}
+                              </div>
+                            )}
+                            {services.length === 0 && (
+                              <div className="mt-1 text-amber-600 dark:text-amber-400">
+                                ⚠️ No services loaded - check /api/services endpoint
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <label htmlFor="service_id" className="block text-sm font-medium text-foreground">
                           Service <span className="text-red-500">*</span>
                         </label>
                         <select
@@ -1286,8 +1352,8 @@ export default function AppointmentBookingModal({
                           className={`mt-1 block w-full rounded-md shadow-sm ${
                             fieldErrors.service_id 
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                              : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                          } ${loading ? 'bg-gray-50' : ''}`}
+                              : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                          } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                           disabled={loading}
                           required
                         >
@@ -1302,7 +1368,7 @@ export default function AppointmentBookingModal({
                           <p className="mt-1 text-sm text-red-600">{fieldErrors.service_id}</p>
                         )}
                         {selectedService && (
-                          <p className="mt-1 text-sm text-gray-500">
+                          <p className="mt-1 text-sm text-muted-foreground">
                             {selectedService.description}
                           </p>
                         )}
@@ -1310,17 +1376,17 @@ export default function AppointmentBookingModal({
 
                       {/* Time Slot Display - Shows when service and time are selected */}
                       {formData.scheduled_at && formData.service_id && getTimeRangeDisplay() && (
-                        <div className="rounded-lg bg-olive-50 border border-olive-200 p-4">
+                        <div className="rounded-lg bg-olive-50 dark:bg-olive-900/20 border border-olive-200 dark:border-olive-800 p-4">
                           <div className="flex items-center">
-                            <ClockIcon className="h-5 w-5 text-olive-600 mr-2" />
+                            <ClockIcon className="h-5 w-5 text-olive-600 dark:text-olive-400 mr-2" />
                             <div>
-                              <p className="text-sm font-medium text-olive-900">
+                              <p className="text-sm font-medium text-olive-900 dark:text-olive-100">
                                 Appointment Time Slot
                               </p>
-                              <p className="text-lg font-semibold text-olive-700">
+                              <p className="text-lg font-semibold text-olive-700 dark:text-olive-300">
                                 {getTimeRangeDisplay()}
                               </p>
-                              <p className="text-xs text-olive-600 mt-1">
+                              <p className="text-xs text-olive-600 dark:text-olive-400 mt-1">
                                 Duration: {formData.duration_minutes} minutes
                                 {selectedService && ` • ${selectedService.name}`}
                               </p>
@@ -1332,7 +1398,7 @@ export default function AppointmentBookingModal({
                       {/* Date and Time */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label htmlFor="scheduled_at" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="scheduled_at" className="block text-sm font-medium text-foreground">
                             Date & Time <span className="text-red-500">*</span>
                             {selectedSlot?.needsTimePicker && (
                               <span className="ml-2 text-xs text-olive-600 font-normal">
@@ -1349,8 +1415,8 @@ export default function AppointmentBookingModal({
                             className={`mt-1 block w-full rounded-md shadow-sm ${
                               fieldErrors.scheduled_at 
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                            } ${loading ? 'bg-gray-50' : ''}`}
+                                : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                            } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                             disabled={loading}
                             required
                           />
@@ -1360,7 +1426,7 @@ export default function AppointmentBookingModal({
                         </div>
                         
                         <div>
-                          <label htmlFor="duration_minutes" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="duration_minutes" className="block text-sm font-medium text-foreground">
                             Duration (minutes)
                           </label>
                           <input
@@ -1372,7 +1438,7 @@ export default function AppointmentBookingModal({
                             min="5"
                             max="480"
                             step="5"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                            className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                           />
                         </div>
                       </div>
@@ -1380,13 +1446,13 @@ export default function AppointmentBookingModal({
                       {/* Available Time Slots */}
                       {availability.length > 0 && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
+                          <label className="block text-sm font-medium text-foreground mb-3">
                             Available Time Slots
                           </label>
                           {checkingAvailability ? (
                             <div className="flex items-center justify-center py-4">
                               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-olive-600"></div>
-                              <span className="ml-2 text-sm text-gray-600">
+                              <span className="ml-2 text-sm text-muted-foreground">
                                 Checking availability...
                               </span>
                             </div>
@@ -1400,8 +1466,8 @@ export default function AppointmentBookingModal({
                                   disabled={!slot.available}
                                   className={`min-h-[44px] px-3 py-2 text-xs rounded-md border transition-colors ${
                                     slot.available
-                                      ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                                      : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                      ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/50'
+                                      : 'border-border bg-muted text-muted-foreground cursor-not-allowed'
                                   }`}
                                 >
                                   {slot.start_time}
@@ -1418,7 +1484,7 @@ export default function AppointmentBookingModal({
                       {/* Enhanced Client Management */}
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold text-gray-900">Client Information</h4>
+                          <h4 className="text-sm font-semibold text-card-foreground">Client Information</h4>
                           {customerSearchLoading && (
                             <div className="flex items-center text-xs text-olive-600">
                               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-olive-600 mr-1"></div>
@@ -1436,9 +1502,9 @@ export default function AppointmentBookingModal({
                               value="new"
                               checked={customerMode === 'new'}
                               onChange={() => handleCustomerModeChange('new')}
-                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
+                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input"
                             />
-                            <span className="ml-2 text-sm text-gray-700">New Client</span>
+                            <span className="ml-2 text-sm text-foreground">New Client</span>
                           </label>
                           <label className="flex items-center">
                             <input
@@ -1447,40 +1513,42 @@ export default function AppointmentBookingModal({
                               value="existing"
                               checked={customerMode === 'existing'}
                               onChange={() => handleCustomerModeChange('existing')}
-                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
+                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input"
                             />
-                            <span className="ml-2 text-sm text-gray-700">Existing Client</span>
+                            <span className="ml-2 text-sm text-foreground">Existing Client</span>
                           </label>
                         </div>
 
                         {/* Existing Client Display */}
                         {customerMode === 'existing' && selectedCustomer && (
-                          <div className="p-4 bg-olive-50 border border-olive-200 rounded-lg">
+                          <div className="p-4 bg-olive-50 dark:bg-olive-900/20 border border-olive-200 dark:border-olive-800 rounded-lg">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
-                                  <UserIcon className="h-5 w-5 text-olive-600" />
-                                  <span className="font-medium text-gray-900">{selectedCustomer.name}</span>
+                                  <UserIcon className="h-5 w-5 text-olive-600 dark:text-olive-400" />
+                                  <span className="font-medium text-card-foreground dark:text-card-foreground">
+                                    {selectedCustomer.name || selectedCustomer.full_name || selectedCustomer.client_name || 'Customer'}
+                                  </span>
                                   {selectedCustomer.vip_status && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-900">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-400">
                                       VIP
                                     </span>
                                   )}
                                 </div>
-                                <div className="space-y-1 text-sm text-gray-600">
-                                  {selectedCustomer.phone && (
+                                <div className="space-y-1 text-sm text-muted-foreground">
+                                  {(selectedCustomer.phone || selectedCustomer.client_phone) && (
                                     <div className="flex items-center gap-1">
-                                      <span>📱 {selectedCustomer.phone}</span>
+                                      <span>📱 {selectedCustomer.phone || selectedCustomer.client_phone}</span>
                                     </div>
                                   )}
-                                  {selectedCustomer.email && (
+                                  {(selectedCustomer.email || selectedCustomer.client_email) && (
                                     <div className="flex items-center gap-1">
-                                      <span>✉️ {selectedCustomer.email}</span>
+                                      <span>✉️ {selectedCustomer.email || selectedCustomer.client_email}</span>
                                     </div>
                                   )}
-                                  <div className="flex items-center gap-4 text-xs text-gray-500">
-                                    <span>Last visit: {selectedCustomer.last_visit_display}</span>
-                                    <span>{selectedCustomer.total_visits} visit{selectedCustomer.total_visits !== 1 ? 's' : ''}</span>
+                                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                    <span>Last visit: {selectedCustomer.last_visit_display || selectedCustomer.last_visit || 'Never'}</span>
+                                    <span>{selectedCustomer.total_visits || selectedCustomer.visit_count || 0} visit{(selectedCustomer.total_visits || selectedCustomer.visit_count || 0) !== 1 ? 's' : ''}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1500,10 +1568,10 @@ export default function AppointmentBookingModal({
                           <button
                             type="button"
                             onClick={() => setShowCustomerSearch(true)}
-                            className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-olive-500 hover:bg-olive-50 transition-colors"
+                            className="w-full p-4 border-2 border-dashed border-input rounded-lg text-center hover:border-olive-500 hover:bg-olive-50 dark:hover:bg-olive-900/20 transition-colors"
                           >
-                            <UserIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                            <span className="text-sm text-gray-600">Click to search for existing client</span>
+                            <UserIcon className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                            <span className="text-sm text-muted-foreground">Click to search for existing client</span>
                           </button>
                         )}
 
@@ -1512,7 +1580,7 @@ export default function AppointmentBookingModal({
                           <>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
-                                <label htmlFor="client_name" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="client_name" className="block text-sm font-medium text-foreground">
                                   Name <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -1529,8 +1597,8 @@ export default function AppointmentBookingModal({
                                   className={`mt-1 block w-full rounded-md shadow-sm ${
                                     fieldErrors.client_name 
                                       ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                      : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                                  } ${loading ? 'bg-gray-50' : ''}`}
+                                      : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                                  } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                                   disabled={loading}
                                   required
                                 />
@@ -1540,7 +1608,7 @@ export default function AppointmentBookingModal({
                               </div>
                               
                               <div>
-                                <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="client_phone" className="block text-sm font-medium text-foreground">
                                   Phone <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -1557,8 +1625,8 @@ export default function AppointmentBookingModal({
                                   className={`mt-1 block w-full rounded-md shadow-sm ${
                                     fieldErrors.client_phone 
                                       ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                      : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                                  } ${loading ? 'bg-gray-50' : ''}`}
+                                      : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                                  } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                                   disabled={loading}
                                   required
                                 />
@@ -1569,7 +1637,7 @@ export default function AppointmentBookingModal({
                             </div>
                             
                             <div>
-                              <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">
+                              <label htmlFor="client_email" className="block text-sm font-medium text-foreground">
                                 Email
                               </label>
                               <input
@@ -1586,8 +1654,8 @@ export default function AppointmentBookingModal({
                                 className={`mt-1 block w-full rounded-md shadow-sm ${
                                   fieldErrors.client_email 
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                    : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                                } ${loading ? 'bg-gray-50' : ''}`}
+                                    : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                                } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                                 disabled={loading}
                               />
                               {fieldErrors.client_email && (
@@ -1598,7 +1666,7 @@ export default function AppointmentBookingModal({
                         )}
                         
                         <div>
-                          <label htmlFor="client_notes" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="client_notes" className="block text-sm font-medium text-foreground">
                             Notes
                           </label>
                           <textarea
@@ -1607,15 +1675,15 @@ export default function AppointmentBookingModal({
                             value={formData.client_notes}
                             onChange={handleInputChange}
                             rows={3}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                            className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                             placeholder="Any special requests or preferences..."
                           />
                         </div>
 
                         {/* Client Notification Preferences */}
                         {(customerMode === 'new' || selectedCustomer) && (
-                          <div className="pt-4 border-t border-gray-200">
-                            <h5 className="text-sm font-medium text-gray-900 mb-3">Notify Client</h5>
+                          <div className="pt-4 border-t border-border">
+                            <h5 className="text-sm font-medium text-card-foreground mb-3">Notify Client</h5>
                             <div className="space-y-2">
                               <label className="flex items-center">
                                 <input
@@ -1625,9 +1693,9 @@ export default function AppointmentBookingModal({
                                     ...prev,
                                     confirmations: e.target.checked
                                   }))}
-                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                                 />
-                                <span className="ml-2 text-sm text-gray-700">Send booking confirmation</span>
+                                <span className="ml-2 text-sm text-foreground">Send booking confirmation</span>
                               </label>
                               
                               <label className="flex items-center">
@@ -1638,9 +1706,9 @@ export default function AppointmentBookingModal({
                                     ...prev,
                                     reminders: e.target.checked
                                   }))}
-                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                                 />
-                                <span className="ml-2 text-sm text-gray-700">Send reminder (24h before)</span>
+                                <span className="ml-2 text-sm text-foreground">Send reminder (24h before)</span>
                               </label>
                               
                               {formData.client_phone && (
@@ -1652,9 +1720,9 @@ export default function AppointmentBookingModal({
                                       ...prev,
                                       sms: e.target.checked
                                     }))}
-                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                                   />
-                                  <span className="ml-2 text-sm text-gray-600">📱 Text message (SMS)</span>
+                                  <span className="ml-2 text-sm text-muted-foreground">📱 Text message (SMS)</span>
                                 </label>
                               )}
                               
@@ -1667,9 +1735,9 @@ export default function AppointmentBookingModal({
                                       ...prev,
                                       email: e.target.checked
                                     }))}
-                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                                   />
-                                  <span className="ml-2 text-sm text-gray-600">✉️ Email notification</span>
+                                  <span className="ml-2 text-sm text-muted-foreground">✉️ Email notification</span>
                                 </label>
                               )}
                             </div>
@@ -1679,11 +1747,11 @@ export default function AppointmentBookingModal({
 
                       {/* Pricing */}
                       <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-gray-900">Pricing</h4>
+                        <h4 className="text-sm font-semibold text-card-foreground">Pricing</h4>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div>
-                            <label htmlFor="service_price" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="service_price" className="block text-sm font-medium text-foreground">
                               Service Price
                             </label>
                             <input
@@ -1694,12 +1762,12 @@ export default function AppointmentBookingModal({
                               onChange={handleInputChange}
                               min="0"
                               step="0.01"
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                              className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                             />
                           </div>
                           
                           <div>
-                            <label htmlFor="tip_amount" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="tip_amount" className="block text-sm font-medium text-foreground">
                               Tip Amount
                             </label>
                             <input
@@ -1710,15 +1778,15 @@ export default function AppointmentBookingModal({
                               onChange={handleInputChange}
                               min="0"
                               step="0.01"
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                              className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                             />
                           </div>
                           
                           <div>
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-foreground">
                               Total Amount
                             </label>
-                            <div className="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900 font-medium">
+                            <div className="mt-1 block w-full px-3 py-2 bg-muted border border-input rounded-md text-card-foreground font-medium">
                               ${(formData.service_price + (formData.tip_amount || 0)).toFixed(2)}
                             </div>
                           </div>
@@ -1727,17 +1795,17 @@ export default function AppointmentBookingModal({
 
                       {/* Recurring Appointments */}
                       <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-gray-900">Recurring Schedule</h4>
+                        <h4 className="text-sm font-semibold text-card-foreground">Recurring Schedule</h4>
                         
                         {isEditing && editingAppointment?.recurrence_rule && (
-                          <div className="mb-4 text-sm text-olive-600 bg-olive-50 border border-olive-200 rounded-md p-3">
+                          <div className="mb-4 text-sm text-olive-600 dark:text-olive-400 bg-olive-50 dark:bg-olive-900/20 border border-olive-200 dark:border-olive-800 rounded-md p-3">
                             ℹ️ This appointment is already part of a recurring series. Converting will create a new series starting from this appointment.
                           </div>
                         )}
                         
                         {/* Conversion Confirmation */}
                         {showConversionConfirmation && formData.is_recurring && isEditing && (
-                          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
                             <div className="flex items-start">
                               <div className="flex-shrink-0">
                                 <svg className="h-5 w-5 text-green-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -1763,7 +1831,7 @@ export default function AppointmentBookingModal({
                         
                         {/* Conflict Detection Results */}
                         {conflicts && conflicts.has_conflicts && (
-                          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                             <div className="flex items-start">
                               <div className="flex-shrink-0">
                                 <svg className="h-5 w-5 text-amber-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -1771,14 +1839,14 @@ export default function AppointmentBookingModal({
                                 </svg>
                               </div>
                               <div className="ml-3 flex-1">
-                                <h3 className="text-sm font-medium text-amber-800">
+                                <h3 className="text-sm font-medium text-amber-800 dark:text-amber-300">
                                   {conflicts.conflicts_found} Scheduling Conflict{conflicts.conflicts_found !== 1 ? 's' : ''} Found
                                 </h3>
-                                <div className="mt-2 text-sm text-amber-700">
+                                <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
                                   <p className="mb-2">The following dates have conflicts:</p>
                                   <div className="max-h-32 overflow-y-auto space-y-1">
                                     {conflicts.conflicts.slice(0, 5).map((conflict, index) => (
-                                      <div key={index} className="text-xs bg-amber-100 rounded px-2 py-1">
+                                      <div key={index} className="text-xs bg-amber-100 dark:bg-amber-950/30 rounded px-2 py-1">
                                         {new Date(conflict.date).toLocaleDateString('en-US', { 
                                           month: 'short', 
                                           day: 'numeric',
@@ -1786,12 +1854,12 @@ export default function AppointmentBookingModal({
                                           minute: '2-digit'
                                         })}
                                         {conflict.conflicting_appointments[0] && (
-                                          <span className="text-amber-700"> - {conflict.conflicting_appointments[0].client_name || conflict.conflicting_appointments[0].client?.full_name || conflict.conflicting_appointments[0].customer_name || 'Walk-in'}</span>
+                                          <span className="text-amber-700 dark:text-amber-300"> - {conflict.conflicting_appointments[0].client_name || conflict.conflicting_appointments[0].customer_name || conflict.conflicting_appointments[0].client?.full_name || 'Walk-in'}</span>
                                         )}
                                       </div>
                                     ))}
                                     {conflicts.conflicts.length > 5 && (
-                                      <div className="text-xs text-amber-700 italic">
+                                      <div className="text-xs text-amber-700 dark:text-amber-300 italic">
                                         ... and {conflicts.conflicts.length - 5} more
                                       </div>
                                     )}
@@ -1799,7 +1867,7 @@ export default function AppointmentBookingModal({
                                 </div>
                                 
                                 <div className="mt-3">
-                                  <label className="block text-sm font-medium text-amber-800 mb-2">
+                                  <label className="block text-sm font-medium text-amber-800 dark:text-amber-300 mb-2">
                                     How would you like to handle conflicts?
                                   </label>
                                   <select
@@ -1824,19 +1892,19 @@ export default function AppointmentBookingModal({
                             type="checkbox"
                             checked={formData.is_recurring}
                             onChange={handleInputChange}
-                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                           />
-                          <label htmlFor="is_recurring" className="ml-2 block text-sm text-gray-900">
+                          <label htmlFor="is_recurring" className="ml-2 block text-sm text-card-foreground">
                             {isEditing ? 'Convert to recurring appointment' : 'Make this a recurring appointment'}
                           </label>
                         </div>
                         
                         {formData.is_recurring && (
-                          <div className="space-y-4 p-4 bg-olive-50 rounded-lg border border-olive-200">
+                          <div className="space-y-4 p-4 bg-olive-50 dark:bg-olive-900/20 rounded-lg border border-olive-200 dark:border-olive-800">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {/* Recurrence Pattern */}
                               <div>
-                                <label htmlFor="recurrence_pattern" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="recurrence_pattern" className="block text-sm font-medium text-foreground">
                                   Repeat
                                 </label>
                                 <select
@@ -1844,7 +1912,7 @@ export default function AppointmentBookingModal({
                                   name="recurrence_pattern"
                                   value={formData.recurrence_pattern}
                                   onChange={handleInputChange}
-                                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                                  className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                                 >
                                   <option value="daily">Daily</option>
                                   <option value="weekly">Weekly</option>
@@ -1854,7 +1922,7 @@ export default function AppointmentBookingModal({
                               
                               {/* Recurrence Interval */}
                               <div>
-                                <label htmlFor="recurrence_interval" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="recurrence_interval" className="block text-sm font-medium text-foreground">
                                   Every
                                 </label>
                                 <div className="mt-1 flex items-center space-x-2">
@@ -1866,9 +1934,9 @@ export default function AppointmentBookingModal({
                                     onChange={handleInputChange}
                                     min="1"
                                     max="12"
-                                    className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                                    className="block w-20 rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                                   />
-                                  <span className="text-sm text-gray-600">
+                                  <span className="text-sm text-muted-foreground">
                                     {formData.recurrence_pattern === 'daily' ? 'day(s)' :
                                      formData.recurrence_pattern === 'weekly' ? 'week(s)' : 'month(s)'}
                                   </span>
@@ -1879,7 +1947,7 @@ export default function AppointmentBookingModal({
                             {/* Days of week for weekly pattern */}
                             {formData.recurrence_pattern === 'weekly' && (
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-foreground mb-2">
                                   Repeat on
                                 </label>
                                 <div className="flex space-x-2">
@@ -1896,7 +1964,7 @@ export default function AppointmentBookingModal({
                                       className={`w-10 h-10 rounded-full text-xs font-medium transition-colors ${
                                         formData.recurrence_days.includes(index)
                                           ? 'bg-olive-600 text-white'
-                                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                       }`}
                                     >
                                       {day.charAt(0)}
@@ -1908,7 +1976,7 @@ export default function AppointmentBookingModal({
                             
                             {/* End condition */}
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <label className="block text-sm font-medium text-foreground mb-2">
                                 End
                               </label>
                               <div className="space-y-2">
@@ -1922,7 +1990,7 @@ export default function AppointmentBookingModal({
                                     onChange={handleInputChange}
                                     className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                                   />
-                                  <label htmlFor="recurrence_end_count" className="ml-2 text-sm text-gray-900">
+                                  <label htmlFor="recurrence_end_count" className="ml-2 text-sm text-card-foreground">
                                     After
                                   </label>
                                   <input
@@ -1933,9 +2001,9 @@ export default function AppointmentBookingModal({
                                     min="1"
                                     max="52"
                                     disabled={formData.recurrence_end_type !== 'count'}
-                                    className="ml-2 w-16 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-gray-100"
+                                    className="ml-2 w-16 rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-muted/50"
                                   />
-                                  <span className="ml-1 text-sm text-gray-600">appointments</span>
+                                  <span className="ml-1 text-sm text-muted-foreground">appointments</span>
                                 </div>
                                 
                                 <div className="flex items-center">
@@ -1948,7 +2016,7 @@ export default function AppointmentBookingModal({
                                     onChange={handleInputChange}
                                     className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                                   />
-                                  <label htmlFor="recurrence_end_date" className="ml-2 text-sm text-gray-900">
+                                  <label htmlFor="recurrence_end_date" className="ml-2 text-sm text-card-foreground">
                                     On
                                   </label>
                                   <input
@@ -1957,7 +2025,7 @@ export default function AppointmentBookingModal({
                                     value={formData.recurrence_end_date}
                                     onChange={handleInputChange}
                                     disabled={formData.recurrence_end_type !== 'date'}
-                                    className="ml-2 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-gray-100"
+                                    className="ml-2 rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-muted/50"
                                   />
                                 </div>
                                 
@@ -1971,7 +2039,7 @@ export default function AppointmentBookingModal({
                                     onChange={handleInputChange}
                                     className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                                   />
-                                  <label htmlFor="recurrence_end_never" className="ml-2 text-sm text-gray-900">
+                                  <label htmlFor="recurrence_end_never" className="ml-2 text-sm text-card-foreground">
                                     Never
                                   </label>
                                 </div>
@@ -1990,15 +2058,15 @@ export default function AppointmentBookingModal({
                             type="checkbox"
                             checked={formData.is_walk_in}
                             onChange={handleInputChange}
-                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                           />
-                          <label htmlFor="is_walk_in" className="ml-2 block text-sm text-gray-900">
+                          <label htmlFor="is_walk_in" className="ml-2 block text-sm text-card-foreground">
                             This is a walk-in appointment
                           </label>
                         </div>
                         
                         <div>
-                          <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="priority" className="block text-sm font-medium text-foreground">
                             Priority
                           </label>
                           <select
@@ -2006,7 +2074,7 @@ export default function AppointmentBookingModal({
                             name="priority"
                             value={formData.priority}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                            className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                           >
                             <option value={0}>Normal</option>
                             <option value={1}>High</option>
@@ -2031,7 +2099,7 @@ export default function AppointmentBookingModal({
                                   setActionType('uncancel')
                                   setShowDeleteConfirmation(true)
                                 }}
-                                className="inline-flex items-center justify-center rounded-lg border-2 border-green-600 bg-white px-4 py-2 text-sm font-medium text-green-600 shadow-sm hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                className="inline-flex items-center justify-center rounded-lg border-2 border-green-600 bg-card px-4 py-2 text-sm font-medium text-green-600 shadow-sm hover:bg-green-50 dark:hover:bg-green-950/30 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                               >
                                 <CheckIcon className="h-5 w-5 mr-2" />
                                 Restore
@@ -2043,7 +2111,7 @@ export default function AppointmentBookingModal({
                                   setActionType('cancel')
                                   setShowDeleteConfirmation(true)
                                 }}
-                                className="inline-flex items-center justify-center rounded-lg border-2 border-orange-600 bg-white px-4 py-2 text-sm font-medium text-orange-600 shadow-sm hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                                className="inline-flex items-center justify-center rounded-lg border-2 border-orange-600 bg-card px-4 py-2 text-sm font-medium text-orange-600 shadow-sm hover:bg-orange-50 dark:hover:bg-orange-950/30 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                               >
                                 <XMarkIcon className="h-5 w-5 mr-2" />
                                 Cancel
@@ -2057,7 +2125,7 @@ export default function AppointmentBookingModal({
                                 setActionType('delete')
                                 setShowDeleteConfirmation(true)
                               }}
-                              className="inline-flex items-center justify-center rounded-lg border-2 border-red-600 bg-white px-4 py-2 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                              className="inline-flex items-center justify-center rounded-lg border-2 border-red-600 bg-card px-4 py-2 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50 dark:hover:bg-red-950/30 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                             >
                               <TrashIcon className="h-5 w-5 mr-2" />
                               Delete
@@ -2083,7 +2151,7 @@ export default function AppointmentBookingModal({
                             <button
                               type="button"
                               onClick={() => setIsBlockMode(true)}
-                              className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                              className="inline-flex items-center justify-center rounded-lg border border-input bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                             >
                               🚫 Block Time
                             </button>
@@ -2098,7 +2166,7 @@ export default function AppointmentBookingModal({
                               }
                               onClose();
                             }}
-                            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                            className="inline-flex items-center justify-center rounded-lg border border-input bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                           >
                             Cancel
                           </button>
@@ -2162,7 +2230,7 @@ export default function AppointmentBookingModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/75 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -2176,19 +2244,19 @@ export default function AppointmentBookingModal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-card px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/30 sm:mx-0 sm:h-10 sm:w-10">
                     <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                    <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                    <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-card-foreground">
                       {actionType === 'cancel' ? 'Cancel Appointment' : actionType === 'uncancel' ? 'Uncancel Appointment' : 'Delete Appointment'}
                     </Dialog.Title>
                     <div className="mt-2">
                       {editingAppointment?.isRecurring || editingAppointment?.extendedProps?.isRecurring ? (
                         <div className="space-y-3">
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             This is a recurring appointment. How would you like to delete it?
                           </p>
                           <div className="space-y-2">
@@ -2199,9 +2267,9 @@ export default function AppointmentBookingModal({
                                 value="single"
                                 checked={deleteOption === 'single'}
                                 onChange={(e) => setDeleteOption(e.target.value)}
-                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-input"
                               />
-                              <label htmlFor="delete-single" className="ml-2 block text-sm text-gray-700">
+                              <label htmlFor="delete-single" className="ml-2 block text-sm text-foreground">
                                 Delete only this occurrence
                               </label>
                             </div>
@@ -2212,16 +2280,16 @@ export default function AppointmentBookingModal({
                                 value="all"
                                 checked={deleteOption === 'all'}
                                 onChange={(e) => setDeleteOption(e.target.value)}
-                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-input"
                               />
-                              <label htmlFor="delete-all" className="ml-2 block text-sm text-gray-700">
+                              <label htmlFor="delete-all" className="ml-2 block text-sm text-foreground">
                                 Delete all occurrences (entire series)
                               </label>
                             </div>
                           </div>
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                           {actionType === 'cancel' ? (
                             <div className="space-y-2">
                               <p>
@@ -2305,7 +2373,7 @@ export default function AppointmentBookingModal({
                   <button
                     type="button"
                     onClick={() => setShowDeleteConfirmation(false)}
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    className="mt-3 inline-flex w-full justify-center rounded-md bg-card px-3 py-2 text-sm font-semibold text-card-foreground shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-muted sm:mt-0 sm:w-auto"
                   >
                     Cancel
                   </button>

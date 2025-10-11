@@ -46,10 +46,10 @@ const TenantProvider = ({ children }) => {
 
         const supabase = createClient()
 
-        // Get user's profile to find their shop_id
+        // Get user's profile to find their barbershop_id
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .select('shop_id, role')
+          .select('barbershop_id, role')
           .eq('id', user.id)
           .single()
 
@@ -60,12 +60,12 @@ const TenantProvider = ({ children }) => {
           return
         }
 
-        // If user has a shop_id, load that specific barbershop
-        if (profile?.shop_id) {
+        // If user has a barbershop_id, load that specific barbershop
+        if (profile?.barbershop_id) {
           const { data: barbershop, error: shopError } = await supabase
             .from('barbershops')
             .select('*')
-            .eq('id', profile.shop_id)
+            .eq('id', profile.barbershop_id)
             .single()
 
           if (shopError) {
@@ -76,7 +76,7 @@ const TenantProvider = ({ children }) => {
             console.log('🏢 Tenant loaded:', barbershop.name, `(${barbershop.id})`)
           }
         } else {
-          // User has no shop_id - query all barbershops they own
+          // User has no barbershop_id - query all barbershops they own
           const { data: ownedShops, error: shopsError } = await supabase
             .from('barbershops')
             .select('*')
@@ -92,10 +92,10 @@ const TenantProvider = ({ children }) => {
             setTenant(firstShop)
             console.log('🏢 Tenant loaded (first owned shop):', firstShop.name, `(${firstShop.id})`)
 
-            // Update profile with this shop_id for future loads
+            // Update profile with this barbershop_id for future loads
             await supabase
               .from('profiles')
-              .update({ shop_id: firstShop.id })
+              .update({ barbershop_id: firstShop.id })
               .eq('id', user.id)
           } else {
             // User has no barbershops - they need to complete onboarding
