@@ -13,7 +13,7 @@ import {
   ArrowPathIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 const EXPORT_FORMATS = [
   { value: 'csv', label: 'CSV', description: 'Comma-separated values for spreadsheets', icon: '📊' },

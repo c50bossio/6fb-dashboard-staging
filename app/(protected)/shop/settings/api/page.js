@@ -13,7 +13,7 @@ import {
   ExclamationTriangleIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 const PERMISSION_SCOPES = [
   { value: 'read', label: 'Read Only', description: 'View data only, no modifications', color: 'blue' },

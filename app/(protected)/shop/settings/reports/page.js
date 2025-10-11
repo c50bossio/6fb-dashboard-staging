@@ -12,7 +12,7 @@ import {
   TrashIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 const REPORT_TYPES = [
   { id: 'revenue', name: 'Revenue Report', description: 'Daily, weekly, and monthly revenue breakdowns' },
