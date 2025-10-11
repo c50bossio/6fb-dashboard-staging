@@ -13,9 +13,12 @@ export async function GET(request) {
     const timeRange = searchParams.get('range') || '7d' // 1d, 7d, 30d, 90d
     const detailed = searchParams.get('detailed') === 'true'
     const type = searchParams.get('type') // trending_services, metrics, etc.
-    
+
+    // CRITICAL: Get barbershop_id from query params for location-specific data
+    const barbershopId = searchParams.get('barbershop_id') || DEMO_BARBERSHOP_ID
+
     const supabase = createServerClient()
-    
+
     // Get current timestamp for calculations
     const now = new Date()
     const ranges = {
@@ -28,17 +31,18 @@ export async function GET(request) {
 
     // Handle specific metric types
     if (type === 'trending_services') {
-      return getTrendingServices(supabase, startDate, now)
+      return getTrendingServices(supabase, startDate, now, barbershopId)
     }
-    
-    // Initialize metrics object
+
+    // Initialize metrics object with location-specific data
     const metrics = {
       timestamp: now.toISOString(),
       time_range: timeRange,
+      barbershop_id: barbershopId,
       system_health: await getSystemHealthMetrics(),
       ai_activity: await getAIActivityMetrics(startDate, now),
-      business_insights: await getBusinessInsightsMetrics(startDate, now),
-      user_engagement: await getUserEngagementMetrics(startDate, now),
+      business_insights: await getBusinessInsightsMetrics(startDate, now, barbershopId),
+      user_engagement: await getUserEngagementMetrics(startDate, now, barbershopId),
       performance: await getPerformanceMetrics(),
     }
     
@@ -162,21 +166,24 @@ async function getAIActivityMetrics(startDate, endDate) {
   }
 }
 
-async function getBusinessInsightsMetrics(startDate, endDate) {
+async function getBusinessInsightsMetrics(startDate, endDate, barbershopId) {
   try {
     const supabase = createServerClient()
-    
+
+    // Use location-specific barbershop_id for accurate metrics
+    const shopId = barbershopId || DEMO_BARBERSHOP_ID
+
     // Use customers and business data to match Analytics API consistency
     const { data: customers } = await supabase
       .from('customers')
       .select('total_spent, total_visits')
-      .eq('barbershop_id', DEMO_BARBERSHOP_ID)
-    
+      .eq('barbershop_id', shopId)
+
     // Get services data for pricing insights
     const { data: services } = await supabase
       .from('services')
       .select('price')
-      .eq('barbershop_id', DEMO_BARBERSHOP_ID)
+      .eq('barbershop_id', shopId)
     
     const totalCustomers = customers?.length || 0
     const totalRevenue = customers?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0
@@ -214,15 +221,18 @@ async function getBusinessInsightsMetrics(startDate, endDate) {
   }
 }
 
-async function getUserEngagementMetrics(startDate, endDate) {
+async function getUserEngagementMetrics(startDate, endDate, barbershopId) {
   try {
     const supabase = createServerClient()
-    
+
+    // Use location-specific barbershop_id for accurate metrics
+    const shopId = barbershopId || DEMO_BARBERSHOP_ID
+
     // Use customers data to match Analytics API for consistency
     const { data: customers } = await supabase
       .from('customers')
       .select('created_at, last_visit_at, barbershop_id')
-      .eq('barbershop_id', DEMO_BARBERSHOP_ID)
+      .eq('barbershop_id', shopId)
     
     if (customers && customers.length > 0) {
       const activeUsers = customers.filter(c => {
@@ -343,12 +353,16 @@ async function getUserSessionStats(startDate, endDate) {
 // FALLBACK MOCK DATA REMOVED - USING REAL DATABASE OPERATIONS ONLY
 // All metrics now come from actual database queries with empty states for unavailable data
 
-async function getTrendingServices(supabase, startDate, endDate) {
+async function getTrendingServices(supabase, startDate, endDate, barbershopId) {
   try {
+    // Use location-specific barbershop_id for accurate metrics
+    const shopId = barbershopId || DEMO_BARBERSHOP_ID
+
     // Try to fetch from trending_services table if it exists
     const { data: services, error } = await supabase
       .from('trending_services')
       .select('*')
+      .eq('barbershop_id', shopId)
       .gte('date', startDate.toISOString().split('T')[0])
       .lte('date', endDate.toISOString().split('T')[0])
       .order('popularity_rank', { ascending: true })

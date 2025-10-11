@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { 
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+import {
   ChartBarIcon,
   CpuChipIcon,
   ClipboardDocumentListIcon,
@@ -99,7 +100,10 @@ export default function UnifiedDashboard({ user, profile }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const modeParam = searchParams.get('mode')
-  
+
+  // Get current location from GlobalDashboardContext - this is the source of truth for shop selection
+  const { currentLocationId, currentLocation, isLoading: contextLoading } = useGlobalDashboard()
+
   const [currentMode, setCurrentMode] = useState(DASHBOARD_MODES.EXECUTIVE)
   const [isLoading, setIsLoading] = useState(false)
   const [dashboardData, setDashboardData] = useState(null)
@@ -114,13 +118,14 @@ export default function UnifiedDashboard({ user, profile }) {
 
   // Load dashboard data based on current mode - API CALLS ONLY
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
-    // Get barbershop ID from profile - NO FALLBACK TO DEMO DATA
-    const barbershopId = profile?.barbershop_id || profile?.shop_id
+    // CRITICAL: Use currentLocationId from GlobalDashboardContext - this is the selected shop
+    // Do NOT use profile?.barbershop_id as that's static and doesn't change when switching shops
+    const barbershopId = currentLocationId
 
     if (!barbershopId) {
       // Only log error once to avoid spam
       if (process.env.NODE_ENV === 'development') {
-        console.warn('⚠️ No barbershop ID found in profile - skipping dashboard load')
+        console.warn('⚠️ No location selected in GlobalDashboardContext - skipping dashboard load')
       }
       setIsLoading(false)
       return
@@ -219,7 +224,7 @@ export default function UnifiedDashboard({ user, profile }) {
     } finally {
       setIsLoading(false)
     }
-  }, [currentMode, user, profile])
+  }, [currentMode, currentLocationId]) // Depend on currentLocationId so data reloads when shop changes
 
   // Onboarding checklist data loading now handled globally
   // const loadChecklistData = useCallback(async () => { ... }, [])
@@ -245,18 +250,21 @@ export default function UnifiedDashboard({ user, profile }) {
 
   // Load data on mount and mode change
   useEffect(() => {
-    loadDashboardData()
-    // loadChecklistData() // Now handled globally
-    
+    // Only load data if we have a location selected
+    if (currentLocationId) {
+      loadDashboardData()
+      // loadChecklistData() // Now handled globally
+    }
+
     // Set up auto-refresh every 30 seconds for operations mode
-    if (currentMode === DASHBOARD_MODES.OPERATIONS) {
+    if (currentMode === DASHBOARD_MODES.OPERATIONS && currentLocationId) {
       const interval = setInterval(() => {
         loadDashboardData()
         // loadChecklistData() // Now handled globally
       }, 30000)
       return () => clearInterval(interval)
     }
-  }, [currentMode, user, profile]) // Add user and profile dependencies
+  }, [currentMode, currentLocationId, loadDashboardData]) // Reload when location changes
 
   const handleModeChange = (mode) => {
     setCurrentMode(mode)
@@ -267,21 +275,18 @@ export default function UnifiedDashboard({ user, profile }) {
 
   // Prefetch data when hovering over executive mode button
   const handleExecutiveModeHover = useCallback(() => {
-    if (currentMode !== DASHBOARD_MODES.EXECUTIVE) {
-      // Prefetch analytics data for executive mode - use real barbershop ID only
-      const barbershopId = profile?.barbershop_id || profile?.shop_id
-      if (barbershopId) {
-        fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
-          .then(response => response.json())
-          .then(result => {
-            if (result.success) {
-              console.log('Executive data prefetched')
-            }
-          })
-          .catch(() => {}) // Ignore errors for prefetch
-      }
+    if (currentMode !== DASHBOARD_MODES.EXECUTIVE && currentLocationId) {
+      // Prefetch analytics data for executive mode - use selected location ID
+      fetch(`/api/analytics/live-data?barbershop_id=${currentLocationId}&format=json`)
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            console.log('Executive data prefetched for location:', currentLocationId)
+          }
+        })
+        .catch(() => {}) // Ignore errors for prefetch
     }
-  }, [currentMode, user, profile])
+  }, [currentMode, currentLocationId])
 
   // Mode selector component
   const ModeSelector = () => (
@@ -338,18 +343,18 @@ export default function UnifiedDashboard({ user, profile }) {
       )
     }
 
-    // Show setup prompt when no barbershop is configured
-    if (!dashboardData && !profile?.barbershop_id && !profile?.shop_id) {
+    // Show setup prompt when no location is selected
+    if (!dashboardData && !currentLocationId) {
       return (
         <div className="card-modern rounded-xl p-12 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <Squares2X2Icon className="h-8 w-8 text-amber-600 dark:text-amber-400" />
             </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">Complete Your Shop Setup</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">No Location Selected</h3>
             <p className="text-muted-foreground mb-6">
-              To access {modeConfigs[currentMode].label}, you need to complete your barbershop profile setup.
-              This will enable all dashboard features.
+              Please select a location from the shop selector in the sidebar to view {modeConfigs[currentMode].label}.
+              {!currentLocation && ' You may need to complete your shop setup first.'}
             </p>
             <div className="flex gap-3 justify-center">
               <a
@@ -442,7 +447,7 @@ export default function UnifiedDashboard({ user, profile }) {
             <div className="space-y-6">
               {/* Executive Summary - Full width now that onboarding is global */}
               <UnifiedExecutiveSummary data={dashboardData} />
-              <SmartAlertsPanel barbershop_id={profile?.barbershop_id || profile?.shop_id} />
+              <SmartAlertsPanel barbershop_id={currentLocationId} />
             </div>
           ) : (
             // Show setup prompt when no barbershop is configured
