@@ -17,7 +17,7 @@
 import { bookingConfirmationService } from '../../../../services/booking-confirmation-service.js';
 import { reminderScheduler } from '../../../../services/reminder-scheduler.js';
 import { pushNotificationService } from '../../../../services/push-notification-service.js';
-import { mapForBookingNotification, validateAppointmentForMapping } from './utils/appointment-field-mapper.js';
+import { mapForBookingNotification, validateAppointmentForMapping } from '../../utils/appointment-field-mapper.js';
 
 export async function POST(request) {
   try {
