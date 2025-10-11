@@ -19,11 +19,10 @@ import {
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { useState, useEffect } from 'react'
-
-
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import ReviewCardEnhanced from '../../../components/reviews/ReviewCardEnhanced'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
+import GlobalNavigation from '../../../components/GlobalNavigation'
 
 export default function ReviewsPage() {
   const { user, profile } = useAuth()

@@ -23,10 +23,9 @@ import {
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-
-
 import ProtectedRoute from '../../../components/ProtectedRoute'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
+import GlobalNavigation from '../../../components/GlobalNavigation'
 
 const QUICK_ACTIONS = [
   { 
