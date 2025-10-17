@@ -64,6 +64,15 @@ export default function CalendarPage() {
   const [isDragRescheduling, setIsDragRescheduling] = useState(false)
   const [pendingDropInfo, setPendingDropInfo] = useState(null)
 
+  // Function to jump calendar to first appointment
+  const jumpToFirstAppointment = useCallback(() => {
+    if (events.length > 0 && window.fullCalendarApi) {
+      const earliestDate = new Date(Math.min(...events.map(e => new Date(e.start))))
+      window.fullCalendarApi.gotoDate(earliestDate)
+      toast.success(`Jumped to ${earliestDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`)
+    }
+  }, [events])
+
   // Get barbershop ID from GlobalDashboardContext (respects sidebar selector) or profile
   useEffect(() => {
     // Priority: 1) currentLocationId from context, 2) activeContext.locationId, 3) profile.barbershop_id
@@ -161,12 +170,12 @@ export default function CalendarPage() {
         start: start.toISOString(),
         end: end.toISOString(),
         resourceId: appointment.barber_id,
-        backgroundColor: appointment.status === 'COMPLETED' ? '#10b981' :
-          appointment.status === 'CANCELLED' ? '#ef4444' :
-            appointment.status === 'CONFIRMED' ? '#3b82f6' : '#f59e0b',
-        borderColor: appointment.status === 'COMPLETED' ? '#059669' :
-          appointment.status === 'CANCELLED' ? '#dc2626' :
-            appointment.status === 'CONFIRMED' ? '#2563eb' : '#d97706',
+        backgroundColor: appointment.status?.toUpperCase() === 'COMPLETED' ? '#10b981' :
+          appointment.status?.toUpperCase() === 'CANCELLED' ? '#ef4444' :
+            appointment.status?.toUpperCase() === 'CONFIRMED' ? '#3b82f6' : '#f59e0b',
+        borderColor: appointment.status?.toUpperCase() === 'COMPLETED' ? '#059669' :
+          appointment.status?.toUpperCase() === 'CANCELLED' ? '#dc2626' :
+            appointment.status?.toUpperCase() === 'CONFIRMED' ? '#2563eb' : '#d97706',
         extendedProps: {
           appointment_id: appointment.id,
           client_id: appointment.client_id,
@@ -357,6 +366,21 @@ export default function CalendarPage() {
                 <div className="text-2xl lg:text-3xl font-bold tracking-tight text-brand-100">{resources.length}</div>
                 <div className="text-sm text-white/85 font-medium mt-0.5">Barbers</div>
               </div>
+              {/* Jump to First Appointment Button - Only show when appointments exist */}
+              {events.length > 0 && (
+                <button
+                  onClick={jumpToFirstAppointment}
+                  className="bg-brand-500 hover:bg-brand-600 active:bg-brand-700 border-2 border-brand-400 hover:border-brand-300 px-4 py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2 group ring-2 ring-brand-300/50"
+                  title="Navigate to first appointment"
+                >
+                  <svg className="h-5 w-5 text-white group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                  <span className="text-sm font-semibold text-white hidden sm:inline">
+                    Jump to First
+                  </span>
+                </button>
+              )}
               <button
                 onClick={loadCalendarData}
                 disabled={isLoading}
