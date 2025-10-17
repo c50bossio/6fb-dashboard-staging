@@ -70,17 +70,17 @@ export default function UnifiedDashboardHeader({
       <MobileContextIndicator />
       
       {/* Main Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-card border-b border-border">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left side - Title and Context */}
             <div className="flex items-center space-x-4">
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-semibold text-gray-900 truncate">
+                <h1 className="text-xl font-semibold text-foreground truncate">
                   {getContextualTitle()}
                 </h1>
                 {getContextualSubtitle() && (
-                  <p className="text-sm text-gray-500 truncate">
+                  <p className="text-sm text-muted-foreground truncate">
                     {getContextualSubtitle()}
                   </p>
                 )}
@@ -154,6 +154,7 @@ export function StaffHeader({ children, ...props }) {
     <UnifiedDashboardHeader
       title="Staff Management"
       customQuickActions={['Active Staff', 'Schedules', 'Performance', '+ Add Staff']}
+      showContextSelector={false}
       {...props}
     >
       {children}

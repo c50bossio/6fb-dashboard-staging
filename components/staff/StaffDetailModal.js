@@ -235,21 +235,21 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center space-x-4">
-            <div className="h-16 w-16 rounded-full bg-gray-200 flex items-center justify-center">
-              <UserCircleIcon className="h-10 w-10 text-gray-600" />
+            <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+              <UserCircleIcon className="h-10 w-10 text-muted-foreground" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-foreground">
                 {
-                  editedData.full_name || 
-                  (editedData.first_name || editedData.last_name ? 
-                    `${editedData.first_name} ${editedData.last_name}`.trim() : 
+                  editedData.full_name ||
+                  (editedData.first_name || editedData.last_name ?
+                    `${editedData.first_name} ${editedData.last_name}`.trim() :
                     editedData.email || 'Staff Member - Profile Incomplete')
                 }
               </h2>
-              <p className="text-gray-600">{formatRoleDisplay(editedData.role)}</p>
+              <p className="text-muted-foreground">{formatRoleDisplay(editedData.role)}</p>
               {isInactive && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 mt-1">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 mt-1">
                   Inactive
                 </span>
               )}
@@ -280,7 +280,7 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                   <Button
                     onClick={() => setShowDeactivateConfirm(true)}
                     variant="outline"
-                    className="text-red-600 border-red-600 hover:bg-red-50"
+                    className="text-red-600 dark:text-red-400 border-red-600 dark:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     <TrashIcon className="h-4 w-4 mr-1" />
                     Deactivate
@@ -328,7 +328,7 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                 </Button>
               </>
             )}
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
               <XMarkIcon className="h-6 w-6" />
             </button>
           </div>
@@ -345,45 +345,45 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Personal Information */}
           <Card className="p-4">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <UserCircleIcon className="h-5 w-5 mr-2 text-gray-600" />
+            <h3 className="font-semibold text-foreground mb-4 flex items-center">
+              <UserCircleIcon className="h-5 w-5 mr-2 text-muted-foreground" />
               Personal Information
             </h3>
             <div className="space-y-3">
               {/* First Name and Last Name Fields */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm text-gray-600">First Name</label>
+                  <label className="text-sm text-muted-foreground">First Name</label>
                   {isEditing ? (
                     <input
                       type="text"
                       value={editedData.first_name}
                       onChange={(e) => setEditedData(prev => ({ ...prev, first_name: e.target.value }))}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                      className="mt-1 w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                       placeholder="Enter first name"
                     />
                   ) : (
-                    <p className="text-gray-900 font-medium">{editedData.first_name || 'Not set'}</p>
+                    <p className="text-foreground font-medium">{editedData.first_name || 'Not set'}</p>
                   )}
                 </div>
                 <div>
-                  <label className="text-sm text-gray-600">Last Name</label>
+                  <label className="text-sm text-muted-foreground">Last Name</label>
                   {isEditing ? (
                     <input
                       type="text"
                       value={editedData.last_name}
                       onChange={(e) => setEditedData(prev => ({ ...prev, last_name: e.target.value }))}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                      className="mt-1 w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                       placeholder="Enter last name"
                     />
                   ) : (
-                    <p className="text-gray-900 font-medium">{editedData.last_name || 'Not set'}</p>
+                    <p className="text-foreground font-medium">{editedData.last_name || 'Not set'}</p>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="text-sm text-gray-600 flex items-center">
+                <label className="text-sm text-muted-foreground flex items-center">
                   <EnvelopeIcon className="h-4 w-4 mr-1" />
                   Email
                 </label>
@@ -392,15 +392,15 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                     type="email"
                     value={editedData.email}
                     onChange={(e) => setEditedData(prev => ({ ...prev, email: e.target.value }))}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                    className="mt-1 w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                   />
                 ) : (
-                  <p className="text-gray-900">{editedData.email}</p>
+                  <p className="text-foreground">{editedData.email}</p>
                 )}
               </div>
 
               <div>
-                <label className="text-sm text-gray-600 flex items-center">
+                <label className="text-sm text-muted-foreground flex items-center">
                   <PhoneIcon className="h-4 w-4 mr-1" />
                   Phone
                 </label>
@@ -409,10 +409,10 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                     type="tel"
                     value={editedData.phone}
                     onChange={(e) => setEditedData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                    className="mt-1 w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                   />
                 ) : (
-                  <p className="text-gray-900">{editedData.phone || 'Not set'}</p>
+                  <p className="text-foreground">{editedData.phone || 'Not set'}</p>
                 )}
               </div>
             </div>
@@ -420,18 +420,18 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
           {/* Professional Information */}
           <Card className="p-4">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center">
-              <BriefcaseIcon className="h-5 w-5 mr-2 text-gray-600" />
+            <h3 className="font-semibold text-foreground mb-4 flex items-center">
+              <BriefcaseIcon className="h-5 w-5 mr-2 text-muted-foreground" />
               Professional Information
             </h3>
             <div className="space-y-3">
               <div>
-                <label className="text-sm text-gray-600">Role</label>
+                <label className="text-sm text-muted-foreground">Role</label>
                 {isEditing ? (
                   <select
                     value={editedData.role}
                     onChange={(e) => setEditedData(prev => ({ ...prev, role: e.target.value }))}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                    className="mt-1 w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                   >
                     <option value="ENTERPRISE_OWNER">Enterprise Owner</option>
                     <option value="SHOP_OWNER">Shop Owner</option>
@@ -440,13 +440,13 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                     <option value="STAFF">Staff</option>
                   </select>
                 ) : (
-                  <p className="text-gray-900 font-medium">{formatRoleDisplay(editedData.role)}</p>
+                  <p className="text-foreground font-medium">{formatRoleDisplay(editedData.role)}</p>
                 )}
               </div>
 
               {/* Appointment Capabilities - Now Editable */}
               <div>
-                <label className="text-sm text-gray-600">Appointment Capability</label>
+                <label className="text-sm text-muted-foreground">Appointment Capability</label>
                 {isEditing ? (
                   <div className="mt-2 space-y-3">
                     <div className="flex items-center">
@@ -455,9 +455,9 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                         id="can_take_appointments"
                         checked={editedData.can_take_appointments}
                         onChange={(e) => setEditedData(prev => ({ ...prev, can_take_appointments: e.target.checked }))}
-                        className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-border rounded"
                       />
-                      <label htmlFor="can_take_appointments" className="ml-2 text-sm text-gray-900">
+                      <label htmlFor="can_take_appointments" className="ml-2 text-sm text-foreground">
                         Can take appointments
                       </label>
                     </div>
@@ -467,19 +467,19 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                         id="is_visible_for_booking"
                         checked={editedData.is_visible_for_booking}
                         onChange={(e) => setEditedData(prev => ({ ...prev, is_visible_for_booking: e.target.checked }))}
-                        className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-border rounded"
                       />
-                      <label htmlFor="is_visible_for_booking" className="ml-2 text-sm text-gray-900">
+                      <label htmlFor="is_visible_for_booking" className="ml-2 text-sm text-foreground">
                         Available for public booking
                       </label>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         Role default: {getRoleCapabilities(editedData.role).canTakeAppointments ? 'Can take appointments' : 'Administrative role (no appointments)'}
                       </p>
-                      <p className="text-xs text-blue-600">
-                        {editedData.is_visible_for_booking 
-                          ? "✓ Customers can book online with this staff member" 
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        {editedData.is_visible_for_booking
+                          ? "✓ Customers can book online with this staff member"
                           : "Only accepts bookings through admin/internal system"}
                       </p>
                     </div>
@@ -487,17 +487,17 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                 ) : (
                   <div className="mt-1">
                     <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      editedData.can_take_appointments 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
+                      editedData.can_take_appointments
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                        : 'bg-muted text-muted-foreground'
                     }`}>
                       {editedData.can_take_appointments ? '✓ Can Take Appointments' : '— Cannot Take Appointments'}
                     </div>
                     {editedData.can_take_appointments && (
                       <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ml-2 ${
-                        editedData.is_visible_for_booking 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : 'bg-yellow-100 text-yellow-800'
+                        editedData.is_visible_for_booking
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                          : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                       }`}>
                         {editedData.is_visible_for_booking ? '🌐 Available for Public Booking' : '🔒 Private Bookings Only'}
                       </div>
@@ -507,15 +507,15 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Status</label>
-                <p className={`font-medium ${isInactive ? 'text-red-600' : 'text-green-600'}`}>
+                <label className="text-sm text-muted-foreground">Status</label>
+                <p className={`font-medium ${isInactive ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                   {isInactive ? 'Inactive' : 'Active'}
                 </p>
               </div>
 
               <div>
-                <label className="text-sm text-gray-600">Member Since</label>
-                <p className="text-gray-900">
+                <label className="text-sm text-muted-foreground">Member Since</label>
+                <p className="text-foreground">
                   {staff.created_at ? new Date(staff.created_at).toLocaleDateString() : 'Unknown'}
                 </p>
               </div>
@@ -524,23 +524,23 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
           {/* Financial Information */}
           <Card className="p-4">
-            <h3 className="font-semibold text-gray-900 mb-2 flex items-center">
-              <CurrencyDollarIcon className="h-5 w-5 mr-2 text-gray-600" />
+            <h3 className="font-semibold text-foreground mb-2 flex items-center">
+              <CurrencyDollarIcon className="h-5 w-5 mr-2 text-muted-foreground" />
               Financial Arrangement
             </h3>
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700">
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
                 <strong>Individual Override:</strong> These settings override the barbershop's default financial arrangement for this staff member specifically.
               </p>
             </div>
             <div className="space-y-3">
               <div>
-                <label className="text-sm text-gray-600">Model</label>
+                <label className="text-sm text-muted-foreground">Model</label>
                 {isEditing ? (
                   <select
                     value={editedData.arrangement_type}
                     onChange={(e) => setEditedData(prev => ({ ...prev, arrangement_type: e.target.value }))}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                    className="mt-1 w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                   >
                     <option value="commission">Commission</option>
                     <option value="booth_rent">Booth Rent</option>
@@ -548,7 +548,7 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                     <option value="hybrid">Hybrid</option>
                   </select>
                 ) : (
-                  <p className="text-gray-900 font-medium">
+                  <p className="text-foreground font-medium">
                     {formatFinancialModel(editedData.arrangement_type)}
                   </p>
                 )}
@@ -556,7 +556,7 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
               {editedData.arrangement_type === 'commission' && (
                 <div>
-                  <label className="text-sm text-gray-600">Commission Rate</label>
+                  <label className="text-sm text-muted-foreground">Commission Rate</label>
                   {isEditing ? (
                     <div>
                       <div className="relative">
@@ -567,16 +567,16 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                           step="5"
                           value={formatCommissionInput(editedData.commission_rate)}
                           onChange={(e) => setEditedData(prev => ({ ...prev, commission_rate: parseCommissionInput(e.target.value || 0) }))}
-                          className="mt-1 w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                          className="mt-1 w-full px-3 py-2 pr-8 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                           placeholder="60"
                         />
-                        <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">%</span>
+                        <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">%</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Enter as percentage (e.g., 60 for 60%)</p>
-                      <p className="text-xs text-gray-400 mt-1">Barber receives this percentage, shop gets the remainder</p>
+                      <p className="text-xs text-muted-foreground mt-1">Enter as percentage (e.g., 60 for 60%)</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">Barber receives this percentage, shop gets the remainder</p>
                     </div>
                   ) : (
-                    <p className="text-gray-900 font-medium">
+                    <p className="text-foreground font-medium">
                       {formatCommissionDisplay(editedData.commission_rate)}
                     </p>
                   )}
@@ -586,37 +586,37 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
               {editedData.arrangement_type === 'booth_rent' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm text-gray-600">Booth Rent Amount</label>
+                    <label className="text-sm text-muted-foreground">Booth Rent Amount</label>
                     {isEditing ? (
                       <div>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">$</span>
                           <input
                             type="number"
                             min="0"
                             step="50"
                             value={editedData.booth_rent_amount || ''}
                             onChange={(e) => setEditedData(prev => ({ ...prev, booth_rent_amount: parseBoothRentInput(e.target.value) }))}
-                            className="mt-1 w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                            className="mt-1 w-full pl-8 pr-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                             placeholder="1500"
                           />
                         </div>
                       </div>
                     ) : (
-                      <p className="text-gray-900 font-medium">
+                      <p className="text-foreground font-medium">
                         {formatBoothRent(editedData.booth_rent_amount, editedData.rent_frequency)}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="text-sm text-gray-600">Payment Frequency</label>
+                    <label className="text-sm text-muted-foreground">Payment Frequency</label>
                     {isEditing ? (
                       <div>
                         <select
                           value={editedData.rent_frequency}
                           onChange={(e) => setEditedData(prev => ({ ...prev, rent_frequency: e.target.value }))}
-                          className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                          className="mt-1 w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                         >
                           {getRentFrequencyOptions().map(option => (
                             <option key={option.value} value={option.value}>
@@ -624,10 +624,10 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                             </option>
                           ))}
                         </select>
-                        <p className="text-xs text-gray-400 mt-1">Barber pays this amount to the shop</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Barber pays this amount to the shop</p>
                       </div>
                     ) : (
-                      <p className="text-gray-900 font-medium">
+                      <p className="text-foreground font-medium">
                         {formatRentFrequency(editedData.rent_frequency)}
                       </p>
                     )}
@@ -637,7 +637,7 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
               {editedData.arrangement_type === 'hourly' && (
                 <div>
-                  <label className="text-sm text-gray-600">Hourly Rate</label>
+                  <label className="text-sm text-muted-foreground">Hourly Rate</label>
                   {isEditing ? (
                     <input
                       type="number"
@@ -645,10 +645,10 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                       step="5"
                       value={editedData.hourly_rate}
                       onChange={(e) => setEditedData(prev => ({ ...prev, hourly_rate: parseFloat(e.target.value) }))}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                      className="mt-1 w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                     />
                   ) : (
-                    <p className="text-gray-900 font-medium">
+                    <p className="text-foreground font-medium">
                       {formatCurrency(editedData.hourly_rate)}/hour
                     </p>
                   )}
@@ -658,54 +658,54 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
               {editedData.arrangement_type === 'hybrid' && (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm text-gray-600">Base Monthly Rent</label>
+                    <label className="text-sm text-muted-foreground">Base Monthly Rent</label>
                     {isEditing ? (
                       <div>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">$</span>
                           <input
                             type="number"
                             min="0"
                             step="50"
                             value={editedData.hybrid_base_rent || editedData.booth_rent_amount || ''}
                             onChange={(e) => setEditedData(prev => ({ ...prev, hybrid_base_rent: parseBoothRentInput(e.target.value) }))}
-                            className="mt-1 w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                            className="mt-1 w-full pl-8 pr-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                             placeholder="800"
                           />
                         </div>
                       </div>
                     ) : (
-                      <p className="text-gray-900 font-medium">
+                      <p className="text-foreground font-medium">
                         {formatBoothRent(editedData.hybrid_base_rent || editedData.booth_rent_amount)}/month
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="text-sm text-gray-600">Revenue Threshold</label>
+                    <label className="text-sm text-muted-foreground">Revenue Threshold</label>
                     {isEditing ? (
                       <div>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">$</span>
                           <input
                             type="number"
                             min="0"
                             step="500"
                             value={editedData.hybrid_revenue_threshold || ''}
                             onChange={(e) => setEditedData(prev => ({ ...prev, hybrid_revenue_threshold: parseBoothRentInput(e.target.value) }))}
-                            className="mt-1 w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                            className="mt-1 w-full pl-8 pr-3 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                             placeholder="3000"
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Commission applies only to revenue above this amount</p>
+                        <p className="text-xs text-muted-foreground mt-1">Commission applies only to revenue above this amount</p>
                       </div>
                     ) : (
-                      <p className="text-gray-900 font-medium">
+                      <p className="text-foreground font-medium">
                         {formatBoothRent(editedData.hybrid_revenue_threshold)}/month
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="text-sm text-gray-600">Commission Rate (Above Threshold)</label>
+                    <label className="text-sm text-muted-foreground">Commission Rate (Above Threshold)</label>
                     {isEditing ? (
                       <div>
                         <div className="relative">
@@ -716,22 +716,22 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                             step="5"
                             value={formatCommissionInput(editedData.hybrid_commission_rate || editedData.commission_rate)}
                             onChange={(e) => setEditedData(prev => ({ ...prev, hybrid_commission_rate: parseCommissionInput(e.target.value || 0) }))}
-                            className="mt-1 w-full px-3 py-2 pr-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500"
+                            className="mt-1 w-full px-3 py-2 pr-8 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-olive-500"
                             placeholder="20"
                           />
-                          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">%</span>
+                          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm">%</span>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Commission rate on revenue above threshold</p>
+                        <p className="text-xs text-muted-foreground mt-1">Commission rate on revenue above threshold</p>
                       </div>
                     ) : (
-                      <p className="text-gray-900 font-medium">
+                      <p className="text-foreground font-medium">
                         {formatCommissionDisplay(editedData.hybrid_commission_rate || editedData.commission_rate)}
                       </p>
                     )}
                   </div>
                   {!isEditing && (
-                    <div className="bg-olive-50 border border-olive-200 rounded-lg p-3">
-                      <p className="text-sm text-olive-700">
+                    <div className="bg-olive-50 dark:bg-olive-900/20 border border-olive-200 dark:border-olive-800 rounded-lg p-3">
+                      <p className="text-sm text-olive-700 dark:text-olive-300">
                         {formatHybridModelDisplay(editedData)}
                       </p>
                     </div>
@@ -741,8 +741,8 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
               {staff.commission_balance && (
                 <div>
-                  <label className="text-sm text-gray-600">Pending Commission</label>
-                  <p className="text-gray-900 font-semibold text-green-600">
+                  <label className="text-sm text-muted-foreground">Pending Commission</label>
+                  <p className="text-foreground font-semibold text-green-600">
                     {formatCurrency(staff.commission_balance[0]?.pending_amount || 0)}
                   </p>
                 </div>
@@ -752,9 +752,9 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
 
           {/* Performance Summary */}
           <Card className="p-4">
-            <h3 className="font-semibold text-gray-900 mb-4 flex items-center justify-between">
+            <h3 className="font-semibold text-foreground mb-4 flex items-center justify-between">
               <div className="flex items-center">
-                <ChartBarIcon className="h-5 w-5 mr-2 text-gray-600" />
+                <ChartBarIcon className="h-5 w-5 mr-2 text-muted-foreground" />
                 Performance (30 Days)
               </div>
               <button
@@ -762,29 +762,29 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
                   // TODO: Navigate to analytics dashboard with staff filter
                   console.log('Navigate to analytics for staff:', staff.id)
                 }}
-                className="text-sm text-olive-600 hover:text-olive-800 font-medium"
+                className="text-sm text-olive-600 dark:text-olive-400 hover:text-olive-800 dark:hover:text-olive-300 font-medium"
               >
                 View Full Analytics →
               </button>
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Total Bookings</span>
-                <span className="font-medium text-gray-900">{staff.metrics?.totalBookings || 0}</span>
+                <span className="text-sm text-muted-foreground">Total Bookings</span>
+                <span className="font-medium text-foreground">{staff.metrics?.totalBookings || 0}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Completion Rate</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-sm text-muted-foreground">Completion Rate</span>
+                <span className="font-medium text-foreground">
                   {staff.metrics?.completionRate || 0}%
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Revenue Generated</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-sm text-muted-foreground">Revenue Generated</span>
+                <span className="font-medium text-foreground">
                   {formatCurrency(staff.metrics?.revenue || 0)}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-3">
+              <p className="text-xs text-muted-foreground mt-3">
                 For detailed analytics including trends, comparisons, and insights, click "View Full Analytics" above.
               </p>
             </div>
@@ -795,10 +795,10 @@ export default function StaffDetailModal({ staff, onClose, onUpdate }) {
         {showDeactivateConfirm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <Card className="p-6 max-w-md">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
                 Confirm Deactivation
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Are you sure you want to deactivate this staff member? They will no longer be able to receive bookings.
                 You can reactivate them at any time.
               </p>
