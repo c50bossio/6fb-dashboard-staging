@@ -1,11 +1,14 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import { toast } from 'sonner'
+import { usePullToRefresh, PullToRefreshIndicator } from '@/hooks/usePullToRefresh'
+import { useSwipeNavigation, SwipeNavigationIndicator } from '@/hooks/useSwipeNavigation'
+import OfflineIndicator from '@/components/OfflineIndicator'
 
 // Use the existing working EnhancedProfessionalCalendar component
 const EnhancedProfessionalCalendar = dynamic(
@@ -26,6 +29,15 @@ const EnhancedProfessionalCalendar = dynamic(
 // Import appointment modals
 const AppointmentBookingModal = dynamic(
   () => import('@/components/calendar/AppointmentBookingModal'),
+  {
+    ssr: false,
+    loading: () => null
+  }
+)
+
+// Import mobile filters
+const MobileCalendarFilters = dynamic(
+  () => import('@/components/calendar/MobileCalendarFilters'),
   {
     ssr: false,
     loading: () => null
@@ -64,6 +76,80 @@ export default function CalendarPage() {
   const [isDragRescheduling, setIsDragRescheduling] = useState(false)
   const [pendingDropInfo, setPendingDropInfo] = useState(null)
 
+  // Mobile filters state
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  const [activeFilters, setActiveFilters] = useState({
+    search: '',
+    dateRange: 'all',
+    barbers: [],
+    statuses: [],
+    todayOnly: false
+  })
+
+  // Pull-to-refresh functionality (mobile only)
+  const pullToRefresh = usePullToRefresh(
+    async () => {
+      console.log('🔄 [PULL-TO-REFRESH] Refreshing calendar data...')
+      await loadCalendarData()
+      toast.success('Calendar refreshed!')
+    },
+    {
+      threshold: 80,
+      resistance: 2.5,
+      enabled: true,
+      onlyMobile: true
+    }
+  )
+
+  // Swipe navigation for day/week views (mobile only)
+  const swipeNavigation = useSwipeNavigation(
+    () => {
+      // Swipe left = next day
+      if (window.fullCalendarApi) {
+        window.fullCalendarApi.next()
+      }
+    },
+    () => {
+      // Swipe right = previous day
+      if (window.fullCalendarApi) {
+        window.fullCalendarApi.prev()
+      }
+    },
+    {
+      threshold: 50,
+      velocityThreshold: 0.3,
+      maxVerticalDistance: 100,
+      enabled: true,
+      onlyMobile: true,
+      preventScroll: false
+    }
+  )
+
+  // Handle filter application
+  const handleApplyFilters = (filters) => {
+    setActiveFilters(filters)
+    const activeCount = [
+      filters.search ? 1 : 0,
+      filters.dateRange !== 'all' ? 1 : 0,
+      filters.barbers.length,
+      filters.statuses.length,
+      filters.todayOnly ? 1 : 0
+    ].reduce((a, b) => a + b, 0)
+
+    if (activeCount > 0) {
+      toast.success(`${activeCount} filter${activeCount > 1 ? 's' : ''} applied`)
+    }
+  }
+
+  // Calculate active filters count for badge
+  const activeFiltersCount = [
+    activeFilters.search ? 1 : 0,
+    activeFilters.dateRange !== 'all' ? 1 : 0,
+    activeFilters.barbers.length > 0 ? 1 : 0,
+    activeFilters.statuses.length > 0 ? 1 : 0,
+    activeFilters.todayOnly ? 1 : 0
+  ].reduce((a, b) => a + b, 0)
+
   // Function to jump calendar to first appointment
   const jumpToFirstAppointment = useCallback(() => {
     if (events.length > 0 && window.fullCalendarApi) {
@@ -88,12 +174,12 @@ export default function CalendarPage() {
     }
   }, [currentLocationId, activeContext, profile])
 
-  // Load calendar data when barbershop ID is available
+  // Load calendar data when barbershop ID is available or filters change
   useEffect(() => {
     if (barbershopId) {
       loadCalendarData()
     }
-  }, [barbershopId])
+  }, [barbershopId, activeFilters])
 
   // Load all calendar data (resources, events, services)
   const loadCalendarData = async () => {
@@ -134,7 +220,8 @@ export default function CalendarPage() {
       // Handle appointments
       if (appointmentsRes.ok) {
         const appointmentsData = await appointmentsRes.json()
-        const formattedEvents = formatAppointmentsAsEvents(appointmentsData.data || [])
+        const filteredAppointments = applyFiltersToEvents(appointmentsData.data || [])
+        const formattedEvents = formatAppointmentsAsEvents(filteredAppointments)
         setEvents(formattedEvents)
       } else {
         console.error('Failed to load appointments:', await appointmentsRes.text())
@@ -157,6 +244,58 @@ export default function CalendarPage() {
       setIsLoading(false)
     }
   }
+
+  // Memoized filter function for better performance
+  const applyFiltersToEvents = useMemo(() => (appointments) => {
+    return appointments.filter(appointment => {
+      // Search filter
+      if (activeFilters.search) {
+        const searchLower = activeFilters.search.toLowerCase()
+        const matchesName = appointment.client_name?.toLowerCase().includes(searchLower)
+        const matchesPhone = appointment.client_phone?.toLowerCase().includes(searchLower)
+        if (!matchesName && !matchesPhone) return false
+      }
+
+      // Today only filter
+      if (activeFilters.todayOnly) {
+        const today = new Date().toDateString()
+        const appointmentDate = new Date(appointment.scheduled_at).toDateString()
+        if (appointmentDate !== today) return false
+      }
+
+      // Date range filter
+      if (activeFilters.dateRange !== 'all') {
+        const appointmentDate = new Date(appointment.scheduled_at)
+        const now = new Date()
+
+        switch (activeFilters.dateRange) {
+          case 'today':
+            if (appointmentDate.toDateString() !== now.toDateString()) return false
+            break
+          case 'week':
+            const weekStart = new Date(now.setDate(now.getDate() - now.getDay()))
+            const weekEnd = new Date(now.setDate(now.getDate() - now.getDay() + 6))
+            if (appointmentDate < weekStart || appointmentDate > weekEnd) return false
+            break
+          case 'month':
+            if (appointmentDate.getMonth() !== now.getMonth() || appointmentDate.getFullYear() !== now.getFullYear()) return false
+            break
+        }
+      }
+
+      // Barber filter
+      if (activeFilters.barbers.length > 0) {
+        if (!activeFilters.barbers.includes(appointment.barber_id)) return false
+      }
+
+      // Status filter
+      if (activeFilters.statuses.length > 0) {
+        if (!activeFilters.statuses.includes(appointment.status?.toUpperCase())) return false
+      }
+
+      return true
+    })
+  }, [activeFilters])
 
   // Format appointments data for FullCalendar
   const formatAppointmentsAsEvents = (appointments) => {
@@ -344,6 +483,9 @@ export default function CalendarPage() {
 
   return (
     <ProtectedRoute>
+      {/* Offline Indicator Banner */}
+      <OfflineIndicator />
+
       <div className="p-4 sm:p-6 max-w-[1600px] mx-auto">
         {/* Calendar Header - Solid brand colors */}
         <div className="mb-6 bg-olive-600 rounded-xl p-6 text-white shadow-md border border-olive-700">
@@ -410,7 +552,30 @@ export default function CalendarPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-2 border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div
+            ref={(el) => {
+              // Share the same ref between pull-to-refresh and swipe navigation
+              pullToRefresh.containerRef.current = el
+              swipeNavigation.containerRef.current = el
+            }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-md border-2 border-gray-200 dark:border-gray-700 overflow-hidden relative"
+          >
+            {/* Pull-to-refresh indicator (mobile only) */}
+            <PullToRefreshIndicator
+              pullDistance={pullToRefresh.pullDistance}
+              progress={pullToRefresh.progress}
+              refreshState={pullToRefresh.refreshState}
+              isActive={pullToRefresh.isActive}
+            />
+
+            {/* Swipe navigation indicators (mobile only) */}
+            <SwipeNavigationIndicator
+              isSwiping={swipeNavigation.isSwiping}
+              swipeDirection={swipeNavigation.swipeDirection}
+              swipeProgress={swipeNavigation.swipeProgress}
+              isActive={swipeNavigation.isActive}
+            />
+
             <EnhancedProfessionalCalendar
               resources={resources}
               events={events}
@@ -420,6 +585,23 @@ export default function CalendarPage() {
               onEventDrop={handleEventDrop}
               height="700px"
             />
+
+            {/* Floating Filter Button (Mobile Only) */}
+            <button
+              onClick={() => setIsFiltersOpen(true)}
+              className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-[#546355] hover:bg-[#3C4A3E] text-white rounded-full shadow-lg flex items-center justify-center z-50 transition-all active:scale-95"
+              aria-label="Open filters"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              {/* Active filters badge */}
+              {activeFiltersCount > 0 && (
+                <span className="absolute -top-2 -right-2 w-6 h-6 bg-[#C5A35B] text-white text-xs font-bold rounded-full flex items-center justify-center shadow-md">
+                  {activeFiltersCount}
+                </span>
+              )}
+            </button>
           </div>
         )}
 
@@ -455,6 +637,15 @@ export default function CalendarPage() {
           barbershopId={barbershopId}
           isDragRescheduling={isDragRescheduling}
           pendingDropInfo={pendingDropInfo}
+        />
+
+        {/* Mobile Calendar Filters (Mobile Only) */}
+        <MobileCalendarFilters
+          isOpen={isFiltersOpen}
+          onClose={() => setIsFiltersOpen(false)}
+          onApplyFilters={handleApplyFilters}
+          barbers={resources}
+          currentFilters={activeFilters}
         />
 
         {/* Instructions Panel - Olive background with gold accents */}

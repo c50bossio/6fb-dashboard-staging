@@ -28,10 +28,11 @@ export const metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5, // Allow zoom for accessibility (WCAG compliance)
+  userScalable: true, // Enable pinch-to-zoom for accessibility
   themeColor: '#3C4A3E',
   viewportFit: 'cover',
+  interactiveWidget: 'resizes-content', // Better keyboard/input handling on mobile
 }
 
 export default function RootLayout({ children }) {

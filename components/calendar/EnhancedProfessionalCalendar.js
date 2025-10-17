@@ -11,6 +11,7 @@ import rrulePlugin from '@fullcalendar/rrule'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import { useRef, useCallback, useEffect, useState } from 'react'
 import { RRule } from 'rrule'
+import { useResponsiveCalendar } from '../../hooks/useResponsiveCalendar'
 
 export default function EnhancedProfessionalCalendar({
   resources: externalResources,
@@ -21,11 +22,17 @@ export default function EnhancedProfessionalCalendar({
   onSlotClick,
   onEventClick,
   onEventDrop,
-  height = '700px',
-  defaultView = 'timeGridDay'
+  height, // Now optional - will use responsive default if not provided
+  defaultView // Now optional - will use responsive default if not provided
 }) {
   const calendarRef = useRef(null)
-  const [currentView, setCurrentView] = useState(controlledView || defaultView)
+  const responsive = useResponsiveCalendar()
+
+  // Use responsive defaults if not explicitly provided
+  const effectiveDefaultView = defaultView || responsive.defaultView
+  const effectiveHeight = height || responsive.height
+
+  const [currentView, setCurrentView] = useState(controlledView || effectiveDefaultView)
   
   // Expose calendar API globally for debugging and manual refresh
   useEffect(() => {
@@ -309,6 +316,20 @@ export default function EnhancedProfessionalCalendar({
           font-size: 0.875rem !important;
           transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+          min-height: 44px !important; /* Touch-friendly minimum */
+          min-width: 44px !important; /* Touch-friendly minimum */
+        }
+
+        /* Mobile: smaller, icon-style buttons */
+        @media (max-width: 767px) {
+          .fc-button {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.75rem !important;
+          }
+
+          .fc-toolbar-title {
+            font-size: 1.125rem !important;
+          }
         }
 
         .fc-button:hover:not(:disabled) {
@@ -365,6 +386,18 @@ export default function EnhancedProfessionalCalendar({
           padding-right: 0.5rem !important;
         }
 
+        /* Responsive time labels */
+        @media (max-width: 767px) {
+          .fc-timegrid-slot-label {
+            font-size: 0.75rem !important;
+            padding-right: 0.25rem !important;
+          }
+
+          .fc-timegrid-slot {
+            height: 2.5rem !important; /* Shorter slots on mobile */
+          }
+        }
+
         /* Business hours highlighting with olive tint */
         .fc-non-business {
           background: rgba(243, 244, 246, 0.5) !important;
@@ -413,10 +446,53 @@ export default function EnhancedProfessionalCalendar({
           opacity: 0.9;
         }
 
-        /* Resource area styling */
+        /* Mobile: larger touch targets for events */
+        @media (max-width: 767px) {
+          .fc-event {
+            font-size: 0.8125rem !important;
+            padding: 0.375rem 0.625rem !important;
+            min-height: 44px !important; /* Touch-friendly minimum */
+          }
+
+          .fc-event-title {
+            font-size: 0.8125rem !important;
+          }
+
+          .fc-event-time {
+            font-size: 0.75rem !important;
+          }
+
+          /* No hover effects on mobile (touch devices) */
+          .fc-event:hover {
+            transform: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+          }
+
+          /* Add active state for touch feedback */
+          .fc-event:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+          }
+        }
+
+        /* Resource area styling - responsive */
         .fc-resource-area {
           min-width: 180px !important;
           background: linear-gradient(to right, #2D3630, #3C4A3E);
+        }
+
+        /* Tablet: narrower resource area */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .fc-resource-area {
+            min-width: 120px !important;
+          }
+        }
+
+        /* Mobile: hide resource area (single barber view only) */
+        @media (max-width: 767px) {
+          .fc-resource-area {
+            display: none !important;
+          }
         }
 
         .fc-resource-area-header {
@@ -620,35 +696,9 @@ export default function EnhancedProfessionalCalendar({
         ]}
         schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
         
-        initialView={controlledView || defaultView}
-        headerToolbar={{
-          left: 'prev,next today',
-          center: 'title',
-          right: 'resourceTimeGridDay,resourceTimeGridWeek,resourceTimelineWeek,timeGridWeek,listWeek'
-        }}
-        views={{
-          dayGridMonth: {
-            buttonText: 'Month'
-          },
-          timeGridWeek: {
-            buttonText: 'Week'
-          },
-          // Premium resource views enabled with proper licensing
-          resourceTimeGridWeek: {
-            buttonText: 'Barber Week'
-          },
-          resourceTimelineWeek: {
-            buttonText: 'Timeline',
-            slotDuration: '01:00:00',
-            slotLabelInterval: '01:00:00'
-          },
-          resourceTimeGridDay: {
-            buttonText: 'Barber Day'
-          },
-          listWeek: {
-            buttonText: 'Agenda'
-          }
-        }}
+        initialView={controlledView || effectiveDefaultView}
+        headerToolbar={responsive.headerToolbar}
+        views={responsive.views}
         
         // Premium resources enabled with proper licensing
         resources={resources}  // Use resources prop for barber resources
@@ -660,8 +710,8 @@ export default function EnhancedProfessionalCalendar({
         timeZone="local"  // Use local timezone to prevent date/time issues
         slotMinTime="08:00:00"
         slotMaxTime="20:00:00"
-        slotDuration="00:30:00"
-        slotLabelInterval="01:00:00"
+        slotDuration={responsive.slotDuration}
+        slotLabelInterval={responsive.slotLabelInterval}
         slotLabelFormat={{
           hour: 'numeric',
           minute: '2-digit',
@@ -670,37 +720,37 @@ export default function EnhancedProfessionalCalendar({
         slotEventOverlap={false}  // Prevent visual event overlap in time slots
         scrollTime="09:00:00"  // Initial scroll position to 9am
         expandRows={true}  // Expand rows to fill available height
-        
+
         businessHours={{
           daysOfWeek: [1, 2, 3, 4, 5, 6],
           startTime: '09:00',
           endTime: '18:00'
         }}
-        
-        height={height}
+
+        height={effectiveHeight}
         nowIndicator={true}
         nowIndicatorClassNames={['current-time-indicator']}
         eventDisplay="auto"  // Changed from "block" to "auto" for proper event rendering
-        dayMaxEvents={3}  // Show max 3 events, rest in popover
+        dayMaxEvents={responsive.dayMaxEvents}  // Responsive max events based on screen size
         moreLinkClick="popover"  // Show events in popover when there are too many
         moreLinkClassNames={['more-events-link']}
         weekNumbers={false}
         eventInteractive={true}  // Ensure events are interactive
         lazyFetching={true}  // Enable lazy loading for better performance
         progressiveEventRendering={true}  // Progressive rendering for better performance
-        eventMaxStack={3}  // Max 3 events stacked in TimeGrid views
-        eventMinHeight={20}  // Minimum height for events
-        eventShortHeight={30}  // Height for short events
-        
-        // Production performance optimizations
-        aspectRatio={1.35}  // Better aspect ratio for professional use
-        contentHeight={600}  // Fixed content height for consistency
+        eventMaxStack={responsive.dayMaxEvents}  // Responsive event stacking
+        eventMinHeight={responsive.eventMinHeight}  // Responsive touch-friendly minimum height
+        eventShortHeight={responsive.eventShortHeight}  // Responsive short event height
+
+        // Responsive performance optimizations
+        aspectRatio={responsive.isMobile ? undefined : 1.35}  // Remove aspect ratio constraint on mobile
+        contentHeight={responsive.contentHeight}  // Responsive content height
         
         editable={true}
         selectable={true}
         selectMirror={true}
-        selectMinDistance={0}  // Allow clicks to trigger select event (duration-based detection in handler)
-        selectLongPressDelay={250}  // Touch device long-press delay
+        selectMinDistance={responsive.selectMinDistance}  // Responsive touch accuracy
+        selectLongPressDelay={responsive.selectLongPressDelay}  // Responsive touch delay
         unselectAuto={true}  // Auto-unselect when clicking elsewhere
         unselectCancel=".fc-event,.modal"  // Don't unselect when clicking events or modals
         select={handleDateSelect}
@@ -769,8 +819,8 @@ export default function EnhancedProfessionalCalendar({
         eventClick={handleEventClick}
         eventDrop={handleEventDrop}
         eventResizableFromStart={true}  // Allow resizing from both ends
-        eventDragMinDistance={5}  // Minimum drag distance before event moves
-        dragRevertDuration={500}  // Animation duration when drag is reverted
+        eventDragMinDistance={responsive.eventDragMinDistance}  // Responsive drag distance
+        dragRevertDuration={responsive.isMobile ? 300 : 500}  // Faster revert on mobile
         dragScroll={true}  // Enable auto-scroll while dragging
         viewDidMount={handleViewChange}
         datesSet={handleViewChange}  // Also handle when navigating dates
