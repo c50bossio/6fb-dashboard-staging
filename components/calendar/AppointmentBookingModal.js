@@ -165,9 +165,14 @@ export default function AppointmentBookingModal({
     }
     
     if (isEditing && editingAppointment) {
+      // Extract data from either flat structure or FullCalendar's extendedProps
+      const props = editingAppointment.extendedProps || editingAppointment
+
+      // Get scheduled_at from various possible sources
       let scheduledAt = ''
-      if (editingAppointment.scheduled_at) {
-        const date = new Date(editingAppointment.scheduled_at)
+      const dateSource = props.scheduled_at || editingAppointment.scheduled_at || editingAppointment.start
+      if (dateSource) {
+        const date = new Date(dateSource)
         const year = date.getFullYear()
         const month = String(date.getMonth() + 1).padStart(2, '0')
         const day = String(date.getDate()).padStart(2, '0')
@@ -175,22 +180,34 @@ export default function AppointmentBookingModal({
         const minutes = String(date.getMinutes()).padStart(2, '0')
         scheduledAt = `${year}-${month}-${day}T${hours}:${minutes}`
       }
-      
+
+      // Get appointment ID from various possible sources
+      const appointmentId = props.appointment_id || editingAppointment.appointment_id || editingAppointment.id
+
+      console.log('📝 [Modal] Pre-populating edit form with:', {
+        appointmentId,
+        barberId: props.barber_id,
+        serviceId: props.service_id,
+        clientName: props.client_name,
+        scheduledAt,
+        fullAppointment: editingAppointment
+      })
+
       setFormData({
-        barber_id: editingAppointment.barber_id || '',
-        service_id: editingAppointment.service_id || '',
+        barber_id: props.barber_id || '',
+        service_id: props.service_id || '',
         scheduled_at: scheduledAt,
-        duration_minutes: editingAppointment.duration_minutes || 60,
-        service_price: editingAppointment.service_price || 0,
-        tip_amount: editingAppointment.tip_amount || 0,
-        client_name: editingAppointment.client_name || editingAppointment.client?.name || '',
-        client_phone: editingAppointment.client_phone || editingAppointment.client?.phone || '',
-        client_email: editingAppointment.client_email || editingAppointment.client?.email || '',
-        client_notes: editingAppointment.client_notes || '',
-        is_walk_in: editingAppointment.is_walk_in || false,
-        booking_source: editingAppointment.booking_source || 'online',
-        priority: editingAppointment.priority || 0,
-        is_recurring: !!editingAppointment.recurrence_rule,
+        duration_minutes: props.duration_minutes || 60,
+        service_price: props.service_price || 0,
+        tip_amount: props.tip_amount || 0,
+        client_name: props.client_name || props.customer_name || editingAppointment.client?.name || '',
+        client_phone: props.client_phone || props.customer_phone || editingAppointment.client?.phone || '',
+        client_email: props.client_email || props.customer_email || editingAppointment.client?.email || '',
+        client_notes: props.notes || props.client_notes || '',
+        is_walk_in: props.is_walk_in || false,
+        booking_source: props.booking_source || 'online',
+        priority: props.priority || 0,
+        is_recurring: !!props.recurrence_rule || !!editingAppointment.recurrence_rule,
         recurrence_pattern: 'weekly',
         recurrence_interval: 1,
         recurrence_days: [],
@@ -513,11 +530,10 @@ export default function AppointmentBookingModal({
 
     setCustomerSearchLoading(true)
     try {
-      const response = await fetch('/api/customers/search', {
+      const { csrfFetchJSON } = await import('@/lib/csrf-fetch')
+
+      const data = await csrfFetchJSON('/api/customers/search', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           phone,
           email,
@@ -525,11 +541,8 @@ export default function AppointmentBookingModal({
         })
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        if (data.found && data.customer) {
-          handleSelectCustomer(data.customer)
-        }
+      if (data.found && data.customer) {
+        handleSelectCustomer(data.customer)
       }
     } catch (error) {
       console.error('Error in quick customer lookup:', error)
@@ -643,7 +656,9 @@ export default function AppointmentBookingModal({
             throw new Error('Conversion cancelled due to conflicts')
           }
           
-          const response = await fetch(`/api/calendar/appointments/${editingAppointment.id}/convert-recurring`, {
+          const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+          const response = await csrfFetch(`/api/calendar/appointments/${editingAppointment.id}/convert-recurring`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -668,7 +683,9 @@ export default function AppointmentBookingModal({
             throw new Error('Invalid response from server')
           }
         } else {
-          const response = await fetch(`/api/calendar/appointments/${editingAppointment.id}`, {
+          const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+          const response = await csrfFetch(`/api/calendar/appointments/${editingAppointment.id}`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json'
@@ -685,7 +702,9 @@ export default function AppointmentBookingModal({
           onBookingComplete(data.appointment)
         }
       } else {
-        const response = await fetch('/api/calendar/appointments', {
+        const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+        const response = await csrfFetch('/api/calendar/appointments', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -719,18 +738,20 @@ export default function AppointmentBookingModal({
 
     setDeletingAppointment(true)
     setError('')
-    
+
     try {
-      const response = await fetch(`/api/calendar/appointments?id=${editingAppointment.id}&action=restore`, {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch(`/api/calendar/appointments?id=${editingAppointment.id}&action=restore`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({})
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to restore appointment')
       }
@@ -766,16 +787,18 @@ export default function AppointmentBookingModal({
     setError('')
     
     try {
-      const response = await fetch(`/api/calendar/appointments?id=${editingAppointment.id}&action=cancel`, {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch(`/api/calendar/appointments?id=${editingAppointment.id}&action=cancel`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({})
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to cancel appointment')
       }
@@ -829,16 +852,18 @@ export default function AppointmentBookingModal({
         barbershop_id: blockData.barbershop_id
       })
 
-      const response = await fetch(`/api/calendar/appointments?action=block`, {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch(`/api/calendar/appointments?action=block`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(blockData)
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to block time slot')
       }
@@ -897,15 +922,17 @@ export default function AppointmentBookingModal({
         console.log('[AppointmentModal] Deleting blocked time slot')
       }
 
-      const response = await fetch(deleteUrl, {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch(deleteUrl, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         }
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
         // If unauthorized and we have retries left, try once more
         if (response.status === 403 && retryCount < 1) {
@@ -1016,7 +1043,9 @@ export default function AppointmentBookingModal({
       const rrule = generateRRule()
       if (!rrule) return
       
-      const response = await fetch('/api/calendar/appointments/check-conflicts', {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch('/api/calendar/appointments/check-conflicts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -528,15 +528,191 @@ export async function POST(request) {
         channels_attempted: notificationResults.notifications?.map(n => n.channel) || []
       }
     }
-    
+
     console.log('Successfully created appointment:', response)
-    
+
     return NextResponse.json(response, { status: 201 })
-    
+
   } catch (error) {
     console.error('Error creating appointment:', error)
     return NextResponse.json(
       { error: 'Failed to create appointment', details: error.message },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    const action = searchParams.get('action')
+
+    console.log(`PATCH /api/calendar/appointments - id: ${id}, action: ${action}`)
+
+    if (!id && action !== 'block') {
+      return NextResponse.json(
+        { error: 'Appointment ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Handle block action (create blocked time slot)
+    if (action === 'block') {
+      const body = await request.json()
+
+      const startDate = new Date(`${body.date}T${body.start_time}`)
+      const endDate = new Date(`${body.date}T${body.end_time}`)
+
+      const blockData = {
+        barbershop_id: body.barbershop_id || DEMO_BARBERSHOP_ID,
+        barber_id: body.barber_id,
+        customer_id: null,
+        service_id: null,
+        start_time: startDate.toISOString(),
+        end_time: endDate.toISOString(),
+        status: 'blocked',
+        price: 0,
+        notes: body.reason || 'Time blocked',
+        is_test: false
+      }
+
+      const { data: blocked, error: blockError } = await supabase
+        .from('appointments')
+        .insert([blockData])
+        .select()
+        .single()
+
+      if (blockError) {
+        console.error('Error creating blocked time:', blockError)
+        return NextResponse.json(
+          { error: 'Failed to block time', details: blockError.message },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({
+        appointment: blocked,
+        message: 'Time slot blocked successfully'
+      })
+    }
+
+    // Handle cancel action
+    if (action === 'cancel') {
+      const { data: appointment, error } = await supabase
+        .from('appointments')
+        .update({ status: 'cancelled' })
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error cancelling appointment:', error)
+        return NextResponse.json(
+          { error: 'Failed to cancel appointment', details: error.message },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({
+        appointment,
+        message: 'Appointment cancelled successfully'
+      })
+    }
+
+    // Handle restore action
+    if (action === 'restore') {
+      const { data: appointment, error } = await supabase
+        .from('appointments')
+        .update({ status: 'CONFIRMED' })
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) {
+        console.error('Error restoring appointment:', error)
+        return NextResponse.json(
+          { error: 'Failed to restore appointment', details: error.message },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({
+        appointment,
+        message: 'Appointment restored successfully'
+      })
+    }
+
+    // Handle general update
+    const body = await request.json()
+    const { data: appointment, error } = await supabase
+      .from('appointments')
+      .update(body)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating appointment:', error)
+      return NextResponse.json(
+        { error: 'Failed to update appointment', details: error.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      appointment,
+      message: 'Appointment updated successfully'
+    })
+
+  } catch (error) {
+    console.error('Error in PATCH /api/calendar/appointments:', error)
+    return NextResponse.json(
+      { error: 'Failed to process request', details: error.message },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    console.log(`DELETE /api/calendar/appointments - id: ${id}`)
+
+    if (!id) {
+      return NextResponse.json(
+        { error: 'Appointment ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Delete the appointment
+    const { data: appointment, error } = await supabase
+      .from('appointments')
+      .delete()
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error deleting appointment:', error)
+      return NextResponse.json(
+        { error: 'Failed to delete appointment', details: error.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({
+      appointment,
+      message: 'Appointment deleted successfully'
+    })
+
+  } catch (error) {
+    console.error('Error in DELETE /api/calendar/appointments:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete appointment', details: error.message },
       { status: 500 }
     )
   }

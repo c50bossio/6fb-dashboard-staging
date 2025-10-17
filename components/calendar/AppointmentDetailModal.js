@@ -15,6 +15,7 @@ import {
   TrashIcon,
   BellIcon,
   ArrowPathIcon,
+  ArrowUturnLeftIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import { toast } from 'sonner'
@@ -179,7 +180,9 @@ export default function AppointmentDetailModal({
     setActiveAction('check-in')
 
     try {
-      const response = await fetch(`/api/appointments/${appointment_id}/check-in`, {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch(`/api/appointments/${appointment_id}/check-in`, {
         method: 'POST'
       })
 
@@ -212,7 +215,7 @@ export default function AppointmentDetailModal({
     }
 
     const confirmed = window.confirm(
-      'Are you sure you want to cancel this appointment? The customer will be notified.'
+      'Are you sure you want to cancel this appointment? The status will change to "cancelled" and the customer will be notified.'
     )
 
     if (!confirmed) return
@@ -221,9 +224,11 @@ export default function AppointmentDetailModal({
     setActiveAction('cancel')
 
     try {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
       const id = appointment_id || appointment.id
-      const response = await fetch(`/api/appointments?id=${id}`, {
-        method: 'DELETE'
+      const response = await csrfFetch(`/api/calendar/appointments?id=${id}&action=cancel`, {
+        method: 'PATCH'
       })
 
       const data = await response.json()
@@ -234,13 +239,101 @@ export default function AppointmentDetailModal({
 
       toast.success('Appointment cancelled successfully')
 
-      if (onCancel) onCancel(data.data)
+      if (onCancel) onCancel(data.appointment)
       if (onRefresh) onRefresh()
 
       onClose()
     } catch (error) {
       console.error('Cancel error:', error)
       toast.error(error.message || 'Failed to cancel appointment')
+    } finally {
+      setIsLoading(false)
+      setActiveAction(null)
+    }
+  }
+
+  // Handle restore action (uncancel)
+  const handleRestore = async () => {
+    if (!appointment_id && !appointment.id) {
+      toast.error('Missing appointment ID')
+      return
+    }
+
+    const confirmed = window.confirm(
+      'Restore this appointment to "confirmed" status?'
+    )
+
+    if (!confirmed) return
+
+    setIsLoading(true)
+    setActiveAction('restore')
+
+    try {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const id = appointment_id || appointment.id
+      const response = await csrfFetch(`/api/calendar/appointments?id=${id}&action=restore`, {
+        method: 'PATCH'
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to restore appointment')
+      }
+
+      toast.success('Appointment restored successfully')
+
+      if (onRefresh) onRefresh()
+
+      onClose()
+    } catch (error) {
+      console.error('Restore error:', error)
+      toast.error(error.message || 'Failed to restore appointment')
+    } finally {
+      setIsLoading(false)
+      setActiveAction(null)
+    }
+  }
+
+  // Handle delete action (permanent removal)
+  const handleDelete = async () => {
+    if (!appointment_id && !appointment.id) {
+      toast.error('Missing appointment ID')
+      return
+    }
+
+    const confirmed = window.confirm(
+      '⚠️ PERMANENTLY DELETE this appointment?\n\nThis action CANNOT be undone and will remove all records from the database.\n\nAre you absolutely sure?'
+    )
+
+    if (!confirmed) return
+
+    setIsLoading(true)
+    setActiveAction('delete')
+
+    try {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const id = appointment_id || appointment.id
+      const response = await csrfFetch(`/api/calendar/appointments?id=${id}`, {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete appointment')
+      }
+
+      toast.success('Appointment permanently deleted')
+
+      if (onRefresh) onRefresh()
+
+      onClose()
+    } catch (error) {
+      console.error('Delete error:', error)
+      toast.error(error.message || 'Failed to delete appointment')
     } finally {
       setIsLoading(false)
       setActiveAction(null)
@@ -258,7 +351,9 @@ export default function AppointmentDetailModal({
     setActiveAction('reminder')
 
     try {
-      const response = await fetch('/api/appointments/send-reminder', {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch('/api/appointments/send-reminder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -364,10 +459,10 @@ export default function AppointmentDetailModal({
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
                   <div className="flex h-full flex-col overflow-y-auto bg-white dark:bg-gray-800 shadow-xl">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-olive-600 to-brand-600 px-6 py-6 text-white">
+                    <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <Dialog.Title className="text-xl font-bold mb-2">
+                          <Dialog.Title className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">
                             Appointment Details
                           </Dialog.Title>
                           <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border ${statusBadge.bg} ${statusBadge.text} ${statusBadge.border}`}>
@@ -377,7 +472,7 @@ export default function AppointmentDetailModal({
                         </div>
                         <button
                           onClick={onClose}
-                          className="rounded-md text-white/80 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+                          className="rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-olive-500"
                         >
                           <XMarkIcon className="h-6 w-6" />
                         </button>
@@ -506,21 +601,23 @@ export default function AppointmentDetailModal({
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                           Quick Actions
                         </h3>
-                        <div className="grid grid-cols-2 gap-2">
-                          {/* Check In - Only for confirmed appointments */}
-                          {status?.toLowerCase() === 'confirmed' && (
-                            <ActionButton
-                              onClick={handleCheckIn}
-                              icon={CheckCircleIcon}
-                              label="Check In"
-                              variant="success"
-                              loading={activeAction === 'check-in'}
-                              disabled={isLoading}
-                            />
-                          )}
 
-                          {/* Edit - For non-completed/cancelled */}
-                          {!['completed', 'cancelled'].includes(status?.toLowerCase()) && (
+                        {/* Active Appointment Actions */}
+                        {status?.toLowerCase() !== 'cancelled' && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {/* Check In - Only for confirmed appointments */}
+                            {status?.toLowerCase() === 'confirmed' && (
+                              <ActionButton
+                                onClick={handleCheckIn}
+                                icon={CheckCircleIcon}
+                                label="Check In"
+                                variant="success"
+                                loading={activeAction === 'check-in'}
+                                disabled={isLoading}
+                              />
+                            )}
+
+                            {/* Edit - For all active appointments */}
                             <ActionButton
                               onClick={handleEdit}
                               icon={PencilSquareIcon}
@@ -528,52 +625,96 @@ export default function AppointmentDetailModal({
                               variant="default"
                               disabled={isLoading}
                             />
-                          )}
 
-                          {/* Reschedule */}
-                          {!['completed', 'cancelled'].includes(status?.toLowerCase()) && (
-                            <ActionButton
-                              onClick={handleReschedule}
-                              icon={ArrowPathIcon}
-                              label="Reschedule"
-                              variant="default"
-                              disabled={isLoading}
-                            />
-                          )}
+                            {/* Reschedule - Not for completed */}
+                            {status?.toLowerCase() !== 'completed' && (
+                              <ActionButton
+                                onClick={handleReschedule}
+                                icon={ArrowPathIcon}
+                                label="Reschedule"
+                                variant="default"
+                                disabled={isLoading}
+                              />
+                            )}
 
-                          {/* Send Reminder */}
-                          {!['completed', 'cancelled'].includes(status?.toLowerCase()) && (
-                            <ActionButton
-                              onClick={handleSendReminder}
-                              icon={BellIcon}
-                              label="Send Reminder"
-                              variant="default"
-                              loading={activeAction === 'reminder'}
-                              disabled={isLoading}
-                            />
-                          )}
+                            {/* Send Reminder - Not for completed */}
+                            {status?.toLowerCase() !== 'completed' && (
+                              <ActionButton
+                                onClick={handleSendReminder}
+                                icon={BellIcon}
+                                label="Send Reminder"
+                                variant="default"
+                                loading={activeAction === 'reminder'}
+                                disabled={isLoading}
+                              />
+                            )}
 
-                          {/* Cancel - For non-completed/cancelled */}
-                          {!['completed', 'cancelled'].includes(status?.toLowerCase()) && (
+                            {/* Cancel - Not for completed */}
+                            {status?.toLowerCase() !== 'completed' && (
+                              <ActionButton
+                                onClick={handleCancel}
+                                icon={TrashIcon}
+                                label="Cancel"
+                                variant="danger"
+                                loading={activeAction === 'cancel'}
+                                disabled={isLoading}
+                              />
+                            )}
+
+                            {/* Delete - For all active appointments (admin cleanup) */}
                             <ActionButton
-                              onClick={handleCancel}
+                              onClick={handleDelete}
                               icon={TrashIcon}
-                              label="Cancel"
+                              label="Delete"
                               variant="danger"
-                              loading={activeAction === 'cancel'}
+                              loading={activeAction === 'delete'}
                               disabled={isLoading}
                             />
-                          )}
 
-                          {/* Message Customer - Future feature */}
-                          <ActionButton
-                            onClick={() => toast.info('Messaging feature coming soon!')}
-                            icon={ChatBubbleLeftRightIcon}
-                            label="Message"
-                            variant="default"
-                            disabled={isLoading}
-                          />
-                        </div>
+                            {/* Message Customer - Future feature */}
+                            <ActionButton
+                              onClick={() => toast.info('Messaging feature coming soon!')}
+                              icon={ChatBubbleLeftRightIcon}
+                              label="Message"
+                              variant="default"
+                              disabled={isLoading}
+                            />
+                          </div>
+                        )}
+
+                        {/* Cancelled Appointment Actions */}
+                        {status?.toLowerCase() === 'cancelled' && (
+                          <div className="grid grid-cols-2 gap-2">
+                            {/* Restore - Uncancel appointment */}
+                            <ActionButton
+                              onClick={handleRestore}
+                              icon={ArrowUturnLeftIcon}
+                              label="Restore"
+                              variant="success"
+                              loading={activeAction === 'restore'}
+                              disabled={isLoading}
+                            />
+
+                            {/* Delete - Permanent removal */}
+                            <ActionButton
+                              onClick={handleDelete}
+                              icon={TrashIcon}
+                              label="Delete"
+                              variant="danger"
+                              loading={activeAction === 'delete'}
+                              disabled={isLoading}
+                            />
+
+                            {/* Message Customer - Future feature */}
+                            <ActionButton
+                              onClick={() => toast.info('Messaging feature coming soon!')}
+                              icon={ChatBubbleLeftRightIcon}
+                              label="Message"
+                              variant="default"
+                              disabled={isLoading}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 
