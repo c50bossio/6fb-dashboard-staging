@@ -1,19 +1,21 @@
 'use client'
 
-import { 
-  CalendarIcon, 
-  UserGroupIcon, 
+import {
+  CalendarIcon,
+  UserGroupIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
   XCircleIcon,
   ChartBarIcon,
   BellIcon,
   ScissorsIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  LinkIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import ComponentErrorBoundary from '../../../../components/dashboard/ComponentErrorBoundary'
+import ShareableBookingLink from '../../../../components/dashboard/ShareableBookingLink'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { useGlobalDashboard } from '../../../../contexts/GlobalDashboardContext'
 
@@ -311,7 +313,7 @@ export default function BarberDashboard() {
         {/* Quick Actions */}
         <div className="bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-border p-4 sm:p-6 mb-6 sm:mb-8">
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-foreground mb-3 sm:mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             <Link href="/barber/schedule" className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors text-center">
               <CalendarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-amber-700 dark:text-amber-300 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-foreground">View Schedule</p>
@@ -319,6 +321,10 @@ export default function BarberDashboard() {
             <Link href="/barber/clients" className="p-3 sm:p-4 bg-olive-50 dark:bg-olive-900/20 rounded-lg hover:bg-olive-100 dark:hover:bg-olive-900/30 transition-colors text-center">
               <UserGroupIcon className="h-5 sm:h-6 w-5 sm:w-6 text-olive-600 dark:text-olive-400 mx-auto mb-1 sm:mb-2" />
               <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-foreground">My Clients</p>
+            </Link>
+            <Link href="/barber/booking-hub" className="p-3 sm:p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-center">
+              <LinkIcon className="h-5 sm:h-6 w-5 sm:w-6 text-blue-600 dark:text-blue-400 mx-auto mb-1 sm:mb-2" />
+              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-foreground">Share Link</p>
             </Link>
             <Link href="/barber/reports" className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-center">
               <ChartBarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-green-600 dark:text-green-400 mx-auto mb-1 sm:mb-2" />
@@ -330,6 +336,13 @@ export default function BarberDashboard() {
             </Link>
           </div>
         </div>
+
+        {/* My Booking Link - Instant Access */}
+        <ComponentErrorBoundary componentName="Booking Link">
+          <div className="mb-6 sm:mb-8">
+            <ShareableBookingLink />
+          </div>
+        </ComponentErrorBoundary>
 
         {/* Today's Schedule */}
         <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border">
