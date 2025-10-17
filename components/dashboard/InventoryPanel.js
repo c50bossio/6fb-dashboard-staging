@@ -42,51 +42,49 @@ export default function InventoryPanel() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [activeTab, setActiveTab] = useState('inventory')
 
-  // Fetch inventory data from Supabase
+  // Fetch inventory data from API (single source of truth)
   useEffect(() => {
     const fetchInventory = async () => {
       try {
         setLoading(true)
-        const supabase = createClient()
-        
-        const { data, error } = await supabase
-          .from('inventory')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-        
-        if (error) {
-          console.error('Error fetching inventory:', error)
-          throw error
+
+        // Call the shop products API (same as POS page uses)
+        // This ensures main dashboard and POS show the same data
+        const response = await fetch('/api/shop/products')
+
+        if (!response.ok) {
+          throw new Error(`Failed to load inventory: ${response.statusText}`)
         }
-        
-        // Transform data to match expected format
-        const transformedInventory = data?.map(item => ({
+
+        const data = await response.json()
+
+        // Transform API response to match expected format
+        const transformedInventory = (data.products || []).map(item => ({
           ...item,
-          category: item.category
-        })) || []
-        
+          // Map products table fields to expected format
+          max_stock: item.max_stock_level || 100,
+          unit_cost: item.cost_price || 0,
+          // Calculate status based on stock levels
+          status: (item.current_stock || 0) === 0 ? 'critical' :
+                  (item.current_stock || 0) <= (item.min_stock_level || 5) ? 'low' : 'good'
+        }))
+
         setInventory(transformedInventory)
         setError(null)
       } catch (err) {
         console.error('Failed to fetch inventory:', err)
-        
-        // If inventory table doesn't exist, show demo state instead of error
-        if (err.code === '42P01' || err.message?.includes('does not exist')) {
-          console.log('📦 Inventory table not found - showing demo CIN7 integration state')
-          setInventory([]) // Empty inventory, will show CIN7 marketplace
-          setError(null)   // No error, just empty state
-        } else {
-          setError(err.message || 'Failed to load inventory')
-        }
+        setInventory([])
+        setError(err.message || 'Failed to load inventory')
       } finally {
         setLoading(false)
       }
     }
 
-    // Always fetch inventory data - use development mode fallback if no user
-    fetchInventory()
-  }, [user])
+    // Only fetch if we have user and profile
+    if (user && profile) {
+      fetchInventory()
+    }
+  }, [user, profile])
 
   const filteredInventory = inventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
