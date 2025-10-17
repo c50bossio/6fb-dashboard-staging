@@ -11,7 +11,6 @@ import '@testing-library/jest-dom'
 import PredictiveAnalyticsDashboard from '../../components/PredictiveAnalyticsDashboard'
 import fetch from 'jest-fetch-mock'
 
-// Mock fetch for API calls
 fetch.enableMocks()
 
 describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
@@ -78,7 +77,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
     user = userEvent.setup()
     fetch.resetMocks()
     
-    // Mock successful API responses by default
     fetch
       .mockResolvedValueOnce({
         ok: true,
@@ -126,13 +124,10 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
       render(<PredictiveAnalyticsDashboard />)
       
       await waitFor(() => {
-        // Should make 3 API calls: dashboard, forecast, and demand
         expect(fetch).toHaveBeenCalledTimes(3)
         
-        // Dashboard call
         expect(fetch).toHaveBeenCalledWith('/api/ai/predictive?barbershop_id=demo')
         
-        // Revenue forecast call
         expect(fetch).toHaveBeenCalledWith('/api/ai/predictive', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -143,7 +138,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
           })
         })
         
-        // Demand prediction call
         expect(fetch).toHaveBeenCalledWith('/api/ai/predictive', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -296,7 +290,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
       
       const timeframeSelect = screen.getByDisplayValue('30')
       
-      // Reset fetch mocks for the reload
       fetch.resetMocks()
       fetch
         .mockResolvedValueOnce({ ok: true, json: async () => mockDashboardData })
@@ -329,7 +322,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
     test('allows switching between different views', async () => {
       render(<PredictiveAnalyticsDashboard />)
       
-      // Add view switching buttons to component first
       const forecastButton = screen.getByText(/forecast/i)
       await user.click(forecastButton)
       
@@ -353,7 +345,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
         expect(fetch).toHaveBeenCalledTimes(3)
       })
       
-      // Reset and setup new mocks
       fetch.resetMocks()
       fetch
         .mockResolvedValueOnce({ ok: true, json: async () => mockDashboardData })
@@ -379,7 +370,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
     test('adjusts layout for compact display', () => {
       const { container } = render(<PredictiveAnalyticsDashboard compact={true} />)
       
-      // Check for compact-specific styling
       expect(container.firstChild).toHaveClass('bg-white')
     })
   })
@@ -392,7 +382,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
       render(<PredictiveAnalyticsDashboard />)
       
       await waitFor(() => {
-        // Should not crash and should handle the error
         expect(screen.getByText('Predictive Analytics')).toBeInTheDocument()
       })
     })
@@ -407,7 +396,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
       render(<PredictiveAnalyticsDashboard />)
       
       await waitFor(() => {
-        // Should display available data despite partial failure
         expect(screen.getByText('94.2% accuracy')).toBeInTheDocument()
       })
     })
@@ -439,7 +427,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
       
       const timeframeSelect = screen.getByDisplayValue('30')
       
-      // Rapidly change timeframes
       for (let i = 0; i < 5; i++) {
         fetch.resetMocks()
         fetch
@@ -450,7 +437,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
         await user.selectOptions(timeframeSelect, i % 2 === 0 ? '30' : '60')
       }
       
-      // Should not crash or cause memory issues
       expect(screen.getByText('Predictive Analytics')).toBeInTheDocument()
     })
   })
@@ -474,7 +460,6 @@ describe('PredictiveAnalyticsDashboard Component - Unit Tests', () => {
       
       await user.keyboard('{Enter}')
       
-      // Should trigger refresh functionality
       expect(fetch).toHaveBeenCalled()
     })
   })

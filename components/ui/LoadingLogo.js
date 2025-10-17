@@ -25,7 +25,6 @@ const LoadingLogo = ({
   const [currentMessage, setCurrentMessage] = useState(message);
   const [animationClass, setAnimationClass] = useState('');
 
-  // Loading messages for different states
   const loadingMessages = [
     'Initializing BookedBarber...',
     'Loading your dashboard...',
@@ -34,7 +33,6 @@ const LoadingLogo = ({
   ];
 
   useEffect(() => {
-    // Cycle through loading messages if no specific message provided
     if (message === 'Loading...') {
       let messageIndex = 0;
       const messageInterval = setInterval(() => {
@@ -46,7 +44,6 @@ const LoadingLogo = ({
     }
   }, [message]);
 
-  // Animation variants
   const getAnimationClass = () => {
     switch (variant) {
       case 'pulse':
@@ -114,7 +111,6 @@ const LoadingLogo = ({
   );
 };
 
-// Convenience components for different use cases
 export const LoadingScreen = (props) => (
   <LoadingLogo {...props} fullScreen size="hero" variant="glow" />
 );
@@ -127,7 +123,6 @@ export const LoadingInline = (props) => (
   <LoadingLogo {...props} size="small" variant="spin" className="py-4" />
 );
 
-// Page-specific loading components
 export const DashboardLoading = () => (
   <LoadingScreen 
     message="Loading your dashboard..."

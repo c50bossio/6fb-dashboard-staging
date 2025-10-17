@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 export const dynamic = 'force-dynamic'
-import { createClient } from '../../../../../lib/supabase'
-import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
+export const revalidate = 0
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
+import { withAdminAuth, logAdminAction } from '@/middleware/adminAuth'
 
 /**
  * GET /api/admin/subscriptions/list
@@ -21,9 +22,8 @@ async function getSubscriptions(request) {
   const offset = (page - 1) * limit
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
-    // Build base query
     let query = supabase
       .from('users')
       .select(`
@@ -51,39 +51,32 @@ async function getSubscriptions(request) {
         updated_at
       `)
       
-    // Apply search filter
     if (search) {
       query = query.or(`email.ilike.%${search}%,name.ilike.%${search}%`)
     }
     
-    // Apply tier filter
     if (tier) {
       query = query.eq('subscription_tier', tier.toLowerCase())
     }
     
-    // Apply status filter
     if (status) {
       query = query.eq('subscription_status', status.toLowerCase())
     }
     
-    // Apply sorting
     const validSortColumns = ['created_at', 'updated_at', 'email', 'name', 'subscription_tier', 'subscription_status']
     const sortColumn = validSortColumns.includes(sortBy) ? sortBy : 'created_at'
     query = query.order(sortColumn, { ascending: sortOrder === 'asc' })
     
-    // Get total count before pagination
     const { count: totalCount } = await supabase
       .from('users')
       .select('id', { count: 'exact', head: true })
     
-    // Apply pagination
     query = query.range(offset, offset + limit - 1)
     
     const { data: subscriptions, error } = await query
     
     if (error) throw error
     
-    // Get summary statistics
     const { data: stats } = await supabase
       .from('users')
       .select('subscription_tier, subscription_status')
@@ -94,12 +87,11 @@ async function getSubscriptions(request) {
       active: stats?.filter(s => s.subscription_status === 'active').length || 0,
       trialing: stats?.filter(s => s.subscription_status === 'trialing').length || 0,
       past_due: stats?.filter(s => s.subscription_status === 'past_due').length || 0,
-      individual: stats?.filter(s => s.subscription_tier === 'individual').length || 0,
-      shop: stats?.filter(s => s.subscription_tier === 'shop').length || 0,
-      enterprise: stats?.filter(s => s.subscription_tier === 'enterprise').length || 0
+      individual: stats?.filter(s => ['individual', 'INDIVIDUAL'].includes(s.subscription_tier)).length || 0,
+      shop: stats?.filter(s => ['shop', 'shop_owner', 'PROFESSIONAL'].includes(s.subscription_tier)).length || 0,
+      enterprise: stats?.filter(s => ['enterprise', 'ENTERPRISE'].includes(s.subscription_tier)).length || 0
     }
     
-    // Log admin action
     await logAdminAction(request, 'view_subscriptions', {
       page,
       limit,
@@ -136,5 +128,4 @@ async function getSubscriptions(request) {
   }
 }
 
-// Export with admin auth wrapper
 export const GET = withAdminAuth(getSubscriptions)

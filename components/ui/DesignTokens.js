@@ -1,8 +1,5 @@
-// Design System Tokens
-// Centralized design values for consistent theming
 
 export const colors = {
-  // Primary brand colors - 6FB gradient theme
   primary: {
     50: '#eff6ff',
     100: '#dbeafe',
@@ -29,7 +26,6 @@ export const colors = {
     900: '#581c87'
   },
 
-  // Semantic colors
   success: {
     50: '#f0fdf4',
     100: '#dcfce7',
@@ -69,7 +65,6 @@ export const colors = {
     900: '#7f1d1d'
   },
 
-  // Neutral/Gray colors
   neutral: {
     50: '#f9fafb',
     100: '#f3f4f6',
@@ -190,7 +185,6 @@ export const zIndex = {
   auto: 'auto'
 }
 
-// Component-specific token combinations
 export const componentTokens = {
   button: {
     borderRadius: borderRadius.lg,
@@ -221,7 +215,6 @@ export const componentTokens = {
   }
 }
 
-// Utility functions for consistent styling
 export const getColorClass = (color, shade = 500, type = 'bg') => {
   return `${type}-${color}-${shade}`
 }
@@ -230,7 +223,6 @@ export const getSpacingClass = (property, value) => {
   return `${property}-${value}`
 }
 
-// Animation tokens
 export const animations = {
   transition: {
     fast: 'transition-all duration-150 ease-in-out',

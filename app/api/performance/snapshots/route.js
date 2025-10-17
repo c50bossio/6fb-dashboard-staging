@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
-
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8001'
 
 export async function GET(request) {
@@ -25,7 +25,6 @@ export async function GET(request) {
   } catch (error) {
     console.error('Error fetching model snapshots:', error)
     
-    // Return mock data for development/testing
     const mockSnapshots = {
       'openai_gpt-5': {
         model: 'gpt-5',

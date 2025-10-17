@@ -33,33 +33,22 @@ export class SecurityTestOrchestrator {
    * Run complete security testing suite
    */
   async runCompleteSuite(page, testTypes = ['all']) {
-    console.log('🚀 Starting comprehensive security testing suite...');
-    console.log(`📋 Test types: ${testTypes.join(', ')}`);
+    
+    }`);
 
     try {
-      // Ensure report directory exists
       await fs.mkdir(this.reportDir, { recursive: true });
 
-      // Create execution plan
       const executionPlan = this.createExecutionPlan(testTypes);
-      console.log(`📅 Execution plan created with ${executionPlan.length} test phases`);
 
-      // Execute security tests according to plan
       for (const phase of executionPlan) {
-        console.log(`\n🔄 Executing phase: ${phase.name}`);
+        
         await this.executePhase(phase, page);
       }
 
-      // Generate comprehensive reports
       const finalReport = await this.generateFinalReport();
 
-      // Calculate overall security posture
       const securityPosture = this.calculateSecurityPosture();
-
-      console.log('\n✅ Security testing suite completed successfully');
-      console.log(`📊 Overall Security Score: ${securityPosture.overallScore}/100`);
-      console.log(`🎯 Risk Level: ${securityPosture.riskLevel}`);
-      console.log(`📈 Total Findings: ${securityPosture.totalFindings}`);
 
       return {
         results: this.results,
@@ -129,14 +118,12 @@ export class SecurityTestOrchestrator {
       }
     ];
 
-    // Filter phases based on requested test types
     let selectedPhases = allPhases;
     
     if (!testTypes.includes('all')) {
       selectedPhases = allPhases.filter(phase => testTypes.includes(phase.type));
     }
 
-    // Sort by priority
     return selectedPhases.sort((a, b) => a.priority - b.priority);
   }
 
@@ -147,7 +134,7 @@ export class SecurityTestOrchestrator {
     const startTime = Date.now();
     
     try {
-      console.log(`⏱️ Starting ${phase.name} (estimated: ${Math.round(phase.estimatedTime / 60000)} minutes)`);
+      } minutes)`);
 
       switch (phase.type) {
         case 'sast':
@@ -173,9 +160,8 @@ export class SecurityTestOrchestrator {
       }
 
       const executionTime = Date.now() - startTime;
-      console.log(`✅ ${phase.name} completed in ${Math.round(executionTime / 1000)}s`);
+      }s`);
 
-      // Save intermediate results
       await this.saveIntermediateResults(phase.type, this.results[phase.type]);
 
     } catch (error) {
@@ -192,12 +178,12 @@ export class SecurityTestOrchestrator {
    * Run SAST tests
    */
   async runSASTTests() {
-    console.log('🔍 Running Static Application Security Testing (SAST)...');
+    ...');
     
     const scanner = new AutomatedSecurityScanner();
     const sastResults = await scanner.runSAST();
     
-    console.log(`✅ SAST completed - ${this.countFindings(sastResults)} findings`);
+    } findings`);
     return sastResults;
   }
 
@@ -205,12 +191,12 @@ export class SecurityTestOrchestrator {
    * Run DAST tests
    */
   async runDASTTests() {
-    console.log('🎯 Running Dynamic Application Security Testing (DAST)...');
+    ...');
     
     const scanner = new AutomatedSecurityScanner();
     const dastResults = await scanner.runDAST();
     
-    console.log(`✅ DAST completed - ${this.countFindings(dastResults)} findings`);
+    } findings`);
     return dastResults;
   }
 
@@ -218,12 +204,10 @@ export class SecurityTestOrchestrator {
    * Run API security tests
    */
   async runAPISecurityTests(page) {
-    console.log('🛡️ Running API Security Testing...');
-    
+
     const apiTester = new APISecurityTester(page);
     const apiResults = await apiTester.runAPISecurityTests();
-    
-    console.log(`✅ API Security Testing completed - ${apiResults.summary?.totalTests || 0} tests run`);
+
     return apiResults;
   }
 
@@ -231,12 +215,10 @@ export class SecurityTestOrchestrator {
    * Run penetration tests
    */
   async runPenetrationTests(page) {
-    console.log('🎯 Running Automated Penetration Testing...');
-    
+
     const penTester = new AutomatedPenetrationTester(page);
     const penResults = await penTester.runPenetrationTests();
-    
-    console.log(`✅ Penetration Testing completed - ${penResults.summary?.totalTests || 0} tests run`);
+
     return penResults;
   }
 
@@ -244,12 +226,10 @@ export class SecurityTestOrchestrator {
    * Run GDPR compliance tests
    */
   async runGDPRComplianceTests(page) {
-    console.log('🇪🇺 Running GDPR Compliance Testing...');
-    
+
     const gdprTester = new GDPRComplianceTester(page);
     const gdprResults = await gdprTester.runGDPRComplianceTests();
-    
-    console.log(`✅ GDPR Compliance Testing completed - ${gdprResults.summary?.totalTests || 0} tests run`);
+
     return gdprResults;
   }
 
@@ -257,11 +237,9 @@ export class SecurityTestOrchestrator {
    * Setup security monitoring
    */
   async setupSecurityMonitoring() {
-    console.log('🔄 Setting up Security Monitoring...');
-    
+
     const monitor = new ContinuousSecurityMonitor();
     
-    // For testing purposes, we'll just initialize and get configuration
     const monitoringResults = {
       status: 'configured',
       timestamp: new Date().toISOString(),
@@ -277,8 +255,7 @@ export class SecurityTestOrchestrator {
         'Implement automated response procedures for critical alerts'
       ]
     };
-    
-    console.log('✅ Security Monitoring configuration completed');
+
     return monitoringResults;
   }
 
@@ -286,18 +263,14 @@ export class SecurityTestOrchestrator {
    * Generate final comprehensive report
    */
   async generateFinalReport() {
-    console.log('📊 Generating comprehensive security report...');
-    
+
     const dashboard = new SecurityReportingDashboard();
     const dashboardData = await dashboard.generateSecurityDashboard(this.results);
     
-    // Create executive summary
     const executiveSummary = await this.createExecutiveSummary();
     
-    // Create remediation plan
     const remediationPlan = await this.createRemediationPlan();
     
-    // Create compliance assessment
     const complianceAssessment = await this.createComplianceAssessment();
     
     const finalReport = {
@@ -317,11 +290,9 @@ export class SecurityTestOrchestrator {
       nextSteps: this.generateNextSteps()
     };
 
-    // Save final report
     const reportPath = path.join(this.reportDir, 'final-security-report.json');
     await fs.writeFile(reportPath, JSON.stringify(finalReport, null, 2));
-    
-    console.log(`📋 Final security report saved: ${reportPath}`);
+
     return finalReport;
   }
 
@@ -424,7 +395,6 @@ export class SecurityTestOrchestrator {
     const mediumCount = allFindings.filter(f => f.severity === 'MEDIUM').length;
     const lowCount = allFindings.filter(f => f.severity === 'LOW').length;
 
-    // Calculate overall security score
     const criticalPenalty = criticalCount * 25;
     const highPenalty = highCount * 15;
     const mediumPenalty = mediumCount * 8;
@@ -432,13 +402,11 @@ export class SecurityTestOrchestrator {
     
     const overallScore = Math.max(0, 100 - criticalPenalty - highPenalty - mediumPenalty - lowPenalty);
     
-    // Determine risk level
     let riskLevel = 'LOW';
     if (overallScore < 50) riskLevel = 'CRITICAL';
     else if (overallScore < 70) riskLevel = 'HIGH';
     else if (overallScore < 85) riskLevel = 'MEDIUM';
 
-    // Identify key findings
     const keyFindings = allFindings
       .filter(f => f.severity === 'CRITICAL' || f.severity === 'HIGH')
       .slice(0, 5)
@@ -449,7 +417,6 @@ export class SecurityTestOrchestrator {
         source: f.source
       }));
 
-    // Generate immediate actions
     const immediateActions = [];
     if (criticalCount > 0) {
       immediateActions.push(`Address ${criticalCount} critical security issue${criticalCount > 1 ? 's' : ''}`);
@@ -480,11 +447,9 @@ export class SecurityTestOrchestrator {
   getAllFindings() {
     const allFindings = [];
 
-    // Extract findings from each test type
     Object.entries(this.results).forEach(([testType, result]) => {
       if (!result) return;
 
-      // Handle different result structures
       if (result.findings) {
         allFindings.push(...result.findings.map(f => ({ ...f, source: testType })));
       }
@@ -499,7 +464,6 @@ export class SecurityTestOrchestrator {
         });
       }
 
-      // Handle nested results structure
       if (result.results && typeof result.results === 'object') {
         Object.values(result.results).forEach(category => {
           if (typeof category === 'object') {
@@ -545,13 +509,11 @@ export class SecurityTestOrchestrator {
     const allFindings = this.getAllFindings();
     const categories = {};
 
-    // Group findings by category
     allFindings.forEach(finding => {
       const category = finding.category || 'general';
       categories[category] = (categories[category] || 0) + 1;
     });
 
-    // Generate recommendations based on most common categories
     const topCategories = Object.entries(categories)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 10);
@@ -647,17 +609,14 @@ export class SecurityTestOrchestrator {
   }
 
   assessOWASPCompliance() {
-    // Placeholder implementation
     return { status: 'PARTIAL', score: 75 };
   }
 
   assessISO27001Compliance() {
-    // Placeholder implementation
     return { status: 'PARTIAL', score: 70 };
   }
 
   assessNISTCompliance() {
-    // Placeholder implementation
     return { status: 'PARTIAL', score: 72 };
   }
 

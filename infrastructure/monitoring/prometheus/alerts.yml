@@ -1,0 +1,615 @@
+# Comprehensive Alerting Rules for 6FB AI Agent System
+# Production-ready alerts with proper SLO/SLI definitions
+# Version: 2.0 - Consolidated Rules
+
+groups:
+  # =============================================================================
+  # SERVICE LEVEL OBJECTIVES (SLO) ALERTS
+  # =============================================================================
+  
+  - name: slo_alerts
+    interval: 30s
+    rules:
+      # Overall system availability SLO: 99.9% uptime
+      - alert: SLO_AvailabilityBreach
+        expr: |
+          (
+            avg_over_time(up{job=~"fastapi-backend|nextjs-frontend"}[5m]) < 0.999
+          ) * 100
+        for: 1m
+        labels:
+          severity: critical
+          category: slo
+          slo_type: availability
+          runbook: https://runbooks.6fb.ai/slo-availability
+        annotations:
+          summary: "Service availability below 99.9% SLO"
+          description: "System availability is {{ $value | humanizePercentage }} over the last 5 minutes, below 99.9% SLO target."
+          impact: "Users may experience service interruptions"
+          
+      # Response time SLO: 95% of requests under 2s
+      - alert: SLO_ResponseTimeBreach
+        expr: |
+          (
+            histogram_quantile(0.95, 
+              rate(http_request_duration_seconds_bucket{job="fastapi-backend"}[5m])
+            ) > 2
+          )
+        for: 3m
+        labels:
+          severity: warning
+          category: slo
+          slo_type: latency
+        annotations:
+          summary: "Response time SLO breach - 95th percentile above 2s"
+          description: "95th percentile response time is {{ $value }}s, exceeding 2s SLO target."
+          
+      # Error rate SLO: Less than 0.1% error rate
+      - alert: SLO_ErrorRateBreach
+        expr: |
+          (
+            sum(rate(http_requests_total{job="fastapi-backend",status=~"5.."}[5m])) /
+            sum(rate(http_requests_total{job="fastapi-backend"}[5m])) * 100
+          ) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          category: slo
+          slo_type: error_rate
+        annotations:
+          summary: "Error rate SLO breach - exceeding 0.1%"
+          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes, exceeding 0.1% SLO target."
+
+  # =============================================================================
+  # SYSTEM HEALTH & INFRASTRUCTURE ALERTS
+  # =============================================================================
+  
+  - name: system_health
+    interval: 30s
+    rules:
+      # Service down - immediate alert
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+          runbook: https://runbooks.6fb.ai/service-down
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on instance {{ $labels.instance }} has been down for more than 1 minute."
+          impact: "Complete service outage for affected component"
+          
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: |
+          (
+            100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+          ) > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanizePercentage }} for more than 5 minutes on {{ $labels.instance }}."
+          threshold: "80%"
+          
+      # Critical CPU usage
+      - alert: CriticalCPUUsage
+        expr: |
+          (
+            100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+          ) > 95
+        for: 2m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "Critical CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanizePercentage }} for more than 2 minutes on {{ $labels.instance }}."
+          
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 
+            node_memory_MemTotal_bytes * 100
+          ) > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} for more than 5 minutes on {{ $labels.instance }}."
+          
+      # Critical memory usage
+      - alert: CriticalMemoryUsage
+        expr: |
+          (
+            (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / 
+            node_memory_MemTotal_bytes * 100
+          ) > 90
+        for: 2m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}. Immediate action required."
+          
+      # Disk space usage
+      - alert: HighDiskUsage
+        expr: |
+          (
+            (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_avail_bytes{fstype!="tmpfs"}) / 
+            node_filesystem_size_bytes{fstype!="tmpfs"} * 100
+          ) > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: storage
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanizePercentage }} on {{ $labels.instance }} filesystem {{ $labels.mountpoint }}."
+          
+      # Critical disk space
+      - alert: CriticalDiskUsage
+        expr: |
+          (
+            (node_filesystem_size_bytes{fstype!="tmpfs"} - node_filesystem_avail_bytes{fstype!="tmpfs"}) / 
+            node_filesystem_size_bytes{fstype!="tmpfs"} * 100
+          ) > 95
+        for: 1m
+        labels:
+          severity: critical
+          category: storage
+        annotations:
+          summary: "Critical disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}. System may become unstable."
+
+  # =============================================================================
+  # APPLICATION PERFORMANCE ALERTS
+  # =============================================================================
+  
+  - name: application_performance
+    interval: 15s
+    rules:
+      # High response time (warning)
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95, 
+            rate(http_request_duration_seconds_bucket{job="fastapi-backend"}[5m])
+          ) > 2
+        for: 3m
+        labels:
+          severity: warning
+          category: performance
+          service: backend
+        annotations:
+          summary: "High response time for backend API"
+          description: "95th percentile response time is {{ $value }}s for backend API, exceeding 2s threshold."
+          
+      # Very high response time (critical)
+      - alert: VeryHighResponseTime
+        expr: |
+          histogram_quantile(0.95, 
+            rate(http_request_duration_seconds_bucket{job="fastapi-backend"}[5m])
+          ) > 5
+        for: 1m
+        labels:
+          severity: critical
+          category: performance
+          service: backend
+        annotations:
+          summary: "Very high response time for backend API"
+          description: "95th percentile response time is {{ $value }}s, severely impacting user experience."
+          
+      # High error rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="fastapi-backend",status=~"5.."}[5m])) /
+            sum(rate(http_requests_total{job="fastapi-backend"}[5m])) * 100
+          ) > 5
+        for: 2m
+        labels:
+          severity: critical
+          category: availability
+          service: backend
+        annotations:
+          summary: "High 5xx error rate for backend API"
+          description: "5xx error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+          
+      # Client error rate spike
+      - alert: HighClientErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{job="fastapi-backend",status=~"4.."}[5m])) /
+            sum(rate(http_requests_total{job="fastapi-backend"}[5m])) * 100
+          ) > 25
+        for: 5m
+        labels:
+          severity: warning
+          category: client_errors
+          service: backend
+        annotations:
+          summary: "High 4xx error rate for backend API"
+          description: "4xx error rate is {{ $value | humanizePercentage }}, indicating potential client issues."
+          
+      # Request rate anomaly (potential DDoS)
+      - alert: RequestRateAnomaly
+        expr: |
+          rate(http_requests_total{job="fastapi-backend"}[1m]) > 
+          (avg_over_time(rate(http_requests_total{job="fastapi-backend"}[1m])[1h:1m]) * 5)
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+          service: backend
+        annotations:
+          summary: "Unusual request rate detected"
+          description: "Current request rate ({{ $value | humanize }}/sec) is 5x higher than the 1-hour average."
+
+  # =============================================================================
+  # DATABASE & CACHE ALERTS
+  # =============================================================================
+  
+  - name: database_health
+    interval: 30s
+    rules:
+      # High database connections
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends > 80
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "High number of PostgreSQL connections"
+          description: "PostgreSQL has {{ $value }} active connections on database {{ $labels.datname }}."
+          
+      # Critical database connections
+      - alert: CriticalDatabaseConnections
+        expr: pg_stat_database_numbackends > 95
+        for: 2m
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "Critical number of PostgreSQL connections"
+          description: "PostgreSQL has {{ $value }} active connections, approaching connection limit."
+          
+      # Long running queries
+      - alert: LongRunningQueries
+        expr: pg_stat_activity_max_tx_duration{state="active"} > 300
+        for: 2m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Long running database query detected"
+          description: "A query has been running for {{ $value | humanizeDuration }} in database {{ $labels.datname }}."
+          
+      # Database replication lag
+      - alert: DatabaseReplicationLag
+        expr: pg_replication_lag_seconds > 60
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "PostgreSQL replication lag detected"
+          description: "Replication lag is {{ $value | humanizeDuration }} on replica {{ $labels.replica }}."
+          
+      # Redis cache hit rate
+      - alert: LowRedisCacheHitRate
+        expr: |
+          (
+            rate(redis_keyspace_hits_total[5m]) /
+            (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) * 100
+          ) < 80
+        for: 10m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "Low Redis cache hit rate"
+          description: "Redis cache hit rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+          
+      # Redis memory usage
+      - alert: HighRedisMemoryUsage
+        expr: |
+          (redis_memory_used_bytes / redis_memory_max_bytes * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis memory usage is {{ $value | humanizePercentage }}."
+
+  # =============================================================================
+  # BUSINESS LOGIC & AI SYSTEM ALERTS
+  # =============================================================================
+  
+  - name: business_metrics
+    interval: 60s
+    rules:
+      # High AI token usage (cost control)
+      - alert: HighAITokenUsage
+        expr: increase(sixfb_ai_tokens_consumed_total[1h]) > 100000
+        for: 5m
+        labels:
+          severity: warning
+          category: cost
+          component: ai
+        annotations:
+          summary: "High AI token consumption detected"
+          description: "AI token usage is {{ $value | humanize }} tokens in the last hour, indicating high operational costs."
+          cost_estimate: "${{ $value | humanize | printf \"%.2f\" }}"
+          
+      # AI service response time
+      - alert: SlowAIResponse
+        expr: |
+          histogram_quantile(0.90, 
+            rate(sixfb_ai_request_duration_seconds_bucket[5m])
+          ) > 30
+        for: 3m
+        labels:
+          severity: warning
+          category: performance
+          component: ai
+        annotations:
+          summary: "Slow AI service response times"
+          description: "90th percentile AI response time is {{ $value }}s, exceeding 30s threshold."
+          
+      # Commission processing failures
+      - alert: CommissionProcessingFailures
+        expr: increase(sixfb_commission_processing_failures_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: business
+          component: commissions
+        annotations:
+          summary: "Commission processing failures detected"
+          description: "{{ $value }} commission processing failures in the last 5 minutes."
+          
+      # Barber booking rate anomaly
+      - alert: BookingRateAnomaly
+        expr: |
+          rate(sixfb_bookings_created_total[5m]) < 
+          (avg_over_time(rate(sixfb_bookings_created_total[5m])[1d:5m]) * 0.5)
+        for: 15m
+        labels:
+          severity: warning
+          category: business
+          component: bookings
+        annotations:
+          summary: "Low booking rate detected"
+          description: "Booking rate has dropped significantly below daily average."
+          
+      # User registration spike
+      - alert: UserRegistrationSpike
+        expr: rate(sixfb_user_registrations_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: info
+          category: business
+          component: auth
+        annotations:
+          summary: "User registration spike detected"
+          description: "{{ $value | humanize }} new user registrations per second over the last 5 minutes."
+
+  # =============================================================================
+  # SECURITY & COMPLIANCE ALERTS
+  # =============================================================================
+  
+  - name: security_monitoring
+    interval: 15s
+    rules:
+      # Failed authentication attempts
+      - alert: HighFailedAuthentications
+        expr: increase(sixfb_auth_failures_total[5m]) > 20
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+          attack_type: brute_force
+        annotations:
+          summary: "High number of failed authentication attempts"
+          description: "{{ $value }} failed authentication attempts in the last 5 minutes from {{ $labels.source_ip }}."
+          
+      # Blocked IP addresses
+      - alert: IPAddressBlocked
+        expr: increase(sixfb_security_blocks_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: info
+          category: security
+        annotations:
+          summary: "IP address blocked due to suspicious activity"
+          description: "IP {{ $labels.blocked_ip }} has been blocked due to {{ $labels.reason }}."
+          
+      # SQL injection attempts
+      - alert: SQLInjectionAttempt
+        expr: increase(sixfb_security_sql_injection_attempts_total[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          category: security
+          attack_type: sql_injection
+        annotations:
+          summary: "SQL injection attempt detected"
+          description: "SQL injection attempt detected from IP {{ $labels.source_ip }} on endpoint {{ $labels.endpoint }}."
+          
+      # Suspicious user agents
+      - alert: SuspiciousUserAgents
+        expr: increase(sixfb_security_suspicious_user_agents_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Multiple requests from suspicious user agents"
+          description: "{{ $value }} requests from suspicious user agents in the last 5 minutes."
+          
+      # GDPR compliance violations
+      - alert: GDPRComplianceViolation
+        expr: sixfb_gdpr_violations_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: compliance
+          regulation: gdpr
+        annotations:
+          summary: "GDPR compliance violation detected"
+          description: "{{ $value }} GDPR compliance violations detected. Immediate attention required."
+
+  # =============================================================================
+  # SSL/TLS CERTIFICATE ALERTS
+  # =============================================================================
+  
+  - name: ssl_monitoring
+    interval: 300s  # Check every 5 minutes
+    rules:
+      # SSL certificate expiring soon (7 days)
+      - alert: SSLCertificateExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 7
+        for: 1h
+        labels:
+          severity: warning
+          category: security
+          certificate_type: ssl
+        annotations:
+          summary: "SSL certificate expiring soon for {{ $labels.instance }}"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanize }} days."
+          
+      # SSL certificate expiring very soon (24 hours)
+      - alert: SSLCertificateExpiringVerySoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 1
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+          certificate_type: ssl
+        annotations:
+          summary: "SSL certificate expiring within 24 hours"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanize }} hours!"
+          
+      # SSL certificate expired
+      - alert: SSLCertificateExpired
+        expr: probe_ssl_earliest_cert_expiry - time() < 0
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+          certificate_type: ssl
+        annotations:
+          summary: "SSL certificate has expired"
+          description: "SSL certificate for {{ $labels.instance }} has expired {{ $value | humanize }} ago."
+
+  # =============================================================================
+  # INFRASTRUCTURE & CONTAINER ALERTS
+  # =============================================================================
+  
+  - name: infrastructure_monitoring
+    interval: 30s
+    rules:
+      # Container restart alerts
+      - alert: ContainerRestarted
+        expr: increase(container_start_time_seconds[5m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Container {{ $labels.name }} restarted"
+          description: "Container {{ $labels.name }} has been restarted on {{ $labels.instance }}."
+          
+      # High container memory usage
+      - alert: HighContainerMemoryUsage
+        expr: |
+          (container_memory_usage_bytes / container_spec_memory_limit_bytes * 100) > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High memory usage in container {{ $labels.name }}"
+          description: "Container {{ $labels.name }} memory usage is {{ $value | humanizePercentage }}."
+          
+      # Container OOM kills
+      - alert: ContainerOOMKilled
+        expr: increase(container_memory_failures_total{failure_type="oom"}[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Container killed due to OOM"
+          description: "Container {{ $labels.name }} was killed due to out of memory."
+          
+      # Load balancer health
+      - alert: LoadBalancerUnhealthy
+        expr: nginx_upstream_servers{state!="up"} > 0
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Load balancer backend unhealthy"
+          description: "{{ $value }} backend servers are unhealthy in upstream {{ $labels.upstream }}."
+
+  # =============================================================================
+  # MONITORING SYSTEM HEALTH
+  # =============================================================================
+  
+  - name: monitoring_health
+    interval: 60s
+    rules:
+      # Prometheus target down
+      - alert: PrometheusTargetDown
+        expr: up{job="prometheus"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "Prometheus monitoring target is down"
+          description: "Prometheus target {{ $labels.instance }} has been down for more than 2 minutes."
+          
+      # Grafana down
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          category: monitoring
+        annotations:
+          summary: "Grafana dashboard is down"
+          description: "Grafana monitoring dashboard is not accessible."
+          
+      # AlertManager down
+      - alert: AlertManagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: monitoring
+        annotations:
+          summary: "AlertManager is down"
+          description: "AlertManager is not accessible. Alerts will not be delivered!"
+          
+      # High Prometheus rule evaluation time
+      - alert: SlowPrometheusRuleEvaluation
+        expr: prometheus_rule_group_last_duration_seconds > 60
+        for: 5m
+        labels:
+          severity: warning
+          category: monitoring
+        annotations:
+          summary: "Slow Prometheus rule evaluation"
+          description: "Rule group {{ $labels.rule_group }} takes {{ $value | humanizeDuration }} to evaluate."

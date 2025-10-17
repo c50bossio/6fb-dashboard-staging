@@ -19,7 +19,6 @@ export function AccessibilityProvider({ children }) {
   const [announcements, setAnnouncements] = useState([])
 
   useEffect(() => {
-    // Detect user preferences
     const mediaQueries = {
       reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)'),
       highContrast: window.matchMedia('(prefers-contrast: high)'),
@@ -37,10 +36,8 @@ export function AccessibilityProvider({ children }) {
       })
     }
 
-    // Initial check
     updatePreferences()
 
-    // Listen for changes
     Object.values(mediaQueries).forEach(mq => {
       if (mq.addEventListener) {
         mq.addEventListener('change', updatePreferences)
@@ -60,7 +57,6 @@ export function AccessibilityProvider({ children }) {
     const id = Date.now()
     setAnnouncements(prev => [...prev, { id, message, priority }])
     
-    // Remove announcement after it's been read
     setTimeout(() => {
       setAnnouncements(prev => prev.filter(a => a.id !== id))
     }, 1000)
@@ -98,7 +94,6 @@ export function AccessibilityProvider({ children }) {
   )
 }
 
-// Skip to content link for keyboard navigation
 export function SkipToContent() {
   return (
     <a
@@ -110,7 +105,6 @@ export function SkipToContent() {
   )
 }
 
-// Focus trap for modals and dialogs
 export function FocusTrap({ children, enabled = true }) {
   useEffect(() => {
     if (!enabled) return
@@ -149,7 +143,6 @@ export function FocusTrap({ children, enabled = true }) {
   return <>{children}</>
 }
 
-// Accessible heading component with proper hierarchy
 export function AccessibleHeading({ 
   level = 2, 
   children, 
@@ -178,7 +171,6 @@ export function AccessibleHeading({
   )
 }
 
-// Accessible button with proper ARIA attributes
 export function AccessibleButton({
   children,
   onClick,
@@ -198,7 +190,6 @@ export function AccessibleButton({
     
     onClick?.(e)
     
-    // Announce action for screen readers
     if (ariaLabel) {
       announce(`${ariaLabel} activated`)
     }

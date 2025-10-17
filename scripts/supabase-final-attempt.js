@@ -2,14 +2,12 @@
 
 import { config } from 'dotenv';
 
-// Force reload environment variables
 config({ path: '.env.local' });
 
 const SUPABASE_ACCESS_TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 const PROJECT_ID = 'dfhqjdoydihajmjxniee';
 
-console.log('🚀 Final attempt with fresh environment...');
-console.log('🔑 Access Token:', SUPABASE_ACCESS_TOKEN ? `${SUPABASE_ACCESS_TOKEN.substring(0, 10)}...` : 'MISSING');
+}...` : 'MISSING');
 
 if (!SUPABASE_ACCESS_TOKEN) {
   console.error('❌ SUPABASE_ACCESS_TOKEN not found in environment');
@@ -93,8 +91,6 @@ INSERT INTO public.barbershops (
 ) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, updated_at = NOW();
   `;
 
-  console.log('📋 Executing SQL via Management API...');
-
   try {
     const response = await fetch(`https://api.supabase.com/v1/projects/${PROJECT_ID}/database/query`, {
       method: 'POST',
@@ -107,17 +103,14 @@ INSERT INTO public.barbershops (
       })
     });
 
-    console.log('📊 Response status:', response.status, response.statusText);
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.log('❌ Error response:', errorText);
+      
       return false;
     }
 
     const result = await response.json();
-    console.log('✅ SQL executed successfully!');
-    console.log('📋 Result:', result);
+
     return true;
 
   } catch (error) {
@@ -127,8 +120,7 @@ INSERT INTO public.barbershops (
 }
 
 async function verifyDatabase() {
-  console.log('🔍 Verifying database setup...');
-  
+
   const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -143,13 +135,11 @@ async function verifyDatabase() {
     if (response.ok) {
       const data = await response.json();
       if (data.length > 0) {
-        console.log('✅ Verification successful!');
-        console.log('🏪 Found barbershop:', data[0].name);
+
         return true;
       }
     }
 
-    console.log('⚠️ Verification failed - no data found');
     return false;
 
   } catch (error) {
@@ -159,31 +149,20 @@ async function verifyDatabase() {
 }
 
 async function main() {
-  console.log('🚀 Starting final automated setup attempt...\n');
 
   const sqlSuccess = await executeSQL();
 
   if (sqlSuccess) {
-    console.log('\n🔍 Verifying the setup...');
+    
     const verifySuccess = await verifyDatabase();
 
     if (verifySuccess) {
-      console.log('\n🎉 SUCCESS! Database is ready!');
-      console.log('🔗 Test at: http://localhost:9999/dashboard/website-settings');
-      console.log('💾 Save functionality should work now!');
-      
-      console.log('\n🎯 Next steps:');
-      console.log('1. Go to website settings');
-      console.log('2. Make a change');
-      console.log('3. Click "Save Changes"');
-      console.log('4. You should see "Settings saved successfully!"');
+
     } else {
-      console.log('\n⚠️ Setup completed but verification failed');
-      console.log('The table was created but may need a moment to be available');
+
     }
   } else {
-    console.log('\n❌ Automated setup failed');
-    console.log('📋 Please run the SQL manually in Supabase dashboard');
+
   }
 }
 

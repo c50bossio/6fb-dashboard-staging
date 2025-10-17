@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   XMarkIcon, 
   TrashIcon, 
@@ -9,6 +8,7 @@ import {
   ClockIcon,
   DatabaseIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { getCacheManager } from '@/lib/ai-cache-manager'
 import { getStreamingClient } from '@/lib/ai-streaming-client'
 
@@ -22,7 +22,6 @@ export default function CacheStatsModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(true)
   const [clearing, setClearing] = useState(false)
 
-  // Load cache statistics
   const loadStats = async () => {
     try {
       setLoading(true)
@@ -43,7 +42,6 @@ export default function CacheStatsModal({ isOpen, onClose }) {
     }
   }
 
-  // Clear cache
   const handleClearCache = async () => {
     if (!confirm('Are you sure you want to clear all cached responses?')) {
       return
@@ -62,7 +60,6 @@ export default function CacheStatsModal({ isOpen, onClose }) {
     }
   }
 
-  // Load stats when modal opens
   useEffect(() => {
     if (isOpen) {
       loadStats()

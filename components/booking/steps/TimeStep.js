@@ -52,13 +52,13 @@ export default function TimeStep({ bookingData, shopSettings, onNext, onBack }) 
         
         // Transform API data to component format
         slots = slotsData.map(slot => ({
-          time: slot.time || slot.start_time?.slice(11, 16),
-          display: new Date(slot.start_time || `${dateStr}T${slot.time}`).toLocaleTimeString('en-US', { 
-            hour: 'numeric', 
-            minute: '2-digit' 
+          time: slot.time || slot.scheduled_at?.slice(11, 16),
+          display: new Date(slot.scheduled_at || `${dateStr}T${slot.time}`).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit'
           }),
           available: slot.is_available !== false,
-          dateTime: slot.start_time || `${dateStr}T${slot.time}:00.000Z`
+          dateTime: slot.scheduled_at || `${dateStr}T${slot.time}:00.000Z`
         }))
       } catch (apiError) {
         console.error('Error fetching slots from API:', apiError)

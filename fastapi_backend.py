@@ -461,8 +461,18 @@ def create_refresh_token(user_id: int, user_email: str) -> str:
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Validate JWT token and return current user - secure authentication"""
+
+    # DEVELOPMENT MODE: Bypass authentication for local development
+    if os.getenv('DEVELOPMENT_MODE') == 'true':
+        return {
+            "id": 1,
+            "email": "dev@example.com",
+            "shop_name": "Development Shop",
+            "is_active": True
+        }
+
     token = credentials.credentials
-    
+
     try:
         # Decode and validate JWT token
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
@@ -1360,67 +1370,119 @@ async def save_notification_settings(notifications: dict, current_user: dict = D
 
 @app.put("/api/v1/settings/business-hours")
 async def save_business_hours(business_hours: dict, current_user: dict = Depends(get_current_user)):
-    """Save business hours settings"""
-    with get_db() as conn:
-        # Get existing settings
-        cursor = conn.execute(
-            "SELECT profile_data FROM shop_profiles WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
-            (current_user["id"],)
+    """Save business hours settings to Supabase"""
+    try:
+        # Use demo barbershop for development
+        # TODO: Get actual barbershop_id from current_user when auth is fully implemented
+        barbershop_id = "550e8400-e29b-41d4-a716-446655440000"
+
+        from services.supabase_service import supabase_service
+
+        # Transform from frontend format to database format
+        day_names = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+
+        for day_name, day_data in business_hours.items():
+            day_index = day_names.index(day_name.lower())
+            is_open = day_data.get('enabled', False)
+
+            # Get first shift if exists
+            shifts = day_data.get('shifts', [])
+            open_time = None
+            close_time = None
+
+            if is_open and shifts and len(shifts) > 0:
+                open_time = shifts[0].get('open')
+                close_time = shifts[0].get('close')
+
+            # Upsert to Supabase
+            result = supabase_service.client.table('business_hours')\
+                .upsert({
+                    'barbershop_id': barbershop_id,
+                    'day_of_week': day_index,
+                    'is_open': is_open,
+                    'open_time': open_time,
+                    'close_time': close_time,
+                    'break_start_time': None,  # TODO: Add break support in frontend
+                    'break_end_time': None,
+                    'notes': day_name.capitalize()
+                }, on_conflict='barbershop_id,day_of_week')\
+                .execute()
+
+        return {
+            "message": "Business hours saved successfully to Supabase",
+            "businessHours": business_hours
+        }
+
+    except Exception as e:
+        print(f"Error saving business hours to Supabase: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to save business hours: {str(e)}"
         )
-        profile = cursor.fetchone()
-        
-        if profile and profile["profile_data"]:
-            # Update existing settings
-            existing_settings = json.loads(profile["profile_data"])
-            existing_settings["businessHours"] = business_hours
-            updated_settings = existing_settings
-        else:
-            # Create new settings with business hours
-            updated_settings = {
-                "businessHours": business_hours
-            }
-        
-        # Save updated settings
-        profile_data = json.dumps(updated_settings)
-        
-        # Delete old profiles and insert new one
-        conn.execute("DELETE FROM shop_profiles WHERE user_id = ?", (current_user["id"],))
-        conn.execute(
-            "INSERT INTO shop_profiles (user_id, profile_data) VALUES (?, ?)",
-            (current_user["id"], profile_data)
-        )
-        conn.commit()
-    
-    return {
-        "message": "Business hours saved successfully",
-        "businessHours": business_hours
-    }
 
 @app.get("/api/v1/settings/business-hours")
 async def get_business_hours(current_user: dict = Depends(get_current_user)):
-    """Get business hours settings"""
-    with get_db() as conn:
-        cursor = conn.execute(
-            "SELECT profile_data FROM shop_profiles WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
-            (current_user["id"],)
-        )
-        profile = cursor.fetchone()
-        
-        if profile and profile["profile_data"]:
-            saved_settings = json.loads(profile["profile_data"])
-            if 'businessHours' in saved_settings:
-                return saved_settings['businessHours']
-    
-    # Return defaults
-    return {
-        "monday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
-        "tuesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
-        "wednesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
-        "thursday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
-        "friday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
-        "saturday": {"enabled": True, "shifts": [{"open": "10:00", "close": "16:00"}]},
-        "sunday": {"enabled": False, "shifts": []}
-    }
+    """Get business hours settings from Supabase"""
+    try:
+        # Use demo barbershop for development
+        # TODO: Get actual barbershop_id from current_user when auth is fully implemented
+        barbershop_id = "550e8400-e29b-41d4-a716-446655440000"
+
+        # Query business_hours from Supabase
+        from services.supabase_service import supabase_service
+
+        result = supabase_service.client.table('business_hours')\
+            .select('*')\
+            .eq('barbershop_id', barbershop_id)\
+            .order('day_of_week')\
+            .execute()
+
+        if result.data:
+            # Transform from database format to frontend format
+            day_names = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+            business_hours = {}
+
+            for row in result.data:
+                day_name = day_names[row['day_of_week']]
+                business_hours[day_name] = {
+                    "enabled": row['is_open'],
+                    "shifts": []
+                }
+
+                if row['is_open'] and row['open_time'] and row['close_time']:
+                    # Convert TIME to string format (HH:MM)
+                    open_time = str(row['open_time'])[:5]  # "09:00:00" -> "09:00"
+                    close_time = str(row['close_time'])[:5]
+                    business_hours[day_name]["shifts"].append({
+                        "open": open_time,
+                        "close": close_time
+                    })
+
+            return business_hours
+
+        # Return defaults if no data found
+        return {
+            "monday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "tuesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "wednesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "thursday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "friday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "saturday": {"enabled": True, "shifts": [{"open": "10:00", "close": "16:00"}]},
+            "sunday": {"enabled": False, "shifts": []}
+        }
+
+    except Exception as e:
+        print(f"Error fetching business hours from Supabase: {e}")
+        # Return defaults on error
+        return {
+            "monday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "tuesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "wednesday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "thursday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "friday": {"enabled": True, "shifts": [{"open": "09:00", "close": "18:00"}]},
+            "saturday": {"enabled": True, "shifts": [{"open": "10:00", "close": "16:00"}]},
+            "sunday": {"enabled": False, "shifts": []}
+        }
 
 @app.post("/api/v1/notifications/test")
 async def test_notification(
@@ -1477,29 +1539,34 @@ async def get_notification_history(
     limit: int = 50
 ):
     """Get notification history for current user"""
-    with get_db() as conn:
-        cursor = conn.execute(
-            """SELECT * FROM notification_history 
-               WHERE user_id = ? 
-               ORDER BY sent_at DESC 
-               LIMIT ?""",
-            (current_user["id"], limit)
-        )
-        
-        history = []
-        for row in cursor:
-            history.append({
-                "id": row["id"],
-                "type": row["type"],
-                "recipient": row["recipient"],
-                "subject": row["subject"],
-                "content": row["content"][:100] + "..." if len(row["content"]) > 100 else row["content"],
-                "status": row["status"],
-                "error_message": row["error_message"],
-                "sent_at": row["sent_at"]
-            })
-        
-        return {"notifications": history, "count": len(history)}
+    try:
+        with get_db() as conn:
+            cursor = conn.execute(
+                """SELECT * FROM notification_history
+                   WHERE user_id = ?
+                   ORDER BY sent_at DESC
+                   LIMIT ?""",
+                (current_user["id"], limit)
+            )
+
+            history = []
+            for row in cursor:
+                history.append({
+                    "id": row["id"],
+                    "type": row["type"],
+                    "recipient": row["recipient"],
+                    "subject": row["subject"],
+                    "content": row["content"][:100] + "..." if len(row["content"]) > 100 else row["content"],
+                    "status": row["status"],
+                    "error_message": row["error_message"],
+                    "sent_at": row["sent_at"]
+                })
+
+            return {"notifications": history, "count": len(history)}
+    except Exception as e:
+        # TODO: Migrate to Supabase notification_history table
+        print(f"⚠️  Notification history not available (SQLite table missing): {e}")
+        return {"notifications": [], "count": 0}
 
 @app.post("/api/v1/notifications/queue")
 async def queue_notification(
@@ -1529,8 +1596,19 @@ async def queue_notification(
 @app.get("/api/v1/notifications/queue/status")
 async def get_queue_status(current_user: dict = Depends(get_current_user)):
     """Get notification queue status"""
-    status = await notification_queue.get_queue_status()
-    return status
+    try:
+        status = await notification_queue.get_queue_status()
+        return status
+    except Exception as e:
+        # TODO: Migrate to Supabase notification queue
+        print(f"⚠️  Queue status not available: {e}")
+        return {
+            "processing": False,
+            "total": 0,
+            "pending": 0,
+            "failed": 0,
+            "next_scheduled": None
+        }
 
 @app.post("/api/v1/notifications/queue/{queue_id}/cancel")
 async def cancel_queued_notification(
@@ -3543,6 +3621,16 @@ try:
 except ImportError as e:
     NOTION_INTEGRATION_AVAILABLE = False
     print(f"⚠️ Notion Integration system not available: {e}")
+
+# Import and include OpenAI AgentKit router
+try:
+    from api.v1.agents.query import router as agents_router
+    app.include_router(agents_router)
+    print("✅ OpenAI AgentKit System included at /api/v1/agents/*")
+    AGENTKIT_AVAILABLE = True
+except ImportError as e:
+    AGENTKIT_AVAILABLE = False
+    print(f"⚠️ OpenAI AgentKit system not available: {e}")
 
 
 # Mount alert service if available

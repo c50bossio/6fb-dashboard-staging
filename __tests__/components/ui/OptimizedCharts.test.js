@@ -6,7 +6,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { RevenueChart, AppointmentChart, CustomerChart } from '../../../components/ui/OptimizedCharts';
 
-// Mock Chart.js and react-chartjs-2
 const ChartjsAuto = {
   Chart: {
     register: jest.fn(),
@@ -63,7 +62,6 @@ jest.mock('react-chartjs-2', () => ({
   Bar: mockBar,
 }));
 
-// Mock ResizeObserver
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
@@ -278,7 +276,6 @@ describe('OptimizedCharts Components', () => {
       render(<CustomerChart data={mockCustomerData} loading={false} showStats={true} />);
       
       const retentionElement = screen.getByTestId('retention-value');
-      // Total returning: 31, Total new: 20, Retention: 31/(31+20) = 60.8%
       expect(retentionElement).toHaveTextContent('60.8%');
     });
 
@@ -340,7 +337,6 @@ describe('OptimizedCharts Components', () => {
     });
 
     it('adjusts font sizes for mobile', () => {
-      // Mock mobile viewport
       Object.defineProperty(window, 'innerWidth', {
         writable: true,
         configurable: true,
@@ -419,7 +415,6 @@ describe('OptimizedCharts Components', () => {
     });
 
     it('provides high contrast mode support', () => {
-      // Mock high contrast media query
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
         value: jest.fn().mockImplementation(query => ({
@@ -436,7 +431,6 @@ describe('OptimizedCharts Components', () => {
       const chart = screen.getByTestId('line-chart');
       const datasets = JSON.parse(chart.getAttribute('data-datasets'));
       
-      // Should use high contrast colors
       expect(datasets[0].borderColor).toBe('rgb(0, 0, 0)');
     });
   });
@@ -454,10 +448,8 @@ describe('OptimizedCharts Components', () => {
     });
 
     it('shows fallback UI on chart render error', () => {
-      // Mock console.error to suppress error output in tests
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       
-      // Force chart render error
       mockLine.mockImplementationOnce(() => {
         throw new Error('Chart render failed');
       });

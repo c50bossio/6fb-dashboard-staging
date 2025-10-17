@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { 
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
+import {
   ChartBarIcon,
   CpuChipIcon,
   ClipboardDocumentListIcon,
@@ -36,7 +37,7 @@ import InventoryPanel from './InventoryPanel'
 // Use API calls instead of direct database imports (client component)
 
 // Demo barbershop ID constant - matches Supabase UUID
-const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+// NO DEMO/MOCK DATA - Use real barbershop IDs from profile only
 
 // Dashboard modes for different user needs
 const DASHBOARD_MODES = {
@@ -95,11 +96,14 @@ const modeConfigs = {
   }
 }
 
-export default function UnifiedDashboard({ user }) {
+export default function UnifiedDashboard({ user, profile }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const modeParam = searchParams.get('mode')
-  
+
+  // Get current location from GlobalDashboardContext - this is the source of truth for shop selection
+  const { currentLocationId, currentLocation, isLoading: contextLoading } = useGlobalDashboard()
+
   const [currentMode, setCurrentMode] = useState(DASHBOARD_MODES.EXECUTIVE)
   const [isLoading, setIsLoading] = useState(false)
   const [dashboardData, setDashboardData] = useState(null)
@@ -114,24 +118,40 @@ export default function UnifiedDashboard({ user }) {
 
   // Load dashboard data based on current mode - API CALLS ONLY
   const loadDashboardData = useCallback(async (forceRefresh = false) => {
-    // Get barbershop ID from user or use demo
-    const barbershopId = user?.barbershop_id || DEMO_BARBERSHOP_ID
-    
+    // CRITICAL: Use currentLocationId from GlobalDashboardContext - this is the selected shop
+    // Do NOT use profile?.barbershop_id as that's static and doesn't change when switching shops
+    const barbershopId = currentLocationId
+
+    if (!barbershopId) {
+      // Only log error once to avoid spam
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('⚠️ No location selected in GlobalDashboardContext - skipping dashboard load')
+      }
+      setIsLoading(false)
+      return
+    }
+
     // CACHE DISABLED: Always fetch fresh data for consistency between Executive/Analytics modes
     // Previously cached data was causing inconsistencies with Analytics panel
-    
-    console.log('Starting dashboard data load...', { currentMode, barbershopId, user })
+
+    if (process.env.NODE_ENV === 'development' && forceRefresh) {
+      console.log('🏪 [UnifiedDashboard] Force refresh - loading data for:', currentMode)
+    }
     setIsLoading(true)
     try {
-      console.log(`Loading dashboard data for mode: ${currentMode}`)
-      
       // Use faster analytics API for executive mode to avoid slow AI health checks
       if (currentMode === DASHBOARD_MODES.EXECUTIVE) {
-        const response = await fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json&force_refresh=true`)
-        const result = await response.json()
-        
-        if (response.ok && result.success) {
-          // Transform analytics data for executive dashboard - FIX DATA MAPPING
+        // Fetch both analytics and AI insights in parallel
+        const [analyticsResponse, insightsResponse] = await Promise.all([
+          fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json&force_refresh=true`),
+          fetch(`/api/ai/insights?barbershop_id=${barbershopId}`)
+        ])
+
+        const result = await analyticsResponse.json()
+        const insightsResult = await insightsResponse.json()
+
+        if (analyticsResponse.ok && result.success) {
+          // Transform analytics data for executive dashboard - USE REAL GROWTH DATA
           const apiData = result.data
           const transformedData = {
             // Executive Summary expects metrics in this format
@@ -139,7 +159,14 @@ export default function UnifiedDashboard({ user }) {
               revenue: apiData.total_revenue || 0,
               customers: apiData.total_customers || 0,
               appointments: apiData.total_appointments || 0,
-              satisfaction: 4.5 // Default satisfaction score
+              satisfaction: apiData.average_satisfaction || 4.5 // REAL satisfaction from database!
+            },
+            // Growth percentages - REAL DATA from period-over-period comparison!
+            growth: {
+              revenue: apiData.revenue_growth || 0,
+              customers: apiData.customer_growth || 0,
+              appointments: apiData.appointment_growth || 0,
+              satisfaction: 0 // Satisfaction growth would require historical tracking
             },
             // Today's snapshot data
             todayMetrics: {
@@ -169,10 +196,11 @@ export default function UnifiedDashboard({ user }) {
               uptime_percent: 99.8
             },
             // Include raw analytics data for other components
-            analytics_data: apiData
+            analytics_data: apiData,
+            // Add dynamic AI insights (NO MOCK DATA!)
+            insights: insightsResult.success ? insightsResult.insights : []
           }
           setDashboardData(transformedData)
-          console.log('Dashboard data loaded successfully:', transformedData)
           // Cache removed for data consistency between Executive/Analytics modes
         } else {
           console.warn('Analytics API error:', result)
@@ -201,15 +229,17 @@ export default function UnifiedDashboard({ user }) {
       }
       
       setLastRefresh(new Date())
-      
+
     } catch (error) {
-      console.error('Failed to load dashboard data:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ [UnifiedDashboard] Failed to load dashboard data:', error)
+      }
       // Show empty state instead of mock data
       setDashboardData({})
     } finally {
       setIsLoading(false)
     }
-  }, [currentMode, user])
+  }, [currentMode, currentLocationId]) // Depend on currentLocationId so data reloads when shop changes
 
   // Onboarding checklist data loading now handled globally
   // const loadChecklistData = useCallback(async () => { ... }, [])
@@ -235,18 +265,28 @@ export default function UnifiedDashboard({ user }) {
 
   // Load data on mount and mode change
   useEffect(() => {
-    loadDashboardData()
-    // loadChecklistData() // Now handled globally
-    
+    // Only load data if we have a location selected
+    if (currentLocationId) {
+      loadDashboardData()
+      // loadChecklistData() // Now handled globally
+    }
+
     // Set up auto-refresh every 30 seconds for operations mode
-    if (currentMode === DASHBOARD_MODES.OPERATIONS) {
-      const interval = setInterval(() => {
+    let interval
+    if (currentMode === DASHBOARD_MODES.OPERATIONS && currentLocationId) {
+      interval = setInterval(() => {
         loadDashboardData()
         // loadChecklistData() // Now handled globally
       }, 30000)
-      return () => clearInterval(interval)
     }
-  }, [currentMode, user]) // Add user dependency, but not loadDashboardData to avoid infinite loop
+
+    // Cleanup: Always clear interval on unmount or dependency change
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
+    }
+  }, [currentMode, currentLocationId, loadDashboardData]) // Reload when location changes
 
   const handleModeChange = (mode) => {
     setCurrentMode(mode)
@@ -257,19 +297,18 @@ export default function UnifiedDashboard({ user }) {
 
   // Prefetch data when hovering over executive mode button
   const handleExecutiveModeHover = useCallback(() => {
-    if (currentMode !== DASHBOARD_MODES.EXECUTIVE) {
-      // Prefetch analytics data for executive mode
-      const barbershopId = user?.barbershop_id || DEMO_BARBERSHOP_ID
-      fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json`)
+    if (currentMode !== DASHBOARD_MODES.EXECUTIVE && currentLocationId) {
+      // Prefetch analytics data for executive mode - use selected location ID
+      fetch(`/api/analytics/live-data?barbershop_id=${currentLocationId}&format=json`)
         .then(response => response.json())
         .then(result => {
           if (result.success) {
-            console.log('Executive data prefetched')
+            console.log('Executive data prefetched for location:', currentLocationId)
           }
         })
         .catch(() => {}) // Ignore errors for prefetch
     }
-  }, [currentMode, user])
+  }, [currentMode, currentLocationId])
 
   // Mode selector component
   const ModeSelector = () => (
@@ -286,10 +325,10 @@ export default function UnifiedDashboard({ user }) {
             onMouseEnter={value === DASHBOARD_MODES.EXECUTIVE ? handleExecutiveModeHover : undefined}
             className={`
               flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
-              transition-all duration-300 
-              ${isActive 
-                ? `gradient-gold-header text-white shadow-gold-glow scale-105 text-shadow-subtle` 
-                : `bg-gray-50/70 text-gray-700 hover:bg-brand-50/50 hover:text-brand-700 hover:shadow-modern`
+              transition-all duration-300
+              ${isActive
+                ? `gradient-gold-header text-white shadow-gold-glow scale-105 text-shadow-subtle`
+                : `bg-muted/70 text-foreground hover:bg-brand-50/50 dark:hover:bg-brand-900/30 hover:text-brand-700 dark:hover:text-brand-300 hover:shadow-modern`
               }
             `}
           >
@@ -303,7 +342,7 @@ export default function UnifiedDashboard({ user }) {
       <button
         onClick={() => loadDashboardData(true)}
         disabled={isLoading}
-        className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+        className="ml-auto flex items-center gap-2 px-3 py-2 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
       >
         <ArrowPathIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
         <span className="text-xs hidden lg:inline">
@@ -319,8 +358,99 @@ export default function UnifiedDashboard({ user }) {
       return (
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
-            <ArrowPathIcon className="h-12 w-12 text-gray-400 animate-spin mx-auto mb-4" />
-            <p className="text-gray-600">Loading dashboard...</p>
+            <ArrowPathIcon className="h-12 w-12 text-muted-foreground animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading dashboard...</p>
+          </div>
+        </div>
+      )
+    }
+
+    // Show setup prompt when no location is selected
+    if (!dashboardData && !currentLocationId) {
+      // Enhanced error diagnostics for production debugging
+      const diagnosticInfo = {
+        hasUser: !!user,
+        hasProfile: !!profile,
+        profileBarbershopId: profile?.barbershop_id || 'Not set',
+        currentLocationId: currentLocationId || 'Not set',
+        contextLoading: contextLoading,
+        timestamp: new Date().toISOString()
+      }
+
+      // Log diagnostic info in development mode
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 [Dashboard] No location selected - diagnostic info:', diagnosticInfo)
+      }
+
+      return (
+        <div className="card-modern rounded-xl p-12 text-center">
+          <div className="max-w-md mx-auto">
+            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Squares2X2Icon className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              {contextLoading ? 'Loading Location...' : 'No Location Available'}
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              {contextLoading ? (
+                'Please wait while we load your location information...'
+              ) : profile?.barbershop_id ? (
+                `Your profile has a location ID (${profile.barbershop_id.substring(0, 8)}...), but it couldn't be loaded. This may indicate a database connection issue.`
+              ) : (
+                'No location is assigned to your account. Please complete your shop setup to get started.'
+              )}
+            </p>
+
+            {/* Diagnostic info for debugging (development only) */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-left">
+                <p className="text-xs font-mono text-gray-600 dark:text-gray-400 mb-2">
+                  <strong>Debug Info:</strong>
+                </p>
+                <ul className="text-xs font-mono text-gray-600 dark:text-gray-400 space-y-1">
+                  <li>User: {diagnosticInfo.hasUser ? '✓' : '✗'}</li>
+                  <li>Profile: {diagnosticInfo.hasProfile ? '✓' : '✗'}</li>
+                  <li>Profile barbershop_id: {diagnosticInfo.profileBarbershopId}</li>
+                  <li>Context Location ID: {diagnosticInfo.currentLocationId}</li>
+                  <li>Context Loading: {diagnosticInfo.contextLoading ? 'Yes' : 'No'}</li>
+                </ul>
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-center">
+              <a
+                href="/settings/shop"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+              >
+                Complete Shop Setup
+              </a>
+              <a
+                href="/settings/profile"
+                className="inline-flex items-center px-4 py-2 border border-muted text-sm font-medium rounded-md text-foreground bg-muted hover:bg-muted/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+              >
+                Update Profile
+              </a>
+            </div>
+
+            {/* Additional help for production issues */}
+            {!contextLoading && profile?.barbershop_id && (
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-sm text-muted-foreground mb-3">
+                  <strong>Having trouble?</strong>
+                </p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  If this issue persists, it may indicate a database connection problem.
+                  Please check your internet connection and try refreshing the page.
+                </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-md text-brand-700 bg-brand-50 hover:bg-brand-100"
+                >
+                  <ArrowPathIcon className="h-3 w-3 mr-1" />
+                  Refresh Page
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )
@@ -381,8 +511,8 @@ export default function UnifiedDashboard({ user }) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Main Dashboard</h2>
-            <p className="text-gray-600 mt-1">{modeConfigs[currentMode].description}</p>
+            <h2 className="text-2xl font-bold text-foreground">Main Dashboard</h2>
+            <p className="text-muted-foreground mt-1">{modeConfigs[currentMode].description}</p>
           </div>
           <ModeSelector />
         </div>
@@ -398,9 +528,37 @@ export default function UnifiedDashboard({ user }) {
             <div className="space-y-6">
               {/* Executive Summary - Full width now that onboarding is global */}
               <UnifiedExecutiveSummary data={dashboardData} />
-              <SmartAlertsPanel barbershop_id={user?.barbershop_id || 'demo'} />
+              <SmartAlertsPanel barbershop_id={currentLocationId} />
             </div>
-          ) : null}
+          ) : (
+            // Show setup prompt when no barbershop is configured
+            <div className="card-modern rounded-xl p-12 text-center">
+              <div className="max-w-md mx-auto">
+                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Squares2X2Icon className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-foreground mb-2">Complete Your Shop Setup</h3>
+                <p className="text-muted-foreground mb-6">
+                  To view your dashboard, you need to complete your barbershop profile setup.
+                  This will enable analytics, appointments, and all dashboard features.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <a
+                    href="/settings/shop"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+                  >
+                    Complete Shop Setup
+                  </a>
+                  <a
+                    href="/settings/profile"
+                    className="inline-flex items-center px-4 py-2 border border-muted text-sm font-medium rounded-md text-foreground bg-muted hover:bg-muted/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+                  >
+                    Update Profile
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 

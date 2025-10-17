@@ -26,7 +26,6 @@ export const useTenantAnalytics = (dateRange = '30d', filters = {}) => {
         setLoading(true)
         setError(null)
 
-        // Fetch real analytics data from API
         const response = await fetch('/api/analytics/tenant', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -43,7 +42,6 @@ export const useTenantAnalytics = (dateRange = '30d', filters = {}) => {
 
         const analyticsData = await response.json()
         setData(analyticsData)
-        console.log('📊 Tenant analytics loaded:', tenantId, analyticsData.summary)
 
       } catch (err) {
         console.error('❌ Error fetching tenant analytics:', err)
@@ -75,7 +73,6 @@ export const usePlatformAnalytics = (dateRange = '30d') => {
         setLoading(true)
         setError(null)
 
-        // Fetch real platform analytics from API
         const response = await fetch('/api/analytics/platform', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -90,7 +87,6 @@ export const usePlatformAnalytics = (dateRange = '30d') => {
 
         const platformData = await response.json()
         setData(platformData)
-        console.log('🌍 Platform analytics loaded:', platformData.summary)
 
       } catch (err) {
         console.error('❌ Error fetching platform analytics:', err)
@@ -111,8 +107,8 @@ export const usePlatformAnalytics = (dateRange = '30d') => {
  * Ensures consistent format regardless of source
  */
 function transformTenantAnalytics(tenant, rawData, dateRange, filters) {
-  const baseMultiplier = tenant.subscription_tier === 'enterprise' ? 2.5 : 
-                        tenant.subscription_tier === 'professional' ? 1.5 : 1
+  const baseMultiplier = ['enterprise', 'ENTERPRISE'].includes(tenant.subscription_tier) ? 2.5 : 
+                        ['professional', 'PROFESSIONAL'].includes(tenant.subscription_tier) ? 1.5 : 1
 
   return {
     tenant_id: tenant.id,
@@ -164,7 +160,6 @@ function transformTenantAnalytics(tenant, rawData, dateRange, filters) {
       engagement_trend: 'increasing'
     },
 
-    // Time series data for charts
     daily_stats: generateDailyStats(30, baseMultiplier),
     
     benchmarks: {

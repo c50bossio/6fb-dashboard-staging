@@ -1,26 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { 
   ScissorsIcon,
   ShieldCheckIcon,
   InformationCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import ServiceManager from '@/components/services/ServiceManager'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 import { getBarberPermissions, getPermissionLevel } from '@/lib/permissions'
 
 export default function BarberServices() {
   const { user, profile } = useAuth()
   const [loading, setLoading] = useState(true)
   const [permissions, setPermissions] = useState(null)
-  const [barbershopId, setBarbershopId] = useState(null)
+  const [barbershopId, setbarbershopId] = useState(null)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     loadBarberData()
-  }, [user])
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadBarberData = async () => {
     if (!user?.id) return
@@ -28,17 +28,15 @@ export default function BarberServices() {
     try {
       setLoading(true)
       
-      // Get barber's associated barbershop
-      const shopId = await getBarberBarbershop()
-      if (!shopId) {
+      const barbershopId = await getbarbershop()
+      if (!barbershopId) {
         setError('No barbershop association found. Please contact your shop owner.')
         return
       }
       
-      setBarbershopId(shopId)
+      setbarbershopId(barbershopId)
       
-      // Load permissions
-      const perms = await getBarberPermissions(user.id, shopId)
+      const perms = await getBarberPermissions(user.id, barbershopId)
       setPermissions(perms)
       
     } catch (error) {
@@ -49,17 +47,12 @@ export default function BarberServices() {
     }
   }
 
-  const getBarberBarbershop = async () => {
-    // This would typically come from a barbershop_staff table or similar
-    // For now, we'll use a placeholder - this should be implemented based on your auth system
+  const getbarbershop = async () => {
     
-    // Try to get from profile or user metadata
     if (profile?.barbershop_id) {
       return profile.barbershop_id
     }
     
-    // If no association found, we need to handle this case
-    // In a real app, you'd query the barbershop_staff table
     return null
   }
 

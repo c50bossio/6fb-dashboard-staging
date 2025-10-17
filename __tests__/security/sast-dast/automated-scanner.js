@@ -28,15 +28,12 @@ export class AutomatedSecurityScanner {
    * Initialize scanner and prepare environment
    */
   async initialize() {
-    console.log(`🔧 Initializing security scanner (ID: ${this.scanId})`);
+    `);
     
-    // Create report directory
     await fs.mkdir(this.reportDir, { recursive: true });
     
-    // Validate tool availability
     await this.validateTools();
-    
-    console.log('✅ Scanner initialized successfully');
+
   }
 
   /**
@@ -59,13 +56,13 @@ export class AutomatedSecurityScanner {
       try {
         await execAsync(tool.command);
         availableTools.push(tool.name);
-        console.log(`✅ ${tool.name} is available`);
+        
       } catch (error) {
         if (tool.required) {
           missingTools.push(tool.name);
           console.error(`❌ Required tool ${tool.name} is not available`);
         } else {
-          console.log(`⚠️ Optional tool ${tool.name} is not available`);
+          
         }
       }
     }
@@ -81,30 +78,24 @@ export class AutomatedSecurityScanner {
    * Run Static Application Security Testing (SAST)
    */
   async runSAST() {
-    console.log('🔍 Running SAST analysis...');
-    
+
     const sastResults = {};
 
-    // Semgrep SAST scan
     if (this.availableTools.includes('semgrep')) {
-      console.log('📊 Running Semgrep analysis...');
+      
       sastResults.semgrep = await this.runSemgrep();
     }
 
-    // Bandit for Python (if available)
     if (this.availableTools.includes('bandit')) {
-      console.log('🐍 Running Bandit Python analysis...');
+      
       sastResults.bandit = await this.runBandit();
     }
 
-    // Custom JavaScript/TypeScript analysis
-    console.log('📝 Running custom JavaScript/TypeScript analysis...');
     sastResults.custom = await this.runCustomSAST();
 
     this.results.sast = sastResults;
     await this.saveResults('sast', sastResults);
-    
-    console.log('✅ SAST analysis completed');
+
     return sastResults;
   }
 
@@ -187,10 +178,8 @@ export class AutomatedSecurityScanner {
     const projectRoot = process.cwd();
 
     try {
-      // Analyze package.json for security issues
       const packageJson = JSON.parse(await fs.readFile(path.join(projectRoot, 'package.json'), 'utf8'));
       
-      // Check for dangerous dependencies
       const dangerousDeps = [
         'eval', 'vm2', 'serialize-javascript', 'node-serialize',
         'express-fileupload', 'formidable', 'multer'
@@ -210,7 +199,6 @@ export class AutomatedSecurityScanner {
         }
       }
 
-      // Scan for hardcoded secrets
       const secretPatterns = [
         { pattern: /["']?[A-Za-z0-9]{32,}["']?/g, name: 'potential-api-key' },
         { pattern: /password\s*[:=]\s*["'][^"']{6,}["']/gi, name: 'hardcoded-password' },
@@ -237,7 +225,6 @@ export class AutomatedSecurityScanner {
           }
         }
 
-        // Check for dangerous JavaScript patterns
         const dangerousPatterns = [
           { pattern: /eval\s*\(/g, name: 'eval-usage', severity: 'HIGH' },
           { pattern: /innerHTML\s*=/g, name: 'innerHTML-xss', severity: 'MEDIUM' },
@@ -290,24 +277,19 @@ export class AutomatedSecurityScanner {
    * Run Dynamic Application Security Testing (DAST)
    */
   async runDAST() {
-    console.log('🎯 Running DAST analysis...');
-    
+
     const dastResults = {};
 
-    // Nuclei vulnerability scanner
     if (this.availableTools.includes('nuclei')) {
-      console.log('🚀 Running Nuclei vulnerability scan...');
+      
       dastResults.nuclei = await this.runNuclei();
     }
 
-    // Custom web application security tests
-    console.log('🌐 Running custom web application security tests...');
     dastResults.custom = await this.runCustomDAST();
 
     this.results.dast = dastResults;
     await this.saveResults('dast', dastResults);
-    
-    console.log('✅ DAST analysis completed');
+
     return dastResults;
   }
 
@@ -373,15 +355,12 @@ export class AutomatedSecurityScanner {
     const baseUrl = this.config.environments.development.baseUrl;
 
     try {
-      // Test for security headers
       const securityHeadersTest = await this.testSecurityHeaders(baseUrl);
       findings.push(...securityHeadersTest);
 
-      // Test for information disclosure
       const infoDisclosureTest = await this.testInformationDisclosure(baseUrl);
       findings.push(...infoDisclosureTest);
 
-      // Test for common vulnerabilities
       const commonVulnTest = await this.testCommonVulnerabilities(baseUrl);
       findings.push(...commonVulnTest);
 
@@ -423,7 +402,6 @@ export class AutomatedSecurityScanner {
       const requiredHeaders = this.config.apiSecurity.headers.required;
       const forbiddenHeaders = this.config.apiSecurity.headers.forbidden;
 
-      // Check for missing required headers
       for (const [headerName, expectedValue] of Object.entries(requiredHeaders)) {
         const headerValue = headers[headerName.toLowerCase()];
         
@@ -446,7 +424,6 @@ export class AutomatedSecurityScanner {
         }
       }
 
-      // Check for forbidden headers
       for (const headerName of forbiddenHeaders) {
         if (headers[headerName.toLowerCase()]) {
           findings.push({
@@ -503,7 +480,6 @@ export class AutomatedSecurityScanner {
           });
         }
       } catch (error) {
-        // Expected for most paths - not a finding
       }
     }
 
@@ -517,7 +493,6 @@ export class AutomatedSecurityScanner {
     const findings = [];
 
     try {
-      // Test for clickjacking protection
       const response = await fetch(baseUrl);
       const xFrameOptions = response.headers.get('x-frame-options');
       const csp = response.headers.get('content-security-policy');
@@ -532,7 +507,6 @@ export class AutomatedSecurityScanner {
         });
       }
 
-      // Test for HTTPS redirect
       try {
         const httpUrl = baseUrl.replace('https://', 'http://');
         const httpResponse = await fetch(httpUrl, { redirect: 'manual' });
@@ -547,7 +521,6 @@ export class AutomatedSecurityScanner {
           });
         }
       } catch (error) {
-        // HTTP might not be available - not necessarily a finding
       }
 
     } catch (error) {
@@ -565,32 +538,27 @@ export class AutomatedSecurityScanner {
    * Run dependency vulnerability analysis
    */
   async runDependencyAnalysis() {
-    console.log('📦 Running dependency vulnerability analysis...');
-    
+
     const dependencyResults = {};
 
-    // NPM Audit
     if (this.availableTools.includes('npm audit')) {
-      console.log('📊 Running npm audit...');
+      
       dependencyResults.npmAudit = await this.runNpmAudit();
     }
 
-    // Snyk (if available)
     if (this.availableTools.includes('snyk')) {
-      console.log('🔍 Running Snyk analysis...');
+      
       dependencyResults.snyk = await this.runSnyk();
     }
 
-    // Safety for Python dependencies (if available)
     if (this.availableTools.includes('safety')) {
-      console.log('🐍 Running Safety analysis...');
+      
       dependencyResults.safety = await this.runSafety();
     }
 
     this.results.dependencies = dependencyResults;
     await this.saveResults('dependencies', dependencyResults);
-    
-    console.log('✅ Dependency analysis completed');
+
     return dependencyResults;
   }
 
@@ -692,7 +660,6 @@ export class AutomatedSecurityScanner {
    * Generate comprehensive security report
    */
   async generateReport() {
-    console.log('📊 Generating comprehensive security report...');
 
     const overallSummary = this.calculateOverallSummary();
     const recommendations = this.generateRecommendations();
@@ -710,18 +677,12 @@ export class AutomatedSecurityScanner {
       compliance: this.assessCompliance()
     };
 
-    // Save main report
     await this.saveResults('final-report', report);
 
-    // Generate HTML report
     await this.generateHTMLReport(report);
 
-    // Generate SARIF report for integration with security tools
     await this.generateSARIFReport(report);
 
-    console.log(`📋 Security report generated: ${this.reportDir}/final-report.json`);
-    console.log(`🌐 HTML report available: ${this.reportDir}/security-report.html`);
-    
     return report;
   }
 
@@ -738,7 +699,6 @@ export class AutomatedSecurityScanner {
       categories: {}
     };
 
-    // Aggregate findings from all tools
     for (const [category, results] of Object.entries(this.results)) {
       for (const [tool, result] of Object.entries(results)) {
         if (result.summary) {
@@ -751,7 +711,6 @@ export class AutomatedSecurityScanner {
       }
     }
 
-    // Calculate security score (0-100)
     const maxScore = 100;
     const criticalPenalty = summary.critical * 10;
     const highPenalty = summary.high * 5;
@@ -780,7 +739,6 @@ export class AutomatedSecurityScanner {
   generateRecommendations() {
     const recommendations = [];
 
-    // Analyze results and generate recommendations
     if (this.results.sast) {
       Object.values(this.results.sast).forEach(result => {
         if (result.findings) {
@@ -798,7 +756,6 @@ export class AutomatedSecurityScanner {
       });
     }
 
-    // Sort by priority
     return recommendations.sort((a, b) => {
       const priorityOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
       return priorityOrder[b.priority] - priorityOrder[a.priority];
@@ -811,7 +768,6 @@ export class AutomatedSecurityScanner {
   assessCompliance() {
     const compliance = {};
 
-    // OWASP Top 10 assessment
     if (this.config.compliance.frameworks.owasp_top10.enabled) {
       compliance.owasp_top10 = this.assessOWASPCompliance();
     }
@@ -923,7 +879,6 @@ export class AutomatedSecurityScanner {
       runs: []
     };
 
-    // Convert findings to SARIF format
     for (const [category, results] of Object.entries(report.results)) {
       for (const [tool, result] of Object.entries(results)) {
         if (result.findings) {
@@ -1020,24 +975,18 @@ export class AutomatedSecurityScanner {
    * Run complete security scan
    */
   async runCompleteScan() {
-    console.log('🚀 Starting comprehensive security scan...');
-    
+
     try {
       await this.initialize();
       
-      // Run all security tests
       await this.runSAST();
       await this.runDAST();
       await this.runDependencyAnalysis();
       
-      // Generate final report
       const report = await this.generateReport();
-      
-      console.log('✅ Security scan completed successfully');
-      console.log(`📊 Security Score: ${report.summary.securityScore}/100 (${report.summary.riskLevel} risk)`);
-      console.log(`🔍 Total Findings: ${report.summary.totalFindings}`);
-      console.log(`🔴 Critical: ${report.summary.critical}, 🟠 High: ${report.summary.high}, 🟡 Medium: ${report.summary.medium}, 🟢 Low: ${report.summary.low}`);
-      
+
+      `);
+
       return report;
       
     } catch (error) {

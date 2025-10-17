@@ -38,24 +38,29 @@ export default function GlobalOnboardingProvider({ children, user }) {
     
     // Widget should show when:
     // 1. On a protected page AND
-    // 2. User is authenticated (or in development mode on protected pages) AND  
+    // 2. User is authenticated (or in development mode on protected pages) AND
     // 3. Not on excluded pages (embed/onboarding)
-    const shouldShow = isProtectedPage && 
-                      (isAuthenticated || isDevelopment) && 
-                      !isEmbedPage && 
+    const shouldShow = isProtectedPage &&
+                      (isAuthenticated || isDevelopment) &&
+                      !isEmbedPage &&
                       !isOnboardingPage
-    
+
     // Auto-hide if user has completed onboarding (100%)
     const progress = calculateProgress()
     const isCompleted = progress >= 100
-    
+
+    // Development bypass: Hide onboarding when testing specific features
+    const developmentHideOnboarding = isDevelopment &&
+                                     process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true'
+
     // Debug logging removed - visibility logic working correctly
-    
-    setIsVisible(shouldShow && !isCompleted)
+
+    setIsVisible(shouldShow && !isCompleted && !developmentHideOnboarding)
   }, [pathname, user, completedItems])
 
   const loadChecklistData = async () => {
-    if (!user && process.env.NODE_ENV !== 'development') {
+    // Always require a user for API calls, regardless of environment
+    if (!user) {
       setChecklistData(null)
       setCompletedItems([])
       return
@@ -63,8 +68,17 @@ export default function GlobalOnboardingProvider({ children, user }) {
 
     try {
       const response = await fetch('/api/onboarding/checklist/status')
+
+      // Silently handle authentication errors (401) - user session may not be fully established yet
+      if (response.status === 401) {
+        // Don't log error - this is expected during initial page load
+        setChecklistData(null)
+        setCompletedItems([])
+        return
+      }
+
       const result = await response.json()
-      
+
       if (response.ok && result.success) {
         setChecklistData(result.data)
         // Extract completed item IDs
@@ -73,12 +87,12 @@ export default function GlobalOnboardingProvider({ children, user }) {
           ?.map(item => item.id) || []
         setCompletedItems(completedIds)
       } else {
-        // If not authenticated or failed, use empty state
+        // If not authenticated or failed, use empty state silently
         setChecklistData(null)
         setCompletedItems([])
       }
     } catch (error) {
-      console.error('Failed to load global checklist data:', error)
+      // Silently handle network errors - don't spam console with non-critical errors
       setChecklistData(null)
       setCompletedItems([])
     }
@@ -97,12 +111,29 @@ export default function GlobalOnboardingProvider({ children, user }) {
   }
 
   const handleProgress = (percentage) => {
-    // Refresh checklist data when progress updates
-    loadChecklistData()
-    
+    // Debounced refresh to prevent rapid API calls
+    const debouncedRefresh = debounce(() => {
+      loadChecklistData()
+    }, 500)
+
+    debouncedRefresh()
+
     // Auto-hide when completed
     if (percentage >= 100) {
       setTimeout(() => setIsVisible(false), 3000) // Hide after celebration
+    }
+  }
+
+  // Debounce utility function
+  const debounce = (func, wait) => {
+    let timeout
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout)
+        func(...args)
+      }
+      clearTimeout(timeout)
+      timeout = setTimeout(later, wait)
     }
   }
 

@@ -1,11 +1,8 @@
-// Real Database-driven Realtime Hook
-// Replaces all mock data generators in useRealtime.js
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createClient } from '../lib/supabase/client'
-// Use API calls instead of direct database imports
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
+export function useRealtime(channelName, barbershopId) {
   const [data, setData] = useState(null)
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState(null)
@@ -15,12 +12,10 @@ export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
   const intervalRef = useRef(null)
   const channelRef = useRef(null)
 
-  // Real-time database polling for metrics
   const fetchRealtimeData = useCallback(async () => {
     try {
       let realtimeData = {}
       
-      // Get different data based on channel type
       if (channelName === 'metrics' || channelName === 'dashboard') {
         const [metricsResponse, businessResponse] = await Promise.all([
           fetch(`/api/realtime/metrics?barbershop_id=${barbershopId}`).then(r => r.json()),
@@ -37,7 +32,6 @@ export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
           session_id: `db-session-${barbershopId}`
         }
       } else if (channelName === 'appointments') {
-        // Get today's appointments
         const { data: appointments } = await supabase
           .from('appointments')
           .select('id, start_time, end_time, status, customer_name, service_name')
@@ -51,7 +45,6 @@ export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
           timestamp: new Date().toISOString()
         }
       } else if (channelName === 'notifications') {
-        // Get recent notifications
         const { data: notifications } = await supabase
           .from('notifications')
           .select('*')
@@ -70,22 +63,16 @@ export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
       setData(realtimeData)
       setLastUpdate(new Date())
       setError(null)
-      
-      console.log(`📡 Realtime data updated for ${channelName}:`, Object.keys(realtimeData))
-      
     } catch (err) {
       console.error('Realtime fetch error:', err)
       setError(err.message)
-      // Don't set mock data - show error state
     }
   }, [channelName, barbershopId, supabase])
 
-  // Set up Supabase realtime subscription for live updates
   const setupRealtimeSubscription = useCallback(() => {
     if (!barbershopId) return
 
     try {
-      // Subscribe to database changes for live updates
       let tableName = 'appointments' // Default table
       
       if (channelName === 'metrics' || channelName === 'dashboard') {
@@ -107,13 +94,12 @@ export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
             filter: `barbershop_id=eq.${barbershopId}`
           },
           (payload) => {
-            console.log(`📡 Database change detected in ${tableName}:`, payload.eventType)
-            // Refresh data when database changes
+            
             fetchRealtimeData()
           }
         )
         .subscribe((status) => {
-          console.log(`📡 Realtime subscription status: ${status}`)
+          
           setIsConnected(status === 'SUBSCRIBED')
         })
       
@@ -126,21 +112,15 @@ export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
     }
   }, [channelName, barbershopId, supabase, fetchRealtimeData])
 
-  // Initialize connection and data fetching
   useEffect(() => {
-    console.log(`📡 Initializing realtime connection for ${channelName}`)
-    
-    // Initial data fetch
+
     fetchRealtimeData()
     
-    // Set up live subscription
     setupRealtimeSubscription()
     
-    // Fallback polling every 30 seconds (in case realtime doesn't work)
     intervalRef.current = setInterval(fetchRealtimeData, 30000)
     
     return () => {
-      // Cleanup
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
       }
@@ -151,17 +131,14 @@ export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
     }
   }, [fetchRealtimeData, setupRealtimeSubscription])
 
-  // Manual refresh function
   const refresh = useCallback(() => {
-    console.log(`🔄 Manual refresh requested for ${channelName}`)
+    
     fetchRealtimeData()
   }, [fetchRealtimeData])
 
-  // Send data to channel (for testing)
   const sendData = useCallback(async (payload) => {
     try {
-      // Insert data into appropriate table based on channel
-      let insertData = { ...payload, barbershop_id: barbershopId }
+      const insertData = { ...payload, barbershop_id: barbershopId }
       
       if (channelName === 'notifications') {
         const { error } = await supabase
@@ -169,9 +146,9 @@ export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
           .insert([insertData])
         
         if (error) throw error
-        console.log(`📤 Sent notification to ${channelName}`)
+        
       } else {
-        console.log(`📤 Send not implemented for ${channelName}`)
+        
       }
       
     } catch (err) {
@@ -190,7 +167,6 @@ export function useRealtime(channelName, barbershopId = 'demo-shop-001') {
   }
 }
 
-// Specialized hooks for common use cases
 export function useRealtimeMetrics(barbershopId) {
   return useRealtime('metrics', barbershopId)
 }
@@ -203,12 +179,10 @@ export function useRealtimeNotifications(barbershopId) {
   return useRealtime('notifications', barbershopId)
 }
 
-// Database health check for realtime functionality
 export async function checkRealtimeSupport() {
   try {
     const supabase = createClient()
     
-    // Test basic connection
     const { data, error } = await supabase
       .from('business_metrics')
       .select('id')

@@ -1,19 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   ChartBarIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   CalendarDaysIcon,
   CurrencyDollarIcon,
-  UserGroupIcon,
-  ExclamationTriangleIcon,
   LightBulbIcon,
   ArrowPathIcon,
   EyeIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect, useCallback } from 'react'
 
 export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', compact = false }) {
   const [predictions, setPredictions] = useState(null)
@@ -23,50 +19,52 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
 
   useEffect(() => {
     loadPredictions()
-  }, [barbershop_id, selectedTimeframe])
+  }, [loadPredictions])
 
-  const loadPredictions = async () => {
+  const loadPredictions = useCallback(async () => {
+    if (loading) {
+      return // Prevent multiple concurrent calls
+    }
+    
     try {
       setLoading(true)
       
-      // Load main dashboard
-      const dashboardResponse = await fetch(`/api/ai/predictive?barbershop_id=${barbershop_id}`)
-      const dashboardData = await dashboardResponse.json()
+      // Single comprehensive API call instead of 3 separate calls
+      const response = await fetch(`/api/ai/predictive?type=comprehensive&horizon=${selectedTimeframe}&barbershop_id=${barbershop_id}`)
+      const data = await response.json()
       
-      // Load revenue forecast
-      const forecastResponse = await fetch('/api/ai/predictive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prediction_type: 'revenue_forecast',
-          barbershop_id,
-          parameters: { timeframe: selectedTimeframe, confidence_level: 0.85 }
+      if (data.success && data.predictions) {
+        setPredictions({
+          dashboard: data.predictions,
+          forecast: data.predictions.revenueForecast || null,
+          demand: data.predictions.demandForecast || null,
+          loading: false,
+          error: null
         })
-      })
-      const forecastData = await forecastResponse.json()
-      
-      // Load demand patterns
-      const demandResponse = await fetch('/api/ai/predictive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prediction_type: 'demand_prediction',
-          barbershop_id
+      } else if (data.insufficient_data) {
+        setPredictions({
+          dashboard: null,
+          forecast: null,
+          demand: null,
+          loading: false,
+          error: data.friendly_message || 'Insufficient booking data for predictions'
         })
-      })
-      const demandData = await demandResponse.json()
-      
-      setPredictions({
-        dashboard: dashboardData.success ? dashboardData.dashboard : null,
-        forecast: forecastData.success ? forecastData.forecast : null,
-        demand: demandData.success ? demandData.demand_prediction : null
-      })
+      } else {
+        throw new Error(data.error || 'Failed to load predictions')
+      }
     } catch (error) {
       console.error('Failed to load predictions:', error)
+      setPredictions({
+        dashboard: null,
+        forecast: null,
+        demand: null,
+        loading: false,
+        error: error.message || 'Failed to load predictions'
+      })
     } finally {
       setLoading(false)
     }
-  }
+  }, [barbershop_id, selectedTimeframe, loading])
 
   const refreshPredictions = () => {
     loadPredictions()
@@ -168,7 +166,7 @@ export default function PredictiveAnalyticsDashboard({ barbershop_id = 'demo', c
                     </div>
                     <div className="text-xs text-olive-600">Next {selectedTimeframe} days</div>
                   </div>
-                  <ArrowTrendingUpIcon className="h-8 w-8 text-indigo-400" />
+                  <ChartBarIcon className="h-8 w-8 text-indigo-400" />
                 </div>
               </div>
               

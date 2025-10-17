@@ -11,7 +11,6 @@ module.exports = withBundleAnalyzer({
   reactStrictMode: true,
   swcMinify: true,
   
-  // Image optimization
   images: {
     domains: [
       'localhost',
@@ -28,21 +27,17 @@ module.exports = withBundleAnalyzer({
     minimumCacheTTL: 60,
   },
   
-  // Optimize build output
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
   
-  // Production optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn'],
     } : false,
   },
   
-  // Module aliases
   webpack: (config, { isServer }) => {
-    // Bundle optimizations
     if (!isServer) {
       config.optimization = {
         ...config.optimization,
@@ -51,14 +46,12 @@ module.exports = withBundleAnalyzer({
           cacheGroups: {
             default: false,
             vendors: false,
-            // Vendor code splitting
             vendor: {
               name: 'vendor',
               chunks: 'all',
               test: /node_modules/,
               priority: 20,
             },
-            // Common components
             common: {
               name: 'common',
               minChunks: 2,
@@ -67,14 +60,12 @@ module.exports = withBundleAnalyzer({
               reuseExistingChunk: true,
               enforce: true,
             },
-            // UI components bundle
             ui: {
               name: 'ui',
               test: /components\/ui/,
               chunks: 'all',
               priority: 30,
             },
-            // Separate large libraries
             react: {
               name: 'react',
               test: /[\\/]node_modules[\\/](react|react-dom|react-router)[\\/]/,
@@ -104,23 +95,19 @@ module.exports = withBundleAnalyzer({
       }
     }
     
-    // Tree shaking
     config.optimization.sideEffects = false
     
-    // Minimize main bundle
     config.optimization.minimize = true
     
     return config
   },
   
-  // Experimental features for better performance
   experimental: {
     optimizeFonts: true,
     optimizeImages: true,
     scrollRestoration: true,
   },
   
-  // Headers for caching
   async headers() {
     return [
       {
@@ -148,12 +135,10 @@ module.exports = withBundleAnalyzer({
     ]
   },
   
-  // Redirects
   async redirects() {
     return []
   },
   
-  // Rewrites
   async rewrites() {
     return []
   },

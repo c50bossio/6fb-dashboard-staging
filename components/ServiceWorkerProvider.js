@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from '@/hooks/use-toast'
+import cacheManager from '@/lib/cacheManager'
 
 export default function ServiceWorkerProvider({ children }) {
   const [isOnline, setIsOnline] = useState(true)
@@ -9,12 +10,20 @@ export default function ServiceWorkerProvider({ children }) {
   const [swUpdateAvailable, setSwUpdateAvailable] = useState(false)
 
   useEffect(() => {
-    // Check if service workers are supported
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      registerServiceWorker()
+    // Completely disable service worker and unregister any existing ones
+    // Service workers disabled for authentication debugging
+    
+    if ('serviceWorker' in navigator) {
+      // Unregister all existing service workers
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        registrations.forEach(registration => {
+          registration.unregister()
+        })
+      }).catch(error => {
+        // Silent failure - service worker cleanup is not critical
+      })
     }
 
-    // Online/offline detection
     const handleOnline = () => {
       setIsOnline(true)
       toast({
@@ -36,7 +45,6 @@ export default function ServiceWorkerProvider({ children }) {
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
-    // Initial online status
     setIsOnline(navigator.onLine)
 
     return () => {
@@ -47,43 +55,9 @@ export default function ServiceWorkerProvider({ children }) {
 
   async function registerServiceWorker() {
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
-      })
-
-      setSwRegistration(registration)
-      console.log('Service Worker registered:', registration)
-
-      // Check for updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing
-
-        newWorker?.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New service worker available
-            setSwUpdateAvailable(true)
-            
-            toast({
-              title: "Update Available",
-              description: "A new version of the app is available.",
-              action: (
-                <button
-                  onClick={() => updateServiceWorker(newWorker)}
-                  className="text-sm font-medium underline"
-                >
-                  Update Now
-                </button>
-              ),
-              duration: 10000
-            })
-          }
-        })
-      })
-
-      // Check for updates every hour
-      setInterval(() => {
-        registration.update()
-      }, 60 * 60 * 1000)
+      // Service worker registration temporarily disabled for auth debugging
+      setSwRegistration(null)
+      return null
 
     } catch (error) {
       console.error('Service Worker registration failed:', error)
@@ -97,18 +71,25 @@ export default function ServiceWorkerProvider({ children }) {
       window.location.reload()
     })
   }
+  
+  async function handleUpdate(registration) {
+    try {
+      // Use cache manager to handle the update properly
+      await cacheManager.applyUpdate(registration)
+    } catch (error) {
+      console.error('Update failed:', error)
+      // Fallback to simple reload
+      window.location.reload(true)
+    }
+  }
 
-  // Add install prompt handling
   useEffect(() => {
     let deferredPrompt = null
 
     const handleBeforeInstallPrompt = (e) => {
-      // Prevent Chrome 67 and earlier from automatically showing the prompt
       e.preventDefault()
-      // Stash the event so it can be triggered later
       deferredPrompt = e
       
-      // Show custom install button/banner
       showInstallPromotion(deferredPrompt)
     }
 
@@ -120,25 +101,10 @@ export default function ServiceWorkerProvider({ children }) {
   }, [])
 
   function showInstallPromotion(prompt) {
-    toast({
-      title: "Install App",
-      description: "Install 6FB Agent for a better experience",
-      action: (
-        <button
-          onClick={async () => {
-            prompt.prompt()
-            const { outcome } = await prompt.userChoice
-            if (outcome === 'accepted') {
-              console.log('User accepted the install prompt')
-            }
-          }}
-          className="text-sm font-medium underline"
-        >
-          Install
-        </button>
-      ),
-      duration: 15000
-    })
+    // PWA install prompt disabled as requested by user
+    // This prevents the "Install App" notification from appearing
+    console.log('[ServiceWorkerProvider] PWA install prompt suppressed')
+    return
   }
 
   return (

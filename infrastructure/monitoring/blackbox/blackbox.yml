@@ -1,0 +1,137 @@
+# Blackbox Exporter Configuration for 6FB AI Agent System
+# Endpoint monitoring and health checks
+
+modules:
+  # HTTP 2xx response check
+  http_2xx:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201, 202]
+      method: GET
+      headers:
+        Accept: "application/json"
+        User-Agent: "6FB-Blackbox-Exporter/1.0"
+      follow_redirects: true
+      fail_if_ssl: false
+      fail_if_not_ssl: false
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+      tls_config:
+        insecure_skip_verify: false
+      
+  # HTTP 2xx POST check (for API endpoints)
+  http_2xx_post:
+    prober: http
+    timeout: 15s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200, 201]
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json"
+      body: '{"health": "check"}'
+      
+  # API health check with authentication
+  http_api_auth:
+    prober: http
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        Authorization: "Bearer ${API_HEALTH_TOKEN}"
+        Accept: "application/json"
+        
+  # SSL certificate expiry check
+  ssl_expiry:
+    prober: http
+    timeout: 10s
+    http:
+      method: GET
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
+      headers:
+        User-Agent: "6FB-SSL-Monitor/1.0"
+        
+  # TCP connectivity check
+  tcp_connect:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+      
+  # DNS resolution check
+  dns_check:
+    prober: dns
+    timeout: 5s
+    dns:
+      query_name: "6fb.ai"
+      query_type: "A"
+      valid_rcodes:
+        - NOERROR
+      validate_answer_rrs:
+        fail_if_matches_regexp:
+          - ".*127.0.0.1"
+        fail_if_not_matches_regexp:
+          - ".*"
+          
+  # ICMP ping check
+  icmp_check:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+      
+  # Custom health check for 6FB API
+  sixfb_api_health:
+    prober: http
+    timeout: 15s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      headers:
+        Accept: "application/json"
+        X-Health-Check: "blackbox"
+      body_size_limit: 1024
+      fail_if_body_not_matches_regexp:
+        - '"status":\s*"healthy"'
+        - '"database":\s*"connected"'
+        - '"redis":\s*"connected"'
+      fail_if_header_not_matches_regexp:
+        - "Content-Type:application/json"
+        
+  # GraphQL endpoint check
+  graphql_check:
+    prober: http  
+    timeout: 10s
+    http:
+      valid_http_versions: ["HTTP/2.0"]
+      valid_status_codes: [200]
+      method: POST
+      headers:
+        Content-Type: "application/json"
+        Accept: "application/json"
+      body: '{"query": "{ __schema { queryType { name } } }"}'
+      fail_if_body_not_matches_regexp:
+        - '"data"'
+        
+  # WebSocket connection check
+  websocket_check:
+    prober: http
+    timeout: 10s
+    http:
+      method: GET
+      headers:
+        Upgrade: "websocket"
+        Connection: "Upgrade"
+        Sec-WebSocket-Key: "x3JJHMbDL1EzLkh9GBhXDw=="
+        Sec-WebSocket-Version: "13"
+      valid_status_codes: [101]

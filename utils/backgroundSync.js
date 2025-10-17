@@ -4,7 +4,6 @@
  * Handles queuing and syncing of offline actions using IndexedDB and Background Sync API
  */
 
-// IndexedDB setup for storing queued actions
 const DB_NAME = '6fb-ai-sync';
 const DB_VERSION = 1;
 const STORE_NAME = 'sync-queue';
@@ -59,13 +58,11 @@ export async function queueAction(action) {
       request.onerror = () => reject(request.error);
     });
 
-    // Register background sync if available
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
       const registration = await navigator.serviceWorker.ready;
       await registration.sync.register('background-sync-' + action.type);
     }
 
-    console.log('[BackgroundSync] Action queued:', queueItem);
     return queueItem.id;
   } catch (error) {
     console.error('[BackgroundSync] Failed to queue action:', error);
@@ -192,7 +189,6 @@ export async function cleanupCompletedActions(olderThanHours = 24) {
           }
           cursor.continue();
         } else {
-          // Delete all marked actions
           const deletePromises = toDelete.map(id => {
             return new Promise((res, rej) => {
               const deleteRequest = store.delete(id);
@@ -225,7 +221,6 @@ export async function syncActions(type) {
     try {
       let response;
       
-      // Execute the action based on type
       switch (action.type) {
         case 'form-submission':
           response = await fetch(action.url, {
@@ -302,7 +297,6 @@ export async function getSyncStats() {
           byType: {}
         };
 
-        // Group by type
         actions.forEach(action => {
           if (!stats.byType[action.type]) {
             stats.byType[action.type] = { total: 0, pending: 0, completed: 0, failed: 0 };
@@ -328,17 +322,14 @@ export async function initBackgroundSync() {
   try {
     await initDB();
     
-    // Clean up old completed actions
     const cleaned = await cleanupCompletedActions(24);
     if (cleaned > 0) {
-      console.log(`[BackgroundSync] Cleaned up ${cleaned} old actions`);
+      
     }
 
-    // Check for service worker support
     if ('serviceWorker' in navigator) {
       const registration = await navigator.serviceWorker.ready;
       
-      // Listen for messages from service worker
       navigator.serviceWorker.addEventListener('message', event => {
         if (event.data?.type === 'SYNC_COMPLETED') {
           markActionCompleted(event.data.actionId);
@@ -348,7 +339,6 @@ export async function initBackgroundSync() {
       });
     }
 
-    console.log('[BackgroundSync] Initialized successfully');
   } catch (error) {
     console.error('[BackgroundSync] Failed to initialize:', error);
   }

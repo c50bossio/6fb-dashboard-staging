@@ -183,58 +183,18 @@ const workflowNumber = process.argv[2] || '1';
 const workflow = workflows[workflowNumber];
 
 if (!workflow) {
-  console.log('❌ Invalid workflow number. Use: 1, 2, or 3');
-  console.log('');
-  console.log('Usage:');
-  console.log('node step-by-step-setup.js 1   # Appointment Confirmation');
-  console.log('node step-by-step-setup.js 2   # Booking Reminder');  
-  console.log('node step-by-step-setup.js 3   # Payment Confirmation');
+
   process.exit(1);
 }
 
-console.log(`🎯 WORKFLOW ${workflowNumber}: ${workflow.name.toUpperCase()}`);
-console.log('=' .repeat(50));
-console.log('');
-console.log('📋 Basic Info:');
-console.log(`Name: ${workflow.name}`);
-console.log(`Identifier: ${workflow.identifier}`);
-console.log(`Description: ${workflow.description}`);
-console.log('');
+}`);
+);
 
-console.log('📧 EMAIL STEP:');
-console.log('-------------');
-console.log(`Subject: ${workflow.emailSubject}`);
-console.log('');
-console.log('HTML Content (copy this entire block):');
-console.log('=====================================');
-console.log(workflow.emailHTML);
-console.log('=====================================');
-console.log('');
-
-console.log('📱 SMS STEP:');
-console.log('-----------');
-console.log(workflow.smsMessage);
-console.log('');
-
-console.log('🔔 IN-APP STEP:');
-console.log('--------------');
-console.log(`Subject: ${workflow.inAppSubject}`);
-console.log(`Body: ${workflow.inAppBody}`);
-console.log('');
-
-console.log('✅ Next Steps:');
-console.log('1. Go to https://web.novu.co → Workflows → Create Workflow');
-console.log('2. Fill in the basic info above');
-console.log('3. Add Email step → copy/paste HTML content');
-console.log('4. Add SMS step → copy/paste SMS message');
-console.log('5. Add In-App step → copy/paste subject & body');
-console.log('6. Save the workflow');
-console.log('');
+:');
 
 if (workflowNumber < '3') {
   const nextWorkflow = parseInt(workflowNumber) + 1;
-  console.log(`🔄 When done, run: node step-by-step-setup.js ${nextWorkflow}`);
+  
 } else {
-  console.log('🎉 After creating all 3 workflows, test with:');
-  console.log('node test-novu-workflows.js');
+
 }

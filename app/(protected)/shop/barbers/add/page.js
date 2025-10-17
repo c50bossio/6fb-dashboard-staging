@@ -1,43 +1,43 @@
 'use client'
 
-import { useState } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
-import { 
+import {
   UserPlusIcon,
-  EnvelopeIcon,
-  PhoneIcon,
   UserIcon,
   CurrencyDollarIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
-  XCircleIcon
+  DocumentTextIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { splitFullName, combineNames, validateNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function AddBarber() {
-  const { user } = useAuth()
-  const supabase = createClient()
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
   const router = useRouter()
   
   const [loading, setLoading] = useState(false)
-  const [step, setStep] = useState(1) // 1: Basic Info, 2: Financial, 3: Schedule, 4: Review
+  const [step, setStep] = useState(1) // 1: Basic Info, 2: Financial, 3: Schedule, 4: Documents, 5: Review
+  const [errors, setErrors] = useState({})
+  const [validationErrors, setValidationErrors] = useState({})
   const [barberData, setBarberData] = useState({
-    // Basic Information
     email: '',
-    fullName: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     bio: '',
     specialty: '',
     yearsExperience: 0,
     
-    // Financial Arrangement
     financialModel: 'commission', // 'commission' or 'booth_rent'
     commissionRate: 60, // Barber gets 60%
     boothRentAmount: 0,
     productCommission: 20,
     
-    // Schedule & Availability
     defaultSchedule: {
       monday: { enabled: true, start: '09:00', end: '18:00' },
       tuesday: { enabled: true, start: '09:00', end: '18:00' },
@@ -48,135 +48,110 @@ export default function AddBarber() {
       sunday: { enabled: false, start: '00:00', end: '00:00' }
     },
     
-    // Permissions
     canManageOwnSchedule: true,
     canViewOwnReports: true,
     canManageOwnClients: true,
     canSellProducts: true,
     
-    // Customization
     enableCustomPage: true,
     customPageSlug: '',
-    profilePhotoUrl: ''
+    profilePhotoUrl: '',
+    
+    // Enhanced fields
+    specialties: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    paymentMethod: 'bank_transfer',
+    paymentFrequency: 'weekly',
+    acceptsWalkIns: false,
+    chairNumber: '',
+    
+    // Documents
+    requiresLicense: true,
+    requiresInsurance: true,
+    requiresContract: true,
+    
+    // Initial goals
+    monthlyRevenueGoal: 0,
+    monthlyAppointmentGoal: 0
   })
 
+  // Enhanced validation
+  const validateStep = (stepNumber) => {
+    const newErrors = {}
+    
+    if (stepNumber === 1) {
+      if (!barberData.email) newErrors.email = 'Email is required'
+      if (!barberData.firstName) newErrors.firstName = 'First name is required'
+      if (!barberData.lastName) newErrors.lastName = 'Last name is required'
+      if (!barberData.phone) newErrors.phone = 'Phone number is required'
+      if (barberData.yearsExperience < 0) newErrors.yearsExperience = 'Experience cannot be negative'
+    }
+    
+    if (stepNumber === 2) {
+      if (barberData.financialModel === 'commission') {
+        if (barberData.commissionRate <= 0 || barberData.commissionRate > 100) {
+          newErrors.commissionRate = 'Commission rate must be between 1-100%'
+        }
+      } else if (barberData.financialModel === 'booth_rent') {
+        if (barberData.boothRentAmount <= 0) {
+          newErrors.boothRentAmount = 'Booth rent amount must be greater than 0'
+        }
+      }
+    }
+    
+    setValidationErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = async () => {
+    if (!validateStep(step)) return
+    
     setLoading(true)
+    setErrors({})
     
     try {
-      // First, create the user account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: barberData.email,
-        password: generateTempPassword(), // Generate temporary password
-        options: {
-          data: {
-            full_name: barberData.fullName,
-            role: 'BARBER'
-          }
-        }
+      // Prepare name data using utility functions
+      const nameData = normalizeNameData({
+        firstName: barberData.firstName.trim(),
+        lastName: barberData.lastName.trim()
       })
       
-      if (authError) {
-        console.error('Error creating barber account:', authError)
-        alert('Failed to create barber account. They may already have an account.')
-        setLoading(false)
-        return
+      // Merge normalized name data with barber data
+      const submissionData = {
+        ...barberData,
+        ...createNameUpdateObject(nameData)
       }
       
-      // Get the shop ID
-      const { data: shop } = await supabase
-        .from('barbershops')
-        .select('id')
-        .eq('owner_id', user?.id)
-        .single()
+      // Use enhanced API endpoint
+      const response = await fetch('/api/shop/barbers/enhanced', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submissionData)
+      })
       
-      if (!shop) {
-        alert('No barbershop found for this owner')
-        setLoading(false)
-        return
+      const result = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create barber')
       }
       
-      // Add barber to barbershop_staff
-      const { error: staffError } = await supabase
-        .from('barbershop_staff')
-        .insert({
-          barbershop_id: shop.id,
-          user_id: authData.user?.id,
-          role: 'BARBER',
-          is_active: true,
-          commission_rate: barberData.commissionRate,
-          booth_rent_amount: barberData.boothRentAmount,
-          financial_model: barberData.financialModel,
-          can_manage_schedule: barberData.canManageOwnSchedule,
-          can_view_reports: barberData.canViewOwnReports,
-          can_manage_clients: barberData.canManageOwnClients,
-          can_sell_products: barberData.canSellProducts
-        })
-      
-      if (staffError) {
-        console.error('Error adding barber to staff:', staffError)
-        alert('Failed to add barber to staff')
-        setLoading(false)
-        return
-      }
-      
-      // Create barber customization
-      const { error: customError } = await supabase
-        .from('barber_customizations')
-        .insert({
-          barbershop_id: shop.id,
-          barber_id: authData.user?.id,
-          slug: barberData.customPageSlug || barberData.fullName.toLowerCase().replace(/\s+/g, '-'),
-          display_name: barberData.fullName,
-          bio: barberData.bio,
-          specialty: barberData.specialty,
-          years_experience: barberData.yearsExperience,
-          profile_photo_url: barberData.profilePhotoUrl
-        })
-      
-      if (customError) {
-        console.error('Error creating barber customization:', customError)
-      }
-      
-      // Set up default availability
-      const availabilityPromises = Object.entries(barberData.defaultSchedule)
-        .filter(([_, schedule]) => schedule.enabled)
-        .map(([day, schedule], index) => {
-          const dayMap = {
-            'monday': 1, 'tuesday': 2, 'wednesday': 3, 'thursday': 4,
-            'friday': 5, 'saturday': 6, 'sunday': 0
-          }
-          
-          return supabase
-            .from('barber_availability')
-            .insert({
-              barbershop_id: shop.id,
-              barber_id: authData.user?.id,
-              day_of_week: dayMap[day],
-              start_time: schedule.start,
-              end_time: schedule.end,
-              is_available: true
-            })
-        })
-      
-      await Promise.all(availabilityPromises)
-      
-      // Send welcome email (mock)
-      console.log('Sending welcome email to:', barberData.email)
-      
-      alert(`Barber ${barberData.fullName} added successfully! They will receive an email to set up their password.`)
-      router.push('/shop/dashboard')
+      // Success - redirect to onboarding
+      router.push(`/shop/barbers/${result.barberId}/onboarding?welcome=true`)
       
     } catch (error) {
       console.error('Error adding barber:', error)
-      alert('An error occurred while adding the barber')
+      setErrors({ 
+        submit: error.message || 'An error occurred while adding the barber'
+      })
     } finally {
       setLoading(false)
     }
   }
 
   const generateTempPassword = () => {
-    // Generate a secure temporary password
     return `Temp${Math.random().toString(36).substring(2, 10)}!`
   }
 
@@ -194,12 +169,8 @@ export default function AddBarber() {
   }
 
   const nextStep = () => {
-    // Validate current step
-    if (step === 1) {
-      if (!barberData.email || !barberData.fullName) {
-        alert('Please fill in all required fields')
-        return
-      }
+    if (!validateStep(step)) {
+      return
     }
     setStep(step + 1)
   }
@@ -217,15 +188,34 @@ export default function AddBarber() {
               <p className="text-sm text-gray-600">Add a barber to your shop team</p>
             </div>
             <div className="flex items-center space-x-4">
-              {/* Step Indicators */}
+              {/* Enhanced Step Indicators */}
               <div className="flex items-center space-x-2">
-                {[1, 2, 3, 4].map((s) => (
-                  <div
-                    key={s}
-                    className={`h-2 w-8 rounded-full ${
-                      s === step ? 'bg-olive-600' : s < step ? 'bg-indigo-200' : 'bg-gray-200'
-                    }`}
-                  />
+                {[
+                  { num: 1, label: 'Basic Info', icon: UserIcon },
+                  { num: 2, label: 'Financial', icon: CurrencyDollarIcon },
+                  { num: 3, label: 'Schedule', icon: CalendarDaysIcon },
+                  { num: 4, label: 'Documents', icon: DocumentTextIcon },
+                  { num: 5, label: 'Review', icon: CheckCircleIcon }
+                ].map((s) => (
+                  <div key={s.num} className="flex items-center">
+                    <div
+                      className={`flex items-center justify-center h-8 w-8 rounded-full text-xs font-medium ${
+                        s.num === step 
+                          ? 'bg-olive-600 text-white' 
+                          : s.num < step 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-gray-200 text-gray-500'
+                      }`}
+                    >
+                      {s.num < step ? (
+                        <CheckCircleIcon className="h-4 w-4" />
+                      ) : (
+                        s.num
+                      )}
+                    </div>
+                    <span className="ml-2 text-xs text-gray-600 hidden md:block">{s.label}</span>
+                    {s.num < 5 && <div className="w-8 h-0.5 bg-gray-200 mx-2" />}
+                  </div>
                 ))}
               </div>
             </div>
@@ -247,15 +237,42 @@ export default function AddBarber() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Full Name <span className="text-red-500">*</span>
+                      First Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      value={barberData.fullName}
-                      onChange={(e) => setBarberData({...barberData, fullName: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Enter barber's full name"
+                      value={barberData.firstName}
+                      onChange={(e) => setBarberData({...barberData, firstName: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        validationErrors.firstName 
+                          ? 'border-red-300 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-olive-500'
+                      }`}
+                      placeholder="Enter first name"
                     />
+                    {validationErrors.firstName && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.firstName}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={barberData.lastName}
+                      onChange={(e) => setBarberData({...barberData, lastName: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        validationErrors.lastName 
+                          ? 'border-red-300 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-olive-500'
+                      }`}
+                      placeholder="Enter last name"
+                    />
+                    {validationErrors.lastName && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.lastName}</p>
+                    )}
                   </div>
                   
                   <div>
@@ -536,8 +553,150 @@ export default function AddBarber() {
             </div>
           )}
 
-          {/* Step 4: Review */}
+          {/* Step 4: Documents & Requirements */}
           {step === 4 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <DocumentTextIcon className="h-5 w-5 mr-2 text-olive-600" />
+                Documents & Requirements
+              </h2>
+              
+              <div className="space-y-6">
+                {/* Document Requirements */}
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Required Documents</h3>
+                  <div className="space-y-4">
+                    <label className="flex items-start p-4 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={barberData.requiresLicense}
+                        onChange={(e) => setBarberData({...barberData, requiresLicense: e.target.checked})}
+                        className="mt-1 h-4 w-4 text-olive-600 rounded"
+                      />
+                      <div className="ml-3">
+                        <p className="font-medium">Barber License</p>
+                        <p className="text-sm text-gray-600">Professional barber license required</p>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start p-4 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={barberData.requiresInsurance}
+                        onChange={(e) => setBarberData({...barberData, requiresInsurance: e.target.checked})}
+                        className="mt-1 h-4 w-4 text-olive-600 rounded"
+                      />
+                      <div className="ml-3">
+                        <p className="font-medium">Liability Insurance</p>
+                        <p className="text-sm text-gray-600">Professional liability insurance documentation</p>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-start p-4 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={barberData.requiresContract}
+                        onChange={(e) => setBarberData({...barberData, requiresContract: e.target.checked})}
+                        className="mt-1 h-4 w-4 text-olive-600 rounded"
+                      />
+                      <div className="ml-3">
+                        <p className="font-medium">Employment Contract</p>
+                        <p className="text-sm text-gray-600">Signed employment or contractor agreement</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+                
+                {/* Emergency Contact */}
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Emergency Contact</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Contact Name
+                      </label>
+                      <input
+                        type="text"
+                        value={barberData.emergencyContactName}
+                        onChange={(e) => setBarberData({...barberData, emergencyContactName: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        placeholder="Emergency contact name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Contact Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={barberData.emergencyContactPhone}
+                        onChange={(e) => setBarberData({...barberData, emergencyContactPhone: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Additional Settings */}
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-4">Additional Settings</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Chair Number
+                      </label>
+                      <input
+                        type="text"
+                        value={barberData.chairNumber}
+                        onChange={(e) => setBarberData({...barberData, chairNumber: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        placeholder="e.g., 4"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Payment Frequency
+                      </label>
+                      <select
+                        value={barberData.paymentFrequency}
+                        onChange={(e) => setBarberData({...barberData, paymentFrequency: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500"
+                      >
+                        <option value="weekly">Weekly</option>
+                        <option value="biweekly">Bi-weekly</option>
+                        <option value="monthly">Monthly</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={barberData.acceptsWalkIns}
+                        onChange={(e) => setBarberData({...barberData, acceptsWalkIns: e.target.checked})}
+                        className="h-4 w-4 text-olive-600 rounded mr-3"
+                      />
+                      <span className="text-sm text-gray-700">Accepts walk-in appointments</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-800 flex items-start">
+                    <InformationCircleIcon className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+                    Documents can be uploaded after the barber account is created. The barber will receive instructions to complete their profile.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Review */}
+          {step === 5 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                 <CheckCircleIcon className="h-5 w-5 mr-2 text-olive-600" />
@@ -548,7 +707,7 @@ export default function AddBarber() {
                 <div>
                   <h3 className="text-md font-medium text-gray-900 mb-3">Basic Information</h3>
                   <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                    <p className="text-sm"><span className="font-medium">Name:</span> {barberData.fullName}</p>
+                    <p className="text-sm"><span className="font-medium">Name:</span> {combineNames(barberData.firstName, barberData.lastName)}</p>
                     <p className="text-sm"><span className="font-medium">Email:</span> {barberData.email}</p>
                     <p className="text-sm"><span className="font-medium">Phone:</span> {barberData.phone || 'Not provided'}</p>
                     <p className="text-sm"><span className="font-medium">Specialty:</span> {barberData.specialty || 'Not specified'}</p>
@@ -585,6 +744,27 @@ export default function AddBarber() {
                   </div>
                 </div>
                 
+                <div>
+                  <h3 className="text-md font-medium text-gray-900 mb-3">Documents & Requirements</h3>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <p className="text-sm">
+                      <span className="font-medium">Required Documents:</span>{' '}
+                      {[
+                        barberData.requiresLicense && 'License',
+                        barberData.requiresInsurance && 'Insurance',
+                        barberData.requiresContract && 'Contract'
+                      ].filter(Boolean).join(', ') || 'None'}
+                    </p>
+                    {barberData.chairNumber && (
+                      <p className="text-sm"><span className="font-medium">Chair Number:</span> {barberData.chairNumber}</p>
+                    )}
+                    {barberData.emergencyContactName && (
+                      <p className="text-sm"><span className="font-medium">Emergency Contact:</span> {barberData.emergencyContactName}</p>
+                    )}
+                    <p className="text-sm"><span className="font-medium">Walk-ins:</span> {barberData.acceptsWalkIns ? 'Accepted' : 'Not Accepted'}</p>
+                  </div>
+                </div>
+                
                 <div className="p-4 bg-olive-50 rounded-lg">
                   <p className="text-sm text-olive-800">
                     <strong>Note:</strong> The barber will receive an email invitation to set up their password and access their dashboard.
@@ -608,7 +788,7 @@ export default function AddBarber() {
               Previous
             </button>
             
-            {step < 4 ? (
+            {step < 5 ? (
               <button
                 onClick={nextStep}
                 className="px-6 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"

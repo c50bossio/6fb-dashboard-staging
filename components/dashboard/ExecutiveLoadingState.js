@@ -1,12 +1,11 @@
 'use client'
 
-import { 
+import {
   ArrowPathIcon,
   ChartBarIcon,
   UsersIcon,
   CurrencyDollarIcon,
-  CalendarDaysIcon,
-  SparklesIcon
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline'
 
 export default function ExecutiveLoadingState() {

@@ -1,6 +1,8 @@
 'use client'
 
-import { 
+export const dynamic = 'force-dynamic'
+
+import {
   ChartBarIcon,
   UserGroupIcon,
   ScissorsIcon,
@@ -9,7 +11,6 @@ import {
   CalendarIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   BellIcon,
   CogIcon,
@@ -20,14 +21,12 @@ import {
   WifiIcon,
   PhoneIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-
+import { useState, useEffect } from 'react'
 import ProtectedRoute from '../../../components/ProtectedRoute'
-import GlobalNavigation from '../../../components/GlobalNavigation'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
+import GlobalNavigation from '../../../components/GlobalNavigation'
 
-// Quick action items
 const QUICK_ACTIONS = [
   { 
     name: 'Open Shop', 
@@ -41,7 +40,7 @@ const QUICK_ACTIONS = [
     icon: UserGroupIcon, 
     color: 'bg-olive-500 hover:bg-olive-600',
     description: 'Mark staff attendance',
-    href: '/dashboard/staff'
+    href: '/shop/settings/staff'
   },
   { 
     name: 'Capacity Planning', 
@@ -59,7 +58,6 @@ const QUICK_ACTIONS = [
   }
 ]
 
-// NO MOCK DATA - Operations data comes from real API calls
 
 export default function OperationsPage() {
   const { user, profile } = useAuth()
@@ -72,7 +70,6 @@ export default function OperationsPage() {
     return () => clearInterval(timer)
   }, [])
 
-  // Load real operations data from database
   useEffect(() => {
     loadOperationsData()
   }, [])
@@ -86,7 +83,6 @@ export default function OperationsPage() {
       if (data.success) {
         setOperationalData(data.data)
       } else {
-        // NO MOCK DATA - show empty state when API fails
         setOperationalData({
           shopStatus: 'unknown',
           openTime: 'N/A',
@@ -117,7 +113,6 @@ export default function OperationsPage() {
       }
     } catch (error) {
       console.error('Failed to load operations data:', error)
-      // Same empty state on error
       setOperationalData({
         shopStatus: 'error',
         openTime: 'N/A',
@@ -178,7 +173,6 @@ export default function OperationsPage() {
     }
   }
 
-  // Show loading state
   if (loading) {
     return (
       <ProtectedRoute>
@@ -277,7 +271,7 @@ export default function OperationsPage() {
                         : 'text-red-600'
                     }`}>
                       {getRevenueChange(operationalData?.todayRevenue || 0, operationalData?.yesterdayRevenue || 0) > 0 ? (
-                        <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                        <ChartBarIcon className="h-4 w-4 mr-1" />
                       ) : (
                         <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
                       )}

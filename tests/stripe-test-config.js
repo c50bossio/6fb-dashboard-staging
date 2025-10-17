@@ -15,7 +15,6 @@
  * Source: https://stripe.com/docs/testing#cards
  */
 const TEST_CARDS = {
-  // Success Cases
   success: {
     visa: {
       number: '4242424242424242',
@@ -54,7 +53,6 @@ const TEST_CARDS = {
     }
   },
 
-  // Decline Cases
   decline: {
     generic_decline: {
       number: '4000000000000002',
@@ -93,7 +91,6 @@ const TEST_CARDS = {
     }
   },
 
-  // Error Cases
   errors: {
     expired_card: {
       number: '4000000000000069',
@@ -121,7 +118,6 @@ const TEST_CARDS = {
     }
   },
 
-  // Special Behavior Cards
   special: {
     always_authenticate: {
       number: '4000002760003184',
@@ -291,7 +287,6 @@ class StripeTestConfig {
       return TEST_CARDS[category][type]
     }
     
-    // Return first card in category if no type specified
     const firstType = Object.keys(TEST_CARDS[category])[0]
     return TEST_CARDS[category][firstType]
   }
@@ -340,7 +335,6 @@ class StripeTestConfig {
       }
     }
     
-    // Check required data fields
     const missingFields = expectedEvent.required_data.filter(field => 
       !eventData.hasOwnProperty(field)
     )
@@ -352,7 +346,6 @@ class StripeTestConfig {
       }
     }
     
-    // Check verification criteria
     if (expectedEvent.verification) {
       for (const [key, expectedValue] of Object.entries(expectedEvent.verification)) {
         if (Array.isArray(expectedValue)) {

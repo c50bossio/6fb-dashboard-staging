@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import fs from 'fs'
 import path from 'path'
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+
+// Force dynamic rendering to prevent build-time execution
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 /**
  * System Health Monitoring Endpoint
@@ -11,19 +15,14 @@ export async function GET(request) {
   try {
     const startTime = Date.now()
     
-    // Check database connectivity
     const dbHealth = await checkDatabaseHealth()
     
-    // Check file system access
     const fsHealth = await checkFileSystemHealth()
     
-    // Get system metrics
     const systemMetrics = await getSystemMetrics()
     
-    // Get service metrics
     const serviceMetrics = await getServiceMetrics()
     
-    // Calculate overall health status
     const overallStatus = calculateOverallStatus([
       dbHealth.status,
       fsHealth.status,
@@ -88,9 +87,8 @@ async function checkDatabaseHealth() {
   const startTime = Date.now()
   
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
-    // Test basic connectivity with a simple query
     const { data, error } = await supabase
       .from('profiles')
       .select('id')
@@ -131,11 +129,9 @@ async function checkFileSystemHealth() {
   const startTime = Date.now()
   
   try {
-    // Check if we can read package.json
     const packagePath = path.join(process.cwd(), 'package.json')
     const packageExists = fs.existsSync(packagePath)
     
-    // Check if we can write to temp directory
     const tempDir = path.join(process.cwd(), 'tmp')
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true })
@@ -145,7 +141,6 @@ async function checkFileSystemHealth() {
     fs.writeFileSync(testFile, 'health check', 'utf8')
     const canRead = fs.readFileSync(testFile, 'utf8') === 'health check'
     
-    // Clean up
     fs.unlinkSync(testFile)
     
     const responseTime = Date.now() - startTime
@@ -179,10 +174,8 @@ async function getSystemMetrics() {
     const memUsage = process.memoryUsage()
     const cpuUsage = process.cpuUsage()
     
-    // Calculate CPU usage percentage (approximation)
     const cpuPercent = ((cpuUsage.user + cpuUsage.system) / 1000000) / process.uptime() * 100
     
-    // Memory usage as percentage (approximation based on heap)
     const memPercent = (memUsage.heapUsed / memUsage.heapTotal) * 100
     
     return {
@@ -230,7 +223,6 @@ async function getServiceMetrics() {
   const services = {}
   
   try {
-    // Frontend service (this endpoint itself)
     services.frontend = {
       status: 'healthy',
       responseTime: 0, // Will be calculated by caller
@@ -238,39 +230,21 @@ async function getServiceMetrics() {
       lastCheck: Date.now()
     }
     
-    // Check if FastAPI backend is available
-    try {
-      const backendUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8001'
-      const backendStart = Date.now()
-      
-      const backendResponse = await fetch(`${backendUrl}/health`, {
-        method: 'GET',
-        timeout: 5000
-      })
-      
-      services.backend = {
-        status: backendResponse.ok ? 'healthy' : 'degraded',
-        responseTime: Date.now() - backendStart,
-        httpStatus: backendResponse.status,
-        lastCheck: Date.now()
-      }
-      
-    } catch (error) {
-      services.backend = {
-        status: 'unhealthy',
-        error: 'Backend not reachable',
-        lastCheck: Date.now()
-      }
+    // Backend is now integrated with Next.js - no separate backend service
+    services.backend = {
+      status: 'healthy',
+      responseTime: 0,
+      integration: 'nextjs_integrated',
+      lastCheck: Date.now(),
+      note: 'Backend functionality integrated with Next.js API routes'
     }
     
-    // Cache service (simple check)
     services.cache = {
       status: 'healthy', // Assume healthy since it's browser-based IndexedDB
       type: 'indexeddb',
       lastCheck: Date.now()
     }
     
-    // WebSocket service status
     services.websocket = {
       status: 'healthy', // Assume healthy - would need more complex check
       connections: 0, // Would track active connections

@@ -38,12 +38,7 @@ class APIHandler(BaseHTTPRequestHandler):
                 {"id": "marketing_expert", "name": "Marketing Expert", "status": "active"},
                 {"id": "financial_advisor", "name": "Financial Advisor", "status": "active"}
             ])
-        elif parsed_path.path == "/debug":
-            self.send_json_response({
-                "environment": os.getenv("ENVIRONMENT", "production"),
-                "port": os.getenv("PORT", "8000"),
-                "timestamp": datetime.now().isoformat()
-            })
+        # Debug endpoint removed for production security
         else:
             self.send_error(404, "Not Found")
 

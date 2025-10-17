@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 /**
  * AI Fallback Endpoint
@@ -14,15 +14,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
     }
     
-    // Verify authentication
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Generate fallback response based on message content
     const response = await generateFallbackResponse(message, agentId, context)
     
     return NextResponse.json({
@@ -54,10 +52,8 @@ async function generateFallbackResponse(message, agentId, context) {
   const startTime = Date.now()
   const lowerMessage = message.toLowerCase()
   
-  // Analyze message intent
   const intent = analyzeMessageIntent(lowerMessage)
   
-  // Generate contextual response
   let response = {
     content: '',
     agent: agentId || 'fallback',
@@ -96,7 +92,6 @@ async function generateFallbackResponse(message, agentId, context) {
   
   response.responseTime = Date.now() - startTime
   
-  // Add generic suggestions if none provided
   if (response.suggestions.length === 0) {
     response.suggestions = [
       "Check your main dashboard for current metrics",
@@ -119,7 +114,6 @@ function analyzeMessageIntent(message) {
     specificity: 'general'
   }
   
-  // Booking related
   if (message.match(/\b(book|appointment|schedule|calendar|availability|reserve)\b/i)) {
     intent.category = 'booking'
     if (message.match(/\b(today|tomorrow|urgent|asap|now)\b/i)) {
@@ -127,7 +121,6 @@ function analyzeMessageIntent(message) {
     }
   }
   
-  // Revenue/Financial
   else if (message.match(/\b(revenue|money|profit|income|sales|financial|earnings|cost)\b/i)) {
     intent.category = 'revenue'
     if (message.match(/\b(report|analysis|breakdown|detailed)\b/i)) {
@@ -135,22 +128,18 @@ function analyzeMessageIntent(message) {
     }
   }
   
-  // Marketing
   else if (message.match(/\b(marketing|campaign|promotion|customer|client|advertising|social media)\b/i)) {
     intent.category = 'marketing'
   }
   
-  // Operations
   else if (message.match(/\b(operation|staff|employee|workflow|efficiency|management|team)\b/i)) {
     intent.category = 'operations'
   }
   
-  // Analytics
   else if (message.match(/\b(analytics|metrics|data|statistics|performance|insights|trends)\b/i)) {
     intent.category = 'analytics'
   }
   
-  // Help
   else if (message.match(/\b(help|how|what|explain|tutorial|guide)\b/i)) {
     intent.category = 'help'
   }
@@ -178,7 +167,7 @@ async function generateBookingFallback(message, intent, context) {
     suggestions.unshift("For urgent bookings, call or text your clients directly")
   }
   
-  const baseResponse = responses[Math.floor(Math.random() * responses.length)]
+  const baseResponse = responses[0]
   
   return {
     content: `${baseResponse}\n\n• ${suggestions.slice(0, 3).join('\n• ')}\n\nMy full booking intelligence should return shortly. In the meantime, these manual options will help you manage appointments.`,
@@ -307,7 +296,7 @@ async function generateGeneralFallback(message, intent, context) {
     "Wait a few minutes and try again for full AI capabilities"
   ]
   
-  const response = generalResponses[Math.floor(Math.random() * generalResponses.length)]
+  const response = generalResponses[0]
   
   return {
     content: `${response}\n\nHere's what you can do:\n\n• ${suggestions.join('\n• ')}\n\nI should be back to full capability shortly!`,

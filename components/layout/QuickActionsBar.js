@@ -83,9 +83,7 @@ export default function QuickActionsBar() {
   const { profile } = useAuth()
   const [showMore, setShowMore] = useState(false)
 
-  // Filter actions based on user role
   const visibleActions = QUICK_ACTIONS.filter(action => {
-    // All users can access basic actions
     return true
   })
 

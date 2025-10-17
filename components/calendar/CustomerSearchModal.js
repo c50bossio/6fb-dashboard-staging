@@ -1,8 +1,15 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { MagnifyingGlassIcon, UserIcon, PhoneIcon, EnvelopeIcon, StarIcon, XMarkIcon, PlusIcon } from '@heroicons/react/24/outline'
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import {
+  MagnifyingGlassIcon,
+  UserIcon,
+  PhoneIcon,
+  StarIcon,
+  XMarkIcon,
+  PlusIcon
+} from '@heroicons/react/24/outline'
+
 import { useState, useEffect, Fragment, useCallback } from 'react'
 
 export default function CustomerSearchModal({
@@ -10,7 +17,7 @@ export default function CustomerSearchModal({
   onClose,
   onSelectCustomer,
   onCreateNewCustomer,
-  barbershopId = 'demo-shop-001'
+  barbershopId
 }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [customers, setCustomers] = useState([])
@@ -18,7 +25,6 @@ export default function CustomerSearchModal({
   const [error, setError] = useState('')
   const [selectedCustomer, setSelectedCustomer] = useState(null)
 
-  // Debounced search
   const searchCustomers = useCallback(async (query) => {
     if (!query || query.length < 2) {
       setCustomers([])
@@ -46,7 +52,6 @@ export default function CustomerSearchModal({
     }
   }, [barbershopId])
 
-  // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       searchCustomers(searchQuery)
@@ -66,7 +71,6 @@ export default function CustomerSearchModal({
     onClose()
   }
 
-  // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
       setSearchQuery('')

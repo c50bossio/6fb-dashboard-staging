@@ -1,10 +1,7 @@
-// Initialize Dashboard Database Tables and Seed Data
-// Run this script to set up all required database tables for the dashboard
 
 const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs').promises
 
-// Database configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTIxMjUzMiwiZXhwIjoyMDUwNzg4NTMyfQ.VwP1RlHkKwMqNl0XDLPabxJZKgMkGRBu84hvOeLI8gQ'
 
@@ -13,22 +10,17 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 async function initializeDashboardDatabase() {
-  console.log('🚀 Initializing Dashboard Database...')
-  
+
   try {
-    // Step 1: Create database tables
-    console.log('📋 Creating dashboard tables...')
-    
+
     const tablesSql = await fs.readFile('database/dashboard-tables.sql', 'utf8')
     
-    // Execute table creation SQL (PostgreSQL specific)
-    // Note: This is a simplified approach - in production, use proper migrations
     const tableStatements = tablesSql.split(';').filter(stmt => stmt.trim().length > 0)
     
     for (const statement of tableStatements) {
       if (statement.trim()) {
         try {
-          console.log(`Executing: ${statement.substring(0, 60)}...`)
+          }...`)
           const { error } = await supabase.rpc('exec_sql', { sql: statement.trim() + ';' })
           if (error) {
             console.warn(`Warning on statement: ${error.message}`)
@@ -38,12 +30,7 @@ async function initializeDashboardDatabase() {
         }
       }
     }
-    
-    console.log('✅ Dashboard tables created')
-    
-    // Step 2: Seed data
-    console.log('🌱 Seeding dashboard data...')
-    
+
     const seedSql = await fs.readFile('database/seed-dashboard-data.sql', 'utf8')
     const seedStatements = seedSql.split(';').filter(stmt => stmt.trim().length > 0)
     
@@ -59,12 +46,7 @@ async function initializeDashboardDatabase() {
         }
       }
     }
-    
-    console.log('✅ Dashboard data seeded')
-    
-    // Step 3: Verify setup
-    console.log('🔍 Verifying dashboard setup...')
-    
+
     const verifications = [
       { table: 'business_metrics', description: 'Business metrics data' },
       { table: 'ai_insights', description: 'AI insights data' },
@@ -82,63 +64,44 @@ async function initializeDashboardDatabase() {
         if (error) {
           console.error(`❌ ${table}: ${error.message}`)
         } else {
-          console.log(`✅ ${table}: ${count} records (${description})`)
+          `)
         }
       } catch (err) {
         console.error(`❌ ${table}: ${err.message}`)
       }
     }
-    
-    // Step 4: Test dashboard data loading
-    console.log('🧪 Testing dashboard data loading...')
-    
+
     const { checkDashboardTablesExist } = require('../lib/dashboard-data')
     const tableCheck = await checkDashboardTablesExist()
     
     if (tableCheck.allTablesExist) {
-      console.log('✅ All dashboard tables verified and accessible')
-      
-      // Test loading actual data
+
       const { getBusinessMetrics, getAIInsights, getAIAgents } = require('../lib/dashboard-data')
       
       const metrics = await getBusinessMetrics('demo-shop-001')
       const insights = await getAIInsights('demo-shop-001', 3)
       const agents = await getAIAgents('demo-shop-001')
-      
-      console.log(`✅ Sample data loaded:`)
-      console.log(`   - Business metrics: Revenue $${metrics.revenue}, ${metrics.customers} customers`)
-      console.log(`   - AI insights: ${insights.length} active insights`)
-      console.log(`   - AI agents: ${agents.length} agents configured`)
-      
+
     } else {
       console.error('❌ Dashboard table verification failed:')
       tableCheck.tableStatus.forEach(status => {
         console.error(`   - ${status.table}: ${status.exists ? 'OK' : 'MISSING'} ${status.error || ''}`)
       })
     }
-    
-    console.log('🎉 Dashboard database initialization complete!')
-    console.log('')
-    console.log('Next steps:')
-    console.log('1. Restart your development server')
-    console.log('2. Visit http://localhost:9999/dashboard')
-    console.log('3. The dashboard should load in under 2 seconds with real data')
-    
+
   } catch (error) {
     console.error('❌ Dashboard database initialization failed:', error)
     process.exit(1)
   }
 }
 
-// Create a simple SQL execution function for Supabase
 async function createExecSqlFunction() {
   const { error } = await supabase.rpc('create_exec_sql_function', {})
   if (error && !error.message.includes('already exists')) {
-    console.log('Note: exec_sql function creation skipped (may already exist)')
+    ')
   }
 }
 
-// Main execution
 if (require.main === module) {
   createExecSqlFunction().then(() => {
     initializeDashboardDatabase().catch(console.error)

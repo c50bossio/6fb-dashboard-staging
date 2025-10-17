@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
 import { 
   CalendarDaysIcon,
   ClockIcon,
@@ -10,6 +8,8 @@ import {
   PhoneIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 export default function AvailabilityPage() {
   const [loading, setLoading] = useState(true)
@@ -20,7 +20,6 @@ export default function AvailabilityPage() {
   const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
-    // Simulate loading available slots
     setTimeout(() => {
       const slots = [
         { id: 1, date: 'Today', time: '2:00 PM', barber: 'Marcus Johnson', shop: '6FB Downtown' },
@@ -39,8 +38,6 @@ export default function AvailabilityPage() {
     e.preventDefault()
     if (!selectedSlot || !phoneNumber || !smsConsent) return
 
-    // In production, this would send to the backend
-    console.log('Booking slot:', selectedSlot, 'Phone:', phoneNumber, 'SMS Consent:', smsConsent)
     setSubmitted(true)
   }
 

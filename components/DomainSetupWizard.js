@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { CheckCircleIcon, ClipboardDocumentIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function DomainSetupWizard({ domain, onComplete }) {
   const [currentStep, setCurrentStep] = useState(1)
@@ -9,7 +9,6 @@ export default function DomainSetupWizard({ domain, onComplete }) {
   const [dnsProvider, setDnsProvider] = useState('')
   const [copied, setCopied] = useState({ a: false, cname: false })
   
-  // DNS records the user needs to add
   const dnsRecords = {
     a: {
       type: 'A',
@@ -36,7 +35,6 @@ export default function DomainSetupWizard({ domain, onComplete }) {
   const verifyDomain = async () => {
     setVerificationStatus('checking')
     
-    // Simulate DNS verification
     setTimeout(() => {
       const random = Math.random()
       if (random > 0.3) {
@@ -381,7 +379,7 @@ export default function DomainSetupWizard({ domain, onComplete }) {
                     </button>
                   </div>
                   <p className="text-sm text-gray-500 mt-4">
-                    Need help? <a href="#" className="text-olive-600 hover:underline">Contact support</a>
+                    Need help? <a href="/support" className="text-olive-600 hover:underline">Contact support</a>
                   </p>
                 </>
               )}

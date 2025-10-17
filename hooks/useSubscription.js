@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { createClient } from '../lib/supabase/client'
-
-const supabase = createClient()
-import { SUBSCRIPTION_PLANS } from '../lib/stripe-client'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export function useSubscription() {
-  const { user } = useUser()
-  const [subscription, setSubscription] = useState(null)
-  const [usage, setUsage] = useState(null)
+  const { user } = useAuth()
+  const [subscriptionData, setSubscriptionData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!user) {
@@ -22,124 +18,93 @@ export function useSubscription() {
 
   const loadSubscriptionData = async () => {
     try {
-      // Get user's subscription info from Supabase
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('subscription_plan, subscription_status, stripe_customer_id')
-        .eq('clerk_id', user.id)
-        .single()
-
-      if (userError) throw userError
-
-      // Get current month's usage
-      const startOfMonth = new Date()
-      startOfMonth.setDate(1)
-      startOfMonth.setHours(0, 0, 0, 0)
-
-      const { data: sessions, error: sessionsError } = await supabase
-        .from('ai_sessions')
-        .select('id')
-        .eq('user_id', userData.id)
-        .gte('created_at', startOfMonth.toISOString())
-
-      if (sessionsError) throw sessionsError
-
-      const currentPlan = SUBSCRIPTION_PLANS[userData.subscription_plan || 'free']
+      setLoading(true)
+      setError(null)
       
-      setSubscription({
-        plan: currentPlan,
-        status: userData.subscription_status || 'free',
-        customerId: userData.stripe_customer_id
+      const response = await fetch('/api/subscription/status')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to fetch subscription')
+      }
+      
+      const data = await response.json()
+      
+      // Store the full response for compatibility
+      setSubscriptionData({
+        subscription: data.subscription,
+        usage: data.usage,
+        billing: data.billing,
+        user: data.user,
+        profile: data.profile,
+        features: data.features
       })
-
-      setUsage({
-        sessionsUsed: sessions?.length || 0,
-        sessionsLimit: currentPlan.limits.sessionsPerMonth,
-        percentUsed: currentPlan.limits.sessionsPerMonth === -1 
-          ? 0 
-          : ((sessions?.length || 0) / currentPlan.limits.sessionsPerMonth) * 100
-      })
+      
     } catch (error) {
       console.error('Error loading subscription:', error)
+      setError(error.message)
+      // Set default data on error
+      setSubscriptionData({
+        subscription: {
+          tier: 'free',
+          status: 'inactive',
+          isActive: false,
+          plan_name: 'Free Plan'
+        },
+        usage: { sms: {}, email: {}, ai: {}, staff: {} },
+        billing: {},
+        profile: {},
+        features: { name: 'Free Plan', features: [] }
+      })
     } finally {
       setLoading(false)
     }
   }
 
-  const canUseFeature = (feature) => {
-    if (!subscription) return false
-    
-    switch (feature) {
-      case 'ai_chat':
-        return usage.sessionsLimit === -1 || usage.sessionsUsed < usage.sessionsLimit
-      
-      case 'marketing_agent':
-      case 'financial_agent':
-        return subscription.plan.limits.agentsAccess.includes('all') || 
-               subscription.plan.limits.agentsAccess.includes(feature)
-      
-      case 'team_collaboration':
-        return subscription.plan.limits.teamMembers > 0
-      
-      case 'api_access':
-        return subscription.plan.limits.apiAccess === true
-      
-      default:
-        return true
-    }
-  }
-
-  const upgradeRequired = (feature) => {
-    if (canUseFeature(feature)) return null
-
-    // Recommend appropriate plan
-    if (feature === 'ai_chat' && usage.sessionsUsed >= usage.sessionsLimit) {
-      if (subscription.plan.id === 'free') return 'starter'
-      if (subscription.plan.id === 'starter') return 'professional'
-    }
-
-    if (['marketing_agent', 'financial_agent'].includes(feature)) {
-      return 'starter'
-    }
-
-    if (feature === 'team_collaboration') {
-      return 'professional'
-    }
-
-    if (feature === 'api_access') {
-      return 'enterprise'
-    }
-
-    return 'professional'
-  }
-
-  const trackUsage = async (eventType) => {
-    if (!user) return
-
+  const openBillingPortal = async () => {
     try {
-      await supabase.from('usage_events').insert({
-        user_id: user.id,
-        event_type: eventType,
-        metadata: {
-          plan: subscription?.plan?.id,
-          timestamp: new Date().toISOString()
-        }
+      const response = await fetch('/api/stripe/create-portal-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
       })
-
-      // Refresh usage data
-      await loadSubscriptionData()
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create portal session')
+      }
+      
+      // Check if we got a relative URL (local billing page) or absolute URL (Stripe portal)
+      if (data.url.startsWith('/')) {
+        // Local billing page - navigate within the app
+        window.location.href = data.url
+      } else {
+        // External Stripe portal - open in new tab
+        window.open(data.url, '_blank')
+      }
     } catch (error) {
-      console.error('Error tracking usage:', error)
+      console.error('Error opening billing portal:', error)
+      
+      // Provide more helpful error message
+      const errorMessage = error.message.includes('No billing account') 
+        ? 'Billing setup in progress. Please try again in a moment.'
+        : 'Unable to open billing portal. Redirecting to billing page...'
+      
+      alert(errorMessage)
+      
+      // Fallback: redirect to local billing page
+      if (error.message.includes('No billing account') || error.message.includes('Failed to create')) {
+        window.location.href = '/dashboard/billing'
+      }
     }
   }
 
   return {
-    subscription,
-    usage,
+    subscriptionData,
+    subscription: subscriptionData?.subscription || null,
+    usage: subscriptionData?.usage || null,
     loading,
-    canUseFeature,
-    upgradeRequired,
-    trackUsage,
+    error,
+    openBillingPortal,
     refresh: loadSubscriptionData
   }
 }

@@ -40,7 +40,7 @@ function RegisterConfirmContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background hero-gradient flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         {/* Logo */}
         <div className="flex justify-center">
@@ -54,16 +54,16 @@ function RegisterConfirmContent() {
           <CheckCircleIcon className="h-16 w-16 text-green-500" />
         </div>
 
-        <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+        <h2 className="mt-6 text-center text-3xl font-bold text-foreground gradient-text">
           Account Created Successfully!
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           We've sent a verification email to confirm your account
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="card-elevated backdrop-blur-sm">
           {/* Email Icon and Info */}
           <div className="text-center">
             <div className="flex justify-center">
@@ -72,11 +72,11 @@ function RegisterConfirmContent() {
               </div>
             </div>
             
-            <h3 className="mt-4 text-lg font-semibold text-gray-900">
+            <h3 className="mt-4 text-lg font-semibold text-foreground">
               Check Your Email
             </h3>
-            
-            <p className="mt-2 text-sm text-gray-600">
+
+            <p className="mt-2 text-sm text-muted-foreground">
               We've sent a verification link to:
             </p>
             
@@ -87,9 +87,9 @@ function RegisterConfirmContent() {
 
           {/* Instructions */}
           <div className="mt-6 space-y-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-2">Next Steps:</h4>
-              <ol className="text-sm text-gray-600 space-y-2">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h4 className="font-semibold text-foreground mb-2">Next Steps:</h4>
+              <ol className="text-sm text-muted-foreground space-y-2">
                 <li className="flex items-start">
                   <span className="bg-olive-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-medium mr-3 mt-0.5 flex-shrink-0">1</span>
                   <span>Check your email inbox (and spam folder)</span>
@@ -148,7 +148,7 @@ function RegisterConfirmContent() {
 
           {/* Help Section */}
           <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Didn't receive the email? Check your spam folder or{' '}
               <Link href="/support" className="text-olive-600 hover:text-olive-500">
                 contact support

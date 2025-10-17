@@ -1,0 +1,50 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: 6fb-ai-agent-system-base
+
+# Base resources
+resources:
+- namespace.yaml
+- deployment.yaml
+- redis-deployment.yaml
+- service.yaml
+- configmap.yaml
+- secrets.yaml
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: 6fb-ai-agent-system
+  app.kubernetes.io/part-of: 6fb-ai-agent-system
+  app.kubernetes.io/managed-by: kustomize
+
+# Common annotations
+commonAnnotations:
+  app.kubernetes.io/version: "1.0.0"
+  config.kubernetes.io/local-config: "false"
+
+# Namespace for all resources
+namespace: agent-system
+
+# Image tags (can be overridden in overlays)
+images:
+- name: 6fb-ai-agent-system/frontend
+  newTag: latest
+- name: 6fb-ai-agent-system/backend
+  newTag: latest
+
+# Resource name prefix
+namePrefix: ""
+
+# Resource name suffix  
+nameSuffix: ""
+
+# Replica count override (can be overridden in overlays)
+replicas:
+- name: frontend
+  count: 1
+- name: backend
+  count: 1
+- name: redis
+  count: 1

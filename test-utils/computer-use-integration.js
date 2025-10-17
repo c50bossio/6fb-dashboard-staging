@@ -26,21 +26,18 @@ class ComputerUseIntegration {
    * Initialize Computer Use integration
    */
   async init() {
-    // Ensure directories exist
     await fs.mkdir(this.screenshotDir, { recursive: true })
     await fs.mkdir(this.reportsDir, { recursive: true })
 
-    // Verify Python script exists
     try {
       await fs.access(this.pythonScript)
-      console.log('✓ Computer Use Python script found')
+      
     } catch (error) {
       console.warn('⚠ Computer Use Python script not found at:', this.pythonScript)
       console.warn('AI visual analysis will be skipped')
       return false
     }
 
-    // Check if Claude API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
       console.warn('⚠ ANTHROPIC_API_KEY not configured')
       console.warn('AI visual analysis will be skipped')
@@ -58,13 +55,11 @@ class ComputerUseIntegration {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       const screenshotPath = path.join(this.screenshotDir, `analysis-${timestamp}.png`)
       
-      // Take screenshot first if not provided
       if (!options.screenshotPath) {
         await this.takeScreenshot(screenshotPath)
         options.screenshotPath = screenshotPath
       }
 
-      // Execute Python script for AI analysis
       const command = `cd "${path.dirname(this.pythonScript)}" && python3 computer_use_basic.py "${prompt}"`
       const { stdout, stderr } = await execAsync(command, {
         env: { ...process.env },
@@ -77,7 +72,6 @@ class ComputerUseIntegration {
 
       const response = JSON.parse(stdout)
       
-      // Save analysis report
       const reportPath = path.join(this.reportsDir, `analysis-${timestamp}.json`)
       await fs.writeFile(reportPath, JSON.stringify({
         timestamp,
@@ -87,7 +81,6 @@ class ComputerUseIntegration {
         metadata: options.metadata || {}
       }, null, 2))
 
-      console.log('🤖 AI Visual Analysis completed')
       return {
         success: true,
         response: response.response,
@@ -109,20 +102,17 @@ class ComputerUseIntegration {
    */
   async takeScreenshot(outputPath) {
     try {
-      // Use macOS screencapture command
       if (process.platform === 'darwin') {
         await execAsync(`screencapture -x "${outputPath}"`)
       } else if (process.platform === 'linux') {
         await execAsync(`gnome-screenshot -f "${outputPath}"`)
       } else if (process.platform === 'win32') {
-        // Windows PowerShell screenshot
         const psCommand = `Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Screen]::PrimaryScreen.Bounds | % { $Bitmap = New-Object System.Drawing.Bitmap($_.Width, $_.Height); $Graphics = [System.Drawing.Graphics]::FromImage($Bitmap); $Graphics.CopyFromScreen($_.X, $_.Y, 0, 0, $Bitmap.Size); $Bitmap.Save('${outputPath}'); }`
         await execAsync(`powershell -Command "${psCommand}"`)
       } else {
         throw new Error(`Unsupported platform: ${process.platform}`)
       }
-      
-      console.log('📸 Screenshot taken:', outputPath)
+
       return outputPath
     } catch (error) {
       console.error('Screenshot failed:', error.message)
@@ -134,11 +124,9 @@ class ComputerUseIntegration {
    * Validate booking flow UX with AI
    */
   async validateBookingFlowUX(page) {
-    console.log('🔍 AI UX Validation - Booking Flow')
-    
+
     const results = []
 
-    // Step 1: Service selection page
     if (page) {
       await page.goto('/booking')
       await page.waitForSelector('[data-testid="service-grid"]')
@@ -150,7 +138,6 @@ class ComputerUseIntegration {
     )
     results.push({ step: 1, analysis: step1Analysis })
 
-    // Step 2: Date and time selection
     if (page) {
       await page.click('[data-testid="service-haircut-classic"]')
       await page.click('[data-testid="barber-john-smith"]')
@@ -164,7 +151,6 @@ class ComputerUseIntegration {
     )
     results.push({ step: 2, analysis: step2Analysis })
 
-    // Step 3: Confirmation page
     if (page) {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
@@ -182,7 +168,6 @@ class ComputerUseIntegration {
     )
     results.push({ step: 3, analysis: step3Analysis })
 
-    // Generate comprehensive UX report
     const uxReport = await this.generateUXReport(results, 'booking-flow')
     
     return {
@@ -196,8 +181,7 @@ class ComputerUseIntegration {
    * Validate dashboard UX with AI
    */
   async validateDashboardUX(page) {
-    console.log('🔍 AI UX Validation - Dashboard')
-    
+
     if (page) {
       await page.goto('/dashboard')
       await page.waitForSelector('[data-testid="dashboard-content"]')
@@ -208,7 +192,6 @@ class ComputerUseIntegration {
       { metadata: { page: 'dashboard', section: 'main' } }
     )
 
-    // Test AI agents section
     if (page) {
       await page.goto('/dashboard/agents')
       await page.waitForSelector('[data-testid="agents-grid"]')
@@ -219,7 +202,6 @@ class ComputerUseIntegration {
       { metadata: { page: 'dashboard/agents', section: 'ai-agents' } }
     )
 
-    // Test integrations section
     if (page) {
       await page.goto('/dashboard/integrations')
       await page.waitForSelector('[data-testid="integrations-grid"]')
@@ -249,8 +231,7 @@ class ComputerUseIntegration {
    * Check accessibility with AI analysis
    */
   async validateAccessibility(page, pageUrl) {
-    console.log(`🔍 AI Accessibility Validation - ${pageUrl}`)
-    
+
     if (page) {
       await page.goto(pageUrl)
       await page.waitForLoadState('networkidle')
@@ -261,7 +242,6 @@ class ComputerUseIntegration {
       { metadata: { page: pageUrl, type: 'accessibility' } }
     )
 
-    // Check for specific accessibility concerns
     const specificChecks = await this.analyzeScreen(
       "Focus specifically on accessibility issues: 1) Are there any interactive elements that might be too small for motor-impaired users? 2) Is there sufficient color contrast throughout? 3) Are error states and validation messages clearly visible? 4) Would this interface work well with screen readers based on visual layout? 5) Are there any flashing or problematic animations?",
       { metadata: { page: pageUrl, type: 'accessibility-specific' } }
@@ -279,8 +259,7 @@ class ComputerUseIntegration {
    * Validate responsive design across viewports
    */
   async validateResponsiveDesign(page, pageUrl) {
-    console.log(`🔍 AI Responsive Design Validation - ${pageUrl}`)
-    
+
     const viewports = [
       { name: 'desktop', width: 1280, height: 720 },
       { name: 'tablet', width: 768, height: 1024 },
@@ -325,8 +304,7 @@ class ComputerUseIntegration {
    * Detect visual bugs and inconsistencies
    */
   async detectVisualBugs(page, pageUrl) {
-    console.log(`🔍 AI Visual Bug Detection - ${pageUrl}`)
-    
+
     if (page) {
       await page.goto(pageUrl)
       await page.waitForLoadState('networkidle')
@@ -337,7 +315,6 @@ class ComputerUseIntegration {
       { metadata: { page: pageUrl, type: 'bug-detection' } }
     )
 
-    // Check for specific common issues
     const specificBugCheck = await this.analyzeScreen(
       "Focus on specific visual problems: 1) Are there any form elements that look broken or oddly positioned? 2) Do all buttons and interactive elements appear clickable and properly styled? 3) Are there any text overflow issues or cut-off content? 4) Do modal dialogs and overlays display correctly? 5) Are loading states and animations working as expected?",
       { metadata: { page: pageUrl, type: 'specific-bugs' } }
@@ -372,8 +349,7 @@ class ComputerUseIntegration {
     }
 
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2))
-    
-    console.log(`📋 UX Report generated: ${reportPath}`)
+
     return report
   }
 
@@ -387,7 +363,6 @@ class ComputerUseIntegration {
       if (analysis.analysis && analysis.analysis.success && analysis.analysis.response) {
         const response = analysis.analysis.response.toLowerCase()
         
-        // Look for common recommendation patterns
         if (response.includes('improve') || response.includes('should') || response.includes('recommend')) {
           const sentences = analysis.analysis.response.split('.')
           sentences.forEach(sentence => {
@@ -436,12 +411,10 @@ class ComputerUseIntegration {
       const response = analysis.analysis.response.toLowerCase()
       let score = 70 // Base score
       
-      // Positive indicators
       if (response.includes('excellent') || response.includes('great')) score += 20
       else if (response.includes('good') || response.includes('well')) score += 10
       else if (response.includes('clear') || response.includes('intuitive')) score += 5
       
-      // Negative indicators
       if (response.includes('poor') || response.includes('bad')) score -= 20
       else if (response.includes('confusing') || response.includes('difficult')) score -= 15
       else if (response.includes('issue') || response.includes('problem')) score -= 10
@@ -456,21 +429,17 @@ class ComputerUseIntegration {
    * Run comprehensive UX audit
    */
   async runComprehensiveAudit(page) {
-    console.log('🚀 Starting Comprehensive AI UX Audit')
-    
+
     const auditResults = {
       timestamp: new Date().toISOString(),
       results: {}
     }
 
     try {
-      // Booking flow UX
       auditResults.results.bookingFlow = await this.validateBookingFlowUX(page)
 
-      // Dashboard UX
       auditResults.results.dashboard = await this.validateDashboardUX(page)
 
-      // Accessibility checks
       const pages = ['/', '/dashboard', '/booking', '/dashboard/agents']
       auditResults.results.accessibility = {}
       
@@ -478,27 +447,21 @@ class ComputerUseIntegration {
         auditResults.results.accessibility[pageUrl] = await this.validateAccessibility(page, pageUrl)
       }
 
-      // Responsive design validation
       auditResults.results.responsive = {}
       for (const pageUrl of pages) {
         auditResults.results.responsive[pageUrl] = await this.validateResponsiveDesign(page, pageUrl)
       }
 
-      // Visual bug detection
       auditResults.results.visualBugs = {}
       for (const pageUrl of pages) {
         auditResults.results.visualBugs[pageUrl] = await this.detectVisualBugs(page, pageUrl)
       }
 
-      // Generate master report
       const masterReportPath = path.join(
         this.reportsDir, 
         `comprehensive-audit-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
       )
       await fs.writeFile(masterReportPath, JSON.stringify(auditResults, null, 2))
-
-      console.log('✅ Comprehensive AI UX Audit completed')
-      console.log(`📋 Master report: ${masterReportPath}`)
 
       return auditResults
 

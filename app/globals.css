@@ -47,25 +47,25 @@
   .dark {
     /* Dark Mode - Brand-Matched Professional Theme */
     /* Logo charcoal variant optimized for dark mode elegance */
-    
+
     --background: 120 7% 18%; /* Brand Charcoal base */
-    --foreground: 32 21% 90%; /* Light Sand text */
-    --card: 120 7% 22%; /* Elevated charcoal cards */
-    --card-foreground: 32 21% 90%; /* Light Sand text */
+    --foreground: 0 0% 95%; /* Bright white text for maximum contrast */
+    --card: 120 7% 16%; /* Darker charcoal cards for better contrast */
+    --card-foreground: 0 0% 95%; /* Bright white text */
     --popover: 120 7% 20%; /* Charcoal popovers */
-    --popover-foreground: 32 21% 90%; /* Light Sand text */
+    --popover-foreground: 0 0% 95%; /* Bright white text */
     --primary: 42 38% 60%; /* Enhanced Gold for dark mode visibility */
     --primary-foreground: 120 7% 12%; /* Dark text on gold */
     --secondary: 130 11% 35%; /* Lighter Olive for secondary actions */
-    --secondary-foreground: 32 21% 90%; /* Light Sand text */
-    --muted: 120 7% 25%; /* Muted charcoal */
-    --muted-foreground: 32 21% 70%; /* Muted light text */
+    --secondary-foreground: 0 0% 95%; /* Bright white text */
+    --muted: 120 7% 22%; /* Darker muted charcoal */
+    --muted-foreground: 0 0% 70%; /* Muted light text */
     --accent: 42 38% 60%; /* Enhanced Gold accent */
     --accent-foreground: 120 7% 12%; /* Dark text on gold */
     --destructive: 2 49% 60%; /* Visible error red for dark mode */
     --destructive-foreground: 0 0% 100%; /* White on error */
     --border: 120 7% 32%; /* Visible charcoal border */
-    --input: 120 7% 25%; /* Input field charcoal */
+    --input: 120 7% 12%; /* Much darker input background for better contrast */
     --ring: 42 38% 60%; /* Gold focus ring in dark mode */
     
     /* Enhanced dark mode spacing */
@@ -141,10 +141,21 @@
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-border rounded-xl bg-input
-           focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent 
+    @apply w-full px-4 py-3 border border-border rounded-xl bg-input text-foreground
+           focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent
            transition-all duration-200 placeholder:text-muted-foreground
            shadow-sm hover:shadow-md;
+  }
+
+  /* Force input background colors in dark mode (override browser autocomplete) */
+  .input-field:-webkit-autofill,
+  .input-field:-webkit-autofill:hover,
+  .input-field:-webkit-autofill:focus,
+  .input-field:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px hsl(var(--input)) inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    box-shadow: 0 0 0 1000px hsl(var(--input)) inset !important;
+    border-color: hsl(var(--border)) !important;
   }
   
   .gradient-text {
@@ -227,7 +238,9 @@
 
   .card-modern-gold {
     @apply backdrop-blur-sm border border-brand-600/20 bg-gradient-to-br from-white to-brand-50/30
+           dark:border-brand-700/30 dark:from-gray-800 dark:to-brand-900/20
            shadow-gold hover:shadow-gold-glow
+           dark:shadow-none dark:hover:shadow-none
            transition-all duration-300 ease-out;
   }
 
@@ -238,10 +251,17 @@
   }
 
   .gradient-gold-header {
-    background: linear-gradient(135deg, 
-      rgba(184, 145, 58, 1) 0%, 
+    background: linear-gradient(135deg,
+      rgba(184, 145, 58, 1) 0%,
       rgba(212, 169, 74, 1) 50%,
       rgba(184, 145, 58, 0.9) 100%);
+  }
+
+  .dark .gradient-gold-header {
+    background: linear-gradient(135deg,
+      rgba(154, 118, 48, 0.8) 0%,
+      rgba(165, 131, 65, 0.85) 50%,
+      rgba(154, 118, 48, 0.75) 100%);
   }
 
   .text-shadow-subtle {
@@ -255,11 +275,13 @@
 
   .metric-card {
     @apply card-modern p-6 hover:scale-[1.02] hover:-translate-y-1
-           bg-gradient-to-br from-white via-white to-brand-50/20;
+           bg-gradient-to-br from-card via-card to-brand-50/20
+           dark:to-brand-900/20;
   }
 
   .metric-card-gold {
-    @apply card-modern-gold p-6 hover:scale-[1.02] hover:-translate-y-1;
+    @apply card-modern-gold p-6 hover:scale-[1.02] hover:-translate-y-1
+           dark:bg-gradient-to-br dark:from-gray-800 dark:to-brand-900/20;
   }
 }
 
@@ -321,6 +343,20 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: hsl(120 7% 18%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(120 7% 35%);
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(120 7% 45%);
 }
 
 /* Animations */
@@ -389,12 +425,7 @@
   animation: pulse 2s infinite;
 }
 
-/* Responsive improvements */
-@media (max-width: 768px) {
-  .hero-gradient {
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #1d4ed8 100%);
-  }
-}
+/* Responsive improvements - mobile inherits desktop brand colors */
 
 /* Loading states */
 .loading-skeleton {
@@ -619,10 +650,15 @@
 }
 
 .card-elevated {
-  background: white;
+  background: hsl(var(--card));
   border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid hsl(var(--border));
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Dark mode support for card-elevated */
+.dark .card-elevated {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
 
 /* Calendar Optimistic Update Styles */

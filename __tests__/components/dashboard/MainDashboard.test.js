@@ -9,7 +9,6 @@ import MainDashboard from '../../../components/dashboard/MainDashboard';
 import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
 
-// Database next/dynamic for OptimizedCharts
 jest.mock('next/dynamic', () => ({
   __esModule: true,
   default: (importFunction, options = {}) => {
@@ -24,7 +23,6 @@ jest.mock('next/dynamic', () => ({
   },
 }));
 
-// Database OptimizedCharts component
 jest.mock('../../../components/ui/OptimizedCharts', () => ({
   RevenueChart: ({ data, loading }) => (
     <div data-testid="revenue-chart">
@@ -334,7 +332,6 @@ describe('MainDashboard Component', () => {
 
   describe('Responsive Design', () => {
     it('adapts layout for mobile viewports', () => {
-      // Mock window.matchMedia for mobile
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
         value: jest.fn().mockImplementation(query => ({
@@ -373,12 +370,10 @@ describe('MainDashboard Component', () => {
 
       renderWithProviders(<MainDashboard />);
       
-      // Wait for initial load
       await waitFor(() => {
         expect(screen.getByText('$15,000')).toBeInTheDocument();
       });
 
-      // Fast-forward time to trigger refresh
       act(() => {
         jest.advanceTimersByTime(30000); // 30 seconds
       });
@@ -418,7 +413,6 @@ describe('MainDashboard Component', () => {
       await waitFor(() => {
         const heading = screen.getByText('Dashboard Overview');
         const computedStyle = window.getComputedStyle(heading);
-        // This would typically check actual contrast ratios
         expect(computedStyle.color).toBeDefined();
       });
     });

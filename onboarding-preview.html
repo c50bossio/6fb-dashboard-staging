@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Onboarding UI Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes draw {
+            to { stroke-dashoffset: 0; }
+        }
+        .animate-draw {
+            stroke-dasharray: 60;
+            stroke-dashoffset: 60;
+            animation: draw 0.5s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Professional Onboarding UI</h1>
+        <p class="text-gray-600 mb-8">Clean, modern interface without emoji overload</p>
+
+        <!-- Progress Indicators -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Progress Indicators</h2>
+            <div class="flex items-center gap-8">
+                <!-- Circular Progress -->
+                <div>
+                    <svg class="w-20 h-20" viewBox="0 0 50 50">
+                        <defs>
+                            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#3B82F6" />
+                                <stop offset="100%" stop-color="#8B5CF6" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="25" cy="25" r="20" stroke="#E5E7EB" stroke-width="4" fill="none" />
+                        <circle cx="25" cy="25" r="20" stroke="url(#progressGradient)" stroke-width="4" 
+                                fill="none" stroke-dasharray="125.6" stroke-dashoffset="31.4" 
+                                stroke-linecap="round" transform="rotate(-90 25 25)" />
+                        <text x="25" y="25" text-anchor="middle" dominant-baseline="middle" 
+                              class="text-xs font-bold fill-gray-700">75%</text>
+                    </svg>
+                    <p class="text-sm text-gray-600 mt-2">Circular Progress</p>
+                </div>
+
+                <!-- Linear Progress -->
+                <div class="flex-1">
+                    <div class="bg-gray-200 rounded-full h-3 overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full" 
+                             style="width: 75%"></div>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-2">Linear Progress Bar</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Business Type Cards -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Business Type Selection</h2>
+            <div class="grid grid-cols-3 gap-4">
+                <button class="p-4 rounded-lg border-2 border-blue-500 bg-blue-50 transition-all">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 mb-3 mx-auto"></div>
+                    <div class="text-sm font-medium">Barbershop</div>
+                </button>
+                <button class="p-4 rounded-lg border-2 border-gray-200 hover:border-gray-300 bg-white transition-all">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 mb-3 mx-auto"></div>
+                    <div class="text-sm font-medium">Hair Salon</div>
+                </button>
+                <button class="p-4 rounded-lg border-2 border-gray-200 hover:border-gray-300 bg-white transition-all">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 mb-3 mx-auto"></div>
+                    <div class="text-sm font-medium">Beauty Spa</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step Icons -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Step Icons with Gradients</h2>
+            <div class="flex items-center justify-between">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mb-2">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium">Business</p>
+                </div>
+                <div class="flex-1 h-1 bg-green-500 mx-2"></div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center mb-2">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium">Complete</p>
+                </div>
+                <div class="flex-1 h-1 bg-gray-300 mx-2"></div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center mb-2">
+                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-sm font-medium">Staff</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Illustrations -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Professional SVG Illustrations</h2>
+            <div class="grid grid-cols-4 gap-6">
+                <!-- Business Icon -->
+                <div class="text-center">
+                    <svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100" fill="none">
+                        <rect x="20" y="30" width="60" height="50" rx="4" class="fill-blue-100 stroke-blue-500" stroke-width="2"/>
+                        <rect x="30" y="40" width="40" height="3" class="fill-blue-400"/>
+                        <rect x="30" y="48" width="30" height="2" class="fill-blue-300"/>
+                        <circle cx="50" cy="20" r="8" class="fill-blue-500"/>
+                        <path d="M47 20 L49 22 L53 18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <p class="text-sm mt-2">Business Setup</p>
+                </div>
+
+                <!-- Schedule Icon -->
+                <div class="text-center">
+                    <svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100" fill="none">
+                        <rect x="15" y="25" width="70" height="60" rx="6" class="fill-indigo-50 stroke-indigo-500" stroke-width="2"/>
+                        <rect x="15" y="25" width="70" height="15" rx="6" class="fill-indigo-500"/>
+                        <circle cx="30" cy="32" r="2" fill="white"/>
+                        <circle cx="50" cy="32" r="2" fill="white"/>
+                        <circle cx="70" cy="32" r="2" fill="white"/>
+                        <rect x="25" y="50" width="12" height="8" rx="2" class="fill-indigo-200"/>
+                        <rect x="44" y="50" width="12" height="8" rx="2" class="fill-green-200"/>
+                    </svg>
+                    <p class="text-sm mt-2">Schedule</p>
+                </div>
+
+                <!-- Payment Icon -->
+                <div class="text-center">
+                    <svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100" fill="none">
+                        <rect x="20" y="35" width="60" height="40" rx="6" class="fill-green-100 stroke-green-500" stroke-width="2"/>
+                        <rect x="20" y="45" width="60" height="8" class="fill-green-500 opacity-20"/>
+                        <circle cx="35" cy="60" r="5" class="fill-green-400"/>
+                        <rect x="50" y="58" width="20" height="4" rx="2" class="fill-green-300"/>
+                    </svg>
+                    <p class="text-sm mt-2">Payment</p>
+                </div>
+
+                <!-- Completion Icon -->
+                <div class="text-center">
+                    <svg class="w-24 h-24 mx-auto" viewBox="0 0 100 100" fill="none">
+                        <circle cx="50" cy="50" r="35" class="fill-green-100 stroke-green-500" stroke-width="3"/>
+                        <path d="M30 50 L42 62 L70 34" stroke="green" stroke-width="4" 
+                              stroke-linecap="round" stroke-linejoin="round" class="animate-draw"/>
+                    </svg>
+                    <p class="text-sm mt-2">Complete</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Badges -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-semibold mb-4">Status Indicators</h2>
+            <div class="flex items-center gap-4">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    Active
+                </span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                    In Progress
+                </span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    <span class="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
+                    Pending
+                </span>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></span>
+                    Saving...
+                </span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

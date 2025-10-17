@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-export function useRealtimeDashboard(barbershopId = 'demo-shop-001', enabled = true) {
+export function useRealtimeDashboard(barbershopId, enabled = true) {
   const [data, setData] = useState(null);
   const [connected, setConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
@@ -15,14 +15,11 @@ export function useRealtimeDashboard(barbershopId = 'demo-shop-001', enabled = t
   useEffect(() => {
     if (!enabled) return;
 
-    console.log('🔄 Starting real-time dashboard connection...');
-    
-    // Create EventSource connection
     const eventSource = new EventSource(`/api/realtime/dashboard?barbershop_id=${barbershopId}`);
     eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
-      console.log('✅ Real-time dashboard connected');
+      
       setConnected(true);
       setError(null);
     };
@@ -33,18 +30,17 @@ export function useRealtimeDashboard(barbershopId = 'demo-shop-001', enabled = t
         
         switch (eventData.type) {
           case 'connected':
-            console.log('📡 Dashboard stream connected:', eventData.message);
+            
             setConnected(true);
             break;
             
           case 'dashboard_update':
-            console.log('📊 Dashboard update received:', eventData.timestamp);
+            
             setData(eventData.data);
             setLastUpdate(new Date(eventData.timestamp));
             break;
             
           case 'heartbeat':
-            // console.log('💓 Dashboard heartbeat:', eventData.timestamp);
             break;
             
           case 'error':
@@ -53,7 +49,7 @@ export function useRealtimeDashboard(barbershopId = 'demo-shop-001', enabled = t
             break;
             
           default:
-            console.log('📨 Unknown dashboard event:', eventData.type);
+            
         }
       } catch (err) {
         console.error('Failed to parse dashboard event:', err);
@@ -66,18 +62,15 @@ export function useRealtimeDashboard(barbershopId = 'demo-shop-001', enabled = t
       setConnected(false);
       setError('Connection error');
       
-      // Attempt to reconnect after a delay
       setTimeout(() => {
         if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
-          console.log('🔄 Attempting to reconnect dashboard stream...');
-          // The useEffect will handle recreation
+          
         }
       }, 5000);
     };
 
-    // Cleanup on unmount
     return () => {
-      console.log('🔌 Closing real-time dashboard connection');
+      
       eventSource.close();
       eventSourceRef.current = null;
       setConnected(false);
@@ -89,13 +82,12 @@ export function useRealtimeDashboard(barbershopId = 'demo-shop-001', enabled = t
       eventSourceRef.current.close();
       eventSourceRef.current = null;
       setConnected(false);
-      console.log('🛑 Real-time dashboard manually disconnected');
+      
     }
   };
 
   const reconnect = () => {
     disconnect();
-    // The useEffect will handle reconnection on the next render
   };
 
   return {

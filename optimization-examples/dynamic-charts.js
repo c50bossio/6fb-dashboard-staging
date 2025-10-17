@@ -16,7 +16,6 @@ function DashboardCharts({ data }) {
 // ✅ OPTIMIZED: Dynamic import with loading state
 import { Suspense, lazy } from 'react'
 
-// Load charts only when needed
 const LazyLineChart = lazy(() => 
   import('recharts').then(module => ({ 
     default: module.LineChart 
@@ -29,7 +28,6 @@ const LazyBarChart = lazy(() =>
   }))
 )
 
-// Chart wrapper with loading state
 function ChartContainer({ chartType, data, ...props }) {
   const ChartComponent = chartType === 'line' ? LazyLineChart : LazyBarChart
   
@@ -47,7 +45,6 @@ function ChartContainer({ chartType, data, ...props }) {
 }
 
 // ✅ EVEN BETTER: Route-based code splitting
-// app/dashboard/analytics/page.jsx
 import dynamic from 'next/dynamic'
 
 const AnalyticsCharts = dynamic(
@@ -58,4 +55,3 @@ const AnalyticsCharts = dynamic(
   }
 )
 
-// Result: Charts only loaded when analytics page is visited

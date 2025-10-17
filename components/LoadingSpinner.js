@@ -2,7 +2,8 @@
 
 import { SparklesIcon } from '@heroicons/react/24/outline'
 
-export default function LoadingSpinner({ size = 'medium', className = '', fullScreen = false, text = '' }) {
+// Named export for compatibility
+export function LoadingSpinner({ size = 'medium', className = '', fullScreen = false, text = '' }) {
   const sizeClasses = {
     small: 'h-4 w-4',
     medium: 'h-8 w-8',
@@ -81,3 +82,6 @@ export function TableLoadingSkeleton({ rows = 5 }) {
     </div>
   )
 }
+
+// Default export for backward compatibility
+export default LoadingSpinner

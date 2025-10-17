@@ -5,11 +5,9 @@ export async function analyticsMiddleware(request) {
   const { pathname, searchParams } = request.nextUrl
   const userId = request.headers.get('x-user-id')
   
-  // Track API requests
   if (pathname.startsWith('/api/')) {
     const startTime = Date.now()
     
-    // Clone the request to read the body
     const requestClone = request.clone()
     let requestBody = {}
     
@@ -18,13 +16,10 @@ export async function analyticsMiddleware(request) {
         requestBody = await requestClone.json()
       }
     } catch (e) {
-      // Body might not be JSON
     }
 
-    // Create response and track
     const response = NextResponse.next()
     
-    // Track the API call
     await trackServerEvent(userId || 'anonymous', 'api_request', {
       path: pathname,
       method: request.method,
@@ -34,7 +29,6 @@ export async function analyticsMiddleware(request) {
       user_agent: request.headers.get('user-agent'),
     })
 
-    // Track specific events based on API endpoints
     if (pathname === '/api/bookings' && request.method === 'POST') {
       await trackServerEvent(userId || 'anonymous', EVENTS.BOOKING_CREATED, {
         ...requestBody,

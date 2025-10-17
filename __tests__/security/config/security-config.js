@@ -4,7 +4,6 @@
  */
 
 export const SECURITY_CONFIG = {
-  // Environment configuration
   environments: {
     development: {
       baseUrl: 'http://localhost:9999',
@@ -20,7 +19,6 @@ export const SECURITY_CONFIG = {
     }
   },
 
-  // Authentication and session security
   authentication: {
     minPasswordLength: 12,
     requireUppercase: true,
@@ -39,7 +37,6 @@ export const SECURITY_CONFIG = {
     passwordHistoryCount: 12
   },
 
-  // Input validation and sanitization
   inputValidation: {
     maxInputLength: 10000,
     maxFileSize: 10 * 1024 * 1024, // 10MB
@@ -106,7 +103,6 @@ export const SECURITY_CONFIG = {
     ]
   },
 
-  // API security testing
   apiSecurity: {
     rateLimiting: {
       requestsPerMinute: 60,
@@ -132,7 +128,6 @@ export const SECURITY_CONFIG = {
     }
   },
 
-  // Vulnerability scanning configuration
   vulnerabilityScanning: {
     tools: {
       owasp_zap: {
@@ -163,7 +158,6 @@ export const SECURITY_CONFIG = {
     }
   },
 
-  // Penetration testing configuration
   penetrationTesting: {
     scope: {
       includePaths: ['/api/*', '/auth/*', '/dashboard/*', '/admin/*'],
@@ -195,7 +189,6 @@ export const SECURITY_CONFIG = {
     }
   },
 
-  // GDPR compliance testing
   gdprCompliance: {
     dataSubjects: {
       testPersons: [
@@ -230,7 +223,6 @@ export const SECURITY_CONFIG = {
     ]
   },
 
-  // Security monitoring and alerting
   monitoring: {
     alerts: {
       criticalThreshold: 1, // Alert immediately for critical vulnerabilities
@@ -264,7 +256,6 @@ export const SECURITY_CONFIG = {
     }
   },
 
-  // Compliance frameworks
   compliance: {
     frameworks: {
       owasp_top10: {
@@ -296,7 +287,6 @@ export const SECURITY_CONFIG = {
   }
 };
 
-// Export individual configurations for modular usage
 export const {
   environments,
   authentication,

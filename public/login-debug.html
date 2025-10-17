@@ -3,152 +3,1188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Debug</title>
+    <title>6FB Authentication Debug Console</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        .debug-console {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+        .log-line {
+            border-left: 3px solid #374151;
+            transition: all 0.2s ease;
+        }
+        .log-line:hover {
+            background-color: #1f2937;
+        }
+        .log-error {
+            border-left-color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        .log-warning {
+            border-left-color: #f59e0b;
+            background-color: rgba(245, 158, 11, 0.1);
+        }
+        .log-success {
+            border-left-color: #10b981;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        .log-info {
+            border-left-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background-color: #10b981; }
+        .status-offline { background-color: #ef4444; }
+        .status-warning { background-color: #f59e0b; }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .loading-pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <div class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-6 text-center">Debug Login Test</h2>
-            
-            <div id="status" class="mb-4 p-3 rounded bg-gray-100 text-sm"></div>
-            
-            <form id="loginForm" class="space-y-4">
-                <input
-                    type="email"
-                    id="email"
-                    placeholder="Email"
-                    class="w-full p-3 border rounded"
-                    value="demo@barbershop.com"
-                />
-                
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Password"
-                    class="w-full p-3 border rounded"
-                    value="demo123"
-                />
-                
-                <button
-                    type="submit"
-                    class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700"
-                >
-                    Test Login
-                </button>
-            </form>
-            
-            <div class="mt-4">
-                <button onclick="testSupabase()" class="w-full bg-gray-600 text-white p-2 rounded">
-                    Test Supabase Connection
-                </button>
+<body class="bg-gray-900 text-white min-h-screen debug-console">
+    <div class="container mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-blue-400 mb-2">🔍 6FB Authentication Debug Console</h1>
+            <div class="flex flex-wrap items-center gap-4 text-sm text-gray-300">
+                <span>Environment: <span id="env-status" class="font-semibold">Detecting...</span></span>
+                <span>Supabase: <span class="status-indicator" id="supabase-indicator"></span><span id="supabase-status">Checking...</span></span>
+                <span>Server: <span class="status-indicator" id="server-indicator"></span><span id="server-status">Checking...</span></span>
+                <span>Auth: <span class="status-indicator" id="auth-indicator"></span><span id="auth-status">Checking...</span></span>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="mb-6">
+            <div class="flex flex-wrap border-b border-gray-700">
+                <button class="tab-button px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:text-blue-400 active" onclick="showTab('overview')">Overview</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:text-blue-400" onclick="showTab('session')">Session Analysis</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:text-blue-400" onclick="showTab('storage')">Storage Inspector</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:text-blue-400" onclick="showTab('network')">Network Monitor</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:text-blue-400" onclick="showTab('tests')">Auth Tests</button>
+                <button class="tab-button px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:text-blue-400" onclick="showTab('logs')">Live Logs</button>
+            </div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <!-- System Status Cards -->
+                <div class="metric-card bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-blue-400 mb-4">System Health</h3>
+                    <div class="space-y-3">
+                        <div id="health-supabase" class="flex justify-between items-center">
+                            <span>Supabase DB</span>
+                            <span class="loading-pulse">Checking...</span>
+                        </div>
+                        <div id="health-auth" class="flex justify-between items-center">
+                            <span>Auth Service</span>
+                            <span class="loading-pulse">Checking...</span>
+                        </div>
+                        <div id="health-api" class="flex justify-between items-center">
+                            <span>API Endpoints</span>
+                            <span class="loading-pulse">Checking...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="metric-card bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-green-400 mb-4">Performance</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span>Avg Response</span>
+                            <span id="avg-response">0ms</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Success Rate</span>
+                            <span id="success-rate">0%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Total Requests</span>
+                            <span id="total-requests">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Session -->
+                <div class="metric-card bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-purple-400 mb-4">Current Session</h3>
+                    <div class="space-y-2">
+                        <div>Status: <span id="session-status" class="font-semibold">Unknown</span></div>
+                        <div>User ID: <span id="session-user-id" class="text-xs text-gray-400">None</span></div>
+                        <div>Expires: <span id="session-expires" class="text-xs text-gray-400">Unknown</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-gray-800 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-yellow-400 mb-4">Quick Actions</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button onclick="runHealthCheck()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm transition-colors">Health Check</button>
+                    <button onclick="testAllEndpoints()" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm transition-colors">Test All APIs</button>
+                    <button onclick="clearAllData()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm transition-colors">Clear All Data</button>
+                    <button onclick="exportDebugData()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm transition-colors">Export Debug</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Analysis Tab -->
+        <div id="session" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-blue-400 mb-4">Session Details</h3>
+                    <div id="session-details" class="space-y-2 text-sm">
+                        <div class="loading-pulse">Loading session information...</div>
+                    </div>
+                    <button onclick="refreshSession()" class="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm">Refresh Session</button>
+                </div>
+
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-green-400 mb-4">Cookie Inspector</h3>
+                    <div id="cookie-details" class="space-y-2 text-sm">
+                        <div class="loading-pulse">Loading cookie information...</div>
+                    </div>
+                    <button onclick="refreshCookies()" class="mt-4 bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm">Refresh Cookies</button>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-gray-800 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-purple-400 mb-4">Auth State Timeline</h3>
+                <canvas id="authTimelineChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Storage Inspector Tab -->
+        <div id="storage" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-blue-400 mb-4">localStorage</h3>
+                    <div id="localStorage-content" class="text-sm max-h-64 overflow-y-auto">
+                        <div class="loading-pulse">Loading...</div>
+                    </div>
+                    <button onclick="clearLocalStorage()" class="mt-4 bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs">Clear All</button>
+                </div>
+
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-green-400 mb-4">sessionStorage</h3>
+                    <div id="sessionStorage-content" class="text-sm max-h-64 overflow-y-auto">
+                        <div class="loading-pulse">Loading...</div>
+                    </div>
+                    <button onclick="clearSessionStorage()" class="mt-4 bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs">Clear All</button>
+                </div>
+
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-purple-400 mb-4">IndexedDB</h3>
+                    <div id="indexedDB-content" class="text-sm max-h-64 overflow-y-auto">
+                        <div class="loading-pulse">Loading...</div>
+                    </div>
+                    <button onclick="clearIndexedDB()" class="mt-4 bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs">Clear All</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Monitor Tab -->
+        <div id="network" class="tab-content">
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-blue-400">Network Requests</h3>
+                    <div class="flex gap-2">
+                        <button onclick="toggleNetworkMonitoring()" id="network-toggle" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm">Start Monitoring</button>
+                        <button onclick="clearNetworkLogs()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">Clear</button>
+                    </div>
+                </div>
+                <div id="network-requests" class="bg-gray-800 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <div class="text-gray-400 text-center py-8">Click "Start Monitoring" to begin tracking network requests</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-green-400 mb-4">Response Times</h3>
+                    <canvas id="responseTimeChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-red-400 mb-4">Error Analysis</h3>
+                    <div id="error-analysis" class="space-y-2 text-sm">
+                        <div class="text-gray-400">No errors detected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth Tests Tab -->
+        <div id="tests" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Email/Password Login Test -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-blue-400 mb-4">Email/Password Login</h3>
+                    <form id="login-test-form" class="space-y-4">
+                        <input type="email" id="test-email" placeholder="Email" class="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white" value="demo@barbershop.com">
+                        <input type="password" id="test-password" placeholder="Password" class="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white" value="demo123">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 p-3 rounded transition-colors">Test Login</button>
+                    </form>
+                    <div id="login-test-result" class="mt-4 p-3 bg-gray-900 rounded text-sm"></div>
+                </div>
+
+                <!-- OAuth Tests -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-green-400 mb-4">OAuth Providers</h3>
+                    <div class="space-y-3">
+                        <button onclick="testGoogleOAuth()" class="w-full bg-red-600 hover:bg-red-700 p-3 rounded transition-colors">Test Google OAuth</button>
+                        <button onclick="testMagicLink()" class="w-full bg-purple-600 hover:bg-purple-700 p-3 rounded transition-colors">Test Magic Link</button>
+                    </div>
+                    <div id="oauth-test-result" class="mt-4 p-3 bg-gray-900 rounded text-sm"></div>
+                </div>
+
+                <!-- API Endpoint Tests -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-yellow-400 mb-4">API Endpoint Tests</h3>
+                    <div class="space-y-2">
+                        <button onclick="testEndpoint('/api/auth/health')" class="w-full bg-yellow-600 hover:bg-yellow-700 p-2 rounded text-sm">Test Health</button>
+                        <button onclick="testEndpoint('/api/auth/session')" class="w-full bg-yellow-600 hover:bg-yellow-700 p-2 rounded text-sm">Test Session</button>
+                        <button onclick="testEndpoint('/api/auth/user')" class="w-full bg-yellow-600 hover:bg-yellow-700 p-2 rounded text-sm">Test User</button>
+                    </div>
+                    <div id="endpoint-test-result" class="mt-4 p-3 bg-gray-900 rounded text-sm max-h-48 overflow-y-auto"></div>
+                </div>
+
+                <!-- Session Recovery Test -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-purple-400 mb-4">Session Recovery</h3>
+                    <div class="space-y-3">
+                        <button onclick="testSessionPersistence()" class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded text-sm">Test Persistence</button>
+                        <button onclick="testSessionRefresh()" class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded text-sm">Test Refresh</button>
+                        <button onclick="simulateNetworkError()" class="w-full bg-red-600 hover:bg-red-700 p-2 rounded text-sm">Simulate Network Error</button>
+                    </div>
+                    <div id="recovery-test-result" class="mt-4 p-3 bg-gray-900 rounded text-sm max-h-48 overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Logs Tab -->
+        <div id="logs" class="tab-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-green-400">Live Debug Logs</h3>
+                <div class="flex gap-2">
+                    <select id="log-filter" class="bg-gray-700 border border-gray-600 rounded px-3 py-1 text-sm">
+                        <option value="all">All Logs</option>
+                        <option value="error">Errors Only</option>
+                        <option value="warning">Warnings Only</option>
+                        <option value="info">Info Only</option>
+                        <option value="success">Success Only</option>
+                    </select>
+                    <button onclick="clearLogs()" class="bg-red-600 hover:bg-red-700 px-4 py-1 rounded text-sm">Clear</button>
+                    <button onclick="exportLogs()" class="bg-blue-600 hover:bg-blue-700 px-4 py-1 rounded text-sm">Export</button>
+                </div>
             </div>
             
-            <pre id="logs" class="mt-4 p-3 bg-gray-900 text-green-400 text-xs rounded overflow-auto max-h-64"></pre>
+            <div id="debug-logs" class="bg-gray-900 rounded-lg p-4 max-h-96 overflow-y-auto">
+                <div class="text-gray-400 text-center py-8">Debug logs will appear here...</div>
+            </div>
+
+            <div class="mt-4 bg-gray-800 rounded-lg p-4">
+                <h4 class="font-semibold text-yellow-400 mb-2">Log Statistics</h4>
+                <div class="grid grid-cols-4 gap-4 text-sm">
+                    <div>Total: <span id="log-count-total">0</span></div>
+                    <div>Errors: <span id="log-count-error" class="text-red-400">0</span></div>
+                    <div>Warnings: <span id="log-count-warning" class="text-yellow-400">0</span></div>
+                    <div>Success: <span id="log-count-success" class="text-green-400">0</span></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script type="module">
-        const logs = document.getElementById('logs');
-        const status = document.getElementById('status');
-        
-        function log(message) {
-            const time = new Date().toTimeString().split(' ')[0];
-            logs.textContent += `[${time}] ${message}\n`;
-            logs.scrollTop = logs.scrollHeight;
-            console.log(message);
+        // Global state
+        window.debugState = {
+            logs: [],
+            networkRequests: [],
+            performance: {
+                requests: 0,
+                totalTime: 0,
+                errors: 0
+            },
+            monitoring: {
+                network: false,
+                realtime: false
+            },
+            supabase: null,
+            session: null
+        };
+
+        // Initialize debug console
+        async function init() {
+            log('🚀 6FB Auth Debug Console initialized', 'info');
+            await loadSupabase();
+            await runInitialChecks();
+            startRealtimeMonitoring();
         }
-        
-        function updateStatus(message, type = 'info') {
-            status.textContent = message;
-            status.className = `mb-4 p-3 rounded text-sm ${
-                type === 'error' ? 'bg-red-100 text-red-700' :
-                type === 'success' ? 'bg-green-100 text-green-700' :
-                'bg-gray-100 text-gray-700'
-            }`;
+
+        // Logging system
+        function log(message, type = 'info') {
+            const timestamp = new Date().toTimeString().split(' ')[0];
+            const logEntry = {
+                timestamp,
+                message,
+                type,
+                id: Date.now() + Math.random()
+            };
+            
+            debugState.logs.unshift(logEntry);
+            if (debugState.logs.length > 1000) {
+                debugState.logs = debugState.logs.slice(0, 1000);
+            }
+            
+            updateLogDisplay();
+            console.log(`[${timestamp}] ${message}`);
         }
-        
-        log('Page loaded');
-        updateStatus('Ready to test login');
-        
-        // Test if we can import Supabase
-        window.testSupabase = async function() {
+
+        function updateLogDisplay() {
+            const logsContainer = document.getElementById('debug-logs');
+            const filter = document.getElementById('log-filter')?.value || 'all';
+            
+            const filteredLogs = filter === 'all' 
+                ? debugState.logs 
+                : debugState.logs.filter(log => log.type === filter);
+
+            if (filteredLogs.length === 0) {
+                logsContainer.innerHTML = '<div class="text-gray-400 text-center py-8">No logs to display</div>';
+                return;
+            }
+
+            logsContainer.innerHTML = filteredLogs.map(log => `
+                <div class="log-line log-${log.type} p-2 mb-1 rounded text-xs">
+                    <span class="text-gray-400">[${log.timestamp}]</span>
+                    <span class="ml-2">${log.message}</span>
+                </div>
+            `).join('');
+
+            // Update stats
+            const stats = debugState.logs.reduce((acc, log) => {
+                acc.total++;
+                acc[log.type] = (acc[log.type] || 0) + 1;
+                return acc;
+            }, { total: 0 });
+
+            document.getElementById('log-count-total').textContent = stats.total;
+            document.getElementById('log-count-error').textContent = stats.error || 0;
+            document.getElementById('log-count-warning').textContent = stats.warning || 0;
+            document.getElementById('log-count-success').textContent = stats.success || 0;
+        }
+
+        // Supabase initialization
+        async function loadSupabase() {
             try {
-                log('Testing Supabase connection...');
-                
-                // Dynamic import
                 const { createClient } = await import('https://unpkg.com/@supabase/supabase-js@2/dist/module/index.js');
-                log('Supabase module loaded');
                 
                 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co';
                 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI';
                 
-                const supabase = createClient(supabaseUrl, supabaseKey);
-                log('Supabase client created');
+                debugState.supabase = createClient(supabaseUrl, supabaseKey);
                 
-                const { data, error } = await supabase.auth.getSession();
-                if (error) {
-                    log(`Session error: ${error.message}`);
-                    updateStatus(`Error: ${error.message}`, 'error');
-                } else {
-                    log(`Session check: ${data.session ? 'Active' : 'None'}`);
-                    updateStatus('Supabase connection successful!', 'success');
-                }
+                // Set up auth state listener
+                debugState.supabase.auth.onAuthStateChange((event, session) => {
+                    log(`🔐 Auth state changed: ${event}`, event === 'SIGNED_IN' ? 'success' : 'info');
+                    debugState.session = session;
+                    updateSessionDisplay();
+                });
+
+                log('✅ Supabase client initialized successfully', 'success');
+                updateStatusIndicator('supabase', 'online');
                 
-            } catch (err) {
-                log(`Error: ${err.message}`);
-                updateStatus(`Error: ${err.message}`, 'error');
+            } catch (error) {
+                log(`❌ Failed to initialize Supabase: ${error.message}`, 'error');
+                updateStatusIndicator('supabase', 'offline');
             }
         }
-        
-        // Login form handler
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            log('Form submitted');
+
+        // Status indicators
+        function updateStatusIndicator(service, status) {
+            const indicator = document.getElementById(`${service}-indicator`);
+            const statusText = document.getElementById(`${service}-status`);
             
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            log(`Attempting login with: ${email}`);
-            updateStatus('Logging in...', 'info');
+            if (indicator) {
+                indicator.className = `status-indicator status-${status}`;
+            }
+            if (statusText) {
+                statusText.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            }
+        }
+
+        // Health checks
+        async function runHealthCheck() {
+            log('🏥 Starting comprehensive health check...', 'info');
             
             try {
-                // Use fetch to call our API
-                log('Calling /api/auth/login...');
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email, password }),
-                });
-                
-                log(`Response status: ${response.status}`);
-                const data = await response.json();
-                log(`Response data: ${JSON.stringify(data)}`);
-                
-                if (response.ok) {
-                    updateStatus('Login successful! Redirecting...', 'success');
-                    log('Redirecting to dashboard...');
-                    setTimeout(() => {
-                        window.location.href = '/dashboard';
-                    }, 1000);
+                // Test Supabase connection
+                const { data, error } = await debugState.supabase.auth.getSession();
+                if (error) {
+                    log(`⚠️ Supabase session error: ${error.message}`, 'warning');
+                    document.getElementById('health-supabase').innerHTML = '<span>Supabase DB</span><span class="text-yellow-400">Warning</span>';
                 } else {
-                    updateStatus(`Login failed: ${data.error}`, 'error');
-                    log(`Login error: ${data.error}`);
+                    log('✅ Supabase connection healthy', 'success');
+                    document.getElementById('health-supabase').innerHTML = '<span>Supabase DB</span><span class="text-green-400">Healthy</span>';
+                }
+
+                // Test API endpoints
+                const healthResponse = await fetch('/api/auth/health');
+                if (healthResponse.ok) {
+                    log('✅ Auth API endpoints healthy', 'success');
+                    document.getElementById('health-auth').innerHTML = '<span>Auth Service</span><span class="text-green-400">Healthy</span>';
+                } else {
+                    log(`❌ Auth API endpoints unhealthy: ${healthResponse.status}`, 'error');
+                    document.getElementById('health-auth').innerHTML = '<span>Auth Service</span><span class="text-red-400">Error</span>';
+                }
+
+                // Test general API
+                const apiResponse = await fetch('/api/health/supabase');
+                if (apiResponse.ok) {
+                    log('✅ General API endpoints healthy', 'success');
+                    document.getElementById('health-api').innerHTML = '<span>API Endpoints</span><span class="text-green-400">Healthy</span>';
+                    updateStatusIndicator('server', 'online');
+                } else {
+                    log(`❌ General API endpoints unhealthy: ${apiResponse.status}`, 'error');
+                    document.getElementById('health-api').innerHTML = '<span>API Endpoints</span><span class="text-red-400">Error</span>';
+                    updateStatusIndicator('server', 'offline');
+                }
+
+            } catch (error) {
+                log(`❌ Health check failed: ${error.message}`, 'error');
+                updateStatusIndicator('server', 'offline');
+            }
+        }
+
+        // Initial checks
+        async function runInitialChecks() {
+            // Environment detection
+            const isLocalhost = window.location.hostname === 'localhost';
+            const port = window.location.port;
+            document.getElementById('env-status').textContent = isLocalhost ? `Development (${port})` : 'Production';
+            
+            // Run health check
+            await runHealthCheck();
+            
+            // Check current session
+            await refreshSession();
+            
+            // Update storage displays
+            updateStorageDisplays();
+        }
+
+        // Session management
+        async function refreshSession() {
+            try {
+                if (!debugState.supabase) {
+                    log('⚠️ Supabase not initialized', 'warning');
+                    return;
+                }
+
+                const { data, error } = await debugState.supabase.auth.getSession();
+                if (error) {
+                    log(`❌ Session fetch error: ${error.message}`, 'error');
+                    updateStatusIndicator('auth', 'offline');
+                    return;
+                }
+
+                debugState.session = data.session;
+                updateSessionDisplay();
+                
+                if (data.session) {
+                    log(`✅ Active session found for user: ${data.session.user.email}`, 'success');
+                    updateStatusIndicator('auth', 'online');
+                } else {
+                    log('ℹ️ No active session', 'info');
+                    updateStatusIndicator('auth', 'offline');
                 }
                 
-            } catch (err) {
-                log(`Exception: ${err.message}`);
-                updateStatus(`Error: ${err.message}`, 'error');
+            } catch (error) {
+                log(`❌ Session refresh failed: ${error.message}`, 'error');
+                updateStatusIndicator('auth', 'offline');
             }
+        }
+
+        function updateSessionDisplay() {
+            const session = debugState.session;
+            
+            if (session) {
+                document.getElementById('session-status').textContent = 'Active';
+                document.getElementById('session-user-id').textContent = session.user.id.substring(0, 12) + '...';
+                document.getElementById('session-expires').textContent = new Date(session.expires_at * 1000).toLocaleString();
+                
+                // Detailed session info
+                const sessionDetails = document.getElementById('session-details');
+                if (sessionDetails) {
+                    sessionDetails.innerHTML = `
+                        <div><strong>User ID:</strong> ${session.user.id}</div>
+                        <div><strong>Email:</strong> ${session.user.email}</div>
+                        <div><strong>Provider:</strong> ${session.user.app_metadata?.provider || 'email'}</div>
+                        <div><strong>Created:</strong> ${new Date(session.user.created_at).toLocaleString()}</div>
+                        <div><strong>Last Sign In:</strong> ${new Date(session.user.last_sign_in_at).toLocaleString()}</div>
+                        <div><strong>Expires:</strong> ${new Date(session.expires_at * 1000).toLocaleString()}</div>
+                        <div><strong>Token Type:</strong> ${session.token_type}</div>
+                        <div><strong>Access Token:</strong> ${session.access_token.substring(0, 50)}...</div>
+                    `;
+                }
+            } else {
+                document.getElementById('session-status').textContent = 'None';
+                document.getElementById('session-user-id').textContent = 'N/A';
+                document.getElementById('session-expires').textContent = 'N/A';
+                
+                const sessionDetails = document.getElementById('session-details');
+                if (sessionDetails) {
+                    sessionDetails.innerHTML = '<div class="text-gray-400">No active session</div>';
+                }
+            }
+        }
+
+        // Cookie management
+        function refreshCookies() {
+            const cookies = document.cookie.split(';').map(cookie => {
+                const [name, value] = cookie.trim().split('=');
+                return { name, value };
+            }).filter(cookie => 
+                cookie.name.includes('sb-') || 
+                cookie.name.includes('auth') || 
+                cookie.name.includes('session')
+            );
+
+            const cookieDetails = document.getElementById('cookie-details');
+            if (cookies.length === 0) {
+                cookieDetails.innerHTML = '<div class="text-gray-400">No authentication cookies found</div>';
+            } else {
+                cookieDetails.innerHTML = cookies.map(cookie => `
+                    <div><strong>${cookie.name}:</strong> ${cookie.value ? cookie.value.substring(0, 50) + '...' : 'empty'}</div>
+                `).join('');
+            }
+
+            log(`🍪 Found ${cookies.length} auth-related cookies`, 'info');
+        }
+
+        // Storage inspection
+        function updateStorageDisplays() {
+            // localStorage
+            const localStorageContent = document.getElementById('localStorage-content');
+            const localStorageItems = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.includes('sb-') || key.includes('auth') || key.includes('supabase')) {
+                    localStorageItems.push({ key, value: localStorage.getItem(key) });
+                }
+            }
+            
+            if (localStorageItems.length === 0) {
+                localStorageContent.innerHTML = '<div class="text-gray-400">No auth-related items</div>';
+            } else {
+                localStorageContent.innerHTML = localStorageItems.map(item => `
+                    <div class="mb-2 p-2 bg-gray-900 rounded">
+                        <div class="font-semibold text-blue-400">${item.key}</div>
+                        <div class="text-xs text-gray-300 break-all">${item.value.substring(0, 100)}${item.value.length > 100 ? '...' : ''}</div>
+                    </div>
+                `).join('');
+            }
+
+            // sessionStorage
+            const sessionStorageContent = document.getElementById('sessionStorage-content');
+            const sessionStorageItems = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key.includes('sb-') || key.includes('auth') || key.includes('supabase')) {
+                    sessionStorageItems.push({ key, value: sessionStorage.getItem(key) });
+                }
+            }
+            
+            if (sessionStorageItems.length === 0) {
+                sessionStorageContent.innerHTML = '<div class="text-gray-400">No auth-related items</div>';
+            } else {
+                sessionStorageContent.innerHTML = sessionStorageItems.map(item => `
+                    <div class="mb-2 p-2 bg-gray-900 rounded">
+                        <div class="font-semibold text-green-400">${item.key}</div>
+                        <div class="text-xs text-gray-300 break-all">${item.value.substring(0, 100)}${item.value.length > 100 ? '...' : ''}</div>
+                    </div>
+                `).join('');
+            }
+
+            // IndexedDB (simplified check)
+            const indexedDBContent = document.getElementById('indexedDB-content');
+            if ('indexedDB' in window) {
+                indexedDBContent.innerHTML = '<div class="text-yellow-400">IndexedDB available - checking for Supabase data...</div>';
+                // Note: Full IndexedDB inspection would require async operations
+            } else {
+                indexedDBContent.innerHTML = '<div class="text-gray-400">IndexedDB not supported</div>';
+            }
+        }
+
+        // Network monitoring
+        function toggleNetworkMonitoring() {
+            const button = document.getElementById('network-toggle');
+            if (debugState.monitoring.network) {
+                debugState.monitoring.network = false;
+                button.textContent = 'Start Monitoring';
+                button.className = 'bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm';
+                log('📡 Network monitoring stopped', 'info');
+            } else {
+                debugState.monitoring.network = true;
+                button.textContent = 'Stop Monitoring';
+                button.className = 'bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm';
+                log('📡 Network monitoring started', 'info');
+                interceptNetworkRequests();
+            }
+        }
+
+        function interceptNetworkRequests() {
+            const originalFetch = window.fetch;
+            window.fetch = async function(...args) {
+                if (!debugState.monitoring.network) return originalFetch.apply(this, args);
+
+                const startTime = Date.now();
+                const url = args[0];
+                
+                try {
+                    const response = await originalFetch.apply(this, args);
+                    const endTime = Date.now();
+                    const duration = endTime - startTime;
+
+                    const requestData = {
+                        url,
+                        method: args[1]?.method || 'GET',
+                        status: response.status,
+                        duration,
+                        timestamp: new Date().toTimeString().split(' ')[0],
+                        success: response.ok
+                    };
+
+                    debugState.networkRequests.unshift(requestData);
+                    if (debugState.networkRequests.length > 50) {
+                        debugState.networkRequests = debugState.networkRequests.slice(0, 50);
+                    }
+
+                    updateNetworkDisplay();
+                    updatePerformanceMetrics(duration, response.ok);
+
+                    if (url.includes('/api/auth/') || url.includes('supabase')) {
+                        log(`🌐 ${requestData.method} ${url} → ${response.status} (${duration}ms)`, response.ok ? 'success' : 'error');
+                    }
+
+                    return response;
+                } catch (error) {
+                    const endTime = Date.now();
+                    const duration = endTime - startTime;
+                    
+                    log(`❌ Network request failed: ${url} (${error.message})`, 'error');
+                    updatePerformanceMetrics(duration, false);
+                    throw error;
+                }
+            };
+        }
+
+        function updateNetworkDisplay() {
+            const container = document.getElementById('network-requests');
+            if (debugState.networkRequests.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 text-center py-8">No requests captured yet</div>';
+                return;
+            }
+
+            container.innerHTML = debugState.networkRequests.map(req => `
+                <div class="p-2 mb-2 rounded ${req.success ? 'bg-green-900' : 'bg-red-900'} text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="font-mono">[${req.timestamp}] ${req.method} ${req.url}</span>
+                        <span class="${req.success ? 'text-green-400' : 'text-red-400'}">${req.status} (${req.duration}ms)</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updatePerformanceMetrics(duration, success) {
+            debugState.performance.requests++;
+            debugState.performance.totalTime += duration;
+            if (!success) debugState.performance.errors++;
+
+            const avgResponse = Math.round(debugState.performance.totalTime / debugState.performance.requests);
+            const successRate = Math.round(((debugState.performance.requests - debugState.performance.errors) / debugState.performance.requests) * 100);
+
+            document.getElementById('avg-response').textContent = `${avgResponse}ms`;
+            document.getElementById('success-rate').textContent = `${successRate}%`;
+            document.getElementById('total-requests').textContent = debugState.performance.requests;
+        }
+
+        // Authentication tests
+        async function testEmailPasswordLogin() {
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            const resultDiv = document.getElementById('login-test-result');
+
+            if (!email || !password) {
+                resultDiv.innerHTML = '<span class="text-red-400">Please enter both email and password</span>';
+                return;
+            }
+
+            log(`🔐 Testing email/password login for: ${email}`, 'info');
+            resultDiv.innerHTML = '<span class="text-yellow-400">Testing login...</span>';
+
+            try {
+                const startTime = Date.now();
+                const { data, error } = await debugState.supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                const duration = Date.now() - startTime;
+
+                if (error) {
+                    resultDiv.innerHTML = `
+                        <div class="text-red-400">❌ Login Failed</div>
+                        <div class="text-xs text-gray-400">Error: ${error.message}</div>
+                        <div class="text-xs text-gray-400">Duration: ${duration}ms</div>
+                    `;
+                    log(`❌ Login failed: ${error.message}`, 'error');
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="text-green-400">✅ Login Successful</div>
+                        <div class="text-xs text-gray-400">User ID: ${data.user.id}</div>
+                        <div class="text-xs text-gray-400">Duration: ${duration}ms</div>
+                    `;
+                    log(`✅ Login successful for ${email} (${duration}ms)`, 'success');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="text-red-400">❌ Exception: ${error.message}</span>`;
+                log(`❌ Login exception: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGoogleOAuth() {
+            log('🔗 Testing Google OAuth flow', 'info');
+            const resultDiv = document.getElementById('oauth-test-result');
+            resultDiv.innerHTML = '<span class="text-yellow-400">Initiating Google OAuth...</span>';
+
+            try {
+                const { data, error } = await debugState.supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: `${window.location.origin}/auth/callback`
+                    }
+                });
+
+                if (error) {
+                    resultDiv.innerHTML = `<div class="text-red-400">❌ OAuth Error: ${error.message}</div>`;
+                    log(`❌ Google OAuth error: ${error.message}`, 'error');
+                } else {
+                    resultDiv.innerHTML = '<div class="text-green-400">✅ OAuth flow initiated</div>';
+                    log('✅ Google OAuth flow initiated successfully', 'success');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-400">❌ Exception: ${error.message}</div>`;
+                log(`❌ Google OAuth exception: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMagicLink() {
+            const email = document.getElementById('test-email').value;
+            const resultDiv = document.getElementById('oauth-test-result');
+            
+            if (!email) {
+                resultDiv.innerHTML = '<span class="text-red-400">Please enter an email address</span>';
+                return;
+            }
+
+            log(`🔗 Testing magic link for: ${email}`, 'info');
+            resultDiv.innerHTML = '<span class="text-yellow-400">Sending magic link...</span>';
+
+            try {
+                const { data, error } = await debugState.supabase.auth.signInWithOtp({
+                    email,
+                    options: {
+                        emailRedirectTo: `${window.location.origin}/auth/callback`
+                    }
+                });
+
+                if (error) {
+                    resultDiv.innerHTML = `<div class="text-red-400">❌ Magic Link Error: ${error.message}</div>`;
+                    log(`❌ Magic link error: ${error.message}`, 'error');
+                } else {
+                    resultDiv.innerHTML = '<div class="text-green-400">✅ Magic link sent successfully</div>';
+                    log(`✅ Magic link sent to ${email}`, 'success');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-400">❌ Exception: ${error.message}</div>`;
+                log(`❌ Magic link exception: ${error.message}`, 'error');
+            }
+        }
+
+        async function testEndpoint(endpoint) {
+            log(`🧪 Testing endpoint: ${endpoint}`, 'info');
+            const resultDiv = document.getElementById('endpoint-test-result');
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const duration = Date.now() - startTime;
+                const data = await response.text();
+
+                const result = `
+                    <div class="mb-2">
+                        <strong class="${response.ok ? 'text-green-400' : 'text-red-400'}">
+                            ${endpoint} → ${response.status} (${duration}ms)
+                        </strong>
+                    </div>
+                    <div class="text-xs text-gray-400 break-all mb-2">${data}</div>
+                    <hr class="border-gray-700 mb-2">
+                `;
+
+                resultDiv.innerHTML = result + (resultDiv.innerHTML || '');
+
+                log(`${response.ok ? '✅' : '❌'} ${endpoint} → ${response.status} (${duration}ms)`, response.ok ? 'success' : 'error');
+
+            } catch (error) {
+                const result = `
+                    <div class="mb-2">
+                        <strong class="text-red-400">${endpoint} → Error</strong>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">${error.message}</div>
+                    <hr class="border-gray-700 mb-2">
+                `;
+
+                resultDiv.innerHTML = result + (resultDiv.innerHTML || '');
+                log(`❌ ${endpoint} failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllEndpoints() {
+            log('🧪 Testing all authentication endpoints...', 'info');
+            
+            const endpoints = [
+                '/api/auth/health',
+                '/api/auth/session',
+                '/api/auth/user',
+                '/api/health/supabase',
+                '/api/health/ai',
+                '/api/health/stripe'
+            ];
+
+            for (const endpoint of endpoints) {
+                await testEndpoint(endpoint);
+                await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+            }
+
+            log('✅ All endpoint tests completed', 'success');
+        }
+
+        // Session recovery tests
+        async function testSessionPersistence() {
+            log('🔄 Testing session persistence...', 'info');
+            const resultDiv = document.getElementById('recovery-test-result');
+            
+            try {
+                // Simulate page refresh by checking if session persists
+                const { data: beforeRefresh } = await debugState.supabase.auth.getSession();
+                
+                if (!beforeRefresh.session) {
+                    resultDiv.innerHTML = '<div class="text-yellow-400">⚠️ No active session to test persistence</div>';
+                    return;
+                }
+
+                // Store current session info
+                const originalUserId = beforeRefresh.session.user.id;
+                
+                // Wait a moment and check again
+                setTimeout(async () => {
+                    const { data: afterDelay } = await debugState.supabase.auth.getSession();
+                    
+                    if (afterDelay.session && afterDelay.session.user.id === originalUserId) {
+                        resultDiv.innerHTML = '<div class="text-green-400">✅ Session persisted successfully</div>';
+                        log('✅ Session persistence test passed', 'success');
+                    } else {
+                        resultDiv.innerHTML = '<div class="text-red-400">❌ Session did not persist</div>';
+                        log('❌ Session persistence test failed', 'error');
+                    }
+                }, 1000);
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-400">❌ Persistence test error: ${error.message}</div>`;
+                log(`❌ Session persistence test error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSessionRefresh() {
+            log('🔄 Testing session refresh...', 'info');
+            const resultDiv = document.getElementById('recovery-test-result');
+            
+            try {
+                const startTime = Date.now();
+                const { data, error } = await debugState.supabase.auth.refreshSession();
+                const duration = Date.now() - startTime;
+
+                if (error) {
+                    resultDiv.innerHTML = `<div class="text-red-400">❌ Refresh failed: ${error.message}</div>`;
+                    log(`❌ Session refresh failed: ${error.message}`, 'error');
+                } else if (data.session) {
+                    resultDiv.innerHTML = `<div class="text-green-400">✅ Session refreshed (${duration}ms)</div>`;
+                    log(`✅ Session refresh successful (${duration}ms)`, 'success');
+                } else {
+                    resultDiv.innerHTML = '<div class="text-yellow-400">⚠️ No session to refresh</div>';
+                    log('⚠️ No session to refresh', 'warning');
+                }
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="text-red-400">❌ Refresh error: ${error.message}</div>`;
+                log(`❌ Session refresh error: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateNetworkError() {
+            log('🌐 Simulating network error...', 'warning');
+            const resultDiv = document.getElementById('recovery-test-result');
+            
+            // Temporarily override fetch to simulate network error
+            const originalFetch = window.fetch;
+            let requestCount = 0;
+
+            window.fetch = function(...args) {
+                requestCount++;
+                if (requestCount <= 2) {
+                    return Promise.reject(new Error('Simulated network error'));
+                } else {
+                    // Restore original fetch
+                    window.fetch = originalFetch;
+                    return originalFetch.apply(this, args);
+                }
+            };
+
+            resultDiv.innerHTML = '<div class="text-yellow-400">🌐 Network error simulation active (next 2 requests will fail)</div>';
+            log('⚠️ Network error simulation activated', 'warning');
+
+            // Auto-restore after 10 seconds
+            setTimeout(() => {
+                window.fetch = originalFetch;
+                log('✅ Network error simulation deactivated', 'info');
+            }, 10000);
+        }
+
+        // Utility functions
+        function clearLogs() {
+            debugState.logs = [];
+            updateLogDisplay();
+            log('🗑️ Debug logs cleared', 'info');
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all authentication data? This will log you out.')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                debugState.supabase?.auth.signOut();
+                debugState.logs = [];
+                debugState.networkRequests = [];
+                debugState.performance = { requests: 0, totalTime: 0, errors: 0 };
+                
+                log('🗑️ All authentication data cleared', 'warning');
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+
+        function clearLocalStorage() {
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.includes('sb-') || key.includes('auth') || key.includes('supabase')) {
+                    keys.push(key);
+                }
+            }
+            keys.forEach(key => localStorage.removeItem(key));
+            updateStorageDisplays();
+            log(`🗑️ Cleared ${keys.length} localStorage items`, 'warning');
+        }
+
+        function clearSessionStorage() {
+            const keys = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key.includes('sb-') || key.includes('auth') || key.includes('supabase')) {
+                    keys.push(key);
+                }
+            }
+            keys.forEach(key => sessionStorage.removeItem(key));
+            updateStorageDisplays();
+            log(`🗑️ Cleared ${keys.length} sessionStorage items`, 'warning');
+        }
+
+        function clearIndexedDB() {
+            // Simplified IndexedDB clearing
+            if ('indexedDB' in window) {
+                // This would need more complex implementation for full IndexedDB clearing
+                log('🗑️ IndexedDB clearing not fully implemented yet', 'warning');
+            }
+        }
+
+        function clearNetworkLogs() {
+            debugState.networkRequests = [];
+            updateNetworkDisplay();
+            log('🗑️ Network logs cleared', 'info');
+        }
+
+        function exportDebugData() {
+            const debugData = {
+                timestamp: new Date().toISOString(),
+                logs: debugState.logs,
+                networkRequests: debugState.networkRequests,
+                performance: debugState.performance,
+                session: debugState.session,
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                localStorage: Object.fromEntries(
+                    Array.from({ length: localStorage.length }, (_, i) => {
+                        const key = localStorage.key(i);
+                        return [key, key.includes('sb-') ? localStorage.getItem(key) : '[REDACTED]'];
+                    })
+                ),
+                cookies: document.cookie
+            };
+
+            const blob = new Blob([JSON.stringify(debugData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `6fb-auth-debug-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            log('📥 Debug data exported successfully', 'success');
+        }
+
+        function exportLogs() {
+            const logData = debugState.logs.map(log => `[${log.timestamp}] [${log.type.toUpperCase()}] ${log.message}`).join('\n');
+            const blob = new Blob([logData], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `6fb-debug-logs-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            log('📥 Debug logs exported successfully', 'success');
+        }
+
+        // Real-time monitoring
+        function startRealtimeMonitoring() {
+            debugState.monitoring.realtime = true;
+            
+            // Monitor storage changes
+            window.addEventListener('storage', (e) => {
+                if (e.key && (e.key.includes('sb-') || e.key.includes('auth'))) {
+                    log(`💾 Storage changed: ${e.key}`, 'info');
+                    updateStorageDisplays();
+                }
+            });
+
+            // Monitor cookie changes (simplified)
+            let lastCookies = document.cookie;
+            setInterval(() => {
+                if (document.cookie !== lastCookies) {
+                    log('🍪 Cookies changed', 'info');
+                    refreshCookies();
+                    lastCookies = document.cookie;
+                }
+            }, 1000);
+
+            // Update session periodically
+            setInterval(refreshSession, 30000); // Every 30 seconds
+
+            log('🔄 Real-time monitoring started', 'success');
+        }
+
+        // Tab management
+        window.showTab = function(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Refresh data when switching tabs
+            if (tabName === 'session') {
+                refreshSession();
+                refreshCookies();
+            } else if (tabName === 'storage') {
+                updateStorageDisplays();
+            }
+        };
+
+        // Global function assignments
+        window.runHealthCheck = runHealthCheck;
+        window.testAllEndpoints = testAllEndpoints;
+        window.clearAllData = clearAllData;
+        window.exportDebugData = exportDebugData;
+        window.refreshSession = refreshSession;
+        window.refreshCookies = refreshCookies;
+        window.clearLocalStorage = clearLocalStorage;
+        window.clearSessionStorage = clearSessionStorage;
+        window.clearIndexedDB = clearIndexedDB;
+        window.toggleNetworkMonitoring = toggleNetworkMonitoring;
+        window.clearNetworkLogs = clearNetworkLogs;
+        window.testGoogleOAuth = testGoogleOAuth;
+        window.testMagicLink = testMagicLink;
+        window.testEndpoint = testEndpoint;
+        window.testSessionPersistence = testSessionPersistence;
+        window.testSessionRefresh = testSessionRefresh;
+        window.simulateNetworkError = simulateNetworkError;
+        window.clearLogs = clearLogs;
+        window.exportLogs = exportLogs;
+
+        // Form handlers
+        document.getElementById('login-test-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            testEmailPasswordLogin();
         });
-        
-        // Auto-test on load
-        setTimeout(() => {
-            log('Auto-testing Supabase connection...');
-            testSupabase();
-        }, 500);
+
+        // Log filter handler
+        document.getElementById('log-filter').addEventListener('change', updateLogDisplay);
+
+        // Initialize the application
+        init();
     </script>
 </body>
 </html>

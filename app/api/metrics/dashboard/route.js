@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
-// import { createServerClient } from '@/lib/supabase-server'
-// import { posthog } from '@/lib/posthog/server'
 
 /**
  * Production Metrics Dashboard API
  * Provides comprehensive metrics for BookedBarber production monitoring
  * GDPR compliant with user consent verification
  */
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export async function GET(request) {
   try {
@@ -15,7 +16,6 @@ export async function GET(request) {
     const metric_type = searchParams.get('metric_type') || 'all'
     const include_detailed = searchParams.get('detailed') === 'true'
 
-    // Validate timeframe
     const validTimeframes = ['1h', '24h', '7d', '30d', '90d']
     if (!validTimeframes.includes(timeframe)) {
       return NextResponse.json({ 
@@ -23,11 +23,9 @@ export async function GET(request) {
       }, { status: 400 })
     }
 
-    // const supabase = createServerClient()
     const supabase = null // Temporarily disabled
     const timeAgo = getTimeAgo(timeframe)
 
-    // Build comprehensive metrics response
     const metricsData = {
       timeframe,
       generated_at: new Date().toISOString(),
@@ -67,7 +65,6 @@ export async function GET(request) {
     // 6. Summary Statistics
     metricsData.summary = await getSummaryMetrics(supabase, timeAgo)
 
-    // Add real-time PostHog insights if available
     if (false && (metric_type === 'all' || metric_type === 'realtime')) { // posthog temporarily disabled
       try {
         metricsData.realtime = await getPostHogInsights(timeframe)
@@ -88,12 +85,10 @@ export async function GET(request) {
   }
 }
 
-// Conversion Funnel Metrics
 async function getConversionMetrics(supabase, timeAgo, detailed) {
   const metrics = {}
 
   try {
-    // Visitor to subscriber conversion
     const { data: pricingViews } = await supabase
       .from('metrics_events')
       .select('session_id, properties')
@@ -115,7 +110,6 @@ async function getConversionMetrics(supabase, timeAgo, detailed) {
       conversion_rate: uniquePricingViews > 0 ? (uniqueSubscriptions / uniquePricingViews * 100).toFixed(2) : 0
     }
 
-    // Plan selection analysis
     const { data: planHovers } = await supabase
       .from('plan_interactions')
       .select('plan_name, interaction_type')
@@ -128,7 +122,6 @@ async function getConversionMetrics(supabase, timeAgo, detailed) {
       .eq('interaction_type', 'click_no_completion')
       .gte('timestamp', timeAgo)
 
-    // Plan popularity analysis
     const planHoverCounts = {}
     const planClickCounts = {}
     
@@ -149,7 +142,6 @@ async function getConversionMetrics(supabase, timeAgo, detailed) {
       total_clicks_without_completion: planClicks?.length || 0
     }
 
-    // OAuth completion rates
     const { data: oauthStarted } = await supabase
       .from('oauth_funnel')
       .select('session_id, oauth_provider')
@@ -192,7 +184,6 @@ async function getConversionMetrics(supabase, timeAgo, detailed) {
       }
     }
 
-    // Payment success/failure rates
     const { data: paymentsStarted } = await supabase
       .from('payment_funnel')
       .select('session_id, step, amount')
@@ -229,7 +220,6 @@ async function getConversionMetrics(supabase, timeAgo, detailed) {
     }
 
     if (detailed) {
-      // Add detailed breakdown by time intervals
       metrics.hourly_breakdown = await getHourlyConversionBreakdown(supabase, timeAgo)
     }
 
@@ -241,12 +231,10 @@ async function getConversionMetrics(supabase, timeAgo, detailed) {
   return metrics
 }
 
-// User Behavior Metrics
 async function getUserBehaviorMetrics(supabase, timeAgo, detailed) {
   const metrics = {}
 
   try {
-    // Time on pricing page
     const { data: timeTracking } = await supabase
       .from('metrics_events')
       .select('properties')
@@ -264,7 +252,6 @@ async function getUserBehaviorMetrics(supabase, timeAgo, detailed) {
       total_sessions: timeTracking?.length || 0
     }
 
-    // Scroll depth analysis
     const { data: scrollEvents } = await supabase
       .from('metrics_events')
       .select('event_name, properties')
@@ -284,7 +271,6 @@ async function getUserBehaviorMetrics(supabase, timeAgo, detailed) {
 
     metrics.scroll_engagement = scrollDepthStats
 
-    // Element visibility and interaction
     const { data: elementViews } = await supabase
       .from('metrics_events')
       .select('properties')
@@ -305,7 +291,6 @@ async function getUserBehaviorMetrics(supabase, timeAgo, detailed) {
     }
 
     if (detailed) {
-      // Device and browser breakdown
       const { data: deviceData } = await supabase
         .from('metrics_events')
         .select('properties')
@@ -341,12 +326,10 @@ async function getUserBehaviorMetrics(supabase, timeAgo, detailed) {
   return metrics
 }
 
-// Performance Metrics
 async function getPerformanceMetrics(supabase, timeAgo, detailed) {
   const metrics = {}
 
   try {
-    // Page load performance
     const { data: performanceData } = await supabase
       .from('page_performance')
       .select('load_time, first_contentful_paint, largest_contentful_paint, cumulative_layout_shift, first_input_delay, page_url, device_type')
@@ -366,7 +349,6 @@ async function getPerformanceMetrics(supabase, timeAgo, detailed) {
         total_measurements: performanceData.length
       }
 
-      // Core Web Vitals scoring
       const { data: webVitals } = await supabase
         .from('metrics_events')
         .select('properties')
@@ -405,18 +387,15 @@ async function getPerformanceMetrics(supabase, timeAgo, detailed) {
     }
 
     if (detailed) {
-      // Performance by page and device type
       const pagePerformance = {}
       const devicePerformance = { mobile: [], tablet: [], desktop: [] }
 
       performanceData?.forEach(perf => {
-        // Group by page
         if (!pagePerformance[perf.page_url]) {
           pagePerformance[perf.page_url] = []
         }
         pagePerformance[perf.page_url].push(perf.load_time)
 
-        // Group by device
         if (devicePerformance[perf.device_type]) {
           devicePerformance[perf.device_type].push(perf.load_time)
         }
@@ -451,7 +430,6 @@ async function getPerformanceMetrics(supabase, timeAgo, detailed) {
   return metrics
 }
 
-// Drop-off Analysis
 async function getDropOffMetrics(supabase, timeAgo, detailed) {
   const metrics = {}
 
@@ -483,7 +461,6 @@ async function getDropOffMetrics(supabase, timeAgo, detailed) {
       total_drop_offs: dropOffs?.length || 0
     }
 
-    // Form abandonment analysis
     const { data: formAbandonment } = await supabase
       .from('metrics_events')
       .select('properties')
@@ -512,7 +489,6 @@ async function getDropOffMetrics(supabase, timeAgo, detailed) {
   return metrics
 }
 
-// Revenue Metrics
 async function getRevenueMetrics(supabase, timeAgo, detailed) {
   const metrics = {}
 
@@ -562,12 +538,10 @@ async function getRevenueMetrics(supabase, timeAgo, detailed) {
   return metrics
 }
 
-// Summary Metrics
 async function getSummaryMetrics(supabase, timeAgo) {
   const summary = {}
 
   try {
-    // Overall session count
     const { data: sessions } = await supabase
       .from('metrics_events')
       .select('session_id')
@@ -575,7 +549,6 @@ async function getSummaryMetrics(supabase, timeAgo) {
 
     const uniqueSessions = new Set(sessions?.map(s => s.session_id)).size
 
-    // Top events
     const { data: allEvents } = await supabase
       .from('metrics_events')
       .select('event_name')
@@ -609,10 +582,7 @@ async function getSummaryMetrics(supabase, timeAgo) {
   return summary
 }
 
-// PostHog Real-time Insights
 async function getPostHogInsights(timeframe) {
-  // This would integrate with PostHog API for real-time insights
-  // For now, return a placeholder structure
   return {
     active_users_now: 0,
     popular_pages: [],
@@ -621,7 +591,6 @@ async function getPostHogInsights(timeframe) {
   }
 }
 
-// Helper functions
 function getTimeAgo(timeframe) {
   const now = new Date()
   switch (timeframe) {
@@ -655,11 +624,9 @@ function extractBrowserFromUserAgent(userAgent) {
 }
 
 async function getHourlyConversionBreakdown(supabase, timeAgo) {
-  // Implementation for hourly breakdown would go here
   return {}
 }
 
-// Health check endpoint
 export async function HEAD() {
   return NextResponse.json({ status: 'healthy' })
 }

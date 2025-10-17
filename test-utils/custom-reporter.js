@@ -26,16 +26,13 @@ class TripleToolReporter {
 
   onBegin(config, suite) {
     this.startTime = Date.now()
-    console.log(`🚀 Starting Triple Tool Testing Suite`)
-    console.log(`   Playwright: E2E Tests`)
-    console.log(`   Puppeteer: Quick Debug`)
-    console.log(`   Computer Use: AI Visual Validation`)
-    console.log('')
+    console.log('🎬 Starting Triple Tool Testing Suite')
   }
 
   onTestBegin(test, result) {
     const testType = this.categorizeTest(test)
-    console.log(`${this.getTestIcon(testType)} ${test.title}`)
+    const icon = this.getTestIcon(testType)
+    console.log(`${icon} Running: ${test.title}`)
   }
 
   onTestEnd(test, result) {
@@ -60,18 +57,18 @@ class TripleToolReporter {
     switch (status) {
       case 'passed':
         this.results.summary.passed++
-        console.log(`   ✅ Passed (${duration}ms)`)
+        console.log(`  ✅ Passed`)
         break
       case 'failed':
         this.results.summary.failed++
-        console.log(`   ❌ Failed (${duration}ms)`)
+        console.log(`  ❌ Failed`)
         if (result.error) {
-          console.log(`      ${result.error.message}`)
+          console.log(`     Error: ${result.error.message}`)
         }
         break
       case 'skipped':
         this.results.summary.skipped++
-        console.log(`   ⏭️  Skipped`)
+        console.log(`  ⏭️  Skipped`)
         break
     }
   }
@@ -110,24 +107,18 @@ class TripleToolReporter {
   }
 
   async generateReport() {
-    console.log('\n📊 Triple Tool Testing Results Summary')
-    console.log('=' .repeat(50))
-    
-    // Overall summary
+    console.log('\n' + '='.repeat(80))
+    console.log('📊 Triple Tool Test Results Summary')
+    console.log('='.repeat(80))
+
     const { total, passed, failed, skipped, duration } = this.results.summary
     const passRate = total > 0 ? Math.round((passed / total) * 100) : 0
-    
-    console.log(`Total Tests:     ${total}`)
-    console.log(`✅ Passed:        ${passed}`)
-    console.log(`❌ Failed:        ${failed}`)
-    console.log(`⏭️  Skipped:       ${skipped}`)
-    console.log(`📈 Pass Rate:     ${passRate}%`)
-    console.log(`⏱️  Duration:      ${Math.round(duration / 1000)}s`)
-    console.log('')
 
-    // Breakdown by tool
-    console.log('📋 Results by Testing Tool:')
-    console.log('-'.repeat(30))
+    console.log(`Total: ${total} | Passed: ${passed} | Failed: ${failed} | Skipped: ${skipped}`)
+    console.log(`Pass Rate: ${passRate}% | Duration: ${Math.round(duration / 1000)}s`)
+
+    console.log('\n📋 Results by Testing Tool:')
+    console.log('-'.repeat(80))
     
     const tools = ['playwright', 'puppeteer', 'computerUse']
     tools.forEach(tool => {
@@ -140,13 +131,11 @@ class TripleToolReporter {
       if (toolTotal > 0) {
         const icon = this.getTestIcon(tool)
         const toolName = tool.charAt(0).toUpperCase() + tool.slice(1)
-        console.log(`${icon} ${toolName}: ${toolPassed}/${toolTotal} (${toolPassRate}%)`)
+        console.log(`${icon} ${toolName}: ${toolPassed}/${toolTotal} passed (${toolPassRate}%)`)
       }
     })
 
-    // Performance metrics
-    console.log('\n⚡ Performance Highlights:')
-    console.log('-'.repeat(25))
+    console.log('\n' + '-'.repeat(80))
     
     const performanceTests = this.results.playwright.filter(t => 
       t.title.toLowerCase().includes('performance') || 
@@ -157,32 +146,29 @@ class TripleToolReporter {
       const avgDuration = Math.round(
         performanceTests.reduce((sum, test) => sum + test.duration, 0) / performanceTests.length
       )
-      console.log(`Avg Performance Test Duration: ${avgDuration}ms`)
+      console.log(`⚡ Performance Tests: ${performanceTests.length} tests, avg ${avgDuration}ms`)
     }
 
-    // Visual regression summary
-    const visualTests = this.results.playwright.filter(t => 
-      t.title.toLowerCase().includes('visual') || 
+    const visualTests = this.results.playwright.filter(t =>
+      t.title.toLowerCase().includes('visual') ||
       t.title.toLowerCase().includes('screenshot')
     )
-    
+
     if (visualTests.length > 0) {
       const visualPassed = visualTests.filter(t => t.status === 'passed').length
-      console.log(`Visual Regression Tests: ${visualPassed}/${visualTests.length}`)
+      console.log(`👁️  Visual Tests: ${visualPassed}/${visualTests.length} passed`)
     }
 
-    // Accessibility summary
-    const a11yTests = this.results.playwright.filter(t => 
-      t.title.toLowerCase().includes('accessibility') || 
+    const a11yTests = this.results.playwright.filter(t =>
+      t.title.toLowerCase().includes('accessibility') ||
       t.title.toLowerCase().includes('wcag')
     )
-    
+
     if (a11yTests.length > 0) {
       const a11yPassed = a11yTests.filter(t => t.status === 'passed').length
-      console.log(`Accessibility Tests: ${a11yPassed}/${a11yTests.length}`)
+      console.log(`♿ Accessibility Tests: ${a11yPassed}/${a11yTests.length} passed`)
     }
 
-    // Failed tests details
     const failedTests = [
       ...this.results.playwright,
       ...this.results.puppeteer,
@@ -190,12 +176,12 @@ class TripleToolReporter {
     ].filter(t => t.status === 'failed')
 
     if (failedTests.length > 0) {
-      console.log('\n🚨 Failed Tests:')
-      console.log('-'.repeat(15))
-      
+      console.log('\n❌ Failed Tests:')
+      console.log('-'.repeat(80))
+
       failedTests.forEach((test, index) => {
         console.log(`${index + 1}. ${test.title}`)
-        console.log(`   File: ${path.basename(test.file)}:${test.line}`)
+        console.log(`   File: ${test.file}:${test.line}`)
         if (test.error) {
           console.log(`   Error: ${test.error.message}`)
         }
@@ -203,21 +189,16 @@ class TripleToolReporter {
       })
     }
 
-    // Generate JSON report
     await this.generateJSONReport()
-    
-    // Generate HTML report
+    console.log('📄 JSON report saved to test-results/triple-tool-report.json')
     await this.generateHTMLReport()
-    
-    console.log('\n📁 Reports Generated:')
-    console.log(`   JSON: test-results/triple-tool-report.json`)
-    console.log(`   HTML: test-results/triple-tool-report.html`)
-    
+    console.log('📄 HTML report saved to test-results/triple-tool-report.html')
+
     if (failed > 0) {
-      console.log(`\n❌ ${failed} test(s) failed. See details above.`)
+      console.log(`\n❌ Tests failed: ${failed} failed. See details above.`)
       process.exit(1)
     } else {
-      console.log(`\n✅ All ${passed} tests passed!`)
+      console.log('\n✅ All tests passed!')
     }
   }
 
@@ -328,8 +309,7 @@ class TripleToolReporter {
     </div>
 
     <script>
-        // Add any interactive functionality here
-        console.log('6FB AI Agent System Test Results Loaded');
+        
     </script>
 </body>
 </html>`

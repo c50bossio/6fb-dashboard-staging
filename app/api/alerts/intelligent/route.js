@@ -4,24 +4,26 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { cacheQuery } from '../../../../lib/analytics-cache.js';
-export const runtime = 'edge'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
-
+import optimizedSupabase, { batchQueries } from '../../../../lib/performance/optimized-supabase.js';
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const barbershopId = searchParams.get('barbershop_id') || 'demo-shop-001';
+    const barbershopId = searchParams.get('barbershop_id');
+    if (!barbershopId) {
+      return NextResponse.json({
+        success: false,
+        error: 'barbershop_id parameter is required'
+      }, { status: 400 });
+    }
 
-    // Use intelligent caching for alert analysis
-    const alerts = await cacheQuery('intelligent-alerts', { barbershopId }, async () => {
+    // Use optimized caching with the new service
+    const queryKey = `intelligent-alerts-${barbershopId}`;
+    const alerts = await optimizedSupabase.executeQuery(queryKey, async () => {
       return await generateIntelligentAlerts(barbershopId);
-    });
+    }, { cacheTTL: 180000 }); // 3 minute cache
 
     return NextResponse.json({
       success: true,
@@ -29,11 +31,12 @@ export async function GET(request) {
       priorityActions: alerts.priorityActions || [],
       thresholds: alerts.thresholds || {},
       insights: alerts.insights || [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      performance: optimizedSupabase.getPerformanceMetrics()
     });
 
   } catch (error) {
-    console.error('Intelligent alerts error:', error);
+    console.error('[Alerts API] Error generating intelligent alerts:', error);
     return NextResponse.json({
       success: false,
       error: 'Failed to generate intelligent alerts',
@@ -48,7 +51,6 @@ export async function POST(request) {
 
     switch (action) {
       case 'update_thresholds':
-        // In a real system, this would update user preferences in database
         return NextResponse.json({
           success: true,
           message: 'Alert thresholds updated',
@@ -56,7 +58,6 @@ export async function POST(request) {
         });
 
       case 'dismiss_alert':
-        // In a real system, this would mark alert as dismissed
         return NextResponse.json({
           success: true,
           message: 'Alert dismissed',
@@ -78,7 +79,7 @@ export async function POST(request) {
     }
 
   } catch (error) {
-    console.error('Alert management error:', error);
+    // Error handling - return appropriate response
     return NextResponse.json({
       success: false,
       error: 'Failed to manage alert'
@@ -91,30 +92,44 @@ export async function POST(request) {
  */
 async function generateIntelligentAlerts(barbershopId) {
   try {
-    // Fetch real business data for alert analysis
-    const { data: bookings } = await supabase
-      .from('bookings')
-      .select('*')
-      .gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false });
+    // Use batch queries to fetch data more efficiently
+    const results = await batchQueries([
+      {
+        key: `bookings-${barbershopId}`,
+        fn: (client) => client
+          .from('bookings')
+          .select('*, customers:customer_id(id, email, created_at)')
+          .gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
+          .order('created_at', { ascending: false }),
+        options: { cacheTTL: 300000 } // 5 minute cache
+      },
+      {
+        key: `customers-recent-${barbershopId}`,
+        fn: (client) => client
+          .from('customers')
+          .select('*')
+          .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+        options: { cacheTTL: 600000 } // 10 minute cache
+      }
+    ]);
 
-    const { data: customers } = await supabase
-      .from('customers')
-      .select('*')
-      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+    const bookingsResult = results.find(r => r.key.includes('bookings'));
+    const customersResult = results.find(r => r.key.includes('customers'));
+    
+    if (!bookingsResult.success || !customersResult.success) {
+      throw new Error('Failed to fetch required data');
+    }
 
-    // Calculate current metrics
+    const bookings = bookingsResult.data?.data || [];
+    const customers = customersResult.data?.data || [];
     const currentMetrics = calculateCurrentMetrics(bookings, customers);
     
-    // Define configurable thresholds
     const thresholds = getAlertThresholds();
     
-    // Generate alerts based on metrics vs thresholds
     const alerts = [];
     const priorityActions = [];
     const insights = [];
 
-    // Revenue Performance Alerts
     if (currentMetrics.dailyRevenue < thresholds.minDailyRevenue) {
       alerts.push({
         id: `revenue-low-${Date.now()}`,
@@ -133,7 +148,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Booking Volume Alerts
     if (currentMetrics.dailyBookings < thresholds.minDailyBookings) {
       alerts.push({
         id: `bookings-low-${Date.now()}`,
@@ -152,7 +166,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Customer Retention Alerts
     if (currentMetrics.newCustomerRatio > thresholds.maxNewCustomerRatio) {
       alerts.push({
         id: `retention-concern-${Date.now()}`,
@@ -171,7 +184,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Capacity Utilization Alerts
     if (currentMetrics.capacityUtilization > thresholds.maxCapacityUtilization) {
       alerts.push({
         id: `capacity-high-${Date.now()}`,
@@ -190,7 +202,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Performance Insights
     if (currentMetrics.weeklyGrowth > 0.1) {
       insights.push({
         type: 'positive',
@@ -209,7 +220,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Priority Actions based on alerts
     if (alerts.length > 0) {
       priorityActions.push({
         id: 'review-performance',
@@ -221,7 +231,6 @@ async function generateIntelligentAlerts(barbershopId) {
       });
     }
 
-    // Seasonal recommendations
     const currentMonth = new Date().getMonth();
     if (currentMonth === 11) { // December
       priorityActions.push({
@@ -240,11 +249,12 @@ async function generateIntelligentAlerts(barbershopId) {
       thresholds,
       insights,
       metrics: currentMetrics,
+      performance: optimizedSupabase.getPerformanceMetrics(),
       generated_at: new Date().toISOString()
     };
 
   } catch (error) {
-    console.error('Error generating intelligent alerts:', error);
+    // Error generating alerts - return default values
     return {
       alerts: [],
       priorityActions: [],
@@ -263,14 +273,12 @@ function calculateCurrentMetrics(bookings = [], customers = []) {
   const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const last14Days = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-  // Filter bookings for different periods
   const recentBookings = bookings.filter(b => new Date(b.created_at) >= last7Days);
   const previousWeekBookings = bookings.filter(b => {
     const date = new Date(b.created_at);
     return date >= last14Days && date < last7Days;
   });
 
-  // Calculate metrics
   const totalRevenue = recentBookings.reduce((sum, b) => sum + (b.price || 0), 0);
   const totalBookings = recentBookings.length;
   
@@ -284,7 +292,6 @@ function calculateCurrentMetrics(bookings = [], customers = []) {
   const newCustomers = customers.filter(c => new Date(c.created_at) >= last7Days).length;
   const newCustomerRatio = uniqueCustomers > 0 ? newCustomers / uniqueCustomers : 0;
   
-  // Estimate capacity utilization (assuming 8 hours/day, 6 services/hour)
   const maxCapacity = 7 * 8 * 6; // 7 days * 8 hours * 6 services per hour
   const capacityUtilization = totalBookings / maxCapacity;
 

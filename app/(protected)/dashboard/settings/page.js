@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   CogIcon,
   BellIcon,
   UserCircleIcon,
@@ -12,10 +12,14 @@ import {
   ClockIcon,
   ExclamationCircleIcon,
   CalendarDaysIcon,
-  PencilIcon
+  PencilIcon,
+  ShieldCheckIcon,
+  InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useCallback, useRef, memo } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/client'
 // Import only essential icons for initial load
 
 // Lazy load heavy/optional icons
@@ -37,25 +41,25 @@ import SubscriptionDashboard from '../../../../components/billing/SubscriptionDa
 
 // Lazy load charts to improve initial page load with loading fallback
 const ChartLoadingSpinner = () => (
-  <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg">
+  <div className="flex items-center justify-center h-64 bg-muted rounded-lg">
     <div className="text-center">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
-      <p className="text-sm text-gray-500 mt-2">Loading chart...</p>
+      <p className="text-sm text-muted-foreground mt-2">Loading chart...</p>
     </div>
   </div>
 )
 
-const LineChart = dynamic(() => import('recharts').then((mod) => ({ default: mod.LineChart })), { 
+const LineChart = dynamic(() => import('recharts').then((mod) => ({ default: mod.LineChart })), {
   ssr: false,
   loading: () => <ChartLoadingSpinner />
 })
 const Line = dynamic(() => import('recharts').then((mod) => ({ default: mod.Line })), { ssr: false })
-const BarChart = dynamic(() => import('recharts').then((mod) => ({ default: mod.BarChart })), { 
+const BarChart = dynamic(() => import('recharts').then((mod) => ({ default: mod.BarChart })), {
   ssr: false,
   loading: () => <ChartLoadingSpinner />
 })
 const Bar = dynamic(() => import('recharts').then((mod) => ({ default: mod.Bar })), { ssr: false })
-const PieChart = dynamic(() => import('recharts').then((mod) => ({ default: mod.PieChart })), { 
+const PieChart = dynamic(() => import('recharts').then((mod) => ({ default: mod.PieChart })), {
   ssr: false,
   loading: () => <ChartLoadingSpinner />
 })
@@ -68,13 +72,77 @@ const Tooltip = dynamic(() => import('recharts').then((mod) => ({ default: mod.T
 const Legend = dynamic(() => import('recharts').then((mod) => ({ default: mod.Legend })), { ssr: false })
 const ResponsiveContainer = dynamic(() => import('recharts').then((mod) => ({ default: mod.ResponsiveContainer })), { ssr: false })
 
+// EditableCard component - defined outside to prevent re-creation on every render
+function EditableCard({ title, icon: Icon, section, children, className = "", editStates, loading, errors, successMessages, onEdit, onCancel, onSave }) {
+  const isEditing = editStates[section]
+  const isLoading = loading[section]
+  const error = errors[section]
+  const successMessage = successMessages[section]
+
+  return (
+    <div className={`card ${isEditing ? 'ring-2 ring-olive-500 ring-opacity-50' : ''} ${className}`}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center">
+          <Icon className="h-6 w-6 text-olive-400 mr-3" />
+          <h3 className="text-lg font-semibold text-card-foreground">{title}</h3>
+        </div>
+        <div className="flex items-center space-x-2">
+          {isEditing ? (
+            <>
+              <button
+                onClick={() => onCancel(section)}
+                disabled={isLoading}
+                className="px-3 py-1.5 text-sm border border-border rounded-md text-muted-foreground hover:bg-muted disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => onSave(section)}
+                disabled={isLoading}
+                className="px-3 py-1.5 text-sm bg-olive-600 text-white rounded-md hover:bg-olive-700 disabled:opacity-50"
+              >
+                {isLoading ? 'Saving...' : 'Save'}
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => onEdit(section)}
+              className="flex items-center px-3 py-1.5 text-sm border border-border rounded-md text-foreground hover:bg-accent"
+            >
+              <PencilIcon className="h-4 w-4 mr-1" />
+              Edit
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Success/Error Messages */}
+      {successMessage && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-md text-sm">
+          {successMessage}
+        </div>
+      )}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-md text-sm">
+          {error}
+        </div>
+      )}
+
+      {children}
+    </div>
+  )
+}
+
 export default function SettingsPage() {
+  const { user, profile } = useAuth()
+  const [currentShopId, setCurrentShopId] = useState(null)
+
   const [settings, setSettings] = useState({
     barbershop: {
-      name: 'Demo Barbershop',
-      address: '123 Main Street, City, State 12345',
-      phone: '+1 (555) 123-4567',
-      email: 'demo@barbershop.com',
+      name: '',
+      address: '',
+      phone: '',
+      email: '',
       timezone: 'America/New_York'
     },
     notifications: {
@@ -95,7 +163,7 @@ export default function SettingsPage() {
     },
     apiMode: 'managed' // Always use our managed APIs
   })
-  
+
 
   const [loading, setLoading] = useState({
     barbershop: false,
@@ -118,6 +186,15 @@ export default function SettingsPage() {
   const [isInitialized, setIsInitialized] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
 
+  // Determine current shop ID from profile (matches tenant-resolver logic)
+  useEffect(() => {
+    if (profile) {
+      const shopId = profile.shop_id || profile.barbershop_id
+      console.log('🏪 [Settings] Current shop ID:', shopId)
+      setCurrentShopId(shopId)
+    }
+  }, [profile])
+
   // Create stable refs to prevent re-renders
   const phoneInputRef = useRef(null)
   const emailInputRef = useRef(null)
@@ -125,17 +202,17 @@ export default function SettingsPage() {
   // NUCLEAR SOLUTION: Only update state on blur to prevent re-renders during typing
   const handlePhoneBlur = useCallback((e) => {
     const displayValue = e.target.value
-    const e164Value = e.target.e164 || displayValue  // Use E.164 for Twilio if available
+    const e164Value = e.target.e164 || displayValue  // Use E.164 international format if available
     const country = e.target.country || 'US'
-    
+
     console.log('NUCLEAR: Phone blur update:', { displayValue, e164Value, country })
-    
+
     setSettings(prev => ({
       ...prev,
-      barbershop: { 
-        ...prev.barbershop, 
+      barbershop: {
+        ...prev.barbershop,
         phone: displayValue,           // Store formatted display version
-        phoneE164: e164Value,          // Store E.164 for Twilio SMS
+        phoneE164: e164Value,          // Store E.164 international format
         phoneCountry: country          // Store country for future reference
       }
     }))
@@ -146,9 +223,9 @@ export default function SettingsPage() {
     console.log('NUCLEAR: Email blur update:', value)
     setSettings(prev => ({
       ...prev,
-      barbershop: { 
-        ...prev.barbershop, 
-        email: value 
+      barbershop: {
+        ...prev.barbershop,
+        email: value
       }
     }))
   }, [])
@@ -164,8 +241,8 @@ export default function SettingsPage() {
   // Initialize from URL hash after component mounts (client-side only)
   useEffect(() => {
     const hash = window.location.hash.replace('#', '')
-    const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
-    
+    const validSections = ['general', 'hours', 'staff', 'notifications', 'security', 'billing', 'system']
+
     // Explicitly block API section access
     if (hash === 'api') {
       // Redirect to general section and update URL
@@ -174,17 +251,17 @@ export default function SettingsPage() {
       setIsInitialized(true)
       return
     }
-    
+
     if (validSections.includes(hash)) {
       setActiveSection(hash)
     }
     setIsInitialized(true)
-    
+
     // Simulate faster initial load by setting page ready
     const timer = setTimeout(() => {
       setPageLoading(false)
     }, 100)
-    
+
     return () => clearTimeout(timer)
   }, [])
 
@@ -192,15 +269,15 @@ export default function SettingsPage() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '')
-      const validSections = ['general', 'hours', 'notifications', 'security', 'billing', 'system']
-      
+      const validSections = ['general', 'hours', 'staff', 'notifications', 'security', 'billing', 'system']
+
       // Explicitly block API section access
       if (hash === 'api') {
         setActiveSection('general')
         window.location.hash = 'general'
         return
       }
-      
+
       if (validSections.includes(hash)) {
         setActiveSection(hash)
       }
@@ -238,34 +315,54 @@ export default function SettingsPage() {
     }
   })
   const [timeRange, setTimeRange] = useState('30days')
-  
-  // Load settings on mount
+
+  // Load settings on mount and when currentShopId changes
   useEffect(() => {
     const loadSettings = async () => {
+      if (!currentShopId) {
+        console.log('⏳ [Settings] Waiting for shop ID...')
+        return
+      }
+
       try {
-        // Load barbershop settings
-        const barbershopResponse = await fetch('/api/v1/settings/barbershop', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-          }
-        })
-        
-        if (barbershopResponse.ok) {
-          const barbershopData = await barbershopResponse.json()
+        console.log('📊 [Settings] Loading barbershop data for shop:', currentShopId)
+
+        // Load barbershop data directly from Supabase
+        const supabase = createClient()
+        const { data: shopData, error: shopError } = await supabase
+          .from('barbershops')
+          .select('id, name, address, phone, email, city, state, timezone')
+          .eq('id', currentShopId)
+          .single()
+
+        if (shopError) {
+          console.error('❌ [Settings] Error loading shop:', shopError)
+          return
+        }
+
+        if (shopData) {
+          console.log('✅ [Settings] Shop data loaded:', shopData.name)
           setSettings(prev => ({
             ...prev,
-            barbershop: barbershopData.barbershop || prev.barbershop,
-            notifications: barbershopData.notifications || prev.notifications
+            barbershop: {
+              name: shopData.name || '',
+              address: shopData.address || '',
+              phone: shopData.phone || '',
+              email: shopData.email || '',
+              timezone: shopData.timezone || 'America/New_York',
+              city: shopData.city || '',
+              state: shopData.state || ''
+            }
           }))
         }
 
-        // Load business hours separately
+        // Load business hours separately (keep existing logic)
         const businessHoursResponse = await fetch('/api/v1/settings/business-hours', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('access_token')}`
           }
         })
-        
+
         if (businessHoursResponse.ok) {
           const businessHoursData = await businessHoursResponse.json()
           setSettings(prev => ({
@@ -274,23 +371,23 @@ export default function SettingsPage() {
           }))
         }
       } catch (error) {
-        console.error('Failed to load settings:', error)
+        console.error('❌ [Settings] Failed to load settings:', error)
       }
     }
-    
+
     loadSettings()
-    
+
     // Load notification data if on notifications tab
     if (activeSection === 'notifications') {
       fetchNotificationHistory()
       fetchQueueStatus()
     }
-    
+
     // Load billing data if on billing tab
     if (activeSection === 'billing') {
       fetchBillingData()
     }
-  }, [activeSection])
+  }, [currentShopId, activeSection])
 
   const fetchBillingData = async () => {
     try {
@@ -299,7 +396,7 @@ export default function SettingsPage() {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setBillingData(data)
@@ -316,7 +413,7 @@ export default function SettingsPage() {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setNotificationHistory(data.notifications || [])
@@ -333,7 +430,7 @@ export default function SettingsPage() {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setQueueStatus(data)
@@ -346,7 +443,7 @@ export default function SettingsPage() {
   const sendTestNotification = async (type) => {
     setLoading(prev => ({ ...prev, testNotifications: true }))
     setTestResult(null)
-    
+
     try {
       const response = await fetch('/api/v1/notifications/test', {
         method: 'POST',
@@ -356,10 +453,10 @@ export default function SettingsPage() {
         },
         body: JSON.stringify({ type })
       })
-      
+
       const result = await response.json()
       setTestResult(result)
-      
+
       // Refresh history after sending
       setTimeout(fetchNotificationHistory, 1000)
     } catch (error) {
@@ -381,13 +478,13 @@ export default function SettingsPage() {
       case 'pending':
         return <ClockIcon className="h-5 w-5 text-amber-800" />
       default:
-        return <ExclamationCircleIcon className="h-5 w-5 text-gray-500" />
+        return <ExclamationCircleIcon className="h-5 w-5 text-muted-foreground" />
     }
   }
 
   const getTypeIcon = (type) => {
-    return type === 'email' ? 
-      <EnvelopeIcon className="h-5 w-5 text-olive-500" /> : 
+    return type === 'email' ?
+      <EnvelopeIcon className="h-5 w-5 text-olive-500" /> :
       <PhoneIcon className="h-5 w-5 text-gold-500" />
   }
 
@@ -409,9 +506,9 @@ export default function SettingsPage() {
       setLoading(prev => ({ ...prev, [section]: true }))
       setErrors(prev => ({ ...prev, [section]: null }))
       setSuccessMessages(prev => ({ ...prev, [section]: null }))
-      
+
       let response
-      
+
       switch (section) {
         case 'barbershop':
           // Validate email format
@@ -420,17 +517,28 @@ export default function SettingsPage() {
             setErrors(prev => ({ ...prev, [section]: 'Invalid email format' }))
             return
           }
-          
-          response = await fetch('/api/v1/settings/barbershop', {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            },
-            body: JSON.stringify(settings.barbershop)
-          })
+
+          // Save directly to Supabase barbershops table
+          const supabase = createClient()
+          const { error: updateError } = await supabase
+            .from('barbershops')
+            .update({
+              name: settings.barbershop.name,
+              address: settings.barbershop.address,
+              phone: settings.barbershop.phone,
+              email: settings.barbershop.email,
+              timezone: settings.barbershop.timezone,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', currentShopId)
+
+          if (updateError) {
+            throw new Error(`Failed to save barbershop settings: ${updateError.message}`)
+          }
+
+          response = { ok: true }
           break
-          
+
         case 'businessHours':
           // Basic validation - just ensure we have valid data structure
           let hasValidationError = false
@@ -441,11 +549,11 @@ export default function SettingsPage() {
             setErrors(prev => ({ ...prev, [section]: 'Invalid business hours data format' }))
             hasValidationError = true
           }
-          
+
           if (hasValidationError) {
             return
           }
-          
+
           response = await fetch('/api/v1/settings/business-hours', {
             method: 'PUT',
             headers: {
@@ -455,7 +563,7 @@ export default function SettingsPage() {
             body: JSON.stringify(settings.businessHours)
           })
           break
-          
+
         case 'notifications':
           response = await fetch('/api/v1/settings/notifications', {
             method: 'PUT',
@@ -466,18 +574,18 @@ export default function SettingsPage() {
             body: JSON.stringify(settings.notifications)
           })
           break
-          
+
         case 'paymentMethod':
           // Simulate payment method update
           response = { ok: true }
           break
-          
+
         case 'subscription':
           // Simulate subscription update
           response = { ok: true }
           break
       }
-      
+
       if (!response.ok) {
         // Get detailed error message from response
         let errorMessage = `Failed to save ${section} settings`
@@ -491,15 +599,15 @@ export default function SettingsPage() {
         }
         throw new Error(errorMessage)
       }
-      
+
       setSuccessMessages(prev => ({ ...prev, [section]: 'Settings saved successfully!' }))
       setEditStates(prev => ({ ...prev, [section]: false }))
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessages(prev => ({ ...prev, [section]: null }))
       }, 3000)
-      
+
     } catch (error) {
       setErrors(prev => ({ ...prev, [section]: error.message || `Error saving ${section} settings` }))
     } finally {
@@ -510,6 +618,7 @@ export default function SettingsPage() {
   const settingSections = [
     { id: 'general', name: 'General', icon: BuildingOfficeIcon },
     { id: 'hours', name: 'Business Hours', icon: CalendarDaysIcon },
+    { id: 'staff', name: 'Staff Management', icon: UserCircleIcon },
     { id: 'notifications', name: 'Notifications', icon: BellIcon },
     { id: 'security', name: 'Security & MFA', icon: KeyIcon },
     { id: 'billing', name: 'Billing & Usage', icon: CreditCardIcon },
@@ -518,7 +627,7 @@ export default function SettingsPage() {
 
   const dayNames = {
     monday: 'Monday',
-    tuesday: 'Tuesday', 
+    tuesday: 'Tuesday',
     wednesday: 'Wednesday',
     thursday: 'Thursday',
     friday: 'Friday',
@@ -547,7 +656,7 @@ export default function SettingsPage() {
         ...prev.businessHours,
         [day]: {
           ...prev.businessHours[day],
-          shifts: prev.businessHours[day].shifts.map((shift, index) => 
+          shifts: prev.businessHours[day].shifts.map((shift, index) =>
             index === shiftIndex ? { ...shift, [field]: value } : shift
           )
         }
@@ -620,19 +729,19 @@ export default function SettingsPage() {
   // Helper function to calculate shift duration
   const calculateShiftDuration = (openTime, closeTime) => {
     if (!openTime || !closeTime) return ''
-    
+
     const [openHour, openMin] = openTime.split(':').map(Number)
     const [closeHour, closeMin] = closeTime.split(':').map(Number)
-    
+
     const openMinutes = openHour * 60 + openMin
     const closeMinutes = closeHour * 60 + closeMin
-    
+
     if (closeMinutes <= openMinutes) return 'Invalid'
-    
+
     const durationMinutes = closeMinutes - openMinutes
     const hours = Math.floor(durationMinutes / 60)
     const minutes = durationMinutes % 60
-    
+
     if (minutes === 0) {
       return `${hours} hour${hours !== 1 ? 's' : ''}`
     } else {
@@ -658,82 +767,21 @@ export default function SettingsPage() {
     { name: 'Email Campaigns', value: billingData.usage.email.cost, color: '#10B981' }
   ]
 
-  // Memoized EditableCard component to prevent unnecessary re-renders
-  const EditableCard = memo(({ title, icon: Icon, section, children, className = "" }) => {
-    const isEditing = editStates[section]
-    const isLoading = loading[section]
-    const error = errors[section]
-    const successMessage = successMessages[section]
-
-    return (
-      <div className={`card ${isEditing ? 'ring-2 ring-olive-500 ring-opacity-50' : ''} ${className}`}>
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
-            <Icon className="h-6 w-6 text-olive-600 mr-3" />
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          </div>
-          <div className="flex items-center space-x-2">
-            {isEditing ? (
-              <>
-                <button 
-                  onClick={() => handleCancel(section)} 
-                  disabled={isLoading}
-                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => handleSave(section)} 
-                  disabled={isLoading}
-                  className="px-3 py-1.5 text-sm bg-olive-600 text-white rounded-md hover:bg-olive-700 disabled:opacity-50"
-                >
-                  {isLoading ? 'Saving...' : 'Save'}
-                </button>
-              </>
-            ) : (
-              <button 
-                onClick={() => handleEdit(section)} 
-                className="flex items-center px-3 py-1.5 text-sm border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                <PencilIcon className="h-4 w-4 mr-1" />
-                Edit
-              </button>
-            )}
-          </div>
-        </div>
-        
-        {/* Success/Error Messages */}
-        {successMessage && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-800 rounded-md text-sm">
-            {successMessage}
-          </div>
-        )}
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-800 rounded-md text-sm">
-            {error}
-          </div>
-        )}
-        
-        {children}
-      </div>
-    )
-  })
-
   // Show loading briefly while determining correct section from URL
   if (!isInitialized || pageLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-muted flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-          <p className="text-gray-600 mt-4 text-lg">Loading Settings...</p>
-          <p className="text-gray-400 text-sm">Optimizing components for best performance</p>
+          <p className="text-muted-foreground mt-4 text-lg">Loading Settings...</p>
+          <p className="text-muted-foreground text-sm">Optimizing components for best performance</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="p-8">
         {/* Global Test Result Notifications */}
         {testResult && (
@@ -750,8 +798,8 @@ export default function SettingsPage() {
         {/* Page Header */}
         <div className="mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Settings</h1>
-            <p className="text-gray-600">Configure your barbershop and system preferences</p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Settings</h1>
+            <p className="text-muted-foreground">Configure your barbershop and system preferences</p>
           </div>
         </div>
 
@@ -768,7 +816,7 @@ export default function SettingsPage() {
                     className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       activeSection === section.id
                         ? 'bg-olive-100 text-olive-700 border border-olive-200'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                     }`}
                   >
                     <Icon className="h-5 w-5 mr-3" />
@@ -784,14 +832,27 @@ export default function SettingsPage() {
             {/* General Settings */}
             {activeSection === 'general' && (
               <div className="space-y-6">
-                <EditableCard 
-                  title="Barbershop Information" 
+                <EditableCard
+                  title="Barbershop Information"
                   icon={BuildingOfficeIcon}
                   section="barbershop"
+                  editStates={editStates}
+                  loading={loading}
+                  errors={errors}
+                  successMessages={successMessages}
+                  onEdit={handleEdit}
+                  onCancel={handleCancel}
+                  onSave={handleSave}
                 >
+                  {!currentShopId && (
+                    <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-md text-sm">
+                      Loading barbershop information...
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
                         Business Name
                       </label>
                       {editStates.barbershop ? (
@@ -805,12 +866,12 @@ export default function SettingsPage() {
                           className="input-field"
                         />
                       ) : (
-                        <p className="text-gray-900 py-2">{settings.barbershop.name}</p>
+                        <p className="text-card-foreground py-2">{settings.barbershop.name || 'Not set'}</p>
                       )}
                     </div>
-                    
+
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
                         Phone Number
                       </label>
                       {editStates.barbershop ? (
@@ -822,16 +883,16 @@ export default function SettingsPage() {
                         />
                       ) : (
                         <div>
-                          <p className="text-gray-900 py-2">{settings.barbershop.phone || 'Not set'}</p>
+                          <p className="text-card-foreground py-2">{settings.barbershop.phone || 'Not set'}</p>
                           {settings.barbershop?.phoneE164 && (
-                            <p className="text-xs text-gray-500">Twilio format: {settings.barbershop.phoneE164}</p>
+                            <p className="text-xs text-muted-foreground">International format: {settings.barbershop.phoneE164}</p>
                           )}
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
                         Address
                       </label>
                       {editStates.barbershop ? (
@@ -845,12 +906,12 @@ export default function SettingsPage() {
                           className="input-field"
                         />
                       ) : (
-                        <p className="text-gray-900 py-2">{settings.barbershop.address}</p>
+                        <p className="text-card-foreground py-2">{settings.barbershop.address || 'Not set'}</p>
                       )}
                     </div>
-                    
+
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
                         Email
                       </label>
                       {editStates.barbershop ? (
@@ -864,12 +925,12 @@ export default function SettingsPage() {
                           validation={true}
                         />
                       ) : (
-                        <p className="text-gray-900 py-2">{settings.barbershop.email || 'Not set'}</p>
+                        <p className="text-card-foreground py-2">{settings.barbershop.email || 'Not set'}</p>
                       )}
                     </div>
-                    
+
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-muted-foreground mb-2">
                         Timezone
                       </label>
                       {editStates.barbershop ? (
@@ -887,7 +948,7 @@ export default function SettingsPage() {
                           <option value="America/Los_Angeles">Pacific Time</option>
                         </select>
                       ) : (
-                        <p className="text-gray-900 py-2">
+                        <p className="text-card-foreground py-2">
                           {settings.barbershop.timezone === 'America/New_York' ? 'Eastern Time' :
                            settings.barbershop.timezone === 'America/Chicago' ? 'Central Time' :
                            settings.barbershop.timezone === 'America/Denver' ? 'Mountain Time' :
@@ -904,17 +965,24 @@ export default function SettingsPage() {
             {/* Business Hours Settings */}
             {activeSection === 'hours' && (
               <div className="space-y-6">
-                <EditableCard 
-                  title="Business Hours" 
+                <EditableCard
+                  title="Business Hours"
                   icon={CalendarDaysIcon}
                   section="businessHours"
+                  editStates={editStates}
+                  loading={loading}
+                  errors={errors}
+                  successMessages={successMessages}
+                  onEdit={handleEdit}
+                  onCancel={handleCancel}
+                  onSave={handleSave}
                 >
                   <div className="space-y-4">
                     {Object.entries(settings.businessHours).map(([day, config]) => (
-                      <div key={day} className="border border-gray-200 rounded-lg p-4">
+                      <div key={day} className="border border-border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center">
-                            <span className="text-lg font-medium text-gray-900 w-24">
+                            <span className="text-lg font-medium text-card-foreground w-24">
                               {dayNames[day]}
                             </span>
                           </div>
@@ -926,21 +994,21 @@ export default function SettingsPage() {
                                 onChange={() => toggleDay(day)}
                                 className="sr-only peer"
                               />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                              <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                             </label>
                           ) : (
                             <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              config.enabled ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                              config.enabled ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                             }`}>
                               {config.enabled ? 'Open' : 'Closed'}
                             </span>
                           )}
                         </div>
-                        
+
                         {config.enabled && (
                           <div className="space-y-3">
                             {config.shifts.map((shift, shiftIndex) => (
-                              <div key={shiftIndex} className="bg-gray-50 p-4 rounded-lg">
+                              <div key={shiftIndex} className="bg-muted p-4 rounded-lg">
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
                                     {editStates.businessHours ? (
@@ -956,15 +1024,15 @@ export default function SettingsPage() {
                                       <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-4">
                                           <div className="text-sm">
-                                            <span className="font-medium text-gray-700">Open:</span>
-                                            <span className="ml-2 text-gray-900">{formatTime12Hour(shift.open)}</span>
+                                            <span className="font-medium text-muted-foreground">Open:</span>
+                                            <span className="ml-2 text-card-foreground">{formatTime12Hour(shift.open)}</span>
                                           </div>
                                           <div className="text-sm">
-                                            <span className="font-medium text-gray-700">Close:</span>
-                                            <span className="ml-2 text-gray-900">{formatTime12Hour(shift.close)}</span>
+                                            <span className="font-medium text-muted-foreground">Close:</span>
+                                            <span className="ml-2 text-card-foreground">{formatTime12Hour(shift.close)}</span>
                                           </div>
                                         </div>
-                                        <div className="text-xs text-gray-500">
+                                        <div className="text-xs text-muted-foreground">
                                           {calculateShiftDuration(shift.open, shift.close)}
                                         </div>
                                       </div>
@@ -981,17 +1049,17 @@ export default function SettingsPage() {
                                   )}
                                 </div>
                                 {shiftIndex < config.shifts.length - 1 && (
-                                  <div className="mt-2 pt-2 border-t border-gray-200">
-                                    <span className="text-xs text-gray-500">Shift {shiftIndex + 1}</span>
+                                  <div className="mt-2 pt-2 border-t border-border">
+                                    <span className="text-xs text-muted-foreground">Shift {shiftIndex + 1}</span>
                                   </div>
                                 )}
                               </div>
                             ))}
-                            
+
                             {editStates.businessHours && (
                               <button
                                 onClick={() => addShift(day)}
-                                className="flex items-center justify-center w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:text-olive-600 hover:border-olive-300 transition-colors"
+                                className="flex items-center justify-center w-full py-3 border-2 border-dashed border-border rounded-lg text-sm text-muted-foreground hover:text-olive-600 hover:border-olive-300 transition-colors"
                               >
                                 <PlusIcon className="h-4 w-4 mr-1" />
                                 Add another shift
@@ -999,9 +1067,9 @@ export default function SettingsPage() {
                             )}
                           </div>
                         )}
-                        
+
                         {!config.enabled && (
-                          <div className="text-center py-4 text-gray-500">
+                          <div className="text-center py-4 text-muted-foreground">
                             <span className="text-sm">Closed</span>
                           </div>
                         )}
@@ -1013,11 +1081,11 @@ export default function SettingsPage() {
                 {/* Quick Templates - Only show in edit mode */}
                 {editStates.businessHours && (
                   <div className="card">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    <h3 className="text-lg font-semibold text-card-foreground mb-4">
                       Quick Templates
-                      <span className="ml-2 text-sm font-normal text-gray-500">Choose a common schedule</span>
+                      <span className="ml-2 text-sm font-normal text-muted-foreground">Choose a common schedule</span>
                     </h3>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <button
                         onClick={() => {
@@ -1032,13 +1100,13 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: standardHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
+                        className="p-4 border-2 border-border rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Standard 9-5</h4>
-                        <p className="text-sm text-gray-600 mt-1">Mon-Fri • 9:00 AM - 5:00 PM</p>
-                        <p className="text-xs text-gray-500 mt-2">40 hours/week</p>
+                        <h4 className="font-medium text-card-foreground group-hover:text-olive-900">Standard 9-5</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Mon-Fri • 9:00 AM - 5:00 PM</p>
+                        <p className="text-xs text-muted-foreground mt-2">40 hours/week</p>
                       </button>
-                      
+
                       <button
                         onClick={() => {
                           const barbershopHours = {
@@ -1052,13 +1120,13 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: barbershopHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
+                        className="p-4 border-2 border-border rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Classic Barbershop</h4>
-                        <p className="text-sm text-gray-600 mt-1">Tue-Sun • Closed Mondays</p>
-                        <p className="text-xs text-gray-500 mt-2">56 hours/week</p>
+                        <h4 className="font-medium text-card-foreground group-hover:text-olive-900">Classic Barbershop</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Tue-Sun • Closed Mondays</p>
+                        <p className="text-xs text-muted-foreground mt-2">56 hours/week</p>
                       </button>
-                      
+
                       <button
                         onClick={() => {
                           const extendedHours = {
@@ -1072,13 +1140,13 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: extendedHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
+                        className="p-4 border-2 border-border rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Extended Hours</h4>
-                        <p className="text-sm text-gray-600 mt-1">7 days • Early to late</p>
-                        <p className="text-xs text-gray-500 mt-2">75 hours/week</p>
+                        <h4 className="font-medium text-card-foreground group-hover:text-olive-900">Extended Hours</h4>
+                        <p className="text-sm text-muted-foreground mt-1">7 days • Early to late</p>
+                        <p className="text-xs text-muted-foreground mt-2">75 hours/week</p>
                       </button>
-                      
+
                       <button
                         onClick={() => {
                           const weekendHours = {
@@ -1092,14 +1160,14 @@ export default function SettingsPage() {
                           }
                           setSettings(prev => ({ ...prev, businessHours: weekendHours }))
                         }}
-                        className="p-4 border-2 border-gray-200 rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
+                        className="p-4 border-2 border-border rounded-lg hover:bg-olive-50 hover:border-olive-300 transition-colors text-left group"
                       >
-                        <h4 className="font-medium text-gray-900 group-hover:text-olive-900">Weekend Only</h4>
-                        <p className="text-sm text-gray-600 mt-1">Sat-Sun only</p>
-                        <p className="text-xs text-gray-500 mt-2">15 hours/week</p>
+                        <h4 className="font-medium text-card-foreground group-hover:text-olive-900">Weekend Only</h4>
+                        <p className="text-sm text-muted-foreground mt-1">Sat-Sun only</p>
+                        <p className="text-xs text-muted-foreground mt-2">15 hours/week</p>
                       </button>
                     </div>
-                    
+
                     <div className="mt-4 p-3 bg-olive-50 border border-olive-200 rounded-lg">
                       <p className="text-sm text-olive-800">
                         💡 <strong>Tip:</strong> Most barbershops find success with 50-60 hours per week, including evenings and weekends when customers are available.
@@ -1110,20 +1178,93 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {/* Staff Management */}
+            {activeSection === 'staff' && (
+              <div className="space-y-6">
+                <div className="card">
+                  <div className="flex items-center mb-6">
+                    <UserCircleIcon className="h-6 w-6 text-olive-600 mr-3" />
+                    <div>
+                      <h3 className="text-lg font-semibold text-card-foreground">Staff & Team Management</h3>
+                      <p className="text-sm text-muted-foreground">Manage barbers, permissions, and roles</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-olive-50 border border-olive-200 rounded-lg p-6">
+                    <div className="flex items-start">
+                      <InformationCircleIcon className="h-6 w-6 text-olive-600 mt-1 mr-3 flex-shrink-0" />
+                      <div>
+                        <h4 className="text-lg font-semibold text-olive-900 mb-2">Staff Management</h4>
+                        <p className="text-olive-800 mb-4">
+                          Manage your team members, assign roles, and control permissions for barbers and staff.
+                        </p>
+                        <a
+                          href="/shop/settings/staff"
+                          className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors"
+                        >
+                          <UserCircleIcon className="h-5 w-5 mr-2" />
+                          Go to Staff Management
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-muted p-4 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <div className="w-8 h-8 bg-olive-100 rounded-lg flex items-center justify-center mr-3">
+                          <UserCircleIcon className="h-5 w-5 text-olive-600" />
+                        </div>
+                        <h4 className="font-semibold text-card-foreground">Team Members</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Invite and manage your barbers and staff</p>
+                    </div>
+
+                    <div className="bg-muted p-4 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <div className="w-8 h-8 bg-olive-100 rounded-lg flex items-center justify-center mr-3">
+                          <ShieldCheckIcon className="h-5 w-5 text-olive-600" />
+                        </div>
+                        <h4 className="font-semibold text-card-foreground">Permissions</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Control access levels and capabilities</p>
+                    </div>
+
+                    <div className="bg-muted p-4 rounded-lg">
+                      <div className="flex items-center mb-2">
+                        <div className="w-8 h-8 bg-olive-100 rounded-lg flex items-center justify-center mr-3">
+                          <BuildingOfficeIcon className="h-5 w-5 text-olive-600" />
+                        </div>
+                        <h4 className="font-semibold text-card-foreground">Roles & Templates</h4>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Quick setup with pre-defined roles</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Notifications Settings */}
             {activeSection === 'notifications' && (
               <div className="space-y-6">
                 {/* Notification Preferences */}
-                <EditableCard 
-                  title="Notification Preferences" 
+                <EditableCard
+                  title="Notification Preferences"
                   icon={BellIcon}
                   section="notifications"
+                  editStates={editStates}
+                  loading={loading}
+                  errors={errors}
+                  successMessages={successMessages}
+                  onEdit={handleEdit}
+                  onCancel={handleCancel}
+                  onSave={handleSave}
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <EnvelopeIcon className="h-4 w-4 text-gray-500 mr-2" />
-                        <span className="text-sm font-medium text-gray-700">Email Notifications</span>
+                        <EnvelopeIcon className="h-4 w-4 text-muted-foreground mr-2" />
+                        <span className="text-sm font-medium text-muted-foreground">Email Notifications</span>
                       </div>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -1136,21 +1277,21 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.emailEnabled ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.emailEnabled ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.emailEnabled ? 'Enabled' : 'Disabled'}
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <PhoneIcon className="h-4 w-4 text-gray-500 mr-2" />
-                        <span className="text-sm font-medium text-gray-700">SMS Notifications</span>
+                        <PhoneIcon className="h-4 w-4 text-muted-foreground mr-2" />
+                        <span className="text-sm font-medium text-muted-foreground">SMS Notifications</span>
                       </div>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -1163,19 +1304,19 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.smsEnabled ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.smsEnabled ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.smsEnabled ? 'Enabled' : 'Disabled'}
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Campaign Alerts</span>
+                      <span className="text-sm font-medium text-muted-foreground">Campaign Alerts</span>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -1187,19 +1328,19 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.campaignAlerts ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.campaignAlerts ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.campaignAlerts ? 'Enabled' : 'Disabled'}
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Booking Alerts</span>
+                      <span className="text-sm font-medium text-muted-foreground">Booking Alerts</span>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -1211,19 +1352,19 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.bookingAlerts ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.bookingAlerts ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.bookingAlerts ? 'Enabled' : 'Disabled'}
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">System Alerts</span>
+                      <span className="text-sm font-medium text-muted-foreground">System Alerts</span>
                       {editStates.notifications ? (
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -1235,11 +1376,11 @@ export default function SettingsPage() {
                             }))}
                             className="sr-only peer"
                           />
-                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                          <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                         </label>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          settings.notifications.systemAlerts ? 'bg-moss-100 text-moss-900' : 'bg-gray-100 text-gray-800'
+                          settings.notifications.systemAlerts ? 'bg-moss-100 text-moss-900' : 'bg-muted text-card-foreground'
                         }`}>
                           {settings.notifications.systemAlerts ? 'Enabled' : 'Disabled'}
                         </span>
@@ -1250,8 +1391,8 @@ export default function SettingsPage() {
 
                 {/* Test Notifications */}
                 <div className="card">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Test Notifications</h3>
-                  
+                  <h3 className="text-lg font-semibold text-card-foreground mb-4">Test Notifications</h3>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <button
                       onClick={() => sendTestNotification('email')}
@@ -1260,11 +1401,11 @@ export default function SettingsPage() {
                     >
                       <EnvelopeIcon className="h-8 w-8 text-olive-600" />
                       <div className="text-left">
-                        <p className="font-semibold text-gray-900">Test Email</p>
-                        <p className="text-sm text-gray-600">Send test email</p>
+                        <p className="font-semibold text-card-foreground">Test Email</p>
+                        <p className="text-sm text-muted-foreground">Send test email</p>
                       </div>
                     </button>
-                    
+
                     <button
                       onClick={() => sendTestNotification('sms')}
                       disabled={loading.testNotifications}
@@ -1272,8 +1413,8 @@ export default function SettingsPage() {
                     >
                       <PhoneIcon className="h-8 w-8 text-gold-600" />
                       <div className="text-left">
-                        <p className="font-semibold text-gray-900">Test SMS</p>
-                        <p className="text-sm text-gray-600">Send test SMS</p>
+                        <p className="font-semibold text-card-foreground">Test SMS</p>
+                        <p className="text-sm text-muted-foreground">Send test SMS</p>
                       </div>
                     </button>
                   </div>
@@ -1281,56 +1422,56 @@ export default function SettingsPage() {
 
                 {/* Notification History */}
                 <div className="card">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Notifications</h3>
-                  
+                  <h3 className="text-lg font-semibold text-card-foreground mb-4">Recent Notifications</h3>
+
                   {notificationHistory.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <BellIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <div className="text-center py-8 text-muted-foreground">
+                      <BellIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
                       <p>No notifications sent yet</p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                      <table className="min-w-full divide-y divide-border">
+                        <thead className="bg-muted">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Type
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Recipient
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Subject
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Status
                             </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                               Sent At
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-card divide-y divide-border">
                           {notificationHistory.slice(0, 5).map((notification) => (
                             <tr key={notification.id}>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 {getTypeIcon(notification.type)}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-card-foreground">
                                 {notification.recipient}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                 {notification.subject || '-'}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
                                   {getStatusIcon(notification.status)}
-                                  <span className="ml-2 text-sm text-gray-900">
+                                  <span className="ml-2 text-sm text-card-foreground">
                                     {notification.status}
                                   </span>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                 {new Date(notification.sent_at).toLocaleString()}
                               </td>
                             </tr>
@@ -1344,26 +1485,26 @@ export default function SettingsPage() {
                 {/* Queue Status */}
                 {queueStatus && (
                   <div className="card">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Queue Status</h3>
-                    
+                    <h3 className="text-lg font-semibold text-card-foreground mb-4">Queue Status</h3>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-sm font-medium text-gray-500">Processing</p>
-                        <p className="text-2xl font-bold text-gray-900">
+                      <div className="bg-muted p-4 rounded-lg">
+                        <p className="text-sm font-medium text-muted-foreground">Processing</p>
+                        <p className="text-2xl font-bold text-card-foreground">
                           {queueStatus.processing ? 'Active' : 'Inactive'}
                         </p>
                       </div>
-                      
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-sm font-medium text-gray-500">Total in Queue</p>
-                        <p className="text-2xl font-bold text-gray-900">{queueStatus.total || 0}</p>
+
+                      <div className="bg-muted p-4 rounded-lg">
+                        <p className="text-sm font-medium text-muted-foreground">Total in Queue</p>
+                        <p className="text-2xl font-bold text-card-foreground">{queueStatus.total || 0}</p>
                       </div>
-                      
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-sm font-medium text-gray-500">Next Scheduled</p>
-                        <p className="text-sm font-bold text-gray-900">
-                          {queueStatus.next_scheduled ? 
-                            new Date(queueStatus.next_scheduled).toLocaleString() : 
+
+                      <div className="bg-muted p-4 rounded-lg">
+                        <p className="text-sm font-medium text-muted-foreground">Next Scheduled</p>
+                        <p className="text-sm font-bold text-card-foreground">
+                          {queueStatus.next_scheduled ?
+                            new Date(queueStatus.next_scheduled).toLocaleString() :
                             'None'
                           }
                         </p>
@@ -1383,12 +1524,12 @@ export default function SettingsPage() {
                     <div className="flex items-center">
                       <KeyIcon className="h-6 w-6 text-olive-600 mr-3" />
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Multi-Factor Authentication</h3>
-                        <p className="text-sm text-gray-600">Secure your account with an additional layer of protection</p>
+                        <h3 className="text-lg font-semibold text-card-foreground">Multi-Factor Authentication</h3>
+                        <p className="text-sm text-muted-foreground">Secure your account with an additional layer of protection</p>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-gradient-to-r from-olive-50 to-indigo-50 border border-olive-200 rounded-lg p-4 mb-6">
                     <div className="flex items-start">
                       <div className="flex-shrink-0">
@@ -1420,9 +1561,9 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* MFA Setup Component */}
-                  <MFASetup 
+                  <MFASetup
                     onComplete={(success) => {
                       if (success) {
                         setTestResult({
@@ -1441,12 +1582,12 @@ export default function SettingsPage() {
                     <div className="flex items-center">
                       <CreditCardIcon className="h-6 w-6 text-olive-600 mr-3" />
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Subscription & Billing</h3>
-                        <p className="text-sm text-gray-600">Manage your subscription plan and payment methods</p>
+                        <h3 className="text-lg font-semibold text-card-foreground">Subscription & Billing</h3>
+                        <p className="text-sm text-muted-foreground">Manage your subscription plan and payment methods</p>
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Subscription Dashboard Component */}
                   <SubscriptionDashboard />
                 </div>
@@ -1455,37 +1596,37 @@ export default function SettingsPage() {
                 <div className="card">
                   <div className="flex items-center mb-6">
                     <KeyIcon className="h-6 w-6 text-olive-600 mr-3" />
-                    <h3 className="text-lg font-semibold text-gray-900">Security Settings</h3>
+                    <h3 className="text-lg font-semibold text-card-foreground">Security Settings</h3>
                   </div>
-                  
+
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <div>
-                        <div className="font-medium text-gray-900">Session Management</div>
-                        <div className="text-sm text-gray-600">Control how long you stay logged in</div>
+                        <div className="font-medium text-card-foreground">Session Management</div>
+                        <div className="text-sm text-muted-foreground">Control how long you stay logged in</div>
                       </div>
-                      <select className="text-sm border border-gray-300 rounded-md px-3 py-1">
+                      <select className="text-sm border border-border rounded-md px-3 py-1">
                         <option value="24h">24 hours</option>
                         <option value="7d">7 days</option>
                         <option value="30d">30 days</option>
                       </select>
                     </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <div>
-                        <div className="font-medium text-gray-900">Login Notifications</div>
-                        <div className="text-sm text-gray-600">Get notified of new login attempts</div>
+                        <div className="font-medium text-card-foreground">Login Notifications</div>
+                        <div className="text-sm text-muted-foreground">Get notified of new login attempts</div>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" defaultChecked className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
+                        <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-olive-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-background after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-olive-600"></div>
                       </label>
                     </div>
-                    
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                       <div>
-                        <div className="font-medium text-gray-900">Password Requirements</div>
-                        <div className="text-sm text-gray-600">Enforce strong password policies</div>
+                        <div className="font-medium text-card-foreground">Password Requirements</div>
+                        <div className="text-sm text-muted-foreground">Enforce strong password policies</div>
                       </div>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
                         Enabled
@@ -1503,74 +1644,81 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">Current Month Total</span>
-                      <CreditCardIcon className="h-5 w-5 text-gray-400" />
+                      <span className="text-sm font-medium text-muted-foreground">Current Month Total</span>
+                      <CreditCardIcon className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div className="flex items-baseline">
-                      <span className="text-3xl font-bold text-gray-900">${billingData.currentMonth.total}</span>
+                      <span className="text-3xl font-bold text-card-foreground">${billingData?.currentMonth?.total ?? 0}</span>
                     </div>
                     <div className="flex items-center mt-2">
-                      {billingData.currentMonth.comparedToLastMonth > 0 ? (
+                      {(billingData?.currentMonth?.comparedToLastMonth ?? 0) > 0 ? (
                         <>
                           <ArrowTrendingUpIcon className="h-4 w-4 text-red-500 mr-1" />
-                          <span className="text-sm text-red-600">+{billingData.currentMonth.comparedToLastMonth}%</span>
+                          <span className="text-sm text-red-600">+{billingData?.currentMonth?.comparedToLastMonth ?? 0}%</span>
                         </>
                       ) : (
                         <>
                           <ArrowTrendingDownIcon className="h-4 w-4 text-green-500 mr-1" />
-                          <span className="text-sm text-green-600">{billingData.currentMonth.comparedToLastMonth}%</span>
+                          <span className="text-sm text-green-600">{billingData?.currentMonth?.comparedToLastMonth ?? 0}%</span>
                         </>
                       )}
-                      <span className="text-sm text-gray-500 ml-1">vs last month</span>
+                      <span className="text-sm text-muted-foreground ml-1">vs last month</span>
                     </div>
                   </div>
 
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">AI Usage</span>
+                      <span className="text-sm font-medium text-muted-foreground">AI Usage</span>
                       <div className="h-2 w-2 bg-olive-500 rounded-full"></div>
                     </div>
                     <div className="flex items-baseline">
-                      <span className="text-2xl font-bold text-gray-900">${billingData.usage.ai.cost}</span>
+                      <span className="text-2xl font-bold text-card-foreground">${billingData.usage.ai.cost}</span>
                     </div>
-                    <span className="text-sm text-gray-500">{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens</span>
+                    <span className="text-sm text-muted-foreground">{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens</span>
                   </div>
 
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">SMS Usage</span>
+                      <span className="text-sm font-medium text-muted-foreground">SMS Usage</span>
                       <div className="h-2 w-2 bg-gold-500 rounded-full"></div>
                     </div>
                     <div className="flex items-baseline">
-                      <span className="text-2xl font-bold text-gray-900">${billingData.usage.sms.cost}</span>
+                      <span className="text-2xl font-bold text-card-foreground">${billingData.usage.sms.cost}</span>
                     </div>
-                    <span className="text-sm text-gray-500">{billingData.usage.sms.messages.toLocaleString()} messages</span>
+                    <span className="text-sm text-muted-foreground">{billingData.usage.sms.messages.toLocaleString()} messages</span>
                   </div>
 
                   <div className="card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-600">Email Usage</span>
+                      <span className="text-sm font-medium text-muted-foreground">Email Usage</span>
                       <div className="h-2 w-2 bg-green-500 rounded-full"></div>
                     </div>
                     <div className="flex items-baseline">
-                      <span className="text-2xl font-bold text-gray-900">${billingData.usage.email.cost}</span>
+                      <span className="text-2xl font-bold text-card-foreground">${billingData.usage.email.cost}</span>
                     </div>
-                    <span className="text-sm text-gray-500">{billingData.usage.email.sent.toLocaleString()} emails</span>
+                    <span className="text-sm text-muted-foreground">{billingData.usage.email.sent.toLocaleString()} emails</span>
                   </div>
                 </div>
 
                 {/* Payment Method */}
-                <EditableCard 
-                  title="Payment Method" 
+                <EditableCard
+                  title="Payment Method"
                   icon={CreditCardIcon}
                   section="paymentMethod"
                   className="mb-8"
+                  editStates={editStates}
+                  loading={loading}
+                  errors={errors}
+                  successMessages={successMessages}
+                  onEdit={handleEdit}
+                  onCancel={handleCancel}
+                  onSave={handleSave}
                 >
                   {editStates.paymentMethod ? (
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-muted-foreground mb-2">
                             Card Number
                           </label>
                           <input
@@ -1580,7 +1728,7 @@ export default function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-muted-foreground mb-2">
                             Expiry Date
                           </label>
                           <input
@@ -1590,7 +1738,7 @@ export default function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-muted-foreground mb-2">
                             CVV
                           </label>
                           <input
@@ -1600,7 +1748,7 @@ export default function SettingsPage() {
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="block text-sm font-medium text-muted-foreground mb-2">
                             Cardholder Name
                           </label>
                           <input
@@ -1612,19 +1760,31 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-between p-6 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <CreditCardIcon className="h-10 w-10 text-gray-400 mr-4" />
-                        <div>
-                          <p className="text-lg font-medium text-gray-900">
-                            {billingData.paymentMethod.brand} •••• {billingData.paymentMethod.last4}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Expires {billingData.paymentMethod.expMonth}/{billingData.paymentMethod.expYear}
-                          </p>
+                    <div className="flex items-center justify-between p-6 bg-muted rounded-lg">
+                      {billingData?.paymentMethod ? (
+                        <>
+                          <div className="flex items-center">
+                            <CreditCardIcon className="h-10 w-10 text-muted-foreground mr-4" />
+                            <div>
+                              <p className="text-lg font-medium text-card-foreground">
+                                {billingData.paymentMethod.brand} •••• {billingData.paymentMethod.last4}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Expires {billingData.paymentMethod.expMonth}/{billingData.paymentMethod.expYear}
+                              </p>
+                            </div>
+                          </div>
+                          <CheckCircleIcon className="h-6 w-6 text-green-500" />
+                        </>
+                      ) : (
+                        <div className="flex items-center">
+                          <CreditCardIcon className="h-10 w-10 text-muted-foreground mr-4" />
+                          <div>
+                            <p className="text-lg font-medium text-card-foreground">No payment method on file</p>
+                            <p className="text-sm text-muted-foreground">Add a payment method to enable billing</p>
+                          </div>
                         </div>
-                      </div>
-                      <CheckCircleIcon className="h-6 w-6 text-green-500" />
+                      )}
                     </div>
                   )}
                 </EditableCard>
@@ -1634,18 +1794,18 @@ export default function SettingsPage() {
                   <div className="lg:col-span-2">
                     <div className="card">
                       <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-semibold text-gray-900">Usage Trends</h3>
-                        <select 
-                          value={timeRange} 
+                        <h3 className="text-lg font-semibold text-card-foreground">Usage Trends</h3>
+                        <select
+                          value={timeRange}
                           onChange={(e) => setTimeRange(e.target.value)}
-                          className="text-sm border border-gray-300 rounded-md px-3 py-1"
+                          className="text-sm border border-border rounded-md px-3 py-1"
                         >
                           <option value="7days">Last 7 days</option>
                           <option value="30days">Last 30 days</option>
                           <option value="90days">Last 90 days</option>
                         </select>
                       </div>
-                      
+
                       <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={dailyUsageData}>
                           <CartesianGrid strokeDasharray="3 3" />
@@ -1662,18 +1822,18 @@ export default function SettingsPage() {
 
                     {/* Detailed Usage */}
                     <div className="card mt-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-6">Detailed Usage Breakdown</h3>
-                      
+                      <h3 className="text-lg font-semibold text-card-foreground mb-6">Detailed Usage Breakdown</h3>
+
                       <div className="space-y-4">
                         <div className="border-b pb-4">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h4 className="font-medium text-gray-900">AI Business Coach</h4>
-                              <p className="text-sm text-gray-600">GPT-4 & Claude API calls</p>
+                              <h4 className="font-medium text-card-foreground">AI Business Coach</h4>
+                              <p className="text-sm text-muted-foreground">GPT-4 & Claude API calls</p>
                             </div>
-                            <span className="font-semibold text-gray-900">${billingData.usage.ai.cost}</span>
+                            <span className="font-semibold text-card-foreground">${billingData.usage.ai.cost}</span>
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-muted-foreground">
                             <p>{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens × $0.06/1K = ${billingData.usage.ai.cost}</p>
                           </div>
                         </div>
@@ -1681,12 +1841,12 @@ export default function SettingsPage() {
                         <div className="border-b pb-4">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h4 className="font-medium text-gray-900">SMS Marketing</h4>
-                              <p className="text-sm text-gray-600">Appointment reminders & campaigns</p>
+                              <h4 className="font-medium text-card-foreground">SMS Marketing</h4>
+                              <p className="text-sm text-muted-foreground">Appointment reminders & campaigns</p>
                             </div>
-                            <span className="font-semibold text-gray-900">${billingData.usage.sms.cost}</span>
+                            <span className="font-semibold text-card-foreground">${billingData.usage.sms.cost}</span>
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-muted-foreground">
                             <p>{billingData.usage.sms.messages} messages × $0.02/msg = ${billingData.usage.sms.cost}</p>
                           </div>
                         </div>
@@ -1694,12 +1854,12 @@ export default function SettingsPage() {
                         <div className="pb-4">
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h4 className="font-medium text-gray-900">Email Campaigns</h4>
-                              <p className="text-sm text-gray-600">Marketing emails & newsletters</p>
+                              <h4 className="font-medium text-card-foreground">Email Campaigns</h4>
+                              <p className="text-sm text-muted-foreground">Marketing emails & newsletters</p>
                             </div>
-                            <span className="font-semibold text-gray-900">${billingData.usage.email.cost}</span>
+                            <span className="font-semibold text-card-foreground">${billingData.usage.email.cost}</span>
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-muted-foreground">
                             <p>{billingData.usage.email.sent.toLocaleString()} emails × $0.001/email = ${billingData.usage.email.cost}</p>
                           </div>
                         </div>
@@ -1707,8 +1867,8 @@ export default function SettingsPage() {
 
                       <div className="mt-6 pt-4 border-t">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-gray-900">Total for January</span>
-                          <span className="text-xl font-bold text-gray-900">${billingData.currentMonth.total}</span>
+                          <span className="font-semibold text-card-foreground">Total for January</span>
+                          <span className="text-xl font-bold text-card-foreground">${billingData?.currentMonth?.total ?? 0}</span>
                         </div>
                       </div>
                     </div>
@@ -1718,7 +1878,7 @@ export default function SettingsPage() {
                   <div className="space-y-6">
                     {/* Usage Distribution */}
                     <div className="card">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage Distribution</h3>
+                      <h3 className="text-lg font-semibold text-card-foreground mb-4">Usage Distribution</h3>
                       <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
                           <Pie
@@ -1742,9 +1902,9 @@ export default function SettingsPage() {
                           <div key={index} className="flex items-center justify-between text-sm">
                             <div className="flex items-center">
                               <div className={`h-3 w-3 rounded-full mr-2`} style={{ backgroundColor: item.color }}></div>
-                              <span className="text-gray-700">{item.name}</span>
+                              <span className="text-muted-foreground">{item.name}</span>
                             </div>
-                            <span className="font-medium text-gray-900">{((item.value / billingData.currentMonth.total) * 100).toFixed(0)}%</span>
+                            <span className="font-medium text-card-foreground">{(billingData?.currentMonth?.total ? ((item.value / billingData.currentMonth.total) * 100).toFixed(0) : 0)}%</span>
                           </div>
                         ))}
                       </div>
@@ -1752,15 +1912,22 @@ export default function SettingsPage() {
 
 
                     {/* Subscription */}
-                    <EditableCard 
-                      title="Subscription" 
+                    <EditableCard
+                      title="Subscription"
                       icon={ChartBarIcon}
                       section="subscription"
+                      editStates={editStates}
+                      loading={loading}
+                      errors={errors}
+                      successMessages={successMessages}
+                      onEdit={handleEdit}
+                      onCancel={handleCancel}
+                      onSave={handleSave}
                     >
                       {editStates.subscription ? (
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-muted-foreground mb-2">
                               Plan
                             </label>
                             <select
@@ -1782,18 +1949,18 @@ export default function SettingsPage() {
                       ) : (
                         <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Plan</span>
-                            <span className="font-medium text-gray-900">{billingData.subscription.plan}</span>
+                            <span className="text-muted-foreground">Plan</span>
+                            <span className="font-medium text-card-foreground">{billingData.subscription.plan}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Status</span>
+                            <span className="text-muted-foreground">Status</span>
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
                               {billingData.subscription.status}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Next billing</span>
-                            <span className="font-medium text-gray-900">{billingData.subscription.nextBilling}</span>
+                            <span className="text-muted-foreground">Next billing</span>
+                            <span className="font-medium text-card-foreground">{billingData.subscription.nextBilling}</span>
                           </div>
                         </div>
                       )}
@@ -1801,18 +1968,18 @@ export default function SettingsPage() {
 
                     {/* Actions */}
                     <div className="card">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Billing Actions</h3>
+                      <h3 className="text-lg font-semibold text-card-foreground mb-4">Billing Actions</h3>
                       <div className="space-y-3">
-                        <button 
+                        <button
                           onClick={handleDownloadInvoice}
-                          className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          className="w-full flex items-center justify-center px-4 py-2 border border-border rounded-md text-sm font-medium text-muted-foreground hover:bg-muted"
                         >
                           <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                           Download Invoice
                         </button>
-                        <button 
+                        <button
                           onClick={handleViewBillingHistory}
-                          className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          className="w-full flex items-center justify-center px-4 py-2 border border-border rounded-md text-sm font-medium text-muted-foreground hover:bg-muted"
                         >
                           <CalendarDaysIcon className="h-4 w-4 mr-2" />
                           View Billing History
@@ -1828,23 +1995,23 @@ export default function SettingsPage() {
             {/* System Status */}
             {activeSection === 'system' && (
               <div className="card">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">System Status</h4>
+                <h4 className="text-lg font-semibold text-card-foreground mb-4">System Status</h4>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">API Status</span>
+                    <span className="text-sm text-muted-foreground">API Status</span>
                     <span className="badge badge-success">All Connected</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Database</span>
+                    <span className="text-sm text-muted-foreground">Database</span>
                     <span className="badge badge-success">Healthy</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Agents</span>
+                    <span className="text-sm text-muted-foreground">Agents</span>
                     <span className="badge badge-success">6 Active</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Last Backup</span>
-                    <span className="text-sm text-gray-500">2 hours ago</span>
+                    <span className="text-sm text-muted-foreground">Last Backup</span>
+                    <span className="text-sm text-muted-foreground">2 hours ago</span>
                   </div>
                 </div>
               </div>

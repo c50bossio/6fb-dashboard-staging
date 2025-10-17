@@ -13,7 +13,6 @@ export async function verifyAdminAuth(userId) {
   const supabase = createClient()
   
   try {
-    // Get user profile from database
     const { data: profile, error } = await supabase
       .from('users')
       .select('id, email, role, is_active')
@@ -29,12 +28,10 @@ export async function verifyAdminAuth(userId) {
       throw new Error('User profile not found')
     }
 
-    // Check if user is active
     if (!profile.is_active) {
       throw new Error('User account is inactive')
     }
 
-    // Check if user has SUPER_ADMIN role
     if (profile.role !== 'SUPER_ADMIN') {
       throw new Error('Insufficient permissions - SUPER_ADMIN role required')
     }
@@ -71,7 +68,6 @@ export async function logAdminAction(adminUserId, action, details = {}) {
 
     if (error) {
       console.error('Failed to log admin action:', error)
-      // Don't throw error here to avoid breaking the main operation
     }
   } catch (error) {
     console.error('Admin audit logging failed:', error)
@@ -84,7 +80,6 @@ export async function logAdminAction(adminUserId, action, details = {}) {
 export function withAdminAuth(handler) {
   return async function authenticatedHandler(request, context) {
     try {
-      // Extract user ID from Supabase auth
       const authHeader = request.headers.get('authorization')
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return new Response(
@@ -105,13 +100,10 @@ export function withAdminAuth(handler) {
         )
       }
 
-      // Verify admin permissions
       const adminAuth = await verifyAdminAuth(user.id)
       
-      // Add admin context to request
       request.adminContext = adminAuth
       
-      // Call the original handler
       return await handler(request, context)
     } catch (error) {
       console.error('Admin auth middleware error:', error)

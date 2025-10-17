@@ -10,13 +10,11 @@ export function useNetworkStatus() {
   const [isSlowConnection, setIsSlowConnection] = useState(false);
 
   useEffect(() => {
-    // Initial status
     setIsOnline(navigator.onLine);
 
     const updateOnlineStatus = () => setIsOnline(navigator.onLine);
     const updateOfflineStatus = () => setIsOnline(false);
 
-    // Connection info
     const updateConnectionInfo = () => {
       if ('connection' in navigator) {
         const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -26,7 +24,6 @@ export function useNetworkStatus() {
           setEffectiveType(connection.effectiveType || '4g');
           setDownlink(connection.downlink || 0);
           
-          // Consider connection slow if effective type is 2g or slow-2g
           const slow = connection.effectiveType === '2g' || 
                       connection.effectiveType === 'slow-2g' ||
                       connection.downlink < 0.5;
@@ -35,11 +32,9 @@ export function useNetworkStatus() {
       }
     };
 
-    // Event listeners
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOfflineStatus);
 
-    // Connection change listeners
     if ('connection' in navigator) {
       const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
       if (connection) {

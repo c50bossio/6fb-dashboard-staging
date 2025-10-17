@@ -66,7 +66,6 @@ describe('Modal Component', () => {
       </Modal>
     )
 
-    // Click on the overlay (backdrop)
     const overlay = screen.getByTestId('modal-overlay') || screen.getByRole('dialog').parentElement
     await user.click(overlay)
 
@@ -213,7 +212,6 @@ describe('Modal Component', () => {
       </div>
     )
 
-    // Focus should be trapped within the modal
     const firstInput = screen.getByPlaceholderText('First input')
     const secondInput = screen.getByPlaceholderText('Second input')
     
@@ -228,7 +226,6 @@ describe('Modal Component', () => {
       </Modal>
     )
 
-    // When modal is closed, body should be scrollable
     expect(document.body.style.overflow).not.toBe('hidden')
 
     rerender(
@@ -237,7 +234,6 @@ describe('Modal Component', () => {
       </Modal>
     )
 
-    // When modal is open, body scroll should be prevented
     expect(document.body.style.overflow).toBe('hidden')
   })
 
@@ -254,10 +250,8 @@ describe('Modal Component', () => {
       </Modal>
     )
 
-    // Modal should not be visible initially
     expect(screen.queryByText('Controlled Modal')).not.toBeInTheDocument()
 
-    // Open the modal
     isOpen = true
     rerender(
       <Modal open={isOpen} onClose={handleClose}>

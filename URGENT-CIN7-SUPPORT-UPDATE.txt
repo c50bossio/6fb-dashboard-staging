@@ -1,0 +1,59 @@
+URGENT UPDATE FOR CIN7 SUPPORT TICKET #220609
+
+CRITICAL: THIS WAS WORKING YESTERDAY!
+
+Yesterday (August 16, 2025):
+✅ API authentication was WORKING
+✅ Successfully pulling product data
+✅ Successfully pulling customer data
+✅ Successfully pulling order data
+✅ Only issue was inventory stock levels not updating
+✅ All other API endpoints were functioning perfectly
+
+Today (August 17, 2025):
+❌ COMPLETE FAILURE - All API calls return "Incorrect credentials!"
+❌ Same code that worked yesterday
+❌ Same API credentials (even regenerated new ones)
+❌ Nothing works anymore
+
+PROOF THIS IS A CIN7-SIDE ISSUE:
+1. NO code changes on our side between yesterday and today
+2. The EXACT same API calls that worked yesterday now fail
+3. Even with freshly regenerated API keys, still fails
+4. API Explorer still works (browser session), but external API is broken
+
+WHAT CHANGED AT CIN7:
+Something changed on CIN7's servers between August 16 and August 17 that broke external API authentication. Possible causes:
+- Service deployment that broke API authentication
+- Configuration change that disabled external API
+- API gateway/proxy configuration error
+- Authentication service failure
+
+BUSINESS IMPACT:
+- $500,000+ inventory sync is completely broken
+- Production system that was working is now down
+- Customer paid extra for this integration
+- This is blocking critical business operations
+
+IMMEDIATE ACTION REQUIRED:
+1. Check what changed on CIN7's infrastructure between Aug 16-17
+2. Review deployment logs for the API service
+3. Check if authentication service is correctly validating API keys
+4. Verify API gateway is properly routing external API requests
+5. ROLLBACK any changes made to the API authentication system
+
+TEST TO CONFIRM:
+Try this exact API call from your side:
+curl -H "api-auth-accountid: 1fd319f3-0a8b-4314-bb82-603f47fe20e9" \
+     -H "api-auth-applicationkey: 2fa20439-73b3-e86b-b7b2-1bd765e45743" \
+     https://inventory.dearsystems.com/ExternalApi/Me
+
+This returns "Incorrect credentials!" but should return account data.
+
+TIMELINE:
+- Aug 16, 2025: Everything working except inventory levels
+- Aug 17, 2025 morning: Complete API failure
+- Aug 17, 2025 afternoon: Multiple troubleshooting attempts, all failed
+- Aug 17, 2025 current: Submitted support ticket #220609
+
+This is a REGRESSION on CIN7's side. Please escalate immediately.

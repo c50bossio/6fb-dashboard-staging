@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-export const runtime = 'edge'
+import { apiLogger } from '@/lib/logger'
+export const runtime = 'nodejs'
 
 const BACKEND_URL = process.env.FASTAPI_BASE_URL || process.env.PYTHON_BACKEND_URL || 'http://localhost:8002'
 
@@ -18,7 +19,11 @@ export async function GET(request) {
       status: backendResponse.status 
     })
   } catch (error) {
-    console.error('Health API Proxy Error:', error)
+    apiLogger.error('Health API proxy error', error, {
+      context: 'health_proxy',
+      backend_url: BACKEND_URL,
+      endpoint: 'GET /api/v1/health'
+    })
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }

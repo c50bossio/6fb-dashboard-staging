@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server-client'
 import dns from 'dns/promises'
+import { NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export async function GET(request) {
   try {
@@ -11,7 +11,6 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Domain required' }, { status: 400 })
     }
     
-    // Check DNS records
     const status = await checkDomainStatus(domain)
     
     return NextResponse.json(status)
@@ -25,12 +24,10 @@ export async function GET(request) {
   }
 }
 
-// Cron job endpoint to check all pending domains
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
     
-    // Get all domains pending verification
     const { data: pendingDomains } = await supabase
       .from('barbershops')
       .select('id, custom_domain, owner_id')
@@ -47,7 +44,6 @@ export async function POST(request) {
       const status = await checkDomainStatus(shop.custom_domain)
       
       if (status.isConfigured && status.sslActive) {
-        // Domain is ready! Update database
         await supabase
           .from('barbershops')
           .update({
@@ -56,7 +52,6 @@ export async function POST(request) {
           })
           .eq('id', shop.id)
         
-        // Send success email
         await sendDomainActiveEmail(shop.owner_id, shop.custom_domain)
         
         results.push({
@@ -99,7 +94,6 @@ async function checkDomainStatus(domain) {
   }
   
   try {
-    // Check A record
     const aRecords = await dns.resolve4(domain)
     if (aRecords.includes('76.76.21.21')) {
       status.dnsRecords.a = true
@@ -111,7 +105,6 @@ async function checkDomainStatus(domain) {
   }
   
   try {
-    // Check CNAME for www
     const cnameRecords = await dns.resolveCname(`www.${domain}`)
     if (cnameRecords.some(record => record.includes('vercel'))) {
       status.dnsRecords.cname = true
@@ -119,11 +112,9 @@ async function checkDomainStatus(domain) {
       status.issues.push('CNAME record not configured')
     }
   } catch (error) {
-    // CNAME might not be required
     status.dnsRecords.cname = true
   }
   
-  // Check if domain is accessible via HTTPS
   try {
     const response = await fetch(`https://${domain}`, {
       method: 'HEAD',
@@ -143,9 +134,8 @@ async function checkDomainStatus(domain) {
 }
 
 async function sendDomainActiveEmail(userId, domain) {
-  const supabase = createClient()
+  const supabase = await createServerSupabaseClient()
   
-  // Get user email
   const { data: profile } = await supabase
     .from('profiles')
     .select('email, full_name')
@@ -201,7 +191,6 @@ async function sendDomainActiveEmail(userId, domain) {
 </html>
   `
   
-  // Send email using your email service
   await sendEmail({
     to: profile.email,
     subject: `✅ ${domain} is now live!`,
@@ -210,6 +199,4 @@ async function sendDomainActiveEmail(userId, domain) {
 }
 
 async function sendEmail({ to, subject, html }) {
-  // Implementation depends on your email service
-  console.log('Sending email to:', to, 'Subject:', subject)
 }

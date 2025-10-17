@@ -1,22 +1,19 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { isDevBypassEnabled, getTestBillingData, TEST_USER_UUID } from '@/lib/auth/dev-bypass'
 
-// Initialize Stripe conditionally
 const stripe = process.env.STRIPE_SECRET_KEY 
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2023-10-16',
     })
   : null
 
-// Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// GET - Retrieve payment methods using existing profile data
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -29,10 +26,7 @@ export async function GET(request) {
       )
     }
 
-    // Extract user ID from account ID (format: billing-{userId})
     const userId = accountId.replace('billing-', '').replace('demo-', '')
-
-    // Check for dev bypass mode with test user
     if (isDevBypassEnabled() && (userId === TEST_USER_UUID || accountId.includes(TEST_USER_UUID))) {
       const testData = getTestBillingData()
       return NextResponse.json({
@@ -42,91 +36,64 @@ export async function GET(request) {
       })
     }
 
-    // Get user profile to check if they have Stripe info
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('stripe_customer_id, email, subscription_status')
-      .eq('id', userId)
-      .single()
+    const { data: paymentMethods, error: methodsError } = await supabase
+      .from('marketing_payment_methods')
+      .select('*')
+      .eq('account_id', accountId)
+      .eq('is_active', true)
+      .order('is_default', { ascending: false })
 
-    const paymentMethods = []
-
-    // If user has Stripe customer ID or subscription, create payment method representation
-    if (profile?.stripe_customer_id || profile?.subscription_status) {
-      paymentMethods.push({
-        id: `pm-${userId}`,
-        account_id: accountId,
-        stripe_payment_method_id: `pm_card_${userId}`,
-        stripe_customer_id: profile.stripe_customer_id || `cus_${userId}`,
-        card_brand: 'visa',
-        card_last4: '4242',
-        card_exp_month: 12,
-        card_exp_year: 2026,
-        is_default: true,
-        is_active: true,
-        billing_address: {
-          line1: '123 Main St',
-          city: 'Business City',
-          state: 'CA',
-          postal_code: '90210',
-          country: 'US'
-        },
-        created_at: profile.created_at || new Date().toISOString(),
-        updated_at: new Date().toISOString()
+    if (methodsError) {
+      console.error('Error fetching payment methods:', methodsError)
+      return NextResponse.json({
+        success: true,
+        paymentMethods: [],
+        timestamp: new Date().toISOString()
       })
+    }
 
-      // Add a backup payment method for demonstration
-      if (profile?.subscription_status === 'active') {
-        paymentMethods.push({
-          id: `pm-${userId}-backup`,
+    if ((!paymentMethods || paymentMethods.length === 0) && accountId) {
+      const { data: account } = await supabase
+        .from('marketing_accounts')
+        .select('id, stripe_customer_id')
+        .eq('id', accountId)
+        .single()
+
+      if (account) {
+        const demoMethod = {
           account_id: accountId,
-          stripe_payment_method_id: `pm_card_backup_${userId}`,
-          stripe_customer_id: profile.stripe_customer_id || `cus_${userId}`,
-          card_brand: 'mastercard',
-          card_last4: '5555',
-          card_exp_month: 8,
-          card_exp_year: 2027,
-          is_default: false,
+          stripe_payment_method_id: `pm_demo_${Date.now()}`,
+          stripe_customer_id: account.stripe_customer_id || `cus_demo_${accountId.substring(0, 8)}`,
+          card_brand: 'visa',
+          card_last4: '4242',
+          card_exp_month: 12,
+          card_exp_year: 2025,
+          is_default: true,
           is_active: true,
           billing_address: {
-            line1: '123 Main St',
-            city: 'Business City',
+            line1: '123 Demo Street',
+            city: 'Demo City',
             state: 'CA',
             postal_code: '90210',
             country: 'US'
-          },
-          created_at: profile.created_at || new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+          }
+        }
+
+        const { data: createdMethod, error: createError } = await supabase
+          .from('marketing_payment_methods')
+          .insert(demoMethod)
+          .select()
+          .single()
+
+        if (!createError && createdMethod) {
+          paymentMethods.push(createdMethod)
+        }
       }
-    } else {
-      // Create demo payment method
-      paymentMethods.push({
-        id: `pm-demo-${userId}`,
-        account_id: accountId,
-        stripe_payment_method_id: `pm_demo_${userId}`,
-        stripe_customer_id: `cus_demo_${userId}`,
-        card_brand: 'visa',
-        card_last4: '4242',
-        card_exp_month: 12,
-        card_exp_year: 2026,
-        is_default: true,
-        is_active: true,
-        billing_address: {
-          line1: '123 Demo St',
-          city: 'Demo City',
-          state: 'CA',
-          postal_code: '90210',
-          country: 'US'
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
     }
 
     return NextResponse.json({
       success: true,
-      paymentMethods: paymentMethods,
+      paymentMethods: paymentMethods || [],
       timestamp: new Date().toISOString()
     })
 
@@ -139,7 +106,6 @@ export async function GET(request) {
   }
 }
 
-// POST - Add new payment method via Stripe
 export async function POST(request) {
   try {
     const data = await request.json()
@@ -152,7 +118,6 @@ export async function POST(request) {
       )
     }
 
-    // Fetch the billing account
     const { data: account, error: accountError } = await supabase
       .from('marketing_accounts')
       .select('*')
@@ -167,7 +132,6 @@ export async function POST(request) {
       )
     }
 
-    // Create or retrieve Stripe customer
     let stripeCustomerId = account.stripe_customer_id
 
     if (!stripeCustomerId) {
@@ -178,7 +142,6 @@ export async function POST(request) {
         )
       }
       
-      // Create new Stripe customer
       const customer = await stripe.customers.create({
         email: account.billing_email,
         name: account.account_name,
@@ -191,7 +154,6 @@ export async function POST(request) {
 
       stripeCustomerId = customer.id
 
-      // Update account with Stripe customer ID
       await supabase
         .from('marketing_accounts')
         .update({
@@ -201,7 +163,6 @@ export async function POST(request) {
         .eq('id', account_id)
     }
 
-    // Create Stripe Checkout session for adding payment method
     if (!stripe) {
       return NextResponse.json(
         { error: 'Stripe not configured - add STRIPE_SECRET_KEY to environment variables' },
@@ -238,7 +199,6 @@ export async function POST(request) {
   }
 }
 
-// DELETE - Remove payment method
 export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -253,7 +213,6 @@ export async function DELETE(request) {
       )
     }
 
-    // Verify ownership
     const { data: account, error: accountError } = await supabase
       .from('marketing_accounts')
       .select('owner_id, stripe_customer_id')
@@ -274,7 +233,6 @@ export async function DELETE(request) {
       )
     }
 
-    // Get payment method details
     const { data: paymentMethod, error: methodError } = await supabase
       .from('marketing_payment_methods')
       .select('stripe_payment_method_id')
@@ -289,17 +247,14 @@ export async function DELETE(request) {
       )
     }
 
-    // Detach payment method from Stripe customer
     if (paymentMethod.stripe_payment_method_id && stripe) {
       try {
         await stripe.paymentMethods.detach(paymentMethod.stripe_payment_method_id)
       } catch (stripeError) {
         console.error('Stripe detach error:', stripeError)
-        // Continue even if Stripe detach fails
       }
     }
 
-    // Soft delete from database
     const { error: deleteError } = await supabase
       .from('marketing_payment_methods')
       .update({

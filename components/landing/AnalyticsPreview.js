@@ -81,24 +81,24 @@ export default function AnalyticsPreview() {
   ]
 
   return (
-    <section className="py-20 bg-gray-900 text-white">
+    <section className="py-20 bg-gray-50 dark:bg-gray-900 text-foreground dark:text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-green-900/50 text-green-400 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 rounded-full text-sm font-semibold mb-4">
             <ChartBarIcon className="h-4 w-4 mr-2" />
             REAL-TIME ANALYTICS
           </div>
-          <h2 className="text-4xl font-bold text-white mb-4">
+          <h2 className="text-4xl font-bold text-foreground dark:text-white mb-4">
             Real Analytics for Real Growth
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Stop guessing. Start knowing. Make decisions based on YOUR data, 
+          <p className="text-xl text-muted-foreground dark:text-gray-300 max-w-3xl mx-auto">
+            Stop guessing. Start knowing. Make decisions based on YOUR data,
             not marketplace statistics that don't help your business.
           </p>
         </div>
 
-        <div className="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-gray-700">
-          <div className="border-b border-gray-700 bg-gray-850">
+        <div className="bg-card dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden border border-border dark:border-gray-700">
+          <div className="border-b border-border dark:border-gray-700 bg-muted dark:bg-gray-850">
             <div className="flex space-x-1 p-2">
               {tabs.map((tab) => {
                 const Icon = tab.icon
@@ -108,8 +108,8 @@ export default function AnalyticsPreview() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center px-4 py-2 rounded-lg transition-all duration-200 ${
                       activeTab === tab.id
-                        ? 'bg-gray-700 text-white'
-                        : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                        ? 'bg-olive-100 dark:bg-gray-700 text-olive-900 dark:text-white'
+                        : 'text-muted-foreground dark:text-gray-400 hover:text-foreground dark:hover:text-white hover:bg-muted/50 dark:hover:bg-gray-700/50'
                     }`}
                   >
                     <Icon className="h-4 w-4 mr-2" />
@@ -122,46 +122,46 @@ export default function AnalyticsPreview() {
 
           <div className="p-8">
             <div className="mb-8">
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-2xl font-bold text-foreground dark:text-white mb-2">
                 {dashboardPreviews[activeTab].title}
               </h3>
-              <p className="text-gray-400">
+              <p className="text-muted-foreground dark:text-gray-400">
                 {dashboardPreviews[activeTab].subtitle}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
               {dashboardPreviews[activeTab].metrics.map((metric, index) => (
-                <div key={index} className="bg-gray-700/50 rounded-xl p-4 border border-gray-600">
-                  <div className="text-sm text-gray-400 mb-1">{metric.label}</div>
-                  <div className="text-2xl font-bold text-white mb-1">{metric.value}</div>
-                  <div className={`text-sm ${metric.positive ? 'text-green-400' : 'text-red-400'}`}>
+                <div key={index} className="bg-muted/50 dark:bg-gray-700/50 rounded-xl p-4 border border-border dark:border-gray-600">
+                  <div className="text-sm text-muted-foreground dark:text-gray-400 mb-1">{metric.label}</div>
+                  <div className="text-2xl font-bold text-foreground dark:text-white mb-1">{metric.value}</div>
+                  <div className={`text-sm ${metric.positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                     {metric.change}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="bg-gray-700/30 rounded-xl p-6 border border-gray-600">
+            <div className="bg-muted/30 dark:bg-gray-700/30 rounded-xl p-6 border border-border dark:border-gray-600">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
-                  <ChartBarIcon className="h-5 w-5 text-olive-400 mr-2" />
-                  <span className="text-gray-300 font-medium">
+                  <ChartBarIcon className="h-5 w-5 text-olive-600 dark:text-olive-400 mr-2" />
+                  <span className="text-foreground dark:text-gray-300 font-medium">
                     {dashboardPreviews[activeTab].chart.description}
                   </span>
                 </div>
-                <div className="flex items-center text-sm text-gray-400">
+                <div className="flex items-center text-sm text-muted-foreground dark:text-gray-400">
                   <EyeIcon className="h-4 w-4 mr-1" />
                   Live Preview
                 </div>
               </div>
-              
-              <div className="h-48 bg-gradient-to-br from-gray-700/50 to-gray-800/50 rounded-lg flex items-center justify-center">
+
+              <div className="h-48 bg-gradient-to-br from-muted/50 to-muted dark:from-gray-700/50 dark:to-gray-800/50 rounded-lg flex items-center justify-center">
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center h-16 w-16 bg-gradient-to-br from-olive-500 to-gold-600 rounded-full mb-3">
                     <ChartBarIcon className="h-8 w-8 text-white" />
                   </div>
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-muted-foreground dark:text-gray-400 text-sm">
                     Interactive charts update in real-time
                   </p>
                 </div>
@@ -172,29 +172,29 @@ export default function AnalyticsPreview() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center h-12 w-12 bg-olive-900/50 text-olive-400 rounded-full mb-3">
+            <div className="inline-flex items-center justify-center h-12 w-12 bg-olive-100 dark:bg-olive-900/50 text-olive-600 dark:text-olive-400 rounded-full mb-3">
               <ClockIcon className="h-6 w-6" />
             </div>
-            <h4 className="text-lg font-semibold text-white mb-2">Real-Time Updates</h4>
-            <p className="text-gray-400 text-sm">
+            <h4 className="text-lg font-semibold text-foreground dark:text-white mb-2">Real-Time Updates</h4>
+            <p className="text-muted-foreground dark:text-gray-400 text-sm">
               See changes as they happen, not next month
             </p>
           </div>
           <div className="text-center">
-            <div className="inline-flex items-center justify-center h-12 w-12 bg-green-900/50 text-green-400 rounded-full mb-3">
+            <div className="inline-flex items-center justify-center h-12 w-12 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 rounded-full mb-3">
               <ArrowTrendingUpIcon className="h-6 w-6" />
             </div>
-            <h4 className="text-lg font-semibold text-white mb-2">Actionable Insights</h4>
-            <p className="text-gray-400 text-sm">
+            <h4 className="text-lg font-semibold text-foreground dark:text-white mb-2">Actionable Insights</h4>
+            <p className="text-muted-foreground dark:text-gray-400 text-sm">
               AI-powered recommendations to grow faster
             </p>
           </div>
           <div className="text-center">
-            <div className="inline-flex items-center justify-center h-12 w-12 bg-gold-900/50 text-gold-400 rounded-full mb-3">
+            <div className="inline-flex items-center justify-center h-12 w-12 bg-gold-100 dark:bg-gold-900/50 text-gold-600 dark:text-gold-400 rounded-full mb-3">
               <EyeIcon className="h-6 w-6" />
             </div>
-            <h4 className="text-lg font-semibold text-white mb-2">Your Data, Private</h4>
-            <p className="text-gray-400 text-sm">
+            <h4 className="text-lg font-semibold text-foreground dark:text-white mb-2">Your Data, Private</h4>
+            <p className="text-muted-foreground dark:text-gray-400 text-sm">
               Only you see your numbers, not competitors
             </p>
           </div>

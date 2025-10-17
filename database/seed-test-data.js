@@ -15,7 +15,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables
 dotenv.config({ path: join(__dirname, '..', '.env.local') })
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -31,11 +30,10 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 })
 
 async function seedDatabase() {
-  console.log('🌱 Starting database seed...')
-  
+
   try {
     // 1. Create test shop owner
-    console.log('Creating shop owner...')
+    
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: 'shopowner@test.com',
       password: 'testpass123',
@@ -53,7 +51,7 @@ async function seedDatabase() {
     const shopOwnerId = authData?.user?.id || 'existing-owner-id'
     
     // 2. Create test barbershop
-    console.log('Creating barbershop...')
+    
     const { data: shop, error: shopError } = await supabase
       .from('barbershops')
       .upsert({
@@ -90,7 +88,7 @@ async function seedDatabase() {
     const shopId = shop?.id || 'existing-shop-id'
     
     // 3. Create test barbers
-    console.log('Creating barbers...')
+    
     const barberEmails = [
       { email: 'barber1@test.com', name: 'Mike Barber' },
       { email: 'barber2@test.com', name: 'Sarah Stylist' },
@@ -113,7 +111,6 @@ async function seedDatabase() {
         const barberId = barberAuth?.user?.id || `barber-${barber.email}`
         barberIds.push(barberId)
         
-        // Add barber to staff
         await supabase
           .from('barbershop_staff')
           .upsert({
@@ -130,7 +127,7 @@ async function seedDatabase() {
     }
     
     // 4. Create test customers
-    console.log('Creating customers...')
+    
     const customerNames = [
       'Alice Johnson', 'Bob Smith', 'Charlie Brown', 'Diana Prince',
       'Edward Norton', 'Fiona Apple', 'George Lucas', 'Helen Hunt',
@@ -159,12 +156,11 @@ async function seedDatabase() {
     }
     
     // 5. Create test appointments
-    console.log('Creating appointments...')
+    
     const services = ['Haircut', 'Beard Trim', 'Hair & Beard', 'Fade', 'Line Up', 'Hot Shave']
     const statuses = ['completed', 'completed', 'completed', 'confirmed', 'cancelled']
     const appointments = []
     
-    // Create appointments for the past 30 days
     for (let daysAgo = 30; daysAgo >= 0; daysAgo--) {
       const appointmentDate = new Date()
       appointmentDate.setDate(appointmentDate.getDate() - daysAgo)
@@ -209,10 +205,9 @@ async function seedDatabase() {
     }
     
     // 6. Create test transactions
-    console.log('Creating transactions...')
+    
     const transactions = []
     
-    // Create transactions for completed appointments
     const completedAppointments = appointments.filter(a => a.status === 'completed')
     for (const appointment of completedAppointments) {
       const serviceAmount = appointment.service_price
@@ -244,7 +239,7 @@ async function seedDatabase() {
     }
     
     // 7. Create some reviews
-    console.log('Creating reviews...')
+    
     const reviews = []
     const reviewComments = [
       'Great haircut, very professional!',
@@ -272,22 +267,14 @@ async function seedDatabase() {
     if (reviewError) {
       console.error('Review creation error:', reviewError)
     }
-    
-    console.log('✅ Database seeded successfully!')
-    console.log('\n📊 Test Data Summary:')
-    console.log(`- 1 Shop Owner (shopowner@test.com / testpass123)`)
-    console.log(`- 1 Barbershop (Premium Cuts)`)
-    console.log(`- ${barberIds.length} Barbers`)
-    console.log(`- ${customerIds.length} Customers`)
-    console.log(`- ${appointments.length} Appointments`)
-    console.log(`- ${transactions.length} Transactions`)
-    console.log(`- ${reviews.length} Reviews`)
-    
+
+    `)
+    `)
+
   } catch (error) {
     console.error('❌ Seed error:', error)
     process.exit(1)
   }
 }
 
-// Run the seed
 seedDatabase()

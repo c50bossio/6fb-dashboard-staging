@@ -1,6 +1,5 @@
 import dynamic from 'next/dynamic'
 
-// Dynamically import the monitoring dashboard to avoid SSR issues with charts
 const MonitoringDashboard = dynamic(
   () => import('@/components/monitoring/MonitoringDashboard'),
   { 

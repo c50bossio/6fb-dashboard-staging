@@ -1,22 +1,23 @@
 'use client'
 
-import { 
+import {
   PaperAirplaneIcon,
   SparklesIcon,
-  ChatBubbleLeftRightIcon,
   CpuChipIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
 import ModelSelector from './ModelSelector'
 
-export default function AIAgentChat() {
+export default function AIAgentChat({ barbershopId }) {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'assistant',
-      content: "Hello! I'm your AI business assistant. I'm connecting to your live business data to provide real insights about your bookings, revenue, and customers. What would you like to know?",
+      content: barbershopId 
+        ? "Hello! I'm your AI business assistant. I'm connecting to your live business data to provide real insights about your bookings, revenue, and customers. What would you like to know?"
+        : "Hello! I'm your AI business assistant. I need a valid barbershop ID to access your business data. Please make sure you're properly logged in to get personalized insights.",
       agent: 'Marcus',
       timestamp: new Date(Date.now() - 60000)
     }
@@ -26,7 +27,6 @@ export default function AIAgentChat() {
   const [businessContext, setBusinessContext] = useState(null)
   const [selectedModel, setSelectedModel] = useState('gpt-5')
 
-  // Check API connection on mount
   useEffect(() => {
     checkAPIConnection()
   }, [])
@@ -36,7 +36,6 @@ export default function AIAgentChat() {
       const response = await fetch('/api/health')
       if (response.ok) {
         setApiConnected(true)
-        // Update initial message to show connection status
         setMessages(prev => prev.map(msg => 
           msg.id === 1 
             ? { ...msg, content: "✅ Internal API connection detected! I can access your live booking calendar, appointments, and analytics. What business insights can I help you with?" }
@@ -51,6 +50,17 @@ export default function AIAgentChat() {
 
   const handleSendMessage = async () => {
     if (!message.trim()) return
+    if (!barbershopId) {
+      const errorResponse = {
+        id: Date.now() + 1,
+        type: 'assistant',
+        content: "I need a valid barbershop ID to access your business data and provide personalized insights. Please make sure you're properly logged in.",
+        agent: 'Marcus',
+        timestamp: new Date()
+      }
+      setMessages(prev => [...prev, errorResponse])
+      return
+    }
 
     const newMessage = {
       id: Date.now(),
@@ -64,32 +74,27 @@ export default function AIAgentChat() {
     setIsLoading(true)
 
     try {
-      // Call the real AI API with business context
-      const response = await fetch('/api/ai/unified-chat', {
+      const response = await fetch('/api/ai/v2', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: 'You are Marcus, an expert AI business assistant for a barbershop. Use the business context provided to give specific, actionable insights based on real data.'
-            },
-            ...messages.filter(msg => msg.type !== 'system').map(msg => ({
-              role: msg.type === 'user' ? 'user' : 'assistant',
-              content: msg.content
-            })),
-            {
-              role: 'user',
-              content: message
-            }
-          ],
-          provider: selectedModel.startsWith('gpt') ? 'openai' : selectedModel.startsWith('claude') ? 'anthropic' : 'google',
-          model: selectedModel,
-          stream: false,
-          includeBusinessContext: true,
-          barbershopId: 'demo-shop-001'
+          message: message,
+          agent: 'auto', // Let the system choose the best agent
+          context: {
+            barbershopId: barbershopId || 'ai-agent-chat',
+            testMode: false,
+            dryRun: false,
+            userId: 'ai-chat-user',
+            businessName: 'Barbershop',
+            conversationHistory: messages.slice(-6).map(msg => ({
+              isUser: msg.type === 'user',
+              text: msg.content,
+              timestamp: msg.timestamp
+            }))
+          },
+          stream: false // Use JSON response
         }),
       })
 
@@ -102,8 +107,13 @@ export default function AIAgentChat() {
       const aiResponse = {
         id: Date.now() + 1,
         type: 'assistant',
-        content: data.content || "I apologize, but I'm having trouble accessing your business data right now. Please try again in a moment.",
-        agent: 'Marcus',
+        content: data.message || data.content || data.text || "I apologize, but I'm having trouble accessing your business data right now. Please try again in a moment.",
+        agent: data.agent?.name || 'AI Agent',
+        agentId: data.agent?.id || 'auto',
+        toolsUsed: data.toolsUsed || [],
+        model: data.model,
+        cost: data.cost,
+        executionTime: data.executionTime || 0,
         timestamp: new Date()
       }
 
@@ -111,7 +121,6 @@ export default function AIAgentChat() {
     } catch (error) {
       console.error('AI response error:', error)
       
-      // Fallback response with connection status
       const errorResponse = {
         id: Date.now() + 1,
         type: 'assistant',
@@ -251,29 +260,29 @@ export default function AIAgentChat() {
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={() => setMessage("Show me today's bookings and revenue")}
-            className="px-3 py-1 text-xs bg-olive-50 text-olive-700 rounded-full hover:bg-olive-100"
-            disabled={!apiConnected}
+            className="px-3 py-1 text-xs bg-olive-50 text-olive-700 rounded-full hover:bg-olive-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!apiConnected || !barbershopId}
           >
             Today's Performance
           </button>
           <button
             onClick={() => setMessage("Analyze my customer booking patterns this month")}
-            className="px-3 py-1 text-xs bg-gold-50 text-gold-700 rounded-full hover:bg-gold-100"
-            disabled={!apiConnected}
+            className="px-3 py-1 text-xs bg-gold-50 text-gold-700 rounded-full hover:bg-gold-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!apiConnected || !barbershopId}
           >
             Customer Analytics
           </button>
           <button
             onClick={() => setMessage("What's my most popular service and best revenue opportunities?")}
-            className="px-3 py-1 text-xs bg-green-50 text-green-700 rounded-full hover:bg-green-100"
-            disabled={!apiConnected}
+            className="px-3 py-1 text-xs bg-green-50 text-green-700 rounded-full hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!apiConnected || !barbershopId}
           >
             Revenue Insights
           </button>
           <button
             onClick={() => setMessage("Show me my weekly schedule and suggest optimizations")}
-            className="px-3 py-1 text-xs bg-orange-50 text-orange-700 rounded-full hover:bg-orange-100"
-            disabled={!apiConnected}
+            className="px-3 py-1 text-xs bg-orange-50 text-orange-700 rounded-full hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!apiConnected || !barbershopId}
           >
             Schedule Analysis
           </button>

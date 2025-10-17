@@ -1,53 +1,110 @@
-// This file configures the initialization of Sentry on the client side.
-// The config you add here will be used whenever a user loads a page in their browser.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+/**
+ * Sentry Client Configuration for Next.js
+ * Production-grade error monitoring for 6FB AI Agent System
+ */
 
-import * as Sentry from "@sentry/nextjs";
+import * as Sentry from '@sentry/nextjs'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-
-  // Adjust this value in production, or use tracesSampler for greater control
+  
+  environment: process.env.NODE_ENV || 'development',
+  
   tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
-
-  // Session Replay
-  replaysOnErrorSampleRate: 1.0, // This sets the sample rate to be 100%. You may want to change it to 100% while in development and sample at a lower rate in production.
-  replaysSessionSampleRate: 0.1, // This sets the sample rate at 10%. You may want to change it to 100% while in development and then sample at a lower rate in production.
-
-  // You can remove this option if you're not planning to use the Sentry Session Replay feature:
+  
+  replaysSessionSampleRate: 0.1, // 10% of sessions
+  replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
+  
   integrations: [
     Sentry.replayIntegration({
-      // Additional Replay configuration goes in here, for example:
-      maskAllText: true,
-      blockAllMedia: false, // Allow media for barbershop demos
+      maskAllText: true, // Privacy protection
+      blockAllMedia: false,
+      maskRequestHeaders: ['authorization', 'cookie'],
+      networkDetailAllowUrls: ['/api/', '/auth/'],
     }),
   ],
   
-  // Error filtering
   beforeSend(event, hint) {
-    // Don't send events in development unless explicitly enabled
-    if (process.env.NODE_ENV === 'development' && !process.env.NEXT_PUBLIC_SENTRY_ENABLE_DEV) {
-      return null
+    if (window.location.pathname.includes('auth/callback')) {
+      event.tags = event.tags || {}
+      event.tags['oauth.callback'] = true
+      event.fingerprint = ['oauth-callback-error']
+      
+      event.contexts = event.contexts || {}
+      event.contexts.oauth = {
+        url: window.location.href,
+        timestamp: new Date().toISOString(),
+        referrer: document.referrer
+      }
     }
     
-    // Filter out specific errors
-    if (event.exception) {
-      const error = hint.originalException
-      
-      // Ignore network errors
-      if (error?.message?.includes('NetworkError')) {
-        return null
+    if (event.request) {
+      if (event.request.headers) {
+        const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key']
+        sensitiveHeaders.forEach(header => {
+          if (event.request.headers[header]) {
+            event.request.headers[header] = '[REDACTED]'
+          }
+        })
       }
       
-      // Ignore canceled requests
-      if (error?.message?.includes('AbortError')) {
-        return null
+      if (event.request.data) {
+        const sensitiveFields = ['password', 'token', 'api_key', 'secret']
+        sensitiveFields.forEach(field => {
+          if (event.request.data[field]) {
+            event.request.data[field] = '[REDACTED]'
+          }
+        })
       }
     }
     
     return event
   },
-});
+  
+  beforeSendTransaction(event) {
+    if (event.transaction && event.transaction.includes('auth/callback')) {
+      event.tags = event.tags || {}
+      event.tags['transaction.type'] = 'oauth_callback'
+      
+      const duration = (event.timestamp || 0) - (event.start_timestamp || 0)
+      if (duration > 3) {
+        event.tags['performance.slow'] = true
+        event.tags['performance.duration'] = Math.round(duration * 1000) + 'ms'
+      }
+      
+      if (duration > 5 && window.performance && window.performance.memory) {
+        event.contexts = event.contexts || {}
+        event.contexts.memory = {
+          usedJSHeapSize: Math.round(window.performance.memory.usedJSHeapSize / 1048576) + 'MB',
+          totalJSHeapSize: Math.round(window.performance.memory.totalJSHeapSize / 1048576) + 'MB',
+          jsHeapSizeLimit: Math.round(window.performance.memory.jsHeapSizeLimit / 1048576) + 'MB'
+        }
+      }
+    }
+    
+    return event
+  },
+  
+  ignoreErrors: [
+    'top.GLOBALS',
+    'ResizeObserver loop limit exceeded',
+    'Non-Error promise rejection captured',
+    'NetworkError',
+    'Failed to fetch',
+    'NavigationDuplicated',
+    'cancelled',
+    /^Warning:/,
+  ],
+  
+  allowUrls: [
+    /https?:\/\/localhost/,
+    /https?:\/\/.*\.vercel\.app/,
+    /https?:\/\/.*\.bookedbarber\.com/,
+  ],
+  
+  autoSessionTracking: true,
+  attachStacktrace: true,
+  debug: process.env.NODE_ENV === 'development',
+})
+
+export default Sentry

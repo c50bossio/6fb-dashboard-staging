@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect, useMemo, Suspense } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
-import Head from 'next/head'
 import { 
   CalendarIcon,
   ClockIcon,
@@ -15,17 +12,31 @@ import {
   CheckCircleIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
-  TagIcon
+  TagIcon,
+  BoltIcon,
+  DevicePhoneMobileIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import Head from 'next/head'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useState, useEffect, useMemo, Suspense } from 'react'
+import BookingFlowOrchestrator from '../../../components/booking/BookingFlowOrchestrator'
+import { useRealtimeAvailability } from '../../../components/booking/RealtimeAvailabilityChecker'
+import { getCachedFeatureFlags } from '../../../lib/feature-flags'
 import { generatePageTitle, generateMetaDescription } from '../../../lib/seo-utils'
 
-// Wrap the main component in Suspense to handle useSearchParams
 function BookingPageContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
   
+  // Enhanced booking system state
+  const [useEnhancedFlow, setUseEnhancedFlow] = useState(false)
+  const [deviceInfo, setDeviceInfo] = useState(null)
+  const [featureFlags, setFeatureFlags] = useState({})
+  const [enhancementReady, setEnhancementReady] = useState(false)
+  
+  // Original booking state - maintained for backward compatibility
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [barberData, setBarberData] = useState(null)
@@ -40,33 +51,76 @@ function BookingPageContent() {
     smsConsent: false
   })
 
-  // Parse URL parameters
+  // URL parameters - enhanced with new options
   const urlServices = searchParams?.get('services')?.split(',') || []
   const urlTimeSlots = searchParams?.get('timeSlots')?.split(',') || []
   const urlDuration = searchParams?.get('duration')
   const urlPrice = searchParams?.get('price')
   const urlDiscount = searchParams?.get('discount')
   const urlExpires = searchParams?.get('expires')
+  
+  // Enhancement flags from URL
+  const urlEnhanced = searchParams?.get('enhanced') === 'true'
+  const urlMobile = searchParams?.get('mobile') === 'true'
+  const urlFlow = searchParams?.get('flow')
+  const urlExperiment = searchParams?.get('exp')
+  const urlDebug = searchParams?.get('debug') === 'true'
 
+  // Enhanced booking system initialization
   useEffect(() => {
+    const initializeEnhancedBooking = async () => {
+      try {
+        // Load feature flags
+        const flags = await getCachedFeatureFlags()
+        setFeatureFlags(flags)
+        
+        // Detect device capabilities
+        const device = detectDeviceCapabilities()
+        setDeviceInfo(device)
+        
+        // Determine if we should use enhanced flow
+        const shouldUseEnhanced = determineBookingFlow(flags, device, {
+          enhanced: urlEnhanced,
+          mobile: urlMobile,
+          flow: urlFlow,
+          experiment: urlExperiment
+        })
+        
+        setUseEnhancedFlow(shouldUseEnhanced)
+        setEnhancementReady(true)
+        
+        // Track component selection for analytics
+        if (shouldUseEnhanced) {
+          trackComponentSelection('enhanced', {
+            device,
+            urlParams: { enhanced: urlEnhanced, mobile: urlMobile, flow: urlFlow },
+            featureFlags: flags
+          })
+        }
+        
+      } catch (error) {
+        console.error('Failed to initialize enhanced booking:', error)
+        // Fallback to original flow
+        setUseEnhancedFlow(false)
+        setEnhancementReady(true)
+      }
+    }
+    
+    initializeEnhancedBooking()
     loadBarberData()
-  }, [params.barberId])
+  }, [params.barberId, urlEnhanced, urlMobile, urlFlow])
 
-  // Track page view and analytics
   useEffect(() => {
     const trackPageView = async () => {
       try {
-        // Check if this is from a booking link
         const linkId = searchParams?.get('linkId')
         if (linkId) {
-          // Generate or get session ID
           let sessionId = sessionStorage.getItem('booking_session_id')
           if (!sessionId) {
             sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
             sessionStorage.setItem('booking_session_id', sessionId)
           }
 
-          // Track the page view
           await fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -90,13 +144,11 @@ function BookingPageContent() {
       }
     }
 
-    // Delay tracking to ensure page is loaded
     const timer = setTimeout(trackPageView, 1000)
     return () => clearTimeout(timer)
   }, [searchParams])
 
   useEffect(() => {
-    // Pre-select services based on URL parameters
     if (urlServices.length > 0 && availableServices.length > 0) {
       const preSelectedServices = availableServices.filter(service => 
         urlServices.includes(service.id.toString()) || 
@@ -110,74 +162,46 @@ function BookingPageContent() {
     try {
       setLoading(true)
       
-      // Load barber data and services from APIs
-      const [barberResponse, servicesResponse] = await Promise.all([
-        fetch(`/api/bookings/availability?barberId=${params.barberId}&date=${new Date().toISOString().split('T')[0]}&duration=60`),
-        fetch(`/api/bookings/services?barberId=${params.barberId}`)
-      ])
-
-      if (barberResponse.ok) {
-        const barberData = await barberResponse.json()
-        if (barberData.barber) {
-          setBarberData(barberData.barber)
-        }
-      } else {
-        // Fallback to mock data if API fails
-        setBarberData({
-          id: params.barberId,
-          name: 'Marcus Johnson',
-          title: 'Master Barber',
-          image: '/barbers/marcus.jpg',
-          rating: 4.9,
-          reviewCount: 156,
-          bio: 'Professional barber with over 10 years of experience specializing in fades, beard sculpting, and modern men\'s cuts.',
-          location: {
-            name: '6FB Downtown',
-            address: '123 Main St, Downtown, NY 10001',
-            phone: '(555) 123-4567'
-          },
-          specialties: ['Fades', 'Beard Sculpting', 'Hot Towel Shaves', 'Classic Cuts']
-        })
-      }
-
-      if (servicesResponse.ok) {
-        const servicesData = await servicesResponse.json()
-        if (servicesData.success && servicesData.services) {
-          setAvailableServices(servicesData.services)
-        }
-      } else {
-        // Fallback to mock services if API fails
-        setAvailableServices([
-          { id: 1, name: 'Classic Cut', duration: 30, price: 35, description: 'Traditional scissor cut and style', category: 'Haircuts' },
-          { id: 2, name: 'Fade Cut', duration: 45, price: 45, description: 'Modern fade with scissor work on top', category: 'Haircuts' },
-          { id: 3, name: 'Buzz Cut', duration: 15, price: 25, description: 'Clean, uniform length all around', category: 'Haircuts' },
-          { id: 4, name: 'Beard Trim', duration: 20, price: 20, description: 'Precision beard trimming and shaping', category: 'Beard Services' },
-          { id: 5, name: 'Beard Sculpting', duration: 30, price: 35, description: 'Detailed beard design and sculpting', category: 'Beard Services' },
-          { id: 6, name: 'Hot Towel Shave', duration: 45, price: 50, description: 'Traditional straight razor shave with hot towel', category: 'Premium Services' },
-          { id: 7, name: 'Hair Wash & Style', duration: 25, price: 30, description: 'Professional wash and styling', category: 'Add-ons' },
-          { id: 8, name: 'Eyebrow Trim', duration: 10, price: 15, description: 'Eyebrow trimming and shaping', category: 'Add-ons' }
-        ])
-      }
-    } catch (error) {
-      console.error('Failed to load barber data:', error)
-      // Use fallback data on error
-      setBarberData({
+      const mockBarber = {
         id: params.barberId,
         name: 'Marcus Johnson',
         title: 'Master Barber',
         image: '/barbers/marcus.jpg',
         rating: 4.9,
         reviewCount: 156,
-        bio: 'Professional barber with over 10 years of experience.',
+        bio: 'Professional barber with over 10 years of experience specializing in fades, beard sculpting, and modern men\'s cuts.',
         location: {
           name: '6FB Downtown',
           address: '123 Main St, Downtown, NY 10001',
           phone: '(555) 123-4567'
+        },
+        specialties: ['Fades', 'Beard Sculpting', 'Hot Towel Shaves', 'Classic Cuts'],
+        availability: {
+          monday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
+          tuesday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
+          wednesday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
+          thursday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
+          friday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
+          saturday: ['09:00', '10:00', '11:00', '14:00', '15:00'],
+          sunday: ['10:00', '11:00', '12:00', '14:00', '15:00']
         }
-      })
-      setAvailableServices([
-        { id: 1, name: 'Classic Cut', duration: 30, price: 35, description: 'Traditional scissor cut and style', category: 'Haircuts' }
-      ])
+      }
+
+      const mockServices = [
+        { id: 1, name: 'Classic Cut', duration: 30, price: 35, description: 'Traditional scissor cut and style', category: 'Haircuts' },
+        { id: 2, name: 'Fade Cut', duration: 45, price: 45, description: 'Modern fade with scissor work on top', category: 'Haircuts' },
+        { id: 3, name: 'Buzz Cut', duration: 15, price: 25, description: 'Clean, uniform length all around', category: 'Haircuts' },
+        { id: 4, name: 'Beard Trim', duration: 20, price: 20, description: 'Precision beard trimming and shaping', category: 'Beard Services' },
+        { id: 5, name: 'Beard Sculpting', duration: 30, price: 35, description: 'Detailed beard design and sculpting', category: 'Beard Services' },
+        { id: 6, name: 'Hot Towel Shave', duration: 45, price: 50, description: 'Traditional straight razor shave with hot towel', category: 'Premium Services' },
+        { id: 7, name: 'Hair Wash & Style', duration: 25, price: 30, description: 'Professional wash and styling', category: 'Add-ons' },
+        { id: 8, name: 'Eyebrow Trim', duration: 10, price: 15, description: 'Eyebrow trimming and shaping', category: 'Add-ons' }
+      ]
+
+      setBarberData(mockBarber)
+      setAvailableServices(mockServices)
+    } catch (error) {
+      console.error('Failed to load barber data:', error)
     } finally {
       setLoading(false)
     }
@@ -211,50 +235,38 @@ function BookingPageContent() {
     return urlTimeSlots
   }
 
-  const generateAvailableSlots = async () => {
-    // Generate next 7 days of availability using real API
+  const generateAvailableSlots = () => {
     const slots = []
     const today = new Date()
-    const totalDuration = calculateTotalDuration()
     
     for (let i = 0; i < 7; i++) {
       const date = new Date(today)
       date.setDate(date.getDate() + i)
-      const dateString = date.toISOString().split('T')[0]
       
-      try {
-        const response = await fetch(`/api/bookings/availability?barberId=${params.barberId}&date=${dateString}&duration=${totalDuration}`)
-        if (response.ok) {
-          const availabilityData = await response.json()
-          
-          let availableSlots = availabilityData.availableSlots || []
-          
-          // Filter by time preferences if provided in URL
-          if (urlTimeSlots.length > 0) {
-            availableSlots = availableSlots.filter(slot => {
-              const hour = parseInt(slot.time.split(':')[0])
-              return urlTimeSlots.some(timeSlot => {
-                if (timeSlot === 'morning') return hour >= 9 && hour < 12
-                if (timeSlot === 'afternoon') return hour >= 12 && hour < 17
-                if (timeSlot === 'evening') return hour >= 17 && hour < 20
-                if (timeSlot === 'weekend') return date.getDay() === 0 || date.getDay() === 6
-                if (timeSlot === 'weekdays') return date.getDay() >= 1 && date.getDay() <= 5
-                return true
-              })
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()
+      const daySlots = barberData?.availability[dayName] || []
+      
+      const filteredSlots = urlTimeSlots.length > 0 
+        ? daySlots.filter(time => {
+            const hour = parseInt(time.split(':')[0])
+            return urlTimeSlots.some(slot => {
+              if (slot === 'morning') return hour >= 9 && hour < 12
+              if (slot === 'afternoon') return hour >= 12 && hour < 17
+              if (slot === 'evening') return hour >= 17 && hour < 20
+              if (slot === 'weekend') return date.getDay() === 0 || date.getDay() === 6
+              if (slot === 'weekdays') return date.getDay() >= 1 && date.getDay() <= 5
+              return true
             })
-          }
+          })
+        : daySlots
 
-          if (availableSlots.length > 0) {
-            slots.push({
-              date: dateString,
-              dayName: date.toLocaleDateString('en-US', { weekday: 'long' }),
-              dayMonth: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-              times: availableSlots.map(slot => slot.time)
-            })
-          }
-        }
-      } catch (error) {
-        console.error(`Failed to fetch availability for ${dateString}:`, error)
+      if (filteredSlots.length > 0) {
+        slots.push({
+          date: date.toISOString().split('T')[0],
+          dayName: date.toLocaleDateString('en-US', { weekday: 'long' }),
+          dayMonth: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          times: filteredSlots
+        })
       }
     }
     
@@ -264,31 +276,16 @@ function BookingPageContent() {
   const handleBooking = async () => {
     setLoading(true)
     try {
-      // Get barbershop ID (we'll need to add this to the API response)
-      const barbershopId = 'default-barbershop' // This should come from the barber data
-      
-      // For multiple services, we'll create a booking with the first service and the total duration/price
-      const primaryService = selectedServices[0]
-      
       const bookingData = {
-        barbershop_id: barbershopId,
-        barber_id: params.barberId,
-        service_id: primaryService.id,
-        scheduled_at: selectedDateTime,
-        duration_minutes: calculateTotalDuration(),
-        service_price: calculateTotalPrice(),
-        tip_amount: 0,
-        client_name: customerInfo.name,
-        client_phone: customerInfo.phone,
-        client_email: customerInfo.email,
-        client_notes: customerInfo.notes,
-        payment_method: 'cash', // Default to cash, can be updated later
-        is_walk_in: false,
-        // Additional metadata for multiple services
-        all_services: selectedServices.map(s => ({ id: s.id, name: s.name, price: s.price, duration: s.duration })),
+        barberId: params.barberId,
+        services: selectedServices,
+        dateTime: selectedDateTime,
+        customer: customerInfo,
+        totalDuration: calculateTotalDuration(),
+        totalPrice: calculateTotalPrice(),
         source: 'booking_link',
-        link_id: searchParams?.get('linkId'),
-        sms_consent: customerInfo.smsConsent
+        linkId: searchParams?.get('linkId'), // Include link ID for attribution
+        smsConsent: customerInfo.smsConsent // Include SMS consent preference
       }
 
       const response = await fetch('/api/bookings/create', {
@@ -297,23 +294,21 @@ function BookingPageContent() {
         body: JSON.stringify(bookingData)
       })
 
-      const result = await response.json()
-
-      if (response.ok && result.success) {
-        // Track conversion if this came from a booking link
+      if (response.ok) {
+        const booking = await response.json()
+        
         const linkId = searchParams?.get('linkId')
         if (linkId) {
           const sessionId = sessionStorage.getItem('booking_session_id')
           
-          // Track conversion analytics
-          fetch('/api/analytics/track', {
+          await fetch('/api/analytics/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               linkId: linkId,
               eventType: 'conversion',
               sessionId: sessionId,
-              bookingId: result.booking.id,
+              bookingId: booking.id,
               conversionValue: calculateTotalPrice(),
               utmSource: searchParams?.get('utm_source'),
               utmMedium: searchParams?.get('utm_medium'),
@@ -324,16 +319,13 @@ function BookingPageContent() {
           })
         }
         
-        // Show success message or redirect
-        alert(`Booking confirmed! Booking ID: ${result.booking.id}`)
-        // You can redirect to a success page or show a success modal
-        // router.push(`/bookings/${result.booking.id}/success`)
+        router.push(`/bookings/${booking.id}/success`)
       } else {
-        throw new Error(result.error || 'Booking failed')
+        throw new Error('Booking failed')
       }
     } catch (error) {
       console.error('Booking failed:', error)
-      alert(`Booking failed: ${error.message}. Please try again.`)
+      alert('Booking failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -361,22 +353,88 @@ function BookingPageContent() {
            customerInfo.phone.trim()
   }
 
-  const [availableSlots, setAvailableSlots] = useState([])
-  
-  useEffect(() => {
-    const loadAvailableSlots = async () => {
-      if (!barberData) return
-      const slots = await generateAvailableSlots()
-      setAvailableSlots(slots)
-    }
+  // Device detection utility
+  const detectDeviceCapabilities = () => {
+    if (typeof window === 'undefined') return null
     
-    loadAvailableSlots()
-  }, [urlTimeSlots, barberData, selectedServices])
+    const userAgent = navigator.userAgent.toLowerCase()
+    const screenWidth = window.innerWidth
+    const isMobile = /android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent) || screenWidth <= 768
+    const isTablet = screenWidth >= 768 && screenWidth <= 1024
+    const isTouchDevice = 'ontouchstart' in window
+    
+    return {
+      isMobile,
+      isTablet,
+      isDesktop: !isMobile && !isTablet,
+      isTouchDevice,
+      screenWidth,
+      screenHeight: window.innerHeight,
+      supportsAdvancedFeatures: !isMobile && screenWidth > 1024,
+      shouldUseEnhancedFlow: !isMobile || screenWidth > 900
+    }
+  }
+  
+  // Enhanced flow determination logic
+  const determineBookingFlow = (flags, device, urlParams) => {
+    // URL parameters take precedence
+    if (urlParams.enhanced) return true
+    if (urlParams.mobile) return false // Mobile forces original flow
+    if (urlParams.flow === 'enhanced') return true
+    if (urlParams.flow === 'original') return false
+    
+    // Feature flag checks
+    if (!flags.new_booking_flow) return false
+    
+    // Device-based decision
+    if (device?.isMobile && !flags.mobile_optimizer_enabled) return false
+    if (device?.supportsAdvancedFeatures && flags.enhanced_booking_flow) return true
+    
+    // Default to original for safety
+    return false
+  }
+  
+  // Analytics tracking
+  const trackComponentSelection = (type, context) => {
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'booking_component_selected', {
+          component_type: type,
+          device_type: context.device?.isMobile ? 'mobile' : context.device?.isTablet ? 'tablet' : 'desktop',
+          screen_width: context.device?.screenWidth,
+          enhanced_enabled: context.urlParams?.enhanced,
+          mobile_enabled: context.urlParams?.mobile,
+          flow_override: context.urlParams?.flow
+        })
+      }
+    } catch (error) {
+      console.error('Analytics tracking failed:', error)
+    }
+  }
 
+  const availableSlots = useMemo(() => {
+    return generateAvailableSlots()
+  }, [urlTimeSlots, barberData])
+
+  // Enhanced loading state with system detection
   if (loading && !barberData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading booking system...</p>
+          {enhancementReady && deviceInfo && (
+            <div className="mt-2 flex items-center justify-center space-x-2 text-sm text-gray-500">
+              {deviceInfo.isMobile ? (
+                <DevicePhoneMobileIcon className="h-4 w-4" />
+              ) : (
+                <CheckCircleIcon className="h-4 w-4" />
+              )}
+              <span>{useEnhancedFlow ? 'Enhanced' : 'Standard'} experience</span>
+              {useEnhancedFlow && <BoltIcon className="h-4 w-4 text-olive-600" />}
+            </div>
+          )}
+        </div>
       </div>
     )
   }
@@ -392,7 +450,69 @@ function BookingPageContent() {
     )
   }
 
-  // Generate SEO-optimized page title and description
+  // Enhanced flow rendering - use BookingFlowOrchestrator if enabled
+  if (enhancementReady && useEnhancedFlow && barberData) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Enhanced flow indicator */}
+        {urlDebug && (
+          <div className="bg-blue-600 text-white px-4 py-2 text-center text-sm">
+            🚀 Enhanced Booking Flow Active - Barber: {barberData.name}
+          </div>
+        )}
+        
+        <BookingFlowOrchestrator
+          barbershopId={barberData.location?.name || '6fb-downtown'}
+          barbershopSlug="6fb-downtown"
+          preselectedBarber={params.barberId}
+          preselectedService={urlServices[0] || null}
+          
+          // URL parameter overrides
+          enhanced={urlEnhanced}
+          mobile={urlMobile}
+          service={urlServices[0] || null}
+          barber={params.barberId}
+          
+          // Configuration
+          defaultFlow="auto"
+          enableRealtimeAvailability={true}
+          enableProgressiveAccount={true}
+          
+          // A/B testing
+          experimentId={urlExperiment}
+          onComponentSelection={trackComponentSelection}
+          onConversionEvent={(event, data) => {
+            console.log('Booking conversion event:', event, data)
+          }}
+          
+          // Pass through all URL parameters for backward compatibility
+          urlParams={{
+            services: urlServices,
+            timeSlots: urlTimeSlots,
+            duration: urlDuration,
+            price: urlPrice,
+            discount: urlDiscount,
+            expires: urlExpires
+          }}
+          
+          // Barber data for context
+          barberData={barberData}
+          availableServices={availableServices}
+          
+          className="enhanced-booking-wrapper"
+        />
+        
+        {/* Development indicator */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="fixed bottom-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium z-40">
+            Enhanced Flow
+          </div>
+        )}
+      </div>
+    )
+  }
+  
+  // Original flow - preserved for backward compatibility
   const searchParamsObj = Object.fromEntries(searchParams?.entries() || [])
   const pageTitle = barberData ? generatePageTitle(barberData, searchParamsObj) : 'Book Appointment'
   const metaDescription = barberData ? generateMetaDescription(barberData, searchParamsObj) : 'Book your appointment online'
@@ -403,6 +523,33 @@ function BookingPageContent() {
         <title>{pageTitle}</title>
         <meta name="description" content={metaDescription} />
       </Head>
+      
+      {/* Backward compatibility indicator */}
+      {urlDebug && (
+        <div className="bg-amber-600 text-white px-4 py-2 text-center text-sm">
+          📚 Original Booking Flow - Full Backward Compatibility Mode
+        </div>
+      )}
+      
+      {/* Enhancement available banner */}
+      {enhancementReady && !useEnhancedFlow && featureFlags.new_booking_flow && (
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 text-center text-sm">
+          <div className="flex items-center justify-center space-x-2">
+            <BoltIcon className="h-4 w-4" />
+            <span>Try our enhanced booking experience!</span>
+            <button
+              onClick={() => {
+                const url = new URL(window.location)
+                url.searchParams.set('enhanced', 'true')
+                window.location.href = url.toString()
+              }}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 px-2 py-1 rounded text-xs font-medium transition-colors"
+            >
+              Enable Now
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Header with enhanced SEO structure */}
       <header className="bg-white shadow-sm">
@@ -850,11 +997,22 @@ function BookingPageContent() {
           </div>
         </div>
       </div>
+      
+      {/* Development debug panel */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 right-4 bg-black bg-opacity-90 text-white px-3 py-1 rounded-full text-xs font-medium z-40 flex items-center space-x-2">
+          <span>Original Flow</span>
+          {deviceInfo && (
+            <span className="text-gray-300">
+              {deviceInfo.isMobile ? '📱' : deviceInfo.isTablet ? '📟' : '🖥️'}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
-// Main component wrapped with Suspense
 export default function BookingPage() {
   return (
     <Suspense fallback={

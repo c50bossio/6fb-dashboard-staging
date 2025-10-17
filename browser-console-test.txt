@@ -1,0 +1,209 @@
+================================================================================
+BROWSER CONSOLE TEST FOR STAFF NAME EDITING
+================================================================================
+
+Instructions:
+1. Open Chrome and navigate to your app (http://localhost:9999)
+2. Login to your account
+3. Go to the Staff Management page
+4. Open DevTools Console (F12)
+5. Copy and paste the entire code below into the console
+6. Press Enter to run the test
+
+================================================================================
+COPY EVERYTHING BELOW THIS LINE:
+================================================================================
+
+// Complete Staff Name Update Test
+(async function testStaffNameUpdate() {
+  console.clear();
+  console.log('%c🧪 STAFF NAME UPDATE TEST', 'font-size: 24px; color: #4CAF50; font-weight: bold; padding: 10px;');
+  console.log('='.repeat(60));
+
+  try {
+    // Step 1: Get current staff list
+    console.log('\n📋 Step 1: Fetching current staff list...');
+    const listResponse = await fetch('/api/staff');
+    
+    if (!listResponse.ok) {
+      console.error('❌ Failed to fetch staff list. Status:', listResponse.status);
+      const error = await listResponse.text();
+      console.error('Error:', error);
+      return;
+    }
+    
+    const staffData = await listResponse.json();
+    console.log('✅ Fetched staff data:', staffData);
+    
+    if (!staffData.staff || staffData.staff.length === 0) {
+      console.error('❌ No staff members found');
+      return;
+    }
+
+    // Find an unnamed staff member or use the first one
+    const targetStaff = staffData.staff.find(s => 
+      !s.first_name || 
+      s.first_name === 'Unknown' || 
+      s.display_name === 'Unknown User' ||
+      s.display_name === 'Staff Member'
+    ) || staffData.staff[0];
+
+    console.log('\n👤 Selected staff member for testing:');
+    console.log('   ID:', targetStaff.id);
+    console.log('   User ID:', targetStaff.user_id);
+    console.log('   Current Display Name:', targetStaff.display_name);
+    console.log('   Current First Name:', targetStaff.first_name || '(empty)');
+    console.log('   Current Last Name:', targetStaff.last_name || '(empty)');
+    console.log('   Current Full Name:', targetStaff.full_name || '(empty)');
+
+    // Step 2: Generate new test name
+    const timestamp = new Date().toLocaleTimeString();
+    const newFirstName = 'Updated';
+    const newLastName = `Staff_${timestamp.replace(/:/g, '')}`;
+    
+    console.log('\n✏️ Step 2: Updating staff name...');
+    console.log(`   New Name: ${newFirstName} ${newLastName}`);
+
+    const updatePayload = {
+      first_name: newFirstName,
+      last_name: newLastName
+    };
+
+    console.log('   Sending PATCH request to:', `/api/staff/${targetStaff.id}`);
+    console.log('   Payload:', updatePayload);
+
+    const updateResponse = await fetch(`/api/staff/${targetStaff.id}`, {
+      method: 'PATCH',
+      headers: { 
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updatePayload)
+    });
+
+    console.log('   Response Status:', updateResponse.status);
+    
+    const updateResult = await updateResponse.json();
+    console.log('   Response Data:', updateResult);
+
+    if (!updateResponse.ok) {
+      console.error('❌ Update failed!');
+      console.error('   Error:', updateResult.error);
+      if (updateResult.details) {
+        console.error('   Details:', updateResult.details);
+      }
+      return;
+    }
+
+    console.log('✅ Update request successful!');
+
+    // Step 3: Wait a moment then verify the update persisted
+    console.log('\n🔍 Step 3: Verifying update persisted...');
+    console.log('   Waiting 1 second for database sync...');
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    console.log('   Fetching updated staff list...');
+    const verifyResponse = await fetch('/api/staff');
+    const verifyData = await verifyResponse.json();
+
+    const updatedStaff = verifyData.staff?.find(s => 
+      s.id === targetStaff.id || 
+      s.user_id === targetStaff.user_id
+    );
+
+    if (!updatedStaff) {
+      console.error('❌ Could not find staff member after update');
+      return;
+    }
+
+    console.log('\n📊 Updated staff data:');
+    console.log('   Display Name:', updatedStaff.display_name);
+    console.log('   First Name:', updatedStaff.first_name);
+    console.log('   Last Name:', updatedStaff.last_name);
+    console.log('   Full Name:', updatedStaff.full_name);
+
+    // Step 4: Verify the update actually worked
+    const updateSuccessful = 
+      updatedStaff.first_name === newFirstName && 
+      updatedStaff.last_name === newLastName;
+
+    if (updateSuccessful) {
+      console.log('\n' + '='.repeat(60));
+      console.log('%c✅ SUCCESS! Name update persisted correctly!', 'font-size: 18px; color: #4CAF50; font-weight: bold;');
+      console.log('='.repeat(60));
+      console.log('\n📌 Summary:');
+      console.log(`   • Changed from: "${targetStaff.display_name}"`);
+      console.log(`   • Changed to: "${updatedStaff.display_name}"`);
+      console.log(`   • Update persisted in database ✓`);
+      console.log('\n🔄 Refreshing page in 3 seconds to show UI update...');
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+      
+    } else {
+      console.warn('\n⚠️ WARNING: Name did not update as expected');
+      console.log('Expected:');
+      console.log('   First Name:', newFirstName);
+      console.log('   Last Name:', newLastName);
+      console.log('Actual:');
+      console.log('   First Name:', updatedStaff.first_name);
+      console.log('   Last Name:', updatedStaff.last_name);
+    }
+
+  } catch (error) {
+    console.error('\n❌ Test failed with error:', error);
+    console.error('Stack trace:', error.stack);
+  }
+
+  console.log('\n' + '='.repeat(60));
+  console.log('Test complete.');
+})();
+
+// Also add helper functions
+window.staffUtils = {
+  // List all staff
+  listStaff: async () => {
+    const res = await fetch('/api/staff');
+    const data = await res.json();
+    console.table(data.staff?.map(s => ({
+      id: s.id,
+      user_id: s.user_id,
+      display_name: s.display_name,
+      first_name: s.first_name,
+      last_name: s.last_name,
+      full_name: s.full_name
+    })));
+  },
+
+  // Update specific staff by ID
+  updateStaff: async (staffId, firstName, lastName) => {
+    const res = await fetch(`/api/staff/${staffId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ first_name: firstName, last_name: lastName })
+    });
+    const result = await res.json();
+    console.log('Update result:', result);
+    return result;
+  },
+
+  // Quick test with random name
+  quickTest: async () => {
+    const res = await fetch('/api/staff');
+    const data = await res.json();
+    if (data.staff?.[0]) {
+      const staff = data.staff[0];
+      const randomName = 'Test_' + Math.floor(Math.random() * 1000);
+      await window.staffUtils.updateStaff(staff.id, randomName, 'User');
+      window.location.reload();
+    }
+  }
+};
+
+console.log('\n💡 Helper functions available:');
+console.log('   • staffUtils.listStaff() - Show all staff in table');
+console.log('   • staffUtils.updateStaff(id, firstName, lastName) - Update specific staff');
+console.log('   • staffUtils.quickTest() - Quick test with random name');
+
+================================================================================

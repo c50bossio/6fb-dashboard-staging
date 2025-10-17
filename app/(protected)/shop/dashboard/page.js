@@ -92,32 +92,25 @@ export default function ShopDashboard() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="h-16 w-16 rounded-lg bg-indigo-100 flex items-center justify-center">
-              <BuildingStorefrontIcon className="h-10 w-10 text-olive-600" />
+            <div className="h-16 w-16 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+              <BuildingStorefrontIcon className="h-10 w-10 text-olive-600 dark:text-olive-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                 {shopData?.name || 'My Barbershop'}
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 {shopData?.address && `${shopData.address}, ${shopData.city}, ${shopData.state}`}
               </p>
             </div>
           </div>
-          
+
           <div className="flex space-x-3">
             <Link
               href="/shop/settings"
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Shop Settings
-            </Link>
-            <Link
-              href="/shop/barbers/add"
-              className="px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 flex items-center"
-            >
-              <UserPlusIcon className="h-5 w-5 mr-2" />
-              Add Barber
             </Link>
           </div>
         </div>
@@ -126,13 +119,13 @@ export default function ShopDashboard() {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Monthly Revenue */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <CurrencyDollarIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
             </div>
             <span className={`text-sm font-medium flex items-center ${
-              metrics.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'
+              metrics.revenueChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
             }`}>
               {metrics.revenueChange >= 0 ? (
                 <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
@@ -142,20 +135,20 @@ export default function ShopDashboard() {
               {Math.abs(metrics.revenueChange)}%
             </span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             ${metrics.monthlyRevenue.toLocaleString()}
           </p>
-          <p className="text-sm text-gray-600 mt-1">Monthly Revenue</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Monthly Revenue</p>
         </div>
 
         {/* Today's Bookings */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-olive-100 rounded-lg">
-              <CalendarDaysIcon className="h-6 w-6 text-olive-600" />
+            <div className="p-2 bg-olive-100 dark:bg-olive-900/30 rounded-lg">
+              <CalendarDaysIcon className="h-6 w-6 text-olive-600 dark:text-olive-400" />
             </div>
             <span className={`text-sm font-medium flex items-center ${
-              metrics.bookingsChange >= 0 ? 'text-green-600' : 'text-red-600'
+              metrics.bookingsChange >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
             }`}>
               {metrics.bookingsChange >= 0 ? (
                 <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
@@ -165,90 +158,90 @@ export default function ShopDashboard() {
               {Math.abs(metrics.bookingsChange)}%
             </span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{metrics.todayBookings}</p>
-          <p className="text-sm text-gray-600 mt-1">Today's Bookings</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{metrics.todayBookings}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Today's Bookings</p>
         </div>
 
         {/* Active Barbers */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <ScissorsIcon className="h-6 w-6 text-olive-600" />
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+              <ScissorsIcon className="h-6 w-6 text-olive-600 dark:text-olive-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{metrics.activeBarbers}</p>
-          <p className="text-sm text-gray-600 mt-1">Active Barbers</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{metrics.activeBarbers}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Active Barbers</p>
         </div>
 
         {/* Average Rating */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-2">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <StarIcon className="h-6 w-6 text-amber-800" />
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+              <StarIcon className="h-6 w-6 text-amber-800 dark:text-amber-400" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{metrics.avgRating.toFixed(1)}</p>
-          <p className="text-sm text-gray-600 mt-1">Average Rating</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{metrics.avgRating.toFixed(1)}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Average Rating</p>
         </div>
       </div>
 
       {/* Barbers Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Your Barbers</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Your Barbers</h2>
             <span className="text-sm text-gray-400">
               View All (Coming Soon)
             </span>
           </div>
         </div>
-        
+
         <div className="p-6">
           {barbers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {barbers.slice(0, 6).map((barber) => (
-                <div key={barber.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                <div key={barber.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-900">
                   <div className="flex items-start space-x-3">
-                    <div className="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                       {barber.users?.avatar_url ? (
-                        <img 
-                          src={barber.users.avatar_url} 
+                        <img
+                          src={barber.users.avatar_url}
                           alt={barber.users.full_name}
                           className="h-12 w-12 rounded-full object-cover"
                         />
                       ) : (
-                        <UserGroupIcon className="h-6 w-6 text-gray-500" />
+                        <UserGroupIcon className="h-6 w-6 text-gray-500 dark:text-gray-400" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 truncate">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
                         {barber.users?.full_name || 'Unnamed Barber'}
                       </p>
-                      <p className="text-sm text-gray-600 truncate">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
                         {barber.users?.email}
                       </p>
                       <div className="mt-2 flex items-center space-x-4 text-xs">
-                        <span className="flex items-center text-gray-500">
+                        <span className="flex items-center text-gray-500 dark:text-gray-400">
                           <CalendarDaysIcon className="h-3 w-3 mr-1" />
                           {barber.bookings_today || 0} today
                         </span>
-                        <span className="flex items-center text-gray-500">
+                        <span className="flex items-center text-gray-500 dark:text-gray-400">
                           <CurrencyDollarIcon className="h-3 w-3 mr-1" />
                           ${barber.revenue_today || 0}
                         </span>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="mt-3 flex space-x-2">
                     <button
-                      className="flex-1 text-center py-1.5 text-sm text-gray-400 bg-gray-100 rounded cursor-not-allowed"
+                      className="flex-1 text-center py-1.5 text-sm text-gray-400 bg-gray-100 dark:bg-gray-800 rounded cursor-not-allowed"
                       disabled
                     >
                       View Details
                     </button>
                     <button
-                      className="flex-1 text-center py-1.5 text-sm text-gray-600 bg-gray-50 rounded hover:bg-gray-100"
+                      className="flex-1 text-center py-1.5 text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                     >
                       Schedule
                     </button>
@@ -259,7 +252,7 @@ export default function ShopDashboard() {
           ) : (
             <div className="text-center py-12">
               <UserGroupIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-              <p className="text-gray-600 mb-4">No barbers added yet</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">No barbers added yet</p>
               <Link
                 href="/shop/barbers/add"
                 className="inline-flex items-center px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700"
@@ -276,45 +269,45 @@ export default function ShopDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Link
           href="/shop/bookings"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+          className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
-          <CalendarDaysIcon className="h-8 w-8 text-olive-600" />
+          <CalendarDaysIcon className="h-8 w-8 text-olive-600 dark:text-olive-400" />
           <div>
-            <p className="font-medium text-gray-900">Manage Bookings</p>
-            <p className="text-sm text-gray-600">View all appointments & schedule</p>
+            <p className="font-medium text-gray-900 dark:text-gray-100">Manage Bookings</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">View all appointments & schedule</p>
           </div>
         </Link>
 
         <Link
           href="/shop/financial"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+          className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
-          <CreditCardIcon className="h-8 w-8 text-green-600" />
+          <CreditCardIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
           <div>
-            <p className="font-medium text-gray-900">Financial Overview</p>
-            <p className="text-sm text-gray-600">Track revenue & commissions</p>
+            <p className="font-medium text-gray-900 dark:text-gray-100">Financial Overview</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Track revenue & commissions</p>
           </div>
         </Link>
 
         <Link
           href="/shop/services"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+          className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
-          <ScissorsIcon className="h-8 w-8 text-gold-600" />
+          <ScissorsIcon className="h-8 w-8 text-gold-600 dark:text-gold-400" />
           <div>
-            <p className="font-medium text-gray-900">Services & Pricing</p>
-            <p className="text-sm text-gray-600">Manage service catalog & pricing</p>
+            <p className="font-medium text-gray-900 dark:text-gray-100">Services & Pricing</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Manage service catalog & pricing</p>
           </div>
         </Link>
 
         <Link
           href="/shop/analytics"
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
+          className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow flex items-center space-x-3"
         >
-          <ChartBarIcon className="h-8 w-8 text-olive-600" />
+          <ChartBarIcon className="h-8 w-8 text-olive-600 dark:text-olive-400" />
           <div>
-            <p className="font-medium text-gray-900">Analytics</p>
-            <p className="text-sm text-gray-600">Performance insights & reports</p>
+            <p className="font-medium text-gray-900 dark:text-gray-100">Analytics</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Performance insights & reports</p>
           </div>
         </Link>
       </div>

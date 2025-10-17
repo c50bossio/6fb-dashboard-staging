@@ -8,23 +8,18 @@ export default function AutoRefreshComponent({ onRefresh, intervalMs = 5000 }) {
   const [refreshCount, setRefreshCount] = useState(0)
   
   useEffect(() => {
-    console.log('🔄 ENHANCED Auto-refresh component started, checking every', intervalMs / 1000, 'seconds')
     
     const interval = setInterval(async () => {
       if (isChecking) {
-        console.log('🔄 Auto-refresh: Skipping - already checking')
         return // Prevent overlapping checks
       }
       
       setIsChecking(true)
       const startTime = Date.now()
-      console.log('🔄 ENHANCED Auto-refresh: Starting check #' + (refreshCount + 1))
       
       try {
-        // Call the refresh function
         if (onRefresh) {
           await onRefresh()
-          console.log('🔄 ENHANCED Auto-refresh: Completed successfully in', Date.now() - startTime, 'ms')
         } else {
           console.warn('🔄 ENHANCED Auto-refresh: No onRefresh function provided')
         }
@@ -38,7 +33,6 @@ export default function AutoRefreshComponent({ onRefresh, intervalMs = 5000 }) {
     }, intervalMs)
     
     return () => {
-      console.log('🔄 ENHANCED Auto-refresh component unmounting')
       clearInterval(interval)
     }
   }, [intervalMs, onRefresh, isChecking, refreshCount])

@@ -1,28 +1,55 @@
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
+import { detectAgentFromCommand, formatForSpeech, getVoiceProfile } from '../../../../lib/voice-personalities'
+export const runtime = 'nodejs'
 
 /**
  * Voice Assistant API Endpoint
  * Processes voice commands and provides voice-optimized responses
+ * Now with multi-agent personality support and voice synthesis profiles
  */
 
 export async function POST(request) {
   try {
-    const { command, original_command, session_id, barbershop_id, context } = await request.json()
+    const { 
+      command, 
+      original_command, 
+      session_id, 
+      barbershop_id, 
+      context,
+      transcript,
+      confidence 
+    } = await request.json()
 
-    if (!command?.trim()) {
+    const voiceCommand = command || transcript
+    if (!voiceCommand?.trim()) {
       return NextResponse.json({
         success: false,
         error: 'Voice command is required'
       }, { status: 400 })
     }
 
-    // Process the voice command
-    const result = await processVoiceCommand(command, original_command, session_id, barbershop_id)
+    const detectedAgent = detectAgentFromCommand(voiceCommand)
+    
+    const result = await processVoiceCommand(
+      voiceCommand, 
+      original_command || voiceCommand, 
+      session_id, 
+      barbershop_id,
+      detectedAgent,
+      confidence || 0.9
+    )
+    
+    const voiceProfile = getVoiceProfile(detectedAgent)
     
     return NextResponse.json({
       success: true,
       ...result,
+      agent: {
+        type: detectedAgent,
+        name: voiceProfile.name,
+        personality: voiceProfile.personality
+      },
+      voice_settings: voiceProfile.parameters,
       processed_at: new Date().toISOString()
     })
   } catch (error) {
@@ -37,10 +64,9 @@ export async function POST(request) {
 /**
  * Process voice command and generate appropriate response
  */
-async function processVoiceCommand(command, originalCommand, sessionId, barbershopId) {
+async function processVoiceCommand(command, originalCommand, sessionId, barbershopId, agentType, confidence) {
   const commandLower = command.toLowerCase()
   
-  // Classify the voice command
   const classification = classifyVoiceCommand(commandLower)
   
   let response = {
@@ -49,7 +75,9 @@ async function processVoiceCommand(command, originalCommand, sessionId, barbersh
     data: null,
     actions: [],
     suggestions: [],
-    command_type: classification.type
+    command_type: classification.type,
+    agent_type: agentType,
+    confidence: confidence
   }
 
   switch (classification.type) {
@@ -85,16 +113,26 @@ async function processVoiceCommand(command, originalCommand, sessionId, barbersh
       response = await handleGeneralCommand(command, sessionId, barbershopId)
   }
 
-  // Add voice synthesis information
+  const voiceProfile = getVoiceProfile(agentType)
+  const speechText = formatForSpeech(response.message, agentType)
+  
   response.voice_response = {
     speak: true,
-    text: generateVoiceFriendlyResponse(response.message, classification.type),
-    rate: 0.9,
-    pitch: 1
+    text: speechText,
+    rate: voiceProfile.parameters.rate,
+    pitch: voiceProfile.parameters.pitch,
+    volume: voiceProfile.parameters.volume,
+    preferredVoices: voiceProfile.voicePreferences
   }
 
-  // Add contextual suggestions
   response.suggestions = generateVoiceSuggestions(classification.type)
+  
+  response.agent_context = {
+    type: agentType,
+    name: voiceProfile.name,
+    personality: voiceProfile.personality,
+    confidence: confidence
+  }
 
   return response
 }
@@ -148,7 +186,6 @@ function classifyVoiceCommand(command) {
  */
 async function handleBusinessStatusCommand(command, barbershopId) {
   try {
-    // Get business health data
     const healthResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:9999'}/api/ai/business-monitor?barbershop_id=${barbershopId}`)
     const healthData = await healthResponse.json()
     
@@ -222,7 +259,6 @@ async function handleRevenueCommand(command, barbershopId) {
       
       message += `This month you've earned $${monthlyRevenue} total. `
       
-      // Add context based on time of day
       const hour = new Date().getHours()
       if (hour < 12) {
         message += "The day is still young, plenty of time to reach your goal!"
@@ -284,7 +320,6 @@ async function handleBookingCommand(command, barbershopId) {
         message += "There's capacity for more bookings today. Consider reaching out to customers. "
       }
       
-      // Add next appointment info
       const nextApptTime = getNextAppointmentTime()
       message += `Your next appointment is at ${nextApptTime}. `
       
@@ -498,7 +533,6 @@ async function handleGeneralCommand(command, sessionId, barbershopId) {
  * Generate voice-friendly response text
  */
 function generateVoiceFriendlyResponse(message, commandType) {
-  // Make responses more conversational for voice
   let voiceText = message
     .replace(/\$/g, ' dollars')
     .replace(/\%/g, ' percent')
@@ -507,7 +541,6 @@ function generateVoiceFriendlyResponse(message, commandType) {
     .replace(/\&/g, ' and')
     .replace(/\#/g, ' number')
     
-  // Remove markdown and special characters
   voiceText = voiceText
     .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
     .replace(/\*(.*?)\*/g, '$1')     // Remove italics

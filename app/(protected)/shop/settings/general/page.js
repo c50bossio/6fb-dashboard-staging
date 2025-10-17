@@ -1,0 +1,528 @@
+'use client'
+
+import {
+  BuildingStorefrontIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  GlobeAltIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  MapPinIcon
+} from '@heroicons/react/24/outline'
+import { useState, useEffect, useRef } from 'react'
+import OnboardingStepBanner from '@/components/onboarding/OnboardingStepBanner'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
+import Link from 'next/link'
+
+export default function GeneralSettingsPage() {
+  const { user: _user } = useAuth()
+  const _supabase = createClient()
+  
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
+  const [notification, setNotification] = useState(null)
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    email: '',
+    phone: '',
+    website: ''
+  })
+
+  const [originalData, setOriginalData] = useState(null)
+  const initialValues = useRef(null)
+
+  useEffect(() => {
+    loadShopData()
+  }, [_user])
+
+  // Capture initial state on first render
+  useEffect(() => {
+    if (!initialValues.current) {
+      initialValues.current = JSON.parse(JSON.stringify(formData))
+    }
+  }, [])
+
+  useEffect(() => {
+    // Always check if data has changed against initial values
+    if (initialValues.current) {
+      const changed = JSON.stringify(formData) !== JSON.stringify(initialValues.current)
+      setHasChanges(changed)
+    }
+  }, [formData])
+
+  const loadShopData = async () => {
+    if (!_user) return
+    
+    try {
+      setLoading(true)
+      
+      // First try to get shop by owner_id
+      let { data: shop, error } = await _supabase
+        .from('barbershops')
+        .select('*')
+        .eq('owner_id', _user.id)
+        .single()
+      
+      // If no shop found by owner_id, check profile for shop_id
+      if (!shop || error) {
+        const { data: profile } = await _supabase
+          .from('profiles')
+          .select('barbershop_id')
+          .eq('id', _user.id)
+          .single()
+
+        const barbershopId = profile?.barbershop_id
+        if (barbershopId) {
+          const { data: shopByProfile } = await _supabase
+            .from('barbershops')
+            .select('*')
+            .eq('id', barbershopId)
+            .single()
+          
+          shop = shopByProfile
+        }
+      }
+      
+      if (shop) {
+        const shopData = {
+          name: shop.name || '',
+          description: shop.description || '',
+          email: shop.email || '',
+          phone: shop.phone || '',
+          website: shop.website || ''
+        }
+        setFormData(shopData)
+        setOriginalData(shopData)
+        // Update initial values to the loaded data
+        initialValues.current = JSON.parse(JSON.stringify(shopData))
+      } else {
+        // No barbershop exists yet - this is expected during onboarding
+        
+        // Pre-fill with user's email if available
+        setFormData(prev => ({
+          ...prev,
+          email: _user.email || prev.email
+        }))
+      }
+    } catch (error) {
+      console.error('Error loading shop data:', error)
+      // Don't show error during onboarding when no shop exists
+      if (!error.message?.includes('No rows') && !error.message?.includes('multiple')) {
+        showNotification('error', 'Failed to load shop information')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    setNotification(null)
+    
+    // Basic validation for general business info
+    const validationErrors = []
+    
+    if (!formData.name?.trim()) {
+      validationErrors.push('Business name is required')
+    }
+    
+    if (!formData.email?.trim()) {
+      validationErrors.push('Email address is required')
+    }
+    
+    if (validationErrors.length > 0) {
+      showNotification('error', validationErrors.join(', '))
+      setSaving(false)
+      return
+    }
+    
+    try {
+      // Check if barbershop exists
+      const { data: existingShop } = await _supabase
+        .from('barbershops')
+        .select('id')
+        .eq('owner_id', _user?.id)
+        .single()
+      
+      if (existingShop) {
+        // Update existing barbershop (general info only)
+        const { error } = await _supabase
+          .from('barbershops')
+          .update({
+            name: formData.name,
+            description: formData.description,
+            email: formData.email,
+            phone: formData.phone,
+            website: formData.website,
+            updated_at: new Date().toISOString()
+          })
+          .eq('owner_id', _user?.id)
+        
+        if (error) throw error
+      } else {
+        // Create new barbershop (during onboarding - general info only)
+        const { data: newShop, error } = await _supabase
+          .from('barbershops')
+          .insert({
+            owner_id: _user?.id,
+            name: formData.name,
+            description: formData.description,
+            email: formData.email,
+            phone: formData.phone,
+            website: formData.website,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+        
+        if (error) throw error
+        
+        // Update profile with shop_id
+        if (newShop) {
+          await _supabase
+            .from('profiles')
+            .update({
+              barbershop_id: newShop.id
+            })
+            .eq('id', _user?.id)
+        }
+      }
+      
+      // No complex onboarding progress tracking needed!
+      // The new /api/onboarding/status endpoint automatically detects completion
+      // based on actual data existence - much simpler and more reliable
+      
+      setOriginalData(formData)
+      // Update initial values to the newly saved data
+      initialValues.current = JSON.parse(JSON.stringify(formData))
+      setHasChanges(false)
+      showNotification('success', 'Settings saved successfully!')
+    } catch (error) {
+      console.error('Error saving:', error)
+      showNotification('error', 'Failed to save settings. Please try again.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDiscard = () => {
+    // Reset to initial values
+    if (initialValues.current) {
+      setFormData(initialValues.current)
+    } else if (originalData) {
+      setFormData(originalData)
+    }
+    setHasChanges(false)
+    showNotification('info', 'Changes discarded')
+  }
+
+  const showNotification = (type, message) => {
+    setNotification({ type, message })
+    setTimeout(() => setNotification(null), 5000)
+  }
+
+  // State to track location completion
+  const [locationStatus, setLocationStatus] = useState({ complete: false, missing: [] })
+  
+  // Check location completion status
+  useEffect(() => {
+    const checkLocationStatus = async () => {
+      try {
+        const response = await fetch('/api/onboarding/status')
+        const data = await response.json()
+        
+        // Check if business step shows location-related missing items
+        const businessStep = data.steps?.business
+        const locationMissing = businessStep?.missing?.filter(item => 
+          item.includes('Location Settings')
+        ) || []
+        
+        setLocationStatus({
+          complete: locationMissing.length === 0,
+          missing: locationMissing
+        })
+      } catch (error) {
+        console.error('Error checking location status:', error)
+      }
+    }
+    
+    checkLocationStatus()
+  }, [_user])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
+      </div>
+    )
+  }
+
+  // Validation function for onboarding completion
+  const validateBusinessCompletion = async () => {
+    try {
+      const response = await fetch('/api/onboarding/status', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const businessComplete = data.steps?.business?.complete || false
+        return {
+          valid: businessComplete,
+          message: businessComplete 
+            ? 'Business information completed successfully!' 
+            : 'Please fill in business name, address, and phone number'
+        }
+      }
+    } catch (error) {
+      console.error('Error validating business completion:', error)
+    }
+    
+    return {
+      valid: false,
+      message: 'Unable to validate business information. Please ensure all required fields are completed.'
+    }
+  }
+
+  return (
+    <div className="max-w-4xl">
+      {/* Onboarding Step Banner */}
+      <OnboardingStepBanner 
+        stepId="business"
+        validateCompletion={validateBusinessCompletion}
+        completionMessage="Business information is complete!"
+      />
+      
+      {/* Header with Save Button */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <BuildingStorefrontIcon className="h-6 w-6 text-gray-400 mr-3" />
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">General Information</h1>
+                <p className="text-sm text-gray-600">Basic information about your barbershop</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              {hasChanges && (
+                <button
+                  onClick={handleDiscard}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Discard
+                </button>
+              )}
+              <button
+                onClick={handleSave}
+                disabled={!hasChanges || saving}
+                className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
+                  !hasChanges || saving
+                    ? 'bg-gray-400 text-gray-500 cursor-not-allowed'
+                    : 'bg-olive-600 text-white hover:bg-olive-700'
+                }`}
+              >
+                {saving ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Saving...
+                  </>
+                ) : originalData === null ? (
+                  'Save Settings'
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Notification */}
+        {notification && (
+          <div className={`px-6 py-3 ${
+            notification.type === 'success' ? 'bg-green-50 border-b border-green-200' :
+            notification.type === 'error' ? 'bg-red-50 border-b border-red-200' :
+            'bg-blue-50 border-b border-blue-200'
+          }`}>
+            <div className="flex items-center">
+              {notification.type === 'success' ? (
+                <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2" />
+              ) : notification.type === 'error' ? (
+                <ExclamationTriangleIcon className="h-5 w-5 text-red-500 mr-2" />
+              ) : (
+                <ExclamationTriangleIcon className="h-5 w-5 text-blue-500 mr-2" />
+              )}
+              <span className={`text-sm font-medium ${
+                notification.type === 'success' ? 'text-green-800' :
+                notification.type === 'error' ? 'text-red-800' :
+                'text-blue-800'
+              }`}>
+                {notification.message}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Form Content */}
+        <div className="p-6">
+          {/* Helper text for first-time users */}
+          {!originalData && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-blue-700">
+                    <strong>Welcome to your barbershop setup!</strong> Fill in the fields below and click "Save Settings" to create your barbershop profile.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Shop Name *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                placeholder="Enter your shop name"
+                autoComplete="organization"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                rows={3}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                placeholder="Brief description of your barbershop..."
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <EnvelopeIcon className="h-4 w-4 inline mr-1" />
+                Email Address *
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                placeholder="shop@example.com"
+                autoComplete="email"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <PhoneIcon className="h-4 w-4 inline mr-1" />
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                placeholder="(555) 123-4567"
+                autoComplete="tel"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <GlobeAltIcon className="h-4 w-4 inline mr-1" />
+                Website
+              </label>
+              <input
+                type="url"
+                value={formData.website}
+                onChange={(e) => setFormData({...formData, website: e.target.value})}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                placeholder="https://www.yourshop.com"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Location Status Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <MapPinIcon className="h-6 w-6 text-gray-400 mr-3" />
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Location Information</h2>
+                <p className="text-sm text-gray-600">Manage your shop's physical address and contact details</p>
+              </div>
+            </div>
+            <div className="flex items-center">
+              {locationStatus.complete ? (
+                <CheckCircleIcon className="h-5 w-5 text-green-500" />
+              ) : (
+                <ExclamationTriangleIcon className="h-5 w-5 text-orange-500" />
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              {locationStatus.complete ? (
+                <div className="flex items-center text-green-700">
+                  <CheckCircleIcon className="h-5 w-5 mr-2" />
+                  <span className="text-sm font-medium">Location information is complete</span>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center text-orange-700 mb-2">
+                    <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+                    <span className="text-sm font-medium">Location information needed</span>
+                  </div>
+                  {locationStatus.missing.length > 0 && (
+                    <div className="text-sm text-gray-600">
+                      <p className="mb-1">Missing information:</p>
+                      <ul className="list-disc list-inside ml-4 space-y-1">
+                        {locationStatus.missing.map((item, index) => (
+                          <li key={index} className="text-gray-600">{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <Link 
+              href="/shop/settings/location"
+              className="ml-4 px-4 py-2 bg-olive-600 text-white rounded-lg hover:bg-olive-700 transition-colors text-sm font-medium"
+            >
+              Manage Location
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

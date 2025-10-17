@@ -1,16 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { 
+import {
   XMarkIcon,
   SparklesIcon,
   ChartBarIcon,
   CpuChipIcon,
-  ClockIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { getAgentRouter } from '@/lib/ai-agent-router'
 
 /**
@@ -43,11 +41,9 @@ export default function AgentSelectorModal({
     try {
       setLoading(true)
       
-      // Get agent metrics from router
       const metrics = agentRouter.getAgentMetrics()
       const agentList = Array.from(agentRouter.agents.values())
       
-      // Combine agent data with metrics
       const enrichedAgents = agentList.map(agent => ({
         ...agent,
         metrics: metrics[agent.id] || {}

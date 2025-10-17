@@ -98,7 +98,6 @@ export function useStaggeredAnimation(count, options = {}) {
   return [setRef, visibleItems]
 }
 
-// Animation classes that work with the scroll hooks
 export const scrollAnimations = {
   fadeInUp: 'transform transition-all duration-700 ease-out translate-y-8 opacity-0',
   fadeInUpVisible: 'transform transition-all duration-700 ease-out translate-y-0 opacity-100',

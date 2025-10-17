@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 WebSocket-enabled FastAPI backend for 6FB AI Agent System
-Supports real-time chat with AI agents
+Supports real-time chat with AI agents and Supabase integration
 """
 
 import os
@@ -18,13 +18,40 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPExcept
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
-import openai
+from openai import AsyncOpenAI
 import sys
 sys.path.append('services')
 from ai_training_service import AITrainingService
 
+try:
+    from supabase import create_client, Client
+    from supabase.lib.client_options import ClientOptions
+    SUPABASE_AVAILABLE = True
+except ImportError:
+    print("Warning: Supabase not available. Install with: pip install supabase")
+    SUPABASE_AVAILABLE = False
+
 # Configure OpenAI API (optional - will use mock responses if not set)
-openai.api_key = os.getenv("OPENAI_API_KEY", "")
+openai_client = AsyncOpenAI(
+    api_key=os.getenv("OPENAI_API_KEY", "")
+) if os.getenv("OPENAI_API_KEY") else None
+
+# Configure Supabase (optional - will use SQLite if not available)
+supabase_client = None
+if SUPABASE_AVAILABLE and os.getenv("NEXT_PUBLIC_SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_ROLE_KEY"):
+    try:
+        supabase_client = create_client(
+            os.getenv("NEXT_PUBLIC_SUPABASE_URL"),
+            os.getenv("SUPABASE_SERVICE_ROLE_KEY"),
+            options=ClientOptions(
+                auto_refresh_token=True,
+                persist_session=True
+            )
+        )
+        print("✅ Supabase client initialized")
+    except Exception as e:
+        print(f"Warning: Failed to initialize Supabase client: {e}")
+        supabase_client = None
 
 app = FastAPI(title="6FB AI Agent System", version="2.1.0")
 
@@ -40,49 +67,328 @@ app.add_middleware(
 # Security
 security = HTTPBearer()
 
-# WebSocket connection manager
+# Enhanced WebSocket connection manager with real-time features
 class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
         self.user_sessions: Dict[str, str] = {}  # websocket_id -> user_id
-
-    async def connect(self, websocket: WebSocket, user_id: str):
+        self.user_connections: Dict[str, List[str]] = {}  # user_id -> [connection_ids]
+        self.room_subscriptions: Dict[str, List[str]] = {}  # room -> [connection_ids]
+        self.connection_metadata: Dict[str, Dict] = {}  # connection_id -> metadata
+        
+    async def connect(self, websocket: WebSocket, user_id: str, metadata: Dict = None):
         await websocket.accept()
-        connection_id = f"{user_id}_{datetime.now().timestamp()}"
+        connection_id = f"{user_id}_{datetime.now().timestamp()}_{secrets.token_hex(4)}"
+        
+        # Store connection
         self.active_connections[connection_id] = websocket
         self.user_sessions[connection_id] = user_id
+        self.connection_metadata[connection_id] = metadata or {}
+        
+        # Track user connections
+        if user_id not in self.user_connections:
+            self.user_connections[user_id] = []
+        self.user_connections[user_id].append(connection_id)
+        
+        # Notify Supabase of connection if available
+        if supabase_client:
+            try:
+                await self.log_connection_event(user_id, "connected", metadata)
+            except Exception as e:
+                print(f"Failed to log connection event: {e}")
+        
         return connection_id
 
     def disconnect(self, connection_id: str):
         if connection_id in self.active_connections:
+            user_id = self.user_sessions[connection_id]
+            
+            # Remove from all data structures
             del self.active_connections[connection_id]
             del self.user_sessions[connection_id]
+            del self.connection_metadata[connection_id]
+            
+            # Remove from user connections
+            if user_id in self.user_connections:
+                self.user_connections[user_id].remove(connection_id)
+                if not self.user_connections[user_id]:
+                    del self.user_connections[user_id]
+            
+            # Remove from room subscriptions
+            for room, connections in list(self.room_subscriptions.items()):
+                if connection_id in connections:
+                    connections.remove(connection_id)
+                    if not connections:
+                        del self.room_subscriptions[room]
+            
+            # Log disconnection
+            if supabase_client:
+                try:
+                    asyncio.create_task(self.log_connection_event(user_id, "disconnected"))
+                except Exception as e:
+                    print(f"Failed to log disconnection event: {e}")
 
     async def send_personal_message(self, message: str, connection_id: str):
         if connection_id in self.active_connections:
-            await self.active_connections[connection_id].send_text(message)
+            try:
+                await self.active_connections[connection_id].send_text(message)
+                return True
+            except Exception as e:
+                print(f"Failed to send message to {connection_id}: {e}")
+                # Connection is dead, clean it up
+                self.disconnect(connection_id)
+                return False
+        return False
 
     async def broadcast_to_user(self, message: str, user_id: str):
         """Send message to all connections for a specific user"""
-        for conn_id, uid in self.user_sessions.items():
-            if uid == user_id:
+        if user_id in self.user_connections:
+            success_count = 0
+            for conn_id in list(self.user_connections[user_id]):
+                if await self.send_personal_message(message, conn_id):
+                    success_count += 1
+            return success_count
+        return 0
+    
+    async def broadcast_to_room(self, message: str, room: str):
+        """Send message to all connections in a room"""
+        if room in self.room_subscriptions:
+            success_count = 0
+            for conn_id in list(self.room_subscriptions[room]):
+                if await self.send_personal_message(message, conn_id):
+                    success_count += 1
+            return success_count
+        return 0
+    
+    def subscribe_to_room(self, connection_id: str, room: str):
+        """Subscribe connection to a room for broadcasts"""
+        if room not in self.room_subscriptions:
+            self.room_subscriptions[room] = []
+        if connection_id not in self.room_subscriptions[room]:
+            self.room_subscriptions[room].append(connection_id)
+    
+    def unsubscribe_from_room(self, connection_id: str, room: str):
+        """Unsubscribe connection from a room"""
+        if room in self.room_subscriptions:
+            if connection_id in self.room_subscriptions[room]:
+                self.room_subscriptions[room].remove(connection_id)
+            if not self.room_subscriptions[room]:
+                del self.room_subscriptions[room]
+    
+    def get_connection_stats(self):
+        """Get connection statistics"""
+        return {
+            "total_connections": len(self.active_connections),
+            "unique_users": len(self.user_connections),
+            "active_rooms": len(self.room_subscriptions),
+            "connections_per_room": {
+                room: len(connections) 
+                for room, connections in self.room_subscriptions.items()
+            }
+        }
+    
+    async def log_connection_event(self, user_id: str, event: str, metadata: Dict = None):
+        """Log connection events to Supabase"""
+        if not supabase_client:
+            return
+        
+        try:
+            supabase_client.table('websocket_events').insert({
+                'user_id': user_id,
+                'event': event,
+                'metadata': metadata or {},
+                'timestamp': datetime.now().isoformat()
+            }).execute()
+        except Exception as e:
+            print(f"Failed to log connection event: {e}")
+    
+    async def broadcast_notification(self, notification_type: str, data: Dict, user_ids: List[str] = None):
+        """Broadcast notifications to users or all connections"""
+        message = json.dumps({
+            "type": "notification",
+            "notification_type": notification_type,
+            "data": data,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        if user_ids:
+            for user_id in user_ids:
+                await self.broadcast_to_user(message, user_id)
+        else:
+            # Broadcast to all connections
+            for conn_id in list(self.active_connections.keys()):
                 await self.send_personal_message(message, conn_id)
 
 manager = ConnectionManager()
 
-# Database functions (same as before)
+# Enhanced database functions with Supabase support
 DB_PATH = "data/6fb_agent_system.db"
+
+class DatabaseManager:
+    """Unified database manager for both SQLite and Supabase"""
+    
+    def __init__(self):
+        self.use_supabase = bool(supabase_client)
+    
+    @contextmanager
+    def get_sqlite_db(self):
+        """Get SQLite database connection"""
+        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        try:
+            yield conn
+        finally:
+            conn.close()
+    
+    async def save_chat_message(self, user_id: str, agent_id: str, message: str, response: str):
+        """Save chat message to appropriate database"""
+        if self.use_supabase:
+            try:
+                supabase_client.table('ai_chat_history').insert({
+                    'user_id': user_id,
+                    'agent_id': agent_id,
+                    'message': message,
+                    'response': response,
+                    'created_at': datetime.now().isoformat()
+                }).execute()
+                return True
+            except Exception as e:
+                print(f"Failed to save to Supabase, falling back to SQLite: {e}")
+        
+        # Fallback to SQLite
+        with self.get_sqlite_db() as conn:
+            conn.execute(
+                "INSERT INTO chat_history (user_id, agent_id, message, response) VALUES (?, ?, ?, ?)",
+                (user_id, agent_id, message, response)
+            )
+            conn.commit()
+        return True
+    
+    async def save_conversation(self, user_id: str, session_id: str, agent_id: str, messages: List[dict]):
+        """Save conversation to appropriate database"""
+        if self.use_supabase:
+            try:
+                # Check if conversation exists
+                existing = supabase_client.table('ai_conversations').select('id').eq('user_id', user_id).eq('session_id', session_id).eq('agent_id', agent_id).execute()
+                
+                if existing.data:
+                    # Update existing
+                    supabase_client.table('ai_conversations').update({
+                        'messages': json.dumps(messages),
+                        'updated_at': datetime.now().isoformat()
+                    }).eq('id', existing.data[0]['id']).execute()
+                else:
+                    # Create new
+                    supabase_client.table('ai_conversations').insert({
+                        'user_id': user_id,
+                        'session_id': session_id,
+                        'agent_id': agent_id,
+                        'messages': json.dumps(messages),
+                        'created_at': datetime.now().isoformat(),
+                        'updated_at': datetime.now().isoformat()
+                    }).execute()
+                return True
+            except Exception as e:
+                print(f"Failed to save conversation to Supabase, falling back to SQLite: {e}")
+        
+        # Fallback to SQLite
+        with self.get_sqlite_db() as conn:
+            cursor = conn.execute(
+                """SELECT id FROM ai_conversations 
+                   WHERE user_id = ? AND session_id = ? AND agent_id = ?""",
+                (user_id, session_id, agent_id)
+            )
+            conv_row = cursor.fetchone()
+            
+            if conv_row:
+                conn.execute(
+                    """UPDATE ai_conversations 
+                       SET messages = ?, updated_at = CURRENT_TIMESTAMP
+                       WHERE id = ?""",
+                    (json.dumps(messages), conv_row["id"])
+                )
+            else:
+                conn.execute(
+                    """INSERT INTO ai_conversations 
+                       (user_id, session_id, agent_id, messages)
+                       VALUES (?, ?, ?, ?)""",
+                    (user_id, session_id, agent_id, json.dumps(messages))
+                )
+            conn.commit()
+        return True
+    
+    async def get_conversation(self, user_id: str, session_id: str, agent_id: str):
+        """Get conversation from appropriate database"""
+        if self.use_supabase:
+            try:
+                result = supabase_client.table('ai_conversations').select('messages').eq('user_id', user_id).eq('session_id', session_id).eq('agent_id', agent_id).order('updated_at', desc=True).limit(1).execute()
+                
+                if result.data:
+                    return json.loads(result.data[0]['messages'])
+                return []
+            except Exception as e:
+                print(f"Failed to get conversation from Supabase, falling back to SQLite: {e}")
+        
+        # Fallback to SQLite
+        with self.get_sqlite_db() as conn:
+            cursor = conn.execute(
+                """SELECT messages FROM ai_conversations 
+                   WHERE user_id = ? AND session_id = ? AND agent_id = ?
+                   ORDER BY updated_at DESC LIMIT 1""",
+                (user_id, session_id, agent_id)
+            )
+            row = cursor.fetchone()
+            return json.loads(row["messages"]) if row else []
+    
+    async def authenticate_user(self, token: str):
+        """Authenticate user with token"""
+        if self.use_supabase:
+            try:
+                # Get user from Supabase auth
+                user_response = supabase_client.auth.get_user(token)
+                if user_response.user:
+                    return {
+                        'id': user_response.user.id,
+                        'email': user_response.user.email,
+                        'shop_name': user_response.user.user_metadata.get('shop_name')
+                    }
+                return None
+            except Exception as e:
+                print(f"Supabase auth failed, falling back to SQLite: {e}")
+        
+        # Fallback to SQLite
+        with self.get_sqlite_db() as conn:
+            cursor = conn.execute(
+                """SELECT u.* FROM users u 
+                   JOIN sessions s ON u.id = s.user_id 
+                   WHERE s.token = ? AND s.expires_at > datetime('now')""",
+                (token,)
+            )
+            user = cursor.fetchone()
+            return dict(user) if user else None
+    
+    async def broadcast_realtime_update(self, table: str, event: str, data: dict, user_id: str = None):
+        """Broadcast real-time updates"""
+        message = {
+            "type": "realtime_update",
+            "table": table,
+            "event": event,
+            "data": data,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        if user_id:
+            await manager.broadcast_to_user(json.dumps(message), user_id)
+        else:
+            await manager.broadcast_notification("database_update", message)
+
+db_manager = DatabaseManager()
 
 @contextmanager
 def get_db():
-    """Get database connection context manager"""
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
+    """Legacy function for backwards compatibility"""
+    return db_manager.get_sqlite_db()
 
 def init_db():
     """Initialize database tables"""
@@ -147,7 +453,7 @@ class AIAgent:
         self.agent_id = agent_id
         self.name = name
         self.system_prompt = system_prompt
-        self.use_openai = bool(openai.api_key)
+        self.use_openai = bool(openai_client)
     
     async def generate_response(self, message: str, conversation_history: List[dict] = None) -> dict:
         """Generate AI response using OpenAI or mock responses"""
@@ -168,12 +474,13 @@ class AIAgent:
                 # Add current message
                 messages.append({"role": "user", "content": message})
                 
-                # Call OpenAI API
-                response = openai.ChatCompletion.create(
-                    model="gpt-3.5-turbo",
+                # Call OpenAI API with modern async client
+                response = await openai_client.chat.completions.create(
+                    model="gpt-4o-mini",  # Use latest cost-efficient model
                     messages=messages,
                     temperature=0.7,
-                    max_tokens=500
+                    max_tokens=500,
+                    timeout=15.0  # Add timeout for reliability
                 )
                 
                 ai_response = response.choices[0].message.content
@@ -183,7 +490,12 @@ class AIAgent:
                     "agent_id": self.agent_id,
                     "agent_name": self.name,
                     "timestamp": datetime.now().isoformat(),
-                    "model": "gpt-3.5-turbo"
+                    "model": "gpt-4o-mini",
+                    "usage": {
+                        "prompt_tokens": response.usage.prompt_tokens,
+                        "completion_tokens": response.usage.completion_tokens,
+                        "total_tokens": response.usage.total_tokens
+                    }
                 }
                 
             except Exception as e:
@@ -328,10 +640,15 @@ class TokenResponse(BaseModel):
 # Routes
 @app.on_event("startup")
 async def startup_event():
-    """Initialize database on startup"""
+    """Initialize enhanced backend with real-time features"""
     init_db()
     print("✅ Database initialized")
-    print(f"✅ OpenAI integration: {'Enabled' if openai.api_key else 'Disabled (using mock responses)'}")
+    print(f"✅ OpenAI integration: {'Enabled' if openai_client else 'Disabled (using mock responses)'}")
+    print(f"✅ Supabase integration: {'Enabled' if supabase_client else 'Disabled (using SQLite)'}")
+    print("✅ Enhanced WebSocket manager initialized")
+    print("✅ Real-time notifications enabled")
+    print("✅ Live data synchronization enabled")
+    print("🚀 6FB AI Agent System ready with full real-time capabilities")
 
 @app.get("/")
 async def root():
@@ -343,7 +660,7 @@ async def root():
         "features": {
             "websocket": "enabled",
             "ai_agents": list(ai_agents.keys()),
-            "openai": bool(openai.api_key)
+            "openai": bool(openai_client)
         }
     }
 
@@ -405,34 +722,52 @@ async def login(user: UserLogin):
         }
     }
 
-# WebSocket endpoint for real-time chat
+# Enhanced WebSocket endpoint with real-time features
 @app.websocket("/ws/{token}")
 async def websocket_endpoint(websocket: WebSocket, token: str):
-    """WebSocket endpoint for real-time AI chat"""
+    """Enhanced WebSocket endpoint for real-time AI chat and notifications"""
     
     # Verify token and get user
-    with get_db() as conn:
-        cursor = conn.execute(
-            """SELECT u.* FROM users u 
-               JOIN sessions s ON u.id = s.user_id 
-               WHERE s.token = ? AND s.expires_at > datetime('now')""",
-            (token,)
-        )
-        user = cursor.fetchone()
+    user_dict = await db_manager.authenticate_user(token)
     
-    if not user:
+    if not user_dict:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
     
-    user_dict = dict(user)
-    connection_id = await manager.connect(websocket, str(user_dict["id"]))
+    # Get connection metadata
+    user_agent = websocket.headers.get('user-agent', 'Unknown')
+    client_ip = websocket.headers.get('x-forwarded-for', 'Unknown')
     
-    # Send welcome message
+    connection_metadata = {
+        'user_agent': user_agent,
+        'client_ip': client_ip,
+        'connection_time': datetime.now().isoformat()
+    }
+    
+    connection_id = await manager.connect(websocket, str(user_dict["id"]), connection_metadata)
+    
+    # Subscribe to user-specific room
+    user_room = f"user_{user_dict['id']}"
+    manager.subscribe_to_room(connection_id, user_room)
+    
+    # Subscribe to shop-specific room if user has shop
+    if user_dict.get('shop_name'):
+        shop_room = f"shop_{user_dict['shop_name']}"
+        manager.subscribe_to_room(connection_id, shop_room)
+    
+    # Send welcome message with enhanced info
     welcome_msg = {
         "type": "connection",
         "status": "connected",
         "user_id": user_dict["id"],
-        "message": "Connected to AI Agent System"
+        "connection_id": connection_id,
+        "features": {
+            "ai_agents": True,
+            "real_time_notifications": True,
+            "live_data_sync": bool(supabase_client),
+            "room_subscriptions": [user_room] + ([shop_room] if user_dict.get('shop_name') else [])
+        },
+        "message": "Connected to enhanced 6FB AI Agent System"
     }
     await manager.send_personal_message(json.dumps(welcome_msg), connection_id)
     
@@ -466,18 +801,8 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
                 }
                 await manager.send_personal_message(json.dumps(typing_msg), connection_id)
                 
-                # Get conversation history
-                conversation_history = []
-                with get_db() as conn:
-                    cursor = conn.execute(
-                        """SELECT messages FROM ai_conversations 
-                           WHERE user_id = ? AND session_id = ? AND agent_id = ?
-                           ORDER BY updated_at DESC LIMIT 1""",
-                        (user_dict["id"], session_id, agent_id)
-                    )
-                    row = cursor.fetchone()
-                    if row:
-                        conversation_history = json.loads(row["messages"])
+                # Get conversation history using enhanced database manager
+                conversation_history = await db_manager.get_conversation(user_dict["id"], session_id, agent_id)
                 
                 # Generate AI response
                 ai_response = await agent.generate_response(user_message, conversation_history)
@@ -486,38 +811,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
                 conversation_history.append({"role": "user", "content": user_message})
                 conversation_history.append({"role": "assistant", "content": ai_response["response"]})
                 
-                # Save to database
-                with get_db() as conn:
-                    cursor = conn.execute(
-                        """SELECT id FROM ai_conversations 
-                           WHERE user_id = ? AND session_id = ? AND agent_id = ?""",
-                        (user_dict["id"], session_id, agent_id)
-                    )
-                    conv_row = cursor.fetchone()
-                    
-                    if conv_row:
-                        # Update existing conversation
-                        conn.execute(
-                            """UPDATE ai_conversations 
-                               SET messages = ?, updated_at = CURRENT_TIMESTAMP
-                               WHERE id = ?""",
-                            (json.dumps(conversation_history), conv_row["id"])
-                        )
-                    else:
-                        # Create new conversation
-                        conn.execute(
-                            """INSERT INTO ai_conversations 
-                               (user_id, session_id, agent_id, messages)
-                               VALUES (?, ?, ?, ?)""",
-                            (user_dict["id"], session_id, agent_id, json.dumps(conversation_history))
-                        )
-                    
-                    # Save to chat history
-                    conn.execute(
-                        "INSERT INTO chat_history (user_id, agent_id, message, response) VALUES (?, ?, ?, ?)",
-                        (user_dict["id"], agent_id, user_message, json.dumps(ai_response))
-                    )
-                    conn.commit()
+                # Save to database using enhanced manager
+                await db_manager.save_conversation(user_dict["id"], session_id, agent_id, conversation_history)
+                await db_manager.save_chat_message(user_dict["id"], agent_id, user_message, json.dumps(ai_response))
                 
                 # Send response
                 response_msg = {
@@ -529,10 +825,85 @@ async def websocket_endpoint(websocket: WebSocket, token: str):
                     "model": ai_response["model"]
                 }
                 await manager.send_personal_message(json.dumps(response_msg), connection_id)
+                
+                # Broadcast real-time update if enabled
+                await db_manager.broadcast_realtime_update(
+                    "ai_conversations", "chat_message", 
+                    {"agent_id": agent_id, "user_id": user_dict["id"], "message_preview": user_message[:50]}
+                )
+            
+            elif message_data.get("type") == "subscribe":
+                # Subscribe to additional rooms/channels
+                room = message_data.get("room")
+                if room and room.startswith(("shop_", "user_", "barbershop_", "calendar_")):
+                    manager.subscribe_to_room(connection_id, room)
+                    await manager.send_personal_message(
+                        json.dumps({"type": "subscribed", "room": room}), connection_id
+                    )
+            
+            elif message_data.get("type") == "unsubscribe":
+                # Unsubscribe from rooms/channels
+                room = message_data.get("room")
+                if room:
+                    manager.unsubscribe_from_room(connection_id, room)
+                    await manager.send_personal_message(
+                        json.dumps({"type": "unsubscribed", "room": room}), connection_id
+                    )
+            
+            elif message_data.get("type") == "live_data_request":
+                # Request live data updates
+                table = message_data.get("table")
+                filters = message_data.get("filters", {})
+                
+                if supabase_client and table:
+                    try:
+                        # Get current data from Supabase
+                        query = supabase_client.table(table).select('*')
+                        for key, value in filters.items():
+                            query = query.eq(key, value)
+                        result = query.execute()
+                        
+                        live_data_msg = {
+                            "type": "live_data",
+                            "table": table,
+                            "data": result.data,
+                            "timestamp": datetime.now().isoformat()
+                        }
+                        await manager.send_personal_message(json.dumps(live_data_msg), connection_id)
+                        
+                        # Subscribe to real-time updates for this table
+                        table_room = f"table_{table}"
+                        manager.subscribe_to_room(connection_id, table_room)
+                        
+                    except Exception as e:
+                        error_msg = {
+                            "type": "error", 
+                            "message": f"Failed to get live data: {str(e)}"
+                        }
+                        await manager.send_personal_message(json.dumps(error_msg), connection_id)
+            
+            elif message_data.get("type") == "dashboard_metrics":
+                # Request real-time dashboard metrics
+                metrics_type = message_data.get("metrics_type", "overview")
+                
+                # This would integrate with your analytics system
+                metrics_data = {
+                    "type": "dashboard_metrics",
+                    "metrics_type": metrics_type,
+                    "data": {
+                        "connections": manager.get_connection_stats(),
+                        "timestamp": datetime.now().isoformat()
+                    }
+                }
+                await manager.send_personal_message(json.dumps(metrics_data), connection_id)
             
             elif message_data.get("type") == "ping":
                 # Handle ping/pong for connection keep-alive
-                pong_msg = {"type": "pong", "timestamp": datetime.now().isoformat()}
+                pong_msg = {
+                    "type": "pong", 
+                    "timestamp": datetime.now().isoformat(),
+                    "connection_id": connection_id
+                }
                 await manager.send_personal_message(json.dumps(pong_msg), connection_id)
     
     except WebSocketDisconnect:
@@ -578,26 +949,180 @@ async def get_conversation(
     
     return {"session_id": session_id, "conversations": conversations}
 
-# Notification endpoint
+# Enhanced notification endpoints
 @app.post("/api/v1/notifications/send")
 async def send_notification(
     notification: dict,
     current_user: dict = Depends(get_current_user)
 ):
     """Send real-time notification to user"""
+    notification_type = notification.get("type", "info")
+    title = notification.get("title", "Notification")
+    message = notification.get("message", "")
+    priority = notification.get("priority", "normal")
+    
     notification_msg = {
         "type": "notification",
-        "title": notification.get("title", "Notification"),
-        "message": notification.get("message", ""),
-        "timestamp": datetime.now().isoformat()
+        "notification_type": notification_type,
+        "title": title,
+        "message": message,
+        "priority": priority,
+        "timestamp": datetime.now().isoformat(),
+        "user_id": current_user["id"]
     }
     
-    await manager.broadcast_to_user(
+    # Send to specific user
+    sent_count = await manager.broadcast_to_user(
         json.dumps(notification_msg),
         str(current_user["id"])
     )
     
-    return {"status": "sent", "user_id": current_user["id"]}
+    # Log to database if Supabase available
+    if supabase_client:
+        try:
+            supabase_client.table('notifications').insert({
+                'user_id': current_user["id"],
+                'type': notification_type,
+                'title': title,
+                'message': message,
+                'priority': priority,
+                'sent_at': datetime.now().isoformat()
+            }).execute()
+        except Exception as e:
+            print(f"Failed to log notification: {e}")
+    
+    return {
+        "status": "sent", 
+        "user_id": current_user["id"],
+        "connections_reached": sent_count,
+        "notification_id": f"notif_{int(datetime.now().timestamp())}"
+    }
+
+@app.post("/api/v1/notifications/broadcast")
+async def broadcast_notification(
+    notification: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Broadcast notification to all connected users or specific groups"""
+    notification_type = notification.get("type", "broadcast")
+    title = notification.get("title", "System Notification")
+    message = notification.get("message", "")
+    target_groups = notification.get("target_groups", [])  # e.g., ["shop_mybarbershop", "user_123"]
+    
+    notification_msg = {
+        "type": "notification",
+        "notification_type": notification_type,
+        "title": title,
+        "message": message,
+        "from_user": current_user["id"],
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    if target_groups:
+        # Broadcast to specific groups/rooms
+        total_sent = 0
+        for group in target_groups:
+            sent_count = await manager.broadcast_to_room(json.dumps(notification_msg), group)
+            total_sent += sent_count
+    else:
+        # Broadcast to all connections
+        await manager.broadcast_notification(notification_type, {
+            "title": title,
+            "message": message,
+            "from_user": current_user["id"]
+        })
+        total_sent = len(manager.active_connections)
+    
+    return {
+        "status": "broadcast_sent",
+        "connections_reached": total_sent,
+        "broadcast_id": f"broadcast_{int(datetime.now().timestamp())}"
+    }
+
+@app.get("/api/v1/realtime/stats")
+async def get_realtime_stats(current_user: dict = Depends(get_current_user)):
+    """Get real-time connection and usage statistics"""
+    return {
+        "connection_stats": manager.get_connection_stats(),
+        "database_type": "supabase" if supabase_client else "sqlite",
+        "ai_integration": "enabled" if openai_client else "mock",
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.post("/api/v1/realtime/booking-update")
+async def broadcast_booking_update(
+    booking_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Broadcast booking status updates to relevant users"""
+    booking_id = booking_data.get("booking_id")
+    status = booking_data.get("status")
+    customer_id = booking_data.get("customer_id")
+    barber_id = booking_data.get("barber_id")
+    shop_id = booking_data.get("shop_id")
+    
+    update_msg = {
+        "type": "booking_update",
+        "booking_id": booking_id,
+        "status": status,
+        "data": booking_data,
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    # Notify relevant parties
+    notifications_sent = 0
+    
+    # Notify customer
+    if customer_id:
+        notifications_sent += await manager.broadcast_to_user(
+            json.dumps(update_msg), str(customer_id)
+        )
+    
+    # Notify barber
+    if barber_id:
+        notifications_sent += await manager.broadcast_to_user(
+            json.dumps(update_msg), str(barber_id)
+        )
+    
+    # Notify shop
+    if shop_id:
+        notifications_sent += await manager.broadcast_to_room(
+            json.dumps(update_msg), f"shop_{shop_id}"
+        )
+    
+    # Log update to database
+    await db_manager.broadcast_realtime_update(
+        "bookings", "status_update", booking_data, customer_id
+    )
+    
+    return {
+        "status": "booking_update_sent",
+        "booking_id": booking_id,
+        "notifications_sent": notifications_sent
+    }
+
+@app.post("/api/v1/realtime/live-metrics")
+async def send_live_metrics(
+    metrics_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """Send live dashboard metrics to connected users"""
+    metrics_msg = {
+        "type": "live_metrics",
+        "metrics": metrics_data,
+        "timestamp": datetime.now().isoformat(),
+        "source": "dashboard_update"
+    }
+    
+    # Broadcast to all users in the same shop
+    shop_room = f"shop_{current_user.get('shop_name', 'default')}"
+    sent_count = await manager.broadcast_to_room(json.dumps(metrics_msg), shop_room)
+    
+    return {
+        "status": "metrics_sent",
+        "room": shop_room,
+        "connections_reached": sent_count
+    }
 
 # AI Training endpoints
 training_service = AITrainingService()

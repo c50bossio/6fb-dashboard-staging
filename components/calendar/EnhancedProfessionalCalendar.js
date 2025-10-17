@@ -1,69 +1,71 @@
 'use client'
 
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import listPlugin from '@fullcalendar/list'
 import FullCalendar from '@fullcalendar/react'
+// Premium plugins enabled with proper licensing
 import resourceTimeGridPlugin from '@fullcalendar/resource-timegrid'
 import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import listPlugin from '@fullcalendar/list'
-import interactionPlugin from '@fullcalendar/interaction'
 import rrulePlugin from '@fullcalendar/rrule'
-// Import RRule class explicitly to ensure proper plugin initialization
+import timeGridPlugin from '@fullcalendar/timegrid'
+import { useRef, useCallback, useEffect, useState } from 'react'
 import { RRule } from 'rrule'
-import { useRef, useCallback, useEffect, useState, useMemo } from 'react'
 
 export default function EnhancedProfessionalCalendar({
   resources: externalResources,
-  events: externalEvents,
+  eventSources: externalEventSources,
+  events: externalEvents, // Keep for backward compatibility
   currentView: controlledView,
   onViewChange,
   onSlotClick,
   onEventClick,
   onEventDrop,
   height = '700px',
-  defaultView = 'resourceTimeGridDay'
+  defaultView = 'timeGridDay'
 }) {
   const calendarRef = useRef(null)
   const [currentView, setCurrentView] = useState(controlledView || defaultView)
   
-  // Update internal state when controlled view changes
+  // Expose calendar API globally for debugging and manual refresh
+  useEffect(() => {
+    if (calendarRef.current) {
+      window.fullCalendarApi = calendarRef.current.getApi()
+      console.log('FullCalendar API exposed as window.fullCalendarApi')
+    }
+  }, [])
+  
   useEffect(() => {
     if (controlledView && controlledView !== currentView) {
       setCurrentView(controlledView)
     }
   }, [controlledView])
   
-  // NO MOCK DATA - Use external resources if provided, otherwise use empty defaults for proper setup
-  const defaultResources = [
-    { id: 'barber-1', title: 'John Smith', eventColor: '#10b981' },
-    { id: 'barber-2', title: 'Sarah Johnson', eventColor: '#546355' },
-    { id: 'barber-3', title: 'Mike Brown', eventColor: '#f59e0b' },
-    { id: 'barber-4', title: 'Lisa Davis', eventColor: '#D4B878' }
-  ]
+  // Use external resources or empty array - let parent handle defaults
+  const resources = externalResources || []
   
-  const resources = externalResources || defaultResources
-  
-  // NO MOCK DATA - Only use externally provided events
+  // Use eventSources if provided, otherwise fallback to events for backward compatibility
+  const eventSources = externalEventSources || null
   const events = externalEvents || []
   
-  // Use events directly without processing
-  // FullCalendar handles resource vs non-resource views internally
   const processedEvents = events
   
-  // Debug logging - only log when events are actually provided
-  useEffect(() => {
-    if (events.length > 0) {
-      console.log('📅 Calendar events loaded:', events.length, 'for view:', currentView)
-    } else {
-      console.log('📅 Calendar initialized with no events (waiting for real data)')
-    }
-  }, [events.length, currentView])
+  // Remove this useEffect - FullCalendar handles updates automatically
+  // when events prop changes
   
-  // Enhanced slot selection handler with view awareness (for drag selection)
   const handleDateSelect = useCallback((selectInfo) => {
+    const duration = Math.round((selectInfo.end - selectInfo.start) / 60000)
+    console.log('🎯 [Calendar] SELECT triggered:', selectInfo.view.type, selectInfo.resource?.id, 'duration:', duration, 'minutes')
+
     const viewType = selectInfo.view.type
-    
-    // Capture comprehensive slot data from drag selection
+
+    // In resource views, clicks also trigger 'select' event with very small duration
+    // Treat selections under 2 minutes as clicks
+    const isClick = duration <= 1
+    const selectionType = isClick ? 'click' : 'drag'
+
+    console.log(`🎯 [Calendar] Detected as: ${selectionType}`)
+
     const slotData = {
       start: selectInfo.start,
       end: selectInfo.end,
@@ -71,74 +73,67 @@ export default function EnhancedProfessionalCalendar({
       endStr: selectInfo.endStr,
       allDay: selectInfo.allDay,
       viewType: viewType,
-      resource: selectInfo.resource,
-      resourceId: selectInfo.resource?.id,
-      resourceTitle: selectInfo.resource?.title,
+      resource: selectInfo.resource,  // Premium feature enabled
+      resourceId: selectInfo.resource?.id,  // Premium feature enabled
+      resourceTitle: selectInfo.resource?.title,  // Premium feature enabled
+      selectedBarber: selectInfo.resource?.id,  // For modal pre-population
+      selectedBarberName: selectInfo.resource?.title,  // For modal pre-population
       jsEvent: selectInfo.jsEvent,
-      selectionType: 'drag',
-      // Calculate duration in minutes
-      duration: Math.round((selectInfo.end - selectInfo.start) / 60000)
+      selectionType: selectionType,
+      duration: isClick ? 30 : duration  // Default to 30 minutes for clicks
     }
     
-    // Add view-specific enhancements
     if (viewType === 'dayGridMonth') {
-      // Month view: Need to handle day selection
       slotData.isMonthView = true
       slotData.needsTimePicker = true
       slotData.selectedDate = selectInfo.start.toLocaleDateString()
       
-      // Find available time slots for this date
       const dateStr = selectInfo.start.toISOString().split('T')[0]
       const dayEvents = events.filter(e => e.start && e.start.startsWith(dateStr))
       slotData.existingAppointments = dayEvents.length
       slotData.suggestedTime = findFirstAvailableSlot(dateStr, dayEvents)
     } else if (viewType === 'listWeek' || viewType === 'listDay') {
-      // List view: Smart slot detection
       slotData.isListView = true
       slotData.nearbyEvents = findNearbyEvents(selectInfo.start)
     } else if (viewType === 'timeGridDay' || viewType === 'timeGridWeek') {
-      // Standard time grid views (non-resource)
       slotData.isTimeGrid = true
       slotData.exactTime = selectInfo.start.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit'
       })
-      // Suggest a barber based on availability
       slotData.suggestedBarber = findAvailableBarber(selectInfo.start, selectInfo.end)
-    } else if (viewType.includes('resourceTimeGrid')) {
-      // Resource views: Already have barber from column
+    } else if (viewType.includes('resourceTimeGrid') || viewType.includes('resourceTimeline')) {
+      // Premium resource view handling enabled
       slotData.isResourceView = true
       slotData.exactTime = selectInfo.start.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit'
       })
+      slotData.selectedBarber = selectInfo.resource?.id
+      slotData.selectedBarberName = selectInfo.resource?.title
     }
     
-    // Log for debugging with enhanced duration feedback
     const durationHours = Math.round(slotData.duration / 60 * 10) / 10  // Round to 1 decimal place
     const durationDisplay = durationHours >= 1 
       ? `${durationHours}h` 
       : `${slotData.duration}min`
     
-    console.log('📅 Slot selected:', {
+    const enhancedSlotData = {
       ...slotData,
       durationDisplay,
       isLongSelection: slotData.duration >= 120  // 2+ hours
-    })
+    }
     
-    // Provide user feedback for long selections
     if (slotData.duration >= 240) {  // 4+ hours
-      console.log('⏰ Long time selection detected:', durationDisplay)
     }
     
     if (onSlotClick) {
-      onSlotClick(slotData)
+      onSlotClick(enhancedSlotData)
     }
     
     selectInfo.view.calendar.unselect()
   }, [onSlotClick, events])
   
-  // Helper function to find first available slot
   const findFirstAvailableSlot = (dateStr, dayEvents = []) => {
     const slots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
     for (const slot of slots) {
@@ -157,10 +152,13 @@ export default function EnhancedProfessionalCalendar({
     return '09:00' // Default
   }
   
-  // Helper function to find available barber
   const findAvailableBarber = (start, end) => {
+    // Handle case when resources is undefined (premium feature removed)
+    if (!resources || resources.length === 0) {
+      return null
+    }
+    
     if (!events || events.length === 0) {
-      // If no events, all barbers are available - return first one
       return resources.length > 0 ? {
         id: resources[0].id,
         name: resources[0].title,
@@ -199,7 +197,6 @@ export default function EnhancedProfessionalCalendar({
     }
   }
   
-  // Helper function to find nearby events
   const findNearbyEvents = (time) => {
     if (!events || events.length === 0) return []
     
@@ -214,7 +211,6 @@ export default function EnhancedProfessionalCalendar({
     })
   }
   
-  // Handle event click
   const handleEventClick = useCallback((clickInfo) => {
     if (onEventClick) {
       onEventClick({
@@ -226,7 +222,6 @@ export default function EnhancedProfessionalCalendar({
     }
   }, [onEventClick])
   
-  // Handle event drop
   const handleEventDrop = useCallback((dropInfo) => {
     if (onEventDrop) {
       onEventDrop({
@@ -241,109 +236,380 @@ export default function EnhancedProfessionalCalendar({
     }
   }, [onEventDrop])
   
-  // Handle view change
   const handleViewChange = useCallback((arg) => {
     const newView = arg.view.type
     setCurrentView(newView)
-    console.log('📅 View changed to:', newView)
-    // Notify parent component if handler provided
     if (onViewChange) {
       onViewChange(newView)
     }
   }, [onViewChange])
   
-  useEffect(() => {
-    if (events.length > 0) {
-      console.log('📅 Enhanced Calendar loaded with', events.length, 'real events')
-      console.log('📅 Sample event:', events[0])
-      console.log('📅 Event start type:', typeof events[0].start)
-    } else {
-      console.log('📅 Enhanced Calendar loaded with no events - waiting for real data from parent')
+  // Removed DOM manipulation useEffect - anti-pattern
+  // Calendar API should be accessed through calendarRef.current.getApi()
+
+  // Custom resource label rendering with profile images
+  const renderResourceLabel = useCallback((resourceInfo) => {
+    const resource = resourceInfo.resource
+    const avatarUrl = resource.extendedProps?.avatar_url
+    const name = resource.title || 'Unknown'
+
+    // Generate colored initials fallback using consistent hashing
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    const colorIndex = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 6
+    const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899']
+    const bgColor = colors[colorIndex]
+
+    return {
+      html: `
+        <div class="resource-label-wrapper">
+          ${avatarUrl ?
+            `<img src="${avatarUrl}" alt="${name}" class="resource-avatar"
+              onerror="var div=document.createElement('div');div.className='resource-avatar-fallback';div.style.backgroundColor='${bgColor}';div.textContent='${initials}';this.replaceWith(div);" />` :
+            `<div class="resource-avatar-fallback" style="background-color: ${bgColor}">${initials}</div>`
+          }
+          <span class="resource-name">${name}</span>
+        </div>
+      `
     }
-    
-    // Make FullCalendar API accessible for debugging
-    if (calendarRef.current) {
-      const calendarApi = calendarRef.current.getApi()
-      if (calendarApi) {
-        // Store API reference on the DOM element for debugging
-        const calendarEl = document.querySelector('.fc')
-        if (calendarEl) {
-          calendarEl._fcApi = calendarApi
-          console.log('📅 FullCalendar API initialized and attached to DOM')
-        }
-      }
-    }
-  }, [events.length])
-  
+  }, [])
+
   return (
     <div className="enhanced-professional-calendar-wrapper">
       <style jsx global>{`
-        .fc-event {
-          border-radius: 4px !important;
-          padding: 4px !important;
-          margin-bottom: 2px !important;
-          border: 1px solid rgba(0,0,0,0.1) !important;
-          cursor: pointer !important;
+        /* ===== BRAND THEME STYLING ===== */
+        /* Calendar container background */
+        .fc {
+          background: transparent;
         }
-        .fc-event-title {
+
+        /* Header toolbar with solid brand color */
+        .fc-toolbar {
+          background: #546355 !important;
+          padding: 1.25rem !important;
+          border-radius: 0.75rem 0.75rem 0 0;
+          margin-bottom: 0 !important;
+          border-bottom: 3px solid #3C4A3E !important;
+        }
+
+        .fc-toolbar-title {
+          color: white !important;
+          font-size: 1.5rem !important;
+          font-weight: 700 !important;
+          letter-spacing: -0.025em !important;
+        }
+
+        /* Toolbar buttons with improved solid styling */
+        .fc-button {
+          background: rgba(255, 255, 255, 0.15) !important;
+          border: 2px solid rgba(255, 255, 255, 0.25) !important;
+          color: white !important;
+          border-radius: 0.5rem !important;
+          padding: 0.625rem 1.25rem !important;
           font-weight: 600 !important;
-          font-size: 12px !important;
-          line-height: 1.3 !important;
+          font-size: 0.875rem !important;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
         }
-        .fc-event-time {
-          font-size: 11px !important;
-          font-weight: 500 !important;
+
+        .fc-button:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.25) !important;
+          border-color: rgba(255, 255, 255, 0.35) !important;
+          transform: translateY(-1px) !important;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12) !important;
         }
-        .fc-timegrid-event {
-          min-height: 30px !important;
+
+        .fc-button:active {
+          background: rgba(255, 255, 255, 0.2) !important;
+          transform: translateY(0) !important;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
         }
-        .fc-timegrid-event-harness {
-          margin-right: 2px !important;
+
+        .fc-button-active {
+          background: rgba(255, 255, 255, 0.3) !important;
+          border-color: rgba(255, 255, 255, 0.4) !important;
+          box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15) !important;
         }
-        /* Fix the now indicator line */
+
+        .fc-button:disabled {
+          opacity: 0.4 !important;
+          cursor: not-allowed !important;
+        }
+
+        /* Day/week headers with dark theme */
+        .fc-col-header {
+          background: #3C4A3E !important;
+          border-bottom: 2px solid #546355 !important;
+        }
+
+        .fc-col-header-cell {
+          padding: 0.75rem 0.5rem !important;
+          font-weight: 600 !important;
+          color: #E5E7EB !important;
+          border-color: #546355 !important;
+        }
+
+        .fc-col-header-cell-cushion {
+          color: #E5E7EB !important;
+          font-weight: 600 !important;
+        }
+
+        /* Time grid styling */
+        .fc-timegrid-slot {
+          height: 3rem !important;
+          border-color: #546355 !important;
+        }
+
+        .fc-timegrid-slot-label {
+          color: #6b7280 !important;
+          font-size: 0.875rem !important;
+          padding-right: 0.5rem !important;
+        }
+
+        /* Business hours highlighting with olive tint */
+        .fc-non-business {
+          background: rgba(243, 244, 246, 0.5) !important;
+        }
+
+        .fc-timegrid-col.fc-day-today {
+          background: rgba(84, 99, 85, 0.03) !important;
+        }
+
+        /* Current time indicator - gold accent */
         .fc-timegrid-now-indicator-line {
-          border-color: #ef4444 !important;
+          border-color: #C5A35B !important;
           border-width: 2px !important;
+          box-shadow: 0 0 8px rgba(197, 163, 91, 0.5);
+        }
+
+        .fc-timegrid-now-indicator-arrow {
+          border-color: #C5A35B !important;
+        }
+
+        /* Events with improved styling */
+        .fc-event {
+          border-radius: 0.375rem !important;
+          cursor: pointer !important;
+          border-width: 1px !important;
+          padding: 0.25rem 0.5rem !important;
+          font-size: 0.875rem !important;
+          font-weight: 500 !important;
+          transition: all 0.2s ease !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .fc-event:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15) !important;
           z-index: 10 !important;
         }
-        .fc-timegrid-now-indicator-arrow {
-          border-color: #ef4444 !important;
-        }
-        /* Force resource area to be visible */
-        .fc-resource-area {
-          width: 15% !important;
-          min-width: 120px !important;
-          display: block !important;
-        }
-        .fc-resource-area-header {
-          background: #f3f4f6 !important;
+
+        .fc-event-title {
           font-weight: 600 !important;
+          color: white !important;
         }
+
+        .fc-event-time {
+          font-weight: 500 !important;
+          opacity: 0.9;
+        }
+
+        /* Resource area styling */
+        .fc-resource-area {
+          min-width: 180px !important;
+          background: linear-gradient(to right, #2D3630, #3C4A3E);
+        }
+
+        .fc-resource-area-header {
+          background: #546355 !important;
+          color: white !important;
+          font-weight: 700 !important;
+          padding: 1rem !important;
+          text-align: center !important;
+        }
+
         .fc-resource-cell {
-          padding: 8px !important;
-          background: #ffffff !important;
-          border-right: 1px solid #e5e7eb !important;
+          border-right: 2px solid #546355 !important;
+          background: #3C4A3E !important;
         }
-        .fc-resource-lane {
-          min-height: 50px !important;
+
+        .fc-resource {
+          padding: 0 !important;
+          transition: background 0.2s ease !important;
         }
-        /* Ensure resource time grid view shows columns */
-        .fc-resource-timegrid .fc-resource-col {
-          width: 25% !important; /* 4 barbers = 25% each */
+
+        .fc-resource:hover {
+          background: rgba(84, 99, 85, 0.25) !important;
         }
-        .fc-resource-timegrid-divider {
-          display: block !important;
+
+        /* Resource label with avatar (inline layout) */
+        .resource-label-wrapper {
+          display: flex !important;
+          align-items: center !important;
+          gap: 0.75rem !important;
+          padding: 0.75rem !important;
+          width: 100%;
         }
-        /* Pulse animation for optimistic updates */
-        @keyframes pulse {
-          0% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.2); }
-          100% { opacity: 1; transform: scale(1); }
+
+        .resource-avatar {
+          width: 48px !important;
+          height: 48px !important;
+          border-radius: 50% !important;
+          object-fit: cover !important;
+          border: 2px solid rgba(255, 255, 255, 0.2) !important;
+          flex-shrink: 0 !important;
+        }
+
+        .resource-avatar-fallback {
+          width: 48px !important;
+          height: 48px !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          color: white !important;
+          font-weight: 700 !important;
+          font-size: 1rem !important;
+          border: 2px solid rgba(255, 255, 255, 0.2) !important;
+          flex-shrink: 0 !important;
+        }
+
+        .resource-name {
+          font-weight: 600 !important;
+          color: #E5E7EB !important;
+          font-size: 0.875rem !important;
+          line-height: 1.25 !important;
+          flex: 1 !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+        }
+
+        /* Timeline view specific styling */
+        .fc-timeline-header-row {
+          background: linear-gradient(to bottom, #3C4A3E, #2D3630) !important;
+        }
+
+        .fc-timeline-slot {
+          border-color: #546355 !important;
+        }
+
+        .fc-timeline-slot-label {
+          color: #6b7280 !important;
+        }
+
+        /* Scrollbars with brand theme */
+        .fc-scroller::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+
+        .fc-scroller::-webkit-scrollbar-track {
+          background: #2D3630;
+          border-radius: 4px;
+        }
+
+        .fc-scroller::-webkit-scrollbar-thumb {
+          background: #C5A35B;
+          border-radius: 4px;
+        }
+
+        .fc-scroller::-webkit-scrollbar-thumb:hover {
+          background: #B8913A;
+        }
+
+        /* Selection overlay with olive tint */
+        .fc-highlight {
+          background: rgba(84, 99, 85, 0.15) !important;
+          border: 2px dashed #546355 !important;
+        }
+
+        /* More events link */
+        .fc-more-link {
+          color: #546355 !important;
+          font-weight: 600 !important;
+          text-decoration: none !important;
+        }
+
+        .fc-more-link:hover {
+          color: #C5A35B !important;
+        }
+
+        /* Popover styling */
+        .fc-popover {
+          border: 2px solid #546355 !important;
+          border-radius: 0.75rem !important;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .fc-popover-header {
+          background: linear-gradient(135deg, #546355, #C5A35B) !important;
+          color: white !important;
+          font-weight: 700 !important;
+          padding: 0.75rem 1rem !important;
+          border-radius: 0.5rem 0.5rem 0 0 !important;
+        }
+
+        .fc-popover-body {
+          background: #2D3630 !important;
+          padding: 0.5rem !important;
+        }
+
+        /* Border colors */
+        .fc-theme-standard td,
+        .fc-theme-standard th {
+          border-color: #546355 !important;
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+          .fc-col-header {
+            background: linear-gradient(to bottom, #1f2937, #111827);
+          }
+
+          .fc-col-header-cell-cushion {
+            color: #9ca3af !important;
+          }
+
+          .fc-timegrid-slot-label {
+            color: #9ca3af !important;
+          }
+
+          .fc-theme-standard td,
+          .fc-theme-standard th {
+            border-color: #374151 !important;
+          }
+
+          .fc-non-business {
+            background: rgba(17, 24, 39, 0.5) !important;
+          }
+
+          .fc-resource-area {
+            background: linear-gradient(to right, #111827, #1f2937);
+          }
+
+          .fc-resource {
+            color: #e5e7eb !important;
+          }
+
+          .fc-scroller::-webkit-scrollbar-track {
+            background: #1f2937;
+          }
+        }
+
+        /* Drag and drop feedback */
+        .fc-event-dragging {
+          opacity: 0.75 !important;
+          transform: scale(1.05);
+        }
+
+        .fc-event-resizing {
+          opacity: 0.8 !important;
         }
       `}</style>
       <FullCalendar
         ref={calendarRef}
         plugins={[
+          // Premium plugins enabled with proper licensing
           resourceTimeGridPlugin,
           resourceTimelinePlugin,
           dayGridPlugin,
@@ -352,16 +618,13 @@ export default function EnhancedProfessionalCalendar({
           interactionPlugin,
           rrulePlugin
         ]}
+        schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
         
-        // Timezone configuration
-        timeZone='local'
-        
-        // View configuration
         initialView={controlledView || defaultView}
         headerToolbar={{
           left: 'prev,next today',
           center: 'title',
-          right: 'resourceTimeGridDay,timeGridWeek,resourceTimeGridWeek,dayGridMonth,listWeek'
+          right: 'resourceTimeGridDay,resourceTimeGridWeek,resourceTimelineWeek,timeGridWeek,listWeek'
         }}
         views={{
           dayGridMonth: {
@@ -370,6 +633,7 @@ export default function EnhancedProfessionalCalendar({
           timeGridWeek: {
             buttonText: 'Week'
           },
+          // Premium resource views enabled with proper licensing
           resourceTimeGridWeek: {
             buttonText: 'Barber Week'
           },
@@ -386,20 +650,13 @@ export default function EnhancedProfessionalCalendar({
           }
         }}
         
-        // Data - resources must be passed as initialResources for proper rendering
-        // For non-resource views, we'll let FullCalendar handle resource events properly
-        initialResources={resources}
-        resources={resources}
-        events={processedEvents}  // Use processed events
-        // This allows resource events to display in non-resource views
-        resourcesInitiallyExpanded={true}
-        refetchResourcesOnNavigate={false}  // Prevent unnecessary resource refetching
-        resourceLabelDidMount={(info) => {
-          // Ensure resource labels are visible
-          console.log('Resource mounted:', info.resource.title)
-        }}
+        // Premium resources enabled with proper licensing
+        resources={resources}  // Use resources prop for barber resources
+        resourceLabelContent={renderResourceLabel}  // Custom rendering with profile images
+        {...(eventSources ? { eventSources: eventSources } : { events: processedEvents })}  // Use eventSources or fallback to events
+        // resourcesInitiallyExpanded={true}
+        // refetchResourcesOnNavigate={false}  // Better performance - only refetch when needed
         
-        // Time configuration
         timeZone="local"  // Use local timezone to prevent date/time issues
         slotMinTime="08:00:00"
         slotMaxTime="20:00:00"
@@ -414,14 +671,12 @@ export default function EnhancedProfessionalCalendar({
         scrollTime="09:00:00"  // Initial scroll position to 9am
         expandRows={true}  // Expand rows to fill available height
         
-        // Business hours
         businessHours={{
           daysOfWeek: [1, 2, 3, 4, 5, 6],
           startTime: '09:00',
           endTime: '18:00'
         }}
         
-        // Display
         height={height}
         nowIndicator={true}
         nowIndicatorClassNames={['current-time-indicator']}
@@ -437,53 +692,46 @@ export default function EnhancedProfessionalCalendar({
         eventMinHeight={20}  // Minimum height for events
         eventShortHeight={30}  // Height for short events
         
-        // Interaction
+        // Production performance optimizations
+        aspectRatio={1.35}  // Better aspect ratio for professional use
+        contentHeight={600}  // Fixed content height for consistency
+        
         editable={true}
         selectable={true}
         selectMirror={true}
-        selectMinDistance={0}  // Remove distance requirement for better long drag selection
+        selectMinDistance={0}  // Allow clicks to trigger select event (duration-based detection in handler)
         selectLongPressDelay={250}  // Touch device long-press delay
         unselectAuto={true}  // Auto-unselect when clicking elsewhere
         unselectCancel=".fc-event,.modal"  // Don't unselect when clicking events or modals
         select={handleDateSelect}
         dateClick={(info) => {
-          // Handle single clicks on dates/times
-          console.log('📅 Single click on date/time:', info)
-          
-          // Only process clicks in time-based views (not month view)
-          if (info.view.type.includes('timeGrid') || info.view.type.includes('resource')) {
-            // For single clicks, we'll pass the start time and let the service selection determine duration
-            // Initially show a provisional 1-hour slot, but this will update based on selected service
+          console.log('👆 [Calendar] CLICK detected:', info.view.type, info.resource?.id, info.date)
+          if (info.view.type.includes('timeGrid')) {
             const provisionalEnd = new Date(info.date)
-            provisionalEnd.setHours(provisionalEnd.getHours() + 1)
+            provisionalEnd.setMinutes(provisionalEnd.getMinutes() + 30) // Default to 30-minute slot duration
             
             const slotData = {
               start: info.date,
-              end: provisionalEnd, // This is provisional and will be recalculated based on service
+              end: provisionalEnd, // Default 30-minute duration matching slot duration
               startStr: info.dateStr,
               endStr: provisionalEnd.toISOString(),
               allDay: false,
               viewType: info.view.type,
-              resource: info.resource,
-              resourceId: info.resource?.id,
-              resourceTitle: info.resource?.title,
+              resource: info.resource,  // Premium feature enabled with GPL license
+              resourceId: info.resource?.id,  // Premium feature enabled with GPL license
+              resourceTitle: info.resource?.title,  // Premium feature enabled with GPL license
+              selectedBarber: info.resource?.id,  // For modal pre-population
+              selectedBarberName: info.resource?.title,  // For modal pre-population
               jsEvent: info.jsEvent,
               selectionType: 'click',
-              duration: null, // Will be determined by service selection
-              isProvisional: true, // Indicates duration needs to be set by service
-              // Add barber info for resource views
-              barberId: info.resource?.id || null,
-              barberName: info.resource?.title || null
+              duration: 30, // Default to 30 minutes matching the calendar slot duration
+              isProvisional: true // Indicates duration can be changed by service selection
             }
             
-            console.log('📅 Opening modal from single click with data:', slotData)
-            
-            // Call the slot click handler
             if (onSlotClick) {
               onSlotClick(slotData)
             }
           } else if (info.view.type === 'dayGridMonth') {
-            // For month view, create an all-day selection or default morning slot
             const slotData = {
               start: info.date,
               end: info.date,
@@ -498,8 +746,6 @@ export default function EnhancedProfessionalCalendar({
               duration: 60
             }
             
-            console.log('📅 Month view click - needs time selection:', slotData)
-            
             if (onSlotClick) {
               onSlotClick(slotData)
             }
@@ -510,11 +756,9 @@ export default function EnhancedProfessionalCalendar({
           endTime: '20:00'
         }}
         selectAllow={(selectInfo) => {
-          // Additional validation for selection
           const duration = selectInfo.end - selectInfo.start
           const maxDuration = 12 * 60 * 60 * 1000  // Max 12 hours selection (full business day)
           
-          // Allow selections up to 12 hours
           if (duration > maxDuration) {
             console.warn('Selection too long:', Math.round(duration / 60000), 'minutes. Max:', Math.round(maxDuration / 60000), 'minutes')
             return false
@@ -531,20 +775,56 @@ export default function EnhancedProfessionalCalendar({
         viewDidMount={handleViewChange}
         datesSet={handleViewChange}  // Also handle when navigating dates
         loading={(isLoading) => {
-          // Handle loading state
-          console.log('Calendar loading:', isLoading)
-        }}
-        eventAdd={(info) => {
-          console.log('Event added:', info.event.id)
-        }}
-        eventChange={(info) => {
-          console.log('Event changed:', info.event.id)
-        }}
-        eventRemove={(info) => {
-          console.log('Event removed:', info.event.id)
+          // Loading state handled by parent component
+          // // Debug log removed for production
+}}
+        
+        // Production-ready event source error handling
+        eventSourceSuccess={(rawEvents, response) => {
+          console.log('[FullCalendar] Received events from API:', rawEvents?.length || 0)
+          if (rawEvents && rawEvents.length > 0) {
+            console.log('[FullCalendar] First event:', rawEvents[0])
+            const blockedEvents = rawEvents.filter(e => e.extendedProps?.is_blocked_time || e.title?.includes('🚫'))
+            if (blockedEvents.length > 0) {
+              console.log(`[FullCalendar] Found ${blockedEvents.length} blocked events:`, blockedEvents)
+            }
+          }
+          
+          // Validate and sanitize events for production
+          const validEvents = (rawEvents || []).filter(event => {
+            const isValid = event.id && event.start && event.title
+            if (!isValid) {
+              console.warn('[FullCalendar] Invalid event filtered out:', event)
+            }
+            return isValid
+          })
+          
+          if (validEvents.length !== rawEvents?.length) {
+            console.warn(`[FullCalendar] Filtered ${(rawEvents?.length || 0) - validEvents.length} invalid events`)
+          }
+          
+          console.log(`[FullCalendar] Returning ${validEvents.length} valid events to calendar`)
+          return validEvents
         }}
         
-        // Event Display Configuration
+        eventSourceFailure={(error) => {
+          console.error('FullCalendar event source failed:', error)
+          
+          // Production-ready error reporting
+          if (error.response?.status === 401) {
+            console.warn('Authentication expired, user should re-login')
+          } else if (error.response?.status === 403) {
+            console.warn('Access denied to calendar events')
+          } else if (error.response?.status >= 500) {
+            console.error('Server error loading events:', error.response?.status)
+          } else if (error.message?.includes('Network Error')) {
+            console.error('Network connectivity issue loading events')
+          }
+          
+          // Return empty array to prevent calendar from breaking
+          return []
+        }}
+        
         eventTimeFormat={{  // Better time formatting
           hour: 'numeric',
           minute: '2-digit',
@@ -552,14 +832,11 @@ export default function EnhancedProfessionalCalendar({
         }}
         displayEventTime={true}
         displayEventEnd={false}  // Don't show end time in event title
-        eventOrder="-duration,title"  // Order by duration (longest first), then title
-        eventOrderStrict={false}  // Allow some flexibility in ordering
+        eventOrder={['start', '-duration', 'title']}  // Optimize event sorting for production
+        eventOrderStrict={true}  // Enforce consistent ordering for better performance
         nextDayThreshold="06:00:00"  // Events ending before 6am count as previous day
         
-        // Event content rendering - Using eventDidMount for styling instead of eventContent
-        // This preserves React event handling while allowing customization
         eventDidMount={(info) => {
-          // Add custom classes based on event properties
           const { event } = info
           if (event.extendedProps?.isOptimistic) {
             info.el.classList.add('optimistic-event')
@@ -568,118 +845,25 @@ export default function EnhancedProfessionalCalendar({
           if (event.extendedProps?.isRecurring) {
             info.el.classList.add('recurring-event')
           }
-          // Add status-based styling
           if (event.extendedProps?.status) {
             info.el.classList.add(`event-status-${event.extendedProps.status}`)
           }
         }}
-        // eventContent={(arg) => {
-        //   const { event } = arg
-        //   const isRecurring = event.extendedProps?.isRecurring
-        //   const isRecurringInstance = event.extendedProps?.isRecurringInstance
-        //   const isOptimistic = event.extendedProps?.isOptimistic
-        //   const status = event.extendedProps?.status
-        //   
-        //   // Parse the title to separate customer and service
-        //   const title = event.title || ''
-        //   const titleParts = title.split(' - ')
-        //   const customer = titleParts[0] || ''
-        //   const service = titleParts[1] || ''
-        //   
-        //   return {
-        //     html: `
-        //       <div class="fc-event-main-frame" style="height: 100%; cursor: pointer; ${isOptimistic ? 'opacity: 0.7; position: relative;' : ''}">
-        //         ${isOptimistic ? '<div style="position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; animation: pulse 1.5s infinite;"></div>' : ''}
-        //         <div class="fc-event-title-container">
-        //           <div class="fc-event-title fc-sticky" style="font-weight: 600; font-size: 12px;">
-        //             ${isRecurring || isRecurringInstance ? '🔄 ' : ''}${isOptimistic ? '⏳ ' : ''}${customer}
-        //           </div>
-        //           ${service ? `<div style="font-size: 11px; opacity: 0.9;">${service}</div>` : ''}
-        //           ${isOptimistic ? '<div style="font-size: 10px; opacity: 0.7; font-style: italic;">Booking...</div>' : ''}
-        //         </div>
-        //       </div>
-        //     `
-        //   }
-        // }}
-        // Old custom eventContent that was causing issues - kept commented
-        // eventContent={(arg) => {
-        //   const { event } = arg
-        //   const isRecurring = event.extendedProps?.isRecurring
-        //   const isRecurringInstance = event.extendedProps?.isRecurringInstance
-          
-        //   // Parse the title to separate customer and service
-        //   const title = event.title || ''
-        //   const titleParts = title.split(' - ')
-        //   const customer = titleParts[0] || ''
-        //   const service = titleParts[1] || ''
-          
-        //   return (
-        //     <div className="p-1 h-full overflow-hidden">
-        //       <div className="flex items-start justify-between mb-1">
-        //         <div className="flex items-center min-w-0 flex-1">
-        //           {(isRecurring || isRecurringInstance) && (
-        //             <span className="text-xs mr-1 flex-shrink-0" title={isRecurring ? 'Recurring Series' : 'Recurring Instance'}>
-        //               🔄
-        //             </span>
-        //           )}
-        //           <div className="min-w-0 flex-1">
-        //             <div className="font-semibold text-xs leading-tight truncate" title={customer}>
-        //               {customer}
-        //             </div>
-        //             {service && (
-        //               <div className="text-xs leading-tight opacity-90 truncate" title={service}>
-        //                 {service}
-        //               </div>
-        //             )}
-        //           </div>
-        //         </div>
-        //       </div>
-        //       {event.extendedProps?.status && event.extendedProps.status !== 'confirmed' && (
-        //         <div className="text-xs opacity-75 leading-tight">
-        //           {event.extendedProps.status}
-        //         </div>
-        //       )}
-        //     </div>
-        //   )
-        // }}
         
-        // Resources - Enhanced configuration for proper rendering
-        schedulerLicenseKey="CC-Attribution-NonCommercial-NoDerivatives"
-        resourceAreaHeaderContent="Barbers"
-        resourceAreaWidth="12%"
-        resourceAreaColumns={[
-          {
-            field: 'title',
-            headerContent: 'Barbers'
-          }
-        ]}
-        datesAboveResources={false}
-        refetchResourcesOnNavigate={true}
-        resourceOrder="title"
+        dayHeaderFormat={{
+          weekday: 'short', 
+          month: 'numeric', 
+          day: 'numeric'
+        }}
         
-        // Mobile responsiveness and better date formatting
-        dayHeaderFormat={currentView.includes('resource') ? 
-          { day: '2-digit' } :  // For resource views: just "10", "11", "12"
-          { weekday: 'short', month: 'numeric', day: 'numeric' }  // For other views: "Mon 8/10"
-        }
-        dayHeaderContent={currentView.includes('resource') ? (arg) => {
-          // Custom day names with "Th" for Thursday to avoid confusion with Tuesday
-          const dayNames = ['S', 'M', 'T', 'W', 'Th', 'F', 'S']
-          const dayOfWeek = arg.date.getDay()
-          const dayNum = arg.date.getDate()
-          
-          // Return HTML structure with different sizes
-          return {
-            html: `<div style="text-align: center; line-height: 1.2;">
-              <span style="font-size: 0.7rem; color: #6b7280;">${dayNames[dayOfWeek]}</span><br/>
-              <span style="font-size: 0.9rem; font-weight: 600;">${dayNum}</span>
-            </div>`
-          }
-        } : undefined}
-        
-        // Performance
         lazyFetching={true}
         progressiveEventRendering={true}
+        
+        rerenderDelay={10}
+        eventMinHeight={25}
+        eventShortHeight={35}
+        slotEventOverlap={false}
+        windowResizeDelay={100}
       />
     </div>
   )

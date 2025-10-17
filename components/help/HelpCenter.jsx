@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   QuestionMarkCircleIcon, 
   MagnifyingGlassIcon,
@@ -10,6 +9,7 @@ import {
   ArrowRightIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 const HELP_ARTICLES = [
   {

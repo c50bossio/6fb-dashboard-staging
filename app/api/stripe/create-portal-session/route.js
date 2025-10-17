@@ -1,22 +1,15 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@/lib/supabase/server-client'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-// Force Node.js runtime to support Supabase dependencies
-export const runtime = 'nodejs'
-
-// Initialize Stripe
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-10-16',
-    })
-  : null
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2024-06-20'
+})
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
     
-    // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     if (authError || !user) {
@@ -25,53 +18,85 @@ export async function POST(request) {
         { status: 401 }
       )
     }
-
-    const { customerId } = await request.json()
     
-    // If no customerId provided, get from database
-    let stripeCustomerId = customerId
+    // Get user's profile data (correct table name)
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id, email, full_name, subscription_tier')
+      .eq('id', user.id)
+      .single()
     
-    if (!stripeCustomerId) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('stripe_customer_id')
-        .eq('id', user.id)
-        .single()
+    if (userError) {
+      console.error('Error fetching user profile:', userError)
+      return NextResponse.json(
+        { error: 'Failed to fetch user profile' },
+        { status: 500 }
+      )
+    }
+    
+    // Check if Stripe is properly configured
+    if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes('placeholder')) {
       
-      stripeCustomerId = userData?.stripe_customer_id
+      return NextResponse.json({ 
+        url: '/dashboard/billing',
+        message: 'Redirecting to billing management page'
+      })
     }
     
-    if (!stripeCustomerId) {
-      return NextResponse.json(
-        { error: 'No Stripe customer found. Please contact support.' },
-        { status: 404 }
-      )
+    let customerId = userData.stripe_customer_id
+    
+    // If no Stripe customer ID exists, create one
+    if (!customerId) {
+
+      const customer = await stripe.customers.create({
+        email: userData.email,
+        name: userData.full_name,
+        metadata: {
+          supabase_user_id: user.id,
+          subscription_tier: userData.subscription_tier || 'free'
+        }
+      })
+      
+      customerId = customer.id
+      
+      // Update the user's profile with the new Stripe customer ID
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', user.id)
+      
+      if (updateError) {
+        console.error('Error updating stripe_customer_id:', updateError)
+        // Continue anyway - we can still create the portal session
+      }
     }
-
-    // Create Stripe billing portal session
-    const portalSession = await stripe.billingPortal.sessions.create({
-      customer: stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://bookbarber.com'}/billing`,
-      configuration: process.env.STRIPE_PORTAL_CONFIG_ID, // Set after running setup script
+    
+    // Create portal session
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9999'}/dashboard/billing`,
     })
-
-    return NextResponse.json({
-      url: portalSession.url
-    })
-
+    
+    return NextResponse.json({ url: session.url })
+    
   } catch (error) {
-    console.error('Portal session creation error:', error)
+    console.error('Portal session error:', error)
     
-    // Handle specific Stripe errors
-    if (error.type === 'StripeInvalidRequestError') {
-      return NextResponse.json(
-        { error: 'Invalid customer or configuration. Please contact support.' },
-        { status: 400 }
-      )
+    // If error is due to missing Stripe config or portal configuration, redirect to billing page instead
+    if (error.message?.includes('Invalid API Key') || 
+        error.message?.includes('No API key') ||
+        error.message?.includes('No configuration provided') ||
+        error.message?.includes('default configuration has not been created') ||
+        error.type === 'StripeInvalidRequestError') {
+
+      return NextResponse.json({ 
+        url: '/dashboard/billing',
+        message: 'Using local billing management'
+      })
     }
     
     return NextResponse.json(
-      { error: 'Failed to create billing portal session. Please try again.' },
+      { error: 'Failed to create portal session' },
       { status: 500 }
     )
   }

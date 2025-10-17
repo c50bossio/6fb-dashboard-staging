@@ -9,7 +9,7 @@ import {
   CheckCircleIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 import { useFeatureFlags } from '@/hooks/useFeatureFlag'
 import { FLAGS } from '@/lib/feature-flags'
@@ -186,7 +186,6 @@ export async function GET(req) {
   const isEnabled = await getFeatureFlag('advanced_analytics')
   
   if (isEnabled) {
-    // Return advanced analytics data
   }
 }`}
               </pre>

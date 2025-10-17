@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-export const runtime = 'edge'
-
-// Initialize Supabase client
+import { NextResponse } from 'next/server'
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -21,7 +20,6 @@ export async function POST(request) {
       userAgent
     } = body
 
-    // Validate required fields
     if (!message) {
       return NextResponse.json(
         { error: 'Message is required' },
@@ -29,7 +27,6 @@ export async function POST(request) {
       )
     }
 
-    // Get user info from session if available
     const authHeader = request.headers.get('authorization')
     let userId = null
     
@@ -39,7 +36,6 @@ export async function POST(request) {
       userId = user?.id
     }
 
-    // Store feedback in database
     const { data, error } = await supabase
       .from('user_feedback')
       .insert({
@@ -58,24 +54,12 @@ export async function POST(request) {
     if (error) {
       console.error('Error saving feedback:', error)
       
-      // Fallback to logging if database fails
-      console.log('Feedback received:', {
-        type,
-        rating,
-        message,
-        email,
-        timestamp,
-        url
-      })
-      
-      // Still return success to user
       return NextResponse.json({
         success: true,
         message: 'Feedback received'
       })
     }
 
-    // Send notification to admin if high-priority
     if (type === 'bug' || rating <= 2) {
       await notifyAdmin({
         type,
@@ -86,9 +70,7 @@ export async function POST(request) {
       })
     }
 
-    // Track analytics event
     if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-      // PostHog tracking would go here
     }
 
     return NextResponse.json({
@@ -108,13 +90,11 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    // Admin endpoint to retrieve feedback
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type')
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Check admin authorization
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
       return NextResponse.json(
@@ -126,7 +106,6 @@ export async function GET(request) {
     const token = authHeader.replace('Bearer ', '')
     const { data: { user } } = await supabase.auth.getUser(token)
     
-    // Check if user is admin
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -140,7 +119,6 @@ export async function GET(request) {
       )
     }
 
-    // Build query
     let query = supabase
       .from('user_feedback')
       .select('*', { count: 'exact' })
@@ -157,7 +135,6 @@ export async function GET(request) {
       throw error
     }
 
-    // Calculate statistics
     const stats = await calculateFeedbackStats()
 
     return NextResponse.json({
@@ -181,24 +158,13 @@ export async function GET(request) {
 }
 
 async function notifyAdmin(feedback) {
-  // Send email notification to admin
   try {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@6fbagent.com'
     
-    // In production, you would use an email service
-    console.log('Admin notification:', {
-      to: adminEmail,
-      subject: `Urgent Feedback: ${feedback.type}`,
-      body: `
-        Type: ${feedback.type}
-        Rating: ${feedback.rating}/5
-        Message: ${feedback.message}
-        From: ${feedback.email || 'Anonymous'}
-        Page: ${feedback.url}
-      `
-    })
+    // Email notification would be sent here
+    // subject: `Urgent Feedback: ${feedback.type}`,
+    // body: feedback content
     
-    // Also create an in-app notification
     await supabase
       .from('notifications')
       .insert({
@@ -233,10 +199,8 @@ async function calculateFeedbackStats() {
     let ratingCount = 0
     
     data.forEach(item => {
-      // Count by type
       stats.byType[item.type] = (stats.byType[item.type] || 0) + 1
       
-      // Calculate rating stats
       if (item.rating) {
         totalRating += item.rating
         ratingCount++

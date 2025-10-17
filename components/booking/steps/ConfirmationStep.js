@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import { CheckCircleIcon, CalendarIcon, ClockIcon, MapPinIcon, UserIcon, CreditCardIcon, DocumentDuplicateIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
+import { useState } from 'react'
 
 export default function ConfirmationStep({ bookingData, shopSettings, onComplete, onBack, isLoading }) {
   const [agreedToTerms, setAgreedToTerms] = useState(false)
@@ -47,7 +47,6 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
   }
   
   const formatPhoneNumber = (phone) => {
-    // Simple formatting for display
     return phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')
   }
   
@@ -147,15 +146,15 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
             <div className="space-y-1">
               <div className="flex items-center text-sm text-gray-600">
                 <UserIcon className="h-4 w-4 mr-2" />
-                {bookingData.customerInfo?.name}
+                {bookingData.clientInfo?.name || bookingData.customerInfo?.name}
               </div>
               <div className="flex items-center text-sm text-gray-600">
                 <EnvelopeIcon className="h-4 w-4 mr-2" />
-                {bookingData.customerInfo?.email}
+                {bookingData.clientInfo?.email || bookingData.customerInfo?.email}
               </div>
               <div className="flex items-center text-sm text-gray-600">
                 <PhoneIcon className="h-4 w-4 mr-2" />
-                {formatPhoneNumber(bookingData.customerInfo?.phone || '')}
+                {formatPhoneNumber(bookingData.clientInfo?.phone || bookingData.customerInfo?.phone || '')}
               </div>
             </div>
           </div>
@@ -198,9 +197,9 @@ Payment: ${bookingData.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Shop
           />
           <span className="ml-2 text-sm text-gray-600">
             I agree to the{' '}
-            <a href="#" className="text-olive-600 hover:underline">terms and conditions</a>
+            <a href="/legal/terms" target="_blank" className="text-olive-600 hover:underline">terms and conditions</a>
             {' '}and understand the{' '}
-            <a href="#" className="text-olive-600 hover:underline">cancellation policy</a>
+            <a href="/legal/cancellation-policy" target="_blank" className="text-olive-600 hover:underline">cancellation policy</a>
             {' '}(cancellations less than {shopSettings.cancellationWindow} hours before 
             appointment may incur a fee)
           </span>

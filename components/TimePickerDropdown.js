@@ -7,7 +7,6 @@ const TimePickerDropdown = ({ value, onChange, placeholder = "Select time", clas
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef(null)
 
-  // Generate time options in 15-minute intervals from 6 AM to 11 PM
   const generateTimeOptions = () => {
     const options = []
     for (let hour = 6; hour <= 23; hour++) {
@@ -29,7 +28,6 @@ const TimePickerDropdown = ({ value, onChange, placeholder = "Select time", clas
 
   const timeOptions = generateTimeOptions()
 
-  // Format display value
   const getDisplayValue = (time24) => {
     if (!time24) return placeholder
     try {
@@ -41,7 +39,6 @@ const TimePickerDropdown = ({ value, onChange, placeholder = "Select time", clas
     }
   }
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -53,7 +50,6 @@ const TimePickerDropdown = ({ value, onChange, placeholder = "Select time", clas
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Popular time options for quick access
   const popularTimes = [
     { value: '09:00', label: '9:00 AM' },
     { value: '10:00', label: '10:00 AM' },

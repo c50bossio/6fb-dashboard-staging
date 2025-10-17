@@ -1,0 +1,150 @@
+'use client'
+
+import dynamic from 'next/dynamic'
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+
+const EnhancedProfessionalCalendar = dynamic(
+  () => import('@/components/calendar/EnhancedProfessionalCalendar'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-[600px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
+)
+
+export default function BookingsPage() {
+  const { user: _user } = useAuth()
+  const [events, setEvents] = useState([])
+  const [resources, setResources] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    fetchRealData()
+  }, [user])
+
+  const fetchRealData = async () => {
+    if (!user) return
+    
+    try {
+      setLoading(true)
+      setError(null)
+      
+      if (!user.barbershop_id) {
+        throw new Error('No barbershop associated with your account. Please contact support.')
+      }
+      
+      const barbershopId = user.barbershop_id
+      
+      const today = new Date()
+      const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+      
+      const [appointmentsResponse, barbersResponse] = await Promise.all([
+        fetch(`/api/calendar/appointments?barbershop_id=${barbershopId}&start_date=${today.toISOString()}&end_date=${nextWeek.toISOString()}`).then(r => r.json()),
+        fetch(`/api/barbers?barbershop_id=${barbershopId}`).then(r => r.json())
+      ])
+      
+      const resources = (barbersResponse.barbers || []).map((barber, index) => ({
+        id: barber.id,
+        title: barber.name,
+        eventColor: ['#10b981', '#546355', '#f59e0b', '#D4B878', '#ef4444', '#06b6d4'][index % 6],
+        extendedProps: {
+          email: barber.email,
+          phone: barber.phone,
+          specialization: barber.specialization || 'General Services',
+          isRealData: true
+        }
+      }))
+      
+      const events = appointmentsResponse.appointments || []
+
+      setEvents(events)
+      setResources(resources)
+      
+      if (events.length === 0 && resources.length === 0) {
+        setError('No bookings or barbers found. Database may need seeding.')
+      }
+      
+    } catch (err) {
+      console.error('Error fetching real data:', err)
+      setError(`API error: ${err.message}`)
+      setEvents([])
+      setResources([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleEventClick = (info) => {
+    
+    alert(`Appointment: ${info.event.title}\nStatus: ${info.event.extendedProps.status}\nPrice: $${info.event.extendedProps.price}`)
+  }
+
+  const handleEventDrop = async (info) => {
+    
+  }
+
+  const handleDateSelect = (info) => {
+    
+    const title = prompt('Enter client name:')
+    if (title) {
+      const newEvent = {
+        id: `temp-${Date.now()}`,
+        title: `${title} - New Booking`,
+        start: info.start,
+        end: info.end,
+        resourceId: info.resource?.id,
+        backgroundColor: '#9C27B0'
+      }
+      setEvents([...events, newEvent])
+    }
+  }
+
+  return (
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Booking Calendar</h1>
+        <p className="text-gray-600 mt-2">
+          Manage your appointments and schedule
+          {error && <span className="ml-2 text-sm text-amber-700">({error})</span>}
+        </p>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-lg p-6" style={{ minHeight: '700px' }}>
+        <EnhancedProfessionalCalendar
+          initialEvents={events}
+          initialResources={resources}
+          onEventClick={handleEventClick}
+          onEventDrop={handleEventDrop}
+          onDateSelect={handleDateSelect}
+          initialView="resourceTimeGridDay"
+          height="650px"
+        />
+      </div>
+
+      {/* Quick Stats */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-sm font-medium text-gray-500">Today's Appointments</h3>
+          <p className="text-2xl font-bold text-gray-900">{events.filter(e => {
+            const eventDate = new Date(e.start).toDateString()
+            const today = new Date().toDateString()
+            return eventDate === today
+          }).length}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-sm font-medium text-gray-500">Active Barbers</h3>
+          <p className="text-2xl font-bold text-gray-900">{resources.length}</p>
+        </div>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h3 className="text-sm font-medium text-gray-500">Total Bookings</h3>
+          <p className="text-2xl font-bold text-gray-900">{events.length}</p>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -16,7 +16,7 @@ import { useState, useEffect } from 'react'
 import ProtectedRoute from '../../components/ProtectedRoute'
 import GlobalNavigation from '../../components/GlobalNavigation'
 import { useAuth } from '../../components/SupabaseAuthProvider'
-import { createClient } from '../../lib/supabase/browser-client'
+import { createClient } from '../../lib/supabase/client'
 import LoadingSpinner, { TableLoadingSkeleton } from '../../components/LoadingSpinner'
 import Button from '../../components/Button'
 
@@ -99,7 +99,7 @@ export default function CustomersPage() {
       
       const newCustomer = {
         ...addCustomerForm,
-        shop_id: profile?.shop_id || null,
+        barbershop_id: profile?.barbershop_id || null,
         created_at: new Date().toISOString(),
         join_date: new Date().toISOString().split('T')[0],
         total_spent: 0,

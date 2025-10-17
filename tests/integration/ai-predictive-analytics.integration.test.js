@@ -8,14 +8,12 @@
 import { NextRequest } from 'next/server'
 import { POST, GET } from '../../app/api/ai/predictive-analytics/route.js'
 
-// Mock database connections
 jest.mock('../../lib/supabase-query.js', () => ({
   queryTable: jest.fn(),
   executeQuery: jest.fn(),
   getTableSchema: jest.fn()
 }))
 
-// Mock AI service providers
 jest.mock('../../lib/ai-providers.js', () => ({
   openaiClient: {
     chat: {
@@ -41,7 +39,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     
-    // Mock successful database queries
     supabaseQuery.queryTable.mockResolvedValue({
       data: [
         { id: 1, total_revenue: 15420, booking_count: 156, date: '2025-01-01' },
@@ -82,7 +79,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
       expect(data.forecast.predicted_revenue).toBeGreaterThan(0)
       expect(data.forecast.confidence_level).toBe(0.85)
       
-      // Verify database was queried for historical data
       expect(supabaseQuery.queryTable).toHaveBeenCalledWith(
         'business_analytics',
         expect.objectContaining({
@@ -94,7 +90,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
     })
 
     test('revenue forecast integrates with multiple data sources', async () => {
-      // Mock additional data sources
       supabaseQuery.queryTable
         .mockResolvedValueOnce({ // Revenue data
           data: [{ total_revenue: 15420, date: '2025-01-01' }],
@@ -125,12 +120,10 @@ describe('AI Predictive Analytics - Integration Tests', () => {
       expect(data.forecast.key_factors).toBeDefined()
       expect(data.forecast.trend_analysis).toBeDefined()
       
-      // Should have queried multiple tables
       expect(supabaseQuery.queryTable).toHaveBeenCalledTimes(3)
     })
 
     test('handles seasonal adjustments in revenue forecasting', async () => {
-      // Mock seasonal data
       supabaseQuery.executeQuery.mockResolvedValue({
         data: [
           { month: 12, seasonal_multiplier: 1.25, revenue: 18500 }, // Holiday boost
@@ -158,7 +151,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
 
   describe('Customer Behavior Prediction Integration', () => {
     test('POST /api/ai/predictive-analytics - customer_behavior analysis', async () => {
-      // Mock customer data
       supabaseQuery.queryTable.mockResolvedValue({
         data: [
           { customer_id: 1, visit_frequency: 30, last_visit: '2025-01-01', churn_score: 0.15 },
@@ -217,7 +209,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
 
   describe('Demand Prediction Integration', () => {
     test('POST /api/ai/predictive-analytics - demand_prediction with time patterns', async () => {
-      // Mock booking patterns data
       supabaseQuery.queryTable.mockResolvedValue({
         data: [
           { hour: 10, day_of_week: 6, booking_count: 25, date: '2025-01-04' }, // Saturday 10 AM
@@ -242,13 +233,11 @@ describe('AI Predictive Analytics - Integration Tests', () => {
       expect(data.demand_prediction.service_demand).toBeDefined()
       expect(data.demand_prediction.capacity_recommendations).toBeDefined()
       
-      // Should identify Saturday as high-demand day
       const saturdayDemand = data.demand_prediction.peak_times.find(p => p.day === 'Saturday')
       expect(saturdayDemand).toBeDefined()
     })
 
     test('integrates capacity optimization with staff scheduling', async () => {
-      // Mock staff and capacity data
       supabaseQuery.queryTable
         .mockResolvedValueOnce({ // Booking patterns
           data: [{ hour: 10, booking_count: 25, capacity_utilization: 0.96 }],
@@ -279,7 +268,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
 
   describe('Pricing Optimization Integration', () => {
     test('POST /api/ai/predictive-analytics - pricing_optimization', async () => {
-      // Mock pricing and demand elasticity data
       supabaseQuery.executeQuery.mockResolvedValue({
         data: [
           { service: 'Haircut', current_price: 45, demand_elasticity: -0.8, optimal_price: 48 },
@@ -311,7 +299,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
 
   describe('Comprehensive Dashboard Integration', () => {
     test('GET /api/ai/predictive-analytics - generates complete dashboard', async () => {
-      // Mock comprehensive analytics data
       supabaseQuery.queryTable
         .mockResolvedValueOnce({ // Revenue metrics
           data: [{ total_revenue: 15420, growth_rate: 0.125 }],
@@ -335,7 +322,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
       expect(data.success).toBe(true)
       expect(data.dashboard).toBeDefined()
       
-      // Verify comprehensive dashboard components
       expect(data.dashboard.revenue_metrics).toBeDefined()
       expect(data.dashboard.customer_metrics).toBeDefined()
       expect(data.dashboard.operational_metrics).toBeDefined()
@@ -344,7 +330,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
     })
 
     test('dashboard integration handles real-time data updates', async () => {
-      // Mock real-time data
       const realTimeData = {
         data: [
           { metric: 'current_bookings', value: 12, timestamp: new Date() },
@@ -386,7 +371,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
     })
 
     test('handles partial data availability', async () => {
-      // Mock partial data success
       supabaseQuery.queryTable
         .mockResolvedValueOnce({ data: [{ revenue: 1000 }], error: null })
         .mockRejectedValueOnce(new Error('Service data unavailable'))
@@ -402,7 +386,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
       const response = await POST(request)
       const data = await response.json()
       
-      // Should provide partial results with warnings
       expect(data.forecast).toBeDefined()
       expect(data.warnings).toBeDefined()
       expect(data.warnings).toContain('Limited data availability')
@@ -427,18 +410,15 @@ describe('AI Predictive Analytics - Integration Tests', () => {
 
   describe('Performance and Caching Integration', () => {
     test('implements caching for frequently requested predictions', async () => {
-      // First request
       const request1 = new NextRequest('http://localhost:3000/api/ai/predictive-analytics?barbershop_id=test-shop-001')
       const response1 = await GET(request1)
       
-      // Second identical request should use cache
       const request2 = new NextRequest('http://localhost:3000/api/ai/predictive-analytics?barbershop_id=test-shop-001')
       const response2 = await GET(request2)
       
       expect(response1.status).toBe(200)
       expect(response2.status).toBe(200)
       
-      // Database should only be queried once due to caching
       expect(supabaseQuery.queryTable).toHaveBeenCalledTimes(3) // Initial queries only
     })
 
@@ -449,7 +429,6 @@ describe('AI Predictive Analytics - Integration Tests', () => {
       
       const responses = await Promise.all(requests.map(req => GET(req)))
       
-      // All requests should succeed
       responses.forEach(response => {
         expect(response.status).toBe(200)
       })
@@ -486,10 +465,8 @@ describe('AI Predictive Analytics - Integration Tests', () => {
     })
 
     test('falls back between AI providers on failure', async () => {
-      // OpenAI fails
       openaiClient.chat.completions.create.mockRejectedValue(new Error('OpenAI unavailable'))
       
-      // Anthropic succeeds
       anthropicClient.messages.create.mockResolvedValue({
         content: [{
           text: JSON.stringify({

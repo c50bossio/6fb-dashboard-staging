@@ -1,16 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-import { 
+import {
   ChatBubbleBottomCenterTextIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
-  ChartBarIcon,
   RocketLaunchIcon,
   ClockIcon,
   CheckCircleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function AIAgentsShowcase() {
   const [activeAgent, setActiveAgent] = useState(0)
@@ -109,18 +108,18 @@ export default function AIAgentsShowcase() {
   ]
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+    <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-olive-100 text-olive-800 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-olive-100 dark:bg-olive-900/30 text-olive-800 dark:text-olive-300 rounded-full text-sm font-semibold mb-4">
             <ArrowPathIcon className="h-4 w-4 mr-2" />
             AI AUTOMATION
           </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-foreground mb-4">
             AI Agents That Work While You Cut
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Stop spending nights doing admin work. Let our AI agents handle the business 
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Stop spending nights doing admin work. Let our AI agents handle the business
             while you focus on what you do best - making people look great.
           </p>
         </div>
@@ -134,9 +133,9 @@ export default function AIAgentsShowcase() {
                   key={index}
                   onClick={() => setActiveAgent(index)}
                   className={`w-full text-left p-4 rounded-xl transition-all duration-300 ${
-                    activeAgent === index 
-                      ? 'bg-white shadow-lg border-2 border-olive-500' 
-                      : 'bg-gray-50 hover:bg-white hover:shadow-md border-2 border-transparent'
+                    activeAgent === index
+                      ? 'bg-card shadow-lg border-2 border-olive-500'
+                      : 'bg-muted/50 dark:bg-card/50 hover:bg-card hover:shadow-md border-2 border-transparent'
                   }`}
                 >
                   <div className="flex items-center">
@@ -144,8 +143,8 @@ export default function AIAgentsShowcase() {
                       <Icon className="h-5 w-5" />
                     </div>
                     <div className="ml-3">
-                      <h3 className="font-semibold text-gray-900">{agent.name}</h3>
-                      <p className="text-sm text-gray-500">Click to explore</p>
+                      <h3 className="font-semibold text-foreground">{agent.name}</h3>
+                      <p className="text-sm text-muted-foreground">Click to explore</p>
                     </div>
                     {activeAgent === index && (
                       <CheckCircleIcon className="h-5 w-5 text-olive-500 ml-auto" />
@@ -157,48 +156,48 @@ export default function AIAgentsShowcase() {
           </div>
 
           <div className="lg:w-2/3">
-            <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+            <div className="bg-card rounded-2xl shadow-xl p-8 border border-border">
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-2xl font-bold text-gray-900">
+                  <h3 className="text-2xl font-bold text-foreground">
                     {agents[activeAgent].title}
                   </h3>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-olive-600">
+                    <div className="text-3xl font-bold text-olive-600 dark:text-olive-400">
                       {agents[activeAgent].stats.metric}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       {agents[activeAgent].stats.label}
                     </div>
                   </div>
                 </div>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   {agents[activeAgent].description}
                 </p>
               </div>
 
               <div className="space-y-3">
-                <h4 className="font-semibold text-gray-900 mb-3">What it does for you:</h4>
+                <h4 className="font-semibold text-foreground mb-3">What it does for you:</h4>
                 {agents[activeAgent].features.map((feature, index) => (
                   <div key={index} className="flex items-start">
-                    <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="ml-3 text-gray-600">{feature}</span>
+                    <CheckCircleIcon className="h-5 w-5 text-green-500 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                    <span className="ml-3 text-muted-foreground">{feature}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-8 p-4 bg-gradient-to-r from-olive-50 to-gold-50 rounded-xl">
+              <div className="mt-8 p-4 bg-gradient-to-r from-olive-50 to-gold-50 dark:from-olive-900/20 dark:to-gold-900/20 rounded-xl border border-olive-100 dark:border-olive-800">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center shadow-md">
-                      <ClockIcon className="h-6 w-6 text-olive-600" />
+                    <div className="h-12 w-12 bg-background rounded-full flex items-center justify-center shadow-md">
+                      <ClockIcon className="h-6 w-6 text-olive-600 dark:text-olive-400" />
                     </div>
                   </div>
                   <div className="ml-4">
-                    <div className="text-sm font-semibold text-gray-900">
+                    <div className="text-sm font-semibold text-foreground">
                       Set it and forget it
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                       Takes just 5 minutes to set up, then runs automatically forever
                     </div>
                   </div>
@@ -209,7 +208,7 @@ export default function AIAgentsShowcase() {
         </div>
 
         <div className="mt-12 text-center">
-          <div className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-full">
+          <div className="inline-flex items-center px-6 py-3 bg-foreground dark:bg-muted text-background dark:text-foreground rounded-full">
             <span className="text-sm font-medium">
               All AI agents included in every plan - no add-ons or hidden fees
             </span>

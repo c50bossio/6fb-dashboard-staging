@@ -14,7 +14,6 @@ import { readFileSync } from 'fs'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables manually
 const envPath = join(__dirname, '../.env.local')
 const envContent = readFileSync(envPath, 'utf8')
 const envLines = envContent.split('\n')
@@ -28,7 +27,6 @@ envLines.forEach(line => {
   }
 })
 
-// Initialize Supabase client with service role key for full access
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -40,16 +38,11 @@ const supabase = createClient(
   }
 )
 
-// Set faker seed for consistent but varied data
 faker.seed(12345)
-
-console.log('🚀 Starting comprehensive test data generation...')
 
 async function generateTestData() {
   try {
-    // Step 1: Create a realistic barbershop
-    console.log('📍 Creating barbershop...')
-    
+
     const barbershopData = {
       id: 'demo-shop-001',
       name: 'Elite Cuts & Grooming',
@@ -86,11 +79,7 @@ async function generateTestData() {
       console.error('Error creating barbershop:', barbershopError)
       throw barbershopError
     }
-    console.log('✅ Barbershop created/updated')
 
-    // Step 2: Create 4 professional barbers
-    console.log('✂️ Creating professional barbers...')
-    
     const barbers = [
       {
         id: 'barber-1',
@@ -192,11 +181,7 @@ async function generateTestData() {
     if (barbersError && barbersError.code !== '23505') {
       console.error('Error creating barbers:', barbersError)
     }
-    console.log('✅ 4 barbers created/updated')
 
-    // Step 3: Create comprehensive service menu
-    console.log('💼 Creating service menu...')
-    
     const services = [
       {
         id: 'service-1',
@@ -303,15 +288,10 @@ async function generateTestData() {
     if (servicesError && servicesError.code !== '23505') {
       console.error('Error creating services:', servicesError)
     }
-    console.log('✅ 8 services created/updated')
 
-    // Step 4: Generate realistic appointments for the next 7 days
-    console.log('📅 Generating realistic appointments...')
-    
     const appointments = []
     const today = new Date()
     
-    // Client name pools for realistic variety
     const clientNames = [
       'James Wilson', 'Robert Taylor', 'Michael Johnson', 'David Brown', 'Christopher Davis',
       'Matthew Miller', 'Anthony Wilson', 'Mark Anderson', 'Donald Thomas', 'Steven Jackson',
@@ -320,34 +300,28 @@ async function generateTestData() {
       'Jason Walker', 'Jeffrey Hall', 'Ryan Allen', 'Jacob Young', 'Gary Hernandez'
     ]
 
-    // Generate appointments for each day
     for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
       const appointmentDate = new Date(today)
       appointmentDate.setDate(today.getDate() + dayOffset)
       
-      // Skip past appointments for today
       const minHour = dayOffset === 0 ? Math.max(9, new Date().getHours() + 1) : 9
       const maxHour = dayOffset === 6 ? 16 : 19 // Sunday ends at 4 PM
       
-      // Generate 8-12 appointments per day
       const appointmentsPerDay = faker.number.int({ min: 8, max: 12 })
       
       for (let i = 0; i < appointmentsPerDay; i++) {
-        // Random time between business hours
         const hour = faker.number.int({ min: minHour, max: maxHour })
         const minute = faker.helpers.arrayElement([0, 15, 30, 45])
         
         const scheduledAt = new Date(appointmentDate)
         scheduledAt.setHours(hour, minute, 0, 0)
         
-        // Skip if appointment is in the past
         if (scheduledAt <= new Date()) continue
         
         const selectedService = faker.helpers.arrayElement(services)
         const selectedBarber = faker.helpers.arrayElement(barbers)
         const clientName = faker.helpers.arrayElement(clientNames)
         
-        // Calculate end time based on service duration
         const endTime = new Date(scheduledAt)
         endTime.setMinutes(endTime.getMinutes() + selectedService.duration_minutes)
         
@@ -386,9 +360,6 @@ async function generateTestData() {
       }
     }
 
-    // Insert appointments in batches to avoid overwhelming the database
-    console.log(`📝 Inserting ${appointments.length} appointments...`)
-    
     const batchSize = 10
     let insertedCount = 0
     
@@ -405,14 +376,7 @@ async function generateTestData() {
       }
     }
 
-    console.log('✅ Test data generation completed successfully!')
-    console.log('\n📊 Summary:')
-    console.log('• 1 Elite barbershop created')
-    console.log('• 4 Professional barbers with specialties')  
-    console.log('• 8 Service categories ($20-$120 range)')
-    console.log(`• ${insertedCount} Realistic appointments over 7 days`)
-    console.log('\n🎯 Your calendar is now populated with professional demo data!')
-    console.log('🔗 Test at: http://localhost:9999/dashboard/calendar')
+    ')
 
   } catch (error) {
     console.error('❌ Error generating test data:', error)
@@ -420,5 +384,4 @@ async function generateTestData() {
   }
 }
 
-// Run the data generation
 generateTestData()

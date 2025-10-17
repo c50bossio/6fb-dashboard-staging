@@ -404,7 +404,7 @@ export default function RegisterPage() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="firstName" className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor="firstName" className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
             First name
           </label>
           <div className="mt-1 relative">
@@ -428,7 +428,7 @@ export default function RegisterPage() {
         </div>
 
         <div>
-          <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="lastName" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
             Last name
           </label>
           <div className="mt-1">
@@ -450,7 +450,7 @@ export default function RegisterPage() {
       </div>
 
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="email" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
           Email address
         </label>
         <div className="mt-1 relative">
@@ -475,7 +475,7 @@ export default function RegisterPage() {
       </div>
 
       <div>
-        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="phone" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
           Phone number
         </label>
         <div className="mt-1 relative">
@@ -528,7 +528,7 @@ export default function RegisterPage() {
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="password" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
           Password
         </label>
         <div className="mt-1 relative">
@@ -565,7 +565,7 @@ export default function RegisterPage() {
       </div>
 
       <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
           Confirm password
         </label>
         <div className="mt-1 relative">
@@ -606,7 +606,7 @@ export default function RegisterPage() {
   const renderStep2 = () => (
     <div className="space-y-6">
       <div>
-        <label htmlFor="businessName" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="businessName" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
           Business name
         </label>
         <div className="mt-1 relative">
@@ -630,7 +630,7 @@ export default function RegisterPage() {
       </div>
 
       <div>
-        <label htmlFor="businessAddress" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="businessAddress" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
           Business address
         </label>
         <div className="mt-1">
@@ -651,7 +651,7 @@ export default function RegisterPage() {
       </div>
 
       <div>
-        <label htmlFor="businessPhone" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="businessPhone" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
           Business phone
         </label>
         <div className="mt-1 relative">
@@ -675,7 +675,7 @@ export default function RegisterPage() {
       </div>
 
       <div>
-        <label htmlFor="businessType" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="businessType" className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
           Business type
         </label>
         <div className="mt-1">

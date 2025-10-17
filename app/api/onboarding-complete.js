@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-export const runtime = 'edge'
+import { NextResponse } from 'next/server'
+export const runtime = 'nodejs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -11,15 +11,10 @@ export async function POST(request) {
   try {
     const body = await request.json()
     
-    // For development, allow anonymous onboarding
     const userId = body.userId || 'anonymous-' + Date.now()
     
-    // Store onboarding data
-    console.log('Onboarding completed:', {
-      userId,
-      data: body,
-      timestamp: new Date().toISOString()
-    })
+    // Log onboarding completion for analytics
+    console.log('Onboarding completed for user:', userId, 'at', new Date().toISOString())
 
     return NextResponse.json({
       success: true,

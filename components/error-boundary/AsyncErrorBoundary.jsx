@@ -3,11 +3,11 @@
  * Provides loading states and error recovery for async components
  */
 
-import React, { Suspense } from 'react'
-import ErrorBoundary from './ErrorBoundary'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
+import React, { Suspense } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import ErrorBoundary from './ErrorBoundary'
 
 // Loading fallback component
 const LoadingFallback = ({ message = 'Loading...', showSkeleton = true }) => {

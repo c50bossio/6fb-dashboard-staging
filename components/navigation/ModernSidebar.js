@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import Logo from '../ui/Logo'
+import ShopSelector from './ShopSelector'
 
 import { useAuth } from '../SupabaseAuthProvider'
 
@@ -65,9 +66,9 @@ export default function ModernSidebar() {
       {/* Mobile Header - inline implementation */}
 
       {/* Desktop Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-40 ${sidebarWidth} bg-white border-r border-gray-200 transition-all duration-300 ease-in-out hidden lg:flex lg:flex-col`}>
+      <div className={`fixed inset-y-0 left-0 z-40 ${sidebarWidth} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out hidden lg:flex lg:flex-col`}>
         {/* Logo and Header */}
-        <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
+        <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200 dark:border-gray-700">
           {!collapsed && (
             <Link href="/dashboard" className="flex items-center">
               <Logo size="small" showText={false} />
@@ -89,6 +90,9 @@ export default function ModernSidebar() {
           </button>
         </div>
 
+        {/* Shop Selector */}
+        {!collapsed && <ShopSelector />}
+
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
           <div className="space-y-2">
@@ -107,12 +111,12 @@ export default function ModernSidebar() {
                         onClick={() => !collapsed && toggleSection(item.id)}
                         className={`w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all group ${
                           isActive
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                            ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                            : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                         }`}
                       >
                         <Icon className={`h-5 w-5 flex-shrink-0 ${
-                          isActive ? 'text-amber-700' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive ? 'text-amber-700 dark:text-amber-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400'
                         }`} />
                         
                         {!collapsed && (
@@ -134,19 +138,19 @@ export default function ModernSidebar() {
                         href={item.href}
                         className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all group ${
                           isActive
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                            : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                            ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                            : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                         }`}
                       >
                         <Icon className={`h-5 w-5 flex-shrink-0 ${
-                          isActive ? 'text-amber-700' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive ? 'text-amber-700 dark:text-amber-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400'
                         }`} />
-                        
+
                         {!collapsed && (
                           <>
                             <span className="ml-3">{item.name}</span>
                             {item.badge && (
-                              <span className="ml-auto px-2 py-1 text-xs font-medium bg-olive-100 text-olive-700 rounded-full">
+                              <span className="ml-auto px-2 py-1 text-xs font-medium bg-olive-100 dark:bg-olive-900/30 text-olive-700 dark:text-olive-300 rounded-full">
                                 {item.badge}
                               </span>
                             )}
@@ -169,12 +173,12 @@ export default function ModernSidebar() {
                             href={child.href}
                             className={`flex items-center px-3 py-2 text-sm rounded-md transition-colors group ${
                               childActive
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
+                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
                             }`}
                           >
                             <ChildIcon className={`h-4 w-4 flex-shrink-0 ${
-                              childActive ? 'text-amber-700' : 'text-gray-400 group-hover:text-gray-500'
+                              childActive ? 'text-amber-700 dark:text-amber-400' : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400'
                             }`} />
                             <span className="ml-2 flex-1">{child.name}</span>
                             {child.badge && (
@@ -199,7 +203,7 @@ export default function ModernSidebar() {
         </nav>
 
         {/* User Profile Section */}
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4">
           {!collapsed ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
@@ -209,10 +213,10 @@ export default function ModernSidebar() {
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                     {user?.user_metadata?.full_name || 'User'}
                   </p>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                     {profile?.role || 'BARBER'}
                   </p>
                 </div>
@@ -245,9 +249,9 @@ export default function ModernSidebar() {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setMobileMenuOpen(false)} />
           
           <div className="fixed inset-y-0 left-0 flex w-full max-w-sm">
-            <div className="flex flex-col w-full bg-white">
+            <div className="flex flex-col w-full bg-white dark:bg-gray-800">
               {/* Mobile Header */}
-              <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200">
+              <div className="flex items-center justify-between h-14 px-4 border-b border-gray-200 dark:border-gray-700">
                 <Link href="/dashboard" className="flex items-center" onClick={() => setMobileMenuOpen(false)}>
                   <Logo size="small" showText={false} />
                 </Link>
@@ -258,6 +262,9 @@ export default function ModernSidebar() {
                   <XMarkIcon className="h-6 w-6" />
                 </button>
               </div>
+
+              {/* Shop Selector */}
+              <ShopSelector />
 
               {/* Mobile Navigation */}
               <nav className="flex-1 px-4 py-4 overflow-y-auto">
@@ -275,8 +282,8 @@ export default function ModernSidebar() {
                             onClick={() => toggleSection(item.id)}
                             className={`w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg ${
                               isActive
-                                ? 'bg-amber-50 text-amber-700'
-                                : 'text-gray-700 hover:bg-gray-50'
+                                ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                                : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                           >
                             <Icon className="h-5 w-5 flex-shrink-0 text-gray-400" />
@@ -296,8 +303,8 @@ export default function ModernSidebar() {
                             onClick={() => setMobileMenuOpen(false)}
                             className={`flex items-center px-3 py-3 text-sm font-medium rounded-lg ${
                               isActive
-                                ? 'bg-amber-50 text-amber-700'
-                                : 'text-gray-700 hover:bg-gray-50'
+                                ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                                : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                           >
                             <Icon className="h-5 w-5 flex-shrink-0 text-gray-400" />
@@ -323,8 +330,8 @@ export default function ModernSidebar() {
                                   onClick={() => setMobileMenuOpen(false)}
                                   className={`flex items-center px-3 py-2 text-sm rounded-md ${
                                     childActive
-                                      ? 'bg-amber-100 text-amber-800'
-                                      : 'text-gray-600 hover:bg-gray-50'
+                                      ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300'
+                                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
                                   }`}
                                 >
                                   <ChildIcon className="h-4 w-4 flex-shrink-0 text-gray-400" />
@@ -351,7 +358,7 @@ export default function ModernSidebar() {
               </nav>
 
               {/* Mobile User Profile */}
-              <div className="border-t border-gray-200 p-4">
+              <div className="border-t border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full flex items-center justify-center">
@@ -360,10 +367,10 @@ export default function ModernSidebar() {
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {user?.user_metadata?.full_name || 'User'}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
                         {profile?.role || 'BARBER'}
                       </p>
                     </div>

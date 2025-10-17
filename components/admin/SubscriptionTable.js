@@ -257,7 +257,6 @@ export default function SubscriptionTable({
           
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
-              // Loading skeleton
               Array.from({ length: 5 }, (_, i) => (
                 <tr key={i}>
                   <td className="px-6 py-4"><div className="h-4 bg-gray-300 rounded animate-pulse"></div></td>
@@ -380,7 +379,6 @@ export default function SubscriptionTable({
   )
 }
 
-// Action Modal Component
 function ActionModal({ action, subscription, onConfirm, onCancel }) {
   const [formData, setFormData] = useState({
     reason: '',

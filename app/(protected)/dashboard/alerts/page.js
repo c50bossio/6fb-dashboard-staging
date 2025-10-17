@@ -1,14 +1,11 @@
 'use client';
 
-import { 
-  BellIcon, 
-  ChartBarIcon,
-  CogIcon,
-  ClockIcon,
+import {
+  BellIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   InformationCircleIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/24/outline'
 import React, { useState, useEffect } from 'react';
 
 import AlertManagementDashboard from '../../../../components/alerts/AlertManagementDashboard';
@@ -20,16 +17,31 @@ const AlertsDashboardPage = () => {
   const [integrationStatus, setIntegrationStatus] = useState(null);
   const [activeTab, setActiveTab] = useState('alerts');
   
-  // Mock user data - in production, this would come from authentication
   useEffect(() => {
-    const User = {
-      id: 'user_001',
-      barbershop_id: 'demo_shop_001',
-      name: 'Demo User',
-      email: 'demo@barbershop.com'
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('/api/auth/user');
+        const userData = await response.json();
+        
+        if (userData.user) {
+          setUser(userData.user);
+        } else {
+          // Fallback for development
+          const fallbackUser = {
+            id: 'user_001',
+            barbershop_id: null,
+            name: 'Development User',
+            email: 'dev@barbershop.com'
+          };
+          setUser(fallbackUser);
+        }
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        setUser(null);
+      }
     };
     
-    setUser(mockUser);
+    fetchUserData();
     fetchSystemStatus();
     fetchIntegrationStatus();
     setLoading(false);
@@ -49,7 +61,6 @@ const AlertsDashboardPage = () => {
   
   const fetchIntegrationStatus = async () => {
     try {
-      // This would call the alert integration service health endpoint
       const IntegrationStatus = {
         service_integrations: {
           realtime_service: true,
@@ -69,7 +80,7 @@ const AlertsDashboardPage = () => {
         }
       };
       
-      setIntegrationStatus(mockIntegrationStatus);
+      setIntegrationStatus(IntegrationStatus);
     } catch (error) {
       console.error('Failed to fetch integration status:', error);
     }
@@ -198,7 +209,6 @@ const AlertsDashboardPage = () => {
   );
 };
 
-// System Health Indicator Component
 const SystemHealthIndicator = ({ status }) => {
   const getHealthColor = () => {
     if (!status) return 'gray';
@@ -217,7 +227,6 @@ const SystemHealthIndicator = ({ status }) => {
   );
 };
 
-// Integration Status Indicator Component
 const IntegrationStatusIndicator = ({ status }) => {
   const getIntegrationHealth = () => {
     if (!status) return { healthy: 0, total: 0 };
@@ -242,7 +251,6 @@ const IntegrationStatusIndicator = ({ status }) => {
   );
 };
 
-// Alert Creation Demo Component
 const AlertCreationDemo = ({ barbershopId, userId }) => {
   const [selectedType, setSelectedType] = useState('revenue_anomaly');
   const [customTitle, setCustomTitle] = useState('');
@@ -422,7 +430,6 @@ const AlertCreationDemo = ({ barbershopId, userId }) => {
   );
 };
 
-// Alert Analytics Dashboard Component
 const AlertAnalyticsDashboard = ({ integrationStatus }) => {
   return (
     <div className="space-y-6">
@@ -476,7 +483,6 @@ const AlertAnalyticsDashboard = ({ integrationStatus }) => {
   );
 };
 
-// Alert Configuration Dashboard Component
 const AlertConfigurationDashboard = ({ barbershopId, userId }) => {
   return (
     <div className="space-y-6">
@@ -501,7 +507,6 @@ const AlertConfigurationDashboard = ({ barbershopId, userId }) => {
   );
 };
 
-// System Monitoring Dashboard Component
 const SystemMonitoringDashboard = ({ systemStatus, integrationStatus }) => {
   return (
     <div className="space-y-6">

@@ -1,5 +1,5 @@
-export const runtime = 'edge'
-
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 /**
  * Real-time Dashboard Updates using Server-Sent Events (SSE)
  * Provides live updates for dashboard metrics and performance data
@@ -7,9 +7,18 @@ export const runtime = 'edge'
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  const barbershopId = searchParams.get('barbershop_id') || 'demo-shop-001';
+  const barbershopId = searchParams.get('barbershop_id');
   
-  // Set up SSE headers
+  if (!barbershopId) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: 'barbershop_id parameter is required'
+    }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+  
   const headers = {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
@@ -18,12 +27,9 @@ export async function GET(request) {
     'Access-Control-Allow-Headers': 'Cache-Control',
   };
 
-  // Create a readable stream for SSE
   const stream = new ReadableStream({
     start(controller) {
-      console.log('🔄 Starting real-time dashboard stream for:', barbershopId);
       
-      // Send initial connection event
       const initEvent = `data: ${JSON.stringify({
         type: 'connected',
         timestamp: new Date().toISOString(),
@@ -32,18 +38,14 @@ export async function GET(request) {
       
       controller.enqueue(new TextEncoder().encode(initEvent));
 
-      // Send periodic updates
       const interval = setInterval(async () => {
         try {
-          // Fetch current analytics data
           const analyticsResponse = await fetch(`http://localhost:9999/api/analytics/live-data?barbershop_id=${barbershopId}`);
           const analyticsData = await analyticsResponse.json();
           
-          // Fetch cache statistics
           const cacheResponse = await fetch('http://localhost:9999/api/cache/stats');
           const cacheData = await cacheResponse.json();
 
-          // Create update event
           const updateEvent = {
             type: 'dashboard_update',
             timestamp: new Date().toISOString(),
@@ -68,7 +70,6 @@ export async function GET(request) {
         } catch (error) {
           console.error('Real-time update error:', error);
           
-          // Send error event
           const errorEvent = `data: ${JSON.stringify({
             type: 'error',
             timestamp: new Date().toISOString(),
@@ -79,7 +80,6 @@ export async function GET(request) {
         }
       }, 15000); // Update every 15 seconds
 
-      // Heartbeat to keep connection alive
       const heartbeat = setInterval(() => {
         const heartbeatEvent = `data: ${JSON.stringify({
           type: 'heartbeat',
@@ -89,9 +89,7 @@ export async function GET(request) {
         controller.enqueue(new TextEncoder().encode(heartbeatEvent));
       }, 30000); // Heartbeat every 30 seconds
 
-      // Cleanup when client disconnects
       request.signal?.addEventListener('abort', () => {
-        console.log('🔌 Real-time dashboard client disconnected');
         clearInterval(interval);
         clearInterval(heartbeat);
         controller.close();

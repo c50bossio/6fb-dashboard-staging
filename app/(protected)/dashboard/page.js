@@ -6,10 +6,19 @@ import UnifiedDashboard from '../../../components/dashboard/UnifiedDashboard'
 import ProfileCompletionPrompt from '../../../components/ProfileCompletionPrompt'
 
 export default function BarbershopDashboard() {
-  console.log('🏪 BarbershopDashboard component loading...')
-  
-  const { user } = useAuth()
+  const { user, profile, loading } = useAuth()
   const [timeOfDay, setTimeOfDay] = useState('')
+
+  // Reduced logging - only log if there are issues with authentication
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && !loading && !user) {
+      console.warn('🏪 [DashboardPage] No user found:', {
+        has_user: !!user,
+        has_profile: !!profile,
+        loading: loading,
+      })
+    }
+  }, [user, profile, loading])
 
   useEffect(() => {
     const hour = new Date().getHours()
@@ -23,9 +32,9 @@ export default function BarbershopDashboard() {
     <div>
       {/* Profile Completion Prompt */}
       <ProfileCompletionPrompt />
-      
+
       {/* Unified Dashboard Component */}
-      <UnifiedDashboard user={user} />
+      <UnifiedDashboard user={user} profile={profile} />
     </div>
   )
 }

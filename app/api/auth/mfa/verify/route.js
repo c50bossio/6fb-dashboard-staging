@@ -1,22 +1,42 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { authenticator } from 'otplib'
+import crypto from 'crypto'
+
+export const runtime = 'nodejs'
+
+/**
+ * Generate backup codes for MFA recovery
+ * @param {number} count - Number of backup codes to generate
+ * @returns {string[]} Array of backup codes
+ */
+function generateBackupCodes(count = 10) {
+  const codes = []
+  for (let i = 0; i < count; i++) {
+    // Generate 8-character alphanumeric codes
+    const code = crypto.randomBytes(4).toString('hex').toUpperCase()
+    // Format as XXXX-XXXX for readability
+    codes.push(`${code.slice(0, 4)}-${code.slice(4, 8)}`)
+  }
+  return codes
+}
 
 export async function POST(request) {
   try {
-    const { token, isSetup = false } = await request.json()
-    
-    if (!token) {
+    const supabase = await createClient()
+    const body = await request.json()
+    const { token, isSetup } = body
+
+    if (!token || token.length !== 6) {
       return NextResponse.json(
-        { error: 'Token is required' },
+        { error: 'Invalid token format' },
         { status: 400 }
       )
     }
 
-    const supabase = createClient()
-    
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
+
     if (userError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -24,151 +44,72 @@ export async function POST(request) {
       )
     }
 
-    // Check rate limiting
-    const { data: rateLimitCheck } = await supabase.rpc('check_mfa_rate_limit', {
-      p_user_id: user.id
+    // Get the pending MFA secret from user metadata
+    const { data: userData } = await supabase.auth.getUser()
+    const secret = userData.user?.user_metadata?.mfa_secret_pending
+
+    if (!secret && isSetup) {
+      return NextResponse.json(
+        { error: 'MFA setup not initialized. Please start setup first.' },
+        { status: 400 }
+      )
+    }
+
+    // Verify the TOTP token
+    const isValid = authenticator.verify({
+      token,
+      secret
     })
 
-    if (!rateLimitCheck) {
-      await supabase.rpc('log_security_event', {
-        p_user_id: user.id,
-        p_event_type: 'mfa_rate_limit_exceeded',
-        p_risk_score: 80
-      })
-      
-      return NextResponse.json(
-        { error: 'Too many verification attempts. Please try again later.' },
-        { status: 429 }
-      )
-    }
-
-    // Get user's MFA method
-    const { data: mfaMethod, error: mfaError } = await supabase
-      .from('user_mfa_methods')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('method_type', 'totp')
-      .single()
-
-    if (mfaError || !mfaMethod) {
-      return NextResponse.json(
-        { error: 'MFA not set up for this user' },
-        { status: 400 }
-      )
-    }
-
-    let isValidToken = false
-    let isBackupCode = false
-
-    // First try TOTP verification
-    if (mfaMethod.secret_key) {
-      isValidToken = authenticator.verify({
-        token,
-        secret: mfaMethod.secret_key
-      })
-    }
-
-    // If TOTP fails, try backup code (only if MFA is already verified)
-    if (!isValidToken && mfaMethod.is_verified) {
-      const { data: backupResult } = await supabase.rpc('verify_backup_code', {
-        p_user_id: user.id,
-        p_code: token
-      })
-      
-      if (backupResult) {
-        isValidToken = true
-        isBackupCode = true
-      }
-    }
-
-    // Log verification attempt
-    await supabase
-      .from('mfa_verification_attempts')
-      .insert({
-        user_id: user.id,
-        method_id: mfaMethod.id,
-        attempt_code: token.substring(0, 2) + '****', // Partial code for logging
-        success: isValidToken
-      })
-
-    if (!isValidToken) {
-      await supabase.rpc('log_security_event', {
-        p_user_id: user.id,
-        p_event_type: 'mfa_verify_failed',
-        p_details: { method_type: 'totp', is_setup: isSetup },
-        p_risk_score: 60
-      })
-
+    if (!isValid) {
       return NextResponse.json(
         { error: 'Invalid verification code' },
-        { status: 400 }
+        { status: 401 }
       )
     }
 
-    // If this is initial setup verification, mark as verified and generate backup codes
-    let backupCodes = null
-    if (isSetup && !mfaMethod.is_verified) {
-      // Mark TOTP method as verified
-      await supabase
-        .from('user_mfa_methods')
-        .update({ 
-          is_verified: true,
-          is_primary: true,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', mfaMethod.id)
-
+    // If this is initial setup, confirm and enable MFA
+    if (isSetup) {
       // Generate backup codes
-      const { data: generatedCodes } = await supabase.rpc('generate_backup_codes', {
-        p_user_id: user.id
-      })
-      
-      backupCodes = generatedCodes
+      const backupCodes = generateBackupCodes(10)
 
-      // Update user profile
-      await supabase
-        .from('profiles')
-        .update({ 
+      // Hash backup codes for storage
+      const hashedBackupCodes = backupCodes.map(code =>
+        crypto.createHash('sha256').update(code).digest('hex')
+      )
+
+      // Move secret from pending to active and store backup codes
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
           mfa_enabled: true,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id)
-
-      await supabase.rpc('log_security_event', {
-        p_user_id: user.id,
-        p_event_type: 'mfa_setup_completed',
-        p_details: { method_type: 'totp' }
-      })
-    } else {
-      // Regular MFA verification
-      await supabase.rpc('log_security_event', {
-        p_user_id: user.id,
-        p_event_type: 'mfa_verify_success',
-        p_details: { 
-          method_type: isBackupCode ? 'backup_code' : 'totp',
-          is_backup_code: isBackupCode
+          mfa_secret: secret,
+          mfa_secret_pending: null,
+          mfa_backup_codes: hashedBackupCodes,
+          mfa_enabled_at: new Date().toISOString()
         }
       })
+
+      if (updateError) {
+        console.error('Error enabling MFA:', updateError)
+        throw new Error('Failed to enable MFA')
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'MFA has been successfully enabled',
+        backupCodes
+      })
     }
 
-    const response = {
+    // For login verification (not setup)
+    return NextResponse.json({
       success: true,
-      message: isSetup ? 'MFA has been successfully enabled' : 'Verification successful',
-      isSetupComplete: isSetup,
-      backupCodes: backupCodes,
-      usedBackupCode: isBackupCode
-    }
-
-    if (isBackupCode) {
-      response.warning = 'You used a backup code. Consider regenerating backup codes for security.'
-    }
-
-    return NextResponse.json(response)
-
+      message: 'Code verified successfully'
+    })
   } catch (error) {
-    console.error('MFA verification error:', error)
+    console.error('MFA Verify API Error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to verify MFA code', message: error.message },
       { status: 500 }
     )
   }

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import { XMarkIcon, ArrowRightIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
+import { useState, useEffect, useRef } from 'react'
 
 const TUTORIALS = {
   dashboard: [

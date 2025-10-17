@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server-client'
+import { createServerSupabaseClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -12,24 +12,20 @@ export async function POST(request) {
     
     const { domain, provider } = await request.json()
     
-    // Get user profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('email, full_name')
       .eq('id', user.id)
       .single()
     
-    // Send provider-specific setup instructions
     const emailContent = generateSetupEmail(domain, provider, profile?.full_name)
     
-    // Using SendGrid or your email service
     await sendEmail({
       to: profile?.email || user.email,
       subject: `Setup Instructions for ${domain}`,
       html: emailContent
     })
     
-    // Log email sent
     await supabase.from('domain_setup_emails').insert({
       user_id: user.id,
       domain,
@@ -189,7 +185,6 @@ function generateSetupEmail(domain, provider, userName) {
 }
 
 async function sendEmail({ to, subject, html }) {
-  // Using SendGrid example - replace with your email service
   const sgMail = require('@sendgrid/mail')
   sgMail.setApiKey(process.env.SENDGRID_API_KEY)
   

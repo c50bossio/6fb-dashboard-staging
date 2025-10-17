@@ -1,33 +1,25 @@
 'use client'
 
-import { 
+import {
   TrophyIcon,
   FireIcon,
   StarIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   BanknotesIcon,
   UserGroupIcon,
-  ClockIcon,
   LightBulbIcon,
   RocketLaunchIcon,
-  ChartBarIcon,
   AcademicCapIcon,
-  HandThumbUpIcon,
   SparklesIcon,
   BoltIcon
 } from '@heroicons/react/24/outline'
-import { 
-  TrophyIcon as TrophySolidIcon,
-  FireIcon as FireSolidIcon,
-  StarIcon as StarSolidIcon
-} from '@heroicons/react/24/solid'
+
 import { useState, useEffect, useCallback } from 'react'
 
 import ProtectedRoute from '../../../../components/ProtectedRoute'
-import { Card } from '../../../../components/ui'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { Card } from '../../../../components/ui'
 
-// Achievement Badge Component
 function AchievementBadge({ achievement, earned = false, size = 'medium' }) {
   const sizeClasses = {
     small: 'w-8 h-8 text-xs',
@@ -56,7 +48,6 @@ function AchievementBadge({ achievement, earned = false, size = 'medium' }) {
   )
 }
 
-// Leaderboard Rank Component
 function LeaderboardRank({ rank, barber, category, showDetails = false }) {
   const getRankIcon = (position) => {
     switch (position) {
@@ -134,7 +125,6 @@ function LeaderboardRank({ rank, barber, category, showDetails = false }) {
   )
 }
 
-// AI Coaching Insights Widget
 function AICoachingInsights({ selectedBarber }) {
   const [insights, setInsights] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -261,7 +251,6 @@ function AICoachingInsights({ selectedBarber }) {
   )
 }
 
-// Gamification Progress Component  
 function GamificationProgress({ barber }) {
   const achievements = [
     { name: 'Revenue Rockstar', icon: '💰', description: '$15K+ monthly revenue', earned: barber.revenue >= 15000 },
@@ -347,12 +336,10 @@ function GamificationProgress({ barber }) {
   )
 }
 
-// Main Leaderboard Component
 function GamifiedLeaderboard() {
   const [activeCategory, setActiveCategory] = useState('overall')
   const [selectedBarber, setSelectedBarber] = useState(null)
 
-  // Database data
   const barberData = [
     {
       id: 1,
@@ -448,7 +435,7 @@ function GamifiedLeaderboard() {
     { id: 'revenue', name: 'Revenue Leaders', icon: BanknotesIcon },
     { id: 'customers', name: 'Customer Champions', icon: UserGroupIcon },
     { id: 'rating', name: 'Five Star Masters', icon: StarIcon },
-    { id: 'growth', name: 'Growth Rockstars', icon: ArrowTrendingUpIcon }
+    { id: 'growth', name: 'Growth Rockstars', icon: ChartBarIcon }
   ]
 
   const getSortedBarbers = useCallback((category) => {

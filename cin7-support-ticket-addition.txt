@@ -1,0 +1,49 @@
+ADDITIONAL TECHNICAL DETAILS FOR CIN7 SUPPORT TICKET #220609
+
+Account Details:
+- Account ID: 1fd319f3-0a8b-4314-bb82-603f47fe20e9
+- API Key (last 4 digits): ...5743
+- API Key was freshly regenerated today and external API access is confirmed enabled
+
+Critical Issue Discovered:
+The external API endpoint (https://inventory.dearsystems.com/ExternalApi/) is returning "Incorrect credentials!" for ALL requests, regardless of the credentials provided.
+
+Evidence:
+1. Valid API credentials return: "Incorrect credentials!" (403 error)
+2. Invalid/fake credentials return: "Incorrect credentials!" (403 error)
+3. No credentials return: "Incorrect credentials!" (403 error)
+
+This proves the API is not validating credentials at all - it's returning a generic error for every request.
+
+Test Results:
+- Tested endpoints: /ExternalApi/Me, /ExternalAPI/v2/me, /externalapi/products
+- All return the same 403 "Incorrect credentials!" error
+- Even completely wrong account IDs return the same error
+- The API Explorer works (using browser session cookies), but external API calls don't work
+
+What Works vs What Doesn't:
+✅ WORKS: API Explorer (uses browser session authentication after login)
+❌ FAILS: External API calls using api-auth-accountid and api-auth-applicationkey headers
+
+Timeline:
+- This integration was working yesterday (August 16, 2025)
+- Started failing today (August 17, 2025) with no code changes on our side
+- Multiple API key regenerations have not resolved the issue
+
+Technical Tests Performed:
+1. Standard authentication headers (api-auth-accountid, api-auth-applicationkey)
+2. Various URL formats (/ExternalApi/, /ExternalAPI/v2/, /externalapi/)
+3. Different HTTP clients (fetch, axios, curl, Node.js https)
+4. Browser-based requests via Playwright
+5. All authentication header variations documented in CIN7 API docs
+
+Request for CIN7 Support:
+1. Please verify the external API service is functioning correctly
+2. Check if there were any changes to the API authentication system between Aug 16-17
+3. Confirm our account has proper external API access permissions
+4. Test the external API endpoint from your side with our account
+5. Check for any IP restrictions or rate limiting affecting our account
+
+This is blocking our production integration which was working yesterday. We have over $500,000 in inventory that needs to be synced.
+
+Thank you for your urgent attention to this matter.

@@ -5,7 +5,7 @@ import { NotificationCenter } from '@novu/notification-center'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function NovuNotificationCenter() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
 
   if (!user) return null
 
@@ -55,15 +55,11 @@ export default function NovuNotificationCenter() {
         position: 'bottom-end',
       }}
       onNotificationClick={(notification) => {
-        console.log('Notification clicked:', notification)
-        // Handle notification click - navigate to relevant page
         if (notification.cta?.data?.url) {
           window.location.href = notification.cta.data.url
         }
       }}
       onActionClick={(actionId, notification) => {
-        console.log('Action clicked:', actionId, notification)
-        // Handle action button clicks
       }}
     />
   )

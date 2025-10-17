@@ -1,12 +1,7 @@
 import { NextResponse } from 'next/server';
 
-// Test mode services for reliable testing
 const testSendGridService = {
     sendWhiteLabelCampaign: async (campaign, shop, recipients) => {
-        console.log('📧 TEST MODE: SendGrid Campaign Simulation');
-        console.log(`   Campaign: ${campaign.name}`);
-        console.log(`   Shop: ${shop.name}`);
-        console.log(`   Recipients: ${recipients.length}`);
         
         return {
             success: true,
@@ -37,10 +32,6 @@ const testSendGridService = {
 
 const testTwilioService = {
     sendWhiteLabelSMSCampaign: async (campaign, shop, recipients) => {
-        console.log('📱 TEST MODE: SMS Campaign Simulation');
-        console.log(`   Campaign: ${campaign.name}`);
-        console.log(`   Shop: ${shop.name}`);
-        console.log(`   Recipients: ${recipients.length}`);
         
         return {
             success: true,
@@ -69,19 +60,15 @@ const testTwilioService = {
     }
 };
 
-// Use test services for reliable testing
 const sendGridService = testSendGridService;
 const twilioService = testTwilioService;
 
-// Campaign sending endpoint with white-label infrastructure
 export async function POST(request) {
     try {
         const data = await request.json();
         const { type, campaign, shop, recipients } = data;
 
-        console.log(`📧 Marketing campaign send request: ${type} campaign for ${shop?.name}`);
 
-        // Validate required fields
         if (!type || !campaign || !shop || !recipients) {
             return NextResponse.json(
                 { 
@@ -105,11 +92,9 @@ export async function POST(request) {
         let result;
 
         if (type === 'email') {
-            // Send email campaign
             result = await sendGridService.sendWhiteLabelCampaign(campaign, shop, recipients);
             
         } else if (type === 'sms') {
-            // Send SMS campaign  
             result = await twilioService.sendWhiteLabelSMSCampaign(campaign, shop, recipients);
             
         } else {
@@ -122,7 +107,6 @@ export async function POST(request) {
             );
         }
 
-        // Calculate billing if successful
         let billing = null;
         if (result.success) {
             if (type === 'email') {
@@ -157,7 +141,6 @@ export async function POST(request) {
     }
 }
 
-// Get campaign sending status
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
@@ -174,7 +157,6 @@ export async function GET(request) {
             );
         }
 
-        // Mock delivery status
         const status = {
             campaign_id: campaignId,
             message_id: messageId,

@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import { 
   UserCircleIcon,
   PaintBrushIcon,
@@ -10,14 +8,54 @@ import {
   PhotoIcon,
   LinkIcon,
   CheckCircleIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
+import { useSearchParams } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import BarberTipSettings from '@/components/barber/BarberTipSettings'
+import ReviewsList from '@/components/reviews/ReviewsList'
+import ReviewStats from '@/components/reviews/ReviewStats'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import useReviews from '@/hooks/useReviews'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
-export default function BarberProfilePage() {
-  const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState('basic')
+// Component to handle search params
+function BarberProfileContent({ onTabChange }) {
+  const searchParams = useSearchParams()
+  
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['basic', 'branding', 'services', 'tips', 'availability', 'portfolio', 'reviews', 'social'].includes(tab)) {
+      onTabChange(tab)
+    }
+  }, [searchParams, onTabChange])
+  
+  return null
+}
+
+function BarberProfilePageContent({ activeTab }) {
+  const { user, profile: userProfile } = useAuth()
+  const [currentTab, setCurrentTab] = useState(activeTab || 'basic')
+  
+  useEffect(() => {
+    if (activeTab) {
+      setCurrentTab(activeTab)
+    }
+  }, [activeTab])
+  const [barbershopId, setBarbershopId] = useState(null)
+  
+  // Get reviews for this barber
+  const { 
+    reviews, 
+    stats: reviewStats, 
+    loading: reviewsLoading,
+    refreshReviews 
+  } = useReviews({ 
+    barberId: userProfile?.id,
+    autoLoad: true 
+  })
   const [profile, setProfile] = useState({
-    // Basic Information
     custom_path: '',
     page_title: '',
     meta_description: '',
@@ -27,7 +65,6 @@ export default function BarberProfilePage() {
     certifications: [],
     languages_spoken: [],
     
-    // Visual Branding
     primary_color: '#000000',
     secondary_color: '#FFFFFF',
     accent_color: '#FFD700',
@@ -35,7 +72,6 @@ export default function BarberProfilePage() {
     background_image_url: '',
     logo_url: '',
     
-    // Contact & Social
     display_phone: '',
     display_email: '',
     instagram_handle: '',
@@ -43,7 +79,6 @@ export default function BarberProfilePage() {
     facebook_url: '',
     youtube_url: '',
     
-    // Business Settings
     accepts_walk_ins: false,
     booking_advance_days: 30,
     minimum_notice_hours: 24,
@@ -51,7 +86,6 @@ export default function BarberProfilePage() {
     deposit_required: false,
     deposit_amount: 0,
     
-    // Portfolio
     portfolio_images: [],
     before_after_images: [],
     featured_work: []
@@ -65,7 +99,11 @@ export default function BarberProfilePage() {
   useEffect(() => {
     loadProfile()
     loadServices()
-  }, [])
+    if (user?.id) {
+      loadBarbershopId()
+    }
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const loadProfile = async () => {
     try {
@@ -93,6 +131,35 @@ export default function BarberProfilePage() {
       }
     } catch (error) {
       console.error('Failed to load services:', error)
+    }
+  }
+
+  const loadBarbershopId = async () => {
+    try {
+      // First try from user profile
+      if (userProfile?.barbershop_id) {
+        setBarbershopId(userProfile.barbershop_id)
+        return
+      }
+      if (userProfile?.barbershop_id) {
+        setBarbershopId(userProfile.barbershop_id)
+        return
+      }
+      
+      // Then try from staff association
+      const _supabase = createClient()
+      const { data: staffRecord } = await _supabase
+        .from('barbershop_staff')
+        .select('barbershop_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single()
+
+      if (staffRecord?.barbershop_id) {
+        setBarbershopId(staffRecord.barbershop_id)
+      }
+    } catch (error) {
+      console.error('Failed to load barbershop ID:', error)
     }
   }
 
@@ -133,8 +200,10 @@ export default function BarberProfilePage() {
     { id: 'basic', label: 'Basic Info', icon: UserCircleIcon },
     { id: 'branding', label: 'Branding', icon: PaintBrushIcon },
     { id: 'services', label: 'Services', icon: CurrencyDollarIcon },
+    { id: 'tips', label: 'Tip Settings', icon: CurrencyDollarIcon },
     { id: 'availability', label: 'Availability', icon: CalendarDaysIcon },
     { id: 'portfolio', label: 'Portfolio', icon: PhotoIcon },
+    { id: 'reviews', label: 'My Reviews', icon: ChatBubbleLeftRightIcon },
     { id: 'social', label: 'Social Links', icon: LinkIcon }
   ]
 
@@ -147,12 +216,12 @@ export default function BarberProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Barber Profile Management</h1>
-          <p className="text-gray-600 mt-2">
+        <div className="bg-card rounded-lg shadow-sm border border-border p-6 mb-6">
+          <h1 className="text-2xl font-bold text-card-foreground">Barber Profile Management</h1>
+          <p className="text-muted-foreground mt-2">
             Customize your professional profile and landing page. Your page will be available at:
             <span className="font-mono text-amber-700 ml-2">
               barbershop.com/{profile.custom_path || 'your-name'}
@@ -163,9 +232,9 @@ export default function BarberProfilePage() {
         {/* Message */}
         {message && (
           <div className={`mb-6 p-4 rounded-lg flex items-center space-x-2 ${
-            message.type === 'success' 
-              ? 'bg-green-50 text-green-800 border border-green-200' 
-              : 'bg-red-50 text-red-800 border border-red-200'
+            message.type === 'success'
+              ? 'bg-green-50 text-green-800 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800'
+              : 'bg-red-50 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800'
           }`}>
             {message.type === 'success' ? (
               <CheckCircleIcon className="h-5 w-5" />
@@ -177,18 +246,18 @@ export default function BarberProfilePage() {
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="border-b border-gray-200">
+        <div className="bg-card rounded-lg shadow-sm border border-border mb-6">
+          <div className="border-b border-border">
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setCurrentTab(tab.id)}
                   className={`
                     flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm
-                    ${activeTab === tab.id
-                      ? 'border-amber-500 text-amber-700'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ${currentTab === tab.id
+                      ? 'border-amber-500 text-amber-700 dark:text-amber-500'
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted'
                     }
                   `}
                 >
@@ -202,11 +271,11 @@ export default function BarberProfilePage() {
           {/* Tab Content */}
           <div className="p-6">
             {/* Basic Info Tab */}
-            {activeTab === 'basic' && (
+            {currentTab === 'basic' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Custom URL Path
                     </label>
                     <input
@@ -214,39 +283,39 @@ export default function BarberProfilePage() {
                       value={profile.custom_path}
                       onChange={(e) => handleInputChange('custom_path', e.target.value.toLowerCase().replace(/\s+/g, '-'))}
                       placeholder="john-doe"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Letters, numbers, and hyphens only</p>
+                    <p className="text-xs text-muted-foreground mt-1">Letters, numbers, and hyphens only</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Years of Experience
                     </label>
                     <input
                       type="number"
                       value={profile.years_experience}
                       onChange={(e) => handleInputChange('years_experience', parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Professional Bio
                   </label>
                   <textarea
                     value={profile.bio}
                     onChange={(e) => handleInputChange('bio', e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     placeholder="Tell clients about your experience, style, and what makes you unique..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Specialties (comma-separated)
                   </label>
                   <input
@@ -254,12 +323,12 @@ export default function BarberProfilePage() {
                     value={profile.specialties?.join(', ') || ''}
                     onChange={(e) => handleArrayInput('specialties', e.target.value)}
                     placeholder="Fades, Beard Sculpting, Hair Design, Kids Cuts"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Certifications (comma-separated)
                   </label>
                   <input
@@ -267,12 +336,12 @@ export default function BarberProfilePage() {
                     value={profile.certifications?.join(', ') || ''}
                     onChange={(e) => handleArrayInput('certifications', e.target.value)}
                     placeholder="Master Barber, Color Specialist, Safety Certified"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Languages Spoken (comma-separated)
                   </label>
                   <input
@@ -280,18 +349,18 @@ export default function BarberProfilePage() {
                     value={profile.languages_spoken?.join(', ') || ''}
                     onChange={(e) => handleArrayInput('languages_spoken', e.target.value)}
                     placeholder="English, Spanish, French"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                   />
                 </div>
               </div>
             )}
 
             {/* Branding Tab */}
-            {activeTab === 'branding' && (
+            {currentTab === 'branding' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Primary Color
                     </label>
                     <div className="flex items-center space-x-2">
@@ -299,19 +368,19 @@ export default function BarberProfilePage() {
                         type="color"
                         value={profile.primary_color}
                         onChange={(e) => handleInputChange('primary_color', e.target.value)}
-                        className="h-10 w-20 border border-gray-300 rounded cursor-pointer"
+                        className="h-10 w-20 border border-input rounded cursor-pointer"
                       />
                       <input
                         type="text"
                         value={profile.primary_color}
                         onChange={(e) => handleInputChange('primary_color', e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                        className="flex-1 px-3 py-2 border border-input rounded-lg bg-input text-foreground"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Secondary Color
                     </label>
                     <div className="flex items-center space-x-2">
@@ -319,19 +388,19 @@ export default function BarberProfilePage() {
                         type="color"
                         value={profile.secondary_color}
                         onChange={(e) => handleInputChange('secondary_color', e.target.value)}
-                        className="h-10 w-20 border border-gray-300 rounded cursor-pointer"
+                        className="h-10 w-20 border border-input rounded cursor-pointer"
                       />
                       <input
                         type="text"
                         value={profile.secondary_color}
                         onChange={(e) => handleInputChange('secondary_color', e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                        className="flex-1 px-3 py-2 border border-input rounded-lg bg-input text-foreground"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Accent Color
                     </label>
                     <div className="flex items-center space-x-2">
@@ -339,26 +408,26 @@ export default function BarberProfilePage() {
                         type="color"
                         value={profile.accent_color}
                         onChange={(e) => handleInputChange('accent_color', e.target.value)}
-                        className="h-10 w-20 border border-gray-300 rounded cursor-pointer"
+                        className="h-10 w-20 border border-input rounded cursor-pointer"
                       />
                       <input
                         type="text"
                         value={profile.accent_color}
                         onChange={(e) => handleInputChange('accent_color', e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                        className="flex-1 px-3 py-2 border border-input rounded-lg bg-input text-foreground"
                       />
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Font Family
                   </label>
                   <select
                     value={profile.font_family}
                     onChange={(e) => handleInputChange('font_family', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                   >
                     <option value="Inter">Inter (Modern & Clean)</option>
                     <option value="Roboto">Roboto (Professional)</option>
@@ -369,7 +438,7 @@ export default function BarberProfilePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Background Image URL
                   </label>
                   <input
@@ -377,12 +446,12 @@ export default function BarberProfilePage() {
                     value={profile.background_image_url}
                     onChange={(e) => handleInputChange('background_image_url', e.target.value)}
                     placeholder="https://example.com/background.jpg"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Logo URL
                   </label>
                   <input
@@ -390,14 +459,14 @@ export default function BarberProfilePage() {
                     value={profile.logo_url}
                     onChange={(e) => handleInputChange('logo_url', e.target.value)}
                     placeholder="https://example.com/logo.png"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                   />
                 </div>
 
                 {/* Preview */}
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
-                  <h3 className="text-sm font-medium text-gray-700 mb-4">Preview</h3>
-                  <div 
+                <div className="border-2 border-dashed border-border rounded-lg p-6 bg-muted/20">
+                  <h3 className="text-sm font-medium text-foreground mb-4">Preview</h3>
+                  <div
                     className="h-32 rounded-lg p-4"
                     style={{
                       backgroundColor: profile.primary_color,
@@ -413,41 +482,41 @@ export default function BarberProfilePage() {
             )}
 
             {/* Services Tab */}
-            {activeTab === 'services' && (
+            {currentTab === 'services' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Your Services</h3>
-                  <button className="px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
+                  <h3 className="text-lg font-medium text-card-foreground">Your Services</h3>
+                  <button className="px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-700">
                     Add Service
                   </button>
                 </div>
 
                 {services.length === 0 ? (
-                  <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <CurrencyDollarIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">No services added yet</p>
-                    <p className="text-xs text-gray-500 mt-1">Add your first service to start accepting bookings</p>
+                  <div className="text-center py-12 bg-muted rounded-lg">
+                    <CurrencyDollarIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <p className="mt-2 text-sm text-foreground">No services added yet</p>
+                    <p className="text-xs text-muted-foreground mt-1">Add your first service to start accepting bookings</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {services.map((service, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                      <div key={index} className="border border-border rounded-lg p-4 bg-card">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-medium text-gray-900">{service.name}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                            <h4 className="font-medium text-card-foreground">{service.name}</h4>
+                            <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
                             <div className="flex items-center space-x-4 mt-2">
-                              <span className="text-sm text-gray-500">
+                              <span className="text-sm text-muted-foreground">
                                 Duration: {service.duration_minutes} min
                               </span>
-                              <span className="text-sm font-medium text-amber-700">
+                              <span className="text-sm font-medium text-amber-700 dark:text-amber-500">
                                 ${service.price}
                               </span>
                             </div>
                           </div>
                           <div className="flex space-x-2">
-                            <button className="text-olive-600 hover:text-olive-800">Edit</button>
-                            <button className="text-red-600 hover:text-red-800">Remove</button>
+                            <button className="text-olive-600 hover:text-olive-800 dark:text-olive-400 dark:hover:text-olive-300">Edit</button>
+                            <button className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">Remove</button>
                           </div>
                         </div>
                       </div>
@@ -458,33 +527,33 @@ export default function BarberProfilePage() {
             )}
 
             {/* Availability Tab */}
-            {activeTab === 'availability' && (
+            {currentTab === 'availability' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Advance Booking Days
                     </label>
                     <input
                       type="number"
                       value={profile.booking_advance_days}
                       onChange={(e) => handleInputChange('booking_advance_days', parseInt(e.target.value) || 30)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">How far in advance clients can book</p>
+                    <p className="text-xs text-muted-foreground mt-1">How far in advance clients can book</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Minimum Notice Hours
                     </label>
                     <input
                       type="number"
                       value={profile.minimum_notice_hours}
                       onChange={(e) => handleInputChange('minimum_notice_hours', parseInt(e.target.value) || 24)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">Minimum hours before appointment time</p>
+                    <p className="text-xs text-muted-foreground mt-1">Minimum hours before appointment time</p>
                   </div>
                 </div>
 
@@ -494,21 +563,21 @@ export default function BarberProfilePage() {
                       type="checkbox"
                       checked={profile.accepts_walk_ins}
                       onChange={(e) => handleInputChange('accepts_walk_ins', e.target.checked)}
-                      className="h-4 w-4 text-amber-700 focus:ring-amber-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-amber-700 focus:ring-amber-500 border-input rounded"
                     />
-                    <span className="text-sm font-medium text-gray-700">Accept Walk-ins</span>
+                    <span className="text-sm font-medium text-foreground">Accept Walk-ins</span>
                   </label>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Cancellation Policy
                   </label>
                   <textarea
                     value={profile.cancellation_policy}
                     onChange={(e) => handleInputChange('cancellation_policy', e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                    className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     placeholder="Describe your cancellation policy..."
                   />
                 </div>
@@ -519,23 +588,23 @@ export default function BarberProfilePage() {
                       type="checkbox"
                       checked={profile.deposit_required}
                       onChange={(e) => handleInputChange('deposit_required', e.target.checked)}
-                      className="h-4 w-4 text-amber-700 focus:ring-amber-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-amber-700 focus:ring-amber-500 border-input rounded"
                     />
-                    <span className="text-sm font-medium text-gray-700">Require Deposit</span>
+                    <span className="text-sm font-medium text-foreground">Require Deposit</span>
                   </label>
-                  
+
                   {profile.deposit_required && (
                     <div className="mt-3 ml-7">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">
                         Deposit Amount
                       </label>
                       <div className="flex items-center">
-                        <span className="mr-2">$</span>
+                        <span className="mr-2 text-foreground">$</span>
                         <input
                           type="number"
                           value={profile.deposit_amount}
                           onChange={(e) => handleInputChange('deposit_amount', parseFloat(e.target.value) || 0)}
-                          className="w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                          className="w-32 px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                         />
                       </div>
                     </div>
@@ -545,42 +614,106 @@ export default function BarberProfilePage() {
             )}
 
             {/* Portfolio Tab */}
-            {activeTab === 'portfolio' && (
+            {currentTab === 'portfolio' && (
               <div className="space-y-6">
-                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-600">Upload your best work</p>
-                  <button className="mt-4 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700">
+                <div className="text-center py-12 bg-muted rounded-lg border-2 border-dashed border-border">
+                  <PhotoIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+                  <p className="mt-2 text-sm text-foreground">Upload your best work</p>
+                  <button className="mt-4 px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-700">
                     Upload Images
                   </button>
                 </div>
-                
-                <p className="text-sm text-gray-500">
-                  Portfolio features coming soon. You'll be able to upload before/after photos, 
+
+                <p className="text-sm text-muted-foreground">
+                  Portfolio features coming soon. You'll be able to upload before/after photos,
                   showcase your best work, and build a gallery that attracts new clients.
                 </p>
               </div>
             )}
 
+            {/* Reviews Tab */}
+            {currentTab === 'reviews' && (
+              <div className="space-y-6">
+                {/* Review Stats */}
+                <ReviewStats 
+                  stats={reviewStats} 
+                  showTrends={false}
+                  compact={false}
+                />
+                
+                {/* Reviews List */}
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">Customer Reviews</h3>
+                    <button 
+                      onClick={refreshReviews}
+                      className="px-4 py-2 text-sm bg-olive-600 text-white rounded-lg hover:bg-olive-700"
+                    >
+                      Sync Reviews
+                    </button>
+                  </div>
+                  
+                  <ReviewsList
+                    reviews={reviews}
+                    loading={reviewsLoading}
+                    onRefresh={refreshReviews}
+                    showFilters={false}
+                    showSearch={true}
+                    showAttribution={true}
+                    compact={false}
+                  />
+                  
+                  {reviews.length === 0 && !reviewsLoading && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mt-6">
+                      <h4 className="text-yellow-900 font-medium mb-2">No Reviews Yet</h4>
+                      <p className="text-yellow-700 text-sm">
+                        Reviews from Google My Business that mention your name or are attributed to you will appear here.
+                        Make sure your barbershop has connected their Google My Business account.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Tip Settings Tab */}
+            {currentTab === 'tips' && (
+              <div className="space-y-6">
+                {barbershopId ? (
+                  <BarberTipSettings 
+                    barberId={user?.id}
+                    barbershopId={barbershopId}
+                  />
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                    <h4 className="text-yellow-900 font-medium mb-2">Loading Tip Settings</h4>
+                    <p className="text-yellow-700 text-sm">
+                      Loading your barbershop association to configure tip settings...
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Social Links Tab */}
-            {activeTab === 'social' && (
+            {currentTab === 'social' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Display Phone Number
                     </label>
                     <input
                       type="tel"
                       value={profile.display_phone}
                       onChange={(e) => handleInputChange('display_phone', e.target.value)}
-                      placeholder="(555) 123-4567"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                      placeholder="(555) 000-0000"
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Display Email
                     </label>
                     <input
@@ -588,44 +721,44 @@ export default function BarberProfilePage() {
                       value={profile.display_email}
                       onChange={(e) => handleInputChange('display_email', e.target.value)}
                       placeholder="john@barbershop.com"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Instagram Handle
                     </label>
                     <div className="flex items-center">
-                      <span className="text-gray-500 mr-2">@</span>
+                      <span className="text-muted-foreground mr-2">@</span>
                       <input
                         type="text"
                         value={profile.instagram_handle}
                         onChange={(e) => handleInputChange('instagram_handle', e.target.value)}
                         placeholder="johndoebarber"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                        className="flex-1 px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       TikTok Handle
                     </label>
                     <div className="flex items-center">
-                      <span className="text-gray-500 mr-2">@</span>
+                      <span className="text-muted-foreground mr-2">@</span>
                       <input
                         type="text"
                         value={profile.tiktok_handle}
                         onChange={(e) => handleInputChange('tiktok_handle', e.target.value)}
                         placeholder="johndoecuts"
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                        className="flex-1 px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Facebook URL
                     </label>
                     <input
@@ -633,12 +766,12 @@ export default function BarberProfilePage() {
                       value={profile.facebook_url}
                       onChange={(e) => handleInputChange('facebook_url', e.target.value)}
                       placeholder="https://facebook.com/johndoebarber"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       YouTube URL
                     </label>
                     <input
@@ -646,7 +779,7 @@ export default function BarberProfilePage() {
                       value={profile.youtube_url}
                       onChange={(e) => handleInputChange('youtube_url', e.target.value)}
                       placeholder="https://youtube.com/@johndoebarber"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500"
+                      className="w-full px-3 py-2 border border-input rounded-lg bg-input text-foreground focus:ring-amber-500 focus:border-amber-500"
                     />
                   </div>
                 </div>
@@ -659,19 +792,30 @@ export default function BarberProfilePage() {
         <div className="flex justify-end space-x-4">
           <button
             onClick={() => window.open(`/preview/${profile.custom_path || 'preview'}`, '_blank')}
-            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            className="px-6 py-2 border border-border text-foreground rounded-lg hover:bg-muted transition-colors"
           >
             Preview Page
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-6 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50"
+            className="px-6 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-700 disabled:opacity-50 transition-colors"
           >
             {saving ? 'Saving...' : 'Save Profile'}
           </button>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function BarberProfilePage() {
+  const [activeTab, setActiveTab] = useState('basic')
+  
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <BarberProfileContent onTabChange={setActiveTab} />
+      <BarberProfilePageContent activeTab={activeTab} />
+    </Suspense>
   )
 }

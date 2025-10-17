@@ -194,6 +194,37 @@ asyncio.run(demonstrate_caching())
 
 ---
 
+## 🔄 Recent System Updates
+
+### Booking Ecosystem Consolidation (October 2025)
+
+The booking system underwent a comprehensive consolidation migration to establish a single source of truth for appointments and standardize field naming across the entire stack.
+
+**What Changed**:
+- Database tables consolidated: `bookings` + `appointments` → `appointments` (single table)
+- 88 booking records unified into 81 appointments (7 duplicates eliminated)
+- Field names standardized: `customer_*` → `client_*`, `start_time` → `scheduled_at`
+- 4 API endpoints updated to use correct schema
+- 70+ components being refactored for consistency
+
+**Impact**: Zero breaking changes, 100% backward compatibility maintained during transition.
+
+**Critical Documentation**:
+- **🎯 Schema Standards (MUST READ)**: `/docs/SCHEMA_STANDARDS.md` - Field naming conventions
+- **⚡ Quick Reference**: `/docs/SCHEMA_QUICK_REFERENCE.md` - One-page cheat sheet
+- **📘 Migration Guide**: `/docs/MIGRATION_BOOKING_CONSOLIDATION_COMPLETE.md`
+- **🔧 Field Mapping**: `/docs/FIELD_MAPPING_REFERENCE.md`
+
+**For Developers - CRITICAL RULES**:
+1. **ALWAYS** use `barbershop_id` (NEVER `shop_id` - causes data loss!)
+2. **ALWAYS** use `client_*` fields (not `customer_*`)
+3. **ALWAYS** use `scheduled_at` for appointments (not `start_time`)
+4. **ALWAYS** use `full_name` and `avatar_url` in profiles
+
+**⚠️ Common Mistake**: Using `shop_id` instead of `barbershop_id` returns empty data. See [SCHEMA_STANDARDS.md](/docs/SCHEMA_STANDARDS.md) for details.
+
+---
+
 ## 🏗️ Architecture Overview
 
 ### System Architecture

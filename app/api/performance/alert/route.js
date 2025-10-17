@@ -1,20 +1,22 @@
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
+import { createClient } from '@/lib/supabase/server'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 /**
  * Performance Alert API Endpoint
  * Receives Core Web Vitals performance alerts and logs them for monitoring
  */
 
-// In-memory store for development (use database in production)
-const performanceAlerts = []
-
 export async function POST(request) {
   try {
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
+    
     const body = await request.json()
     const { metric, value, rating, url, userAgent, timestamp } = body
 
-    // Validate required fields
     if (!metric || value === undefined || !rating) {
       return NextResponse.json(
         { error: 'Missing required fields: metric, value, rating' },
@@ -22,44 +24,50 @@ export async function POST(request) {
       )
     }
 
-    // Create performance alert record
     const alert = {
-      id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       metric,
       value: parseFloat(value),
       rating,
       url: url || 'unknown',
-      userAgent: userAgent || 'unknown',
-      timestamp: timestamp || Date.now(),
+      user_agent: userAgent || 'unknown',
+      timestamp: timestamp ? new Date(timestamp).toISOString() : new Date().toISOString(),
       severity: getSeverity(metric, value, rating),
-      received_at: Date.now()
+      created_at: new Date().toISOString()
     }
 
-    // Store alert (in production, save to database)
-    performanceAlerts.push(alert)
+    const { data: savedAlert, error: saveError } = await supabase
+      .from('performance_alerts')
+      .insert(alert)
+      .select()
+      .single()
 
-    // Keep only last 1000 alerts to prevent memory issues
-    if (performanceAlerts.length > 1000) {
-      performanceAlerts.shift()
+    if (saveError) {
+      console.error('Failed to save performance alert:', saveError)
     }
 
-    // Log critical performance issues
+    const alertId = savedAlert?.id || `alert_${Date.now()}`
+
     if (alert.severity === 'critical') {
       console.error(`🚨 CRITICAL PERFORMANCE ALERT: ${metric} = ${value} (${rating}) on ${url}`)
+      
+      await supabase
+        .from('notifications')
+        .insert({
+          type: 'performance_critical',
+          title: 'Critical Performance Issue',
+          message: `${metric} metric is critically poor (${value}) on ${url}`,
+          severity: 'critical',
+          data: JSON.stringify(alert)
+        })
     } else if (alert.severity === 'warning') {
       console.warn(`⚠️ PERFORMANCE WARNING: ${metric} = ${value} (${rating}) on ${url}`)
     }
 
-    // In production, you could:
-    // - Send to monitoring service (DataDog, New Relic, etc.)
-    // - Send Slack/email notifications
-    // - Save to database
-    // - Trigger automated performance optimizations
-
     return NextResponse.json({
       success: true,
-      alert_id: alert.id,
-      message: 'Performance alert received successfully'
+      alert_id: alertId,
+      message: 'Performance alert received successfully',
+      severity: alert.severity
     })
 
   } catch (error) {
@@ -74,54 +82,98 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
+    
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '50')
     const metric = searchParams.get('metric')
     const severity = searchParams.get('severity')
+    const hours = parseInt(searchParams.get('hours') || '24')
 
-    let filteredAlerts = [...performanceAlerts]
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
 
-    // Filter by metric if specified
+    let query = supabase
+      .from('performance_alerts')
+      .select('*')
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
     if (metric) {
-      filteredAlerts = filteredAlerts.filter(alert => alert.metric === metric)
+      query = query.eq('metric', metric)
     }
-
-    // Filter by severity if specified
     if (severity) {
-      filteredAlerts = filteredAlerts.filter(alert => alert.severity === severity)
+      query = query.eq('severity', severity)
     }
 
-    // Sort by timestamp (most recent first) and limit results
-    filteredAlerts = filteredAlerts
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, limit)
+    const { data: alerts, error: fetchError } = await query
 
-    // Calculate summary statistics
+    if (fetchError) {
+      console.error('Failed to fetch performance alerts:', fetchError)
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to fetch performance alerts',
+        alerts: [],
+        summary: {
+          total_alerts: 0,
+          by_metric: {},
+          by_severity: {},
+          by_rating: {}
+        },
+        data_available: false
+      })
+    }
+
+    const filteredAlerts = alerts || []
+
     const summary = {
-      total_alerts: performanceAlerts.length,
+      total_alerts: filteredAlerts.length,
       filtered_count: filteredAlerts.length,
       by_metric: {},
       by_severity: {},
-      by_rating: {}
+      by_rating: {},
+      average_values: {}
     }
 
-    performanceAlerts.forEach(alert => {
-      // By metric
+    filteredAlerts.forEach(alert => {
       summary.by_metric[alert.metric] = (summary.by_metric[alert.metric] || 0) + 1
       
-      // By severity
       summary.by_severity[alert.severity] = (summary.by_severity[alert.severity] || 0) + 1
       
-      // By rating
       summary.by_rating[alert.rating] = (summary.by_rating[alert.rating] || 0) + 1
+      
+      if (!summary.average_values[alert.metric]) {
+        summary.average_values[alert.metric] = { sum: 0, count: 0 }
+      }
+      summary.average_values[alert.metric].sum += alert.value
+      summary.average_values[alert.metric].count += 1
     })
+
+    Object.keys(summary.average_values).forEach(metric => {
+      const data = summary.average_values[metric]
+      summary.average_values[metric] = parseFloat((data.sum / data.count).toFixed(2))
+    })
+
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const recentAlerts = filteredAlerts.filter(a => a.created_at >= oneDayAgo)
+    const olderAlerts = filteredAlerts.filter(a => a.created_at < oneDayAgo)
+
+    const trend = {
+      recent_count: recentAlerts.length,
+      older_count: olderAlerts.length,
+      trend: recentAlerts.length > olderAlerts.length ? 'worsening' : 
+             recentAlerts.length < olderAlerts.length ? 'improving' : 'stable'
+    }
 
     return NextResponse.json({
       success: true,
       alerts: filteredAlerts,
       summary,
-      filters: { limit, metric, severity },
-      timestamp: Date.now()
+      trend,
+      filters: { limit, metric, severity, hours },
+      timestamp: new Date().toISOString(),
+      data_available: filteredAlerts.length > 0
     })
 
   } catch (error) {
@@ -138,7 +190,6 @@ export async function GET(request) {
  * Determine alert severity based on metric and value
  */
 function getSeverity(metric, value, rating) {
-  // Critical thresholds for immediate attention
   const criticalThresholds = {
     LCP: 6.0,    // Extremely poor LCP
     FID: 1.0,    // Extremely poor FID
@@ -157,6 +208,3 @@ function getSeverity(metric, value, rating) {
 
   return 'info'
 }
-
-// Export for external use
-export { performanceAlerts }

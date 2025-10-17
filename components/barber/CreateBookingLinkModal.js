@@ -1,17 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { 
+import {
   XMarkIcon,
-  PlusIcon,
-  MinusIcon,
   CalendarIcon,
   ClockIcon,
   CurrencyDollarIcon,
-  TagIcon,
   LinkIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barberId }) {
   const [formData, setFormData] = useState({
@@ -34,7 +31,6 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
   const [currentStep, setCurrentStep] = useState(1)
   const [previewUrl, setPreviewUrl] = useState('')
 
-  // Mock services - in production this would come from API
   const Services = [
     { id: 1, name: 'Classic Cut', duration: 30, price: 35, category: 'Haircuts' },
     { id: 2, name: 'Fade Cut', duration: 45, price: 45, category: 'Haircuts' },
@@ -137,7 +133,6 @@ export default function CreateBookingLinkModal({ isOpen, onClose, onSave, barber
       
       await onSave(linkData)
       
-      // Reset form
       setFormData({
         name: '',
         services: [],

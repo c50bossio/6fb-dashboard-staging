@@ -37,7 +37,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useNavigation } from '../contexts/NavigationContext'
+import { useAuth } from './SupabaseAuthProvider'
 import Logo, { LogoHeader } from './ui/Logo'
+import ShopSelector from './navigation/ShopSelector'
 
 const navigation = [
   { 
@@ -130,28 +132,16 @@ const shopManagement = [
     icon: BuildingStorefrontIcon,
     description: 'Multi-barber overview and shop analytics'
   },
-  { 
-    name: 'Website Customization', 
-    href: '/shop/website', 
+  {
+    name: 'Website Customization',
+    href: '/shop/website',
     icon: GlobeAltIcon,
     description: 'Customize your shop website and barber pages',
     badge: 'NEW'
   },
-  { 
-    name: 'Shop Settings', 
-    href: '/shop/settings', 
-    icon: Cog6ToothIcon,
-    description: 'Configure shop details and preferences'
-  },
-  { 
-    name: 'Add Barber', 
-    href: '/shop/barbers/add', 
-    icon: UserPlusIcon,
-    description: 'Add new barbers to your team'
-  },
-  { 
-    name: 'Financial Overview', 
-    href: '/shop/financial', 
+  {
+    name: 'Financial Overview',
+    href: '/shop/financial',
     icon: CurrencyDollarIcon,
     description: 'Commission settings and financial arrangements'
   },
@@ -162,14 +152,19 @@ const shopManagement = [
     description: 'Manage inventory, marketplace, and point of sale',
     badge: 'CIN7'
   },
-  { 
-    name: 'Point of Sale', 
-    href: '/dashboard/pos', 
+  {
+    name: 'Point of Sale',
+    href: '/dashboard/pos',
     icon: CreditCardIcon,
     description: 'Process product sales and commissions'
+  },
+  {
+    name: 'Staff Management',
+    href: '/shop/barbers',
+    icon: UserGroupIcon,
+    description: 'Manage barbers, schedules, and compensation'
   }
   // Coming Soon:
-  // - Staff Management (manage all barbers)
   // - Advanced Reports (detailed analytics)
 ]
 
@@ -203,28 +198,23 @@ const marketingOperations = [
 
 // Enterprise operations
 const enterpriseOperations = [
-  { 
-    name: 'Enterprise Portal', 
-    href: '/enterprise/website', 
+  {
+    name: 'Enterprise Dashboard',
+    href: '/enterprise/dashboard',
+    icon: ChartPieIcon,
+    description: 'Multi-location overview, analytics, and performance comparison',
+    badge: 'NEW ✨'
+  },
+  {
+    name: 'Enterprise Portal',
+    href: '/enterprise/website',
     icon: BuildingOffice2Icon,
-    description: 'Manage multi-location website and portal',
-    badge: 'NEW'
+    description: 'Manage multi-location website and portal'
   }
 ]
 // Future features:
-// - Enterprise Dashboard (multi-location overview)
 // - Location Management (manage all shops)
-// - Cross-Shop Analytics (performance comparison)
-
-const legacyPages = [
-  { 
-    name: 'Legacy Dashboard', 
-    href: '/', 
-    icon: HomeIcon,
-    description: 'Original dashboard (deprecated)',
-    isLegacy: true
-  }
-]
+// - Staff Optimization (AI-powered scheduling)
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -233,10 +223,10 @@ export default function Navigation() {
   const [isMobile, setIsMobile] = useState(true) // Default to mobile for SSR consistency
   const [currentTime, setCurrentTime] = useState('--:--') // Consistent initial state
   const [isClient, setIsClient] = useState(false)
-  
-  // For development, we'll assume SHOP_OWNER role
-  // In production, this would come from useAuth() context
-  const userRole = 'SHOP_OWNER' // This would normally be: const { user } = useAuth() and user.role
+
+  // Get user role from auth context
+  const { profile } = useAuth()
+  const userRole = profile?.role || 'CLIENT' // Default to CLIENT if no role found
 
   // Client-side only initialization
   useEffect(() => {
@@ -299,7 +289,9 @@ export default function Navigation() {
   // Mobile Header Component
   const MobileHeader = () => (
     <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
-      <LogoHeader size="small" showText={false} />
+      <Link href="/dashboard">
+        <LogoHeader size="small" showText={false} />
+      </Link>
       <button
         onClick={() => setIsMobileMenuOpen(true)}
         className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all duration-200"
@@ -317,7 +309,7 @@ export default function Navigation() {
       <div className={`${collapsed ? 'px-2' : 'px-4'} py-4`}>
         {!collapsed && (
           <div className="mb-4">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
             AI-POWERED MODULES
             </h2>
           </div>
@@ -333,7 +325,7 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? (isLegacy ? 'bg-gray-100 shadow-sm' : 'bg-gradient-to-r from-olive-50 to-gold-50 border border-olive-200 shadow-md') : 'hover:bg-gray-50'} ${isLegacy ? 'opacity-60' : ''}`}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? (isLegacy ? 'bg-muted shadow-sm' : 'bg-gradient-to-r from-olive-50 to-gold-50 dark:from-olive-900/30 dark:to-gold-900/30 border border-olive-200 dark:border-olive-800 shadow-md') : 'hover:bg-muted'} ${isLegacy ? 'opacity-60' : ''}`}
                 >
                   <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
@@ -352,27 +344,27 @@ export default function Navigation() {
                       <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
-                          isActive 
-                            ? isLegacy 
-                              ? 'text-gray-700' 
-                              : 'text-gray-900' 
-                            : 'text-gray-700 group-hover:text-gray-900'
+                          isActive
+                            ? isLegacy
+                              ? 'text-gray-700 dark:text-gray-200'
+                              : 'text-gray-900 dark:text-gray-100'
+                            : 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100'
                         }`}>
                           {item.name}
                         </p>
                         {item.badge && !isLegacy && (
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
-                            ${isActive 
-                              ? 'bg-olive-100 text-olive-700' 
-                              : 'bg-gray-100 text-gray-600'
+                            ${isActive
+                              ? 'bg-olive-100 text-olive-700 dark:bg-olive-900/30 dark:text-olive-300'
+                              : 'bg-muted text-muted-foreground'
                             }
                           `}>
                             {item.badge}
                           </span>
                         )}
                         {isLegacy && (
-                          <span className="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-500">
+                          <span className="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-muted text-muted-foreground">
                             Legacy
                           </span>
                         )}
@@ -394,7 +386,7 @@ export default function Navigation() {
                         key={submode.mode}
                         href={`${item.href}?mode=${submode.mode}`}
                         onClick={onItemClick}
-                        className="flex items-center gap-2 text-xs text-gray-600 hover:text-olive-600 py-1"
+                        className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 hover:text-olive-600 dark:hover:text-olive-400 py-1"
                       >
                         <submode.icon className="h-3 w-3" />
                         <span>{submode.name}</span>
@@ -409,10 +401,10 @@ export default function Navigation() {
       </div>
 
       {/* Core Business Operations */}
-      <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
+      <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
         {!collapsed && (
           <div className="mb-4">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
             CORE OPERATIONS
             </h2>
           </div>
@@ -427,7 +419,7 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 shadow-md' : 'hover:bg-gray-50'}`}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border border-green-200 dark:border-green-800 shadow-md' : 'hover:bg-muted'}`}
                 >
                   <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
@@ -441,16 +433,16 @@ export default function Navigation() {
                       <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
-                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                          isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100'
                         }`}>
                           {item.name}
                         </p>
                         {item.badge && (
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
-                            ${isActive 
-                              ? 'bg-moss-100 text-moss-800' 
-                              : 'bg-gray-100 text-gray-600'
+                            ${isActive
+                              ? 'bg-moss-100 text-moss-800 dark:bg-moss-900/30 dark:text-moss-300'
+                              : 'bg-muted text-muted-foreground'
                             }
                           `}>
                             {item.badge}
@@ -458,7 +450,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-tight">
                           {item.description}
                         </p>
                       )}
@@ -473,10 +465,10 @@ export default function Navigation() {
       </div>
 
       {/* Marketing Operations - Available to all authenticated users */}
-      <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
+      <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
         {!collapsed && (
           <div className="mb-4">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
               MARKETING
             </h2>
           </div>
@@ -491,7 +483,7 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 shadow-md' : 'hover:bg-gray-50'}`}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/30 dark:to-rose-900/30 border border-pink-200 dark:border-pink-800 shadow-md' : 'hover:bg-muted'}`}
                 >
                   <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
@@ -505,16 +497,16 @@ export default function Navigation() {
                       <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
-                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                          isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100'
                         }`}>
                           {item.name}
                         </p>
                         {item.badge && (
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
-                            ${isActive 
-                              ? 'bg-pink-100 text-pink-700' 
-                              : 'bg-gray-100 text-gray-600'
+                            ${isActive
+                              ? 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300'
+                              : 'bg-muted text-muted-foreground'
                             }
                           `}>
                             {item.badge}
@@ -522,7 +514,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-tight">
                           {item.description}
                         </p>
                       )}
@@ -538,10 +530,10 @@ export default function Navigation() {
 
       {/* Barber Operations - Only show for barbers and owners */}
       {['BARBER', 'SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) && (
-        <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
+        <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
           {!collapsed && (
             <div className="mb-4">
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 BARBER OPERATIONS
               </h2>
             </div>
@@ -556,7 +548,7 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 shadow-md' : 'hover:bg-gray-50'}`}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 border border-amber-200 dark:border-amber-800 shadow-md' : 'hover:bg-muted'}`}
                 >
                   <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
@@ -570,16 +562,16 @@ export default function Navigation() {
                       <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
-                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                          isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100'
                         }`}>
                           {item.name}
                         </p>
                         {item.badge && (
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
-                            ${isActive 
-                              ? 'bg-amber-100 text-amber-700' 
-                              : 'bg-gray-100 text-gray-600'
+                            ${isActive
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                              : 'bg-muted text-muted-foreground'
                             }
                           `}>
                             {item.badge}
@@ -587,7 +579,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-tight">
                           {item.description}
                         </p>
                       )}
@@ -604,10 +596,10 @@ export default function Navigation() {
 
       {/* Shop Management - Only show for shop owners and above */}
       {['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) && (
-        <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
+        <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
           {!collapsed && (
             <div className="mb-4">
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 SHOP MANAGEMENT
               </h2>
             </div>
@@ -622,7 +614,7 @@ export default function Navigation() {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-indigo-50 to-olive-50 border border-indigo-200 shadow-md' : 'hover:bg-gray-50'}`}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-indigo-50 to-olive-50 dark:from-indigo-900/30 dark:to-olive-900/30 border border-indigo-200 dark:border-indigo-800 shadow-md' : 'hover:bg-muted'}`}
                 >
                   <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
@@ -636,16 +628,16 @@ export default function Navigation() {
                       <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
-                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                          isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100'
                         }`}>
                           {item.name}
                         </p>
                         {item.badge && (
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
-                            ${isActive 
-                              ? 'bg-indigo-100 text-olive-700' 
-                              : 'bg-gray-100 text-gray-600'
+                            ${isActive
+                              ? 'bg-indigo-100 text-olive-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                              : 'bg-muted text-muted-foreground'
                             }
                           `}>
                             {item.badge}
@@ -653,7 +645,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-tight">
                           {item.description}
                         </p>
                       )}
@@ -668,27 +660,30 @@ export default function Navigation() {
         </div>
       )}
 
-      {/* Enterprise Operations - Only show for enterprise owners */}
-      {['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) && (
-        <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100`}>
+      {/* Enterprise Operations - Show for enterprise owners OR enterprise subscription holders */}
+      {(
+        ['ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(userRole) ||
+        (profile?.subscription_tier === 'enterprise' && profile?.organization_id)
+      ) && (
+        <div className={`${collapsed ? 'px-2' : 'px-4'} py-4 border-t border-gray-100 dark:border-gray-700`}>
           {!collapsed && (
             <div className="mb-4">
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
                 ENTERPRISE OPERATIONS
               </h2>
             </div>
           )}
-          
+
           <ul className="space-y-2">
             {enterpriseOperations.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href)
-            
+
             return (
               <li key={item.name}>
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-gold-50 to-pink-50 border border-gold-200 shadow-md' : 'hover:bg-gray-50'}`}
+                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-3'} rounded-xl transition-all duration-200 hover:scale-105 ${isActive ? 'bg-gradient-to-r from-gold-50 to-pink-50 dark:from-gold-900/30 dark:to-pink-900/30 border border-gold-200 dark:border-gold-800 shadow-md' : 'hover:bg-muted'}`}
                 >
                   <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <item.icon
@@ -702,16 +697,16 @@ export default function Navigation() {
                       <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className={`text-sm font-medium truncate ${
-                          isActive ? 'text-gray-900' : 'text-gray-700 group-hover:text-gray-900'
+                          isActive ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100'
                         }`}>
                           {item.name}
                         </p>
                         {item.badge && (
                           <span className={`
                             ml-2 px-2 py-1 text-xs font-medium rounded-full
-                            ${isActive 
-                              ? 'bg-gold-100 text-gold-700' 
-                              : 'bg-gray-100 text-gray-600'
+                            ${isActive
+                              ? 'bg-gold-100 text-gold-700 dark:bg-gold-900/30 dark:text-gold-300'
+                              : 'bg-muted text-muted-foreground'
                             }
                           `}>
                             {item.badge}
@@ -719,7 +714,7 @@ export default function Navigation() {
                         )}
                       </div>
                       {item.description && (
-                        <p className="mt-1 text-xs text-gray-500 leading-tight">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-tight">
                           {item.description}
                         </p>
                       )}
@@ -733,46 +728,6 @@ export default function Navigation() {
         </ul>
         </div>
       )}
-
-      {/* Legacy Pages */}
-      <div className={`${collapsed ? 'px-2' : 'px-4'} py-2`}>
-        <ul className="space-y-1">
-          {legacyPages.map((item) => {
-            const isActive = pathname === item.href
-            
-            return (
-              <li key={item.name}>
-                <Link
-                  href={item.href}
-                  onClick={onItemClick}
-                  className={`group block ${collapsed ? 'px-2 py-2' : 'px-3 py-2'} rounded-lg transition-colors opacity-60 ${isActive ? 'bg-gray-100 shadow-sm' : 'hover:bg-gray-50'}`}
-                >
-                  <div className={`flex items-start ${collapsed ? 'justify-center' : 'space-x-3'}`}>
-                    <item.icon className={`${collapsed ? '' : 'mt-0.5'} h-4 w-4 flex-shrink-0 text-gray-400`} title={collapsed ? item.name : undefined} />
-                    {!collapsed && (
-                      <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium truncate text-gray-600">
-                          {item.name}
-                        </p>
-                        <span className="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-500">
-                          Legacy
-                        </span>
-                      </div>
-                      {item.description && (
-                        <p className="mt-1 text-xs text-gray-400 leading-tight">
-                          {item.description}
-                        </p>
-                      )}
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
     </>
   )
 
@@ -794,7 +749,9 @@ export default function Navigation() {
           <div className="mobile-navigation absolute inset-y-0 left-0 w-80 max-w-full bg-card shadow-2xl transform transition-transform ease-in-out duration-300 border-r border-border">
             {/* Header */}
             <div className="p-6 border-b border-border flex items-center justify-between bg-background/95 backdrop-blur-sm">
-              <Logo size="medium" showText priority />
+              <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                <Logo size="medium" showText priority />
+              </Link>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all duration-200"
@@ -803,7 +760,10 @@ export default function Navigation() {
                 <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
-            
+
+            {/* Shop Selector - CRITICAL: Provides location context for entire app */}
+            <ShopSelector collapsed={false} />
+
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 140px)' }}>
               <NavigationItems onItemClick={() => setIsMobileMenuOpen(false)} />
@@ -847,7 +807,9 @@ export default function Navigation() {
             <div className="p-6 border-b border-border bg-background/95 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className={`flex items-center ${isCollapsed ? 'hidden' : ''}`}>
-                  <Logo size="medium" showText priority />
+                  <Link href="/dashboard">
+                    <Logo size="medium" showText priority />
+                  </Link>
                 </div>
                 <button
                   onClick={() => setIsCollapsed(!isCollapsed)}
@@ -862,7 +824,10 @@ export default function Navigation() {
                 </button>
               </div>
             </div>
-            
+
+            {/* Shop Selector - CRITICAL: Provides location context for entire app */}
+            <ShopSelector collapsed={isCollapsed} />
+
             <NavigationItems collapsed={isCollapsed} />
           </div>
 

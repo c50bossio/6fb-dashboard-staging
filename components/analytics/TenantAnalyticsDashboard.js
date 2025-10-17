@@ -6,17 +6,15 @@ import {
   CurrencyDollarIcon,
   SparklesIcon,
   CalendarDaysIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   TrophyIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
-import LoadingSpinner from '../LoadingSpinner'
 
 import { useTenant } from '@/contexts/TenantContext'
 import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
+import LoadingSpinner from '../LoadingSpinner'
 
 export default function TenantAnalyticsDashboard() {
   const { tenant, tenantName, businessName, subscriptionTier } = useTenant()
@@ -150,7 +148,7 @@ export default function TenantAnalyticsDashboard() {
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
-            <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+            <ChartBarIcon className="h-4 w-4 text-green-500 mr-1" />
             <span className="text-green-600">+12% from last period</span>
           </div>
         </div>
@@ -169,7 +167,7 @@ export default function TenantAnalyticsDashboard() {
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
-            <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+            <ChartBarIcon className="h-4 w-4 text-green-500 mr-1" />
             <span className="text-green-600">{analytics.growth_trends.user_growth}</span>
           </div>
         </div>
@@ -188,7 +186,7 @@ export default function TenantAnalyticsDashboard() {
             </div>
           </div>
           <div className="mt-4 flex items-center text-sm">
-            <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+            <ChartBarIcon className="h-4 w-4 text-green-500 mr-1" />
             <span className="text-green-600">{analytics.growth_trends.revenue_growth}</span>
           </div>
         </div>

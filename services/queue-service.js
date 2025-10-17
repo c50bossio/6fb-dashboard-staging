@@ -6,7 +6,6 @@
 const Bull = require('bull');
 const Redis = require('ioredis');
 
-// Redis configuration
 const redisConfig = {
     host: process.env.REDIS_HOST || 'localhost',
     port: process.env.REDIS_PORT || 6379,
@@ -16,16 +15,13 @@ const redisConfig = {
     enableReadyCheck: true,
     retryStrategy: (times) => {
         const delay = Math.min(times * 1000, 30000);
-        console.log(`Redis reconnecting in ${delay}ms...`);
         return delay;
     }
 };
 
-// Create Redis clients
 const redisClient = new Redis(redisConfig);
 const redisSubscriber = new Redis(redisConfig);
 
-// Queue definitions
 const queues = {
     email: null,
     sms: null,
@@ -33,7 +29,6 @@ const queues = {
     analytics: null
 };
 
-// Queue configurations
 const queueConfigs = {
     email: {
         name: 'email-campaigns',
@@ -103,21 +98,16 @@ class QueueService {
         if (this.initialized) return;
 
         try {
-            // Test Redis connection
             await redisClient.ping();
-            console.log('✅ Redis connection established');
 
-            // Initialize each queue
             for (const [key, config] of Object.entries(queueConfigs)) {
                 this.queues[key] = new Bull(config.name, {
                     redis: redisConfig,
                     defaultJobOptions: config.defaultJobOptions
                 });
 
-                // Set up event listeners
                 this.setupQueueListeners(key, this.queues[key]);
                 
-                console.log(`✅ Queue initialized: ${config.name}`);
             }
 
             this.initialized = true;
@@ -134,7 +124,6 @@ class QueueService {
     setupQueueListeners(queueName, queue) {
         queue.on('completed', (job, result) => {
             this.metrics.jobsProcessed++;
-            console.log(`✅ Job ${job.id} completed in ${queueName}`);
         });
 
         queue.on('failed', (job, err) => {
@@ -165,7 +154,6 @@ class QueueService {
 
         const job = await this.queues.email.add('send-email-campaign', campaignData, jobOptions);
         
-        console.log(`📧 Email campaign queued: ${job.id}`);
         return job;
     }
 
@@ -183,7 +171,6 @@ class QueueService {
 
         const job = await this.queues.sms.add('send-sms-campaign', campaignData, jobOptions);
         
-        console.log(`📱 SMS campaign queued: ${job.id}`);
         return job;
     }
 
@@ -224,13 +211,11 @@ class QueueService {
         const batchSize = parseInt(process.env.QUEUE_BATCH_SIZE) || 100;
         const batches = [];
         
-        // Split recipients into batches
         for (let i = 0; i < recipients.length; i += batchSize) {
             const batch = recipients.slice(i, i + batchSize);
             batches.push(batch);
         }
 
-        // Queue each batch with delay
         const jobs = [];
         for (let i = 0; i < batches.length; i++) {
             const delay = i * parseInt(process.env.QUEUE_BATCH_DELAY_MS || 1000);
@@ -251,7 +236,6 @@ class QueueService {
             jobs.push(job);
         }
 
-        console.log(`📦 Queued ${batches.length} batches for campaign ${campaignId}`);
         return jobs;
     }
 
@@ -307,7 +291,6 @@ class QueueService {
         if (!queue) throw new Error(`Queue ${queueName} not found`);
 
         await queue.pause();
-        console.log(`⏸️ Queue ${queueName} paused`);
     }
 
     /**
@@ -320,7 +303,6 @@ class QueueService {
         if (!queue) throw new Error(`Queue ${queueName} not found`);
 
         await queue.resume();
-        console.log(`▶️ Queue ${queueName} resumed`);
     }
 
     /**
@@ -333,7 +315,6 @@ class QueueService {
         if (!queue) throw new Error(`Queue ${queueName} not found`);
 
         await queue.clean(0, 'failed');
-        console.log(`🧹 Cleared failed jobs from ${queueName}`);
     }
 
     /**
@@ -353,7 +334,6 @@ class QueueService {
             retryCount++;
         }
 
-        console.log(`🔄 Retried ${retryCount} failed jobs in ${queueName}`);
         return retryCount;
     }
 
@@ -379,7 +359,6 @@ class QueueService {
         if (!queue) throw new Error(`Queue ${queueName} not found`);
 
         const removed = await queue.clean(ageMs, 'completed');
-        console.log(`🧹 Removed ${removed.length} old completed jobs from ${queueName}`);
         return removed;
     }
 
@@ -387,18 +366,15 @@ class QueueService {
      * Graceful shutdown
      */
     async shutdown() {
-        console.log('🛑 Shutting down queue service...');
 
         for (const [name, queue] of Object.entries(this.queues)) {
             await queue.close();
-            console.log(`✅ Queue ${name} closed`);
         }
 
         await redisClient.quit();
         await redisSubscriber.quit();
         
         this.initialized = false;
-        console.log('✅ Queue service shutdown complete');
     }
 
     /**
@@ -423,9 +399,7 @@ class QueueService {
     }
 }
 
-// Export singleton instance
 const queueService = new QueueService();
 
-// Node.js CommonJS export for compatibility
 module.exports = queueService;
 module.exports.QueueService = QueueService;

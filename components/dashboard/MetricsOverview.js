@@ -1,28 +1,27 @@
 'use client'
 
-import { 
+import {
   ChatBubbleLeftRightIcon,
   SparklesIcon,
   ChartBarIcon,
-  PhoneIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   MinusIcon,
   CalendarDaysIcon,
+  CalendarIcon,
+  CheckCircleIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
 import React from 'react'
 
+import { useTenant } from '@/contexts/TenantContext'
+import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
 import LoadingSpinner from '../LoadingSpinner'
 import { StatCard, Card, Badge, Alert, StatusBadge } from '../ui'
 
-import { useTenant } from '@/contexts/TenantContext'
-import { useTenantAnalytics } from '@/hooks/useTenantAnalytics'
 
-// Fallback component in case ArrowTrendingUpIcon is not available
-const SafeArrowTrendingUpIcon = ArrowTrendingUpIcon || (() => <span>↗</span>)
+const SafeChartBarIcon = ChartBarIcon || (() => <span>↗</span>)
 
 const MetricsOverview = React.memo(function MetricsOverview({ 
   dashboardStats, 
@@ -35,16 +34,20 @@ const MetricsOverview = React.memo(function MetricsOverview({
   const { data: analytics, loading: analyticsLoading } = useTenantAnalytics('7d', {
     metric_focus: 'overview'
   })
+  
+  // Use real dashboard data when available
+  const realData = dashboardStats?.analytics_data
+  const hasRealData = realData && dashboardStats?.system_health?.data_source === 'supabase_enhanced'
   if (loading || analyticsLoading) {
     return (
       <div className="space-y-6">
         {/* Loading skeleton for system status */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
+        <div className="bg-card rounded-lg border border-border p-4 animate-pulse">
           <div className="flex items-center space-x-3">
-            <div className="w-5 h-5 bg-gray-200 rounded"></div>
+            <div className="w-5 h-5 bg-muted rounded"></div>
             <div className="flex-1">
-              <div className="h-4 bg-gray-200 rounded mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-muted rounded mb-2"></div>
+              <div className="h-3 bg-muted rounded w-3/4"></div>
             </div>
           </div>
         </div>
@@ -52,12 +55,12 @@ const MetricsOverview = React.memo(function MetricsOverview({
         {/* Loading skeleton for metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 animate-pulse">
+            <div key={i} className="bg-card rounded-lg border border-border p-4 sm:p-6 animate-pulse">
               <div className="flex items-center">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded flex-shrink-0"></div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-muted rounded flex-shrink-0"></div>
                 <div className="ml-3 sm:ml-4 flex-1 min-w-0">
-                  <div className="h-3 sm:h-4 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-5 sm:h-6 bg-gray-200 rounded"></div>
+                  <div className="h-3 sm:h-4 bg-muted rounded mb-2"></div>
+                  <div className="h-5 sm:h-6 bg-muted rounded"></div>
                 </div>
               </div>
             </div>
@@ -67,49 +70,65 @@ const MetricsOverview = React.memo(function MetricsOverview({
     )
   }
 
-  // Use tenant analytics data if available, fallback to dashboardStats
   const metrics = [
     {
-      title: "Today's Conversations",
-      value: analytics?.ai_usage?.ai_conversations || dashboardStats?.totalConversations || 847,
-      change: "+12%",
+      title: hasRealData ? "Total Appointments" : "Today's Conversations",
+      value: hasRealData ? 
+        (realData.total_appointments || 0) : 
+        (analytics?.ai_usage?.ai_conversations || dashboardStats?.totalConversations || 847),
+      change: hasRealData ? 
+        `${realData.appointments_today || 0} today` : 
+        "+12%",
       changeType: "positive",
-      icon: ChatBubbleLeftRightIcon,
+      icon: hasRealData ? CalendarIcon : ChatBubbleLeftRightIcon,
       color: "blue",
-      description: "from yesterday",
+      description: hasRealData ? "all time" : "from yesterday",
       gradient: "from-olive-500 to-cyan-500"
     },
     {
-      title: "Active AI Agents",
-      value: dashboardStats?.activeAgents || 6,
-      change: "All systems",
-      changeType: "neutral",
-      icon: SparklesIcon,
+      title: hasRealData ? "Total Revenue" : "Active AI Agents",
+      value: hasRealData ? 
+        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })
+          .format(realData.total_revenue || 0) :
+        (dashboardStats?.activeAgents || 6),
+      change: hasRealData ? 
+        `$${realData.daily_revenue || 0} today` : 
+        "All systems",
+      changeType: hasRealData ? "positive" : "neutral",
+      icon: hasRealData ? CurrencyDollarIcon : SparklesIcon,
       color: "purple",
-      description: "operational",
+      description: hasRealData ? "all time" : "operational",
       gradient: "from-gold-500 to-pink-500"
     },
     {
-      title: "Active Users",
-      value: analytics?.summary?.total_users || dashboardStats?.activeUsers || 12,
-      change: analytics?.growth_trends?.user_growth || "+8%",
+      title: hasRealData ? "Total Customers" : "Active Users",
+      value: hasRealData ? 
+        (realData.total_customers || 0) : 
+        (analytics?.summary?.total_users || dashboardStats?.activeUsers || 12),
+      change: hasRealData ? 
+        `${realData.new_customers_this_month || 0} new` : 
+        (analytics?.growth_trends?.user_growth || "+8%"),
       changeType: "positive",
       icon: UserGroupIcon,
       color: "green",
-      description: "last 7 days",
+      description: hasRealData ? "all time" : "last 7 days",
       gradient: "from-green-500 to-emerald-500"
     },
     {
-      title: "Revenue Tracked",
-      value: analytics?.business_metrics?.revenue_tracked ? 
-        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })
-          .format(analytics.business_metrics.revenue_tracked) : 
-        '$0',
-      change: analytics?.growth_trends?.revenue_growth || "+15%",
+      title: hasRealData ? "Completion Rate" : "Revenue Tracked",
+      value: hasRealData ? 
+        `${Math.round(realData.appointment_completion_rate || 0)}%` :
+        (analytics?.business_metrics?.revenue_tracked ? 
+          new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 })
+            .format(analytics.business_metrics.revenue_tracked) : 
+          '$0'),
+      change: hasRealData ? 
+        `${realData.completed_appointments || 0} done` : 
+        (analytics?.growth_trends?.revenue_growth || "+15%"),
       changeType: "positive",
-      icon: CurrencyDollarIcon,
+      icon: hasRealData ? CheckCircleIcon : CurrencyDollarIcon,
       color: "orange",
-      description: "this period",
+      description: hasRealData ? "appointment success" : "this period",
       gradient: "from-orange-500 to-red-500"
     }
   ]
@@ -117,7 +136,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
   const getTrendIcon = (changeType) => {
     switch (changeType) {
       case 'positive':
-        return <SafeArrowTrendingUpIcon className="h-3 w-3" />
+        return <SafeChartBarIcon className="h-3 w-3" />
       case 'negative':
         return <ArrowTrendingDownIcon className="h-3 w-3" />
       default:
@@ -132,7 +151,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
       case 'negative':
         return 'text-red-600 bg-red-100'
       default:
-        return 'text-gray-600 bg-gray-100'
+        return 'text-gray-600 bg-muted'
     }
   }
 
@@ -140,23 +159,31 @@ const MetricsOverview = React.memo(function MetricsOverview({
     if (onMetricClick) {
       onMetricClick(metric);
     } else {
-      // Default behavior - show more details
-      console.log(`📊 Metric clicked: ${metric.title}`, metric);
-      // You could show a modal or navigate to a detailed view
     }
   }
 
   return (
     <div className="space-y-6">
+      {/* Data Source Indicator */}
+      {hasRealData && (
+        <div className="text-xs text-gray-500 flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+          <span>Data Source: Live Database</span>
+          {realData.last_updated && (
+            <span>• Updated: {new Date(realData.last_updated).toLocaleTimeString()}</span>
+          )}
+        </div>
+      )}
+
       {/* Tenant Analytics Header */}
       {tenant && (
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">
-              Business Analytics
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {hasRealData ? "Barbershop Analytics" : "Business Analytics"}
             </h3>
-            <p className="text-sm text-gray-600">
-              Last 7 days • {businessName || tenantName}
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {hasRealData ? "Real-time business metrics" : "Last 7 days"} • {businessName || tenantName}
             </p>
           </div>
           
@@ -196,7 +223,7 @@ const MetricsOverview = React.memo(function MetricsOverview({
           <div
             key={index}
             onClick={() => handleMetricClick(metric)}
-            className="relative bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-4 lg:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group overflow-hidden cursor-pointer touch-manipulation"
+            className="relative bg-card rounded-xl sm:rounded-2xl shadow-lg border border-border p-3 sm:p-4 lg:p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group overflow-hidden cursor-pointer touch-manipulation"
           >
             {/* Background gradient */}
             <div className={`absolute inset-0 bg-gradient-to-br ${metric.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`}></div>
@@ -214,10 +241,10 @@ const MetricsOverview = React.memo(function MetricsOverview({
               </div>
               
               <div className="mb-1 sm:mb-3">
-                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 leading-tight">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-1 leading-tight">
                   {metric.value}
                 </div>
-                <div className="text-xs sm:text-sm font-medium text-gray-600 leading-tight">
+                <div className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 leading-tight">
                   {metric.title}
                 </div>
               </div>
@@ -234,25 +261,25 @@ const MetricsOverview = React.memo(function MetricsOverview({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">This Week</h3>
-            <CalendarDaysIcon className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">This Week</h3>
+            <CalendarDaysIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">New Conversations</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">New Conversations</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.weeklyConversations || 47}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">AI Responses</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">AI Responses</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.weeklyResponses || 156}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Learning Events</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Learning Events</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.weeklyLearning || 23}
               </span>
             </div>
@@ -261,29 +288,29 @@ const MetricsOverview = React.memo(function MetricsOverview({
 
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">User Engagement</h3>
-            <UserGroupIcon className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">User Engagement</h3>
+            <UserGroupIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Active Users</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Active Users</span>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   {dashboardStats?.activeUsers || 12}
                 </span>
                 <Badge variant="success" size="sm">+3</Badge>
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Avg Session</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Avg Session</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.avgSession || '8m 34s'}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Satisfaction</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Satisfaction</span>
               <div className="flex items-center space-x-1">
-                <span className="text-sm font-semibold text-gray-900">4.8/5</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">4.8/5</span>
                 <div className="flex text-yellow-400">
                   {[...Array(5)].map((_, i) => (
                     <span key={i} className="text-xs">★</span>
@@ -296,29 +323,29 @@ const MetricsOverview = React.memo(function MetricsOverview({
 
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Business Impact</h3>
-            <CurrencyDollarIcon className="h-5 w-5 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Business Impact</h3>
+            <CurrencyDollarIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Cost Savings</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Cost Savings</span>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-green-600">
+                <span className="text-sm font-semibold text-green-600 dark:text-green-400">
                   ${dashboardStats?.costSavings || '2,340'}
                 </span>
                 <Badge variant="success" size="sm">↑ 18%</Badge>
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Time Saved</span>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm text-gray-600 dark:text-gray-400">Time Saved</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {dashboardStats?.timeSaved || '47 hours'}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Efficiency Gain</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Efficiency Gain</span>
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-semibold text-olive-600">
+                <span className="text-sm font-semibold text-olive-600 dark:text-olive-400">
                   {dashboardStats?.efficiency || '+34%'}
                 </span>
                 <Badge variant="info" size="sm">vs last month</Badge>

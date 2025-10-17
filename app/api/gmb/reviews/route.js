@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-export const runtime = 'edge'
-
+import { NextResponse } from 'next/server'
+import { logGMBAPIRequest } from '@/lib/gmb-audit-logger'
+import { checkGMBRateLimit, logGMBApiUsage } from '@/lib/gmb-rate-limiter'
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -12,6 +14,16 @@ const supabase = createClient(
  * Get reviews with attribution data for a barbershop
  */
 export async function GET(request) {
+  const startTime = Date.now()
+  const auditData = {
+    barbershop_id: null,
+    user_id: null,
+    endpoint: '/api/gmb/reviews',
+    method: 'GET',
+    ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown',
+    user_agent: request.headers.get('user-agent') || 'unknown'
+  }
+
   try {
     const { searchParams } = new URL(request.url)
     const barbershopId = searchParams.get('barbershop_id')
@@ -20,15 +32,56 @@ export async function GET(request) {
     const confidence = searchParams.get('confidence')
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
+    const userId = request.headers.get('x-user-id') // From auth middleware
+
+    auditData.barbershop_id = barbershopId
+    auditData.user_id = userId
 
     if (!barbershopId) {
+      await logGMBAPIRequest({
+        ...auditData,
+        response_status: 400,
+        response_time_ms: Date.now() - startTime,
+        error_details: 'Missing barbershop_id parameter'
+      })
+      
       return NextResponse.json({
         success: false,
         error: 'barbershop_id is required'
       }, { status: 400 })
     }
 
-    // Build query with filters
+    // Check rate limits for GMB API compliance
+    const rateLimitCheck = await checkGMBRateLimit(barbershopId)
+    if (!rateLimitCheck.allowed) {
+      await logGMBAPIRequest({
+        ...auditData,
+        response_status: 429,
+        response_time_ms: Date.now() - startTime,
+        rate_limit_info: rateLimitCheck,
+        error_details: 'Rate limit exceeded'
+      })
+
+      return NextResponse.json({
+        success: false,
+        error: 'Rate limit exceeded',
+        rate_limit: {
+          limit: rateLimitCheck.limit,
+          remaining: rateLimitCheck.remaining,
+          reset_time: rateLimitCheck.resetTime,
+          retry_after: rateLimitCheck.retryAfter
+        }
+      }, { 
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': rateLimitCheck.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitCheck.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitCheck.resetTime.toString(),
+          'Retry-After': rateLimitCheck.retryAfter.toString()
+        }
+      })
+    }
+
     let query = supabase
       .from('gmb_reviews')
       .select(`
@@ -66,7 +119,6 @@ export async function GET(request) {
       .order('review_date', { ascending: false })
       .range(offset, offset + limit - 1)
 
-    // Apply filters
     if (barberId) {
       query = query.eq('gmb_review_attributions.barber_id', barberId)
     }
@@ -83,7 +135,6 @@ export async function GET(request) {
       throw error
     }
 
-    // Get total count for pagination
     let countQuery = supabase
       .from('gmb_reviews')
       .select('id', { count: 'exact', head: true })
@@ -95,6 +146,14 @@ export async function GET(request) {
 
     const { count } = await countQuery
 
+    // Log successful API request
+    await logGMBAPIRequest({
+      ...auditData,
+      response_status: 200,
+      response_time_ms: Date.now() - startTime,
+      rate_limit_info: rateLimitCheck
+    })
+
     return NextResponse.json({
       success: true,
       data: {
@@ -105,11 +164,29 @@ export async function GET(request) {
           offset,
           has_more: (count || 0) > offset + limit
         }
+      },
+      rate_limit: {
+        remaining: rateLimitCheck.remaining,
+        reset_time: rateLimitCheck.resetTime
+      }
+    }, {
+      headers: {
+        'X-RateLimit-Remaining': rateLimitCheck.remaining.toString(),
+        'X-RateLimit-Reset': rateLimitCheck.resetTime.toString()
       }
     })
 
   } catch (error) {
     console.error('Error fetching GMB reviews:', error)
+    
+    // Log failed API request
+    await logGMBAPIRequest({
+      ...auditData,
+      response_status: 500,
+      response_time_ms: Date.now() - startTime,
+      error_details: error.message
+    })
+    
     return NextResponse.json({
       success: false,
       error: 'Failed to fetch reviews'
@@ -132,7 +209,6 @@ export async function POST(request) {
       }, { status: 400 })
     }
 
-    // Get review and account info
     const { data: reviewData, error: reviewError } = await supabase
       .from('gmb_reviews')
       .select(`
@@ -155,7 +231,6 @@ export async function POST(request) {
       }, { status: 404 })
     }
 
-    // Save response to database
     const { data: responseData, error: saveError } = await supabase
       .from('gmb_review_responses')
       .insert({
@@ -173,7 +248,6 @@ export async function POST(request) {
       throw saveError
     }
 
-    // If auto_publish is true, post to GMB immediately
     if (auto_publish) {
       try {
         const gmbResult = await postResponseToGMB(
@@ -183,7 +257,6 @@ export async function POST(request) {
           reviewData.gmb_accounts.access_token
         )
 
-        // Update response record with GMB result
         await supabase
           .from('gmb_review_responses')
           .update({
@@ -196,7 +269,6 @@ export async function POST(request) {
       } catch (publishError) {
         console.error('Failed to publish to GMB:', publishError)
         
-        // Update response record with error
         await supabase
           .from('gmb_review_responses')
           .update({

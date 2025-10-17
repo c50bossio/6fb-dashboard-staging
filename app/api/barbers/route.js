@@ -10,7 +10,7 @@ const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
 // GET /api/barbers - Fetch barbers/staff
 export async function GET(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     
     // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()

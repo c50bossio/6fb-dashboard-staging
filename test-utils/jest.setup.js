@@ -1,76 +1,93 @@
 import '@testing-library/jest-dom'
-import 'jest-canvas-mock'
-import 'intersection-observer'
 import 'whatwg-fetch'
-import ResizeObserver from 'resize-observer-polyfill'
 
-// Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
-  constructor() {}
-  disconnect() {}
-  observe() {}
-  unobserve() {}
-}
+// Mock Next.js router
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      route: '/',
+      pathname: '/',
+      query: {},
+      asPath: '/',
+      push: jest.fn(),
+      replace: jest.fn(),
+      reload: jest.fn(),
+      back: jest.fn(),
+      prefetch: jest.fn(),
+      beforePopState: jest.fn(),
+      events: {
+        on: jest.fn(),
+        off: jest.fn(),
+        emit: jest.fn(),
+      },
+    }
+  },
+}))
 
-// Mock ResizeObserver
-global.ResizeObserver = ResizeObserver
-
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-})
-
-// Mock window.scrollTo
-Object.defineProperty(window, 'scrollTo', {
-  value: jest.fn()
-})
-
-// Mock localStorage
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-}
-global.localStorage = localStorageMock
-
-// Mock sessionStorage
-const sessionStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-}
-global.sessionStorage = sessionStorageMock
-
-// Mock fetch globally
-global.fetch = jest.fn()
+// Mock Next.js navigation
+jest.mock('next/navigation', () => ({
+  useRouter() {
+    return {
+      push: jest.fn(),
+      replace: jest.fn(),
+      reload: jest.fn(),
+      back: jest.fn(),
+      forward: jest.fn(),
+      refresh: jest.fn(),
+    }
+  },
+  useSearchParams() {
+    return {
+      get: jest.fn(),
+      has: jest.fn(),
+      getAll: jest.fn(),
+      keys: jest.fn(),
+      values: jest.fn(),
+      entries: jest.fn(),
+      forEach: jest.fn(),
+      toString: jest.fn(),
+    }
+  },
+  usePathname() {
+    return '/'
+  },
+}))
 
 // Mock console methods to reduce noise in tests
-const originalError = console.error
-const originalWarn = console.warn
+global.console = {
+  ...console,
+  log: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+}
 
-beforeAll(() => {
-  console.error = jest.fn()
-  console.warn = jest.fn()
-})
+// Mock global objects that might be missing in jsdom
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}))
 
-afterAll(() => {
-  console.error = originalError
-  console.warn = originalWarn
-})
+global.IntersectionObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  disconnect: jest.fn(),
+}))
 
-// Reset all mocks after each test
-afterEach(() => {
-  jest.clearAllMocks()
-})
+// Mock window.matchMedia (only in browser/jsdom environment)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // Deprecated
+      removeListener: jest.fn(), // Deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  })
+}

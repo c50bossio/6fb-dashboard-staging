@@ -1,14 +1,21 @@
-import { createServerComponentClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function POST() {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerComponentClient({ cookies: () => cookieStore })
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Missing Supabase configuration' 
+      }, { status: 500 })
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Check if tables already exist
     const { data: existingTable, error: checkError } = await supabase
       .from('booking_links')
       .select('id')
@@ -22,8 +29,6 @@ export async function POST() {
       })
     }
 
-    // If tables don't exist, they need to be created via Supabase Dashboard
-    // because we can't execute CREATE TABLE via the Supabase client directly
     
     return NextResponse.json({ 
       success: false,

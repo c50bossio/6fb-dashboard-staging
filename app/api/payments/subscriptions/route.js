@@ -81,7 +81,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const customer_id = searchParams.get('customer_id')
-    const shop_id = searchParams.get('shop_id')
+    const barbershop_id = searchParams.get('barbershop_id')
     const action = searchParams.get('action') || 'list' // list, plans, status, usage
 
     const supabase = createClient()
@@ -90,14 +90,14 @@ export async function GET(request) {
       // Return available VIP plans
       const plansWithShopPricing = await Promise.all(
         Object.values(VIP_PLANS).map(async (plan) => {
-          // Get shop-specific pricing if shop_id provided
+          // Get shop-specific pricing if barbershop_id provided
           let shopSpecificPlan = { ...plan }
-          
-          if (shop_id) {
+
+          if (barbershop_id) {
             const { data: shopPricing } = await supabase
               .from('shop_vip_pricing')
               .select('*')
-              .eq('shop_id', shop_id)
+              .eq('barbershop_id', barbershop_id)
               .eq('plan_id', plan.id)
               .single()
             
@@ -114,7 +114,7 @@ export async function GET(request) {
       return NextResponse.json({
         success: true,
         plans: plansWithShopPricing,
-        shop_id: shop_id || null
+        barbershop_id: barbershop_id || null
       })
     }
 
@@ -185,8 +185,8 @@ export async function GET(request) {
         `)
         .order('created_at', { ascending: false })
 
-      if (shop_id) {
-        subscriptionsQuery = subscriptionsQuery.eq('shop_id', shop_id)
+      if (barbershop_id) {
+        subscriptionsQuery = subscriptionsQuery.eq('barbershop_id', barbershop_id)
       }
 
       const { data: subscriptions, error } = await subscriptionsQuery.limit(100)
@@ -235,7 +235,7 @@ export async function POST(request) {
       action, // 'create', 'update', 'cancel', 'reactivate'
       customer_id,
       plan_id,
-      shop_id,
+      barbershop_id,
       payment_method_id,
       coupon_code = null,
       trial_days = 7,
@@ -314,7 +314,7 @@ export async function POST(request) {
           name: customer_name || customerData?.name,
           metadata: {
             user_id: customer_id,
-            shop_id: shop_id || ''
+            barbershop_id: barbershop_id || ''
           }
         })
 
@@ -352,7 +352,7 @@ export async function POST(request) {
         metadata: {
           customer_id,
           plan_id,
-          shop_id: shop_id || '',
+          barbershop_id: barbershop_id || '',
           created_via: 'api'
         },
         expand: ['latest_invoice.payment_intent']
@@ -370,7 +370,7 @@ export async function POST(request) {
         .from('user_subscriptions')
         .insert({
           customer_id,
-          shop_id: shop_id || null,
+          barbershop_id: barbershop_id || null,
           stripe_subscription_id: stripeSubscription.id,
           stripe_customer_id: stripeCustomerId,
           plan_id,

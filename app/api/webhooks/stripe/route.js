@@ -793,7 +793,7 @@ async function processCommissionDistribution(supabase, payment) {
       .insert({
         payment_id: payment.id,
         barber_id: payment.barber_id,
-        shop_id: payment.shop_id,
+        barbershop_id: payment.barbershop_id,
         amount: payment.commission_barber,
         commission_rate: payment.commission_barber / payment.amount,
         status: 'pending',
@@ -897,7 +897,7 @@ async function updateBusinessMetrics(supabase, payment, eventType) {
         .from('daily_business_metrics')
         .upsert({
           date: today,
-          shop_id: payment.shop_id,
+          barbershop_id: payment.barbershop_id,
           total_revenue: supabase.raw('COALESCE(total_revenue, 0) + ?', [payment.amount / 100]),
           completed_bookings: supabase.raw('COALESCE(completed_bookings, 0) + 1'),
           commission_earned: supabase.raw('COALESCE(commission_earned, 0) + ?', [payment.commission_barber / 100]),
@@ -913,7 +913,7 @@ async function updateBusinessMetrics(supabase, payment, eventType) {
           .upsert({
             date: today,
             barber_id: payment.barber_id,
-            shop_id: payment.shop_id,
+            barbershop_id: payment.barbershop_id,
             services_completed: supabase.raw('COALESCE(services_completed, 0) + 1'),
             revenue_generated: supabase.raw('COALESCE(revenue_generated, 0) + ?', [payment.amount / 100]),
             commission_earned: supabase.raw('COALESCE(commission_earned, 0) + ?', [payment.commission_barber / 100]),

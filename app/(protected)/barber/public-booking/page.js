@@ -1,8 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import QRCode from 'qrcode'
-
 import { 
   GlobeAltIcon, 
   ShareIcon,
@@ -18,11 +15,14 @@ import {
   StarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
+import QRCode from 'qrcode'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function PublicBookingPage() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [activeTab, setActiveTab] = useState('preview')
   const [copied, setCopied] = useState({})
   const [qrSize, setQrSize] = useState(200)
@@ -31,13 +31,10 @@ export default function PublicBookingPage() {
   const [previewData, setPreviewData] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Force component refresh to clear any cached icon references
   useEffect(() => {
-    // Clear any cached references
-    console.log('🔄 PublicBookingPage mounted, all icons should be ClipboardIcon')
+    
   }, [])
 
-  // Mock barber data - in production, this would come from user profile
   const barberData = {
     id: user?.id || 'preview-barber',
     name: user?.full_name || 'John Martinez',
@@ -57,7 +54,6 @@ export default function PublicBookingPage() {
     ]
   }
 
-  // Generate various booking URLs and sharing content
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://6fb-ai.com'
   const barberId = user?.id || 'your-barber-id'
   const barberName = user?.full_name || 'Your Name'
@@ -83,13 +79,11 @@ export default function PublicBookingPage() {
   }
 
   useEffect(() => {
-    // Simulate loading barber data
     const timer = setTimeout(() => {
       setPreviewData(barberData)
       setLoading(false)
     }, 800)
 
-    // Generate QR code
     if (typeof window !== 'undefined') {
       QRCode.toDataURL(urls.utmPrint, { width: qrSize, margin: 2 })
         .then(url => setQrCodeUrl(url))
@@ -97,7 +91,7 @@ export default function PublicBookingPage() {
     }
 
     return () => clearTimeout(timer)
-  }, [qrSize])
+  }, [qrSize]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const copyToClipboard = async (text, key) => {
     try {
@@ -505,7 +499,7 @@ export default function PublicBookingPage() {
                   <div className="text-center">
                     <div className="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg shadow-inner">
                       {qrCodeUrl ? (
-                        <img 
+                        <Image 
                           src={qrCodeUrl} 
                           alt="QR Code"
                           width={qrSize}
@@ -654,7 +648,7 @@ export default function PublicBookingPage() {
                 </h4>
                 <ul className="text-xs text-olive-700 space-y-1">
                   <li>• Customize the templates with your personal touch</li>
-                  <li>• Add specific services or promotions you're offering</li>
+                  <li>• Add specific services or promotions you&apos;re offering</li>
                   <li>• Include your business hours and contact information</li>
                   <li>• Use relevant hashtags for your local area</li>
                 </ul>

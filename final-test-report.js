@@ -35,9 +35,7 @@ async function generateFinalReport() {
   };
 
   try {
-    console.log('🎯 Generating Final Test Report for 6FB AI Agent System...');
-    
-    // Test each key page
+
     const pages = [
       { name: 'Homepage', url: 'http://localhost:9999' },
       { name: 'Dashboard', url: 'http://localhost:9999/dashboard' },
@@ -46,14 +44,11 @@ async function generateFinalReport() {
     ];
 
     for (const pageInfo of pages) {
-      console.log(`📋 Testing ${pageInfo.name}...`);
-      
+
       try {
         await page.goto(pageInfo.url, { waitUntil: 'networkidle2' });
         
-        // Comprehensive page evaluation
         const pageEval = await page.evaluate(() => {
-          // UI Structure Analysis
           const structure = {
             hasHeader: !!document.querySelector('header, .header, [role="banner"]'),
             hasNavigation: !!document.querySelector('nav, .nav, [role="navigation"]'),
@@ -62,7 +57,6 @@ async function generateFinalReport() {
             hasFooter: !!document.querySelector('footer, [role="contentinfo"]')
           };
           
-          // Content Analysis
           const content = {
             title: document.title,
             hasH1: !!document.querySelector('h1'),
@@ -72,7 +66,6 @@ async function generateFinalReport() {
             images: document.querySelectorAll('img').length
           };
           
-          // Barbershop Feature Detection
           const barbershopFeatures = {
             bookingKeywords: ['book', 'appointment', 'schedule', 'reserve'].some(word => 
               document.body.textContent.toLowerCase().includes(word)
@@ -89,7 +82,6 @@ async function generateFinalReport() {
             hasAnalyticsDashboard: !!document.querySelector('[class*="chart"], [class*="metric"], [class*="stat"]')
           };
           
-          // Technical Quality
           const technical = {
             metaDescription: document.querySelector('meta[name="description"]')?.content || null,
             viewport: document.querySelector('meta[name="viewport"]')?.content || null,
@@ -109,7 +101,6 @@ async function generateFinalReport() {
           };
         });
         
-        // Take screenshot
         const screenshotPath = `/Users/bossio/6FB AI Agent System/test-results/final-${pageInfo.name.toLowerCase()}.png`;
         await page.screenshot({ path: screenshotPath, fullPage: true });
         
@@ -128,8 +119,6 @@ async function generateFinalReport() {
       }
     }
 
-    // Responsive Testing
-    console.log('📱 Testing Responsive Design...');
     const viewports = [
       { name: 'Mobile', width: 375, height: 667 },
       { name: 'Tablet', width: 768, height: 1024 }
@@ -156,8 +145,6 @@ async function generateFinalReport() {
       finalReport.testResults.ResponsiveDesign.devices[viewport.name] = responsiveCheck;
     }
 
-    // Performance Check
-    console.log('⚡ Performance Analysis...');
     await page.setViewport({ width: 1920, height: 1080 });
     await page.goto('http://localhost:9999', { waitUntil: 'networkidle2' });
     
@@ -175,17 +162,14 @@ async function generateFinalReport() {
     
     finalReport.testResults.Performance = performance;
 
-    // Generate Overall Assessment
     const passedPages = Object.values(finalReport.testResults).filter(result => 
       result.status === 'PASS' || result.devices
     ).length;
     
     const totalTests = Object.keys(finalReport.testResults).length;
 
-    // Critical Issues Assessment
     const criticalIssues = [];
     
-    // Check for missing navigation
     const pagesWithoutNav = Object.entries(finalReport.testResults)
       .filter(([name, result]) => result.structure && !result.structure.hasNavigation)
       .map(([name]) => name);
@@ -194,7 +178,6 @@ async function generateFinalReport() {
       criticalIssues.push(`Missing navigation on: ${pagesWithoutNav.join(', ')}`);
     }
     
-    // Check for missing barbershop features
     const pagesWithLimitedFeatures = Object.entries(finalReport.testResults)
       .filter(([name, result]) => {
         if (!result.barbershopFeatures) return false;
@@ -216,7 +199,6 @@ async function generateFinalReport() {
 
     finalReport.criticalIssues = [...finalReport.criticalIssues, ...criticalIssues];
 
-    // Recommendations
     finalReport.recommendations = [
       {
         priority: 'HIGH',
@@ -255,16 +237,12 @@ async function generateFinalReport() {
       }
     ];
 
-    // Production Readiness Score
     let score = 70; // Base score
     
-    // Deduct points for critical issues
     score -= finalReport.criticalIssues.length * 10;
     
-    // Add points for successful page loads
     score += (passedPages / totalTests) * 20;
     
-    // Add points for responsive design
     if (finalReport.testResults.ResponsiveDesign?.devices) {
       score += 5;
     }
@@ -282,36 +260,28 @@ async function generateFinalReport() {
     finalReport.error = error.message;
   }
 
-  // Save final report
   const reportPath = '/Users/bossio/6FB AI Agent System/test-results/FINAL-COMPREHENSIVE-TEST-REPORT.json';
   fs.writeFileSync(reportPath, JSON.stringify(finalReport, null, 2));
   
-  // Generate summary
-  console.log('\n' + '='.repeat(60));
-  console.log('📊 6FB AI AGENT SYSTEM - FINAL TEST REPORT');
-  console.log('='.repeat(60));
-  console.log(`🎯 Production Readiness Score: ${finalReport.productionReadiness.score}/100`);
-  console.log(`📋 Status: ${finalReport.productionReadiness.status}`);
-  console.log(`✅ Tests Passed: ${Object.values(finalReport.testResults).filter(r => r.status === 'PASS').length}`);
-  console.log(`❌ Critical Issues: ${finalReport.criticalIssues.length}`);
-  console.log(`💡 Recommendations: ${finalReport.recommendations.length}`);
+  );
   
+  );
+
+  .filter(r => r.status === 'PASS').length}`);
+
   if (finalReport.criticalIssues.length > 0) {
-    console.log('\n🚨 CRITICAL ISSUES:');
-    finalReport.criticalIssues.forEach(issue => console.log(`   • ${issue}`));
+    
+    finalReport.criticalIssues.forEach(issue => );
   }
-  
-  console.log('\n📋 TOP PRIORITY FIXES:');
+
   finalReport.recommendations
     .filter(r => r.priority === 'HIGH')
-    .forEach(rec => console.log(`   • ${rec.category}: ${rec.issue}`));
-  
-  console.log(`\n📄 Full report: ${reportPath}`);
-  console.log('='.repeat(60));
+    .forEach(rec => );
+
+  );
   
   await browser.close();
   return finalReport;
 }
 
-// Generate the final report
 generateFinalReport().catch(console.error);

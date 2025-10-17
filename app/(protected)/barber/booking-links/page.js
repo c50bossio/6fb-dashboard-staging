@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { 
   LinkIcon, 
   QrCodeIcon, 
@@ -11,19 +10,17 @@ import {
   ClipboardIcon,
   ShareIcon,
   ChartBarIcon,
-  CalendarIcon,
-  ClockIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
-  ArrowTopRightOnSquareIcon,
   CodeBracketIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { useState, useEffect } from 'react'
 import CreateBookingLinkModal from '../../../../components/barber/CreateBookingLinkModal'
-import QRCodeModal from '../../../../components/barber/QRCodeModal'
 import EmbedCodeModal from '../../../../components/barber/EmbedCodeModal'
+import QRCodeModal from '../../../../components/barber/QRCodeModal'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BookingLinksPage() {
   const { user, profile } = useAuth()
@@ -40,7 +37,7 @@ export default function BookingLinksPage() {
 
   useEffect(() => {
     loadBookingLinks()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const showToastNotification = (message, type = 'success') => {
     setToastMessage(message)
@@ -59,7 +56,6 @@ export default function BookingLinksPage() {
         return
       }
 
-      // Call real API endpoint
       const response = await fetch(`/api/barber/booking-links/create?barberId=${user.id}`, {
         method: 'GET',
         headers: {
@@ -81,9 +77,7 @@ export default function BookingLinksPage() {
       
     } catch (error) {
       console.error('Failed to load booking links:', error)
-      
-      // Fallback to mock data for demo/testing
-      console.log('🔄 Using fallback mock booking links data...')
+
       const mockBookingLinks = [
         {
           id: 'demo-link-1',
@@ -154,7 +148,6 @@ export default function BookingLinksPage() {
         throw new Error('User not authenticated')
       }
 
-      // Call real API endpoint to create booking link
       const response = await fetch('/api/barber/booking-links/create', {
         method: 'POST',
         headers: {
@@ -185,7 +178,6 @@ export default function BookingLinksPage() {
       const result = await response.json()
       
       if (result.success) {
-        // Add the new link to the beginning of the list
         setBookingLinks(prev => [result.data, ...prev])
         showToastNotification('Booking link created successfully!', 'success')
       } else {
@@ -201,7 +193,6 @@ export default function BookingLinksPage() {
 
   const generateQRCode = async (linkId) => {
     try {
-      // Call real QR generation API
       const response = await fetch('/api/barber/qr-codes/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -215,10 +206,8 @@ export default function BookingLinksPage() {
       const result = await response.json()
       
       if (result.success) {
-        // Find the link and update it with QR data
         const link = bookingLinks.find(l => l.id === linkId)
         if (link) {
-          // Add QR code data to the link for the modal
           const linkWithQR = {
             ...link,
             qrCodeUrl: result.data.qrCodeUrl,
@@ -229,7 +218,6 @@ export default function BookingLinksPage() {
           setShowQRModal(true)
           showToastNotification('QR code generated successfully!', 'success')
           
-          // Update the link in the list to show QR as generated
           setBookingLinks(links => 
             links.map(l => l.id === linkId ? { ...l, qrGenerated: true } : l)
           )
@@ -246,7 +234,6 @@ export default function BookingLinksPage() {
   const showEmbedCode = (linkId) => {
     const link = bookingLinks.find(l => l.id === linkId)
     if (link) {
-      // Increment embed count
       const updatedLinks = bookingLinks.map(l => 
         l.id === linkId 
           ? { ...l, embed_count: (l.embed_count || 0) + 1 }
@@ -254,7 +241,6 @@ export default function BookingLinksPage() {
       )
       setBookingLinks(updatedLinks)
 
-      // Prepare link data for embed modal
       const linkForEmbed = {
         ...link,
         barberId: user?.id,
@@ -270,7 +256,6 @@ export default function BookingLinksPage() {
 
   const toggleLinkStatus = async (linkId) => {
     try {
-      // API call to toggle active status
       setBookingLinks(links =>
         links.map(l => 
           l.id === linkId ? { ...l, active: !l.active } : l
@@ -454,7 +439,6 @@ export default function BookingLinksPage() {
     </div>
   )
 
-  // Calculate summary stats
   const totalClicks = bookingLinks.reduce((sum, link) => sum + link.clicks, 0)
   const totalConversions = bookingLinks.reduce((sum, link) => sum + link.conversions, 0)
   const totalRevenue = bookingLinks.reduce((sum, link) => sum + link.revenue, 0)

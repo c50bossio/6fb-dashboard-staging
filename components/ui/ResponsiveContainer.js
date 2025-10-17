@@ -2,7 +2,6 @@
 
 import { forwardRef } from 'react'
 
-// Responsive container with consistent breakpoints and spacing
 const ResponsiveContainer = forwardRef(({
   children,
   size = 'default',
@@ -39,7 +38,6 @@ ResponsiveContainer.displayName = 'ResponsiveContainer'
 
 export default ResponsiveContainer
 
-// Responsive Grid component for consistent layouts
 export function ResponsiveGrid({ 
   children, 
   cols = { sm: 1, md: 2, lg: 3, xl: 4 },
@@ -61,7 +59,6 @@ export function ResponsiveGrid({
   )
 }
 
-// Responsive Stack component for vertical layouts
 export function ResponsiveStack({ 
   children, 
   spacing = 'default',

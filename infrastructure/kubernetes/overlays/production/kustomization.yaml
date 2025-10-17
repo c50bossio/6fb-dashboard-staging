@@ -1,0 +1,320 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: 6fb-ai-agent-system-production
+
+# Reference to base configuration
+resources:
+- ../../base
+- prod-config.yaml
+- resource-limits.yaml
+- ingress-prod.yaml
+- hpa.yaml
+
+# Production-specific namespace
+namespace: agent-system
+
+# Production-specific labels
+commonLabels:
+  environment: production
+  deployment-type: prod
+
+# Production-specific annotations
+commonAnnotations:
+  deployment.environment: "production"
+  deployment.date: "2025-08-25"
+  deployment.tier: "production"
+
+# Production image tags (use specific versions, not latest)
+images:
+- name: 6fb-ai-agent-system/frontend
+  newTag: v1.0.0
+- name: 6fb-ai-agent-system/backend
+  newTag: v1.0.0
+
+# Production replica overrides
+replicas:
+- name: frontend
+  count: 3
+- name: backend
+  count: 3
+- name: redis
+  count: 1
+
+# ConfigMap generator for production-specific config
+configMapGenerator:
+- name: prod-config
+  literals:
+  - NODE_ENV=production
+  - LOG_LEVEL=warning
+  - ENABLE_DEBUG=false
+  - WORKERS=4
+  - PROMETHEUS_METRICS_ENABLED=true
+
+# Production patches for security and performance
+patches:
+# Frontend production configuration
+- target:
+    kind: Deployment
+    name: frontend
+  patch: |-
+    - op: replace
+      path: /spec/strategy
+      value:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+          maxSurge: 2
+    - op: replace
+      path: /spec/template/spec/containers/0/env
+      value:
+      - name: NODE_ENV
+        value: production
+      - name: NEXT_PUBLIC_API_URL
+        valueFrom:
+          configMapKeyRef:
+            name: prod-config
+            key: api-url
+      - name: NEXT_PUBLIC_SUPABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: supabase-url
+      - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: supabase-anon-key
+      - name: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: stripe-publishable-key
+      - name: NEXT_PUBLIC_POSTHOG_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: posthog-api-key
+      - name: NEXT_PUBLIC_POSTHOG_HOST
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: posthog-host
+      - name: NEXT_PUBLIC_SENTRY_DSN
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: sentry-dsn
+      - name: NEXT_PUBLIC_PUSHER_APP_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: pusher-app-key
+      - name: NEXT_PUBLIC_PUSHER_APP_CLUSTER
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: pusher-app-cluster
+      - name: NEXT_PUBLIC_NOVU_APPLICATION_IDENTIFIER
+        valueFrom:
+          configMapKeyRef:
+            name: prod-config
+            key: novu-app-id
+      - name: NEXT_PUBLIC_ENABLE_RAG
+        value: "true"
+      - name: NEXT_PUBLIC_ENABLE_MOCK_FALLBACK
+        value: "false"
+
+# Backend production configuration
+- target:
+    kind: Deployment
+    name: backend
+  patch: |-
+    - op: replace
+      path: /spec/strategy
+      value:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 1
+          maxSurge: 2
+    - op: replace
+      path: /spec/template/spec/containers/0/env
+      value:
+      - name: PYTHONPATH
+        value: "/app"
+      - name: LOG_LEVEL
+        value: "warning"
+      - name: WORKERS
+        value: "4"
+      - name: REDIS_URL
+        value: "redis://:$(REDIS_PASSWORD)@redis:6379"
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: database-url
+      - name: SUPABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: supabase-url
+      - name: SUPABASE_SERVICE_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: supabase-service-key
+      - name: OPENAI_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: openai-api-key
+      - name: ANTHROPIC_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: anthropic-api-key
+      - name: GOOGLE_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: google-api-key
+      - name: STRIPE_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: stripe-secret-key
+      - name: STRIPE_WEBHOOK_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: stripe-webhook-secret
+      - name: STRIPE_CONNECT_CLIENT_ID
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: stripe-connect-client-id
+      - name: SENDGRID_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: sendgrid-api-key
+      - name: TWILIO_ACCOUNT_SID
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: twilio-account-sid
+      - name: TWILIO_AUTH_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: twilio-auth-token
+      - name: TWILIO_PHONE_NUMBER
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: twilio-phone-number
+      - name: PUSHER_APP_ID
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: pusher-app-id
+      - name: PUSHER_APP_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: pusher-app-key
+      - name: PUSHER_APP_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: pusher-app-secret
+      - name: PUSHER_APP_CLUSTER
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: pusher-app-cluster
+      - name: NOVU_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: novu-api-key
+      - name: POSTHOG_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: posthog-api-key
+      - name: SENTRY_DSN
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: sentry-dsn
+      - name: EDGE_CONFIG
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: edge-config
+      - name: REDIS_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: redis-password
+      - name: CORS_ORIGINS
+        valueFrom:
+          configMapKeyRef:
+            name: prod-config
+            key: cors-origins
+    - op: add
+      path: /spec/template/spec/containers/0/command
+      value: ["gunicorn", "fastapi_backend:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000"]
+
+# Redis production configuration
+- target:
+    kind: Deployment
+    name: redis
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/args
+      value:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - "512mb"
+      - --maxmemory-policy
+      - allkeys-lru
+      - --requirepass
+      - $(REDIS_PASSWORD)
+    - op: add
+      path: /spec/template/spec/containers/0/env
+      value:
+      - name: REDIS_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: app-secrets
+            key: redis-password
+
+# Production service configuration (keep ClusterIP)
+- target:
+    kind: Service
+    name: frontend
+  patch: |-
+    - op: replace
+      path: /spec/type
+      value: ClusterIP
+
+- target:
+    kind: Service
+    name: backend
+  patch: |-
+    - op: replace
+      path: /spec/type
+      value: ClusterIP
+
+- target:
+    kind: Service
+    name: redis
+  patch: |-
+    - op: replace
+      path: /spec/type
+      value: ClusterIP

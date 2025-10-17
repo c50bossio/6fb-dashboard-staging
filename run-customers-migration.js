@@ -9,34 +9,26 @@ const supabase = createClient(
 
 async function runMigration() {
   try {
-    // First check if customers table already exists
     const { data: existingTable } = await supabase
       .from('customers')
       .select('id')
       .limit(1);
     
     if (existingTable) {
-      console.log('✅ Customers table already exists. Checking for missing columns...');
-      
-      // Check if we need to add missing columns
+
       const { data, error } = await supabase.rpc('get_table_columns', {
         table_name: 'customers'
       }).single();
       
       if (error) {
-        // RPC function might not exist, try a different approach
-        console.log('Checking table structure...');
-        
-        // Try to query with the columns we expect
+
         const { error: queryError } = await supabase
           .from('customers')
           .select('barbershop_id, last_visit_at')
           .limit(1);
         
         if (queryError && queryError.message.includes('column')) {
-          console.log('Some columns are missing. Adding them...');
-          
-          // Add missing columns
+
           const alterTableSQL = `
             ALTER TABLE customers 
             ADD COLUMN IF NOT EXISTS barbershop_id VARCHAR(255),
@@ -45,43 +37,32 @@ async function runMigration() {
             -- Update shop_id to barbershop_id if shop_id exists
             UPDATE customers SET barbershop_id = shop_id WHERE barbershop_id IS NULL AND shop_id IS NOT NULL;
           `;
-          
-          // Note: Direct SQL execution might not be available via Supabase client
-          // We'll need to handle this differently
-          console.log('⚠️  Manual migration needed. Please run the following SQL in Supabase SQL Editor:');
-          console.log(alterTableSQL);
+
         } else {
-          console.log('✅ All required columns exist');
+          
         }
       }
     } else {
-      console.log('❌ Customers table does not exist. Please run the migration SQL manually in Supabase.');
-      
+
       const migrationSQL = fs.readFileSync('./database/migrations/002_add_customers_table.sql', 'utf8');
-      console.log('\n📋 Migration SQL to run:');
-      console.log('========================================');
-      console.log(migrationSQL.substring(0, 500) + '...');
-      console.log('========================================');
-      console.log('\nFull migration is in: database/migrations/002_add_customers_table.sql');
+
+       + '...');
+
     }
-    
-    // Also check the bookings table for required columns
-    console.log('\n📊 Checking bookings table...');
+
     const { error: bookingsError } = await supabase
       .from('bookings')
       .select('customer_id, customer_name, customer_phone, customer_email')
       .limit(1);
     
     if (bookingsError && bookingsError.message.includes('column')) {
-      console.log('⚠️  Bookings table needs additional columns. Add these in Supabase SQL Editor:');
-      console.log(`
-ALTER TABLE bookings
-ADD COLUMN IF NOT EXISTS customer_name VARCHAR(255),
+      
+      ,
 ADD COLUMN IF NOT EXISTS customer_phone VARCHAR(20),
 ADD COLUMN IF NOT EXISTS customer_email VARCHAR(255);
       `);
     } else {
-      console.log('✅ Bookings table has all required columns');
+      
     }
     
   } catch (error) {
@@ -91,7 +72,7 @@ ADD COLUMN IF NOT EXISTS customer_email VARCHAR(255);
 
 runMigration()
   .then(() => {
-    console.log('\n✅ Migration check complete');
+    
     process.exit(0);
   })
   .catch(err => {

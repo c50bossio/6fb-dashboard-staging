@@ -24,25 +24,18 @@ class CICDReportGenerator {
    * Main report generation function
    */
   async generateReports() {
-    console.log('🚀 Starting CI/CD security report generation...');
-    console.log(`📂 Input directory: ${this.inputDir}`);
-    console.log(`📁 Output directory: ${this.outputDir}`);
 
     try {
-      // Ensure output directory exists
       await fs.mkdir(this.outputDir, { recursive: true });
 
-      // Collect all security results
       await this.collectSecurityResults();
 
-      // Generate various report formats
       await this.generateJSONReport();
       await this.generateSARIFReport();
       await this.generateSummaryReport();
       await this.generateHTMLDashboard();
       await this.generateMarkdownReport();
 
-      console.log('✅ Security reports generated successfully');
       return {
         scanId: this.scanId,
         timestamp: new Date().toISOString(),
@@ -66,7 +59,6 @@ class CICDReportGenerator {
    * Collect security results from all test phases
    */
   async collectSecurityResults() {
-    console.log('📊 Collecting security results...');
 
     try {
       const entries = await fs.readdir(this.inputDir, { withFileTypes: true });
@@ -76,7 +68,6 @@ class CICDReportGenerator {
           const dirPath = path.join(this.inputDir, entry.name);
           const files = await fs.readdir(dirPath);
           
-          // Process each result file
           for (const file of files) {
             const filePath = path.join(dirPath, file);
             
@@ -84,7 +75,6 @@ class CICDReportGenerator {
               const content = await fs.readFile(filePath, 'utf8');
               const data = JSON.parse(content);
               
-              // Categorize results based on file name patterns
               if (file.includes('sast')) {
                 this.results.sast = this.results.sast || [];
                 this.results.sast.push({ tool: this.extractToolName(file), data });
@@ -109,11 +99,10 @@ class CICDReportGenerator {
         }
       }
 
-      console.log(`📋 Collected results from ${Object.keys(this.results).length} test categories`);
+    console.log(`📊 Scanned ${inputDirectories.length} test categories`);
 
     } catch (error) {
       console.warn(`⚠️ Could not read input directory: ${error.message}`);
-      // Continue with empty results
     }
   }
 
@@ -148,7 +137,7 @@ class CICDReportGenerator {
 
     const reportPath = path.join(this.outputDir, 'security-report.json');
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
-    console.log(`📄 JSON report generated: ${reportPath}`);
+    
   }
 
   /**
@@ -161,7 +150,6 @@ class CICDReportGenerator {
       if (!Array.isArray(tools)) return;
 
       tools.forEach(({ tool, data }) => {
-        // Handle different data structures from various tools
         const toolFindings = this.extractFindingsFromTool(tool, data, category);
         findings.push(...toolFindings);
       });
@@ -277,7 +265,6 @@ class CICDReportGenerator {
           break;
 
         default:
-          // Generic handling for custom tools
           if (data.findings) {
             findings.push(...data.findings.map(f => ({ ...f, tool, category })));
           } else if (data.results) {
@@ -312,7 +299,6 @@ class CICDReportGenerator {
     const seen = new Set();
 
     findings.forEach(finding => {
-      // Create a signature for deduplication
       const signature = `${finding.title}-${finding.file}-${finding.line}-${finding.severity}`;
       
       if (!seen.has(signature)) {
@@ -321,7 +307,6 @@ class CICDReportGenerator {
       }
     });
 
-    console.log(`🔍 Deduplicated ${findings.length} findings to ${unique.length} unique issues`);
     return unique;
   }
 
@@ -351,7 +336,6 @@ class CICDReportGenerator {
       toolCounts[tool] = (toolCounts[tool] || 0) + 1;
     });
 
-    // Calculate security score
     const criticalPenalty = severityCounts.CRITICAL * 20;
     const highPenalty = severityCounts.HIGH * 10;
     const mediumPenalty = severityCounts.MEDIUM * 5;
@@ -359,7 +343,6 @@ class CICDReportGenerator {
     
     const securityScore = Math.max(0, 100 - criticalPenalty - highPenalty - mediumPenalty - lowPenalty);
     
-    // Determine risk level
     let riskLevel = 'LOW';
     if (securityScore < 50) riskLevel = 'CRITICAL';
     else if (securityScore < 70) riskLevel = 'HIGH';
@@ -387,7 +370,6 @@ class CICDReportGenerator {
       runs: []
     };
 
-    // Group findings by tool
     const toolGroups = {};
     findings.forEach(finding => {
       const tool = finding.tool || 'unknown';
@@ -397,7 +379,6 @@ class CICDReportGenerator {
       toolGroups[tool].push(finding);
     });
 
-    // Create SARIF run for each tool
     Object.entries(toolGroups).forEach(([tool, toolFindings]) => {
       const run = {
         tool: {
@@ -429,7 +410,7 @@ class CICDReportGenerator {
 
     const sarifPath = path.join(this.outputDir, 'security-report.sarif');
     await fs.writeFile(sarifPath, JSON.stringify(sarif, null, 2));
-    console.log(`📄 SARIF report generated: ${sarifPath}`);
+    
   }
 
   /**
@@ -455,7 +436,7 @@ class CICDReportGenerator {
 
     const summaryPath = path.join(this.outputDir, 'security-summary.json');
     await fs.writeFile(summaryPath, JSON.stringify(summary, null, 2));
-    console.log(`📄 Summary report generated: ${summaryPath}`);
+    
   }
 
   /**
@@ -568,7 +549,7 @@ class CICDReportGenerator {
 
     const htmlPath = path.join(this.outputDir, 'security-dashboard.html');
     await fs.writeFile(htmlPath, htmlTemplate);
-    console.log(`📄 HTML dashboard generated: ${htmlPath}`);
+    
   }
 
   /**
@@ -636,7 +617,7 @@ ${this.generateRecommendations(findings).map(rec => `- **${rec.priority}**: ${re
 
     const markdownPath = path.join(this.outputDir, 'security-report.md');
     await fs.writeFile(markdownPath, markdown);
-    console.log(`📄 Markdown report generated: ${markdownPath}`);
+    
   }
 
   /**
@@ -646,13 +627,11 @@ ${this.generateRecommendations(findings).map(rec => `- **${rec.priority}**: ${re
     const recommendations = [];
     const categories = {};
 
-    // Count findings by category
     findings.forEach(finding => {
       const category = finding.category || 'general';
       categories[category] = (categories[category] || 0) + 1;
     });
 
-    // Generate recommendations for top categories
     Object.entries(categories)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 10)
@@ -728,12 +707,10 @@ ${this.generateRecommendations(findings).map(rec => `- **${rec.priority}**: ${re
   }
 }
 
-// CLI execution
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
   const options = {};
 
-  // Parse command line arguments
   for (let i = 0; i < args.length; i += 2) {
     const key = args[i].replace('--', '');
     const value = args[i + 1];
@@ -743,8 +720,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const generator = new CICDReportGenerator(options);
   generator.generateReports()
     .then(result => {
-      console.log('✅ Report generation completed successfully');
-      console.log(JSON.stringify(result, null, 2));
+      
+      );
       process.exit(0);
     })
     .catch(error => {

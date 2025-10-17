@@ -1,11 +1,20 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, CurrencyDollarIcon, TrashIcon, ExclamationTriangleIcon, CheckIcon } from '@heroicons/react/24/outline'
+import {
+  XMarkIcon,
+  CalendarIcon,
+  ClockIcon,
+  UserIcon,
+  TrashIcon,
+  ExclamationTriangleIcon,
+  CheckIcon
+} from '@heroicons/react/24/outline'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Fragment } from 'react'
 
 import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 import CustomerSearchModal from './CustomerSearchModal'
 
 export default function AppointmentBookingModal({
@@ -16,17 +25,17 @@ export default function AppointmentBookingModal({
   services,
   onBookingComplete,
   barbershopId,
-  editingAppointment = null
+  editingAppointment = null,
+  isDragRescheduling = false,
+  pendingDropInfo = null
 }) {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
+  const { activeContext, contextualData } = useGlobalDashboard()
   const isEditing = !!editingAppointment
   
-  // Form state - Initialize with selectedSlot data
   const getInitialDateTime = () => {
     if (selectedSlot?.start) {
-      // Handle both Date objects and ISO strings
       const date = selectedSlot.start instanceof Date ? selectedSlot.start : new Date(selectedSlot.start)
-      // Convert to local time string for datetime-local input
       const year = date.getFullYear()
       const month = String(date.getMonth() + 1).padStart(2, '0')
       const day = String(date.getDate()).padStart(2, '0')
@@ -37,11 +46,52 @@ export default function AppointmentBookingModal({
     return ''
   }
   
+  // Smart barber auto-selection logic
+  const getSmartBarberId = () => {
+    // Priority 1: If selectedSlot has barber info (from calendar click/drag), use it
+    // Check multiple possible field names defensively (calendar can send any of these)
+    const slotBarberId = selectedSlot?.barberId || selectedSlot?.selectedBarber || selectedSlot?.resourceId
+    if (slotBarberId) {
+      console.log('[Modal] Using barber from calendar slot:', slotBarberId)
+      return slotBarberId
+    }
+
+    // Priority 2: If single barber in context (solo practitioner), auto-select them
+    if (contextualData?.availableBarbers?.length === 1) {
+      console.log('[Modal] Auto-selecting solo barber:', contextualData.availableBarbers[0].id)
+      return contextualData.availableBarbers[0].id
+    }
+
+    // Priority 3: If current user is in available barbers, auto-select current user
+    if (_user?.id && contextualData?.availableBarbers) {
+      const currentUserBarber = contextualData.availableBarbers.find(
+        barber => barber.user_id === _user.id || barber.id === _user.id
+      )
+      if (currentUserBarber) {
+        console.log('[Modal] Auto-selecting current user as barber:', currentUserBarber.id)
+        return currentUserBarber.id || currentUserBarber.user_id
+      }
+    }
+
+    // Priority 4: Fallback to empty for manual selection
+    console.log('[Modal] No auto-select criteria met, leaving barber selection empty')
+    return ''
+  }
+  
+  // Initialize with dragged duration or default
+  const initialDuration = selectedSlot?.duration || 60
+
+  // Track which fields were auto-populated
+  const [autoPopulated, setAutoPopulated] = useState({
+    barber: false,
+    location: false
+  })
+  
   const [formData, setFormData] = useState({
-    barber_id: selectedSlot?.barberId || '',
+    barber_id: getSmartBarberId(),
     service_id: '',
     scheduled_at: getInitialDateTime(),
-    duration_minutes: 60,
+    duration_minutes: initialDuration,
     service_price: 0,
     tip_amount: 0,
     client_name: '',
@@ -51,7 +101,6 @@ export default function AppointmentBookingModal({
     is_walk_in: false,
     booking_source: 'online',
     priority: 0,
-    // Recurring appointment fields
     is_recurring: false,
     recurrence_pattern: 'weekly', // daily, weekly, monthly
     recurrence_interval: 1, // every N weeks/months
@@ -73,13 +122,11 @@ export default function AppointmentBookingModal({
   const [fieldErrors, setFieldErrors] = useState({})
   const [isValidating, setIsValidating] = useState(false)
   
-  // Customer management state
   const [customerMode, setCustomerMode] = useState('new') // 'new' or 'existing'
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [showCustomerSearch, setShowCustomerSearch] = useState(false)
   const [customerSearchLoading, setCustomerSearchLoading] = useState(false)
   
-  // Notification preferences state
   const [notificationPreferences, setNotificationPreferences] = useState({
     sms: true,
     email: true,
@@ -87,28 +134,45 @@ export default function AppointmentBookingModal({
     reminders: true
   })
   
-  // Delete/Cancel confirmation dialog state
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const [deleteOption, setDeleteOption] = useState('single') // 'single' or 'all' for recurring
   const [deletingAppointment, setDeletingAppointment] = useState(false)
   const [actionType, setActionType] = useState('cancel') // 'cancel' or 'delete'
   
-  // Quick block mode state
   const [isBlockMode, setIsBlockMode] = useState(false)
   const [blockReason, setBlockReason] = useState('')
 
-  // Populate form when modal opens with selectedSlot or when editing
   useEffect(() => {
-    // PHASE 1 FIX: Reset delete option when modal opens
     setDeleteOption('single')
     setActionType('cancel')
     setShowDeleteConfirmation(false)
     
+    // Check if editing a blocked time
     if (isEditing && editingAppointment) {
-      // Convert appointment time to local time for editing
+      const isBlockedTime = editingAppointment.extendedProps?.is_blocked_time || 
+                           editingAppointment.extendedProps?.status === 'blocked' ||
+                           editingAppointment.status === 'blocked'
+      
+      if (isBlockedTime) {
+        setIsBlockMode(true)
+        setBlockReason(
+          editingAppointment.client_notes || 
+          editingAppointment.notes || 
+          editingAppointment.title?.replace('🚫 ', '').replace('Time Blocked - ', '') || 
+          ''
+        )
+      }
+    }
+    
+    if (isEditing && editingAppointment) {
+      // Extract data from either flat structure or FullCalendar's extendedProps
+      const props = editingAppointment.extendedProps || editingAppointment
+
+      // Get scheduled_at from various possible sources
       let scheduledAt = ''
-      if (editingAppointment.scheduled_at) {
-        const date = new Date(editingAppointment.scheduled_at)
+      const dateSource = props.scheduled_at || editingAppointment.scheduled_at || editingAppointment.start
+      if (dateSource) {
+        const date = new Date(dateSource)
         const year = date.getFullYear()
         const month = String(date.getMonth() + 1).padStart(2, '0')
         const day = String(date.getDate()).padStart(2, '0')
@@ -116,30 +180,34 @@ export default function AppointmentBookingModal({
         const minutes = String(date.getMinutes()).padStart(2, '0')
         scheduledAt = `${year}-${month}-${day}T${hours}:${minutes}`
       }
-      
-      // Debug logging to see what IDs we're trying to set
-      console.log('🔍 Modal - Setting form data for editing:', {
-        barber_id: editingAppointment.barber_id,
-        service_id: editingAppointment.service_id,
-        editingAppointment: editingAppointment
+
+      // Get appointment ID from various possible sources
+      const appointmentId = props.appointment_id || editingAppointment.appointment_id || editingAppointment.id
+
+      console.log('📝 [Modal] Pre-populating edit form with:', {
+        appointmentId,
+        barberId: props.barber_id,
+        serviceId: props.service_id,
+        clientName: props.client_name,
+        scheduledAt,
+        fullAppointment: editingAppointment
       })
-      
+
       setFormData({
-        barber_id: editingAppointment.barber_id || '',
-        service_id: editingAppointment.service_id || '',
+        barber_id: props.barber_id || '',
+        service_id: props.service_id || '',
         scheduled_at: scheduledAt,
-        duration_minutes: editingAppointment.duration_minutes || 60,
-        service_price: editingAppointment.service_price || 0,
-        tip_amount: editingAppointment.tip_amount || 0,
-        client_name: editingAppointment.client_name || editingAppointment.client?.name || '',
-        client_phone: editingAppointment.client_phone || editingAppointment.client?.phone || '',
-        client_email: editingAppointment.client_email || editingAppointment.client?.email || '',
-        client_notes: editingAppointment.client_notes || '',
-        is_walk_in: editingAppointment.is_walk_in || false,
-        booking_source: editingAppointment.booking_source || 'online',
-        priority: editingAppointment.priority || 0,
-        // Recurring fields - only show for parent recurring events
-        is_recurring: !!editingAppointment.recurrence_rule,
+        duration_minutes: props.duration_minutes || 60,
+        service_price: props.service_price || 0,
+        tip_amount: props.tip_amount || 0,
+        client_name: props.client_name || props.customer_name || editingAppointment.client?.name || '',
+        client_phone: props.client_phone || props.customer_phone || editingAppointment.client?.phone || '',
+        client_email: props.client_email || props.customer_email || editingAppointment.client?.email || '',
+        client_notes: props.notes || props.client_notes || '',
+        is_walk_in: props.is_walk_in || false,
+        booking_source: props.booking_source || 'online',
+        priority: props.priority || 0,
+        is_recurring: !!props.recurrence_rule || !!editingAppointment.recurrence_rule,
         recurrence_pattern: 'weekly',
         recurrence_interval: 1,
         recurrence_days: [],
@@ -148,22 +216,29 @@ export default function AppointmentBookingModal({
         recurrence_end_date: ''
       })
     } else if (selectedSlot && !isEditing) {
-      // Update form when opening with a new selected slot
+      // 🔍 DEBUG: Log the complete slot data to see what we're receiving
+      console.log('[Modal Init] Selected slot data:', {
+        barberId: selectedSlot.barberId,
+        selectedBarber: selectedSlot.selectedBarber,
+        resourceId: selectedSlot.resourceId,
+        resourceTitle: selectedSlot.resourceTitle,
+        viewType: selectedSlot.viewType,
+        selectionType: selectedSlot.selectionType,
+        fullSlot: selectedSlot
+      })
+
       let dateTime
-      const slotDate = selectedSlot.start instanceof Date 
-        ? selectedSlot.start 
+      const slotDate = selectedSlot.start instanceof Date
+        ? selectedSlot.start
         : new Date(selectedSlot.start)
-      
-      // Handle different view types
+
       if (selectedSlot.needsTimePicker) {
-        // Month view: Use selected date with suggested time
         const year = slotDate.getFullYear()
         const month = String(slotDate.getMonth() + 1).padStart(2, '0')
         const day = String(slotDate.getDate()).padStart(2, '0')
         const time = selectedSlot.suggestedTime || '09:00'
         dateTime = `${year}-${month}-${day}T${time}`
       } else {
-        // Other views: Use exact time from slot - convert to local time
         const year = slotDate.getFullYear()
         const month = String(slotDate.getMonth() + 1).padStart(2, '0')
         const day = String(slotDate.getDate()).padStart(2, '0')
@@ -171,17 +246,36 @@ export default function AppointmentBookingModal({
         const minutes = String(slotDate.getMinutes()).padStart(2, '0')
         dateTime = `${year}-${month}-${day}T${hours}:${minutes}`
       }
+
+      // Get smart barber ID
+      const smartBarberId = getSmartBarberId()
+      console.log('[Modal Init] Smart barber selection result:', smartBarberId)
+      
+      // Check if barber was auto-populated
+      const wasBarberAutoPopulated = !selectedSlot.barberId && smartBarberId && (
+        // Single barber scenario
+        contextualData?.availableBarbers?.length === 1 ||
+        // Current user is a barber scenario
+        (_user?.id && contextualData?.availableBarbers?.some(
+          b => b.user_id === _user.id || b.id === _user.id
+        ))
+      )
       
       setFormData(prev => ({
         ...prev,
-        barber_id: selectedSlot.barberId || '',
+        barber_id: smartBarberId,
         scheduled_at: dateTime,
         duration_minutes: selectedSlot.duration || 60  // Use dragged duration or default to 60
       }))
+      
+      // Track auto-population
+      setAutoPopulated({
+        barber: wasBarberAutoPopulated,
+        location: !!activeContext?.locationId
+      })
     }
   }, [isEditing, editingAppointment, selectedSlot])
 
-  // Calculate end time based on start time and duration
   const calculateEndTime = useCallback(() => {
     if (formData.scheduled_at && formData.duration_minutes) {
       const start = new Date(formData.scheduled_at)
@@ -191,11 +285,10 @@ export default function AppointmentBookingModal({
     return null
   }, [formData.scheduled_at, formData.duration_minutes])
 
-  // Format time range for display
   const getTimeRangeDisplay = useCallback(() => {
     if (formData.scheduled_at && formData.duration_minutes) {
       const start = new Date(formData.scheduled_at)
-      const end = calculateEndTime()
+      const end = new Date(start.getTime() + formData.duration_minutes * 60000)
       if (end) {
         const startTime = start.toLocaleTimeString('en-US', { 
           hour: 'numeric', 
@@ -211,16 +304,22 @@ export default function AppointmentBookingModal({
       }
     }
     return null
-  }, [formData.scheduled_at, formData.duration_minutes, calculateEndTime])
+  }, [formData.scheduled_at, formData.duration_minutes])
 
-  // Update service details when service is selected
   useEffect(() => {
-    if (formData.service_id) {
+    // Only override duration with service duration if:
+    // 1. NOT in block mode
+    // 2. User hasn't dragged to select a specific duration
+    const userSelectedDuration = selectedSlot?.duration && selectedSlot?.selectionType === 'drag'
+    
+    // Debug logging
+
+    if (!isBlockMode && !userSelectedDuration && formData.service_id) {
       const selectedService = services.find(s => s.id === formData.service_id)
       if (selectedService) {
-        // Only update if values are actually different to prevent infinite loop
-        if (formData.duration_minutes !== selectedService.duration_minutes ||
-            formData.service_price !== parseFloat(selectedService.price)) {
+        // Only update if duration actually needs to change
+        if (formData.duration_minutes !== selectedService.duration_minutes) {
+          
           setFormData(prev => ({
             ...prev,
             duration_minutes: selectedService.duration_minutes,
@@ -228,10 +327,22 @@ export default function AppointmentBookingModal({
           }))
         }
       }
+    } else if (userSelectedDuration) {
+      
     }
-  }, [formData.service_id, formData.duration_minutes, formData.service_price, services])
+  }, [isBlockMode, formData.service_id, services, selectedSlot?.duration, selectedSlot?.selectionType])
 
-  // Check availability when barber, date, or duration changes
+  // Preserve dragged duration when entering block mode
+  useEffect(() => {
+    if (isBlockMode && selectedSlot?.duration) {
+      setFormData(prev => ({
+        ...prev,
+        duration_minutes: selectedSlot.duration,
+        service_id: '' // Clear service selection in block mode
+      }))
+    }
+  }, [isBlockMode, selectedSlot?.duration])
+
   const checkAvailability = useCallback(async () => {
     if (!formData.barber_id || !formData.scheduled_at || !formData.duration_minutes) return
     
@@ -261,7 +372,6 @@ export default function AppointmentBookingModal({
       
       setAvailability(data.available_slots || [])
       
-      // Check if selected time is available
       const selectedTime = appointmentDate.toTimeString().slice(0, 5)
       const isAvailable = data.available_slots?.some(slot => 
         slot.start_time === selectedTime && slot.available
@@ -279,17 +389,13 @@ export default function AppointmentBookingModal({
     }
   }, [formData.barber_id, formData.scheduled_at, formData.duration_minutes, isEditing, editingAppointment?.id])
 
-  // Use useRef for the timer to avoid dependency issues
   const availabilityTimerRef = useRef(null)
 
-  // Debounced availability check
   const debouncedAvailabilityCheck = useCallback(() => {
-    // Clear existing timer
     if (availabilityTimerRef.current) {
       clearTimeout(availabilityTimerRef.current)
     }
     
-    // Set new timer
     availabilityTimerRef.current = setTimeout(() => {
       checkAvailability()
     }, 800) // Wait 800ms after user stops typing/changing
@@ -298,7 +404,6 @@ export default function AppointmentBookingModal({
   useEffect(() => {
     debouncedAvailabilityCheck()
     
-    // Cleanup timer on unmount
     return () => {
       if (availabilityTimerRef.current) {
         clearTimeout(availabilityTimerRef.current)
@@ -306,14 +411,13 @@ export default function AppointmentBookingModal({
     }
   }, [debouncedAvailabilityCheck])
 
-  // Validation function
   const validateField = (name, value) => {
     const errors = {}
     
     switch (name) {
       case 'client_name':
         if (!value.trim()) {
-          errors.client_name = 'Customer name is required'
+          errors.client_name = 'Client name is required'
         } else if (value.trim().length < 2) {
           errors.client_name = 'Name must be at least 2 characters'
         }
@@ -356,7 +460,6 @@ export default function AppointmentBookingModal({
     return errors
   }
 
-  // Validate all required fields
   const validateForm = () => {
     const requiredFields = ['client_name', 'client_phone', 'scheduled_at', 'barber_id', 'service_id']
     let allErrors = {}
@@ -367,7 +470,6 @@ export default function AppointmentBookingModal({
       allErrors = { ...allErrors, ...fieldErrors }
     })
     
-    // Validate email if provided
     if (formData.client_email) {
       const emailErrors = validateField('client_email', formData.client_email)
       allErrors = { ...allErrors, ...emailErrors }
@@ -377,12 +479,10 @@ export default function AppointmentBookingModal({
     return Object.keys(allErrors).length === 0
   }
 
-  // Customer management functions
   const handleCustomerModeChange = (mode) => {
     setCustomerMode(mode)
     if (mode === 'new') {
       setSelectedCustomer(null)
-      // Clear form fields when switching to new customer
       setFormData(prev => ({
         ...prev,
         client_name: '',
@@ -398,7 +498,6 @@ export default function AppointmentBookingModal({
     setSelectedCustomer(customer)
     setCustomerMode('existing')
     
-    // Populate form with customer data
     setFormData(prev => ({
       ...prev,
       client_name: customer.name || '',
@@ -407,12 +506,10 @@ export default function AppointmentBookingModal({
       customer_id: customer.id
     }))
     
-    // Load customer notification preferences
     if (customer.notification_preferences) {
       setNotificationPreferences(customer.notification_preferences)
     }
     
-    // Clear any existing field errors for customer fields
     setFieldErrors(prev => {
       const newErrors = { ...prev }
       delete newErrors.client_name
@@ -428,17 +525,15 @@ export default function AppointmentBookingModal({
     setShowCustomerSearch(false)
   }
 
-  // Quick customer lookup by phone/email
   const quickCustomerLookup = async (phone, email) => {
     if (!phone && !email) return
 
     setCustomerSearchLoading(true)
     try {
-      const response = await fetch('/api/customers/search', {
+      const { csrfFetchJSON } = await import('@/lib/csrf-fetch')
+
+      const data = await csrfFetchJSON('/api/customers/search', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           phone,
           email,
@@ -446,12 +541,8 @@ export default function AppointmentBookingModal({
         })
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        if (data.found && data.customer) {
-          // Auto-select found customer
-          handleSelectCustomer(data.customer)
-        }
+      if (data.found && data.customer) {
+        handleSelectCustomer(data.customer)
       }
     } catch (error) {
       console.error('Error in quick customer lookup:', error)
@@ -463,17 +554,9 @@ export default function AppointmentBookingModal({
   const handleInputChange = async (e) => {
     const { name, value, type, checked } = e.target
     
-    // Special handling for converting to recurring
     if (name === 'is_recurring' && checked && isEditing && !editingAppointment?.recurrence_rule) {
-      // Preserve the original day and time when converting to recurring
       const appointmentDate = new Date(formData.scheduled_at)
       const dayOfWeek = appointmentDate.getDay()
-      
-      console.log('Converting to recurring - preserving time:', {
-        originalTime: formData.scheduled_at,
-        dayOfWeek: dayOfWeek,
-        appointmentDate: appointmentDate.toString()
-      })
       
       setFormData(prev => ({
         ...prev,
@@ -483,12 +566,10 @@ export default function AppointmentBookingModal({
         recurrence_days: [dayOfWeek], // Set the day to match original appointment
         recurrence_end_type: 'count',
         recurrence_count: 10
-        // Note: scheduled_at is NOT changed, preserving the original time
       }))
       
       setShowConversionConfirmation(true)
       
-      // Check for conflicts when converting to recurring
       setTimeout(() => checkRecurringConflicts(), 500)
     } else if (name === 'is_recurring' && !checked) {
       setShowConversionConfirmation(false)
@@ -503,13 +584,11 @@ export default function AppointmentBookingModal({
         [name]: type === 'checkbox' ? checked : value
       }))
       
-      // Real-time validation for individual fields
       if (['client_name', 'client_phone', 'client_email', 'scheduled_at', 'barber_id', 'service_id'].includes(name)) {
         const fieldErrors = validateField(name, type === 'checkbox' ? checked : value)
         setFieldErrors(prev => ({
           ...prev,
           ...fieldErrors,
-          // Clear error if field is now valid
           ...(Object.keys(fieldErrors).length === 0 ? { [name]: undefined } : {})
         }))
       }
@@ -523,7 +602,6 @@ export default function AppointmentBookingModal({
     setError('')
     setIsValidating(true)
     
-    // Validate form before submission
     if (!validateForm()) {
       setIsValidating(false)
       setLoading(false)
@@ -532,49 +610,55 @@ export default function AppointmentBookingModal({
     }
     
     try {
-      // Validate required fields
       if (!formData.barber_id || !formData.service_id || !formData.scheduled_at) {
         throw new Error('Please fill in all required fields')
       }
-      
+
       if (!formData.client_name && !user) {
-        throw new Error('Customer name is required')
+        throw new Error('Client name is required')
       }
       
-      // Prepare appointment data with customer and notification information
+      // Calculate start and end times for API validation
+      const startDate = new Date(formData.scheduled_at)
+      const endDate = new Date(startDate.getTime() + formData.duration_minutes * 60000)
+      
+      // Extract complete service information for proper database persistence
+      const selectedService = services.find(s => s.id === formData.service_id)
+      
       const appointmentData = {
         ...formData,
         barbershop_id: barbershopId,
         client_id: user?.id || null,
         total_amount: formData.service_price + (formData.tip_amount || 0),
-        scheduled_at: new Date(formData.scheduled_at).toISOString(),
+        scheduled_at: startDate.toISOString(),
+        start_time: startDate.toISOString(), // Required by API schema
+        end_time: endDate.toISOString(),     // Required by API schema
         recurrence_rule: generateRRule(),
         
-        // Customer management data
+        // Complete service information for database persistence
+        service_id: formData.service_id,
+        service_name: selectedService?.name || '',
+        service_type: selectedService?.type || selectedService?.category || selectedService?.name || '',
+        service_description: selectedService?.description || '',
+        service_price: formData.service_price || selectedService?.price || 0,
+        
         customer_id: selectedCustomer?.id || null,
         customer_mode: customerMode,
         is_new_customer: customerMode === 'new',
-        
-        // Notification preferences
+
         notification_preferences: notificationPreferences,
-        send_notifications: notificationPreferences.confirmations || notificationPreferences.reminders,
-        
-        // Customer data for API compatibility
-        customer_name: formData.client_name,
-        customer_phone: formData.client_phone, 
-        customer_email: formData.client_email
+        send_notifications: notificationPreferences.confirmations || notificationPreferences.reminders
       }
       
       if (isEditing) {
-        // Check if converting to recurring appointment
         if (formData.is_recurring && !editingAppointment.recurrence_rule) {
-          // Don't proceed if user selected cancel for conflicts
           if (conflicts && conflicts.has_conflicts && conflictResolution === 'cancel') {
             throw new Error('Conversion cancelled due to conflicts')
           }
           
-          // Convert existing appointment to recurring
-          const response = await fetch(`/api/calendar/appointments/${editingAppointment.id}/convert-recurring`, {
+          const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+          const response = await csrfFetch(`/api/calendar/appointments/${editingAppointment.id}/convert-recurring`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -592,8 +676,6 @@ export default function AppointmentBookingModal({
           }
           
           const data = await response.json()
-          console.log('Convert recurring response:', data)
-          // Pass the appointment data properly
           if (data && data.appointment) {
             onBookingComplete(data.appointment)
           } else {
@@ -601,8 +683,9 @@ export default function AppointmentBookingModal({
             throw new Error('Invalid response from server')
           }
         } else {
-          // Update existing appointment normally
-          const response = await fetch(`/api/calendar/appointments/${editingAppointment.id}`, {
+          const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+          const response = await csrfFetch(`/api/calendar/appointments/${editingAppointment.id}`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json'
@@ -619,8 +702,9 @@ export default function AppointmentBookingModal({
           onBookingComplete(data.appointment)
         }
       } else {
-        // Create new appointment
-        const response = await fetch('/api/calendar/appointments', {
+        const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+        const response = await csrfFetch('/api/calendar/appointments', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -634,7 +718,6 @@ export default function AppointmentBookingModal({
         }
         
         const data = await response.json()
-        console.log('New appointment created:', data)
         onBookingComplete(data.appointment || data)
       }
       
@@ -646,94 +729,90 @@ export default function AppointmentBookingModal({
     }
   }
   
-  // Handle appointment uncancellation (reactivate cancelled appointment)
   const handleUncancel = async () => {
     if (!editingAppointment || !editingAppointment.id) {
       console.error('No appointment to uncancel', editingAppointment)
       setError('No appointment ID found. This may be demo data that cannot be uncancelled.')
       return
     }
-    
-    console.log('Attempting to uncancel appointment:', editingAppointment.id)
-    
+
     setDeletingAppointment(true)
     setError('')
-    
+
     try {
-      const response = await fetch('/api/calendar/appointments/uncancel', {
-        method: 'POST',
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch(`/api/calendar/appointments?id=${editingAppointment.id}&action=restore`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          appointmentId: editingAppointment.id
-        })
+        body: JSON.stringify({})
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to uncancel appointment')
+        throw new Error(data.error || 'Failed to restore appointment')
       }
-      
-      console.log('Uncancel successful:', data)
-      
-      // Close the modal and refresh the calendar
+
+      console.log('[AppointmentModal] Successfully restored appointment')
       setShowDeleteConfirmation(false)
       onClose()
       
-      // Call the booking complete callback to refresh the calendar
       if (onBookingComplete) {
-        await onBookingComplete({ isUncancelled: true })
+        await onBookingComplete({ 
+          isUncancelled: true,
+          appointment: data.appointment,
+          message: 'Appointment restored successfully'
+        })
       }
       
     } catch (error) {
-      console.error('Error uncancelling appointment:', error)
-      setError('Failed to uncancel appointment: ' + error.message)
+      console.error('Error restoring appointment:', error)
+      setError('Failed to restore appointment: ' + error.message)
     } finally {
       setDeletingAppointment(false)
     }
   }
 
-  // Handle appointment cancellation (soft delete - marks as cancelled, stays visible)
   const handleCancel = async () => {
     if (!editingAppointment || !editingAppointment.id) {
       console.error('No appointment to cancel', editingAppointment)
       setError('No appointment ID found. This may be demo data that cannot be cancelled.')
       return
     }
-    
-    console.log('Attempting to cancel appointment:', editingAppointment.id)
-    
+
     setDeletingAppointment(true)
     setError('')
     
     try {
-      const response = await fetch('/api/calendar/appointments/cancel', {
-        method: 'POST',
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch(`/api/calendar/appointments?id=${editingAppointment.id}&action=cancel`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          appointmentId: editingAppointment.id
-        })
+        body: JSON.stringify({})
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to cancel appointment')
       }
-      
-      console.log('Cancel successful:', data)
-      
-      // Close the modal and refresh the calendar
+
+      console.log('[AppointmentModal] Successfully cancelled appointment')
       setShowDeleteConfirmation(false)
       onClose()
       
-      // Call the booking complete callback to refresh the calendar
       if (onBookingComplete) {
-        await onBookingComplete({ isCancelled: true })
+        await onBookingComplete({ 
+          isCancelled: true,
+          appointment: data.appointment,
+          message: 'Appointment cancelled successfully'
+        })
       }
       
     } catch (error) {
@@ -744,62 +823,70 @@ export default function AppointmentBookingModal({
     }
   }
 
-  // Handle quick block time functionality
   const handleQuickBlock = async () => {
+    console.log('handleQuickBlock called with barbershopId:', barbershopId)
     setLoading(true)
     setError('')
     
     try {
-      // Calculate end time based on start time and duration
       const startDate = new Date(formData.scheduled_at || selectedSlot?.start)
       const endDate = new Date(startDate.getTime() + (formData.duration_minutes || 60) * 60000)
       
-      // Prepare minimal booking data for blocked time
       const blockData = {
         barber_id: formData.barber_id || selectedSlot?.barberId || barbers?.[0]?.id,
-        service_id: null, // No service for blocked time
-        customer_id: null, // Null for blocked slots to avoid foreign key constraint
-        start_time: startDate.toISOString(),
-        end_time: endDate.toISOString(),
-        scheduled_at: startDate.toISOString(),
-        duration_minutes: formData.duration_minutes || 60,
-        status: 'blocked',
-        notes: blockReason || 'Time blocked',
-        client_name: 'BLOCKED',
-        client_phone: '',
-        client_email: '',
-        service_price: 0,
-        tip_amount: 0,
-        shop_id: barbershopId || 'demo-shop-001',
-        is_blocked_time: true // Special flag for UI handling
+        date: startDate.toISOString().split('T')[0], // Extract date part (YYYY-MM-DD)
+        start_time: startDate.toTimeString().slice(0, 5), // Extract time part (HH:MM)
+        end_time: endDate.toTimeString().slice(0, 5), // Extract time part (HH:MM)
+        reason: blockReason || 'Time blocked',
+        barbershop_id: barbershopId,
+        barbershop_id: barbershopId
       }
       
-      console.log('Creating blocked time slot:', blockData)
-      
-      const response = await fetch('/api/calendar/appointments', {
-        method: 'POST',
+      console.log('Sending block data to API:', {
+        date: blockData.date,
+        start_time: blockData.start_time,
+        end_time: blockData.end_time,
+        barber_id: blockData.barber_id,
+        reason: blockData.reason,
+        barbershop_id: blockData.barbershop_id,
+        barbershop_id: blockData.barbershop_id
+      })
+
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch(`/api/calendar/appointments?action=block`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(blockData)
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to block time slot')
       }
-      
-      console.log('Time blocked successfully:', data)
-      
-      // Reset form and close modal
+
       setIsBlockMode(false)
       setBlockReason('')
       onClose()
       
-      // Refresh calendar
       if (onBookingComplete) {
-        await onBookingComplete({ isBlocked: true })
+        // Pass the complete appointment data from API response instead of just {isBlocked: true}
+        const appointmentData = data.appointment || data.event || {
+          id: data.appointment?.id,
+          start_time: startDate.toISOString(),
+          end_time: endDate.toISOString(), 
+          scheduled_at: startDate.toISOString(),
+          status: 'blocked',
+          customer_name: 'BLOCKED',
+          notes: blockReason || 'Time blocked',
+          duration_minutes: formData.duration_minutes || 60,
+          barber_id: formData.barber_id || selectedSlot?.barberId || barbers?.[0]?.id,
+          is_blocked_time: true
+        }
+        await onBookingComplete(appointmentData)
       }
       
     } catch (error) {
@@ -810,100 +897,124 @@ export default function AppointmentBookingModal({
     }
   }
 
-  // Handle appointment deletion (hard delete - completely removes from calendar and history)
-  const handleDelete = async () => {
+  const handleDelete = async (retryCount = 0) => {
     if (!editingAppointment || !editingAppointment.id) {
       console.error('No appointment to delete', editingAppointment)
       setError('No appointment ID found. This may be demo data that cannot be deleted.')
       return
     }
     
-    console.log('🔴 DELETE ATTEMPT - Appointment Details:', {
-      id: editingAppointment.id,
-      status: editingAppointment.extendedProps?.status,
-      isRecurring: editingAppointment.isRecurring,
-      extendedProps: editingAppointment.extendedProps,
-      fullAppointment: editingAppointment
-    })
-    
     setDeletingAppointment(true)
     setError('')
     
     try {
-      // Build delete URL with appropriate parameters
-      let deleteUrl = `/api/calendar/appointments/${editingAppointment.id}`
-      const params = new URLSearchParams()
+      // Use the new DELETE endpoint with query parameter
+      const deleteUrl = `/api/calendar/appointments?id=${editingAppointment.id}`
       
-      // PHASE 1 ENHANCED: Explicitly check for cancelled status FIRST
-      const isCancelled = editingAppointment.extendedProps?.status === 'cancelled'
+      console.log('[AppointmentModal] Deleting appointment:', editingAppointment.id)
       
-      if (isCancelled) {
-        // PHASE 1 FIX: Cancelled appointments NEVER get parameters
-        console.log('🔴 DELETE - CANCELLED APPOINTMENT - NO PARAMETERS WILL BE SENT')
-        console.log('🔴 DELETE - Status:', editingAppointment.extendedProps?.status)
-        // Do NOT add any parameters - just use base URL
-      } else {
-        // Only check recurring logic for NON-cancelled appointments
-        const isActuallyRecurring = editingAppointment.isRecurring || editingAppointment.extendedProps?.isRecurring
-        
-        console.log('🔴 DELETE - Non-Cancelled Appointment Check:', {
-          isRecurring: editingAppointment.isRecurring,
-          extendedPropsRecurring: editingAppointment.extendedProps?.isRecurring,
-          status: editingAppointment.extendedProps?.status,
-          isActuallyRecurring,
-          deleteOption
-        })
-        
-        // Only add parameters for actual recurring appointments that are NOT cancelled
-        if (isActuallyRecurring) {
-          if (deleteOption === 'all') {
-            params.append('deleteAll', 'true')
-          } else if (deleteOption === 'single' && editingAppointment.start) {
-            // Get the date of this specific occurrence
-            const occurrenceDate = new Date(editingAppointment.start)
-            params.append('cancelDate', occurrenceDate.toISOString().split('T')[0])
-          }
-        }
+      // Check if this is a blocked time
+      const isBlockedTime = editingAppointment.extendedProps?.is_blocked_time || 
+                           editingAppointment.extendedProps?.status === 'blocked' ||
+                           editingAppointment.title?.includes('🚫')
+      
+      if (isBlockedTime) {
+        console.log('[AppointmentModal] Deleting blocked time slot')
       }
-      
-      if (params.toString()) {
-        deleteUrl += `?${params.toString()}`
-      }
-      
-      console.log('🔴 DELETE URL:', deleteUrl)
-      console.log('🔴 URL PARAMS:', params.toString() || 'NONE')
-      
-      // Use DELETE method to actually remove from database
-      const response = await fetch(deleteUrl, {
+
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch(deleteUrl, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         }
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete appointment')
+        // If unauthorized and we have retries left, try once more
+        if (response.status === 403 && retryCount < 1) {
+          console.log('[AppointmentModal] Retrying delete with delay...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          return handleDelete(retryCount + 1)
+        }
+        
+        // Provide more specific error messages
+        if (response.status === 404) {
+          throw new Error('Appointment not found. It may have already been deleted.')
+        } else if (response.status === 403) {
+          throw new Error('You do not have permission to delete this appointment.')
+        } else {
+          throw new Error(data.error || 'Failed to delete appointment')
+        }
       }
-      
-      console.log('Delete successful:', data)
-      
-      // Close the modal and refresh the calendar
+
+      console.log('[AppointmentModal] Successfully deleted appointment')
       setShowDeleteConfirmation(false)
       onClose()
       
-      // Call the booking complete callback to refresh the calendar
-      // Pass a special flag to indicate this was a deletion
       if (onBookingComplete) {
-        await onBookingComplete({ isDeleted: true })
+        await onBookingComplete({ 
+          isDeleted: true,
+          deletedId: editingAppointment.id,
+          message: 'Appointment permanently deleted'
+        })
       }
       
     } catch (error) {
       console.error('Error deleting appointment:', error)
-      setError('Failed to delete appointment: ' + error.message)
+      
+      // Check for network errors
+      if (error.message === 'Failed to fetch') {
+        setError('Network error. Please check your connection and try again.')
+      } else {
+        setError(error.message || 'Failed to delete appointment')
+      }
     } finally {
       setDeletingAppointment(false)
+    }
+  }
+
+  const handleCompleteAndCheckout = async () => {
+    if (!editingAppointment || !editingAppointment.id) {
+      console.error('No appointment to checkout', editingAppointment)
+      setError('No appointment ID found for checkout.')
+      return
+    }
+
+    try {
+      // Close this modal first
+      onClose()
+
+      // Navigate to POS with pre-filled appointment data
+      const checkoutData = {
+        appointmentId: editingAppointment.id,
+        customerId: editingAppointment.customer_id,
+        customerName: editingAppointment.client_name || editingAppointment.client?.name,
+        customerPhone: editingAppointment.client_phone || editingAppointment.client?.phone,
+        customerEmail: editingAppointment.client_email || editingAppointment.client?.email,
+        services: [{
+          id: editingAppointment.service_id,
+          name: editingAppointment.service_name || 'Service',
+          price: editingAppointment.service_price || 0,
+          duration_minutes: editingAppointment.duration_minutes || 60
+        }],
+        barberId: editingAppointment.barber_id,
+        scheduledAt: editingAppointment.scheduled_at,
+        tipAmount: editingAppointment.tip_amount || 0
+      }
+
+      // Store checkout data in sessionStorage for POS to pick up
+      sessionStorage.setItem('pendingCheckout', JSON.stringify(checkoutData))
+
+      // Navigate to POS page with checkout mode
+      window.location.href = '/shop/products?checkout=appointment&id=' + editingAppointment.id
+      
+    } catch (error) {
+      console.error('Error preparing checkout:', error)
+      setError('Failed to prepare checkout: ' + error.message)
     }
   }
 
@@ -922,7 +1033,6 @@ export default function AppointmentBookingModal({
     setAvailabilityError('')
   }
 
-  // Check for conflicts when converting to recurring
   const checkRecurringConflicts = async () => {
     if (!formData.is_recurring || !formData.barber_id) return
     
@@ -933,7 +1043,9 @@ export default function AppointmentBookingModal({
       const rrule = generateRRule()
       if (!rrule) return
       
-      const response = await fetch('/api/calendar/appointments/check-conflicts', {
+      const { csrfFetch } = await import('@/lib/csrf-fetch')
+
+      const response = await csrfFetch('/api/calendar/appointments/check-conflicts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -959,13 +1071,12 @@ export default function AppointmentBookingModal({
     }
   }
   
-  // Helper function to generate RRule string
   const generateRRule = () => {
     if (!formData.is_recurring) return null
     
     const startDate = new Date(formData.scheduled_at)
     let freq = 'WEEKLY'
-    let interval = formData.recurrence_interval
+    const interval = formData.recurrence_interval
     
     switch (formData.recurrence_pattern) {
       case 'daily':
@@ -981,7 +1092,6 @@ export default function AppointmentBookingModal({
     
     let rrule = `FREQ=${freq};INTERVAL=${interval}`
     
-    // Add end condition
     if (formData.recurrence_end_type === 'count') {
       rrule += `;COUNT=${formData.recurrence_count}`
     } else if (formData.recurrence_end_type === 'date' && formData.recurrence_end_date) {
@@ -990,7 +1100,6 @@ export default function AppointmentBookingModal({
       rrule += `;UNTIL=${until}`
     }
     
-    // Add days of week for weekly pattern
     if (formData.recurrence_pattern === 'weekly' && formData.recurrence_days.length > 0) {
       const days = formData.recurrence_days.map(day => {
         const weekdays = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']
@@ -1018,7 +1127,7 @@ export default function AppointmentBookingModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/75 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -1032,11 +1141,11 @@ export default function AppointmentBookingModal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+              <Dialog.Panel className="relative transform rounded-lg bg-card text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="min-h-[44px] min-w-[44px] p-3 rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2 flex items-center justify-center"
+                    className="min-h-[44px] min-w-[44px] p-3 rounded-md bg-card text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-olive-500 focus:ring-offset-2 flex items-center justify-center"
                     onClick={onClose}
                   >
                     <span className="sr-only">Close</span>
@@ -1047,10 +1156,15 @@ export default function AppointmentBookingModal({
                 <div className="px-4 pb-4 pt-5 sm:p-6">
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
-                    <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-gray-900 mb-6">
-                      {isBlockMode ? 'Block Time Slots' : isEditing ? 'Edit Appointment' : 'Book New Appointment'}
-                      {isEditing && editingAppointment?.recurrence_rule && (
-                        <div className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-3">
+                    <Dialog.Title as="h3" className="text-lg font-semibold leading-6 text-card-foreground mb-6">
+                      {isBlockMode ? 'Block Time Slots' : isDragRescheduling ? 'Reschedule Appointment' : isEditing ? 'Edit Appointment' : 'Book New Appointment'}
+                      {isDragRescheduling && pendingDropInfo && (
+                        <div className="mt-2 text-sm text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+                          📅 Rescheduling appointment to new time. Review the details below and confirm the changes. You can also make this a recurring appointment if needed.
+                        </div>
+                      )}
+                      {isEditing && editingAppointment?.recurrence_rule && !isDragRescheduling && (
+                        <div className="mt-2 text-sm text-amber-700 dark:text-amber-300 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3">
                           🔄 This is a recurring appointment. Changes will only apply to this specific occurrence.
                         </div>
                       )}
@@ -1069,11 +1183,11 @@ export default function AppointmentBookingModal({
                         <>
                           {/* Time and Duration for Block Mode */}
                           <div className="space-y-4">
-                            <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="bg-muted rounded-lg p-4">
                               <div className="flex items-center space-x-4 mb-3">
-                                <CalendarIcon className="h-5 w-5 text-gray-500" />
+                                <CalendarIcon className="h-5 w-5 text-muted-foreground" />
                                 <div>
-                                  <p className="text-sm font-medium text-gray-900">
+                                  <p className="text-sm font-medium text-card-foreground">
                                     {selectedSlot && new Date(selectedSlot.start).toLocaleDateString('en-US', {
                                       weekday: 'long',
                                       year: 'numeric',
@@ -1081,7 +1195,7 @@ export default function AppointmentBookingModal({
                                       day: 'numeric'
                                     })}
                                   </p>
-                                  <p className="text-sm text-gray-600">
+                                  <p className="text-sm text-muted-foreground">
                                     {selectedSlot && new Date(selectedSlot.start).toLocaleTimeString('en-US', {
                                       hour: 'numeric',
                                       minute: '2-digit'
@@ -1102,15 +1216,24 @@ export default function AppointmentBookingModal({
                               
                               {/* Duration Selector */}
                               <div>
-                                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+                                <label htmlFor="duration" className="block text-sm font-medium text-foreground mb-2">
                                   Duration
                                 </label>
                                 <select
                                   id="duration"
                                   value={formData.duration_minutes}
                                   onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
-                                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
+                                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
                                 >
+                                  {/* If the current duration is not in the standard options, add it as the first option */}
+                                  {formData.duration_minutes && 
+                                   ![15, 30, 45, 60, 90, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720].includes(formData.duration_minutes) && (
+                                    <option value={formData.duration_minutes}>
+                                      {formData.duration_minutes >= 60 
+                                        ? `${(formData.duration_minutes / 60).toFixed(1)} hours (custom)`
+                                        : `${formData.duration_minutes} minutes (custom)`}
+                                    </option>
+                                  )}
                                   <option value="15">15 minutes</option>
                                   <option value="30">30 minutes</option>
                                   <option value="45">45 minutes</option>
@@ -1133,7 +1256,7 @@ export default function AppointmentBookingModal({
                             
                             {/* Reason for Blocking */}
                             <div>
-                              <label htmlFor="blockReason" className="block text-sm font-medium text-gray-700 mb-2">
+                              <label htmlFor="blockReason" className="block text-sm font-medium text-foreground mb-2">
                                 Reason (optional)
                               </label>
                               <input
@@ -1142,12 +1265,12 @@ export default function AppointmentBookingModal({
                                 value={blockReason}
                                 onChange={(e) => setBlockReason(e.target.value)}
                                 placeholder="e.g., Lunch break, Meeting, Personal time"
-                                className="w-full rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground placeholder-muted-foreground focus:border-olive-500 focus:outline-none focus:ring-1 focus:ring-olive-500"
                               />
                             </div>
                             
-                            <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
-                              <p className="text-sm text-amber-800">
+                            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md p-3">
+                              <p className="text-sm text-amber-800 dark:text-amber-300">
                                 🚫 This time will be blocked and unavailable for customer bookings.
                               </p>
                             </div>
@@ -1158,26 +1281,66 @@ export default function AppointmentBookingModal({
                       {/* Regular Booking Form Fields */}
                       {/* Barber Selection */}
                       <div>
-                        <label htmlFor="barber_id" className="block text-sm font-medium text-gray-700">
-                          Barber <span className="text-red-500">*</span>
-                        </label>
+                        {/* Debug Info - Only shown in development */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded text-xs">
+                            <div className="text-blue-700 dark:text-blue-300 font-medium">
+                              🔍 Debug: {barbers.length} barber{barbers.length !== 1 ? 's' : ''} loaded
+                            </div>
+                            <div className="mt-1 text-blue-600 dark:text-blue-400">
+                              Current user: {_user?.email || 'Not logged in'} (ID: {_user?.id?.slice(0, 8) || 'N/A'}...)
+                            </div>
+                            {barbers.length > 0 && (
+                              <div className="mt-1 text-blue-600 dark:text-blue-400">
+                                Available: {barbers.map(b => `${b.title || b.id?.slice(0, 8)}${b.id === _user?.id ? ' (You)' : ''}`).join(', ')}
+                              </div>
+                            )}
+                            {barbers.length === 0 && (
+                              <div className="mt-1 text-amber-600 dark:text-amber-400">
+                                ⚠️ No barbers loaded - check /api/staff endpoint
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between mb-1">
+                          <label htmlFor="barber_id" className="block text-sm font-medium text-foreground">
+                            Barber <span className="text-red-500">*</span>
+                          </label>
+                          {autoPopulated.barber && formData.barber_id && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-950/30 text-green-800 dark:text-green-400">
+                              <CheckIcon className="w-3 h-3 mr-1" />
+                              Auto-selected
+                            </span>
+                          )}
+                        </div>
                         <select
                           id="barber_id"
                           name="barber_id"
                           value={formData.barber_id}
-                          onChange={handleInputChange}
+                          onChange={(e) => {
+                            handleInputChange(e)
+                            // Clear auto-populated flag when user manually changes selection
+                            if (autoPopulated.barber) {
+                              setAutoPopulated(prev => ({ ...prev, barber: false }))
+                            }
+                          }}
                           className={`mt-1 block w-full rounded-md shadow-sm ${
                             fieldErrors.barber_id 
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                              : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                          } ${loading ? 'bg-gray-50' : ''}`}
+                              : autoPopulated.barber && formData.barber_id
+                              ? 'border-green-300 focus:border-green-500 focus:ring-green-500'
+                              : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                          } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                           disabled={loading}
                           required
                         >
                           <option value="">Select a barber</option>
                           {barbers.map(barber => (
                             <option key={barber.id} value={barber.id}>
-                              {barber.name}
+                              {barber.title || barber.extendedProps?.full_name || barber.full_name || barber.name || 'Staff Member'}
+                              {/* Show indicator only if this barber IS the current logged-in user */}
+                              {barber.id === _user?.id && ' (You)'}
                             </option>
                           ))}
                         </select>
@@ -1188,7 +1351,26 @@ export default function AppointmentBookingModal({
 
                       {/* Service Selection */}
                       <div>
-                        <label htmlFor="service_id" className="block text-sm font-medium text-gray-700">
+                        {/* Debug Info - Only shown in development */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <div className="mb-2 p-2 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded text-xs">
+                            <div className="text-purple-700 dark:text-purple-300 font-medium">
+                              🔍 Debug: {services.length} service{services.length !== 1 ? 's' : ''} available
+                            </div>
+                            {services.length > 0 && (
+                              <div className="mt-1 text-purple-600 dark:text-purple-400">
+                                Services: {services.map(s => `${s.name} ($${s.price})`).join(', ')}
+                              </div>
+                            )}
+                            {services.length === 0 && (
+                              <div className="mt-1 text-amber-600 dark:text-amber-400">
+                                ⚠️ No services loaded - check /api/services endpoint
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <label htmlFor="service_id" className="block text-sm font-medium text-foreground">
                           Service <span className="text-red-500">*</span>
                         </label>
                         <select
@@ -1199,8 +1381,8 @@ export default function AppointmentBookingModal({
                           className={`mt-1 block w-full rounded-md shadow-sm ${
                             fieldErrors.service_id 
                               ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                              : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                          } ${loading ? 'bg-gray-50' : ''}`}
+                              : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                          } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                           disabled={loading}
                           required
                         >
@@ -1215,7 +1397,7 @@ export default function AppointmentBookingModal({
                           <p className="mt-1 text-sm text-red-600">{fieldErrors.service_id}</p>
                         )}
                         {selectedService && (
-                          <p className="mt-1 text-sm text-gray-500">
+                          <p className="mt-1 text-sm text-muted-foreground">
                             {selectedService.description}
                           </p>
                         )}
@@ -1223,17 +1405,17 @@ export default function AppointmentBookingModal({
 
                       {/* Time Slot Display - Shows when service and time are selected */}
                       {formData.scheduled_at && formData.service_id && getTimeRangeDisplay() && (
-                        <div className="rounded-lg bg-olive-50 border border-olive-200 p-4">
+                        <div className="rounded-lg bg-olive-50 dark:bg-olive-900/20 border border-olive-200 dark:border-olive-800 p-4">
                           <div className="flex items-center">
-                            <ClockIcon className="h-5 w-5 text-olive-600 mr-2" />
+                            <ClockIcon className="h-5 w-5 text-olive-600 dark:text-olive-400 mr-2" />
                             <div>
-                              <p className="text-sm font-medium text-olive-900">
+                              <p className="text-sm font-medium text-olive-900 dark:text-olive-100">
                                 Appointment Time Slot
                               </p>
-                              <p className="text-lg font-semibold text-olive-700">
+                              <p className="text-lg font-semibold text-olive-700 dark:text-olive-300">
                                 {getTimeRangeDisplay()}
                               </p>
-                              <p className="text-xs text-olive-600 mt-1">
+                              <p className="text-xs text-olive-600 dark:text-olive-400 mt-1">
                                 Duration: {formData.duration_minutes} minutes
                                 {selectedService && ` • ${selectedService.name}`}
                               </p>
@@ -1245,7 +1427,7 @@ export default function AppointmentBookingModal({
                       {/* Date and Time */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label htmlFor="scheduled_at" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="scheduled_at" className="block text-sm font-medium text-foreground">
                             Date & Time <span className="text-red-500">*</span>
                             {selectedSlot?.needsTimePicker && (
                               <span className="ml-2 text-xs text-olive-600 font-normal">
@@ -1262,8 +1444,8 @@ export default function AppointmentBookingModal({
                             className={`mt-1 block w-full rounded-md shadow-sm ${
                               fieldErrors.scheduled_at 
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                            } ${loading ? 'bg-gray-50' : ''}`}
+                                : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                            } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                             disabled={loading}
                             required
                           />
@@ -1273,7 +1455,7 @@ export default function AppointmentBookingModal({
                         </div>
                         
                         <div>
-                          <label htmlFor="duration_minutes" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="duration_minutes" className="block text-sm font-medium text-foreground">
                             Duration (minutes)
                           </label>
                           <input
@@ -1285,7 +1467,7 @@ export default function AppointmentBookingModal({
                             min="5"
                             max="480"
                             step="5"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                            className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                           />
                         </div>
                       </div>
@@ -1293,13 +1475,13 @@ export default function AppointmentBookingModal({
                       {/* Available Time Slots */}
                       {availability.length > 0 && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
+                          <label className="block text-sm font-medium text-foreground mb-3">
                             Available Time Slots
                           </label>
                           {checkingAvailability ? (
                             <div className="flex items-center justify-center py-4">
                               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-olive-600"></div>
-                              <span className="ml-2 text-sm text-gray-600">
+                              <span className="ml-2 text-sm text-muted-foreground">
                                 Checking availability...
                               </span>
                             </div>
@@ -1313,8 +1495,8 @@ export default function AppointmentBookingModal({
                                   disabled={!slot.available}
                                   className={`min-h-[44px] px-3 py-2 text-xs rounded-md border transition-colors ${
                                     slot.available
-                                      ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                                      : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                                      ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/50'
+                                      : 'border-border bg-muted text-muted-foreground cursor-not-allowed'
                                   }`}
                                 >
                                   {slot.start_time}
@@ -1328,19 +1510,19 @@ export default function AppointmentBookingModal({
                         </div>
                       )}
 
-                      {/* Enhanced Customer Management */}
+                      {/* Enhanced Client Management */}
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold text-gray-900">Customer Information</h4>
+                          <h4 className="text-sm font-semibold text-card-foreground">Client Information</h4>
                           {customerSearchLoading && (
                             <div className="flex items-center text-xs text-olive-600">
                               <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-olive-600 mr-1"></div>
-                              Finding customer...
+                              Finding client...
                             </div>
                           )}
                         </div>
-                        
-                        {/* Customer Mode Toggle */}
+
+                        {/* Client Mode Toggle */}
                         <div className="flex items-center space-x-4">
                           <label className="flex items-center">
                             <input
@@ -1349,9 +1531,9 @@ export default function AppointmentBookingModal({
                               value="new"
                               checked={customerMode === 'new'}
                               onChange={() => handleCustomerModeChange('new')}
-                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
+                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input"
                             />
-                            <span className="ml-2 text-sm text-gray-700">New Customer</span>
+                            <span className="ml-2 text-sm text-foreground">New Client</span>
                           </label>
                           <label className="flex items-center">
                             <input
@@ -1360,40 +1542,42 @@ export default function AppointmentBookingModal({
                               value="existing"
                               checked={customerMode === 'existing'}
                               onChange={() => handleCustomerModeChange('existing')}
-                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300"
+                              className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input"
                             />
-                            <span className="ml-2 text-sm text-gray-700">Existing Customer</span>
+                            <span className="ml-2 text-sm text-foreground">Existing Client</span>
                           </label>
                         </div>
 
-                        {/* Existing Customer Display */}
+                        {/* Existing Client Display */}
                         {customerMode === 'existing' && selectedCustomer && (
-                          <div className="p-4 bg-olive-50 border border-olive-200 rounded-lg">
+                          <div className="p-4 bg-olive-50 dark:bg-olive-900/20 border border-olive-200 dark:border-olive-800 rounded-lg">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
-                                  <UserIcon className="h-5 w-5 text-olive-600" />
-                                  <span className="font-medium text-gray-900">{selectedCustomer.name}</span>
+                                  <UserIcon className="h-5 w-5 text-olive-600 dark:text-olive-400" />
+                                  <span className="font-medium text-card-foreground dark:text-card-foreground">
+                                    {selectedCustomer.name || selectedCustomer.full_name || selectedCustomer.client_name || 'Customer'}
+                                  </span>
                                   {selectedCustomer.vip_status && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-900">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-400">
                                       VIP
                                     </span>
                                   )}
                                 </div>
-                                <div className="space-y-1 text-sm text-gray-600">
-                                  {selectedCustomer.phone && (
+                                <div className="space-y-1 text-sm text-muted-foreground">
+                                  {(selectedCustomer.phone || selectedCustomer.client_phone) && (
                                     <div className="flex items-center gap-1">
-                                      <span>📱 {selectedCustomer.phone}</span>
+                                      <span>📱 {selectedCustomer.phone || selectedCustomer.client_phone}</span>
                                     </div>
                                   )}
-                                  {selectedCustomer.email && (
+                                  {(selectedCustomer.email || selectedCustomer.client_email) && (
                                     <div className="flex items-center gap-1">
-                                      <span>✉️ {selectedCustomer.email}</span>
+                                      <span>✉️ {selectedCustomer.email || selectedCustomer.client_email}</span>
                                     </div>
                                   )}
-                                  <div className="flex items-center gap-4 text-xs text-gray-500">
-                                    <span>Last visit: {selectedCustomer.last_visit_display}</span>
-                                    <span>{selectedCustomer.total_visits} visit{selectedCustomer.total_visits !== 1 ? 's' : ''}</span>
+                                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                    <span>Last visit: {selectedCustomer.last_visit_display || selectedCustomer.last_visit || 'Never'}</span>
+                                    <span>{selectedCustomer.total_visits || selectedCustomer.visit_count || 0} visit{(selectedCustomer.total_visits || selectedCustomer.visit_count || 0) !== 1 ? 's' : ''}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1408,24 +1592,24 @@ export default function AppointmentBookingModal({
                           </div>
                         )}
 
-                        {/* Existing Customer Search Button */}
+                        {/* Existing Client Search Button */}
                         {customerMode === 'existing' && !selectedCustomer && (
                           <button
                             type="button"
                             onClick={() => setShowCustomerSearch(true)}
-                            className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-olive-500 hover:bg-olive-50 transition-colors"
+                            className="w-full p-4 border-2 border-dashed border-input rounded-lg text-center hover:border-olive-500 hover:bg-olive-50 dark:hover:bg-olive-900/20 transition-colors"
                           >
-                            <UserIcon className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                            <span className="text-sm text-gray-600">Click to search for existing customer</span>
+                            <UserIcon className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                            <span className="text-sm text-muted-foreground">Click to search for existing client</span>
                           </button>
                         )}
 
-                        {/* New Customer Fields */}
+                        {/* New Client Fields */}
                         {customerMode === 'new' && (
                           <>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
-                                <label htmlFor="client_name" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="client_name" className="block text-sm font-medium text-foreground">
                                   Name <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -1435,7 +1619,6 @@ export default function AppointmentBookingModal({
                                   value={formData.client_name}
                                   onChange={handleInputChange}
                                   onBlur={() => {
-                                    // Quick lookup when user enters phone/email
                                     if (formData.client_phone || formData.client_email) {
                                       quickCustomerLookup(formData.client_phone, formData.client_email)
                                     }
@@ -1443,8 +1626,8 @@ export default function AppointmentBookingModal({
                                   className={`mt-1 block w-full rounded-md shadow-sm ${
                                     fieldErrors.client_name 
                                       ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                      : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                                  } ${loading ? 'bg-gray-50' : ''}`}
+                                      : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                                  } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                                   disabled={loading}
                                   required
                                 />
@@ -1454,7 +1637,7 @@ export default function AppointmentBookingModal({
                               </div>
                               
                               <div>
-                                <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="client_phone" className="block text-sm font-medium text-foreground">
                                   Phone <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -1464,7 +1647,6 @@ export default function AppointmentBookingModal({
                                   value={formData.client_phone}
                                   onChange={handleInputChange}
                                   onBlur={() => {
-                                    // Quick lookup when user enters phone
                                     if (formData.client_phone) {
                                       quickCustomerLookup(formData.client_phone, formData.client_email)
                                     }
@@ -1472,8 +1654,8 @@ export default function AppointmentBookingModal({
                                   className={`mt-1 block w-full rounded-md shadow-sm ${
                                     fieldErrors.client_phone 
                                       ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                      : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                                  } ${loading ? 'bg-gray-50' : ''}`}
+                                      : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                                  } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                                   disabled={loading}
                                   required
                                 />
@@ -1484,7 +1666,7 @@ export default function AppointmentBookingModal({
                             </div>
                             
                             <div>
-                              <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">
+                              <label htmlFor="client_email" className="block text-sm font-medium text-foreground">
                                 Email
                               </label>
                               <input
@@ -1494,7 +1676,6 @@ export default function AppointmentBookingModal({
                                 value={formData.client_email}
                                 onChange={handleInputChange}
                                 onBlur={() => {
-                                  // Quick lookup when user enters email
                                   if (formData.client_email) {
                                     quickCustomerLookup(formData.client_phone, formData.client_email)
                                   }
@@ -1502,8 +1683,8 @@ export default function AppointmentBookingModal({
                                 className={`mt-1 block w-full rounded-md shadow-sm ${
                                   fieldErrors.client_email 
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-500 ring-red-500 ring-1' 
-                                    : 'border-gray-300 focus:border-olive-500 focus:ring-olive-500'
-                                } ${loading ? 'bg-gray-50' : ''}`}
+                                    : 'border-input focus:border-olive-500 focus:ring-olive-500'
+                                } ${loading ? 'bg-muted' : 'bg-background'} text-foreground`}
                                 disabled={loading}
                               />
                               {fieldErrors.client_email && (
@@ -1514,7 +1695,7 @@ export default function AppointmentBookingModal({
                         )}
                         
                         <div>
-                          <label htmlFor="client_notes" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="client_notes" className="block text-sm font-medium text-foreground">
                             Notes
                           </label>
                           <textarea
@@ -1523,15 +1704,15 @@ export default function AppointmentBookingModal({
                             value={formData.client_notes}
                             onChange={handleInputChange}
                             rows={3}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                            className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                             placeholder="Any special requests or preferences..."
                           />
                         </div>
 
-                        {/* Customer Notification Preferences */}
+                        {/* Client Notification Preferences */}
                         {(customerMode === 'new' || selectedCustomer) && (
-                          <div className="pt-4 border-t border-gray-200">
-                            <h5 className="text-sm font-medium text-gray-900 mb-3">Notify Customer</h5>
+                          <div className="pt-4 border-t border-border">
+                            <h5 className="text-sm font-medium text-card-foreground mb-3">Notify Client</h5>
                             <div className="space-y-2">
                               <label className="flex items-center">
                                 <input
@@ -1541,9 +1722,9 @@ export default function AppointmentBookingModal({
                                     ...prev,
                                     confirmations: e.target.checked
                                   }))}
-                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                                 />
-                                <span className="ml-2 text-sm text-gray-700">Send booking confirmation</span>
+                                <span className="ml-2 text-sm text-foreground">Send booking confirmation</span>
                               </label>
                               
                               <label className="flex items-center">
@@ -1554,9 +1735,9 @@ export default function AppointmentBookingModal({
                                     ...prev,
                                     reminders: e.target.checked
                                   }))}
-                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                                  className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                                 />
-                                <span className="ml-2 text-sm text-gray-700">Send reminder (24h before)</span>
+                                <span className="ml-2 text-sm text-foreground">Send reminder (24h before)</span>
                               </label>
                               
                               {formData.client_phone && (
@@ -1568,9 +1749,9 @@ export default function AppointmentBookingModal({
                                       ...prev,
                                       sms: e.target.checked
                                     }))}
-                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                                   />
-                                  <span className="ml-2 text-sm text-gray-600">📱 Text message (SMS)</span>
+                                  <span className="ml-2 text-sm text-muted-foreground">📱 Text message (SMS)</span>
                                 </label>
                               )}
                               
@@ -1583,9 +1764,9 @@ export default function AppointmentBookingModal({
                                       ...prev,
                                       email: e.target.checked
                                     }))}
-                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                                   />
-                                  <span className="ml-2 text-sm text-gray-600">✉️ Email notification</span>
+                                  <span className="ml-2 text-sm text-muted-foreground">✉️ Email notification</span>
                                 </label>
                               )}
                             </div>
@@ -1595,11 +1776,11 @@ export default function AppointmentBookingModal({
 
                       {/* Pricing */}
                       <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-gray-900">Pricing</h4>
+                        <h4 className="text-sm font-semibold text-card-foreground">Pricing</h4>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div>
-                            <label htmlFor="service_price" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="service_price" className="block text-sm font-medium text-foreground">
                               Service Price
                             </label>
                             <input
@@ -1610,12 +1791,12 @@ export default function AppointmentBookingModal({
                               onChange={handleInputChange}
                               min="0"
                               step="0.01"
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                              className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                             />
                           </div>
                           
                           <div>
-                            <label htmlFor="tip_amount" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="tip_amount" className="block text-sm font-medium text-foreground">
                               Tip Amount
                             </label>
                             <input
@@ -1626,15 +1807,15 @@ export default function AppointmentBookingModal({
                               onChange={handleInputChange}
                               min="0"
                               step="0.01"
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                              className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                             />
                           </div>
                           
                           <div>
-                            <label className="block text-sm font-medium text-gray-700">
+                            <label className="block text-sm font-medium text-foreground">
                               Total Amount
                             </label>
-                            <div className="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-900 font-medium">
+                            <div className="mt-1 block w-full px-3 py-2 bg-muted border border-input rounded-md text-card-foreground font-medium">
                               ${(formData.service_price + (formData.tip_amount || 0)).toFixed(2)}
                             </div>
                           </div>
@@ -1643,17 +1824,17 @@ export default function AppointmentBookingModal({
 
                       {/* Recurring Appointments */}
                       <div className="space-y-4">
-                        <h4 className="text-sm font-semibold text-gray-900">Recurring Schedule</h4>
+                        <h4 className="text-sm font-semibold text-card-foreground">Recurring Schedule</h4>
                         
                         {isEditing && editingAppointment?.recurrence_rule && (
-                          <div className="mb-4 text-sm text-olive-600 bg-olive-50 border border-olive-200 rounded-md p-3">
+                          <div className="mb-4 text-sm text-olive-600 dark:text-olive-400 bg-olive-50 dark:bg-olive-900/20 border border-olive-200 dark:border-olive-800 rounded-md p-3">
                             ℹ️ This appointment is already part of a recurring series. Converting will create a new series starting from this appointment.
                           </div>
                         )}
                         
                         {/* Conversion Confirmation */}
                         {showConversionConfirmation && formData.is_recurring && isEditing && (
-                          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg">
                             <div className="flex items-start">
                               <div className="flex-shrink-0">
                                 <svg className="h-5 w-5 text-green-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -1679,7 +1860,7 @@ export default function AppointmentBookingModal({
                         
                         {/* Conflict Detection Results */}
                         {conflicts && conflicts.has_conflicts && (
-                          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                             <div className="flex items-start">
                               <div className="flex-shrink-0">
                                 <svg className="h-5 w-5 text-amber-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -1687,14 +1868,14 @@ export default function AppointmentBookingModal({
                                 </svg>
                               </div>
                               <div className="ml-3 flex-1">
-                                <h3 className="text-sm font-medium text-amber-800">
+                                <h3 className="text-sm font-medium text-amber-800 dark:text-amber-300">
                                   {conflicts.conflicts_found} Scheduling Conflict{conflicts.conflicts_found !== 1 ? 's' : ''} Found
                                 </h3>
-                                <div className="mt-2 text-sm text-amber-700">
+                                <div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
                                   <p className="mb-2">The following dates have conflicts:</p>
                                   <div className="max-h-32 overflow-y-auto space-y-1">
                                     {conflicts.conflicts.slice(0, 5).map((conflict, index) => (
-                                      <div key={index} className="text-xs bg-amber-100 rounded px-2 py-1">
+                                      <div key={index} className="text-xs bg-amber-100 dark:bg-amber-950/30 rounded px-2 py-1">
                                         {new Date(conflict.date).toLocaleDateString('en-US', { 
                                           month: 'short', 
                                           day: 'numeric',
@@ -1702,12 +1883,12 @@ export default function AppointmentBookingModal({
                                           minute: '2-digit'
                                         })}
                                         {conflict.conflicting_appointments[0] && (
-                                          <span className="text-amber-700"> - {conflict.conflicting_appointments[0].customer_name}</span>
+                                          <span className="text-amber-700 dark:text-amber-300"> - {conflict.conflicting_appointments[0].client_name || conflict.conflicting_appointments[0].customer_name || conflict.conflicting_appointments[0].client?.full_name || 'Walk-in'}</span>
                                         )}
                                       </div>
                                     ))}
                                     {conflicts.conflicts.length > 5 && (
-                                      <div className="text-xs text-amber-700 italic">
+                                      <div className="text-xs text-amber-700 dark:text-amber-300 italic">
                                         ... and {conflicts.conflicts.length - 5} more
                                       </div>
                                     )}
@@ -1715,7 +1896,7 @@ export default function AppointmentBookingModal({
                                 </div>
                                 
                                 <div className="mt-3">
-                                  <label className="block text-sm font-medium text-amber-800 mb-2">
+                                  <label className="block text-sm font-medium text-amber-800 dark:text-amber-300 mb-2">
                                     How would you like to handle conflicts?
                                   </label>
                                   <select
@@ -1740,19 +1921,19 @@ export default function AppointmentBookingModal({
                             type="checkbox"
                             checked={formData.is_recurring}
                             onChange={handleInputChange}
-                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                           />
-                          <label htmlFor="is_recurring" className="ml-2 block text-sm text-gray-900">
+                          <label htmlFor="is_recurring" className="ml-2 block text-sm text-card-foreground">
                             {isEditing ? 'Convert to recurring appointment' : 'Make this a recurring appointment'}
                           </label>
                         </div>
                         
                         {formData.is_recurring && (
-                          <div className="space-y-4 p-4 bg-olive-50 rounded-lg border border-olive-200">
+                          <div className="space-y-4 p-4 bg-olive-50 dark:bg-olive-900/20 rounded-lg border border-olive-200 dark:border-olive-800">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {/* Recurrence Pattern */}
                               <div>
-                                <label htmlFor="recurrence_pattern" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="recurrence_pattern" className="block text-sm font-medium text-foreground">
                                   Repeat
                                 </label>
                                 <select
@@ -1760,7 +1941,7 @@ export default function AppointmentBookingModal({
                                   name="recurrence_pattern"
                                   value={formData.recurrence_pattern}
                                   onChange={handleInputChange}
-                                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                                  className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                                 >
                                   <option value="daily">Daily</option>
                                   <option value="weekly">Weekly</option>
@@ -1770,7 +1951,7 @@ export default function AppointmentBookingModal({
                               
                               {/* Recurrence Interval */}
                               <div>
-                                <label htmlFor="recurrence_interval" className="block text-sm font-medium text-gray-700">
+                                <label htmlFor="recurrence_interval" className="block text-sm font-medium text-foreground">
                                   Every
                                 </label>
                                 <div className="mt-1 flex items-center space-x-2">
@@ -1782,9 +1963,9 @@ export default function AppointmentBookingModal({
                                     onChange={handleInputChange}
                                     min="1"
                                     max="12"
-                                    className="block w-20 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                                    className="block w-20 rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                                   />
-                                  <span className="text-sm text-gray-600">
+                                  <span className="text-sm text-muted-foreground">
                                     {formData.recurrence_pattern === 'daily' ? 'day(s)' :
                                      formData.recurrence_pattern === 'weekly' ? 'week(s)' : 'month(s)'}
                                   </span>
@@ -1795,7 +1976,7 @@ export default function AppointmentBookingModal({
                             {/* Days of week for weekly pattern */}
                             {formData.recurrence_pattern === 'weekly' && (
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-foreground mb-2">
                                   Repeat on
                                 </label>
                                 <div className="flex space-x-2">
@@ -1812,7 +1993,7 @@ export default function AppointmentBookingModal({
                                       className={`w-10 h-10 rounded-full text-xs font-medium transition-colors ${
                                         formData.recurrence_days.includes(index)
                                           ? 'bg-olive-600 text-white'
-                                          : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                       }`}
                                     >
                                       {day.charAt(0)}
@@ -1824,7 +2005,7 @@ export default function AppointmentBookingModal({
                             
                             {/* End condition */}
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                              <label className="block text-sm font-medium text-foreground mb-2">
                                 End
                               </label>
                               <div className="space-y-2">
@@ -1838,7 +2019,7 @@ export default function AppointmentBookingModal({
                                     onChange={handleInputChange}
                                     className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                                   />
-                                  <label htmlFor="recurrence_end_count" className="ml-2 text-sm text-gray-900">
+                                  <label htmlFor="recurrence_end_count" className="ml-2 text-sm text-card-foreground">
                                     After
                                   </label>
                                   <input
@@ -1849,9 +2030,9 @@ export default function AppointmentBookingModal({
                                     min="1"
                                     max="52"
                                     disabled={formData.recurrence_end_type !== 'count'}
-                                    className="ml-2 w-16 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-gray-100"
+                                    className="ml-2 w-16 rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-muted/50"
                                   />
-                                  <span className="ml-1 text-sm text-gray-600">appointments</span>
+                                  <span className="ml-1 text-sm text-muted-foreground">appointments</span>
                                 </div>
                                 
                                 <div className="flex items-center">
@@ -1864,7 +2045,7 @@ export default function AppointmentBookingModal({
                                     onChange={handleInputChange}
                                     className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                                   />
-                                  <label htmlFor="recurrence_end_date" className="ml-2 text-sm text-gray-900">
+                                  <label htmlFor="recurrence_end_date" className="ml-2 text-sm text-card-foreground">
                                     On
                                   </label>
                                   <input
@@ -1873,7 +2054,7 @@ export default function AppointmentBookingModal({
                                     value={formData.recurrence_end_date}
                                     onChange={handleInputChange}
                                     disabled={formData.recurrence_end_type !== 'date'}
-                                    className="ml-2 rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-gray-100"
+                                    className="ml-2 rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500 disabled:bg-muted/50"
                                   />
                                 </div>
                                 
@@ -1887,7 +2068,7 @@ export default function AppointmentBookingModal({
                                     onChange={handleInputChange}
                                     className="h-4 w-4 text-olive-600 focus:ring-olive-500"
                                   />
-                                  <label htmlFor="recurrence_end_never" className="ml-2 text-sm text-gray-900">
+                                  <label htmlFor="recurrence_end_never" className="ml-2 text-sm text-card-foreground">
                                     Never
                                   </label>
                                 </div>
@@ -1906,15 +2087,15 @@ export default function AppointmentBookingModal({
                             type="checkbox"
                             checked={formData.is_walk_in}
                             onChange={handleInputChange}
-                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-olive-600 focus:ring-olive-500 border-input rounded"
                           />
-                          <label htmlFor="is_walk_in" className="ml-2 block text-sm text-gray-900">
+                          <label htmlFor="is_walk_in" className="ml-2 block text-sm text-card-foreground">
                             This is a walk-in appointment
                           </label>
                         </div>
                         
                         <div>
-                          <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
+                          <label htmlFor="priority" className="block text-sm font-medium text-foreground">
                             Priority
                           </label>
                           <select
@@ -1922,7 +2103,7 @@ export default function AppointmentBookingModal({
                             name="priority"
                             value={formData.priority}
                             onChange={handleInputChange}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-olive-500 focus:ring-olive-500"
+                            className="mt-1 block w-full rounded-md border-input shadow-sm focus:border-olive-500 focus:ring-olive-500"
                           >
                             <option value={0}>Normal</option>
                             <option value={1}>High</option>
@@ -1941,27 +2122,25 @@ export default function AppointmentBookingModal({
                           <div className="flex flex-col sm:flex-row gap-2">
                             {/* Show different first button based on appointment status */}
                             {editingAppointment?.extendedProps?.status === 'cancelled' ? (
-                              // Restore button for cancelled appointments
                               <button
                                 type="button"
                                 onClick={() => {
                                   setActionType('uncancel')
                                   setShowDeleteConfirmation(true)
                                 }}
-                                className="inline-flex items-center justify-center rounded-lg border-2 border-green-600 bg-white px-4 py-2 text-sm font-medium text-green-600 shadow-sm hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                className="inline-flex items-center justify-center rounded-lg border-2 border-green-600 bg-card px-4 py-2 text-sm font-medium text-green-600 shadow-sm hover:bg-green-50 dark:hover:bg-green-950/30 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                               >
                                 <CheckIcon className="h-5 w-5 mr-2" />
                                 Restore
                               </button>
                             ) : (
-                              // Cancel button for active appointments
                               <button
                                 type="button"
                                 onClick={() => {
                                   setActionType('cancel')
                                   setShowDeleteConfirmation(true)
                                 }}
-                                className="inline-flex items-center justify-center rounded-lg border-2 border-orange-600 bg-white px-4 py-2 text-sm font-medium text-orange-600 shadow-sm hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                                className="inline-flex items-center justify-center rounded-lg border-2 border-orange-600 bg-card px-4 py-2 text-sm font-medium text-orange-600 shadow-sm hover:bg-orange-50 dark:hover:bg-orange-950/30 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
                               >
                                 <XMarkIcon className="h-5 w-5 mr-2" />
                                 Cancel
@@ -1975,7 +2154,7 @@ export default function AppointmentBookingModal({
                                 setActionType('delete')
                                 setShowDeleteConfirmation(true)
                               }}
-                              className="inline-flex items-center justify-center rounded-lg border-2 border-red-600 bg-white px-4 py-2 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                              className="inline-flex items-center justify-center rounded-lg border-2 border-red-600 bg-card px-4 py-2 text-sm font-medium text-red-600 shadow-sm hover:bg-red-50 dark:hover:bg-red-950/30 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                             >
                               <TrashIcon className="h-5 w-5 mr-2" />
                               Delete
@@ -1985,12 +2164,23 @@ export default function AppointmentBookingModal({
                         
                         {/* Right side buttons */}
                         <div className="flex flex-col sm:flex-row gap-2">
+                          {/* Complete & Checkout button - only show for confirmed appointments */}
+                          {isEditing && editingAppointment?.extendedProps?.status === 'confirmed' && (
+                            <button
+                              type="button"
+                              onClick={handleCompleteAndCheckout}
+                              className="inline-flex items-center justify-center rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 shadow-sm hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                            >
+                              💰 Complete & Checkout
+                            </button>
+                          )}
+                          
                           {/* Show Block Time button when not in block mode and not editing */}
                           {!isBlockMode && !isEditing && (
                             <button
                               type="button"
                               onClick={() => setIsBlockMode(true)}
-                              className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                              className="inline-flex items-center justify-center rounded-lg border border-input bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                             >
                               🚫 Block Time
                             </button>
@@ -2005,7 +2195,7 @@ export default function AppointmentBookingModal({
                               }
                               onClose();
                             }}
-                            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                            className="inline-flex items-center justify-center rounded-lg border border-input bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                           >
                             Cancel
                           </button>
@@ -2069,7 +2259,7 @@ export default function AppointmentBookingModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/75 transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -2083,19 +2273,19 @@ export default function AppointmentBookingModal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-card px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/30 sm:mx-0 sm:h-10 sm:w-10">
                     <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                    <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-gray-900">
+                    <Dialog.Title as="h3" className="text-base font-semibold leading-6 text-card-foreground">
                       {actionType === 'cancel' ? 'Cancel Appointment' : actionType === 'uncancel' ? 'Uncancel Appointment' : 'Delete Appointment'}
                     </Dialog.Title>
                     <div className="mt-2">
                       {editingAppointment?.isRecurring || editingAppointment?.extendedProps?.isRecurring ? (
                         <div className="space-y-3">
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             This is a recurring appointment. How would you like to delete it?
                           </p>
                           <div className="space-y-2">
@@ -2106,9 +2296,9 @@ export default function AppointmentBookingModal({
                                 value="single"
                                 checked={deleteOption === 'single'}
                                 onChange={(e) => setDeleteOption(e.target.value)}
-                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-input"
                               />
-                              <label htmlFor="delete-single" className="ml-2 block text-sm text-gray-700">
+                              <label htmlFor="delete-single" className="ml-2 block text-sm text-foreground">
                                 Delete only this occurrence
                               </label>
                             </div>
@@ -2119,16 +2309,16 @@ export default function AppointmentBookingModal({
                                 value="all"
                                 checked={deleteOption === 'all'}
                                 onChange={(e) => setDeleteOption(e.target.value)}
-                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-input"
                               />
-                              <label htmlFor="delete-all" className="ml-2 block text-sm text-gray-700">
+                              <label htmlFor="delete-all" className="ml-2 block text-sm text-foreground">
                                 Delete all occurrences (entire series)
                               </label>
                             </div>
                           </div>
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                           {actionType === 'cancel' ? (
                             <div className="space-y-2">
                               <p>
@@ -2212,7 +2402,7 @@ export default function AppointmentBookingModal({
                   <button
                     type="button"
                     onClick={() => setShowDeleteConfirmation(false)}
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    className="mt-3 inline-flex w-full justify-center rounded-md bg-card px-3 py-2 text-sm font-semibold text-card-foreground shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-muted sm:mt-0 sm:w-auto"
                   >
                     Cancel
                   </button>
@@ -2230,7 +2420,7 @@ export default function AppointmentBookingModal({
     </Transition.Root>
     )}
 
-    {/* Customer Search Modal */}
+    {/* Client Search Modal */}
     <CustomerSearchModal
       isOpen={showCustomerSearch}
       onClose={() => setShowCustomerSearch(false)}

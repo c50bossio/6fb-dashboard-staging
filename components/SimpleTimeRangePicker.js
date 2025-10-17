@@ -10,7 +10,6 @@ const SimpleTimeRangePicker = ({
   showLabels = true,
   className = ""
 }) => {
-  // Calculate duration
   const calculateDuration = () => {
     if (!openTime || !closeTime) return null
     
@@ -35,7 +34,6 @@ const SimpleTimeRangePicker = ({
 
   const duration = calculateDuration()
 
-  // Validation
   const hasError = openTime && closeTime && !duration
 
   return (
@@ -44,7 +42,7 @@ const SimpleTimeRangePicker = ({
         {/* Open Time */}
         <div className="flex-1">
           {showLabels && (
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Open
             </label>
           )}
@@ -57,9 +55,9 @@ const SimpleTimeRangePicker = ({
 
         {/* Separator */}
         <div className="flex flex-col items-center px-2">
-          <div className="text-xs text-gray-500 mt-6">to</div>
+          <div className="text-xs text-muted-foreground mt-6">to</div>
           {duration && (
-            <span className="text-xs text-gray-500 mt-1">
+            <span className="text-xs text-muted-foreground mt-1">
               {duration}
             </span>
           )}
@@ -68,7 +66,7 @@ const SimpleTimeRangePicker = ({
         {/* Close Time */}
         <div className="flex-1">
           {showLabels && (
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-muted-foreground mb-1">
               Close
             </label>
           )}
@@ -89,7 +87,7 @@ const SimpleTimeRangePicker = ({
 
       {/* Success summary */}
       {duration && (
-        <div className="mt-2 text-sm text-gray-600">
+        <div className="mt-2 text-sm text-muted-foreground">
           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-olive-50 text-olive-700">
             {duration} • {openTime} - {closeTime}
           </span>

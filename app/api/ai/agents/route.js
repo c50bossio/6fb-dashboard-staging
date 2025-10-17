@@ -2,9 +2,74 @@ import { NextResponse } from 'next/server'
 
 import { aiOrchestrator } from '@/lib/ai-orchestrator-enhanced'
 import { createClient } from '@/lib/supabase/server'
+import { logAgentQuery } from '@/lib/agent-performance-logger'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
+
+/**
+ * Detect if a query requires real database access
+ */
+function checkIfDatabaseQuery(message) {
+  const messageLower = message.toLowerCase()
+
+  const databaseKeywords = [
+    // Revenue & Financial
+    'revenue', 'earned', 'made', 'income', 'sales', 'profit', 'commission',
+
+    // Appointments & Bookings
+    'appointments', 'bookings', 'scheduled', 'booked',
+
+    // Customers
+    'customers', 'clients', 'client list',
+
+    // Services
+    'services', 'most popular', 'top services',
+
+    // Questions requiring data
+    'how much', 'how many', 'what is my', 'show me', 'give me',
+
+    // Time periods
+    'this month', 'last week', 'today', 'yesterday', 'this year'
+  ]
+
+  return databaseKeywords.some(keyword => messageLower.includes(keyword))
+}
+
+/**
+ * Call Python AgentKit backend for database queries
+ */
+async function callAgentKitBackend(message, context) {
+  const fastApiUrl = process.env.FASTAPI_BASE_URL || 'http://localhost:8001'
+
+  try {
+    const response = await fetch(`${fastApiUrl}/api/v1/agents/query`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${context.user_id}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        context: {
+          barbershop_id: context.barbershop_id,
+          user_id: context.user_id
+        }
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`AgentKit backend returned ${response.status}: ${errorText}`)
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('❌ AgentKit backend error:', error)
+    throw new Error(`Failed to query AgentKit backend: ${error.message}`)
+  }
+}
 
 export async function POST(request) {
   try {
@@ -34,30 +99,148 @@ export async function POST(request) {
     }
 
     try {
-      // Use Enhanced AI Orchestrator with full app integration
-      const response = await aiOrchestrator.processMessage(message, {
-        businessContext: businessContext || {},
-        sessionId: sessionId || `session_${Date.now()}`,
-        userId: effectiveUser.id,
-        request_collaboration
-      })
-      
-      return NextResponse.json({
-        success: true,
-        message: response.response,
-        agent_id: response.agent,
-        data_sources: response.data_sources,
-        actions_taken: response.actions_taken,
-        business_context: response.business_context,
-        // Collaboration data for the hook
-        primary_agent: response.agent,
-        collaborative_responses: response.actions_taken || [],
-        coordination_summary: `${response.agent} analyzed your business data and provided personalized recommendations.`,
-        collaboration_score: 0.9,
-        total_confidence: 0.9,
-        combined_recommendations: response.actions_taken || [],
-        timestamp: response.timestamp
-      })
+      // Detect if query requires database access
+      const requiresDatabaseQuery = checkIfDatabaseQuery(message)
+
+      // Route database queries to Python AgentKit backend for real data access
+      if (requiresDatabaseQuery) {
+        console.log('🔗 Routing to AgentKit backend for database query')
+        const startTime = Date.now()
+
+        try {
+          const agentKitResponse = await callAgentKitBackend(message, {
+            user_id: effectiveUser.id,
+            barbershop_id: businessContext?.barbershop_id || 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+          })
+
+          const responseTime = Date.now() - startTime
+
+          // Log AgentKit query performance
+          await logAgentQuery({
+            query: message,
+            agent_used: agentKitResponse.agent_used || 'agentkit_backend',
+            handoffs: agentKitResponse.handoffs || [],
+            tokens_used: agentKitResponse.tokens_used || 0,
+            cost_usd: agentKitResponse.cost_usd || 0,
+            response_time_ms: agentKitResponse.response_time_ms || responseTime,
+            status: 'success',
+            barbershop_id: businessContext?.barbershop_id,
+            user_id: effectiveUser.id,
+            session_id: sessionId,
+            query_type: 'database',
+            collaboration_type: agentKitResponse.handoffs?.length > 0 ? 'handoff' : 'single',
+            ai_provider: 'agentkit_backend',
+            model_used: 'gpt-5',
+            response_length: agentKitResponse.response?.length || 0,
+            confidence_score: agentKitResponse.confidence || null
+          }).catch(err => console.error('[AgentLogger] Failed to log query:', err))
+
+          return NextResponse.json({
+            success: true,
+            message: agentKitResponse.response,
+            agent_id: agentKitResponse.agent_used,
+            provider: 'agentkit_backend',
+            data_sources: ['database', 'supabase'],
+            tokens_used: agentKitResponse.tokens_used,
+            cost_usd: agentKitResponse.cost_usd,
+            response_time_ms: agentKitResponse.response_time_ms || responseTime,
+            timestamp: agentKitResponse.metadata?.timestamp
+          })
+        } catch (error) {
+          const responseTime = Date.now() - startTime
+
+          // Log failed query
+          await logAgentQuery({
+            query: message,
+            agent_used: 'agentkit_backend',
+            handoffs: [],
+            tokens_used: 0,
+            cost_usd: 0,
+            response_time_ms: responseTime,
+            status: 'error',
+            error_message: error.message,
+            barbershop_id: businessContext?.barbershop_id,
+            user_id: effectiveUser.id,
+            session_id: sessionId,
+            query_type: 'database',
+            ai_provider: 'agentkit_backend'
+          }).catch(err => console.error('[AgentLogger] Failed to log error:', err))
+
+          throw error
+        }
+      }
+
+      // Use Enhanced AI Orchestrator for general queries
+      const startTime = Date.now()
+
+      try {
+        const response = await aiOrchestrator.processMessage(message, {
+          businessContext: businessContext || {},
+          sessionId: sessionId || `session_${Date.now()}`,
+          userId: effectiveUser.id,
+          request_collaboration
+        })
+
+        const responseTime = Date.now() - startTime
+
+        // Log orchestrator query performance
+        await logAgentQuery({
+          query: message,
+          agent_used: response.agent || 'ai_orchestrator',
+          handoffs: [],
+          tokens_used: 0, // Orchestrator doesn't track tokens currently
+          cost_usd: 0,
+          response_time_ms: responseTime,
+          status: 'success',
+          barbershop_id: businessContext?.barbershop_id,
+          user_id: effectiveUser.id,
+          session_id: sessionId,
+          query_type: 'general',
+          collaboration_type: request_collaboration ? 'multi_agent' : 'single',
+          ai_provider: 'ai_orchestrator',
+          model_used: 'gpt-5',
+          response_length: response.response?.length || 0,
+          confidence_score: response.confidence || 0.9
+        }).catch(err => console.error('[AgentLogger] Failed to log query:', err))
+
+        return NextResponse.json({
+          success: true,
+          message: response.response,
+          agent_id: response.agent,
+          data_sources: response.data_sources,
+          actions_taken: response.actions_taken,
+          business_context: response.business_context,
+          // Collaboration data for the hook
+          primary_agent: response.agent,
+          collaborative_responses: response.actions_taken || [],
+          coordination_summary: `${response.agent} analyzed your business data and provided personalized recommendations.`,
+          collaboration_score: 0.9,
+          total_confidence: 0.9,
+          combined_recommendations: response.actions_taken || [],
+          timestamp: response.timestamp
+        })
+      } catch (orchError) {
+        const responseTime = Date.now() - startTime
+
+        // Log failed orchestrator query
+        await logAgentQuery({
+          query: message,
+          agent_used: 'ai_orchestrator',
+          handoffs: [],
+          tokens_used: 0,
+          cost_usd: 0,
+          response_time_ms: responseTime,
+          status: 'error',
+          error_message: orchError.message,
+          barbershop_id: businessContext?.barbershop_id,
+          user_id: effectiveUser.id,
+          session_id: sessionId,
+          query_type: 'general',
+          ai_provider: 'ai_orchestrator'
+        }).catch(err => console.error('[AgentLogger] Failed to log error:', err))
+
+        throw orchError
+      }
 
     } catch (aiError) {
       console.error('AI Agent error:', aiError)

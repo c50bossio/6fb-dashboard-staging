@@ -2,7 +2,7 @@
 
 import { Dialog, Transition } from '@headlessui/react'
 import { CheckCircleIcon, CalendarDaysIcon, ClockIcon, UserIcon, CurrencyDollarIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid'
+
 import { useState, useEffect, Fragment } from 'react'
 
 export default function BookingConfirmationModal({
@@ -10,12 +10,12 @@ export default function BookingConfirmationModal({
   onClose,
   appointmentData,
   barberName,
-  serviceName
+  serviceName,
+  integrationResults = null
 }) {
   const [showCheckmark, setShowCheckmark] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  // Animate checkmark when modal opens
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => setShowCheckmark(true), 300)
@@ -28,7 +28,6 @@ export default function BookingConfirmationModal({
 
   if (!appointmentData) return null
 
-  // Format appointment date/time
   const formatDateTime = (dateString) => {
     const date = new Date(dateString)
     const options = {
@@ -62,17 +61,16 @@ export default function BookingConfirmationModal({
     })
   }
 
-  // Copy appointment details to clipboard
   const handleCopyDetails = async () => {
     const details = `
 Appointment Confirmation
 
-📅 ${formatDate(appointmentData.start_time)}
-🕐 ${formatTime(appointmentData.start_time)}
+📅 ${formatDate(appointmentData.scheduled_at || appointmentData.start_time)}
+🕐 ${formatTime(appointmentData.scheduled_at || appointmentData.start_time)}
 💺 Barber: ${barberName}
 ✂️ Service: ${serviceName}
-👤 Customer: ${appointmentData.customer_name || appointmentData.client_name}
-📞 Phone: ${appointmentData.customer_phone || appointmentData.client_phone}
+👤 Customer: ${appointmentData.client_name || appointmentData.customer_name}
+📞 Phone: ${appointmentData.client_phone || appointmentData.customer_phone}
 ${appointmentData.notes ? `📝 Notes: ${appointmentData.notes}` : ''}
 ${appointmentData.price ? `💰 Price: $${appointmentData.price}` : ''}
 ${appointmentData.is_recurring ? '🔄 Recurring: Yes' : ''}
@@ -160,10 +158,10 @@ Booking ID: ${appointmentData.id}
                       <CalendarDaysIcon className="mr-3 h-5 w-5 text-gray-400" />
                       <div>
                         <div className="font-medium text-gray-900">
-                          {formatDate(appointmentData.start_time)}
+                          {formatDate(appointmentData.scheduled_at || appointmentData.start_time)}
                         </div>
                         <div className="text-gray-600">
-                          {formatTime(appointmentData.start_time)} - {formatTime(appointmentData.end_time)}
+                          {formatTime(appointmentData.scheduled_at || appointmentData.start_time)} - {formatTime(appointmentData.end_time || new Date(new Date(appointmentData.scheduled_at).getTime() + (appointmentData.duration_minutes || 60) * 60000).toISOString())}
                         </div>
                       </div>
                     </div>
@@ -195,10 +193,10 @@ Booking ID: ${appointmentData.id}
                       <div>
                         <div className="font-medium text-gray-900">Customer</div>
                         <div className="text-gray-600">
-                          {appointmentData.customer_name || appointmentData.client_name}
-                          {(appointmentData.customer_phone || appointmentData.client_phone) && (
+                          {appointmentData.client_name || appointmentData.customer_name}
+                          {(appointmentData.client_phone || appointmentData.customer_phone) && (
                             <div className="text-xs text-gray-500">
-                              {appointmentData.customer_phone || appointmentData.client_phone}
+                              {appointmentData.client_phone || appointmentData.customer_phone}
                             </div>
                           )}
                         </div>
@@ -238,6 +236,56 @@ Booking ID: ${appointmentData.id}
                     )}
                   </div>
                 </div>
+
+                {/* Integration Status */}
+                {integrationResults && (
+                  <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <h4 className="font-medium text-blue-900 mb-3 text-sm">Integration Status</h4>
+                    <div className="space-y-2 text-xs">
+                      {/* Email/SMS Notifications */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-blue-700">Notifications:</span>
+                        <div className="flex items-center">
+                          {integrationResults.notifications?.success ? (
+                            <>
+                              <CheckCircleIcon className="h-3 w-3 text-green-600 mr-1" />
+                              <span className="text-green-700 text-xs">
+                                Sent ({integrationResults.notifications.results?.filter(r => r.success).map(r => r.channel).join(', ') || 'email/SMS'})
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <XMarkIcon className="h-3 w-3 text-red-500 mr-1" />
+                              <span className="text-red-700 text-xs">
+                                {integrationResults.notifications?.error || 'Failed'}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Calendar Sync */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-blue-700">Calendar Sync:</span>
+                        <div className="flex items-center">
+                          {integrationResults.calendar_sync?.success ? (
+                            <>
+                              <CheckCircleIcon className="h-3 w-3 text-green-600 mr-1" />
+                              <span className="text-green-700 text-xs">Synced to Google Calendar</span>
+                            </>
+                          ) : (
+                            <>
+                              <XMarkIcon className="h-3 w-3 text-gray-400 mr-1" />
+                              <span className="text-gray-500 text-xs">
+                                {integrationResults.calendar_sync?.message || 'Not configured'}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Booking ID */}
                 <div className="mt-4 text-center">

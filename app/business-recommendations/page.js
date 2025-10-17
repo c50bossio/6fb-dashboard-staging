@@ -1,15 +1,14 @@
 'use client'
 
-import { 
+import {
   LightBulbIcon,
   ArrowPathIcon,
   ClockIcon,
   CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   RocketLaunchIcon,
-  ChartBarIcon,
   UserGroupIcon,
   CogIcon,
   MegaphoneIcon,
@@ -35,7 +34,7 @@ function RecommendationCard({ recommendation, onImplement }) {
     customer_acquisition: UserGroupIcon,
     operational_efficiency: CogIcon,
     marketing_strategy: MegaphoneIcon,
-    cost_management: ArrowTrendingUpIcon,
+    cost_management: ChartBarIcon,
     customer_retention: StarIcon
   }
 
@@ -139,7 +138,7 @@ function RecommendationCard({ recommendation, onImplement }) {
           <span className="text-gray-600">Timeline: {recommendation.implementation_time}</span>
         </div>
         <div className="flex items-center">
-          <ArrowTrendingUpIcon className="h-4 w-4 text-gray-500 mr-2" />
+          <ChartBarIcon className="h-4 w-4 text-gray-500 mr-2" />
           <span className="text-gray-600">Confidence: {Math.round((recommendation.confidence_score || 0) * 100)}%</span>
         </div>
       </div>
@@ -209,13 +208,9 @@ function BusinessRecommendationsContent() {
 
   const handleImplementRecommendation = async (recommendation) => {
     try {
-      // Track implementation (in real app, this would update backend)
-      console.log('Implementing recommendation:', recommendation.id)
-      
-      // Show success message (in real app, you'd have toast notifications)
+
       alert(`Marked "${recommendation.title}" as implemented!`)
       
-      // In real implementation, you might:
       // 1. Track this in analytics
       // 2. Update recommendation status
       // 3. Schedule follow-up check
@@ -309,7 +304,6 @@ function BusinessRecommendationsContent() {
                "Comprehensive AI analysis completed with personalized recommendations."}
             </p>
 
-            
             {recommendations.recommendations_suite?.total_potential_impact && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white rounded-lg p-4 text-center">

@@ -1,155 +1,190 @@
-# 🚨 NO MOCK DATA POLICY - STRICTLY ENFORCED
+# 🚫 NO MOCK DATA POLICY - ENFORCED BY GIT HOOKS
 
-## Absolute Rule
-**This application NEVER uses mock data. All data must come from real database operations.**
+This repository enforces a **ZERO TOLERANCE** policy for mock, fake, or hardcoded data outside of testing contexts.
 
-## Why This Policy Exists
+## 🎯 Policy Overview
 
-### Performance Impact
-- **Mock data generation causes 10+ second loading delays**
-- **Real database queries are sub-second and much faster**
-- **Complex mock object generation blocks the UI thread**
-- **Multiple mock generators compound loading time**
+**MANDATORY**: This application MUST use real database operations for ALL features. We are building for a REAL barbershop going live soon.
 
-### Data Integrity
-- **Mock data doesn't reflect real database constraints**
-- **Business logic validation fails with fake data**
-- **Real queries ensure proper data relationships**
-- **Database indexes and optimization work with real data**
+### ✅ Required Practices
+- **USE SUPABASE ONLY**: PostgreSQL via Supabase for all data storage
+- **REAL DATABASE QUERIES**: Every API call must query actual database tables
+- **CREATE MISSING TABLES**: If table doesn't exist, create proper SQL schema
+- **SEED REALISTIC DATA**: Use database INSERT statements, never hardcoded objects
+- **EMPTY STATES**: Show loading/empty UI states when no data exists
 
-### Development Quality
-- **Mock data hides implementation gaps**
-- **Forces proper database schema design**
-- **Ensures complete feature implementation**
-- **Prevents shortcuts that cause production issues**
+### ❌ Prohibited Practices
+- **NO MOCK DATA GENERATORS**: Never create `generateMock*()` functions
+- **NO FALLBACK MOCK DATA**: APIs must query database, not return hardcoded data
+- **NO HARDCODED OBJECTS**: No `const users = [...]` or similar patterns
+- **NO FAKE PLACEHOLDERS**: No placeholder data that "looks real"
 
-## Prohibited Practices ❌
+## 🔒 Enforcement via Git Hooks
 
+A pre-commit hook automatically scans all staged files for mock data violations:
+
+### Detected Patterns
 ```javascript
-// ❌ NEVER DO THIS
-const generateMockMetrics = () => ({
-  revenue: 145000,
-  customers: 1210,
-  // ... hardcoded fake data
-})
+// ❌ These patterns will BLOCK commits:
+generateMock*
+mockData
+fakeData
+MOCK_*
+FAKE_*
+const mockUsers = [...]
+function generateFakeData()
+export const mockResponse
+hardcoded.*data
+placeholder.*data
+dummy.*data
+mockUser
+fakeUser
+mockProfile
+stubData
+```
 
-// ❌ NEVER DO THIS  
-const fallbackData = mockInsights.length > 0 ? mockInsights : generateMockData()
+### Allowed Locations
+Mock data is ONLY permitted in:
+- `__tests__/` directories
+- `.test.js` and `.spec.js` files
+- `stories/` and `.stories.js` files (Storybook)
+- `cypress/` and `e2e/` test directories
+- `fixtures/` and `__mocks__/` directories
+- Documentation files
 
-// ❌ NEVER DO THIS
-if (apiError) {
-  return { data: FAKE_PLACEHOLDER_DATA }
+## 💡 Correct Implementation Examples
+
+### ❌ WRONG - Mock Data (Will be blocked)
+```javascript
+// This will BLOCK your commit
+const mockUsers = [
+  { id: 1, name: 'John Doe', email: 'john@example.com' },
+  { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+]
+
+function getUsersAPI() {
+  return { data: mockUsers, error: null }
 }
 ```
 
-## Required Practices ✅
-
+### ✅ CORRECT - Real Database Operations
 ```javascript
-// ✅ ALWAYS DO THIS - Real database queries
-const getBusinessMetrics = async () => {
+// This is the correct approach
+async function getUsersAPI() {
   const { data, error } = await supabase
-    .from('business_metrics')
-    .select('*')
-    .order('date', { ascending: false })
-    .limit(30)
-  
-  return { data: data || [], error }
-}
+    .from('profiles')
+    .select('id, full_name, email')
+    .limit(10)
 
-// ✅ ALWAYS DO THIS - Handle empty results gracefully
-const metrics = await getBusinessMetrics()
-if (!metrics.data.length) {
-  return { message: 'No metrics available', data: [] }
+  return { data, error }
 }
 ```
 
-## Implementation Requirements
+### ❌ WRONG - Hardcoded Return Data
+```javascript
+// This will BLOCK your commit
+function getBarbers() {
+  return [
+    { id: 'barber1', name: 'Mike', specialties: ['fade'] },
+    { id: 'barber2', name: 'Sarah', specialties: ['color'] }
+  ]
+}
+```
 
-### 1. Database First Approach
-- **Create missing tables** with proper SQL schema
-- **Add proper indexes** for query performance
-- **Use database constraints** for data validation
-- **Implement proper relationships** between tables
+### ✅ CORRECT - Database Query
+```javascript
+// This is the correct approach
+async function getBarbers() {
+  const { data, error } = await supabase
+    .from('barbershop_staff')
+    .select('id, full_name, specialties')
+    .eq('role', 'barber')
 
-### 2. Seed Realistic Test Data
+  if (error) throw error
+  return data
+}
+```
+
+## 🛠️ When Database is Empty
+
+### ❌ WRONG - Generate Mock Data
+```javascript
+// DON'T DO THIS - creates fake data
+function generateTestData() {
+  return Array.from({ length: 10 }, (_, i) => ({
+    id: i + 1,
+    name: `User ${i + 1}`,
+    email: `user${i + 1}@example.com`
+  }))
+}
+```
+
+### ✅ CORRECT - Database Seed Script
 ```sql
--- ✅ Use real database operations
-INSERT INTO business_metrics (date, revenue, customers, satisfaction) 
-VALUES 
-  ('2025-01-01', 1450.00, 12, 4.5),
-  ('2025-01-02', 1680.00, 14, 4.7),
-  ('2025-01-03', 1320.00, 11, 4.3);
+-- Create proper seed data in database
+INSERT INTO profiles (id, full_name, email, role) VALUES
+  ('user-1', 'John Smith', 'john@barbershop.com', 'CLIENT'),
+  ('user-2', 'Sarah Johnson', 'sarah@barbershop.com', 'BARBER'),
+  ('user-3', 'Mike Davis', 'mike@barbershop.com', 'SHOP_OWNER');
 ```
 
-### 3. API Endpoint Requirements
-Every API endpoint MUST:
-- **Query actual database tables**
-- **Return real data or empty arrays**
-- **Handle database errors properly**
-- **Include proper error messages**
-- **Never fall back to mock data**
+## 🔧 Testing the Hook
 
-### 4. Frontend Requirements
-UI components MUST:
-- **Handle loading states** during database queries
-- **Show empty states** when no data exists
-- **Display error messages** for failed queries
-- **Never show fake placeholder data**
+Test the pre-commit hook by trying to commit mock data:
 
-## Code Review Checklist
+```bash
+# This should be BLOCKED by the hook
+echo "const mockData = [{ id: 1, name: 'test' }]" > test-file.js
+git add test-file.js
+git commit -m "test mock data" # Will be rejected
 
-❌ **Immediate rejection if found:**
-- Any `generateMock*()` functions
-- Hardcoded fallback data objects
-- `const mockData = {...}`
-- Comments like `// TODO: replace with real data`
+# Clean up
+git reset HEAD test-file.js
+rm test-file.js
+```
 
-✅ **Required for approval:**
-- Database table creation scripts
-- Real SQL queries in API endpoints
-- Proper error handling for empty results
-- Loading states in UI components
+## 📋 Bypass Emergency Procedure
 
-## Performance Guidelines
+**ONLY in extreme emergencies**, you can bypass the hook:
 
-### Database Query Optimization
-- **Use proper SQL indexes** for fast queries
-- **Implement pagination** for large datasets
-- **Cache frequent queries** with short TTL
-- **Optimize N+1 query problems**
+```bash
+git commit --no-verify -m "Emergency commit"
+```
 
-### Frontend Optimization
-- **Show skeleton screens** during loading
-- **Implement progressive loading** for complex data
-- **Use React.memo** for expensive components
-- **Debounce search/filter inputs**
+**⚠️ WARNING**: This should NEVER be used except for critical production fixes. Any bypassed commits must be immediately followed by a commit that removes the mock data.
 
-## Emergency Procedures
+## 🎯 Benefits of This Policy
 
-### If Database is Down
-- **Show appropriate error message**
-- **Provide retry functionality**
-- **Log the error for debugging**
-- **Never fall back to mock data**
+1. **Production Ready**: Every feature works with real data from day one
+2. **Performance**: No fake data generation causing loading delays
+3. **Data Integrity**: Consistent behavior with actual database operations
+4. **Real Testing**: Tests run against realistic data scenarios
+5. **No Surprises**: What works in development works in production
 
-### If Table Doesn't Exist
-1. **Create the table** with proper schema
-2. **Add necessary indexes**
-3. **Seed with realistic test data**
-4. **Update documentation**
+## 🚨 Violation Response
 
-### If Data is Missing
-1. **Check database connection**
-2. **Verify table existence**
-3. **Seed test data if needed**
-4. **Show empty state in UI**
+If the hook blocks your commit:
 
-## Enforcement
+1. **Identify the violation**: Check the error message for specific patterns
+2. **Replace with database operations**: Use Supabase queries instead
+3. **Create seed data**: If you need test data, add it to the database
+4. **Move to test files**: If truly needed for testing, move to `__tests__/`
 
-This policy is **non-negotiable** and will be:
-- **Enforced in code reviews**
-- **Checked in CI/CD pipelines**
-- **Monitored in production**
-- **Required for feature completion**
+## 📞 Support
 
-**Any mock data found in the codebase indicates incomplete implementation and must be replaced with real database operations immediately.**
+If you encounter issues with the hook or need clarification:
+
+1. Check this document first
+2. Review `SUPABASE_PRODUCTION_RULE.md` for complete database guidelines
+3. Look at existing code examples that pass the hook
+4. Ask team members for guidance on proper database patterns
+
+## 🎉 Hook Success
+
+When your commit passes the hook, you'll see:
+```
+🔍 Checking for mock data violations...
+✅ No mock data violations found. Commit approved!
+```
+
+This confirms your code follows production-ready patterns and will work reliably with real Supabase data.

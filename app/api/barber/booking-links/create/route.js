@@ -1,13 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
-
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 export async function POST(request) {
+  // Create Supabase client inside the function to avoid build-time issues
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
   try {
     const body = await request.json()
     
@@ -28,7 +28,6 @@ export async function POST(request) {
       sendReminders
     } = body
 
-    // Validate required fields
     if (!barberId || !name || !url || !services) {
       return NextResponse.json(
         { error: 'Missing required fields: barberId, name, url, services' },
@@ -36,7 +35,6 @@ export async function POST(request) {
       )
     }
 
-    // Validate services array
     if (!Array.isArray(services) || services.length === 0) {
       return NextResponse.json(
         { error: 'Services must be a non-empty array' },
@@ -44,7 +42,6 @@ export async function POST(request) {
       )
     }
 
-    // Insert booking link into database
     const { data: bookingLink, error: insertError } = await supabase
       .from('booking_links')
       .insert({
@@ -76,7 +73,6 @@ export async function POST(request) {
       )
     }
 
-    // Track the link creation event
     await supabase
       .from('link_analytics')
       .insert({
@@ -134,7 +130,6 @@ export async function GET(request) {
     let useFallback = false
 
     try {
-      // Fetch all booking links for the barber
       const { data, error: fetchError } = await supabase
         .from('booking_links')
         .select('*')
@@ -146,7 +141,6 @@ export async function GET(request) {
         useFallback = true
       } else {
         bookingLinks = data || []
-        // Don't use fallback if table exists but is empty
         useFallback = false
       }
     } catch (dbError) {
@@ -154,66 +148,20 @@ export async function GET(request) {
       useFallback = true
     }
 
-    // Only use mock data if table doesn't exist, not if it's empty
     if (useFallback) {
-      const mockData = [
-        {
-          id: 'demo-link-1',
-          name: 'Quick Haircut Booking',
-          url: 'http://localhost:9999/book/demo-barber?service=haircut',
-          services: JSON.stringify(['Classic Cut', 'Fade Cut']),
-          time_slots: ['Morning', 'Afternoon'],
-          duration: 45,
-          custom_price: 45,
-          discount: 0,
-          clicks: 15,
-          conversions: 3,
-          revenue: 135,
-          created_at: '2024-08-01T10:00:00.000Z',
-          expires_at: null,
-          active: true,
-          qr_generated: false
-        },
-        {
-          id: 'demo-link-2',
-          name: 'Full Grooming Package',
-          url: 'http://localhost:9999/book/demo-barber?service=full',
-          services: JSON.stringify(['Classic Cut', 'Beard Trim', 'Hot Towel Shave']),
-          time_slots: ['Morning', 'Afternoon', 'Evening'],
-          duration: 90,
-          custom_price: 85,
-          discount: 10,
-          clicks: 8,
-          conversions: 2,
-          revenue: 170,
-          created_at: '2024-08-05T14:30:00.000Z',
-          expires_at: null,
-          active: true,
-          qr_generated: true
-        },
-        {
-          id: 'demo-link-3',
-          name: 'Premium Experience',
-          url: 'http://localhost:9999/book/demo-barber?service=premium',
-          services: JSON.stringify(['Fade Cut', 'Beard Styling', 'Hair Wash']),
-          time_slots: ['Afternoon', 'Evening'],
-          duration: 75,
-          custom_price: 95,
-          discount: 5,
-          clicks: 5,
-          conversions: 1,
-          revenue: 95,
-          created_at: '2024-08-10T16:00:00.000Z',
-          expires_at: null,
-          active: false,
-          qr_generated: true
-        }
-      ]
-      
-      bookingLinks = mockData
+      return NextResponse.json({
+        success: false,
+        data: [],
+        message: 'Booking links table not available. Please ensure database is properly configured.',
+        instructions: [
+          'Create booking_links table in Supabase',
+          'Ensure table has proper columns and RLS policies',
+          'Try creating a new booking link through the UI'
+        ],
+        data_available: false
+      })
     }
 
-    // Transform data for frontend
     const transformedLinks = bookingLinks.map(link => ({
       id: link.id,
       name: link.name,

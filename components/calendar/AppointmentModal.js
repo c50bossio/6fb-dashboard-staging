@@ -1,21 +1,27 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { XMarkIcon, CalendarIcon, ClockIcon, UserIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import {
+  XMarkIcon,
+  CalendarIcon,
+  ClockIcon,
+  CurrencyDollarIcon
+} from '@heroicons/react/24/outline'
 import { useState, useEffect, Fragment } from 'react'
 import { toast } from '@/hooks/use-toast'
 
-export default function AppointmentModal({ 
-  isOpen, 
-  onClose, 
-  onSave, 
+export default function AppointmentModal({
+  isOpen,
+  onClose,
+  onSave,
   selectedSlot,
-  existingAppointment = null 
+  existingAppointment = null,
+  barbershopId = null
 }) {
   const [formData, setFormData] = useState({
-    customerName: '',
-    customerPhone: '',
-    customerEmail: '',
+    clientName: '',
+    clientPhone: '',
+    clientEmail: '',
     service: '',
     barberId: '',
     notes: '',
@@ -32,33 +38,39 @@ export default function AppointmentModal({
   const [validationErrors, setValidationErrors] = useState({})
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Load services and barbers when modal opens
+  // Load services and barbers when modal opens or barbershop changes
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && barbershopId) {
       loadInitialData()
     }
-  }, [isOpen])
+  }, [isOpen, barbershopId])
 
   const loadInitialData = async () => {
     setIsLoading(true)
     setLoadingError(null)
-    
+
     try {
-      // Load services and barbers in parallel
+      // Ensure we have a barbershop_id before fetching
+      if (!barbershopId) {
+        throw new Error('No barbershop configured')
+      }
+
+      // Load services and barbers in parallel using correct API endpoints
       const [servicesResponse, barbersResponse] = await Promise.all([
-        fetch('/api/calendar/services'),
-        fetch('/api/calendar/barbers')
+        fetch(`/api/services?barbershop_id=${barbershopId}`),
+        fetch(`/api/staff?barbershop_id=${barbershopId}`)
       ])
-      
+
       if (!servicesResponse.ok || !barbersResponse.ok) {
         throw new Error('Failed to load data')
       }
-      
+
       const servicesData = await servicesResponse.json()
       const barbersData = await barbersResponse.json()
-      
+
       setServices(servicesData.services || [])
-      setBarbers(barbersData.barbers || [])
+      // The /api/staff endpoint returns 'staff' array, not 'barbers'
+      setBarbers(barbersData.staff || [])
       
       // Set default service if available
       if (servicesData.services && servicesData.services.length > 0) {
@@ -83,50 +95,52 @@ export default function AppointmentModal({
     }
   }
 
-  // Reset form when modal opens/closes
+  // Reset form when modal closes (but keep services/barbers cached for performance)
   useEffect(() => {
-    if (isOpen) {
-      if (existingAppointment) {
-        // Edit mode
-        const appointment = existingAppointment.extendedProps
-        setFormData({
-          customerName: appointment.customer || '',
-          customerPhone: appointment.phone || '',
-          customerEmail: appointment.email || '',
-          service: appointment.serviceId || '',
-          barberId: existingAppointment.getResources()[0]?.id || '',
-          notes: appointment.notes || '',
-          status: appointment.status || 'pending'
-        })
-      } else if (selectedSlot) {
-        // Create mode
-        setFormData(prev => ({
-          ...prev,
-          barberId: selectedSlot.resourceId || '',
-          service: services.length > 0 ? services[0].id : ''
-        }))
-      }
-    } else {
-      // Reset form
+    if (!isOpen) {
       setFormData({
-        customerName: '',
-        customerPhone: '',
-        customerEmail: '',
+        clientName: '',
+        clientPhone: '',
+        clientEmail: '',
         service: '',
         barberId: '',
         notes: '',
         status: 'pending'
       })
-      setServices([])
-      setBarbers([])
       setSelectedService(null)
       setLoadingError(null)
       setValidationErrors({})
       setIsDeleting(false)
     }
+  }, [isOpen])
+
+  // Initialize form for editing existing appointment
+  useEffect(() => {
+    if (isOpen && existingAppointment) {
+      const appointment = existingAppointment.extendedProps
+      setFormData({
+        clientName: appointment.client_name || appointment.client?.full_name || appointment.customer_name || appointment.customer || '',
+        clientPhone: appointment.client_phone || appointment.client?.phone || appointment.customer_phone || appointment.phone || '',
+        clientEmail: appointment.client_email || appointment.client?.email || appointment.customer_email || appointment.email || '',
+        service: appointment.serviceId || '',
+        barberId: existingAppointment.getResources()[0]?.id || '',
+        notes: appointment.notes || '',
+        status: appointment.status || 'pending'
+      })
+    }
+  }, [isOpen, existingAppointment])
+
+  // Initialize form for new appointment from slot (only runs after services are loaded)
+  useEffect(() => {
+    if (isOpen && !existingAppointment && selectedSlot && services.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        barberId: selectedSlot.resourceId || '',
+        service: services[0].id
+      }))
+    }
   }, [isOpen, existingAppointment, selectedSlot, services])
 
-  // Update selected service and calculate end time
   useEffect(() => {
     const service = services.find(s => s.id === formData.service)
     setSelectedService(service)
@@ -149,41 +163,41 @@ export default function AppointmentModal({
 
   const validateForm = () => {
     const errors = {}
-    
+
     // Required fields validation
-    if (!formData.customerName || formData.customerName.trim().length < 1) {
-      errors.customerName = 'Customer name is required'
-    } else if (formData.customerName.length > 255) {
-      errors.customerName = 'Customer name must be less than 255 characters'
+    if (!formData.clientName || formData.clientName.trim().length < 1) {
+      errors.clientName = 'Client name is required'
+    } else if (formData.clientName.length > 255) {
+      errors.clientName = 'Client name must be less than 255 characters'
     }
-    
-    if (!formData.customerPhone || formData.customerPhone.trim().length < 1) {
-      errors.customerPhone = 'Phone number is required'
-    } else if (formData.customerPhone.length > 20) {
-      errors.customerPhone = 'Phone number must be less than 20 characters'
+
+    if (!formData.clientPhone || formData.clientPhone.trim().length < 1) {
+      errors.clientPhone = 'Phone number is required'
+    } else if (formData.clientPhone.length > 20) {
+      errors.clientPhone = 'Phone number must be less than 20 characters'
     }
-    
+
     // Email validation (optional but must be valid if provided)
-    if (formData.customerEmail && formData.customerEmail.trim()) {
+    if (formData.clientEmail && formData.clientEmail.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(formData.customerEmail)) {
-        errors.customerEmail = 'Please enter a valid email address'
+      if (!emailRegex.test(formData.clientEmail)) {
+        errors.clientEmail = 'Please enter a valid email address'
       }
     }
-    
+
     if (!formData.barberId) {
       errors.barberId = 'Please select a barber'
     }
-    
+
     if (!formData.service) {
       errors.service = 'Please select a service'
     }
-    
+
     // Notes validation (optional but limited)
     if (formData.notes && formData.notes.length > 500) {
       errors.notes = 'Notes must be less than 500 characters'
     }
-    
+
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -216,9 +230,9 @@ export default function AppointmentModal({
     
     try {
       const appointmentData = {
-        client_name: formData.customerName,
-        client_phone: formData.customerPhone,
-        client_email: formData.customerEmail || null,
+        client_name: formData.clientName,
+        client_phone: formData.clientPhone,
+        client_email: formData.clientEmail || null,
         client_notes: formData.notes || null,
         barber_id: formData.barberId,
         service_id: formData.service,
@@ -383,7 +397,7 @@ export default function AppointmentModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
+          <div className="fixed inset-0 bg-black/25 dark:bg-black/60" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
@@ -397,14 +411,14 @@ export default function AppointmentModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl transition-all border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-4">
-                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">
                     {existingAppointment ? 'Edit Appointment' : 'New Appointment'}
                   </Dialog.Title>
                   <button
                     onClick={onClose}
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                    className="rounded-md bg-white dark:bg-gray-700 text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 focus:outline-none"
                   >
                     <XMarkIcon className="h-6 w-6" />
                   </button>
@@ -413,32 +427,32 @@ export default function AppointmentModal({
                 {/* Loading State */}
                 {isLoading && (
                   <div className="mb-4 p-4 text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto mb-2"></div>
-                    <p className="text-sm text-gray-600">Loading appointment data...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 dark:border-brand-500 mx-auto mb-2"></div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Loading appointment data...</p>
                   </div>
                 )}
 
                 {/* Error State */}
                 {loadingError && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-800">{loadingError}</p>
+                  <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <p className="text-sm text-red-800 dark:text-red-300">{loadingError}</p>
                   </div>
                 )}
 
                 {/* Appointment Time Display */}
                 {!isLoading && selectedSlot && selectedService && (
-                  <div className="mb-4 p-3 bg-olive-50 border border-olive-200 rounded-lg">
-                    <div className="flex items-center space-x-2 text-sm text-olive-800">
-                      <CalendarIcon className="h-4 w-4" />
+                  <div className="mb-4 p-3 bg-olive-50 dark:bg-olive-900/20 border border-olive-200 dark:border-olive-800 rounded-lg">
+                    <div className="flex items-center space-x-2 text-sm text-olive-800 dark:text-olive-300">
+                      <CalendarIcon className="h-4 w-4 text-brand-600 dark:text-brand-500" />
                       <span>
                         {formatDateTime(selectedSlot.start)}
                         {calculatedEndTime && ` - ${formatDateTime(calculatedEndTime)}`}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-2 text-sm text-olive-600 mt-1">
-                      <ClockIcon className="h-4 w-4" />
+                    <div className="flex items-center space-x-2 text-sm text-olive-600 dark:text-olive-400 mt-1">
+                      <ClockIcon className="h-4 w-4 text-brand-600 dark:text-brand-500" />
                       <span>{selectedService.duration_minutes || selectedService.duration || 30} minutes</span>
-                      <CurrencyDollarIcon className="h-4 w-4 ml-2" />
+                      <CurrencyDollarIcon className="h-4 w-4 ml-2 text-brand-600 dark:text-brand-500" />
                       <span>${selectedService.price || 0}</span>
                     </div>
                   </div>
@@ -446,77 +460,77 @@ export default function AppointmentModal({
 
                 {!isLoading && (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Customer Information */}
+                  {/* Client Information */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Customer Name *
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Client Name *
                     </label>
                     <input
                       type="text"
-                      name="customerName"
-                      value={formData.customerName}
+                      name="clientName"
+                      value={formData.clientName}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500 ${
-                        validationErrors.customerName ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-olive-500 focus:border-olive-500 ${
+                        validationErrors.clientName ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
-                      placeholder="Enter customer name"
+                      placeholder="Enter client name"
                       required
                     />
-                    {validationErrors.customerName && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.customerName}</p>
+                    {validationErrors.clientName && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.clientName}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Phone Number *
                     </label>
                     <input
                       type="tel"
-                      name="customerPhone"
-                      value={formData.customerPhone}
+                      name="clientPhone"
+                      value={formData.clientPhone}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500 ${
-                        validationErrors.customerPhone ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-olive-500 focus:border-olive-500 ${
+                        validationErrors.clientPhone ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                       placeholder="(555) 123-4567"
                       required
                     />
-                    {validationErrors.customerPhone && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.customerPhone}</p>
+                    {validationErrors.clientPhone && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.clientPhone}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Email (Optional)
                     </label>
                     <input
                       type="email"
-                      name="customerEmail"
-                      value={formData.customerEmail}
+                      name="clientEmail"
+                      value={formData.clientEmail}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500 ${
-                        validationErrors.customerEmail ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-olive-500 focus:border-olive-500 ${
+                        validationErrors.clientEmail ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
-                      placeholder="customer@email.com"
+                      placeholder="client@email.com"
                     />
-                    {validationErrors.customerEmail && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.customerEmail}</p>
+                    {validationErrors.clientEmail && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.clientEmail}</p>
                     )}
                   </div>
 
                   {/* Service Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Service
                     </label>
                     <select
                       name="service"
                       value={formData.service}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500 ${
-                        validationErrors.service ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-olive-500 focus:border-olive-500 ${
+                        validationErrors.service ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                     >
                       <option value="">Select a service</option>
@@ -527,46 +541,46 @@ export default function AppointmentModal({
                       ))}
                     </select>
                     {validationErrors.service && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.service}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.service}</p>
                     )}
                   </div>
 
                   {/* Barber Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Barber *
                     </label>
                     <select
                       name="barberId"
                       value={formData.barberId}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500 ${
-                        validationErrors.barberId ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-olive-500 focus:border-olive-500 ${
+                        validationErrors.barberId ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                       required
                     >
                       <option value="">Select a barber</option>
                       {barbers.map(barber => (
                         <option key={barber.id} value={barber.id}>
-                          {barber.title || barber.name}
+                          {barber.full_name || barber.name || barber.title}
                         </option>
                       ))}
                     </select>
                     {validationErrors.barberId && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.barberId}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.barberId}</p>
                     )}
                   </div>
 
                   {/* Status */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Status
                     </label>
                     <select
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-olive-500 focus:border-olive-500"
                     >
                       <option value="pending">Pending</option>
                       <option value="confirmed">Confirmed</option>
@@ -577,7 +591,7 @@ export default function AppointmentModal({
 
                   {/* Notes */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Notes (Optional)
                     </label>
                     <textarea
@@ -586,15 +600,15 @@ export default function AppointmentModal({
                       onChange={handleInputChange}
                       rows={3}
                       maxLength={500}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:ring-olive-500 focus:border-olive-500 ${
-                        validationErrors.notes ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-olive-500 focus:border-olive-500 ${
+                        validationErrors.notes ? 'border-red-500 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
                       }`}
                       placeholder="Special requests, preferences, etc."
                     />
                     {validationErrors.notes && (
-                      <p className="mt-1 text-sm text-red-600">{validationErrors.notes}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.notes}</p>
                     )}
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       {formData.notes?.length || 0}/500 characters
                     </p>
                   </div>
@@ -604,22 +618,22 @@ export default function AppointmentModal({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500"
+                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-olive-500"
                     >
                       Cancel
                     </button>
-                    
+
                     {/* Delete button for existing appointments */}
                     {existingAppointment && (
                       <button
                         type="button"
                         onClick={handleDelete}
                         disabled={isDeleting || isSubmitting || isLoading}
-                        className="px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 border border-red-300 dark:border-red-700 rounded-md shadow-sm text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isDeleting ? (
                           <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2"></div>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 dark:border-red-400 mr-2"></div>
                             Cancelling...
                           </div>
                         ) : (
@@ -627,11 +641,11 @@ export default function AppointmentModal({
                         )}
                       </button>
                     )}
-                    
+
                     <button
                       type="submit"
                       disabled={isSubmitting || isLoading}
-                      className="flex-1 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-olive-600 hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-olive-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-olive-600 to-brand-600 hover:from-olive-700 hover:to-brand-700 dark:from-olive-600 dark:to-brand-600 dark:hover:from-olive-700 dark:hover:to-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
                     >
                       {isSubmitting ? (
                         <div className="flex items-center justify-center">

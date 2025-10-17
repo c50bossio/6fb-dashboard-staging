@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import {
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
@@ -10,7 +8,9 @@ import {
   ShareIcon,
   ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline'
+import Image from 'next/image'
 import QRCode from 'qrcode'
+import { useState, useEffect } from 'react'
 
 export default function LivePreview({ 
   businessData = {}, 
@@ -24,7 +24,6 @@ export default function LivePreview({
   
   const bookingUrl = `https://bookedbarber.com/${slug || 'your-business'}`
   
-  // Generate QR code
   useEffect(() => {
     const generateQR = async () => {
       try {
@@ -59,14 +58,12 @@ export default function LivePreview({
           url: bookingUrl
         })
       } catch (err) {
-        console.log('Error sharing:', err)
       }
     } else {
       handleCopyLink()
     }
   }
 
-  // Get colors with defaults
   const primaryColor = brandingData.primaryColor || '#3B82F6'
   const secondaryColor = brandingData.secondaryColor || '#1F2937'
   

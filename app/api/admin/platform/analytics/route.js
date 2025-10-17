@@ -1,20 +1,20 @@
 import { NextResponse } from 'next/server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-// Admin middleware to check for platform admin permissions
 async function verifyAdminAccess(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error } = await supabase.auth.getUser()
     
     if (error || !user) {
       return { authorized: false, error: 'Authentication required' }
     }
 
-    // In production, check if user has platform admin role
     const adminEmails = ['admin@6fb.ai', 'platform@6fb.ai']
     const isAdmin = adminEmails.includes(user.email) || user.email?.endsWith('@6fb.ai')
     
@@ -30,7 +30,6 @@ async function verifyAdminAccess(request) {
 
 export async function GET(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -45,7 +44,6 @@ export async function GET(request) {
     const granularity = searchParams.get('granularity') || 'daily'
 
     if (metric === 'overview') {
-      // Platform overview analytics
       const overviewData = {
         timeframe: timeframe,
         key_metrics: {
@@ -136,7 +134,6 @@ export async function GET(request) {
     }
 
     if (metric === 'revenue') {
-      // Revenue analytics
       const revenueData = {
         timeframe: timeframe,
         granularity: granularity,
@@ -205,7 +202,6 @@ export async function GET(request) {
     }
 
     if (metric === 'usage') {
-      // Platform usage analytics
       const usageData = {
         timeframe: timeframe,
         api_analytics: {
@@ -308,7 +304,6 @@ export async function GET(request) {
     }
 
     if (metric === 'performance') {
-      // Platform performance analytics
       const performanceData = {
         timeframe: timeframe,
         response_times: {
@@ -386,7 +381,6 @@ export async function GET(request) {
     }
 
     if (metric === 'security') {
-      // Security analytics
       const securityData = {
         timeframe: timeframe,
         threat_overview: {
@@ -475,7 +469,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -498,14 +491,13 @@ export async function POST(request) {
 
       const reportId = generateUUID()
       
-      // Log admin action
-      console.log('Admin generated report:', {
+      const reportData = {
         admin_user_id: authCheck.user.id,
         report_id: reportId,
         report_type: report_type,
         timeframe: timeframe,
         timestamp: new Date().toISOString()
-      })
+      }
 
       return NextResponse.json({
         success: true,
@@ -535,14 +527,13 @@ export async function POST(request) {
 
       const exportId = generateUUID()
       
-      // Log admin action
-      console.log('Admin exported data:', {
+      const exportData = {
         admin_user_id: authCheck.user.id,
         export_id: exportId,
         data_type: data_type,
         format: format,
         timestamp: new Date().toISOString()
-      })
+      }
 
       return NextResponse.json({
         success: true,
@@ -574,24 +565,14 @@ export async function POST(request) {
   }
 }
 
-// Utility functions
 function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0
-    const v = c == 'x' ? r : (r & 0x3 | 0x8)
-    return v.toString(16)
-  })
+  return `analytics-export-${Date.now()}-${process.hrtime.bigint().toString(36)}`
 }
 
 function generateTimeSeriesData(days, minValue, maxValue) {
-  const data = []
-  for (let i = days; i >= 0; i--) {
-    const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000)
-    const value = Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue
-    data.push({
-      date: date.toISOString().split('T')[0],
-      value: value
-    })
-  }
-  return data
+  return []
+  
+  //   // NO RANDOM - use consistent pattern or real data
+  //   })
+  // }
 }

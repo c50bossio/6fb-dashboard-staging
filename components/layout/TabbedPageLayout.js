@@ -1,11 +1,25 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 
 import { Card } from '../ui'
 
-export default function TabbedPageLayout({ 
+// Component to handle search params
+function TabbedPageSearchHandler({ tabs, onTabChange }) {
+  const searchParams = useSearchParams()
+  
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab')
+    if (tabFromUrl && tabs.find(tab => tab.id === tabFromUrl)) {
+      onTabChange(tabFromUrl)
+    }
+  }, [searchParams, tabs, onTabChange])
+  
+  return null
+}
+
+function TabbedPageLayoutContent({ 
   title, 
   description, 
   tabs, 
@@ -15,16 +29,11 @@ export default function TabbedPageLayout({
   fullWidth = false 
 }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id)
 
-  // Sync active tab with URL parameter
-  useEffect(() => {
-    const tabFromUrl = searchParams.get('tab')
-    if (tabFromUrl && tabs.find(tab => tab.id === tabFromUrl)) {
-      setActiveTab(tabFromUrl)
-    }
-  }, [searchParams, tabs])
+  const handleTabFromUrl = (tabId) => {
+    setActiveTab(tabId)
+  }
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId)
@@ -184,7 +193,15 @@ export default function TabbedPageLayout({
   )
 }
 
-// Helper component for tab content that needs loading states
+export default function TabbedPageLayout(props) {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">Loading...</div>}>
+      <TabbedPageSearchHandler tabs={props.tabs} onTabChange={() => {}} />
+      <TabbedPageLayoutContent {...props} />
+    </Suspense>
+  )
+}
+
 export function TabContent({ loading, error, children, emptyState = null }) {
   if (loading) {
     return (
@@ -239,7 +256,6 @@ export function TabContent({ loading, error, children, emptyState = null }) {
   return children
 }
 
-// Pre-built empty state components
 export const EmptyStates = {
   NoData: ({ title = "No data available", description = "Get started by creating your first item.", action = null }) => (
     <div>

@@ -6,7 +6,6 @@ export default function CalendarSimplePage() {
   const calendarRef = useRef(null)
 
   useEffect(() => {
-    // Dynamically load FullCalendar from CDN to bypass any module issues
     const script = document.createElement('script')
     script.src = 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js'
     script.async = true
@@ -31,14 +30,12 @@ export default function CalendarSimplePage() {
     }
     document.head.appendChild(script)
 
-    // Add FullCalendar CSS
     const link = document.createElement('link')
     link.rel = 'stylesheet'
     link.href = 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.css'
     document.head.appendChild(link)
 
     return () => {
-      // Cleanup
       if (script.parentNode) {
         script.parentNode.removeChild(script)
       }

@@ -1,7 +1,6 @@
 'use client'
 
 const SimpleTimePicker = ({ value, onChange, placeholder = "Select time" }) => {
-  // Generate time options in 30-minute intervals
   const generateTimeOptions = () => {
     const options = []
     for (let hour = 6; hour <= 23; hour++) {

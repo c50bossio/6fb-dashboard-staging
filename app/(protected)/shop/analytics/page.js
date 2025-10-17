@@ -1,145 +1,340 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { 
+import {
   ChartBarIcon,
   CurrencyDollarIcon,
   UserGroupIcon,
   TrophyIcon,
   CalendarDaysIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   StarIcon,
-  ClockIcon,
-  ScissorsIcon,
-  EyeIcon,
-  DocumentArrowDownIcon,
-  FunnelIcon,
-  BuildingStorefrontIcon
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline'
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import dynamic from 'next/dynamic'
+import { useState, useEffect } from 'react'
+
+// Lazy load heavy chart components to reduce initial bundle size
+const LazyLineChart = dynamic(() => 
+  import('recharts').then(module => ({ 
+    default: ({ children, ...props }) => (
+      <module.LineChart {...props}>
+        {children}
+      </module.LineChart>
+    )
+  })),
+  { 
+    loading: () => (
+      <div className="animate-pulse bg-gray-200 h-64 w-full rounded-lg flex items-center justify-center">
+        <span className="text-gray-500">Loading line chart...</span>
+      </div>
+    ),
+    ssr: false 
+  }
+)
+
+const LazyBarChart = dynamic(() =>
+  import('recharts').then(module => ({
+    default: ({ children, ...props }) => (
+      <module.BarChart {...props}>
+        {children}
+      </module.BarChart>
+    )
+  })),
+  { 
+    loading: () => (
+      <div className="animate-pulse bg-gray-200 h-64 w-full rounded-lg flex items-center justify-center">
+        <span className="text-gray-500">Loading bar chart...</span>
+      </div>
+    ),
+    ssr: false 
+  }
+)
+
+const LazyPieChart = dynamic(() =>
+  import('recharts').then(module => ({
+    default: ({ children, ...props }) => (
+      <module.PieChart {...props}>
+        {children}
+      </module.PieChart>
+    )
+  })),
+  { 
+    loading: () => (
+      <div className="animate-pulse bg-gray-200 h-64 w-full rounded-lg flex items-center justify-center">
+        <span className="text-gray-500">Loading pie chart...</span>
+      </div>
+    ),
+    ssr: false 
+  }
+)
+
+const LazyResponsiveContainer = dynamic(() =>
+  import('recharts').then(module => ({ default: module.ResponsiveContainer })),
+  { ssr: false }
+)
+
+const LazyLine = dynamic(() =>
+  import('recharts').then(module => ({ default: module.Line })),
+  { ssr: false }
+)
+
+const LazyBar = dynamic(() =>
+  import('recharts').then(module => ({ default: module.Bar })),
+  { ssr: false }
+)
+
+const LazyPie = dynamic(() =>
+  import('recharts').then(module => ({ default: module.Pie })),
+  { ssr: false }
+)
+
+const LazyCell = dynamic(() =>
+  import('recharts').then(module => ({ default: module.Cell })),
+  { ssr: false }
+)
+
+const LazyXAxis = dynamic(() =>
+  import('recharts').then(module => ({ default: module.XAxis })),
+  { ssr: false }
+)
+
+const LazyYAxis = dynamic(() =>
+  import('recharts').then(module => ({ default: module.YAxis })),
+  { ssr: false }
+)
+
+const LazyCartesianGrid = dynamic(() =>
+  import('recharts').then(module => ({ default: module.CartesianGrid })),
+  { ssr: false }
+)
+
+const LazyTooltip = dynamic(() =>
+  import('recharts').then(module => ({ default: module.Tooltip })),
+  { ssr: false }
+)
+
+const LazyLegend = dynamic(() =>
+  import('recharts').then(module => ({ default: module.Legend })),
+  { ssr: false }
+)
+import { AnalyticsHeader } from '@/components/layout/UnifiedDashboardHeader'
+import { useAuth } from '@/components/SupabaseAuthProvider'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 
 export default function ShopAnalytics() {
   const { user, profile } = useAuth()
+  const { activeContext, contextualData, contextLoading } = useGlobalDashboard()
   const [loading, setLoading] = useState(true)
   const [timeRange, setTimeRange] = useState('month') // week, month, quarter, year
   const [analyticsData, setAnalyticsData] = useState({})
+  const [showExportMenu, setShowExportMenu] = useState(false)
 
   useEffect(() => {
     loadAnalyticsData()
-  }, [timeRange])
+  }, [timeRange, activeContext])
+
+  // Prioritize contextual data from unified context over real-time API calls
+  useEffect(() => {
+    if (contextualData?.analytics && !contextLoading) {
+      const transformedContextualData = {
+        overview: {
+          totalRevenue: contextualData.analytics.totalRevenue || 0,
+          revenueChange: contextualData.analytics.revenueChange || 0,
+          totalBookings: contextualData.analytics.totalAppointments || 0,
+          bookingsChange: contextualData.analytics.appointmentChange || 0,
+          totalClients: contextualData.analytics.totalCustomers || 0,
+          clientsChange: contextualData.analytics.customerChange || 0,
+          averageRating: contextualData.analytics.averageRating || 4.5,
+          ratingChange: contextualData.analytics.ratingChange || 0.1
+        },
+        revenueData: contextualData.analytics.revenueData || [],
+        barberPerformance: contextualData.analytics.barberPerformance || [],
+        serviceAnalytics: contextualData.analytics.serviceAnalytics || [],
+        timeAnalytics: contextualData.analytics.timeAnalytics || [],
+        customerMetrics: contextualData.analytics.customerMetrics || {
+          newClients: 0,
+          returningClients: 0,
+          retentionRate: 0,
+          averageLifetimeValue: 0,
+          averageVisitFrequency: 0,
+          topClients: []
+        }
+      }
+      
+      setAnalyticsData(transformedContextualData)
+      setLoading(false)
+    }
+  }, [contextualData, contextLoading])
 
   const loadAnalyticsData = async () => {
+    // Skip API calls if we have contextual data already
+    if (contextualData?.analytics && !contextLoading) {
+      return
+    }
+
     try {
-      // Mock comprehensive analytics data
-      const mockData = {
+      setLoading(true)
+      
+      // Determine period days based on time range
+      const periodDaysMap = {
+        'week': 7,
+        'month': 30,
+        'quarter': 90,
+        'year': 365
+      }
+      const periodDays = periodDaysMap[timeRange] || 30
+
+      // Include location context in API calls if available
+      const locationParam = activeContext?.locationId ? `&location_id=${activeContext.locationId}` : ''
+      
+      // Load comprehensive analytics from FastAPI
+      const [dashboardResponse, liveMetricsResponse, businessMetricsResponse] = await Promise.all([
+        fetch(`/api/shop/analytics/dashboard?period_days=${periodDays}${locationParam}`),
+        fetch(`/api/shop/analytics/live-metrics${locationParam ? '?' + locationParam.substring(1) : ''}`),
+        fetch(`/api/shop/analytics/business-metrics${locationParam ? '?' + locationParam.substring(1) : ''}`)
+      ])
+
+      const [dashboardData, liveMetrics, businessMetrics] = await Promise.all([
+        dashboardResponse.json(),
+        liveMetricsResponse.json(),
+        businessMetricsResponse.json()
+      ])
+
+      // Transform real data to match UI expectations
+      const transformedData = {
         overview: {
-          totalRevenue: 18750,
-          revenueChange: 12.5,
-          totalBookings: 156,
-          bookingsChange: 8.3,
-          totalClients: 247,
-          clientsChange: 15.2,
-          averageRating: 4.8,
-          ratingChange: 0.2
+          totalRevenue: dashboardData.summary?.total_revenue || 0,
+          revenueChange: businessMetrics.growth_rate || 0,
+          totalBookings: dashboardData.summary?.total_appointments || 0,
+          bookingsChange: businessMetrics.trends?.customer_growth || 0,
+          totalClients: dashboardData.summary?.total_customers || 0,
+          clientsChange: businessMetrics.trends?.customer_growth || 0,
+          averageRating: businessMetrics.customer_satisfaction || 4.5,
+          ratingChange: 0.1
         },
         
-        revenueData: [
-          { date: '2024-11-01', revenue: 580, bookings: 12 },
-          { date: '2024-11-02', revenue: 720, bookings: 15 },
-          { date: '2024-11-03', revenue: 650, bookings: 13 },
-          { date: '2024-11-04', revenue: 890, bookings: 18 },
-          { date: '2024-11-05', revenue: 620, bookings: 14 },
-          { date: '2024-11-06', revenue: 750, bookings: 16 },
-          { date: '2024-11-07', revenue: 680, bookings: 15 },
-          { date: '2024-11-08', revenue: 820, bookings: 17 },
-          { date: '2024-11-09', revenue: 590, bookings: 12 },
-          { date: '2024-11-10', revenue: 910, bookings: 19 }
-        ],
+        revenueData: Object.entries(dashboardData.daily_revenue || {}).map(([date, revenue]) => ({
+          date,
+          revenue: revenue || 0,
+          bookings: Math.floor((revenue || 0) / (dashboardData.summary?.average_appointment_value || 40)) // Estimate bookings
+        })).slice(-10), // Show last 10 days
 
-        barberPerformance: [
-          {
-            id: 'barber-alex-123',
-            name: 'Alex Rodriguez',
-            revenue: 6250,
-            bookings: 52,
-            rating: 4.9,
-            retention: 85,
-            commission: 4062.50,
-            clients: 87,
-            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'
-          },
-          {
-            id: 'barber-jamie-123',
-            name: 'Jamie Chen',
-            revenue: 5890,
-            bookings: 47,
-            rating: 4.8,
-            retention: 78,
-            commission: 4005.20,
-            clients: 64,
-            avatar: 'https://images.unsplash.com/photo-1494790108755-2616b332-111?w=150'
-          },
-          {
-            id: 'barber-mike-123',
-            name: 'Mike Thompson',
-            revenue: 6610,
-            bookings: 57,
-            rating: 4.9,
-            retention: 92,
-            commission: 4627.00,
-            clients: 102,
-            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'
-          }
-        ],
+        barberPerformance: [], // This would need a separate endpoint or data structure
 
-        serviceAnalytics: [
-          { name: 'Classic Haircut', bookings: 89, revenue: 3115, percentage: 35.2 },
-          { name: 'Fade Cut', bookings: 67, revenue: 2680, percentage: 30.3 },
-          { name: 'Full Package', bookings: 23, revenue: 1725, percentage: 19.5 },
-          { name: 'Beard Trim', bookings: 45, revenue: 1125, percentage: 12.7 },
-          { name: 'Hot Shave', bookings: 5, revenue: 225, percentage: 2.3 }
-        ],
+        serviceAnalytics: (dashboardData.popular_services || []).map(service => ({
+          name: service.service || 'Unknown Service',
+          bookings: service.count || 0,
+          revenue: service.count * 35, // Estimate revenue per service
+          percentage: service.percentage || 0
+        })),
 
-        timeAnalytics: [
-          { hour: '9:00', bookings: 8, revenue: 320 },
-          { hour: '10:00', bookings: 12, revenue: 480 },
-          { hour: '11:00', bookings: 15, revenue: 600 },
-          { hour: '12:00', bookings: 10, revenue: 400 },
-          { hour: '13:00', bookings: 8, revenue: 320 },
-          { hour: '14:00', bookings: 18, revenue: 720 },
-          { hour: '15:00', bookings: 20, revenue: 800 },
-          { hour: '16:00', bookings: 22, revenue: 880 },
-          { hour: '17:00', bookings: 15, revenue: 600 },
-          { hour: '18:00', bookings: 12, revenue: 480 }
-        ],
+        timeAnalytics: [], // This would need hourly breakdown data
 
         customerMetrics: {
-          newClients: 23,
-          returningClients: 134,
-          retentionRate: 78.5,
-          averageLifetimeValue: 420,
-          averageVisitFrequency: 6.2,
-          topClients: [
-            { name: 'Robert Brown', visits: 18, spent: 1350, lastVisit: '2024-11-15' },
-            { name: 'John Smith', visits: 12, spent: 420, lastVisit: '2024-12-08' },
-            { name: 'Michael Johnson', visits: 8, spent: 320, lastVisit: '2024-12-07' }
-          ]
+          newClients: Math.floor((dashboardData.summary?.total_customers || 0) * 0.3), // Estimate 30% new
+          returningClients: Math.floor((dashboardData.summary?.total_customers || 0) * 0.7), // Estimate 70% returning
+          retentionRate: dashboardData.summary?.customer_retention_rate || 0,
+          averageLifetimeValue: (dashboardData.summary?.total_revenue || 0) / Math.max(dashboardData.summary?.total_customers || 1, 1),
+          averageVisitFrequency: 6.2, // Default until we have this metric
+          topClients: [] // This would need a separate endpoint
+        },
+
+        // Store raw data for debugging
+        _rawData: {
+          dashboard: dashboardData,
+          liveMetrics,
+          businessMetrics
         }
       }
 
-      setAnalyticsData(mockData)
+      setAnalyticsData(transformedData)
     } catch (error) {
       console.error('Error loading analytics:', error)
+      
+      // Fallback to empty data structure
+      setAnalyticsData({
+        overview: {
+          totalRevenue: 0,
+          revenueChange: 0,
+          totalBookings: 0,
+          bookingsChange: 0,
+          totalClients: 0,
+          clientsChange: 0,
+          averageRating: 0,
+          ratingChange: 0
+        },
+        revenueData: [],
+        barberPerformance: [],
+        serviceAnalytics: [],
+        timeAnalytics: [],
+        customerMetrics: {
+          newClients: 0,
+          returningClients: 0,
+          retentionRate: 0,
+          averageLifetimeValue: 0,
+          averageVisitFrequency: 0,
+          topClients: []
+        }
+      })
     } finally {
       setLoading(false)
     }
   }
 
+  const handleExport = async (format) => {
+    try {
+      setShowExportMenu(false)
+      
+      const periodDaysMap = {
+        'week': 7,
+        'month': 30,
+        'quarter': 90,
+        'year': 365
+      }
+      const periodDays = periodDaysMap[timeRange] || 30
+      
+      const response = await fetch(`/api/shop/analytics/export?format=${format}&period_days=${periodDays}&include_details=true`)
+      
+      if (!response.ok) {
+        throw new Error('Export failed')
+      }
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      
+      const timestamp = new Date().toISOString().split('T')[0]
+      link.download = `shop-analytics-${timestamp}.${format}`
+      
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+    } catch (error) {
+      console.error('Export error:', error)
+      alert('Failed to export analytics data. Please try again.')
+    }
+  }
+
+  // Close export menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showExportMenu && !event.target.closest('.relative')) {
+        setShowExportMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showExportMenu])
+
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#C5A35B']
 
-  if (loading) {
+  if (loading || contextLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
@@ -150,38 +345,52 @@ export default function ShopAnalytics() {
   const { overview, revenueData, barberPerformance, serviceAnalytics, timeAnalytics, customerMetrics } = analyticsData
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center">
-              <ChartBarIcon className="h-8 w-8 text-olive-600" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Shop Analytics</h1>
-              <p className="text-gray-600">Performance insights and business intelligence</p>
-            </div>
-          </div>
-          
-          <div className="flex space-x-3">
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+    <div className="min-h-screen bg-gray-50">
+      {/* Unified Header */}
+      <AnalyticsHeader>
+        <div className="flex space-x-3">
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+            <option value="quarter">Last 3 Months</option>
+            <option value="year">Last Year</option>
+          </select>
+          <div className="relative">
+            <button 
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center"
             >
-              <option value="week">Last 7 Days</option>
-              <option value="month">Last 30 Days</option>
-              <option value="quarter">Last 3 Months</option>
-              <option value="year">Last Year</option>
-            </select>
-            <button className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center">
               <DocumentArrowDownIcon className="h-5 w-5 mr-2" />
               Export Report
             </button>
+            
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                <div className="py-1">
+                  <button
+                    onClick={() => handleExport('json')}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    Export as JSON
+                  </button>
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    Export as CSV
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </AnalyticsHeader>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -194,7 +403,7 @@ export default function ShopAnalytics() {
               overview.revenueChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {overview.revenueChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
@@ -214,7 +423,7 @@ export default function ShopAnalytics() {
               overview.bookingsChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {overview.bookingsChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
@@ -234,7 +443,7 @@ export default function ShopAnalytics() {
               overview.clientsChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {overview.clientsChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
@@ -254,7 +463,7 @@ export default function ShopAnalytics() {
               overview.ratingChange >= 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {overview.ratingChange >= 0 ? (
-                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+                <ChartBarIcon className="h-4 w-4 mr-1" />
               ) : (
                 <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
               )}
@@ -272,24 +481,24 @@ export default function ShopAnalytics() {
           <h2 className="text-lg font-semibold text-gray-900">Revenue & Bookings Trend</h2>
         </div>
         <div className="p-6">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip 
+          <LazyResponsiveContainer width="100%" height={300}>
+            <LazyLineChart data={revenueData}>
+              <LazyCartesianGrid strokeDasharray="3 3" />
+              <LazyXAxis dataKey="date" tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
+              <LazyYAxis yAxisId="left" />
+              <LazyYAxis yAxisId="right" orientation="right" />
+              <LazyTooltip 
                 formatter={(value, name) => [
                   name === 'revenue' ? `$${value}` : value,
                   name === 'revenue' ? 'Revenue' : 'Bookings'
                 ]}
                 labelFormatter={(date) => new Date(date).toLocaleDateString()}
               />
-              <Legend />
-              <Bar yAxisId="left" dataKey="revenue" fill="#3B82F6" name="Revenue" />
-              <Line yAxisId="right" type="monotone" dataKey="bookings" stroke="#10B981" strokeWidth={2} name="Bookings" />
-            </LineChart>
-          </ResponsiveContainer>
+              <LazyLegend />
+              <LazyBar yAxisId="left" dataKey="revenue" fill="#3B82F6" name="Revenue" />
+              <LazyLine yAxisId="right" type="monotone" dataKey="bookings" stroke="#10B981" strokeWidth={2} name="Bookings" />
+            </LazyLineChart>
+          </LazyResponsiveContainer>
         </div>
       </div>
 
@@ -349,9 +558,9 @@ export default function ShopAnalytics() {
             <h2 className="text-lg font-semibold text-gray-900">Service Popularity</h2>
           </div>
           <div className="p-6">
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
+            <LazyResponsiveContainer width="100%" height={250}>
+              <LazyPieChart>
+                <LazyPie
                   data={serviceAnalytics}
                   cx="50%"
                   cy="50%"
@@ -361,12 +570,12 @@ export default function ShopAnalytics() {
                   label={({ name, percentage }) => `${name} ${percentage}%`}
                 >
                   {serviceAnalytics.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <LazyCell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                </Pie>
-                <Tooltip formatter={(value, name) => [`${value} bookings`, 'Bookings']} />
-              </PieChart>
-            </ResponsiveContainer>
+                </LazyPie>
+                <LazyTooltip formatter={(value, name) => [`${value} bookings`, 'Bookings']} />
+              </LazyPieChart>
+            </LazyResponsiveContainer>
           </div>
         </div>
 
@@ -376,15 +585,15 @@ export default function ShopAnalytics() {
             <h2 className="text-lg font-semibold text-gray-900">Peak Hours Analysis</h2>
           </div>
           <div className="p-6">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={timeAnalytics}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="hour" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="bookings" fill="#3B82F6" />
-              </BarChart>
-            </ResponsiveContainer>
+            <LazyResponsiveContainer width="100%" height={250}>
+              <LazyBarChart data={timeAnalytics}>
+                <LazyCartesianGrid strokeDasharray="3 3" />
+                <LazyXAxis dataKey="hour" />
+                <LazyYAxis />
+                <LazyTooltip />
+                <LazyBar dataKey="bookings" fill="#3B82F6" />
+              </LazyBarChart>
+            </LazyResponsiveContainer>
           </div>
         </div>
       </div>
@@ -442,6 +651,8 @@ export default function ShopAnalytics() {
             </div>
           </div>
         </div>
+      </div>
+      
       </div>
     </div>
   )

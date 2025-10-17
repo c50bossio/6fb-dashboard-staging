@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-// POST - Initialize database with customization schema
 export async function POST(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
-    // First, add all the customization fields to the barbershops table
     const alterTableQueries = [
       'ALTER TABLE barbershops ADD COLUMN IF NOT EXISTS logo_url TEXT',
       'ALTER TABLE barbershops ADD COLUMN IF NOT EXISTS cover_image_url TEXT',
@@ -28,19 +28,15 @@ export async function POST(request) {
       'ALTER TABLE barbershops ADD COLUMN IF NOT EXISTS custom_fonts JSONB DEFAULT \'{"heading": "Inter", "body": "Inter"}\'',
     ]
 
-    console.log('Applying customization schema to barbershops table...')
     
     for (const query of alterTableQueries) {
       const { error } = await supabase.rpc('exec_sql', { sql: query })
       if (error && !error.message.includes('already exists')) {
         console.error('Error executing query:', query, error)
-        // Continue with other queries even if one fails
       }
     }
 
-    // Create supporting tables
     const createTableQueries = [
-      // Business hours table
       `CREATE TABLE IF NOT EXISTS business_hours (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         barbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE,
@@ -54,7 +50,6 @@ export async function POST(request) {
         UNIQUE(barbershop_id, day_of_week)
       )`,
       
-      // Team members table
       `CREATE TABLE IF NOT EXISTS team_members (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         barbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE,
@@ -68,7 +63,6 @@ export async function POST(request) {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       )`,
       
-      // Customer testimonials table
       `CREATE TABLE IF NOT EXISTS customer_testimonials (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         barbershop_id UUID REFERENCES barbershops(id) ON DELETE CASCADE,
@@ -88,11 +82,9 @@ export async function POST(request) {
       const { error } = await supabase.rpc('exec_sql', { sql: query })
       if (error && !error.message.includes('already exists')) {
         console.error('Error creating table:', error)
-        // Continue with other queries
       }
     }
 
-    console.log('Database initialization completed!')
 
     return NextResponse.json({
       success: true,

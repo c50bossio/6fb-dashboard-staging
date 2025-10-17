@@ -25,27 +25,19 @@ export function PerformanceProvider({ children }) {
 
     initialized.current = true
 
-    // Initialize comprehensive performance monitoring
     try {
-      // Core Web Vitals monitoring
       initPerformanceMonitoring()
 
-      // Optimize critical resources
       preloadCriticalResources()
 
-      // Optimize images
       optimizeImageLoading()
 
-      // Optimize third-party scripts
       optimizeThirdPartyScripts()
 
-      console.log('🚀 Performance optimization suite initialized')
 
-      // Set up periodic reporting
       const reportInterval = setInterval(() => {
         reportRef.current = getPerformanceReport()
         
-        // Send report to analytics in production
         if (process.env.NODE_ENV === 'production' && reportRef.current.score < 75) {
           console.warn('⚠️ Performance score below threshold:', reportRef.current.score)
         }

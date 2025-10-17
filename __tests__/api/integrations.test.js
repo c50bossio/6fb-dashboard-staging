@@ -4,13 +4,11 @@ import { POST as TrafftWebhookPOST } from '@/app/api/integrations/trafft/webhook
 import { GET as IntegrationsListGET } from '@/app/api/integrations/list/route'
 import { NextRequest } from 'next/server'
 
-// Database data
 jest.mock('@/lib/database', () => ({
   query: jest.fn(),
   transaction: jest.fn()
 }))
 
-// Mock Trafft API
 global.fetch = jest.fn()
 
 describe('Integration API Routes', () => {
@@ -81,7 +79,6 @@ describe('Integration API Routes', () => {
 
   describe('POST /api/integrations/trafft/auth', () => {
     it('configures Trafft integration successfully', async () => {
-      // Mock successful Trafft API validation
       fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -126,7 +123,6 @@ describe('Integration API Routes', () => {
     })
 
     it('handles invalid API key', async () => {
-      // Mock Trafft API rejection
       fetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
@@ -155,7 +151,6 @@ describe('Integration API Routes', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          // Missing apiKey
           barbershopId: 'test-shop-123'
         })
       })
@@ -257,7 +252,6 @@ describe('Integration API Routes', () => {
 
   describe('POST /api/integrations/trafft/sync', () => {
     it('triggers manual sync successfully', async () => {
-      // Mock Trafft API responses
       fetch
         .mockResolvedValueOnce({
           ok: true,
@@ -357,7 +351,6 @@ describe('Integration API Routes', () => {
     })
 
     it('handles sync failure gracefully', async () => {
-      // Mock Trafft API failure
       fetch.mockRejectedValueOnce(new Error('Trafft API unavailable'))
 
       const request = new NextRequest('http://localhost:3000/api/integrations/trafft/sync', {

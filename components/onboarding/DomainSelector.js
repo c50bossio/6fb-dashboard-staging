@@ -1,7 +1,9 @@
 'use client'
 
+import {
+  CheckCircleIcon
+} from '@heroicons/react/24/outline'
 import { useState } from 'react'
-import { CheckCircleIcon, GlobeAltIcon, SparklesIcon } from '@heroicons/react/24/outline'
 
 export default function DomainSelector({ onDomainSelect, businessName }) {
   const [domainOption, setDomainOption] = useState('free') // free, buy, existing
@@ -10,7 +12,6 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false)
   const [availableDomains, setAvailableDomains] = useState([])
   
-  // Generate domain suggestions based on business name
   const generateDomainSuggestions = () => {
     const slug = businessName.toLowerCase().replace(/[^a-z0-9]+/g, '')
     return [
@@ -25,7 +26,6 @@ export default function DomainSelector({ onDomainSelect, businessName }) {
 
   const checkDomainAvailability = async () => {
     setIsCheckingAvailability(true)
-    // Simulate API call to check domain availability
     setTimeout(() => {
       setAvailableDomains(generateDomainSuggestions())
       setIsCheckingAvailability(false)

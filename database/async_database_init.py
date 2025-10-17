@@ -107,9 +107,7 @@ class AsyncDatabaseInitializer:
                 pain_points TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-                INDEX idx_sessions_user_id (user_id),
-                INDEX idx_sessions_updated (updated_at)
+                FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
             )
         """
         
@@ -126,10 +124,7 @@ class AsyncDatabaseInitializer:
                 urgency TEXT CHECK (urgency IN ('low', 'medium', 'high', 'critical')),
                 requires_data BOOLEAN DEFAULT FALSE,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (session_id) REFERENCES agentic_sessions (session_id) ON DELETE CASCADE,
-                INDEX idx_messages_session_id (session_id),
-                INDEX idx_messages_timestamp (timestamp),
-                INDEX idx_messages_role (role)
+                FOREIGN KEY (session_id) REFERENCES agentic_sessions (session_id) ON DELETE CASCADE
             )
         """
         
@@ -142,10 +137,7 @@ class AsyncDatabaseInitializer:
                 question_pattern TEXT,
                 recommendation_success TEXT,
                 conversation_context TEXT,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                INDEX idx_insights_profile (shop_profile),
-                INDEX idx_insights_domain (question_domain),
-                INDEX idx_insights_timestamp (timestamp)
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """
         

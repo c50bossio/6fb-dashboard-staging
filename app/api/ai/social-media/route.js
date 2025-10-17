@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
-
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 /**
  * Social Media Integration & Auto-posting System
  * Manages social media presence, auto-posting, and engagement tracking
@@ -46,7 +46,6 @@ export async function GET(request) {
       return analytics
     }
     
-    // Get comprehensive social media dashboard
     const dashboard = await getSocialMediaDashboard(barbershop_id)
     return dashboard
   } catch (error) {
@@ -231,7 +230,6 @@ async function createSocialMediaPost(barbershop_id, parameters) {
     status: 'posting'
   }
   
-  // Simulate posting to each platform
   const results = []
   for (const platform of post.platforms) {
     const result = await simulatePostToPlatform(platform, post, barbershop_id)
@@ -315,27 +313,24 @@ async function generateSocialContent(barbershop_id, parameters) {
   }
   
   const selectedTemplates = contentTemplates[content_type] || contentTemplates.promotional
-  const baseContent = selectedTemplates[Math.floor(Math.random() * selectedTemplates.length)]
+  const baseContent = selectedTemplates[0]
   
-  // Customize content based on parameters
   let generatedContent = baseContent
     .replace('{barber_name}', 'Mike')
     .replace('{years}', '8')
     .replace('{customer_name}', 'John')
     .replace('{hashtags}', '#barbershop #freshcut #grooming #menstyle #localbarber')
   
-  // Add promotional elements if requested
   if (include_promotion) {
     const promotions = [
       "Special offer: 15% off this week only!",
       "Book 2 services, get 10% off!",
       "First-time customers: 20% discount!"
     ]
-    const promo = promotions[Math.floor(Math.random() * promotions.length)]
+    const promo = promotions[0]
     generatedContent += ` 🎯 ${promo}`
   }
   
-  // Platform-specific optimizations
   if (platform === 'instagram') {
     generatedContent += " 📸 #InstaStyle"
   } else if (platform === 'facebook') {
@@ -403,7 +398,6 @@ async function manageReviews(barbershop_id, parameters) {
   ]
   
   if (action === 'respond') {
-    // Generate or use provided response
     const response = response_content || generateReviewResponse(
       recentReviews.find(r => r.id === review_id)
     )
@@ -418,7 +412,6 @@ async function manageReviews(barbershop_id, parameters) {
     })
   }
   
-  // Return review management dashboard
   return NextResponse.json({
     success: true,
     review_summary: {
@@ -569,8 +562,7 @@ async function analyzeCompetitors(barbershop_id, parameters) {
  */
 
 async function simulatePostToPlatform(platform, post, barbershop_id) {
-  // Simulate API call to social media platform
-  const success = Math.random() > 0.1 // 90% success rate
+  const success = true // Real implementation should check actual API status
   
   return {
     platform,
@@ -579,7 +571,7 @@ async function simulatePostToPlatform(platform, post, barbershop_id) {
     message: success 
       ? `Posted successfully to ${platform}`
       : `Failed to post to ${platform} - please check connection`,
-    estimated_reach: success ? Math.floor(Math.random() * 500) + 200 : 0
+    estimated_reach: success ? 350 : 0 // Real implementation should calculate actual reach
   }
 }
 
@@ -611,7 +603,7 @@ function generateReviewResponse(review) {
   }
   
   const categoryResponses = responses[review.sentiment] || responses.neutral
-  return categoryResponses[Math.floor(Math.random() * categoryResponses.length)]
+  return categoryResponses[0]
 }
 
 function getEngagementEstimate(content_type, platform) {

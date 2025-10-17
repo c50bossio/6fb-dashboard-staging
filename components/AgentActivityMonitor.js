@@ -1,13 +1,12 @@
 'use client'
 
-import { 
-  SparklesIcon, 
-  ChartBarIcon, 
-  MegaphoneIcon, 
+import {
+  SparklesIcon,
+  ChartBarIcon,
+  MegaphoneIcon,
   CogIcon,
   CheckCircleIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
@@ -39,10 +38,8 @@ export default function AgentActivityMonitor({ className = '', showHeader = true
   const [activeCollaborations, setActiveCollaborations] = useState([])
 
   useEffect(() => {
-    // Fetch agent status
     fetchAgentStatus()
     
-    // Set up polling for real-time updates
     const interval = setInterval(fetchAgentStatus, 10000) // Every 10 seconds
     
     return () => clearInterval(interval)
@@ -56,7 +53,6 @@ export default function AgentActivityMonitor({ className = '', showHeader = true
         setAgentStatus(data)
         setLastUpdate(new Date())
         
-        // Simulate some active collaborations for demo
         setActiveCollaborations([
           {
             id: 'collab_1',
@@ -241,7 +237,6 @@ export default function AgentActivityMonitor({ className = '', showHeader = true
   )
 }
 
-// Minimal version for sidebar or header
 export function MiniAgentActivityIndicator({ className = '' }) {
   const [activeAgents, setActiveAgents] = useState(3)
   const [hasCollaboration, setHasCollaboration] = useState(true)

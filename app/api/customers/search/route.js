@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-export const runtime = 'edge'
-
+import { NextResponse } from 'next/server'
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -11,7 +11,14 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q')
-    const barbershopId = searchParams.get('barbershop_id') || 'demo-shop-001'
+    const barbershopId = searchParams.get('barbershop_id')
+    
+    if (!barbershopId) {
+      return NextResponse.json({
+        customers: [],
+        error: 'barbershop_id parameter is required'
+      }, { status: 400 })
+    }
     const limit = parseInt(searchParams.get('limit')) || 10
 
     if (!query || query.length < 2) {
@@ -21,28 +28,32 @@ export async function GET(request) {
       })
     }
 
-    // Search customers by name, phone, or email
-    const { data: customers, error } = await supabase
+    // Build the query step by step like the main customers API
+    let searchQuery = supabase
       .from('customers')
       .select(`
         id,
         name,
         phone,
         email,
-        updated_at as last_visit_at,
+        last_visit_at,
         total_visits,
         preferences,
         vip_status
       `)
-      .eq('shop_id', barbershopId)
+      .or(`barbershop_id.eq.${barbershopId},barbershop_id.eq.${barbershopId}`)
       .eq('is_active', true)
-      .or(`name.ilike.%${query}%,phone.ilike.%${query}%,email.ilike.%${query}%`)
-      .order('last_visit_at', { ascending: false })
-      .limit(limit)
+    
+    // Add search filter conditionally
+    searchQuery = searchQuery.or(`name.ilike.%${query}%,phone.ilike.%${query}%,email.ilike.%${query}%`)
+    
+    // Apply ordering and limit
+    searchQuery = searchQuery.order('last_visit_at', { ascending: false }).limit(limit)
+
+    const { data: customers, error } = await searchQuery
 
     if (error) {
-      console.error('Error searching customers:', error)
-      // Return empty results if table doesn't exist
+      console.error('Customer search error:', error)
       if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
         return NextResponse.json({
           customers: [],
@@ -57,7 +68,6 @@ export async function GET(request) {
       )
     }
 
-    // Enhance results with additional info
     const enhancedCustomers = customers.map(customer => ({
       ...customer,
       display_name: customer.name,
@@ -80,7 +90,6 @@ export async function GET(request) {
     })
 
   } catch (error) {
-    console.error('Error in customer search:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }
@@ -88,10 +97,15 @@ export async function GET(request) {
   }
 }
 
-// Quick customer lookup by phone or email for exact matches
 export async function POST(request) {
   try {
-    const { phone, email, barbershop_id = 'demo-shop-001' } = await request.json()
+    const { phone, email, barbershop_id } = await request.json()
+    
+    if (!barbershop_id) {
+      return NextResponse.json({
+        error: 'barbershop_id is required'
+      }, { status: 400 })
+    }
 
     if (!phone && !email) {
       return NextResponse.json(
@@ -107,18 +121,18 @@ export async function POST(request) {
         name,
         phone,
         email,
-        updated_at as last_visit_at,
+        last_visit_at,
         total_visits,
         preferences,
         notes,
         notification_preferences,
         vip_status
       `)
-      .eq('shop_id', barbershop_id)
+      .or(`barbershop_id.eq.${barbershop_id},barbershop_id.eq.${barbershop_id}`)
       .eq('is_active', true)
 
     if (phone && email) {
-      query = query.or(`phone.eq.${phone},email.eq.${email}`)
+      query = query.or(`(phone.eq.${phone}),(email.eq.${email})`)
     } else if (phone) {
       query = query.eq('phone', phone)
     } else {
@@ -128,8 +142,6 @@ export async function POST(request) {
     const { data: customers, error } = await query
 
     if (error) {
-      console.error('Error looking up customer:', error)
-      // Return empty result if table doesn't exist
       if (error.message?.includes('relation') || error.message?.includes('does not exist')) {
         return NextResponse.json({
           customer: null,
@@ -151,7 +163,6 @@ export async function POST(request) {
       })
     }
 
-    // Return first match (should be unique based on constraints)
     const customer = customers[0]
 
     return NextResponse.json({
@@ -173,7 +184,6 @@ export async function POST(request) {
     })
 
   } catch (error) {
-    console.error('Error in customer lookup:', error)
     return NextResponse.json(
       { error: 'Internal server error', details: error.message },
       { status: 500 }

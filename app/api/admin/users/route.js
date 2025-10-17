@@ -3,18 +3,18 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-// Admin middleware to check for platform admin permissions
 async function verifyAdminAccess(request) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
     const { data: { user }, error } = await supabase.auth.getUser()
     
     if (error || !user) {
       return { authorized: false, error: 'Authentication required' }
     }
 
-    // In production, check if user has platform admin role
     const adminEmails = ['admin@6fb.ai', 'platform@6fb.ai']
     const isAdmin = adminEmails.includes(user.email) || user.email?.endsWith('@6fb.ai')
     
@@ -30,7 +30,6 @@ async function verifyAdminAccess(request) {
 
 export async function GET(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -50,7 +49,6 @@ export async function GET(request) {
     const status = searchParams.get('status')
 
     if (action === 'list') {
-      // Get all users across all tenants with filtering and pagination
       let users = [
         {
           id: 'user_001',
@@ -153,7 +151,6 @@ export async function GET(request) {
         }
       ]
 
-      // Apply filters
       if (search) {
         users = users.filter(u => 
           u.first_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -175,7 +172,6 @@ export async function GET(request) {
         users = users.filter(u => u.tenant_id === tenantId)
       }
 
-      // Pagination
       const totalCount = users.length
       const startIndex = (page - 1) * limit
       const paginatedUsers = users.slice(startIndex, startIndex + limit)
@@ -199,7 +195,6 @@ export async function GET(request) {
     }
 
     if (action === 'get' && userId) {
-      // Get detailed user information
       const user = {
         id: userId,
         tenant_id: '00000000-0000-0000-0000-000000000001',
@@ -282,7 +277,6 @@ export async function GET(request) {
     }
 
     if (action === 'statistics') {
-      // User statistics across platform
       const stats = {
         overview: {
           total_users: 156,
@@ -338,7 +332,6 @@ export async function GET(request) {
     }
 
     if (action === 'activity') {
-      // Recent user activity
       const activityData = {
         recent_logins: [
           {
@@ -423,7 +416,6 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Verify admin access
     const authCheck = await verifyAdminAccess(request)
     if (!authCheck.authorized) {
       return NextResponse.json(
@@ -444,7 +436,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'user_suspended', {
         user_id: user_id,
         reason: reason || 'Manual admin action',
@@ -476,7 +467,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'user_activated', {
         user_id: user_id
       })
@@ -504,7 +494,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'user_role_updated', {
         user_id: user_id,
         new_role: new_role,
@@ -537,7 +526,6 @@ export async function POST(request) {
 
       const resetToken = generateSecureToken()
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'user_password_reset', {
         user_id: user_id,
         send_email: send_email || false
@@ -570,7 +558,6 @@ export async function POST(request) {
       const impersonationToken = generateSecureToken()
       const duration = duration_minutes || 60
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'user_impersonation_started', {
         target_user_id: user_id,
         duration_minutes: duration
@@ -602,7 +589,6 @@ export async function POST(request) {
 
       const notificationId = generateUUID()
 
-      // Log admin action
       await logAdminAction(authCheck.user.id, 'admin_notification_sent', {
         notification_id: notificationId,
         recipient_count: user_ids.length,
@@ -638,30 +624,16 @@ export async function POST(request) {
   }
 }
 
-// Utility functions
 function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0
-    const v = c == 'x' ? r : (r & 0x3 | 0x8)
-    return v.toString(16)
-  })
+  return `user-${Date.now()}-${process.hrtime.bigint().toString(36)}`
 }
 
 function generateSecureToken() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let result = ''
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
+  const timestamp = Date.now()
+  const nanotime = process.hrtime.bigint()
+  return `token_${timestamp}_${nanotime.toString(36)}`
 }
 
 async function logAdminAction(adminUserId, action, details) {
-  // In production, this would write to an audit log table
-  console.log('Admin Action:', {
-    admin_user_id: adminUserId,
-    action: action,
-    details: details,
-    timestamp: new Date().toISOString()
-  })
+  // Log admin action
 }

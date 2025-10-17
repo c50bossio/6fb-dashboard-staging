@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Fragment } from 'react'
+import { useState, useEffect, Fragment, useMemo, useCallback } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { 
   ChevronDownIcon,
@@ -17,75 +17,92 @@ export default function ViewSwitcher() {
   const [availableContexts, setAvailableContexts] = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Get the user's role from either profile or user metadata
-  const userRole = profile?.role || user?.user_metadata?.role || 'CLIENT'
+  // Memoize user role to prevent recalculation on every render
+  const userRole = useMemo(() => {
+    return profile?.role || user?.user_metadata?.role || 'CLIENT'
+  }, [profile?.role, user?.user_metadata?.role])
 
-  // Load available contexts based on role
-  useEffect(() => {
-    if (userRole) {
-      loadAvailableContexts()
-    }
-  }, [userRole])
-
-  const loadAvailableContexts = async () => {
+  // Memoize loadAvailableContexts to prevent infinite loops
+  const loadAvailableContexts = useCallback(async () => {
     try {
       const contexts = []
-      
+
       if (userRole === 'SHOP_OWNER') {
-        // Fetch actual barbers from the API
-        const response = await fetch('/api/shop/barbers')
-        
-        if (response.ok) {
-          const { barbers } = await response.json()
-          
-          // Format barbers as contexts
-          if (barbers && barbers.length > 0) {
-            barbers.forEach(barber => {
-              if (barber.users) {
-                contexts.push({
-                  id: barber.user_id || barber.id,
-                  type: 'barber',
-                  name: barber.users.full_name || barber.users.email || 'Unnamed Barber',
-                  role: 'Barber',
-                  email: barber.users.email,
-                  avatar: barber.users.avatar_url
-                })
-              }
-            })
+        // Fetch actual barbers from the API with silent error handling
+        try {
+          const response = await fetch('/api/shop/barbers')
+
+          if (response.ok) {
+            const { barbers } = await response.json()
+
+            // Format barbers as contexts
+            if (barbers && barbers.length > 0) {
+              barbers.forEach(barber => {
+                if (barber.users) {
+                  contexts.push({
+                    id: barber.user_id || barber.id,
+                    type: 'barber',
+                    name: barber.users.full_name || barber.users.email || 'Unnamed Barber',
+                    role: 'Barber',
+                    email: barber.users.email,
+                    avatar: barber.users.avatar_url
+                  })
+                }
+              })
+            }
+          } else if (response.status === 500) {
+            // Silently handle 500 errors - user may not have shops configured yet
+            // Don't spam console with errors for expected edge cases
+          } else {
+            // Only log unexpected error codes
+            console.warn('⚠️ Unexpected response fetching barbers:', response.status)
           }
-        } else {
-          console.error('Failed to fetch barbers:', response.status)
+        } catch (fetchError) {
+          // Silently handle network errors - component will hide itself if no contexts
         }
       } else if (userRole === 'ENTERPRISE_OWNER') {
-        // Fetch actual shops from the API
-        const response = await fetch('/api/enterprise/shops')
-        
-        if (response.ok) {
-          const { shops } = await response.json()
-          
-          // Format shops as contexts
-          if (shops && shops.length > 0) {
-            shops.forEach(shop => {
-              contexts.push({
-                id: shop.id,
-                type: 'shop',
-                name: shop.name,
-                role: 'Shop',
-                location: shop.location
+        // Fetch actual shops from the API with silent error handling
+        try {
+          const response = await fetch('/api/enterprise/shops')
+
+          if (response.ok) {
+            const { shops } = await response.json()
+
+            // Format shops as contexts
+            if (shops && shops.length > 0) {
+              shops.forEach(shop => {
+                contexts.push({
+                  id: shop.id,
+                  type: 'shop',
+                  name: shop.name,
+                  role: 'Shop',
+                  location: shop.location
+                })
               })
-            })
+            }
+          } else if (response.status === 500) {
+            // Silently handle 500 errors - user may not have enterprise locations yet
+          } else {
+            console.warn('⚠️ Unexpected response fetching shops:', response.status)
           }
-        } else {
-          console.error('Failed to fetch shops:', response.status)
+        } catch (fetchError) {
+          // Silently handle network errors
         }
       }
-      
+
       setAvailableContexts(contexts)
     } catch (error) {
-      console.error('Error loading contexts:', error)
+      // Silently handle any unexpected errors - component will hide if no contexts
       setAvailableContexts([])
     }
-  }
+  }, [userRole]) // Only re-create when userRole actually changes
+
+  // Load available contexts when userRole changes
+  useEffect(() => {
+    if (userRole && userRole !== 'CLIENT' && userRole !== 'BARBER') {
+      loadAvailableContexts()
+    }
+  }, [userRole, loadAvailableContexts]) // Include both dependencies
 
   const switchContext = async (context) => {
     setLoading(true)

@@ -1,4 +1,3 @@
-// Minimal Playwright config for paywall testing without auth setup
 const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
@@ -10,7 +9,6 @@ module.exports = defineConfig({
   reporter: 'list',
   
   use: {
-    // Test against production site
     baseURL: 'https://bookedbarber.com',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
@@ -26,6 +24,4 @@ module.exports = defineConfig({
     },
   ],
 
-  // No webServer since we're testing production
-  // No globalSetup/teardown to avoid auth issues
 });

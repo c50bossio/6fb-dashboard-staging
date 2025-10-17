@@ -3,11 +3,11 @@
  * Logs errors and displays a fallback UI
  */
 
+import { AlertTriangle, RefreshCw } from 'lucide-react'
 import React from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

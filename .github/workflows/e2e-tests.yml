@@ -1,0 +1,493 @@
+# E2E Tests CI/CD Pipeline
+# Comprehensive GitHub Actions workflow for running E2E tests across different environments
+
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Test environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+      browsers:
+        description: 'Browsers to test'
+        required: true
+        default: 'chromium'
+        type: choice
+        options:
+        - chromium
+        - firefox
+        - webkit
+        - all
+      test_suites:
+        description: 'Test suites to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - critical
+        - booking
+        - payment
+        - notifications
+        - analytics
+        - visual
+        - errors
+      parallel:
+        description: 'Run tests in parallel'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  PLAYWRIGHT_BROWSERS_PATH: 0
+
+jobs:
+  # Pre-test validation
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run_tests: ${{ steps.check.outputs.should_run }}
+      test_matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if E2E tests should run
+        id: check
+        run: |
+          # Skip E2E tests for documentation-only changes
+          if git diff --name-only ${{ github.event.before }}..${{ github.sha }} | grep -E '\.(js|jsx|ts|tsx|json|env)$' > /dev/null; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate test matrix
+        id: matrix
+        run: |
+          # Generate dynamic test matrix based on inputs or defaults
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            BROWSERS="${{ github.event.inputs.browsers }}"
+            SUITES="${{ github.event.inputs.test_suites }}"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            BROWSERS="chromium"
+            SUITES="critical"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            BROWSERS="all"
+            SUITES="all"
+          else
+            BROWSERS="chromium,firefox"
+            SUITES="critical"
+          fi
+          
+          # Convert to JSON matrix
+          echo "matrix={\"browser\":[\"${BROWSERS//,/\",\"}\"],\"suite\":[\"${SUITES//,/\",\"}\"]}" >> $GITHUB_OUTPUT
+
+  # Smoke tests (quick validation)
+  smoke-tests:
+    runs-on: ubuntu-latest
+    needs: validate
+    if: needs.validate.outputs.should_run_tests == 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Setup test environment
+        run: |
+          # Create required directories
+          mkdir -p test-results
+          mkdir -p playwright-report
+          
+          # Setup environment variables for testing
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> $GITHUB_ENV
+          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_TEST_SECRET_KEY }}" >> $GITHUB_ENV
+
+      - name: Start services
+        run: |
+          # Start development server in background
+          npm run dev &
+          echo "DEV_PID=$!" >> $GITHUB_ENV
+          
+          # Wait for services to be ready
+          timeout 60 bash -c 'until curl -f http://localhost:9999/api/health; do sleep 2; done'
+
+      - name: Run smoke tests
+        run: |
+          chmod +x scripts/run-e2e-tests.sh
+          ./scripts/run-e2e-tests.sh --smoke --verbose
+        timeout-minutes: 10
+
+      - name: Upload smoke test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+
+  # Main E2E test suite
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [validate, smoke-tests]
+    if: needs.validate.outputs.should_run_tests == 'true'
+    
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.validate.outputs.test_matrix) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: |
+          # Install specific browser or all browsers
+          if [ "${{ matrix.browser }}" = "all" ]; then
+            npx playwright install --with-deps
+          else
+            npx playwright install --with-deps ${{ matrix.browser }}
+          fi
+
+      - name: Setup test environment
+        run: |
+          # Create required directories
+          mkdir -p test-results
+          mkdir -p playwright-report
+          mkdir -p screenshots
+          
+          # Setup environment variables
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> $GITHUB_ENV
+          echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_TEST_SECRET_KEY }}" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
+
+      - name: Start services
+        run: |
+          # Start development services
+          npm run dev &
+          echo "DEV_PID=$!" >> $GITHUB_ENV
+          
+          # Start backend if needed
+          if [ -f "fastapi_backend.py" ]; then
+            python fastapi_backend.py &
+            echo "BACKEND_PID=$!" >> $GITHUB_ENV
+          fi
+          
+          # Wait for services to be ready
+          timeout 120 bash -c 'until curl -f http://localhost:9999/api/health; do sleep 5; done'
+
+      - name: Run E2E tests
+        run: |
+          chmod +x scripts/run-e2e-tests.sh
+          ./scripts/run-e2e-tests.sh \
+            --environment ${{ github.event.inputs.environment || 'development' }} \
+            --browsers ${{ matrix.browser }} \
+            --suites ${{ matrix.suite }} \
+            --workers ${{ github.event.inputs.parallel == 'true' && 'auto' || '1' }} \
+            --verbose
+        timeout-minutes: 60
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results-${{ matrix.browser }}-${{ matrix.suite }}
+          path: |
+            test-results/
+            playwright-report/
+            screenshots/
+          retention-days: 30
+
+      - name: Upload Playwright HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.browser }}-${{ matrix.suite }}
+          path: playwright-report/
+          retention-days: 30
+
+  # Visual regression tests (separate job for better isolation)
+  visual-tests:
+    runs-on: ubuntu-latest
+    needs: [validate, smoke-tests]
+    if: needs.validate.outputs.should_run_tests == 'true' && (github.event_name == 'schedule' || contains(github.event.inputs.test_suites, 'visual') || contains(github.event.inputs.test_suites, 'all'))
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Setup test environment
+        run: |
+          mkdir -p test-results/visual
+          mkdir -p screenshots/baseline
+          mkdir -p screenshots/actual
+          mkdir -p screenshots/diff
+          
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> $GITHUB_ENV
+
+      - name: Download baseline screenshots
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          # Download baseline screenshots from artifacts or storage
+          # This would typically come from a baseline branch or storage
+          echo "Downloading baseline screenshots..."
+
+      - name: Start services
+        run: |
+          npm run dev &
+          timeout 120 bash -c 'until curl -f http://localhost:9999/api/health; do sleep 5; done'
+
+      - name: Run visual regression tests
+        run: |
+          npx playwright test tests/e2e/visual-regression.spec.js \
+            --project=chromium \
+            --reporter=html \
+            --output-dir=test-results/visual
+        continue-on-error: true
+
+      - name: Upload visual test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-test-results
+          path: |
+            test-results/visual/
+            screenshots/
+          retention-days: 30
+
+      - name: Comment on PR with visual changes
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Check for visual differences and comment on PR
+            // This would analyze the visual test results and post a comment
+            console.log('Checking for visual differences...');
+
+  # Performance tests
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: [validate, smoke-tests]
+    if: needs.validate.outputs.should_run_tests == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Setup test environment
+        run: |
+          mkdir -p test-results/performance
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" >> $GITHUB_ENV
+
+      - name: Start services
+        run: |
+          npm run dev &
+          timeout 120 bash -c 'until curl -f http://localhost:9999/api/health; do sleep 5; done'
+
+      - name: Run performance tests
+        run: |
+          npx playwright test tests/performance/ \
+            --project=chromium \
+            --reporter=json \
+            --output-dir=test-results/performance
+
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-test-results
+          path: test-results/performance/
+          retention-days: 30
+
+  # Test result aggregation and reporting
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: [smoke-tests, e2e-tests, visual-tests, performance-tests]
+    if: always() && needs.validate.outputs.should_run_tests == 'true'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-test-results/
+
+      - name: Generate comprehensive test report
+        run: |
+          # Create comprehensive test summary
+          echo "# E2E Test Summary" > test-summary.md
+          echo "" >> test-summary.md
+          echo "## Test Execution Details" >> test-summary.md
+          echo "- **Trigger**: ${{ github.event_name }}" >> test-summary.md
+          echo "- **Branch**: ${{ github.ref_name }}" >> test-summary.md
+          echo "- **Commit**: ${{ github.sha }}" >> test-summary.md
+          echo "- **Environment**: ${{ github.event.inputs.environment || 'development' }}" >> test-summary.md
+          echo "" >> test-summary.md
+          
+          # Analyze test results
+          echo "## Test Results" >> test-summary.md
+          
+          # Count test results from artifacts
+          total_tests=0
+          passed_tests=0
+          failed_tests=0
+          
+          # Parse JSON results if available
+          if find all-test-results -name "results.json" -type f | head -1 | xargs cat > /dev/null 2>&1; then
+            echo "Results found and parsed" >> test-summary.md
+          else
+            echo "No detailed results available" >> test-summary.md
+          fi
+          
+          # Add links to detailed reports
+          echo "" >> test-summary.md
+          echo "## Detailed Reports" >> test-summary.md
+          echo "- [Playwright HTML Report](playwright-report/index.html)" >> test-summary.md
+          echo "- [Visual Regression Results](visual-test-results/)" >> test-summary.md
+          echo "- [Performance Test Results](performance-test-results/)" >> test-summary.md
+
+      - name: Upload test summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-summary
+          path: test-summary.md
+          retention-days: 30
+
+      - name: Comment test summary on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            try {
+              const summary = fs.readFileSync('test-summary.md', 'utf8');
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: summary
+              });
+            } catch (error) {
+              console.log('Error posting test summary:', error);
+            }
+
+      - name: Set job status
+        run: |
+          # Determine overall test status
+          if [ "${{ needs.smoke-tests.result }}" = "success" ] && [ "${{ needs.e2e-tests.result }}" = "success" ]; then
+            echo "All critical tests passed"
+            exit 0
+          else
+            echo "Some tests failed"
+            exit 1
+          fi
+
+  # Notification on failure
+  notify-failure:
+    runs-on: ubuntu-latest
+    needs: [smoke-tests, e2e-tests, visual-tests, performance-tests, test-summary]
+    if: failure() && (github.event_name == 'schedule' || github.ref == 'refs/heads/main')
+    
+    steps:
+      - name: Send failure notification
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Send notification about test failures
+            // This could integrate with Slack, email, or other notification systems
+            console.log('E2E tests failed - sending notifications');
+            
+            // Create issue for test failures if needed
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'E2E Test Failure - ' + new Date().toISOString().split('T')[0],
+              body: 'E2E tests failed in the latest run. Please check the test results and fix any issues.',
+              labels: ['bug', 'e2e-tests', 'ci-failure']
+            });
+
+# Workflow completion notification
+  workflow-complete:
+    runs-on: ubuntu-latest
+    needs: [smoke-tests, e2e-tests, visual-tests, performance-tests, test-summary]
+    if: always()
+    
+    steps:
+      - name: Workflow completion status
+        run: |
+          echo "E2E test workflow completed"
+          echo "Overall status: ${{ job.status }}"

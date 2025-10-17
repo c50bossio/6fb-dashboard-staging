@@ -1,8 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
 import { 
   StarIcon,
   ChatBubbleLeftRightIcon,
@@ -12,6 +9,9 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function ReviewPage() {
   const params = useParams()
@@ -25,7 +25,6 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simulate loading appointment details
     setTimeout(() => {
       setAppointment({
         id: params.id,
@@ -42,14 +41,6 @@ export default function ReviewPage() {
     e.preventDefault()
     if (rating === 0) return
 
-    // In production, this would send to the backend
-    console.log('Review submitted:', {
-      rating,
-      reviewText,
-      phoneNumber,
-      smsConsent,
-      appointmentId: params.id
-    })
     setSubmitted(true)
   }
 

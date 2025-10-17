@@ -1,7 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
 import {
   PaintBrushIcon,
   PhotoIcon,
@@ -10,18 +8,18 @@ import {
   Cog6ToothIcon,
   ClipboardIcon,
   CheckIcon,
-  CloudArrowUpIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function WebsiteSettingsPage() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [activeTab, setActiveTab] = useState('general')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const [settings, setSettings] = useState({
-    // Basic Info
     name: '',
     tagline: '',
     description: '',
@@ -31,7 +29,6 @@ export default function WebsiteSettingsPage() {
     city: '',
     state: '',
     
-    // Branding
     logo_url: '',
     cover_image_url: '',
     brand_colors: {
@@ -47,16 +44,13 @@ export default function WebsiteSettingsPage() {
     },
     theme_preset: 'default',
     
-    // Content
     hero_title: '',
     hero_subtitle: '',
     about_text: '',
     
-    // Settings
     website_enabled: true,
     shop_slug: '',
     
-    // Social Links
     social_links: {
       instagram: '',
       facebook: '',
@@ -64,23 +58,44 @@ export default function WebsiteSettingsPage() {
       twitter: ''
     },
     
-    // SEO
     seo_title: '',
     seo_description: '',
     seo_keywords: ''
   })
 
-  // Get current barbershop ID (demo implementation)
-  const [shopId, setShopId] = useState('demo-barbershop')
+  const [barbershopId, setShopId] = useState(null)
   
-  // In a real implementation, you'd get this from user context or API
   useEffect(() => {
-    // For demo purposes, we'll use a fixed shop ID
-    // In production, this would come from the authenticated user's barbershop
-    setShopId('demo-barbershop')
-  }, [])
+    if (user?.id) {
+      // Get barbershop_id from user profile
+      const fetchUserShopId = async () => {
+        try {
+          const response = await fetch('/api/profile')
+          if (response.ok) {
+            const { profile } = await response.json()
+            if (profile?.barbershop_id) {
+              setShopId(profile.barbershop_id)
+            } else {
+              // If no barbershop_id in profile, check if user owns any barbershops
+              const shopResponse = await fetch('/api/barbershops/user-shops')
+              if (shopResponse.ok) {
+                const { shops } = await shopResponse.json()
+                if (shops && shops.length > 0) {
+                  setShopId(shops[0].id) // Use first owned shop
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user shop ID:', error)
+          setMessage({ type: 'error', text: 'Unable to load your barbershop. Please contact support.' })
+        }
+      }
+      
+      fetchUserShopId()
+    }
+  }, [user])
 
-  // Tabs configuration
   const tabs = [
     { id: 'general', name: 'General', icon: Cog6ToothIcon },
     { id: 'branding', name: 'Branding', icon: PaintBrushIcon },
@@ -89,7 +104,6 @@ export default function WebsiteSettingsPage() {
     { id: 'preview', name: 'Preview', icon: EyeIcon }
   ]
 
-  // Predefined theme presets
   const themePresets = [
     {
       id: 'default',
@@ -113,63 +127,50 @@ export default function WebsiteSettingsPage() {
     }
   ]
 
-  // Load settings on component mount
   useEffect(() => {
-    loadSettings()
-  }, [])
+    if (barbershopId) {
+      loadSettings()
+    }
+  }, [barbershopId])
 
   const loadSettings = async () => {
+    if (!barbershopId) return
+    
     setLoading(true)
     try {
-      // First, try to create demo data if it doesn't exist
-      const demoResponse = await fetch('/api/demo/setup', { method: 'POST' })
-      const demoResult = await demoResponse.json()
-      
-      let actualShopId = shopId
-      if (demoResult.shopId) {
-        actualShopId = demoResult.shopId
-        setShopId(actualShopId)
-      }
-
-      const response = await fetch(`/api/customization/${actualShopId}/settings`)
+      const response = await fetch(`/api/customization/${barbershopId}/settings`)
       if (response.ok) {
         const { data } = await response.json()
         setSettings({
           ...settings,
           ...data,
-          // Ensure all required fields have defaults
           brand_colors: data.brand_colors || settings.brand_colors,
           custom_fonts: data.custom_fonts || settings.custom_fonts,
           social_links: data.social_links || settings.social_links
         })
         setMessage({ type: 'success', text: 'Settings loaded successfully' })
+      } else if (response.status === 404) {
+        setMessage({ type: 'info', text: 'No custom settings found - using defaults. Save to create your website customization.' })
       } else {
-        // If it still fails, use default settings
-        setMessage({ type: 'info', text: 'Using default settings - save to create your barbershop profile' })
+        setMessage({ type: 'error', text: 'Failed to load settings' })
       }
     } catch (error) {
       console.error('Error loading settings:', error)
-      setMessage({ type: 'error', text: 'Using default settings - save to create your profile' })
+      setMessage({ type: 'error', text: 'Error loading settings: ' + error.message })
     } finally {
       setLoading(false)
     }
   }
 
   const saveSettings = async () => {
+    if (!barbershopId) {
+      setMessage({ type: 'error', text: 'No barbershop found. Please contact support.' })
+      return
+    }
+    
     setSaving(true)
     try {
-      // First create a barbershop record if it doesn't exist
-      const createResponse = await fetch('/api/demo/simple-setup', { method: 'POST' })
-      const createResult = await createResponse.json()
-      
-      let actualShopId = shopId
-      if (createResult.shopId) {
-        actualShopId = createResult.shopId
-        setShopId(actualShopId)
-      }
-
-      // Then save the settings
-      const response = await fetch(`/api/customization/${actualShopId}/settings`, {
+      const response = await fetch(`/api/customization/${barbershopId}/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -178,7 +179,9 @@ export default function WebsiteSettingsPage() {
       })
 
       if (response.ok) {
-        setMessage({ type: 'success', text: 'Settings saved successfully!' })
+        setMessage({ type: 'success', text: 'Website settings saved successfully!' })
+        // Reload settings to get any server-side updates
+        await loadSettings()
       } else {
         const errorData = await response.json()
         setMessage({ type: 'error', text: errorData.error || 'Failed to save settings' })
@@ -188,7 +191,6 @@ export default function WebsiteSettingsPage() {
       setMessage({ type: 'error', text: 'Failed to save settings: ' + error.message })
     } finally {
       setSaving(false)
-      // Clear message after 5 seconds for better UX
       setTimeout(() => setMessage({ type: '', text: '' }), 5000)
     }
   }
@@ -228,7 +230,7 @@ export default function WebsiteSettingsPage() {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('type', uploadType)
-    formData.append('shopId', shopId)
+    formData.append('barbershopId', barbershopId)
 
     try {
       const response = await fetch('/api/customization/upload', {
@@ -258,10 +260,15 @@ export default function WebsiteSettingsPage() {
     handleInputChange('shop_slug', slug)
   }
 
-  if (loading) {
+  if (loading || !barbershopId) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">
+            {!barbershopId ? 'Loading your barbershop...' : 'Loading website settings...'}
+          </p>
+        </div>
       </div>
     )
   }
@@ -872,9 +879,7 @@ export default function WebsiteSettingsPage() {
                       <div className="flex space-x-3">
                         <button
                           onClick={() => {
-                            // Save current settings to localStorage for preview
                             localStorage.setItem('preview-barbershop', JSON.stringify(settings))
-                            // Open preview page
                             window.open('/barbershop/preview', '_blank')
                           }}
                           className="text-sm text-olive-600 hover:text-olive-800 underline font-medium"

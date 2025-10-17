@@ -1,0 +1,41 @@
+[Unit]
+Description=Profile Health Monitor - 6FB AI Agent System
+Documentation=https://docs.6fbagent.com/monitoring
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/6fb-ai-agent
+ExecStart=/usr/bin/node scripts/automated-health-check.js --interval=300
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=30
+
+# Environment
+Environment=NODE_ENV=production
+Environment=LOG_LEVEL=info
+EnvironmentFile=-/etc/default/6fb-health-monitor
+
+# Security
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/www/6fb-ai-agent/logs
+
+# Resource limits
+LimitNOFILE=4096
+MemoryMax=256M
+CPUQuota=10%
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=profile-health-monitor
+
+[Install]
+WantedBy=multi-user.target

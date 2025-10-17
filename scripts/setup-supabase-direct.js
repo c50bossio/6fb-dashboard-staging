@@ -8,7 +8,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables from .env.local
 const envPath = join(__dirname, '../.env.local')
 try {
   const envContent = readFileSync(envPath, 'utf8')
@@ -23,25 +22,17 @@ try {
     }
   })
 } catch (error) {
-  console.log('Warning: Could not load .env.local file')
+  
 }
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-console.log('🚀 Setting up Supabase database directly...')
-console.log('URL:', supabaseUrl)
-
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function setupSupabase() {
-  console.log('\n📋 Step 1: Creating barbershops table...')
-  
-  // Since we can't execute raw SQL easily, let's insert test data directly
-  // and assume tables exist or will be created through the dashboard
-  
+
   try {
-    // Test connection and try to insert a barbershop
     const testBarbershop = {
       name: 'The Classic Cut',
       slug: 'classic-cut-demo-' + Date.now(),
@@ -53,7 +44,6 @@ async function setupSupabase() {
       is_active: true
     }
 
-    console.log('🔍 Testing barbershop insertion...')
     const { data: barbershop, error: barbershopError } = await supabase
       .from('barbershops')
       .insert(testBarbershop)
@@ -62,20 +52,14 @@ async function setupSupabase() {
 
     if (barbershopError) {
       if (barbershopError.message.includes('does not exist')) {
-        console.log('❌ Tables do not exist yet. Please create them manually in Supabase dashboard.')
-        console.log('📋 Go to: https://supabase.com/dashboard/project/dfhqjdoydihajmjxniee')
-        console.log('📋 Open SQL Editor and run: database/setup-calendar-tables.sql')
+
         return false
       } else {
-        console.log('⚠️  Barbershop creation error:', barbershopError.message)
+        
         return false
       }
     }
 
-    console.log('✅ Successfully created barbershop:', barbershop.name)
-
-    // Test barber creation
-    console.log('\n👨‍💼 Step 2: Creating test barber...')
     const testBarber = {
       barbershop_id: barbershop.id,
       name: 'Tony Rodriguez',
@@ -91,14 +75,10 @@ async function setupSupabase() {
       .single()
 
     if (barberError) {
-      console.log('⚠️  Barber creation error:', barberError.message)
+      
       return false
     }
 
-    console.log('✅ Successfully created barber:', barber.name)
-
-    // Test service creation
-    console.log('\n✂️  Step 3: Creating test service...')
     const testService = {
       barbershop_id: barbershop.id,
       name: 'Classic Haircut',
@@ -116,14 +96,10 @@ async function setupSupabase() {
       .single()
 
     if (serviceError) {
-      console.log('⚠️  Service creation error:', serviceError.message)
+      
       return false
     }
 
-    console.log('✅ Successfully created service:', service.name)
-
-    // Test client creation
-    console.log('\n👤 Step 4: Creating test client...')
     const testClient = {
       barbershop_id: barbershop.id,
       name: 'John Smith',
@@ -139,14 +115,10 @@ async function setupSupabase() {
       .single()
 
     if (clientError) {
-      console.log('⚠️  Client creation error:', clientError.message)
+      
       return false
     }
 
-    console.log('✅ Successfully created client:', client.name)
-
-    // Test appointment creation
-    console.log('\n📅 Step 5: Creating test appointment...')
     const appointmentTime = new Date()
     appointmentTime.setHours(appointmentTime.getHours() + 24) // Tomorrow at same time
 
@@ -170,24 +142,13 @@ async function setupSupabase() {
       .single()
 
     if (appointmentError) {
-      console.log('⚠️  Appointment creation error:', appointmentError.message)
+      
       return false
     }
 
-    console.log('✅ Successfully created appointment for:', appointment.client_name)
-
-    console.log('\n🎉 Database setup successful!')
-    console.log('=====================================')
-    console.log('📊 Created test data:')
-    console.log(`   • Barbershop: ${barbershop.name}`)
-    console.log(`   • Barber: ${barber.name}`)
-    console.log(`   • Service: ${service.name} ($${service.price})`)
-    console.log(`   • Client: ${client.name}`)
-    console.log(`   • Appointment: ${appointmentTime.toLocaleDateString()}`)
-    console.log('')
-    console.log('🔗 Test your calendar: http://localhost:9999/dashboard/calendar')
-    console.log('📈 Generate more data: node scripts/create-test-data.js')
-    console.log('')
+    `)
+    
+    }`)
 
     return true
 
@@ -197,14 +158,10 @@ async function setupSupabase() {
   }
 }
 
-// Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   setupSupabase().then(success => {
     if (!success) {
-      console.log('\n💡 Next steps:')
-      console.log('1. Create tables manually in Supabase dashboard')
-      console.log('2. Copy/paste database/setup-calendar-tables.sql')
-      console.log('3. Run this script again: node scripts/setup-supabase-direct.js')
+
       process.exit(1)
     }
   }).catch(console.error)

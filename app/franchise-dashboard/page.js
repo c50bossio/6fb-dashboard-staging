@@ -4,7 +4,12 @@ import { TrendingUp, TrendingDown, MapPin, Users, Calendar, DollarSign, Star, Ba
 import { useState, useEffect } from 'react'
 
 import { Alert, AlertDescription, Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui'
-import { buttonHandlers } from '../lib/buttonHandlers'
+// TODO: Create buttonHandlers utility or replace with direct implementations
+const buttonHandlers = {
+  showNotification: (msg) => console.log('[Notification]', msg),
+  navigateTo: (path) => window.location.href = path,
+  openModal: (type) => console.log('[Modal]', type)
+}
 
 export default function FranchiseDashboard() {
   const [franchiseData, setFranchiseData] = useState(null)
@@ -22,7 +27,6 @@ export default function FranchiseDashboard() {
     try {
       setLoading(true)
       
-      // Fetch franchise overview data
       const [franchiseRes, locationsRes, performanceRes] = await Promise.all([
         fetch('/api/franchise/overview'),
         fetch('/api/franchise/locations'),

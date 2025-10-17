@@ -1,17 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '@/components/SupabaseAuthProvider'
-import { 
+import {
   CalendarDaysIcon,
   UserGroupIcon,
   ClockIcon,
   CurrencyDollarIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   PlusIcon,
   PhoneIcon,
-  EnvelopeIcon,
   CheckCircleIcon,
   XCircleIcon,
   ExclamationTriangleIcon,
@@ -21,6 +17,8 @@ import {
   MapPinIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/components/SupabaseAuthProvider'
 
 export default function ShopBookingsManagement() {
   const { user, profile } = useAuth()

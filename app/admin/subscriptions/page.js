@@ -1,17 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useAuth } from '../../../components/SupabaseAuthProvider'
 import { useRouter } from 'next/navigation'
-import LoadingSpinner from '../../../components/LoadingSpinner'
-import { useAdminAuth } from '../../../hooks/useAdminAuth'
-
-// Admin components
-import RevenueMetrics from '../../../components/admin/RevenueMetrics'
-import SubscriptionTable from '../../../components/admin/SubscriptionTable'
+import { useState, useEffect } from 'react'
+import AdminHeader from '../../../components/admin/AdminHeader'
 import GrowthChart from '../../../components/admin/GrowthChart'
 import PaymentIssues from '../../../components/admin/PaymentIssues'
-import AdminHeader from '../../../components/admin/AdminHeader'
+import RevenueMetrics from '../../../components/admin/RevenueMetrics'
+import SubscriptionTable from '../../../components/admin/SubscriptionTable'
+import LoadingSpinner from '../../../components/LoadingSpinner'
+import { useAuth } from '../../../components/SupabaseAuthProvider'
+import { useAdminAuth } from '../../../hooks/useAdminAuth'
+
 
 export default function AdminSubscriptionsPage() {
   const { user, loading: authLoading } = useAuth()
@@ -19,13 +18,11 @@ export default function AdminSubscriptionsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   
-  // Dashboard data states
   const [metrics, setMetrics] = useState(null)
   const [subscriptions, setSubscriptions] = useState([])
   const [paymentIssues, setPaymentIssues] = useState([])
   const [refreshing, setRefreshing] = useState(false)
   
-  // Filters and pagination
   const [filters, setFilters] = useState({
     search: '',
     tier: 'all',
@@ -40,7 +37,6 @@ export default function AdminSubscriptionsPage() {
     totalPages: 0
   })
 
-  // Check admin authentication and load data
   useEffect(() => {
     if (authLoading || adminLoading) return
     
@@ -54,16 +50,13 @@ export default function AdminSubscriptionsPage() {
       return
     }
 
-    // User is authenticated and is admin, load dashboard data
     loadDashboardData().finally(() => setLoading(false))
   }, [user, authLoading, isAdmin, adminLoading, router])
 
-  // Load dashboard data
   const loadDashboardData = async () => {
     try {
       setRefreshing(true)
       
-      // Load metrics, subscriptions, and payment issues in parallel
       const [metricsRes, subscriptionsRes, paymentIssuesRes] = await Promise.all([
         fetch('/api/admin/subscriptions/metrics?period=30d'),
         fetch(`/api/admin/subscriptions/list?${buildQueryString()}`),
@@ -92,7 +85,6 @@ export default function AdminSubscriptionsPage() {
     }
   }
 
-  // Build query string for API calls
   const buildQueryString = () => {
     const params = new URLSearchParams()
     
@@ -108,23 +100,19 @@ export default function AdminSubscriptionsPage() {
     return params.toString()
   }
 
-  // Handle filter changes
   const handleFilterChange = (newFilters) => {
     setFilters({ ...filters, ...newFilters })
     setPagination({ ...pagination, page: 1 })
   }
 
-  // Handle pagination
   const handlePageChange = (newPage) => {
     setPagination({ ...pagination, page: newPage })
   }
 
-  // Refresh dashboard
   const handleRefresh = () => {
     loadDashboardData()
   }
 
-  // Handle subscription management actions
   const handleSubscriptionAction = async (action, subscriptionId, options = {}) => {
     try {
       const response = await fetch('/api/admin/subscriptions/manage', {
@@ -145,7 +133,6 @@ export default function AdminSubscriptionsPage() {
         throw new Error(result.error || 'Action failed')
       }
 
-      // Show success message and refresh data
       alert(`Successfully ${action.replace('_', ' ')} for user`)
       await loadDashboardData()
     } catch (error) {
@@ -154,7 +141,6 @@ export default function AdminSubscriptionsPage() {
     }
   }
 
-  // Export subscriptions to CSV
   const handleExportCSV = async () => {
     try {
       const response = await fetch(`/api/admin/subscriptions/list?${buildQueryString()}&export=csv`)
@@ -178,7 +164,6 @@ export default function AdminSubscriptionsPage() {
     }
   }
 
-  // Re-load data when filters or pagination change
   useEffect(() => {
     if (isAdmin) {
       loadDashboardData()

@@ -3,9 +3,6 @@ import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
 
-// Demo barbershop ID constant - matches Supabase UUID
-const DEMO_BARBERSHOP_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
-
 // Validation schema for services
 const serviceSchema = z.object({
   barbershop_id: z.string().uuid(),
@@ -20,8 +17,8 @@ const serviceSchema = z.object({
 // GET /api/services - Fetch services
 export async function GET(request) {
   try {
-    const supabase = createClient()
-    
+    const supabase = await createClient()
+
     // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
@@ -57,133 +54,19 @@ export async function GET(request) {
     const { data: services, error } = await query
 
     if (error) {
-      console.warn('Database query failed, using mock data:', error.message)
-      
-      // Mock services data for demo/development
-      const mockServices = [
+      console.error('Database query failed:', error.message)
+      return NextResponse.json(
         {
-          id: 'service-001',
-          name: 'Classic Haircut',
-          description: 'Traditional haircut with scissors and clippers',
-          price: 35,
-          duration_minutes: 30,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Hair'
+          error: 'Failed to fetch services',
+          details: error.message,
+          hint: 'Please ensure services are created in your barbershop settings'
         },
-        {
-          id: 'service-002',
-          name: 'Fade Cut',
-          description: 'Modern fade haircut with precise blending',
-          price: 45,
-          duration_minutes: 45,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Hair'
-        },
-        {
-          id: 'service-003',
-          name: 'Beard Trim',
-          description: 'Professional beard shaping and trimming',
-          price: 25,
-          duration_minutes: 20,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Beard'
-        },
-        {
-          id: 'service-004',
-          name: 'Hot Towel Shave',
-          description: 'Luxury hot towel shave with straight razor',
-          price: 50,
-          duration_minutes: 45,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Shave'
-        },
-        {
-          id: 'service-005',
-          name: 'Hair & Beard Combo',
-          description: 'Complete haircut and beard grooming package',
-          price: 60,
-          duration_minutes: 60,
-          barbershop_id: barbershop_id || DEMO_BARBERSHOP_ID,
-          is_active: true,
-          category: 'Package'
-        }
-      ]
-
-      // Filter by active status and category
-      let finalServices = active_only ? mockServices.filter(s => s.is_active) : mockServices
-      if (category) {
-        finalServices = finalServices.filter(s => s.category === category)
-      }
-      
-      // Group services by category
-      const servicesByCategory = finalServices.reduce((acc, service) => {
-        const cat = service.category || 'General'
-        if (!acc[cat]) {
-          acc[cat] = []
-        }
-        acc[cat].push(service)
-        return acc
-      }, {})
-
-      return NextResponse.json({
-        services: finalServices,
-        servicesByCategory,
-        total: finalServices.length
-      })
-    }
-
-    // If no services found, try to get default services from payment service
-    let finalServices = services
-    if (services.length === 0) {
-      try {
-        const { spawn } = await import('child_process')
-        const path = await import('path')
-        
-        const scriptPath = path.join(process.cwd(), 'scripts', 'payment_api.py')
-        const pythonProcess = spawn('python3', [scriptPath, 'get-services'], {
-          stdio: ['pipe', 'pipe', 'pipe']
-        })
-
-        pythonProcess.stdin.write('{}')
-        pythonProcess.stdin.end()
-
-        const result = await new Promise((resolve) => {
-          let stdout = ''
-          pythonProcess.stdout.on('data', (data) => {
-            stdout += data.toString()
-          })
-          pythonProcess.on('close', () => {
-            try {
-              resolve(JSON.parse(stdout.trim()))
-            } catch {
-              resolve({ success: false, services: [] })
-            }
-          })
-        })
-
-        if (result.success && result.services) {
-          finalServices = result.services.map(service => ({
-            id: service.service_id,
-            name: service.name,
-            price: service.base_price,
-            duration_minutes: service.duration_minutes,
-            category: service.category,
-            deposit_required: service.deposit_required,
-            deposit_percentage: service.deposit_percentage,
-            is_active: true
-          }))
-        }
-      } catch (error) {
-        console.error('Failed to fetch default services:', error)
-      }
+        { status: 500 }
+      )
     }
 
     // Group services by category
-    const servicesByCategory = finalServices.reduce((acc, service) => {
+    const servicesByCategory = (services || []).reduce((acc, service) => {
       const category = service.category || 'General'
       if (!acc[category]) {
         acc[category] = []
@@ -193,9 +76,9 @@ export async function GET(request) {
     }, {})
 
     return NextResponse.json({
-      services: finalServices,
+      services: services || [],
       servicesByCategory,
-      total: finalServices.length
+      total: services?.length || 0
     })
 
   } catch (error) {
@@ -207,8 +90,8 @@ export async function GET(request) {
 // POST /api/services - Create new service
 export async function POST(request) {
   try {
-    const supabase = createClient()
-    
+    const supabase = await createClient()
+
     // Get user session
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {

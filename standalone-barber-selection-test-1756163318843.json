@@ -1,0 +1,77 @@
+{
+  "timestamp": "2025-08-25T23:08:08.876Z",
+  "testSuite": "Standalone Barber Auto-Selection Test",
+  "totalTests": 6,
+  "passed": 4,
+  "failed": 1,
+  "warnings": 1,
+  "tests": [
+    {
+      "test": "PRIORITY_1_APPOINTMENT",
+      "status": "PASS",
+      "message": "Appointment-based auto-selection working correctly",
+      "details": null,
+      "timestamp": "2025-08-25T23:08:12.846Z"
+    },
+    {
+      "test": "CHANGE_BARBER_P1",
+      "status": "PASS",
+      "message": "Change Barber functionality working from appointment selection",
+      "details": null,
+      "timestamp": "2025-08-25T23:08:13.362Z"
+    },
+    {
+      "test": "PRIORITY_2_LOGGED_IN",
+      "status": "PASS",
+      "message": "Logged-in barber auto-selection working correctly",
+      "details": null,
+      "timestamp": "2025-08-25T23:08:14.473Z"
+    },
+    {
+      "test": "PRIORITY_3_MANUAL",
+      "status": "PASS",
+      "message": "Manual barber selection working correctly",
+      "details": null,
+      "timestamp": "2025-08-25T23:08:16.061Z"
+    },
+    {
+      "test": "SELECTION_VALIDATION",
+      "status": "WARNING",
+      "message": "Could not test validation: Protocol error (Input.dispatchMouseEvent): Target closed",
+      "details": null,
+      "timestamp": "2025-08-25T23:08:38.842Z"
+    },
+    {
+      "test": "MOBILE_RESPONSIVENESS",
+      "status": "FAIL",
+      "message": "Mobile test failed: Protocol error (Emulation.setTouchEmulationEnabled): Session closed. Most likely the page has been closed.",
+      "details": null,
+      "timestamp": "2025-08-25T23:08:38.842Z"
+    }
+  ],
+  "screenshots": [
+    "/Users/bossio/6FB AI Agent System/test-screenshots/01-mock-interface-loaded.png",
+    "/Users/bossio/6FB AI Agent System/test-screenshots/02-priority-1-appointment-selection.png",
+    "/Users/bossio/6FB AI Agent System/test-screenshots/03-change-barber-from-appointment.png",
+    "/Users/bossio/6FB AI Agent System/test-screenshots/04-priority-2-logged-in-barber.png",
+    "/Users/bossio/6FB AI Agent System/test-screenshots/05-priority-3-manual-selection.png",
+    "/Users/bossio/6FB AI Agent System/test-screenshots/06-manual-barber-selected.png"
+  ],
+  "summary": {
+    "successRate": "66.7%",
+    "totalTests": 6,
+    "passed": 4,
+    "failed": 1,
+    "warnings": 1,
+    "overallStatus": "FAIL"
+  },
+  "testEnvironment": {
+    "baseUrl": "http://localhost:9999",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "timestamp": "2025-08-25T23:08:38.843Z",
+    "testType": "Standalone Mock Interface"
+  }
+}

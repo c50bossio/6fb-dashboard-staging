@@ -1,0 +1,421 @@
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import { getDisplayName, splitFullName, combineNames, normalizeNameData, createNameUpdateObject } from '@/lib/name-utils'
+import { createClient } from '@/lib/supabase/server'
+// Using SendGrid directly for edge runtime compatibility
+
+// SendGrid email service with retry logic for edge runtime
+async function sendInvitationEmail({ to, subject, html }, retryCount = 0) {
+  const MAX_RETRIES = 3
+  const RETRY_DELAY = [1000, 2000, 4000] // Exponential backoff: 1s, 2s, 4s
+  
+  if (!process.env.SENDGRID_API_KEY) {
+    return { success: false, error: 'SendGrid not configured' }
+  }
+  
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: to }] }],
+        from: { 
+          email: process.env.SENDGRID_FROM_EMAIL || 'support@em3014.6fbmentorship.com',
+          name: process.env.SENDGRID_FROM_NAME || 'BookedBarber'
+        },
+        subject,
+        content: [{ type: 'text/html', value: html }]
+      }),
+      signal: controller.signal
+    })
+    
+    clearTimeout(timeoutId)
+    
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`SendGrid API error: ${response.status} - ${errorText}`)
+    }
+    
+    return { success: true }
+  } catch (error) {
+    console.error(`SendGrid attempt ${retryCount + 1} failed:`, error.message)
+    
+    // Retry on network errors, timeouts, or 5xx server errors
+    const shouldRetry = retryCount < MAX_RETRIES && (
+      error.name === 'AbortError' || // Timeout
+      error.message.includes('fetch failed') || // Network error
+      error.message.includes('5') // 5xx server error
+    )
+    
+    if (shouldRetry) {
+      
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY[retryCount]))
+      return sendInvitationEmail({ to, subject, html }, retryCount + 1)
+    }
+    
+    return { 
+      success: false, 
+      error: `Email delivery failed after ${retryCount + 1} attempts: ${error.message}`
+    }
+  }
+}
+
+// Generate secure invitation token
+function generateInvitationToken() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let token = ''
+  for (let i = 0; i < 32; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return token
+}
+
+export async function POST(request) {
+  try {
+    const cookieStore = cookies()
+    const supabase = createClient(cookieStore)
+    
+    // Verify authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    const body = await request.json()
+    const { email, full_name, firstName, lastName, first_name, last_name, role = 'BARBER', barbershopId, sendEmail = true } = body
+    
+    if (!email || !barbershopId) {
+      return NextResponse.json(
+        { error: 'Email and barbershop ID are required' },
+        { status: 400 }
+      )
+    }
+    
+    // Verify user owns or manages this barbershop
+    const { data: barbershop } = await supabase
+      .from('barbershops')
+      .select('id, name, owner_id')
+      .eq('id', barbershopId)
+      .single()
+    
+    if (!barbershop || barbershop.owner_id !== user.id) {
+      return NextResponse.json(
+        { error: 'You do not have permission to invite staff to this barbershop' },
+        { status: 403 }
+      )
+    }
+    
+    // Check if user already exists
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('id, full_name, first_name, last_name')
+      .eq('email', email)
+      .single()
+    
+    if (existingUser) {
+      // Check if already a staff member
+      const { data: existingStaff } = await supabase
+        .from('barbershop_staff')
+        .select('id')
+        .eq('barbershop_id', barbershopId)
+        .eq('user_id', existingUser.id)
+        .single()
+      
+      if (existingStaff) {
+        return NextResponse.json(
+          { error: 'This person is already a staff member' },
+          { status: 409 }
+        )
+      }
+      
+      // User exists but not staff - add them directly
+      const { data: staffMember, error: staffError } = await supabase
+        .from('barbershop_staff')
+        .insert({
+          barbershop_id: barbershopId,
+          user_id: existingUser.id,
+          role: role,
+          is_active: true,
+          metadata: {
+            invited_by: user.id,
+            invited_at: new Date().toISOString(),
+            ...normalizeNameData({ 
+              fullName: full_name, 
+              firstName: firstName || first_name,
+              lastName: lastName || last_name 
+            }) || normalizeNameData({
+              fullName: existingUser.full_name,
+              firstName: existingUser.first_name,
+              lastName: existingUser.last_name
+            })
+          }
+        })
+        .select()
+        .single()
+      
+      if (staffError) {
+        throw staffError
+      }
+      
+      // Create financial arrangement if financial data provided
+      const { financialModel, commissionRate, paymentMethod, bankAccount, enableStripeConnect } = body
+      if (financialModel) {
+        const arrangementData = {
+          barbershop_id: barbershopId,
+          barber_id: existingUser.id,
+          arrangement_type: financialModel,
+          is_active: true,
+          effective_date: new Date().toISOString().split('T')[0],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+        
+        // Add type-specific fields
+        if (financialModel === 'commission') {
+          arrangementData.commission_percentage = commissionRate || 60
+        } else if (financialModel === 'booth_rent') {
+          arrangementData.booth_rent_amount = body.boothRentAmount || 1500
+          arrangementData.rent_due_day = body.rentDueDay || 1
+          arrangementData.grace_period_days = body.gracePeriod || 3
+          arrangementData.late_fee_amount = body.lateFeeAmount || 50
+        } else if (financialModel === 'hybrid') {
+          arrangementData.hybrid_commission_rate = commissionRate || 40
+          arrangementData.hybrid_base_rent = body.hybridBaseRent || 800
+          arrangementData.hybrid_revenue_threshold = body.hybridThreshold || 3000
+          arrangementData.rent_due_day = body.rentDueDay || 1
+        }
+        
+        // Add payment collection settings
+        if (paymentMethod) {
+          // For Stripe Connect, we'll set up the account later
+          if (enableStripeConnect) {
+            arrangementData.barber_stripe_onboarded = false
+            // Stripe account will be created in a separate step
+          } else if (bankAccount) {
+            // Manual payout details
+            arrangementData.payment_method_priority = ['ach']
+            // Note: We don't store full bank details for security
+          }
+        }
+        
+        arrangementData.auto_collect_enabled = body.autoCollect !== false
+        arrangementData.allow_partial_payments = body.allowPartialPayments !== false
+        
+        const { error: arrangementError } = await supabase
+          .from('financial_arrangements')
+          .insert(arrangementData)
+        
+        if (arrangementError) {
+          console.error('Failed to create financial arrangement:', arrangementError)
+          // Don't fail the whole operation if financial arrangement fails
+        }
+      }
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Staff member added successfully',
+        data: staffMember,
+        existingUser: true
+      })
+    } else {
+      // User doesn't exist - create pending invitation
+      // Generate invitation token
+      const invitationToken = generateInvitationToken()
+      const expiresAt = new Date()
+      expiresAt.setDate(expiresAt.getDate() + 7) // 7 days expiry
+      
+      // Extract financial data from body
+      const { financialModel, commissionRate, paymentMethod, bankAccount } = body
+      
+      // Store as pending staff with invitation metadata
+      const { data: pendingStaff, error: pendingError } = await supabase
+        .from('barbershop_staff')
+        .insert({
+          barbershop_id: barbershopId,
+          user_id: user.id, // Temporarily use inviter's ID
+          role: role,
+          is_active: false, // Mark as inactive until accepted
+          metadata: {
+            pending_invitation: true,
+            invitation_token: invitationToken,
+            invited_email: email,
+            invited_name: full_name || combineNames(firstName || first_name, lastName || last_name),
+            invited_by: user.id,
+            invited_at: new Date().toISOString(),
+            expires_at: expiresAt.toISOString(),
+            invitation_status: 'pending',
+            // Store financial setup to apply when invitation is accepted
+            pending_financial_arrangement: financialModel ? {
+              arrangement_type: financialModel,
+              commission_percentage: financialModel === 'commission' || financialModel === 'hybrid' ? (commissionRate || 60) : null,
+              booth_rent_amount: financialModel === 'booth_rent' ? (body.boothRentAmount || 1500) : null,
+              hybrid_base_rent: financialModel === 'hybrid' ? (body.hybridBaseRent || 800) : null,
+              hybrid_revenue_threshold: financialModel === 'hybrid' ? (body.hybridThreshold || 3000) : null,
+              rent_due_day: financialModel === 'booth_rent' || financialModel === 'hybrid' ? (body.rentDueDay || 1) : null,
+              payment_method: paymentMethod || null,
+              bank_account_last4: bankAccount ? bankAccount.slice(-4) : null,
+              routing_number: body.routingNumber || null
+            } : null
+          }
+        })
+        .select()
+        .single()
+      
+      if (pendingError) {
+        // Check if already invited
+        if (pendingError.code === '23505') {
+          return NextResponse.json(
+            { error: 'An invitation has already been sent to this person' },
+            { status: 409 }
+          )
+        }
+        throw pendingError
+      }
+      
+      // Send invitation email if enabled
+      let emailResult = { success: false }
+      if (sendEmail && process.env.SENDGRID_API_KEY) {
+        const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://bookedbarber.com'}/accept-invitation?token=${invitationToken}`
+        
+        emailResult = await sendInvitationEmail({
+          to: email,
+          subject: `You're invited to join ${barbershop.name} on Booked Barber`,
+          html: generateInvitationEmailHTML({
+            recipientName: getDisplayName({
+              fullName: full_name,
+              firstName: firstName || first_name,
+              lastName: lastName || last_name,
+              defaultName: 'there'
+            }),
+            barbershopName: barbershop.name,
+            inviterName: user.email,
+            invitationUrl,
+            role
+          })
+        })
+        
+        if (!emailResult.success) {
+          console.error('Failed to send invitation email:', emailResult.error)
+        }
+      }
+      
+      return NextResponse.json({
+        success: true,
+        message: emailResult.success 
+          ? `Invitation sent to ${email}` 
+          : `Invitation created for ${email}${!process.env.SENDGRID_API_KEY ? ' (email not configured)' : ' (email delivery failed)'}`,
+        data: {
+          id: pendingStaff.id,
+          email,
+          full_name: full_name || combineNames(firstName || first_name, lastName || last_name),
+          firstName: firstName || first_name,
+          lastName: lastName || last_name,
+          role,
+          invitation_token: invitationToken,
+          expires_at: expiresAt.toISOString(),
+          email_sent: emailResult.success,
+          email_error: emailResult.success ? null : emailResult.error
+        },
+        requiresSignup: true,
+        instructions: (sendEmail && emailResult.success) ? [
+          `✅ Invitation email delivered to ${email}`,
+          'They will receive a link to join your barbershop',
+          'The invitation expires in 7 days',
+          'Once they accept, they will appear in your staff list'
+        ] : (sendEmail && !emailResult.success) ? [
+          `⚠️ Email delivery failed, but invitation was created`,
+          `Share this invitation link manually with ${full_name || 'the staff member'}:`,
+          `${process.env.NEXT_PUBLIC_APP_URL || 'https://bookedbarber.com'}/accept-invitation?token=${invitationToken}`,
+          'The invitation expires in 7 days',
+          'Once they accept, they will appear in your staff list'
+        ] : [
+          `Share this invitation link with ${full_name || 'the staff member'}:`,
+          `${process.env.NEXT_PUBLIC_APP_URL || 'https://bookedbarber.com'}/accept-invitation?token=${invitationToken}`,
+          'The invitation expires in 7 days',
+          'Once they accept, they will appear in your staff list'
+        ]
+      })
+    }
+    
+  } catch (error) {
+    console.error('Error inviting staff:', error)
+    return NextResponse.json(
+      { error: 'Failed to process invitation' },
+      { status: 500 }
+    )
+  }
+}
+
+// Generate invitation email HTML with BookedBarber branding
+function generateInvitationEmailHTML({ recipientName, barbershopName, inviterName, invitationUrl, role }) {
+  // BookedBarber Brand Colors
+  const colors = {
+    primary: '#3C4A3E',     // Deep Olive
+    gold: '#B8913A',        // BookedBarber Gold
+    goldLight: '#C5A35B',   // Rich Gold
+    goldAccent: '#D4A94A',  // Lighter Gold
+    text: '#1F2320',        // Gunmetal
+    textLight: '#4a4f4a',   // Medium gray
+    background: '#FFFFFF',
+    backgroundLight: '#f8f9fa',
+    backgroundSand: '#EAE3D2',  // Light Sand
+    warning: '#E6B655'      // Amber for warning
+  }
+  
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitation to Join ${barbershopName}</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: ${colors.text}; margin: 0; padding: 0; background-color: ${colors.backgroundLight};">
+    <div style="max-width: 600px; margin: 40px auto; background: ${colors.background}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.07);">
+        <div style="background: ${colors.primary}; color: white; padding: 40px 30px; text-align: center; position: relative;">
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: ${colors.gold};"></div>
+            <h1 style="margin: 0; font-size: 28px; font-weight: 600;">You're Invited!</h1>
+            <p style="margin: 10px 0 0; opacity: 0.95; font-size: 16px; color: ${colors.goldLight};">Join ${barbershopName} on BookedBarber</p>
+        </div>
+        <div style="padding: 40px 30px;">
+            <h2 style="color: ${colors.primary}; margin-top: 0; font-size: 20px;">Hi ${recipientName},</h2>
+            <p style="color: ${colors.textLight}; font-size: 16px; line-height: 1.6;">
+                ${inviterName} has invited you to join <strong style="color: ${colors.primary};">${barbershopName}</strong> as a <strong style="color: ${colors.gold};">${role.toLowerCase()}</strong> on BookedBarber - the modern platform for barbershop management.
+            </p>
+            
+            <div style="background: ${colors.backgroundSand}; border-left: 4px solid ${colors.gold}; padding: 20px; margin: 30px 0; border-radius: 4px;">
+                <h3 style="margin: 0 0 15px; color: ${colors.primary}; font-size: 16px;">What you'll get access to:</h3>
+                <ul style="margin: 0; padding-left: 20px; color: ${colors.textLight};">
+                    <li>Manage your appointments and schedule</li>
+                    <li>Track your clients and their preferences</li>
+                    <li>View your performance and earnings</li>
+                    <li>Access the shop's booking system</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0;">
+                <a href="${invitationUrl}" style="display: inline-block; background: ${colors.primary}; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background 0.2s;">Accept Invitation</a>
+            </div>
+            
+            <div style="background: #fff8e1; border: 1px solid #d4a94a; padding: 15px; border-radius: 6px; margin-top: 30px;">
+                <p style="margin: 0; color: #6b5d16; font-size: 14px;">
+                    <strong>⏰ This invitation expires in 7 days</strong><br>
+                    Please accept it before it expires to join the team.
+                </p>
+            </div>
+            
+            <p style="color: #999; font-size: 14px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                If you're unable to click the button above, copy and paste this link into your browser:<br>
+                <span style="color: ${colors.gold}; word-break: break-all;">${invitationUrl}</span>
+            </p>
+        </div>
+    </div>
+</body>
+</html>`
+}

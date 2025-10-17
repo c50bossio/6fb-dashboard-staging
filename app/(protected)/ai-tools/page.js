@@ -18,11 +18,9 @@ import { useState, lazy, Suspense } from 'react'
 import TabbedPageLayout, { TabContent, EmptyStates } from '../../../components/layout/TabbedPageLayout'
 import { useAuth } from '../../../components/SupabaseAuthProvider'
 
-// Lazy load AI components
 const AIAgentChat = lazy(() => import('../../../components/ai/AIAgentChat'))
 const AITrainingInterface = lazy(() => import('../../../components/ai/AITrainingInterface'))
 
-// AI Dashboard component
 const AIDashboard = () => (
   <div className="space-y-6">
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -147,7 +145,6 @@ const AIDashboard = () => (
   </div>
 )
 
-// AI Performance component with real optimization data
 const AIPerformance = () => {
   const [performanceData, setPerformanceData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -168,7 +165,6 @@ const AIPerformance = () => {
     }
 
     fetchPerformanceData()
-    // Refresh every 10 seconds
     const interval = setInterval(fetchPerformanceData, 10000)
     return () => clearInterval(interval)
   }, [])
@@ -377,7 +373,6 @@ const AIPerformance = () => {
   )
 }
 
-// Knowledge Base component
 const KnowledgeBase = () => (
   <div className="space-y-6">
     <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -442,7 +437,6 @@ const KnowledgeBase = () => (
   </div>
 )
 
-// AI Test Center component with automated testing results
 const AITestCenter = () => {
   const [testingData, setTestingData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -463,7 +457,6 @@ const AITestCenter = () => {
     }
 
     fetchTestingData()
-    // Refresh every 30 seconds
     const interval = setInterval(fetchTestingData, 30000)
     return () => clearInterval(interval)
   }, [])
@@ -680,12 +673,10 @@ const AITestCenter = () => {
 export default function AIToolsPage() {
   const { user, profile } = useAuth()
   
-  // Avoid unused variable warnings - these are required for auth context
   if (!user || !profile) {
     return null
   }
 
-  // Define AI Tools tabs
   const aiToolsTabs = [
     {
       id: 'dashboard',

@@ -11,12 +11,11 @@
 
 const Stripe = require('stripe');
 
-// Load environment variables
 require('dotenv').config({ path: '.env.local' });
 
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error('❌ STRIPE_SECRET_KEY not found in environment variables');
-  console.log('Please make sure your .env.local file contains STRIPE_SECRET_KEY');
+  
   process.exit(1);
 }
 
@@ -25,11 +24,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 async function setupStripeProducts() {
-  console.log('🚀 Setting up Stripe products for BookedBarber...\n');
 
   try {
-    // Create Individual Barber Product
-    console.log('Creating Individual Barber product...');
+    
     const barberProduct = await stripe.products.create({
       name: 'Individual Barber',
       description: 'Perfect for independent barbers and stylists',
@@ -47,7 +44,6 @@ async function setupStripeProducts() {
       }
     });
 
-    // Create prices for Individual Barber
     const barberMonthly = await stripe.prices.create({
       product: barberProduct.id,
       unit_amount: 3500, // $35.00
@@ -76,12 +72,6 @@ async function setupStripeProducts() {
       }
     });
 
-    console.log('✅ Individual Barber product created');
-    console.log(`   Monthly Price ID: ${barberMonthly.id}`);
-    console.log(`   Yearly Price ID: ${barberYearly.id}\n`);
-
-    // Create Barbershop Product
-    console.log('Creating Barbershop product...');
     const shopProduct = await stripe.products.create({
       name: 'Barbershop',
       description: 'Ideal for barbershop owners with multiple barbers',
@@ -101,7 +91,6 @@ async function setupStripeProducts() {
       }
     });
 
-    // Create prices for Barbershop
     const shopMonthly = await stripe.prices.create({
       product: shopProduct.id,
       unit_amount: 9900, // $99.00
@@ -130,12 +119,6 @@ async function setupStripeProducts() {
       }
     });
 
-    console.log('✅ Barbershop product created');
-    console.log(`   Monthly Price ID: ${shopMonthly.id}`);
-    console.log(`   Yearly Price ID: ${shopYearly.id}\n`);
-
-    // Create Multi-Location Enterprise Product
-    console.log('Creating Multi-Location Enterprise product...');
     const enterpriseProduct = await stripe.products.create({
       name: 'Multi-Location Enterprise',
       description: 'For barbershop chains and franchises',
@@ -156,7 +139,6 @@ async function setupStripeProducts() {
       }
     });
 
-    // Create prices for Enterprise
     const enterpriseMonthly = await stripe.prices.create({
       product: enterpriseProduct.id,
       unit_amount: 24900, // $249.00
@@ -185,12 +167,6 @@ async function setupStripeProducts() {
       }
     });
 
-    console.log('✅ Multi-Location Enterprise product created');
-    console.log(`   Monthly Price ID: ${enterpriseMonthly.id}`);
-    console.log(`   Yearly Price ID: ${enterpriseYearly.id}\n`);
-
-    // Create Customer Portal Configuration
-    console.log('Configuring Customer Portal...');
     const portalConfig = await stripe.billingPortal.configurations.create({
       business_profile: {
         headline: 'BookedBarber - Manage Your Subscription',
@@ -250,50 +226,10 @@ async function setupStripeProducts() {
       }
     });
 
-    console.log('✅ Customer Portal configured');
-    console.log(`   Portal Config ID: ${portalConfig.id}\n`);
-
-    // Output environment variables
-    console.log('========================================');
-    console.log('🎉 SUCCESS! Stripe products created');
-    console.log('========================================\n');
-    console.log('Add these to your .env.local file:\n');
-    console.log(`# Stripe Configuration for BookedBarber`);
-    console.log(`STRIPE_SECRET_KEY=${process.env.STRIPE_SECRET_KEY || 'sk_test_YOUR_TEST_KEY_HERE'}`);
-    console.log(`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_PUBLISHABLE_KEY_HERE\n`);
-    console.log(`# Individual Barber Prices`);
-    console.log(`STRIPE_BARBER_PRICE_ID=${barberMonthly.id}`);
-    console.log(`STRIPE_BARBER_PRICE_ID_YEARLY=${barberYearly.id}\n`);
-    console.log(`# Barbershop Prices`);
-    console.log(`STRIPE_SHOP_PRICE_ID=${shopMonthly.id}`);
-    console.log(`STRIPE_SHOP_PRICE_ID_YEARLY=${shopYearly.id}\n`);
-    console.log(`# Enterprise Prices`);
-    console.log(`STRIPE_ENTERPRISE_PRICE_ID=${enterpriseMonthly.id}`);
-    console.log(`STRIPE_ENTERPRISE_PRICE_ID_YEARLY=${enterpriseYearly.id}\n`);
-    console.log(`# Customer Portal`);
-    console.log(`STRIPE_PORTAL_CONFIG_ID=${portalConfig.id}\n`);
-
-    // Create webhook endpoint
-    console.log('Next Step: Configure webhook endpoint in Stripe Dashboard');
-    console.log('=========================================================');
-    console.log('1. Go to: https://dashboard.stripe.com/webhooks');
-    console.log('2. Click "Add endpoint"');
-    console.log('3. Endpoint URL: https://bookbarber.com/api/stripe/webhook');
-    console.log('4. Select events:');
-    console.log('   - checkout.session.completed');
-    console.log('   - customer.subscription.created');
-    console.log('   - customer.subscription.updated');
-    console.log('   - customer.subscription.deleted');
-    console.log('   - invoice.payment_succeeded');
-    console.log('   - invoice.payment_failed');
-    console.log('5. After creation, copy the webhook signing secret');
-    console.log('6. Add to .env.local: STRIPE_WEBHOOK_SECRET=whsec_...\n');
-
   } catch (error) {
     console.error('❌ Error setting up Stripe products:', error.message);
     process.exit(1);
   }
 }
 
-// Run the setup
 setupStripeProducts();

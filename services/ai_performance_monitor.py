@@ -531,7 +531,14 @@ class AIPerformanceMonitor:
         snapshot.overall_score = self._calculate_overall_score(snapshot)
         snapshot.status = self._determine_status(snapshot.overall_score)
         
-        # Store snapshot
+        # Store snapshot - fix JSON serialization of enums
+        snapshot_dict = asdict(snapshot)
+        # Convert enum values to strings for JSON serialization
+        snapshot_dict['model'] = snapshot.model.value
+        snapshot_dict['provider'] = snapshot.provider.value
+        snapshot_dict['status'] = snapshot.status.value
+        snapshot_dict['timestamp'] = snapshot.timestamp.isoformat()
+        
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute('''
@@ -543,7 +550,7 @@ class AIPerformanceMonitor:
                 model.value,
                 provider.value,
                 end_time.timestamp(),
-                json.dumps(asdict(snapshot)),
+                json.dumps(snapshot_dict),
                 snapshot.overall_score,
                 snapshot.status.value
             ))

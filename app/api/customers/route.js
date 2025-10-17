@@ -17,14 +17,17 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit')) || 50
     const offset = parseInt(searchParams.get('offset')) || 0
     const search = searchParams.get('search')
-    const sortBy = searchParams.get('sort_by') || 'last_visit_at'
+    const requestedSortBy = searchParams.get('sort_by') || 'created_at'
     const sortOrder = searchParams.get('sort_order') || 'desc'
+
+    // Valid sortable columns in customers table
+    const validSortColumns = ['name', 'phone', 'email', 'created_at', 'updated_at', 'total_visits', 'total_spent', 'vip_status']
+    const sortBy = validSortColumns.includes(requestedSortBy) ? requestedSortBy : 'created_at'
 
     let query = supabase
       .from('customers')
       .select('*')
-      .eq('shop_id', barbershopId)
-      .eq('is_active', true)
+      .eq('barbershop_id', barbershopId)
       .range(offset, offset + limit - 1)
 
     // Add search functionality
@@ -49,8 +52,7 @@ export async function GET(request) {
     let countQuery = supabase
       .from('customers')
       .select('id', { count: 'exact', head: true })
-      .eq('shop_id', barbershopId)
-      .eq('is_active', true)
+      .eq('barbershop_id', barbershopId)
 
     if (search) {
       countQuery = countQuery.or(`name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
@@ -109,8 +111,7 @@ export async function POST(request) {
     let existingQuery = supabase
       .from('customers')
       .select('id, name, phone, email')
-      .eq('shop_id', barbershop_id)
-      .eq('is_active', true)
+      .eq('barbershop_id', barbershop_id)
 
     if (phone && email) {
       existingQuery = existingQuery.or(`phone.eq.${phone},email.eq.${email}`)
@@ -136,7 +137,7 @@ export async function POST(request) {
     const { data: customer, error } = await supabase
       .from('customers')
       .insert([{
-        shop_id: barbershop_id,
+        barbershop_id: barbershop_id,
         name,
         phone,
         email,
@@ -145,7 +146,6 @@ export async function POST(request) {
         notification_preferences,
         total_visits: 0,
         total_spent: 0,
-        is_active: true,
         vip_status: false
       }])
       .select()

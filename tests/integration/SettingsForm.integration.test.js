@@ -10,7 +10,6 @@ import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import SettingsPage from '../../app/dashboard/settings/page'
 
-// Mock dynamic imports for charts and icons
 jest.mock('next/dynamic', () => {
   return (importFunc) => {
     const ComponentMock = (props) => <div data-testid="mocked-component" {...props} />
@@ -19,7 +18,6 @@ jest.mock('next/dynamic', () => {
   }
 })
 
-// Mock localStorage
 const LocalStorage = {
   getItem: jest.fn(() => 'mock-token'),
   setItem: jest.fn(),
@@ -27,10 +25,8 @@ const LocalStorage = {
 }
 Object.defineProperty(window, 'localStorage', { value: mockLocalStorage })
 
-// Mock fetch for API calls
 global.fetch = jest.fn()
 
-// Mock window location for hash handling
 delete window.location
 window.location = {
   hash: '',
@@ -45,7 +41,6 @@ describe('Settings Form Integration Tests', () => {
     user = userEvent.setup()
     jest.clearAllMocks()
     
-    // Default successful API responses
     fetch.mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -128,11 +123,9 @@ describe('Settings Form Integration Tests', () => {
       const editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
-      // Should show Save and Cancel buttons
       expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
       
-      // Edit button should be hidden
       expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument()
     })
 
@@ -146,7 +139,6 @@ describe('Settings Form Integration Tests', () => {
       const editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
-      // Phone and email should become NuclearInput fields
       const phoneInput = screen.getByPlaceholderText('Enter phone number')
       const emailInput = screen.getByPlaceholderText('Enter email address')
       
@@ -166,7 +158,6 @@ describe('Settings Form Integration Tests', () => {
       const editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
-      // Card should have edit mode styling
       const editableCard = screen.getByRole('button', { name: /edit/i }).closest('.card')
       expect(editableCard).toHaveClass('ring-2', 'ring-blue-500', 'ring-opacity-50')
     })
@@ -185,18 +176,14 @@ describe('Settings Form Integration Tests', () => {
       
       const phoneInput = screen.getByPlaceholderText('Enter phone number')
       
-      // Type in phone field
       await user.type(phoneInput, '+1 (555) 999-8888')
       expect(phoneInput.value).toBe('+1 (555) 999-8888')
       
-      // Focus should remain during typing
       expect(phoneInput).toHaveFocus()
       
-      // Move focus away to trigger blur
       const emailInput = screen.getByPlaceholderText('Enter email address')
       await user.click(emailInput)
       
-      // Phone input should no longer have focus
       expect(phoneInput).not.toHaveFocus()
     })
 
@@ -212,11 +199,9 @@ describe('Settings Form Integration Tests', () => {
       
       const emailInput = screen.getByPlaceholderText('Enter email address')
       
-      // Type valid email
       await user.type(emailInput, 'newemail@test.com')
       expect(emailInput.value).toBe('newemail@test.com')
       
-      // Type and test special characters
       await user.clear(emailInput)
       await user.type(emailInput, 'test+tag@domain.co.uk')
       expect(emailInput.value).toBe('test+tag@domain.co.uk')
@@ -235,7 +220,6 @@ describe('Settings Form Integration Tests', () => {
       const phoneInput = screen.getByPlaceholderText('Enter phone number')
       const emailInput = screen.getByPlaceholderText('Enter email address')
       
-      // Rapid switching between inputs
       await user.type(phoneInput, '555-1234')
       await user.click(emailInput)
       await user.type(emailInput, 'test@')
@@ -262,7 +246,6 @@ describe('Settings Form Integration Tests', () => {
       await user.clear(emailInput)
       await user.type(emailInput, 'invalid-email')
       
-      // Trigger blur to update state
       await user.tab()
       
       const saveButton = screen.getByRole('button', { name: /save/i })
@@ -272,7 +255,6 @@ describe('Settings Form Integration Tests', () => {
         expect(screen.getByText('Invalid email format')).toBeInTheDocument()
       })
       
-      // Should still be in edit mode
       expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument()
     })
 
@@ -302,12 +284,10 @@ describe('Settings Form Integration Tests', () => {
         const saveButton = screen.getByRole('button', { name: /save/i })
         await user.click(saveButton)
         
-        // Should not show validation error
         await waitFor(() => {
           expect(screen.queryByText('Invalid email format')).not.toBeInTheDocument()
         })
         
-        // Clean up for next iteration
         screen.debug = () => {} // Suppress debug output
       }
     })
@@ -355,7 +335,6 @@ describe('Settings Form Integration Tests', () => {
       const editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
-      // Update form fields
       const phoneInput = screen.getByPlaceholderText('Enter phone number')
       const emailInput = screen.getByPlaceholderText('Enter email address')
       
@@ -367,7 +346,6 @@ describe('Settings Form Integration Tests', () => {
       await user.type(emailInput, 'updated@test.com')
       await user.tab() // Trigger blur
       
-      // Mock successful save response
       fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({})
@@ -416,7 +394,6 @@ describe('Settings Form Integration Tests', () => {
         expect(screen.getByText('Settings saved successfully!')).toBeInTheDocument()
       })
       
-      // Should exit edit mode
       expect(screen.queryByRole('button', { name: /save/i })).not.toBeInTheDocument()
       expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
     })
@@ -431,7 +408,6 @@ describe('Settings Form Integration Tests', () => {
       const editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
-      // Create a promise that we can control
       let resolvePromise
       const savePromise = new Promise((resolve) => {
         resolvePromise = resolve
@@ -442,11 +418,9 @@ describe('Settings Form Integration Tests', () => {
       const saveButton = screen.getByRole('button', { name: /save/i })
       await user.click(saveButton)
       
-      // Should show loading state
       expect(screen.getByText('Saving...')).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled()
       
-      // Resolve the promise
       resolvePromise({
         ok: true,
         json: async () => ({})
@@ -488,7 +462,6 @@ describe('Settings Form Integration Tests', () => {
       const editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
-      // Create an error by entering invalid email
       const emailInput = screen.getByPlaceholderText('Enter email address')
       await user.clear(emailInput)
       await user.type(emailInput, 'invalid-email')
@@ -501,7 +474,6 @@ describe('Settings Form Integration Tests', () => {
         expect(screen.getByText('Invalid email format')).toBeInTheDocument()
       })
       
-      // Cancel should clear the error
       const cancelButton = screen.getByRole('button', { name: /cancel/i })
       await user.click(cancelButton)
       
@@ -518,7 +490,6 @@ describe('Settings Form Integration Tests', () => {
       const editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
-      // Make changes
       const phoneInput = screen.getByPlaceholderText('Enter phone number')
       await user.clear(phoneInput)
       await user.type(phoneInput, 'modified phone')
@@ -526,7 +497,6 @@ describe('Settings Form Integration Tests', () => {
       const cancelButton = screen.getByRole('button', { name: /cancel/i })
       await user.click(cancelButton)
       
-      // Should not call save API
       expect(fetch).not.toHaveBeenCalledWith(
         '/api/v1/settings/barbershop',
         expect.objectContaining({ method: 'PUT' })
@@ -542,7 +512,6 @@ describe('Settings Form Integration Tests', () => {
         expect(screen.queryByText('Loading Settings...')).not.toBeInTheDocument()
       })
       
-      // First cycle - edit and save
       let editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
@@ -555,7 +524,6 @@ describe('Settings Form Integration Tests', () => {
         expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
       })
       
-      // Second cycle - edit and cancel
       editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
@@ -564,7 +532,6 @@ describe('Settings Form Integration Tests', () => {
       
       expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
       
-      // Third cycle - edit and save again
       editButton = screen.getByRole('button', { name: /edit/i })
       await user.click(editButton)
       
@@ -591,7 +558,6 @@ describe('Settings Form Integration Tests', () => {
       const phoneInput = screen.getByPlaceholderText('Enter phone number')
       const emailInput = screen.getByPlaceholderText('Enter email address')
       
-      // Update both fields simultaneously
       await act(async () => {
         await user.clear(phoneInput)
         await user.clear(emailInput)
@@ -602,7 +568,6 @@ describe('Settings Form Integration Tests', () => {
         await user.type(emailInput, 'simultaneous@test.com')
       })
       
-      // Blur both to update state
       await user.tab()
       await user.tab()
       

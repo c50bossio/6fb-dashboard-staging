@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import { 
   PlayIcon, 
   CheckCircleIcon, 
   ExclamationTriangleIcon,
   ClockIcon 
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 const ACTION_ICONS = {
   'sms_campaign': '📱',
@@ -44,7 +44,6 @@ const ExecutableActionButton = ({
       const result = await onExecute(action)
       setExecutionResult(result)
       
-      // Auto-clear success result after 3 seconds
       if (result.success) {
         setTimeout(() => {
           setExecutionResult(null)

@@ -1,27 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import QRCode from 'qrcode'
-import { 
-  GlobeAltIcon, 
+import {
   ShareIcon,
   QrCodeIcon,
   ClipboardIcon,
   CheckIcon,
   ArrowDownTrayIcon,
   LinkIcon,
-  DevicePhoneMobileIcon,
-  PhotoIcon,
   EyeIcon,
   EnvelopeIcon,
   StarIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline'
+import Image from 'next/image'
+import QRCode from 'qrcode'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../SupabaseAuthProvider'
 
 export default function PublicPageTab() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [activeTab, setActiveTab] = useState('preview')
   const [copied, setCopied] = useState({})
   const [qrSize, setQrSize] = useState(200)
@@ -30,7 +27,6 @@ export default function PublicPageTab() {
   const [previewData, setPreviewData] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Mock barber data - in production, this would come from user profile
   const barberData = {
     id: user?.id || 'preview-barber',
     name: user?.full_name || 'John Martinez',
@@ -50,7 +46,6 @@ export default function PublicPageTab() {
     ]
   }
 
-  // Generate various booking URLs and sharing content
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://6fb-ai.com'
   const barberId = user?.id || 'your-barber-id'
   const barberName = user?.full_name || 'Your Name'
@@ -76,13 +71,11 @@ export default function PublicPageTab() {
   }
 
   useEffect(() => {
-    // Simulate loading barber data
     const timer = setTimeout(() => {
       setPreviewData(barberData)
       setLoading(false)
     }, 800)
 
-    // Generate QR code
     if (typeof window !== 'undefined') {
       QRCode.toDataURL(urls.utmPrint, { width: qrSize, margin: 2 })
         .then(url => setQrCodeUrl(url))

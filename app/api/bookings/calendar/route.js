@@ -45,9 +45,9 @@ export async function GET(request) {
 
     const { start, end, barberId, status, limit } = validationResult.data
 
-    // Build query
+    // Build query - using appointments table (single source of truth)
     let query = supabase
-      .from('bookings')
+      .from('appointments')
       .select(`
         id,
         scheduled_at,
@@ -59,28 +59,25 @@ export async function GET(request) {
         client_phone,
         client_notes,
         status,
-        payment_status,
         created_at,
-        barber:profiles!bookings_barber_id_fkey(
-          id, 
-          name, 
-          email, 
-          image_url,
-          user_metadata
+        barber:profiles!appointments_barber_id_fkey(
+          id,
+          full_name,
+          email,
+          avatar_url
         ),
         service:services(
-          id, 
-          name, 
-          description, 
-          duration_minutes, 
-          price, 
-          category,
-          color
+          id,
+          name,
+          description,
+          duration_minutes,
+          price,
+          category
         ),
         barbershop:barbershops(
-          id, 
-          name, 
-          address, 
+          id,
+          name,
+          address,
           phone
         )
       `)
@@ -110,16 +107,14 @@ export async function GET(request) {
       }, { status: 500 })
     }
 
-    // Transform bookings to calendar events format
-    const events = bookings.map(booking => {
-      const startTime = new Date(booking.scheduled_at)
-      const endTime = new Date(startTime.getTime() + booking.duration_minutes * 60000)
-      
+    // Transform appointments to calendar events format
+    const events = bookings.map(appointment => {
+      const startTime = new Date(appointment.scheduled_at)
+      const endTime = new Date(startTime.getTime() + appointment.duration_minutes * 60000)
+
       // Determine event color based on service category or status
       let backgroundColor = '#546355' // Default olive green
-      if (booking.service?.color) {
-        backgroundColor = booking.service.color
-      } else if (booking.service?.category) {
+      if (appointment.service?.category) {
         // Color coding by service category
         const categoryColors = {
           'Haircuts': '#3B82F6',      // Blue
@@ -127,41 +122,40 @@ export async function GET(request) {
           'Premium Services': '#8B5CF6', // Purple
           'Add-ons': '#10B981'        // Emerald
         }
-        backgroundColor = categoryColors[booking.service.category] || backgroundColor
+        backgroundColor = categoryColors[appointment.service.category] || backgroundColor
       }
 
       // Adjust opacity based on status
-      if (booking.status === 'PENDING') {
+      if (appointment.status === 'PENDING') {
         backgroundColor += '80' // Add transparency
       }
 
       return {
-        id: booking.id,
-        title: `${booking.client_name} - ${booking.service?.name || 'Service'}`,
-        start: booking.scheduled_at,
+        id: appointment.id,
+        title: `${appointment.client_name || 'Walk-in'} - ${appointment.service?.name || 'Service'}`,
+        start: appointment.scheduled_at,
         end: endTime.toISOString(),
-        resourceId: booking.barber?.id,
+        resourceId: appointment.barber?.id,
         backgroundColor,
         borderColor: backgroundColor,
         textColor: '#FFFFFF',
-        classNames: [`status-${booking.status.toLowerCase()}`],
+        classNames: [`status-${appointment.status.toLowerCase()}`],
         extendedProps: {
-          bookingId: booking.id,
-          clientName: booking.client_name,
-          clientEmail: booking.client_email,
-          clientPhone: booking.client_phone,
-          clientNotes: booking.client_notes,
-          serviceName: booking.service?.name,
-          serviceCategory: booking.service?.category,
-          servicePrice: booking.service_price,
-          totalAmount: booking.total_amount,
-          status: booking.status,
-          paymentStatus: booking.payment_status,
-          barberName: booking.barber?.name,
-          barbershopName: booking.barbershop?.name,
-          duration: booking.duration_minutes,
+          appointmentId: appointment.id,
+          clientName: appointment.client_name,
+          clientEmail: appointment.client_email,
+          clientPhone: appointment.client_phone,
+          clientNotes: appointment.client_notes,
+          serviceName: appointment.service?.name,
+          serviceCategory: appointment.service?.category,
+          servicePrice: appointment.service_price,
+          totalAmount: appointment.total_amount,
+          status: appointment.status,
+          barberName: appointment.barber?.full_name,
+          barbershopName: appointment.barbershop?.name,
+          duration: appointment.duration_minutes,
           canEdit: true,
-          canCancel: new Date(booking.scheduled_at) > new Date(Date.now() + 2 * 60 * 60 * 1000) // 2 hours ahead
+          canCancel: new Date(appointment.scheduled_at) > new Date(Date.now() + 2 * 60 * 60 * 1000) // 2 hours ahead
         }
       }
     })
@@ -171,9 +165,8 @@ export async function GET(request) {
       .from('profiles')
       .select(`
         id,
-        name,
-        image_url,
-        user_metadata,
+        full_name,
+        avatar_url,
         barbershop_staff!inner(
           barbershop_id,
           role,
@@ -189,8 +182,8 @@ export async function GET(request) {
     // Transform barbers to resource format for calendar
     const resources = barbers?.map(barber => ({
       id: barber.id,
-      title: barber.name,
-      imageUrl: barber.image_url,
+      title: barber.full_name,
+      imageUrl: barber.avatar_url,
       eventColor: '#546355',
       businessHours: {
         startTime: '09:00',

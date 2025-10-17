@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { 
+import {
   XMarkIcon,
   CodeBracketIcon,
   AdjustmentsHorizontalIcon,
@@ -10,9 +9,9 @@ import {
   ComputerDesktopIcon,
   DevicePhoneMobileIcon,
   CursorArrowRaysIcon,
-  PaintBrushIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
+import { useState } from 'react'
 
 export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
   const [activeTab, setActiveTab] = useState('iframe')
@@ -37,7 +36,6 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://yourdomain.com'
   const embedUrl = `${baseUrl}/book/${bookingLink?.barberId || 'demo-barber'}/embed`
 
-  // Generate embed codes based on options
   const generateIframeCode = () => {
     const params = new URLSearchParams()
     
@@ -155,7 +153,6 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
       await navigator.clipboard.writeText(code)
       setCopiedType(type)
       
-      // Show enhanced toast notification
       const typeNames = {
         iframe: 'iFrame embed code',
         javascript: 'JavaScript widget code',
@@ -165,7 +162,6 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
       setToastMessage(`${typeNames[type]} copied to clipboard!`)
       setShowToast(true)
       
-      // Hide feedback after delay
       setTimeout(() => {
         setCopiedType(null)
         setShowToast(false)
@@ -189,8 +185,6 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
   }
 
   const notifyParentOfHeight = () => {
-    // Function for iframe height notification (not needed in modal context)
-    // This is just to prevent onLoad error
   }
 
   const getEmbedCode = () => {
@@ -512,7 +506,8 @@ export default function EmbedCodeModal({ isOpen, onClose, bookingLink }) {
                 ) : activeTab === 'link' ? (
                   <div className="p-8 text-center">
                     <a 
-                      href="#" 
+                      href={`/book/${bookingLink?.barberId || 'demo'}`}
+                      target="_blank" 
                       style={{ 
                         color: embedOptions.primaryColor,
                         textDecoration: 'none',

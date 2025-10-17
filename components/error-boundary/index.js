@@ -12,5 +12,4 @@ export {
   useErrorHandler 
 } from './ComponentErrorBoundary'
 
-// Composite error boundary that combines all error handling
 export { default as AppErrorBoundary } from './AppErrorBoundary'

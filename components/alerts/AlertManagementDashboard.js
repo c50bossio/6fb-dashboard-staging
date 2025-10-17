@@ -1,18 +1,15 @@
 'use client';
 
-import { 
-  BellIcon, 
+import {
+  BellIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XMarkIcon,
   ClockIcon,
-  AdjustmentsHorizontalIcon,
   ChartBarIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   EyeIcon,
   EyeSlashIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/24/outline'
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 const AlertManagementDashboard = ({ 
@@ -34,11 +31,9 @@ const AlertManagementDashboard = ({
   const [analytics, setAnalytics] = useState(null);
   const [realTimeEnabled, setRealTimeEnabled] = useState(true);
   
-  // Real-time updates
   const wsRef = useRef(null);
   const retryTimeoutRef = useRef(null);
   
-  // Fetch alerts
   const fetchAlerts = useCallback(async () => {
     try {
       setLoading(true);
@@ -69,7 +64,6 @@ const AlertManagementDashboard = ({
     }
   }, [barbershopId, userId, filters]);
   
-  // Fetch user preferences
   const fetchPreferences = useCallback(async () => {
     try {
       const params = new URLSearchParams({
@@ -89,7 +83,6 @@ const AlertManagementDashboard = ({
     }
   }, [barbershopId, userId]);
   
-  // Initialize real-time connection
   const initializeRealTime = useCallback(() => {
     if (!realTimeEnabled || !window.Pusher) return;
     
@@ -127,12 +120,10 @@ const AlertManagementDashboard = ({
       
     } catch (err) {
       console.error('Real-time connection failed:', err);
-      // Retry after 30 seconds
       retryTimeoutRef.current = setTimeout(initializeRealTime, 30000);
     }
   }, [userId, barbershopId, realTimeEnabled]);
   
-  // Handle alert actions
   const handleAlertAction = async (alertId, action, options = {}) => {
     try {
       const response = await fetch('/api/alerts/acknowledge', {
@@ -152,7 +143,6 @@ const AlertManagementDashboard = ({
       
       const data = await response.json();
       if (data.success) {
-        // Update local state
         setAlerts(prev => prev.map(alert => 
           alert.alert_id === alertId 
             ? { ...alert, status: data.data.result.status }
@@ -165,7 +155,6 @@ const AlertManagementDashboard = ({
           'success'
         );
         
-        // Close selected alert if it was the one acted upon
         if (selectedAlert?.alert_id === alertId) {
           setSelectedAlert(null);
         }
@@ -178,15 +167,12 @@ const AlertManagementDashboard = ({
     }
   };
   
-  // Show real-time notification
   const showRealTimeNotification = (title, message, type) => {
-    // Simple notification - could be enhanced with a proper notification system
     if (Notification.permission === 'granted') {
       new Notification(title, { body: message });
     }
   };
   
-  // Filter alerts based on current filters
   const filteredAlerts = alerts.filter(alert => {
     if (filters.priority !== 'all' && alert.priority !== filters.priority) return false;
     if (filters.category !== 'all' && alert.category !== filters.category) return false;
@@ -194,13 +180,11 @@ const AlertManagementDashboard = ({
     return true;
   });
   
-  // Initialize
   useEffect(() => {
     fetchAlerts();
     fetchPreferences();
     initializeRealTime();
     
-    // Request notification permission
     if (Notification.permission === 'default') {
       Notification.requestPermission();
     }
@@ -215,7 +199,6 @@ const AlertManagementDashboard = ({
     };
   }, [fetchAlerts, fetchPreferences, initializeRealTime]);
   
-  // Auto-refresh alerts every 30 seconds
   useEffect(() => {
     const interval = setInterval(fetchAlerts, 30000);
     return () => clearInterval(interval);
@@ -299,7 +282,7 @@ const AlertManagementDashboard = ({
               onClick={fetchAlerts}
               className="p-2 text-gray-400 hover:text-gray-600"
             >
-              <ArrowTrendingUpIcon className="h-5 w-5" />
+              <ChartBarIcon className="h-5 w-5" />
             </button>
           </div>
         </div>
@@ -420,7 +403,6 @@ const AlertManagementDashboard = ({
   );
 };
 
-// Individual Alert Item Component
 const AlertItem = ({ alert, onAction, onSelect, isSelected }) => {
   const getPriorityColor = (priority) => {
     const colors = {
@@ -529,7 +511,6 @@ const AlertItem = ({ alert, onAction, onSelect, isSelected }) => {
   );
 };
 
-// Alert Detail Modal Component
 const AlertDetailModal = ({ alert, onClose, onAction }) => {
   const [notes, setNotes] = useState('');
   const [actionType, setActionType] = useState('acknowledge');

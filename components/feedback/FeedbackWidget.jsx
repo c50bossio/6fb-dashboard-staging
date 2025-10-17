@@ -1,7 +1,11 @@
 'use client'
 
+import {
+  XMarkIcon,
+  ChatBubbleBottomCenterTextIcon,
+  FaceSmileIcon
+} from '@heroicons/react/24/outline'
 import { useState, useEffect } from 'react'
-import { XMarkIcon, ChatBubbleBottomCenterTextIcon, FaceSmileIcon, FaceFrownIcon } from '@heroicons/react/24/outline'
 import { toast } from '@/hooks/use-toast'
 
 export default function FeedbackWidget() {

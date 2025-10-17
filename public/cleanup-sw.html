@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Service Worker Cleanup</title>
+</head>
+<body>
+    <h1>Cleaning up service workers...</h1>
+    <p id="status">Unregistering all service workers...</p>
+    
+    <script>
+        async function cleanupServiceWorkers() {
+            const statusEl = document.getElementById('status');
+            
+            try {
+                if ('serviceWorker' in navigator) {
+                    // Unregister all service workers
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    console.log('Found', registrations.length, 'service worker registrations');
+                    
+                    for (let registration of registrations) {
+                        console.log('Unregistering SW:', registration.scope);
+                        await registration.unregister();
+                    }
+                    
+                    // Clear cache storage
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        console.log('Found', cacheNames.length, 'caches');
+                        
+                        for (let cacheName of cacheNames) {
+                            console.log('Deleting cache:', cacheName);
+                            await caches.delete(cacheName);
+                        }
+                    }
+                    
+                    statusEl.innerHTML = `
+                        <p style="color: green;">✅ Cleanup complete!</p>
+                        <p>Unregistered ${registrations.length} service workers</p>
+                        <p>Cleared all caches</p>
+                        <p><strong>Redirecting to app in 2 seconds...</strong></p>
+                    `;
+                    
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                    
+                } else {
+                    statusEl.innerHTML = '<p style="color: orange;">Service workers not supported</p>';
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Cleanup error:', error);
+                statusEl.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            }
+        }
+        
+        // Run cleanup immediately
+        cleanupServiceWorkers();
+    </script>
+</body>
+</html>

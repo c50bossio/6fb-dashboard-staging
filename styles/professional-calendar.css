@@ -36,9 +36,9 @@
 
 /* Resource header (Barbers) */
 .fc-resource-header {
-  background: #f9fafb;
+  background: #3C4A3E;
   font-weight: 600;
-  color: #374151;
+  color: #E5E7EB;
 }
 
 /* Column headers - Fix date display */
@@ -51,7 +51,7 @@
   padding: 4px 2px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: #E5E7EB;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -65,8 +65,8 @@
 
 /* Ensure day headers in resource grid view are readable */
 .fc-scrollgrid-section-header .fc-col-header-cell {
-  background: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
+  background: #3C4A3E;
+  border-bottom: 2px solid #546355;
 }
 
 /* Day and date formatting in headers */
@@ -97,7 +97,7 @@
 /* Clean up the weekend highlighting */
 .fc-day-sat .fc-col-header-cell-cushion,
 .fc-day-sun .fc-col-header-cell-cushion {
-  color: #6b7280;
+  color: #D1D5DB;
 }
 
 /* Responsive adjustments for resource columns */

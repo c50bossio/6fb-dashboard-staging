@@ -1,13 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   ShareIcon,
   HeartIcon,
   ChatBubbleLeftIcon,
   CalendarDaysIcon,
-  StarIcon,
-  ArrowTrendingUpIcon,
+  ChartBarIcon,
   EyeIcon,
   PlusIcon,
   ArrowPathIcon,
@@ -16,6 +14,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 
 export default function SocialMediaDashboard({ barbershop_id = 'demo', compact = false }) {
   const [dashboard, setDashboard] = useState(null)
@@ -198,7 +197,7 @@ export default function SocialMediaDashboard({ barbershop_id = 'demo', compact =
             {[
               { id: 'overview', name: 'Overview', icon: EyeIcon },
               { id: 'content', name: 'Content', icon: MegaphoneIcon },
-              { id: 'analytics', name: 'Analytics', icon: ArrowTrendingUpIcon }
+              { id: 'analytics', name: 'Analytics', icon: ChartBarIcon }
             ].map((tab) => (
               <button
                 key={tab.id}

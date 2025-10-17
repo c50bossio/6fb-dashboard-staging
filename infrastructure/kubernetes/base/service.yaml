@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+    component: web
+    app.kubernetes.io/name: 6fb-ai-agent-system
+    app.kubernetes.io/component: frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 9999
+    protocol: TCP
+    name: http
+  selector:
+    app: frontend
+    component: web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    app: backend
+    component: api
+    app.kubernetes.io/name: 6fb-ai-agent-system
+    app.kubernetes.io/component: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: backend
+    component: api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+    component: cache
+    app.kubernetes.io/name: 6fb-ai-agent-system
+    app.kubernetes.io/component: redis
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    protocol: TCP
+    name: redis
+  selector:
+    app: redis
+    component: cache

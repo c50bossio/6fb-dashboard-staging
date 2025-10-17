@@ -1,14 +1,13 @@
 'use client'
 
+
+import { CheckBadgeIcon, ChartBarIcon, ChatBubbleBottomCenterTextIcon as QuoteIcon } from '@heroicons/react/24/outline'
 import { 
   StarIcon,
-  ArrowTrendingUpIcon,
   ClockIcon,
   UserGroupIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/solid'
-import { ChatBubbleBottomCenterTextIcon as QuoteIcon } from '@heroicons/react/24/outline'
-import { CheckBadgeIcon } from '@heroicons/react/24/outline'
 
 export default function BarberSuccessStories() {
   const stories = [
@@ -61,7 +60,7 @@ export default function BarberSuccessStories() {
       title: "From Invisible to Influential",
       before: "Lost in marketplace listings",
       after: "Top Google search result for 'barber near me'",
-      icon: ArrowTrendingUpIcon
+      icon: ChartBarIcon
     },
     {
       title: "From Chaos to Control",
@@ -84,61 +83,61 @@ export default function BarberSuccessStories() {
   ]
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+    <section className="py-20 bg-gradient-to-b from-background to-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-moss-100 text-moss-900 rounded-full text-sm font-semibold mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-olive-100 dark:bg-olive-900/30 text-olive-900 dark:text-olive-300 rounded-full text-sm font-semibold mb-4">
             <CheckBadgeIcon className="h-4 w-4 mr-2" />
             SUCCESS STORIES
           </div>
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-foreground mb-4">
             Barbers Who Took Control of Their Business
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Real barbers, real results. See how switching from marketplace dependency 
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Real barbers, real results. See how switching from marketplace dependency
             to brand ownership transformed their businesses.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
           {stories.map((story, index) => (
-            <div key={index} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+            <div key={index} className="bg-card rounded-2xl shadow-lg overflow-hidden border border-border">
               <div className="p-6">
                 <div className="flex items-start mb-4">
                   <div className="flex-shrink-0">
-                    <div className="h-16 w-16 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
-                      <span className="text-2xl font-bold text-gray-600">
+                    <div className="h-16 w-16 bg-gradient-to-br from-muted to-muted/70 rounded-full flex items-center justify-center">
+                      <span className="text-2xl font-bold text-muted-foreground">
                         {story.name.charAt(0)}
                       </span>
                     </div>
                   </div>
                   <div className="ml-4 flex-1">
                     <div className="flex items-center">
-                      <h3 className="text-lg font-bold text-gray-900">{story.name}</h3>
+                      <h3 className="text-lg font-bold text-foreground">{story.name}</h3>
                       {story.verified && (
-                        <CheckBadgeIcon className="h-5 w-5 text-olive-500 ml-2" />
+                        <CheckBadgeIcon className="h-5 w-5 text-olive-600 dark:text-olive-500 ml-2" />
                       )}
                     </div>
-                    <p className="text-sm text-gray-600">{story.title}</p>
-                    <p className="text-sm text-gray-500">{story.location}</p>
+                    <p className="text-sm text-muted-foreground">{story.title}</p>
+                    <p className="text-sm text-muted-foreground/70">{story.location}</p>
                   </div>
                 </div>
 
                 <div className="mb-4">
                   <div className="flex items-start">
-                    <QuoteIcon className="h-5 w-5 text-gray-300 flex-shrink-0 mt-1" />
-                    <p className="ml-2 text-gray-700 italic">
+                    <QuoteIcon className="h-5 w-5 text-muted-foreground/30 flex-shrink-0 mt-1" />
+                    <p className="ml-2 text-muted-foreground italic">
                       {story.quote}
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-green-50 to-olive-50 rounded-xl p-3 mb-4">
+                <div className="bg-gradient-to-r from-green-50 to-olive-50 dark:from-green-900/20 dark:to-olive-900/20 rounded-xl p-3 mb-4">
                   <div className="text-center">
-                    <div className="text-sm font-semibold text-green-800 mb-1">
+                    <div className="text-sm font-semibold text-green-800 dark:text-green-400 mb-1">
                       KEY ACHIEVEMENT
                     </div>
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-lg font-bold text-foreground">
                       {story.highlight}
                     </div>
                   </div>
@@ -147,16 +146,16 @@ export default function BarberSuccessStories() {
                 <div className="space-y-3">
                   {story.results.map((result, idx) => (
                     <div key={idx} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">{result.label}</span>
-                      <span className="text-lg font-bold text-gray-900">{result.metric}</span>
+                      <span className="text-sm text-muted-foreground">{result.label}</span>
+                      <span className="text-lg font-bold text-foreground">{result.metric}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="mt-4 flex items-center text-sm text-gray-500">
+                <div className="mt-4 flex items-center text-sm text-muted-foreground/70">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <StarIcon key={i} className="h-4 w-4 text-yellow-400" />
+                      <StarIcon key={i} className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />
                     ))}
                   </div>
                   <span className="ml-2">Verified 6FB Success Story</span>
@@ -166,7 +165,7 @@ export default function BarberSuccessStories() {
           ))}
         </div>
 
-        <div className="bg-gray-900 rounded-2xl p-8 text-white">
+        <div className="bg-gray-900 dark:bg-gray-950 rounded-2xl p-8 text-white">
           <h3 className="text-2xl font-bold mb-8 text-center">
             The Transformation is Real
           </h3>
@@ -175,18 +174,18 @@ export default function BarberSuccessStories() {
               const Icon = transform.icon
               return (
                 <div key={index} className="text-center">
-                  <div className="inline-flex items-center justify-center h-12 w-12 bg-white/10 rounded-full mb-4">
+                  <div className="inline-flex items-center justify-center h-12 w-12 bg-white/10 dark:bg-white/5 rounded-full mb-4">
                     <Icon className="h-6 w-6 text-olive-400" />
                   </div>
                   <h4 className="font-semibold mb-3">{transform.title}</h4>
                   <div className="space-y-2">
                     <div className="text-sm">
                       <span className="text-red-400">Before:</span>
-                      <p className="text-gray-400">{transform.before}</p>
+                      <p className="text-gray-400 dark:text-gray-500">{transform.before}</p>
                     </div>
                     <div className="text-sm">
                       <span className="text-green-400">After:</span>
-                      <p className="text-gray-300">{transform.after}</p>
+                      <p className="text-gray-300 dark:text-gray-400">{transform.after}</p>
                     </div>
                   </div>
                 </div>
@@ -196,10 +195,10 @@ export default function BarberSuccessStories() {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-lg text-gray-700 font-medium mb-6">
+          <p className="text-lg text-foreground font-medium mb-6">
             Join 500+ barbers who've taken control of their business
           </p>
-          <button className="bg-gradient-to-r from-olive-600 to-gold-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300">
+          <button className="bg-gradient-to-r from-olive-600 to-gold-600 dark:from-olive-500 dark:to-gold-500 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:shadow-xl transition-all duration-300">
             Start Your Success Story Today
           </button>
         </div>

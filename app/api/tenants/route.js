@@ -3,11 +3,9 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
-
+export const dynamic = 'force-dynamic'
 export async function GET(request) {
   try {
-    // For now, return demo tenant data since we're using SQLite
-    // In production, this would integrate with Supabase and the Python tenant service
     
     const { searchParams } = new URL(request.url)
     const action = searchParams.get('action')
@@ -15,7 +13,6 @@ export async function GET(request) {
     const slug = searchParams.get('slug')
 
     if (action === 'list') {
-      // Return list of tenants (for platform admin)
       return NextResponse.json({
         success: true,
         data: {
@@ -66,7 +63,6 @@ export async function GET(request) {
     }
 
     if (action === 'get' && (tenantId || slug)) {
-      // Return specific tenant details
       const tenant = {
         id: tenantId || '00000000-0000-0000-0000-000000000001',
         name: 'Demo Barbershop',
@@ -126,7 +122,6 @@ export async function GET(request) {
     }
 
     if (action === 'statistics') {
-      // Return platform statistics
       return NextResponse.json({
         success: true,
         data: {
@@ -166,10 +161,8 @@ export async function POST(request) {
     const { action, data } = await request.json()
 
     if (action === 'create') {
-      // Create new tenant
       const tenantData = data
 
-      // Validate required fields
       const requiredFields = ['name', 'email']
       for (const field of requiredFields) {
         if (!tenantData[field]) {
@@ -180,11 +173,9 @@ export async function POST(request) {
         }
       }
 
-      // Generate tenant ID and slug
       const tenantId = generateUUID()
       const slug = generateSlug(tenantData.name)
 
-      // For demo, return success with generated data
       const newTenant = {
         id: tenantId,
         name: tenantData.name,
@@ -216,7 +207,6 @@ export async function POST(request) {
     }
 
     if (action === 'update') {
-      // Update existing tenant
       const { tenant_id, updates } = data
 
       if (!tenant_id) {
@@ -226,7 +216,6 @@ export async function POST(request) {
         }, { status: 400 })
       }
 
-      // For demo, return success
       return NextResponse.json({
         success: true,
         data: {
@@ -240,7 +229,6 @@ export async function POST(request) {
     }
 
     if (action === 'delete') {
-      // Soft delete tenant
       const { tenant_id } = data
 
       if (!tenant_id) {
@@ -263,7 +251,6 @@ export async function POST(request) {
     }
 
     if (action === 'invite_user') {
-      // Invite user to tenant
       const { tenant_id, email, role, message } = data
 
       if (!tenant_id || !email || !role) {
@@ -307,13 +294,8 @@ export async function POST(request) {
   }
 }
 
-// Utility functions
 function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0
-    const v = c == 'x' ? r : (r & 0x3 | 0x8)
-    return v.toString(16)
-  })
+  return `tenant-${Date.now()}-${process.hrtime.bigint().toString(36)}`
 }
 
 function generateSlug(name) {
@@ -326,12 +308,9 @@ function generateSlug(name) {
 }
 
 function generateInvitationToken() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let result = ''
-  for (let i = 0; i < 32; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
+  const timestamp = Date.now()
+  const nanotime = process.hrtime.bigint()
+  return `invite_${timestamp}_${nanotime.toString(36)}`
 }
 
 function getPlanFeatures(planTier) {

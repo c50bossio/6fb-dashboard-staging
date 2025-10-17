@@ -4,10 +4,10 @@ import { BellIcon, ChatBubbleLeftRightIcon, ChartBarIcon } from '@heroicons/reac
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 
+import { useAuth } from '@/components/SupabaseAuthProvider'
 import { useRealtimeNotifications } from '@/hooks/useRealtimeDatabase'
 
 
-// Dynamically import components to avoid SSR issues
 const RealtimeDashboard = dynamic(
   () => import('@/components/realtime/RealtimeDashboard'),
   { ssr: false }
@@ -19,11 +19,24 @@ const RealtimeChat = dynamic(
 )
 
 export default function RealtimePage() {
+  const { user, profile } = useAuth()
   const [activeTab, setActiveTab] = useState('dashboard')
-  const { data: notifications = [], refresh } = useRealtimeNotifications('demo-shop-001')
+  
+  const barbershopId = profile?.barbershop_id || user?.barbershop_id
+  const { data: notifications = [], refresh } = useRealtimeNotifications(barbershopId)
+  
+  if (!barbershopId) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">No barbershop associated with your account.</p>
+          <p className="text-sm text-gray-500 mt-1">Please contact support.</p>
+        </div>
+      </div>
+    )
+  }
   
   const clearNotifications = () => {
-    // In real implementation, this would clear notifications in database
     refresh()
   }
 
@@ -231,7 +244,7 @@ export default function RealtimePage() {
                   body: JSON.stringify({
                     type: 'booking_update',
                     data: {
-                      shopId: 'test-shop',
+                      barbershopId: 'test-shop',
                       bookingId: Date.now(),
                       serviceName: 'Test Service',
                       status: 'confirmed',

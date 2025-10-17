@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useAuth } from '../components/SupabaseAuthProvider'
+import { createClient } from '../lib/supabase/client'
 
 const TenantContext = createContext()
 
@@ -31,66 +32,76 @@ const TenantProvider = ({ children }) => {
 
   // Load tenant information based on authenticated user
   useEffect(() => {
-    const loadTenant = async () => {
-      if (!user) {
-        setTenant(null)
-        setLoading(false)
-        return
-      }
+    // Guard against infinite loops - only run if user.id actually changed
+    if (!user?.id) {
+      setTenant(null)
+      setLoading(false)
+      return
+    }
 
+    const loadTenant = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        // Check if user has completed onboarding
-        const storedTenant = localStorage.getItem(`tenant_${user.id}`)
-        
-        if (storedTenant) {
-          // User has completed onboarding, load their tenant data
-          const parsedTenant = JSON.parse(storedTenant)
-          setTenant(parsedTenant)
-        } else {
-          // New user - no tenant yet, create a default tenant for them
-          console.log('🆕 New user detected, creating tenant...')
+        const supabase = createClient()
+
+        // Get user's profile to find their barbershop_id
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('barbershop_id, role')
+          .eq('id', user.id)
+          .single()
+
+        if (profileError) {
+          console.error('❌ Error fetching profile:', profileError)
+          setError(profileError.message)
+          setLoading(false)
+          return
         }
 
-        // Create a default tenant for new users
-        // In production, this would create a record in Supabase
-        if (!storedTenant) {
-          const Tenant = {
-            id: 'barbershop_demo_001',
-            name: 'Demo Barbershop',
-            owner_id: user.id,
-            subscription_tier: 'starter',
-            onboarding_completed: true, // Set to true so users can access dashboard immediately
-            settings: {
-              business_name: 'Demo Barbershop',
-              address: '123 Main St, Demo City, DC 12345',
-              phone: '(555) 123-4567',
-              email: 'hello@demobarbershop.com',
-              timezone: 'America/New_York',
-              currency: 'USD'
-            },
-            features: {
-            ai_chat: true,
-            analytics: true,
-            booking_system: true,
-            payment_processing: true,
-            email_marketing: false,
-            sms_notifications: true
-          },
-            integrations: {
-              stripe: { connected: false, account_id: null },
-              google_calendar: { connected: false },
-              mailchimp: { connected: false },
-              twilio: { connected: false }
-            },
-            created_at: '2025-01-01T00:00:00Z',
-            updated_at: new Date().toISOString()
-          }
+        // If user has a barbershop_id, load that specific barbershop
+        if (profile?.barbershop_id) {
+          const { data: barbershop, error: shopError } = await supabase
+            .from('barbershops')
+            .select('*')
+            .eq('id', profile.barbershop_id)
+            .single()
 
-          setTenant(Tenant)
-          console.log('🏢 Tenant loaded:', Tenant.name, `(${Tenant.id})`)
+          if (shopError) {
+            console.error('❌ Error fetching barbershop:', shopError)
+            setError(shopError.message)
+          } else if (barbershop) {
+            setTenant(barbershop)
+            console.log('🏢 Tenant loaded:', barbershop.name, `(${barbershop.id})`)
+          }
+        } else {
+          // User has no barbershop_id - query all barbershops they own
+          const { data: ownedShops, error: shopsError } = await supabase
+            .from('barbershops')
+            .select('*')
+            .eq('owner_id', user.id)
+            .order('created_at', { ascending: true })
+
+          if (shopsError) {
+            console.error('❌ Error fetching owned barbershops:', shopsError)
+            setError(shopsError.message)
+          } else if (ownedShops && ownedShops.length > 0) {
+            // User owns barbershops - load the first one
+            const firstShop = ownedShops[0]
+            setTenant(firstShop)
+            console.log('🏢 Tenant loaded (first owned shop):', firstShop.name, `(${firstShop.id})`)
+
+            // Update profile with this barbershop_id for future loads
+            await supabase
+              .from('profiles')
+              .update({ barbershop_id: firstShop.id })
+              .eq('id', user.id)
+          } else {
+            // User has no barbershops - they need to complete onboarding
+            console.log('🆕 New user detected - no barbershops found')
+            setTenant(null)
+          }
         }
 
       } catch (err) {
@@ -102,7 +113,7 @@ const TenantProvider = ({ children }) => {
     }
 
     loadTenant()
-  }, [user])
+  }, [user?.id]) // Only re-run when user ID actually changes
 
   // Tenant management functions
   const updateTenant = async (updates) => {
@@ -110,22 +121,29 @@ const TenantProvider = ({ children }) => {
 
     try {
       setLoading(true)
-      
-      // In production, this would update Supabase
-      const updatedTenant = {
-        ...tenant,
-        ...updates,
-        updated_at: new Date().toISOString()
+      const supabase = createClient()
+
+      // Update barbershop in Supabase
+      const { data: updatedShop, error: updateError } = await supabase
+        .from('barbershops')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tenant.id)
+        .select()
+        .single()
+
+      if (updateError) {
+        console.error('❌ Error updating barbershop:', updateError)
+        setError(updateError.message)
+        throw updateError
       }
-      
-      setTenant(updatedTenant)
-      
-      // Persist to localStorage for demo purposes
-      localStorage.setItem(`tenant_${user.id}`, JSON.stringify(updatedTenant))
-      
-      console.log('✅ Tenant updated:', updatedTenant.name)
-      
-      return updatedTenant
+
+      setTenant(updatedShop)
+      console.log('✅ Tenant updated:', updatedShop.name)
+
+      return updatedShop
     } catch (err) {
       console.error('❌ Error updating tenant:', err)
       setError(err.message)
@@ -137,11 +155,6 @@ const TenantProvider = ({ children }) => {
 
   const setTenantData = (newTenant) => {
     setTenant(newTenant)
-    
-    // Persist to localStorage for demo purposes
-    if (user && newTenant) {
-      localStorage.setItem(`tenant_${user.id}`, JSON.stringify(newTenant))
-    }
   }
 
   const updateIntegration = async (provider, integrationData) => {

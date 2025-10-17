@@ -6,18 +6,16 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Real Supabase credentials
 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQwODcwMTAsImV4cCI6MjA2OTY2MzAxMH0.TUYnEBzpB2LQaGLIXg5wtvJHyyhFD2QAOMdY_B-V1fI'
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 async function examineBookingsTable() {
-  console.log('🔍 Examining Bookings Table Structure')
-  console.log('=' .repeat(50))
+  
+  )
   
   try {
-    // Get sample data from bookings table
     const { data: bookings, error } = await supabase
       .from('bookings')
       .select('*')
@@ -29,41 +27,36 @@ async function examineBookingsTable() {
     }
 
     if (bookings && bookings.length > 0) {
-      console.log('\n📋 Bookings Table Columns:')
+      
       const columns = Object.keys(bookings[0])
       columns.forEach(col => {
         const value = bookings[0][col]
         const type = value === null ? 'null' : typeof value
-        console.log(`   - ${col.padEnd(25)} (${type})`)
+        } (${type})`)
       })
       
-      console.log('\n📊 Sample Data (1 record):')
-      console.log(JSON.stringify(bookings[0], null, 2))
+      :')
+      )
     } else {
-      console.log('No data in bookings table, fetching schema...')
-      
-      // Try to get column info even with no data
+
       const { data, error: schemaError } = await supabase
         .from('bookings')
         .select('*')
         .limit(0)
       
       if (!schemaError) {
-        console.log('✅ Bookings table exists but is empty')
+        
       }
     }
 
-    // Count total bookings
     const { count, error: countError } = await supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
     
     if (!countError) {
-      console.log(`\n📈 Total bookings in table: ${count || 0}`)
+      
     }
 
-    // Check if bookings table has the fields we need for appointments
-    console.log('\n🔎 Checking if bookings table can replace appointments:')
     const requiredFields = [
       'barbershop_id',
       'barber_id', 
@@ -79,17 +72,16 @@ async function examineBookingsTable() {
       const existingColumns = Object.keys(bookings[0])
       requiredFields.forEach(field => {
         if (existingColumns.includes(field)) {
-          console.log(`   ✅ ${field} - EXISTS`)
+          
         } else {
-          // Check for similar fields
           const similar = existingColumns.filter(col => 
             col.toLowerCase().includes(field.toLowerCase().replace('_', '')) ||
             field.toLowerCase().includes(col.toLowerCase().replace('_', ''))
           )
           if (similar.length > 0) {
-            console.log(`   ⚠️  ${field} - MISSING (similar: ${similar.join(', ')})`)
+            })`)
           } else {
-            console.log(`   ❌ ${field} - MISSING`)
+            
           }
         }
       })
@@ -100,5 +92,4 @@ async function examineBookingsTable() {
   }
 }
 
-// Run examination
 examineBookingsTable()

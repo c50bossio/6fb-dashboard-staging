@@ -29,10 +29,10 @@ export async function GET(request, { params }) {
     }
 
     const { data: booking, error } = await supabase
-      .from('bookings')
+      .from('appointments')
       .select(`
         *,
-        barber:profiles!bookings_barber_id_fkey(id, name, email, image_url),
+        barber:profiles!appointments_barber_id_fkey(id, full_name, email, avatar_url),
         service:services(id, name, description, duration_minutes, price, category),
         barbershop:barbershops(id, name, address, phone)
       `)
@@ -45,8 +45,8 @@ export async function GET(request, { params }) {
 
     // Check if user has permission to view this booking
     // Either the customer who made the booking or staff at the barbershop
-    const canView = booking.client_email === user.email || 
-                   user.role === 'admin' || 
+    const canView = booking.client_email === user.email ||
+                   user.role === 'admin' ||
                    user.role === 'staff'
 
     if (!canView) {
@@ -57,7 +57,7 @@ export async function GET(request, { params }) {
       success: true,
       booking: {
         ...booking,
-        barber_name: booking.barber?.name,
+        barber_name: booking.barber?.full_name,
         service_name: booking.service?.name,
         barbershop_name: booking.barbershop?.name,
         barbershop_address: booking.barbershop?.address,
@@ -101,7 +101,7 @@ export async function PUT(request, { params }) {
 
     // Get existing booking to check permissions
     const { data: existingBooking, error: fetchError } = await supabase
-      .from('bookings')
+      .from('appointments')
       .select('*')
       .eq('id', params.id)
       .single()
@@ -111,8 +111,8 @@ export async function PUT(request, { params }) {
     }
 
     // Check permissions
-    const canUpdate = existingBooking.client_email === user.email || 
-                     user.role === 'admin' || 
+    const canUpdate = existingBooking.client_email === user.email ||
+                     user.role === 'admin' ||
                      user.role === 'staff'
 
     if (!canUpdate) {
@@ -126,7 +126,7 @@ export async function PUT(request, { params }) {
       const newEnd = new Date(newStart.getTime() + duration * 60000)
 
       const { data: conflicts, error: conflictError } = await supabase
-        .from('bookings')
+        .from('appointments')
         .select('id, scheduled_at, duration_minutes')
         .eq('barber_id', existingBooking.barber_id)
         .eq('status', 'CONFIRMED')
@@ -154,7 +154,7 @@ export async function PUT(request, { params }) {
 
     // Update the booking
     const { data: updatedBooking, error: updateError } = await supabase
-      .from('bookings')
+      .from('appointments')
       .update({
         ...updateData,
         updated_at: new Date().toISOString()
@@ -162,7 +162,7 @@ export async function PUT(request, { params }) {
       .eq('id', params.id)
       .select(`
         *,
-        barber:profiles!bookings_barber_id_fkey(id, name, email),
+        barber:profiles!appointments_barber_id_fkey(id, full_name, email),
         service:services(id, name, description, duration_minutes, price, category),
         barbershop:barbershops(id, name, address, phone)
       `)
@@ -206,7 +206,7 @@ export async function DELETE(request, { params }) {
 
     // Get existing booking to check permissions
     const { data: existingBooking, error: fetchError } = await supabase
-      .from('bookings')
+      .from('appointments')
       .select('*')
       .eq('id', params.id)
       .single()
@@ -216,8 +216,8 @@ export async function DELETE(request, { params }) {
     }
 
     // Check permissions
-    const canCancel = existingBooking.client_email === user.email || 
-                     user.role === 'admin' || 
+    const canCancel = existingBooking.client_email === user.email ||
+                     user.role === 'admin' ||
                      user.role === 'staff'
 
     if (!canCancel) {
@@ -243,16 +243,15 @@ export async function DELETE(request, { params }) {
 
     // Update booking status to CANCELLED
     const { data: cancelledBooking, error: cancelError } = await supabase
-      .from('bookings')
+      .from('appointments')
       .update({
         status: 'CANCELLED',
-        cancelled_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
       .eq('id', params.id)
       .select(`
         *,
-        barber:profiles!bookings_barber_id_fkey(id, name, email),
+        barber:profiles!appointments_barber_id_fkey(id, full_name, email),
         service:services(id, name, description, duration_minutes, price, category)
       `)
       .single()

@@ -1,0 +1,213 @@
+# Production Docker Compose Configuration
+# Extends base configuration with production-specific settings
+# Version: 1.0 - Infrastructure Consolidation
+# Date: 2025-08-25
+
+# Usage: docker-compose -f docker-compose.base.yml -f docker-compose.prod.yml up
+
+services:
+  # Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    container_name: agent-system-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../../nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ../../nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+      - nginx_cache:/var/cache/nginx
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+  redis:
+    extends:
+      file: docker-compose.base.yml
+      service: redis
+    restart: always
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD}
+    environment:
+      - LOG_LEVEL=warning
+    volumes:
+      - redis_data_prod:/data
+
+  frontend:
+    extends:
+      file: docker-compose.base.yml
+      service: frontend
+    build:
+      context: ../..
+      dockerfile: Dockerfile.frontend.prod
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=https://api.${DOMAIN_NAME}
+      - NEXT_PUBLIC_ENABLE_RAG=true
+      - NEXT_PUBLIC_ENABLE_MOCK_FALLBACK=false
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+      - NEXT_PUBLIC_POSTHOG_KEY=${NEXT_PUBLIC_POSTHOG_KEY}
+      - NEXT_PUBLIC_POSTHOG_HOST=${NEXT_PUBLIC_POSTHOG_HOST}
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+      - NEXT_PUBLIC_PUSHER_APP_KEY=${NEXT_PUBLIC_PUSHER_APP_KEY}
+      - NEXT_PUBLIC_PUSHER_APP_CLUSTER=${NEXT_PUBLIC_PUSHER_APP_CLUSTER}
+      - NEXT_PUBLIC_NOVU_APPLICATION_IDENTIFIER=${NEXT_PUBLIC_NOVU_APPLICATION_IDENTIFIER}
+    env_file:
+      - ../../.env.production
+    volumes:
+      - frontend_cache:/app/.next/cache
+      - frontend_static:/app/.next/static
+    command: npm start
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  backend:
+    extends:
+      file: docker-compose.base.yml
+      service: backend
+    build:
+      context: ../..
+      dockerfile: Dockerfile.backend.prod
+    restart: always
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - CORS_ORIGINS=https://${DOMAIN_NAME},https://www.${DOMAIN_NAME}
+      - LOG_LEVEL=WARNING
+      - WORKERS=4
+      # Production API Keys
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - STRIPE_CONNECT_CLIENT_ID=${STRIPE_CONNECT_CLIENT_ID}
+      # Communication services
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
+      # Real-time & Analytics
+      - PUSHER_APP_ID=${PUSHER_APP_ID}
+      - PUSHER_APP_KEY=${PUSHER_APP_KEY}
+      - PUSHER_APP_SECRET=${PUSHER_APP_SECRET}
+      - PUSHER_APP_CLUSTER=${PUSHER_APP_CLUSTER}
+      - NOVU_API_KEY=${NOVU_API_KEY}
+      - POSTHOG_API_KEY=${POSTHOG_API_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - EDGE_CONFIG=${EDGE_CONFIG}
+    env_file:
+      - ../../.env.production
+    volumes:
+      - agent_data_prod:/app/data
+    command: gunicorn fastapi_backend:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  # Production monitoring stack
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: agent-system-prometheus
+    restart: always
+    volumes:
+      - ../../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - agent-network
+    profiles:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: agent-system-grafana
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - ../../monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - agent-network
+    profiles:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  # Production volumes with backup support
+  nginx_logs:
+    driver: local
+  nginx_cache:
+    driver: local
+  frontend_cache:
+    driver: local
+  frontend_static:
+    driver: local
+  agent_data_prod:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-/var/lib/agent-system/data}
+  redis_data_prod:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${REDIS_DATA_PATH:-/var/lib/agent-system/redis}
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

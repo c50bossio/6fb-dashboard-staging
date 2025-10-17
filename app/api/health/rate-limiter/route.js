@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import rateLimiter from '@/lib/redis-rate-limiter'
 
-// Force Node.js runtime to support Redis/ioredis dependencies
 export const runtime = 'nodejs'
 
 /**
@@ -11,17 +10,13 @@ export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
-    // Get rate limiter status
     const status = rateLimiter.getStatus()
     
-    // Get current time for reference
     const timestamp = new Date().toISOString()
     
-    // Determine health status
     const isHealthy = status.redisAvailable || status.memoryEntries >= 0
     const healthStatus = isHealthy ? 'healthy' : 'degraded'
     
-    // Performance metrics
     const metrics = {
       source: status.source,
       redisAvailable: status.redisAvailable,
@@ -30,7 +25,6 @@ export async function GET(request) {
       fallbackMode: !status.redisAvailable
     }
     
-    // Warnings based on status
     const warnings = []
     if (!status.redisAvailable) {
       warnings.push('Redis unavailable - using in-memory fallback')
@@ -92,7 +86,6 @@ export async function GET(request) {
   }
 }
 
-// Also support HEAD requests for basic health checks
 export async function HEAD(request) {
   try {
     const status = rateLimiter.getStatus()

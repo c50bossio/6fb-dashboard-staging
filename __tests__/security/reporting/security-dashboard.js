@@ -18,20 +18,17 @@ export class SecurityReportingDashboard {
    * Generate comprehensive security dashboard
    */
   async generateSecurityDashboard(scanResults = {}) {
-    console.log('📊 Generating security dashboard...');
 
     await fs.mkdir(this.dashboardDir, { recursive: true });
 
     const dashboardData = await this.aggregateSecurityData(scanResults);
     
-    // Generate different dashboard formats
     await this.generateHTMLDashboard(dashboardData);
     await this.generateJSONReport(dashboardData);
     await this.generateSARIFReport(dashboardData);
     await this.generatePDFReport(dashboardData);
     await this.generateCSVReport(dashboardData);
 
-    console.log(`✅ Security dashboard generated at: ${this.dashboardDir}`);
     return dashboardData;
   }
 
@@ -66,7 +63,6 @@ export class SecurityReportingDashboard {
       }
     };
 
-    // Process scan results
     if (scanResults.sast) {
       await this.processSASTResults(scanResults.sast, aggregatedData);
     }
@@ -87,7 +83,6 @@ export class SecurityReportingDashboard {
       await this.processPenetrationResults(scanResults.penetration, aggregatedData);
     }
 
-    // Calculate overall metrics
     this.calculateOverallMetrics(aggregatedData);
 
     return aggregatedData;
@@ -365,7 +360,6 @@ export class SecurityReportingDashboard {
     </div>
 
     <script>
-        // Vulnerability Distribution Chart
         const ctx1 = document.getElementById('vulnerabilityChart').getContext('2d');
         new Chart(ctx1, {
             type: 'doughnut',
@@ -392,7 +386,6 @@ export class SecurityReportingDashboard {
             }
         });
 
-        // Security Score Trend Chart
         const ctx2 = document.getElementById('trendChart').getContext('2d');
         new Chart(ctx2, {
             type: 'line',
@@ -429,7 +422,7 @@ export class SecurityReportingDashboard {
 
     const htmlPath = path.join(this.dashboardDir, 'security-dashboard.html');
     await fs.writeFile(htmlPath, htmlTemplate);
-    console.log(`📄 HTML dashboard generated: ${htmlPath}`);
+    
   }
 
   /**
@@ -481,7 +474,7 @@ export class SecurityReportingDashboard {
   async generateJSONReport(data) {
     const jsonPath = path.join(this.dashboardDir, 'security-report.json');
     await fs.writeFile(jsonPath, JSON.stringify(data, null, 2));
-    console.log(`📄 JSON report generated: ${jsonPath}`);
+    
   }
 
   /**
@@ -494,7 +487,6 @@ export class SecurityReportingDashboard {
       runs: []
     };
 
-    // Convert vulnerabilities to SARIF format
     const allVulns = [
       ...data.vulnerabilities.critical,
       ...data.vulnerabilities.high,
@@ -536,7 +528,7 @@ export class SecurityReportingDashboard {
 
     const sarifPath = path.join(this.dashboardDir, 'security-report.sarif');
     await fs.writeFile(sarifPath, JSON.stringify(sarif, null, 2));
-    console.log(`📄 SARIF report generated: ${sarifPath}`);
+    
   }
 
   /**
@@ -599,7 +591,7 @@ export class SecurityReportingDashboard {
 
     const pdfPath = path.join(this.dashboardDir, 'security-report.html');
     await fs.writeFile(pdfPath, pdfTemplate);
-    console.log(`📄 PDF-ready report generated: ${pdfPath}`);
+    
   }
 
   /**
@@ -642,7 +634,7 @@ export class SecurityReportingDashboard {
 
     const csvPath = path.join(this.dashboardDir, 'security-vulnerabilities.csv');
     await fs.writeFile(csvPath, csvContent);
-    console.log(`📄 CSV report generated: ${csvPath}`);
+    
   }
 
   /**
@@ -651,7 +643,6 @@ export class SecurityReportingDashboard {
   calculateOverallMetrics(data) {
     const totalVulns = Object.values(data.vulnerabilities).reduce((sum, vulns) => sum + vulns.length, 0);
     
-    // Calculate security score based on vulnerability severity
     const criticalPenalty = data.vulnerabilities.critical.length * 20;
     const highPenalty = data.vulnerabilities.high.length * 10;
     const mediumPenalty = data.vulnerabilities.medium.length * 5;
@@ -663,7 +654,6 @@ export class SecurityReportingDashboard {
     data.overview.securityScore = securityScore;
     data.overview.riskLevel = this.calculateRiskLevel(securityScore);
     
-    // Calculate compliance score (placeholder)
     data.overview.complianceScore = Math.max(0, 100 - (data.vulnerabilities.critical.length * 15) - (data.vulnerabilities.high.length * 8));
   }
 
@@ -735,14 +725,12 @@ export class SecurityReportingDashboard {
       const latest = historicalData[historicalData.length - 1];
       const previous = historicalData[historicalData.length - 2];
       
-      // Security score trend
       if (latest.securityScore > previous.securityScore + 5) {
         trends.securityScoreTrend = 'improving';
       } else if (latest.securityScore < previous.securityScore - 5) {
         trends.securityScoreTrend = 'declining';
       }
       
-      // Vulnerability trend
       if (latest.totalFindings < previous.totalFindings) {
         trends.vulnerabilityTrend = 'improving';
       } else if (latest.totalFindings > previous.totalFindings) {

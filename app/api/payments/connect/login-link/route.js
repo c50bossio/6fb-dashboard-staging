@@ -1,0 +1,49 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+// const { stripeService } = require('@/services/stripe-service')
+const stripeService = { createLoginLink: async () => ({ error: 'Stripe service temporarily disabled for deployment' }) }
+
+export async function POST(request) {
+  try {
+    const supabase = await createClient()
+    
+    // Authenticate user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    
+    const body = await request.json()
+    const { account_id } = body
+    
+    // Verify account ownership
+    const { data: account } = await supabase
+      .from('stripe_connected_accounts')
+      .select('*')
+      .eq('stripe_account_id', account_id)
+      .eq('user_id', user.id)
+      .single()
+    
+    if (!account) {
+      return NextResponse.json({ error: 'Account not found or unauthorized' }, { status: 403 })
+    }
+    
+    // Create login link for Stripe Express dashboard
+    const result = await stripeService.createLoginLink(account_id)
+    
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 400 })
+    }
+    
+    return NextResponse.json({
+      url: result.url
+    })
+    
+  } catch (error) {
+    console.error('Error creating login link:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

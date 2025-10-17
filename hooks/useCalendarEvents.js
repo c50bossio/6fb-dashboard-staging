@@ -8,7 +8,7 @@ const TimezoneService = require('../services/timezone.service');
 export const useCalendarEvents = (options = {}) => {
   const {
     barberId = null,
-    shopId = 'shop_001',
+    barbershopId = 'shop_001',
     timezone = TimezoneService.getCurrentTimezone(),
     useServerExpansion = true // Use server-side expansion for better performance
   } = options;
@@ -38,7 +38,7 @@ export const useCalendarEvents = (options = {}) => {
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           barber_id: barberId,
-          shop_id: shopId,
+          barbershop_id: barbershopId,
           include_single: true,
           timezone: timezone
         })
@@ -50,10 +50,9 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
       
-      // Events are already formatted from the expand endpoint
       setEvents(data.events || []);
       
-      console.log(`Loaded ${data.meta?.total || 0} events (${data.meta?.recurring_count || 0} recurring, ${data.meta?.single_count || 0} single)`);
+      `);
       
     } catch (err) {
       console.error('Error fetching calendar events:', err);
@@ -61,7 +60,7 @@ export const useCalendarEvents = (options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [barberId, shopId, timezone]);
+  }, [barberId, barbershopId, timezone]);
 
   /**
    * Fetch events using client-side expansion (fallback)
@@ -74,7 +73,7 @@ export const useCalendarEvents = (options = {}) => {
       const params = new URLSearchParams({
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
-        shop_id: shopId
+        barbershop_id: barbershopId
       });
 
       if (barberId) {
@@ -89,7 +88,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
       
-      // Process events for calendar display
       const processedEvents = processCalendarEvents(data.appointments || [], timezone);
       setEvents(processedEvents);
       
@@ -99,16 +97,14 @@ export const useCalendarEvents = (options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [barberId, shopId, timezone]);
+  }, [barberId, barbershopId, timezone]);
 
   /**
    * Main fetch function that chooses the appropriate method
    */
   const fetchEvents = useCallback(async (startDate, endDate) => {
-    // Update date range
     setDateRange({ start: startDate, end: endDate });
 
-    // Use server expansion if enabled
     if (useServerExpansion) {
       await fetchEventsWithExpansion(startDate, endDate);
     } else {
@@ -124,7 +120,6 @@ export const useCalendarEvents = (options = {}) => {
       setLoading(true);
       setError(null);
 
-      // Determine endpoint based on whether it's recurring
       const endpoint = appointmentData.is_recurring 
         ? '/api/calendar/recurring/create'
         : '/api/calendar/appointments';
@@ -136,7 +131,7 @@ export const useCalendarEvents = (options = {}) => {
         },
         body: JSON.stringify({
           ...appointmentData,
-          shop_id: shopId,
+          barbershop_id: barbershopId,
           timezone: timezone
         })
       });
@@ -148,7 +143,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
 
-      // Refresh events after creation
       if (dateRange.start && dateRange.end) {
         await fetchEvents(dateRange.start, dateRange.end);
       }
@@ -161,7 +155,7 @@ export const useCalendarEvents = (options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [shopId, timezone, dateRange, fetchEvents]);
+  }, [barbershopId, timezone, dateRange, fetchEvents]);
 
   /**
    * Update an existing appointment
@@ -171,7 +165,6 @@ export const useCalendarEvents = (options = {}) => {
       setLoading(true);
       setError(null);
 
-      // Check if this is a recurring appointment modification
       const isRecurringModification = modificationOptions.modification_type && 
         ['this_only', 'this_and_future', 'all'].includes(modificationOptions.modification_type);
 
@@ -206,7 +199,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
 
-      // Refresh events after update
       if (dateRange.start && dateRange.end) {
         await fetchEvents(dateRange.start, dateRange.end);
       }
@@ -229,7 +221,6 @@ export const useCalendarEvents = (options = {}) => {
       setLoading(true);
       setError(null);
 
-      // Check if this is a recurring appointment deletion
       const isRecurringDeletion = deletionOptions.deletion_type && 
         ['this_only', 'this_and_future', 'all'].includes(deletionOptions.deletion_type);
 
@@ -255,7 +246,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
 
-      // Refresh events after deletion
       if (dateRange.start && dateRange.end) {
         await fetchEvents(dateRange.start, dateRange.end);
       }
@@ -296,7 +286,6 @@ export const useCalendarEvents = (options = {}) => {
 
       const data = await response.json();
 
-      // Refresh events after conversion
       if (dateRange.start && dateRange.end) {
         await fetchEvents(dateRange.start, dateRange.end);
       }

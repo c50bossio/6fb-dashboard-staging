@@ -1,30 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { 
+import {
   ScissorsIcon,
   CurrencyDollarIcon,
   ClockIcon,
   PlusIcon,
   PencilIcon,
-  TrashIcon,
-  EyeIcon,
-  TagIcon,
   StarIcon,
   ChartBarIcon,
-  FunnelIcon,
   MagnifyingGlassIcon,
   PhotoIcon,
   Cog6ToothIcon,
   GlobeAltIcon,
   CheckCircleIcon,
-  XCircleIcon,
-  ExclamationTriangleIcon,
   ShieldCheckIcon,
   LockClosedIcon
 } from '@heroicons/react/24/outline'
-import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect } from 'react'
 import { hasPermission, validateServicePricing, validateServiceDuration, getPermissionLevel } from '@/lib/permissions'
+import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 
 export default function ServiceManager({ 
   userRole, 
@@ -64,13 +58,12 @@ export default function ServiceManager({
   }
 
   const loadServicesData = async () => {
-    const supabase = createClient()
+    const _supabase = createClient()
     
     try {
       let servicesQuery
       
       if (isBarber) {
-        // Load barber's customized services and shop services
         const { data: barberServices } = await supabase
           .from('barber_services')
           .select('*')
@@ -84,11 +77,9 @@ export default function ServiceManager({
           .eq('barbershop_id', barbershopId)
           .eq('is_active', true)
         
-        // Merge services with barber customizations taking priority
         const mergedServices = mergeServices(shopServices || [], barberServices || [])
         setServices(mergedServices)
       } else {
-        // Shop owners see all shop services
         const { data: shopServices } = await supabase
           .from('services')
           .select('*')
@@ -99,7 +90,6 @@ export default function ServiceManager({
         setServices(shopServices || [])
       }
 
-      // Load categories
       const uniqueCategories = [...new Set(services.map(s => s.category).filter(Boolean))]
       const categoryData = uniqueCategories.map(cat => ({
         id: cat,
@@ -122,12 +112,10 @@ export default function ServiceManager({
       barberServices.map(bs => [bs.base_service_id, bs])
     )
     
-    // Add shop services with barber customizations
     shopServices.forEach(shopService => {
       const barberCustomization = barberServiceMap.get(shopService.id)
       
       if (barberCustomization) {
-        // Use barber's customized version
         merged.push({
           ...shopService,
           ...barberCustomization,
@@ -138,7 +126,6 @@ export default function ServiceManager({
           customDuration: barberCustomization.duration_minutes
         })
       } else {
-        // Use shop default
         merged.push({
           ...shopService,
           isCustomized: false
@@ -146,7 +133,6 @@ export default function ServiceManager({
       }
     })
     
-    // Add barber-only services (no base service)
     barberServices
       .filter(bs => !bs.base_service_id)
       .forEach(barberService => {
@@ -164,13 +150,10 @@ export default function ServiceManager({
     if (isShopOwner) return true
     if (!isBarber || !userPermissions) return false
     
-    // Check if barber can modify services
     if (!userPermissions.can_modify_services) return false
     
-    // If it's a barber-only service, they can edit it
     if (service.isBarberOnly) return true
     
-    // For shop services, check if they can modify existing ones
     return true
   }
 

@@ -8,19 +8,13 @@
 const { createClient } = require('@supabase/supabase-js')
 const fs = require('fs')
 
-// Supabase configuration
 const supabaseUrl = 'https://dfhqjdoydihajmjxniee.supabase.co'
 const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
-
-console.log('🚀 Executing Production Database Migration')
-console.log('========================================')
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function createProductionTables() {
-  console.log('📊 Creating core production tables...')
-  
-  // Create tables directly through the API
+
   const tableDefinitions = [
     {
       name: 'tenants',
@@ -122,41 +116,30 @@ async function createProductionTables() {
       `
     }
   ]
-  
-  console.log(`📋 Creating ${tableDefinitions.length} production tables...`)
-  
+
   for (const table of tableDefinitions) {
-    console.log(`   🔧 Creating table: ${table.name}`)
-    
+
     try {
-      // Use raw SQL query through the REST API
       const { data, error } = await supabase.rpc('exec_sql', {
         sql: table.sql
       })
       
       if (error) {
-        console.log(`   ⚠️  Direct SQL failed for ${table.name}, trying alternative approach...`)
-        
-        // Alternative: Create table using INSERT to force table creation
+
         try {
-          // Try to insert a test record to trigger table creation
           await supabase.from(table.name).select('*').limit(1)
-          console.log(`   ✅ Table ${table.name} already exists or was created`)
+          
         } catch (altError) {
-          console.log(`   ❌ Could not create table ${table.name}:`, error.message)
+          
         }
       } else {
-        console.log(`   ✅ Table ${table.name} created successfully`)
+        
       }
     } catch (err) {
-      console.log(`   ❌ Error creating ${table.name}:`, err.message)
+      
     }
   }
-  
-  console.log('')
-  console.log('🔍 Verifying table creation...')
-  
-  // Verify tables were created by trying to query them
+
   const verificationResults = []
   
   for (const table of tableDefinitions) {
@@ -168,52 +151,29 @@ async function createProductionTables() {
       
       if (!error) {
         verificationResults.push({ table: table.name, status: 'EXISTS', error: null })
-        console.log(`   ✅ Verified: ${table.name}`)
+        
       } else {
         verificationResults.push({ table: table.name, status: 'MISSING', error: error.message })
-        console.log(`   ❌ Missing: ${table.name} - ${error.message}`)
+        
       }
     } catch (err) {
       verificationResults.push({ table: table.name, status: 'ERROR', error: err.message })
-      console.log(`   ❌ Error: ${table.name} - ${err.message}`)
+      
     }
   }
-  
-  console.log('')
-  console.log('📊 Migration Results Summary')
-  console.log('===========================')
-  
+
   const existingTables = verificationResults.filter(r => r.status === 'EXISTS')
   const missingTables = verificationResults.filter(r => r.status !== 'EXISTS')
-  
-  console.log(`✅ Tables verified: ${existingTables.length}/${tableDefinitions.length}`)
-  
+
   if (existingTables.length > 0) {
-    console.log('✅ Existing tables:', existingTables.map(t => t.table).join(', '))
+    .join(', '))
   }
   
   if (missingTables.length > 0) {
-    console.log('❌ Missing tables:', missingTables.map(t => t.table).join(', '))
-    console.log('')
-    console.log('📋 Manual Migration Required')
-    console.log('============================')
-    console.log('Please execute the migration manually via Supabase SQL Editor:')
-    console.log('https://supabase.com/dashboard/project/dfhqjdoydihajmjxniee/sql')
-    console.log('')
-    console.log('Copy and paste the content from: migrate-to-production-db.sql')
+    .join(', '))
+
   } else {
-    console.log('')
-    console.log('🎉 Database Migration Complete!')
-    console.log('==============================')
-    console.log('✅ All production tables created successfully')
-    console.log('✅ Token-based billing system ready')
-    console.log('✅ Multi-tenant architecture active')
-    console.log('✅ Usage analytics tracking enabled')
-    
-    // Test basic functionality
-    console.log('')
-    console.log('🧪 Testing database functionality...')
-    
+
     const testTenant = {
       name: 'Migration Test Barbershop',
       slug: 'test-migration-' + Date.now(),
@@ -227,27 +187,20 @@ async function createProductionTables() {
         .select()
       
       if (!insertError && insertData.length > 0) {
-        console.log('✅ Database write test successful')
-        
-        // Clean up test data
+
         await supabase
           .from('tenants')
           .delete()
           .eq('id', insertData[0].id)
-        
-        console.log('✅ Database functionality verified')
+
       } else {
-        console.log('❌ Database write test failed:', insertError?.message)
+        
       }
     } catch (testError) {
-      console.log('❌ Database test error:', testError.message)
+      
     }
   }
-  
-  console.log('')
-  console.log('🚀 Production Database Status: READY')
-  console.log('===================================')
+
 }
 
-// Execute migration
 createProductionTables().catch(console.error)

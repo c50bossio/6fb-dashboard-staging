@@ -1,0 +1,168 @@
+/**
+ * React Query Hooks for AI Scheduling Features
+ * Phase 5-6: AI-powered scheduling intelligence
+ */
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query-client'
+import aiSchedulingAgent from '@/services/ai-scheduling-agent'
+
+/**
+ * Get AI scheduling suggestions for optimal time slots
+ */
+export function useAISchedulingSuggestions(barbershopId, duration, date) {
+  return useQuery({
+    queryKey: queryKeys.ai.schedulingSuggestions(barbershopId, duration, date),
+    queryFn: () => aiSchedulingAgent.suggestOptimalSlots(barbershopId, date, duration),
+    enabled: !!barbershopId && !!date,
+    staleTime: 5 * 60 * 1000, // 5 minutes - suggestions can change based on new bookings
+  })
+}
+
+/**
+ * Predict no-show risk for an appointment
+ */
+export function useNoShowPrediction(appointment) {
+  return useQuery({
+    queryKey: queryKeys.ai.noShowPrediction(appointment?.id),
+    queryFn: () => aiSchedulingAgent.predictNoShowRisk(appointment),
+    enabled: !!appointment?.id,
+    staleTime: 30 * 60 * 1000, // 30 minutes - risk doesn't change frequently
+  })
+}
+
+/**
+ * Optimize schedule for a specific date
+ */
+export function useScheduleOptimization() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ barbershopId, date }) => 
+      aiSchedulingAgent.optimizeSchedule(barbershopId, date),
+    onSuccess: (data, { barbershopId }) => {
+      // Invalidate appointments after optimization
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.appointments.byShop(barbershopId)
+      })
+    }
+  })
+}
+
+/**
+ * Get booking pattern analysis
+ */
+export function useBookingPatterns(barbershopId) {
+  return useQuery({
+    queryKey: [...queryKeys.ai.all(), 'patterns', barbershopId],
+    queryFn: () => aiSchedulingAgent.analyzeBookingPatterns(barbershopId),
+    enabled: !!barbershopId,
+    staleTime: 60 * 60 * 1000, // 1 hour - patterns don't change frequently
+  })
+}
+
+/**
+ * Get customer preferences analysis
+ */
+export function useCustomerPreferences(barbershopId) {
+  return useQuery({
+    queryKey: [...queryKeys.ai.all(), 'preferences', barbershopId],
+    queryFn: () => aiSchedulingAgent.getCustomerPreferences(barbershopId),
+    enabled: !!barbershopId,
+    staleTime: 60 * 60 * 1000, // 1 hour
+  })
+}
+
+/**
+ * Generate smart reminders based on no-show risk
+ */
+export function useSmartReminders() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: async ({ appointmentId, riskLevel }) => {
+      // This would call an API to schedule smart reminders
+      const response = await fetch('/api/ai/smart-reminders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointmentId, riskLevel })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to schedule smart reminders')
+      }
+      
+      return response.json()
+    },
+    onSuccess: (data, { appointmentId }) => {
+      // Update the appointment with reminder status
+      queryClient.setQueryData(
+        [...queryKeys.appointments.all(), appointmentId],
+        (old) => ({
+          ...old,
+          smart_reminders_scheduled: true,
+          reminder_strategy: data.strategy
+        })
+      )
+    }
+  })
+}
+
+/**
+ * Get AI-powered availability analysis
+ */
+export function useAvailabilityAnalysis(barbershopId, dateRange) {
+  return useQuery({
+    queryKey: [...queryKeys.ai.all(), 'availability', barbershopId, dateRange],
+    queryFn: async () => {
+      const dates = []
+      const current = new Date(dateRange.start)
+      const end = new Date(dateRange.end)
+      
+      while (current <= end) {
+        dates.push(current.toISOString().split('T')[0])
+        current.setDate(current.getDate() + 1)
+      }
+      
+      const availabilityPromises = dates.map(date => 
+        aiSchedulingAgent.getAvailability(barbershopId, date)
+      )
+      
+      const results = await Promise.all(availabilityPromises)
+      
+      return dates.map((date, index) => ({
+        date,
+        slots: results[index],
+        utilization: calculateUtilization(results[index])
+      }))
+    },
+    enabled: !!barbershopId && !!dateRange?.start && !!dateRange?.end,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  })
+}
+
+/**
+ * Prefetch AI suggestions for smooth navigation
+ */
+export function usePrefetchAISuggestions() {
+  const queryClient = useQueryClient()
+  
+  return (barbershopId, duration, date) => {
+    return queryClient.prefetchQuery({
+      queryKey: queryKeys.ai.schedulingSuggestions(barbershopId, duration, date),
+      queryFn: () => aiSchedulingAgent.suggestOptimalSlots(barbershopId, date, duration),
+      staleTime: 5 * 60 * 1000,
+    })
+  }
+}
+
+// Helper function to calculate utilization
+function calculateUtilization(slots) {
+  if (!slots || slots.length === 0) return 0
+  
+  const totalSlots = slots.length
+  const availableSlots = slots.filter(slot => slot.available).length
+  const bookedSlots = totalSlots - availableSlots
+  
+  return Math.round((bookedSlots / totalSlots) * 100)
+}

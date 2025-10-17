@@ -8,7 +8,6 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Initialize Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDA4NzAxMCwiZXhwIjoyMDY5NjYzMDEwfQ.fv9Av9Iu1z-79bfIAKEHSf1OCxlnzugkBlWIH8HLW8c'
@@ -416,20 +415,15 @@ CREATE INDEX IF NOT EXISTS idx_unsubscribes_active ON email_unsubscribes(is_acti
 `;
 
 async function createBillingTables() {
-  console.log('🏗️  Creating marketing billing tables in Supabase...')
 
   try {
-    // Execute the SQL to create tables
     const { data, error } = await supabase.rpc('exec_sql', {
       sql_query: createTableSQL
     })
 
     if (error) {
       console.error('❌ Error creating tables:', error)
-      
-      // Try alternative approach - split into individual statements
-      console.log('🔄 Trying alternative approach...')
-      
+
       const statements = createTableSQL.split(';').filter(stmt => stmt.trim())
       
       for (const statement of statements) {
@@ -439,17 +433,14 @@ async function createBillingTables() {
               sql_query: statement + ';'
             })
           } catch (e) {
-            console.log('⚠️  Statement skipped (might already exist):', statement.substring(0, 100) + '...')
+            :', statement.substring(0, 100) + '...')
           }
         }
       }
     } else {
-      console.log('✅ All billing tables created successfully')
+      
     }
 
-    // Verify tables exist
-    console.log('\n🔍 Verifying table creation...')
-    
     const tables = [
       'marketing_accounts',
       'marketing_payment_methods', 
@@ -467,16 +458,14 @@ async function createBillingTables() {
           .select('*', { count: 'exact', head: true })
 
         if (error) {
-          console.log(`❌ Table '${table}' verification failed:`, error.message)
+          
         } else {
-          console.log(`✅ Table '${table}' exists`)
+          
         }
       } catch (e) {
-        console.log(`❌ Table '${table}' not accessible:`, e.message)
+        
       }
     }
-
-    console.log('\n✨ Marketing billing database setup completed!')
 
   } catch (error) {
     console.error('❌ Setup error:', error)
@@ -484,5 +473,4 @@ async function createBillingTables() {
   }
 }
 
-// Run the setup
 createBillingTables().catch(console.error)

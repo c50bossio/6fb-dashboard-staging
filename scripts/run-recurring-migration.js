@@ -12,7 +12,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Initialize Supabase client with service role key for admin access
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dfhqjdoydihajmjxniee.supabase.co',
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmaHFqZG95ZGloYWptanhuaWVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNTIxMjUzMiwiZXhwIjoyMDUwNzg4NTMyfQ.VwP1RlHkKwMqNl0XDLPabxJZKgMkGRBu84hvOeLI8gQ'
@@ -29,24 +28,20 @@ const colors = {
 };
 
 const log = {
-  info: (msg) => console.log(`${colors.cyan}ℹ${colors.reset} ${msg}`),
-  success: (msg) => console.log(`${colors.green}✓${colors.reset} ${msg}`),
-  error: (msg) => console.log(`${colors.red}✗${colors.reset} ${msg}`),
-  warning: (msg) => console.log(`${colors.yellow}⚠${colors.reset} ${msg}`)
+  info: (msg) => ,
+  success: (msg) => ,
+  error: (msg) => ,
+  warning: (msg) => 
 };
 
 async function runMigration() {
-  console.log(`\n${colors.bright}${colors.blue}Running Recurring Appointments Migration${colors.reset}\n`);
 
   try {
-    // Read the migration file
     const migrationPath = path.join(__dirname, '..', 'database', 'migrations', '002-add-recurring-improvements.sql');
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
     
     log.info('Migration file loaded successfully');
     
-    // Split the migration into individual statements
-    // Remove comments and split by semicolons
     const statements = migrationSQL
       .split('\n')
       .filter(line => !line.trim().startsWith('--'))
@@ -57,7 +52,6 @@ async function runMigration() {
     
     log.info(`Found ${statements.length} SQL statements to execute`);
     
-    // Execute each statement
     let successCount = 0;
     let skipCount = 0;
     let errorCount = 0;
@@ -65,12 +59,10 @@ async function runMigration() {
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i];
       
-      // Skip empty statements or comments
       if (!statement || statement.startsWith('--')) {
         continue;
       }
       
-      // Skip DO blocks as they can't be executed via Supabase client
       if (statement.toUpperCase().startsWith('DO ')) {
         log.warning(`Skipping DO block (statement ${i + 1})`);
         skipCount++;
@@ -78,14 +70,11 @@ async function runMigration() {
       }
       
       try {
-        // For ALTER TABLE and CREATE statements, we need to use raw SQL
         const { error } = await supabase.rpc('exec_sql', {
           sql: statement + ';'
         }).single();
         
         if (error) {
-          // Try direct execution as fallback
-          // Note: Some statements might fail if they already exist
           if (statement.includes('IF NOT EXISTS') || statement.includes('OR REPLACE')) {
             log.warning(`Statement ${i + 1} might already exist (this is OK)`);
             skipCount++;
@@ -97,7 +86,6 @@ async function runMigration() {
           successCount++;
         }
       } catch (err) {
-        // Check if it's a "already exists" error
         if (err.message?.includes('already exists') || 
             err.message?.includes('duplicate') ||
             err.code === '42P07' || // duplicate table
@@ -108,18 +96,10 @@ async function runMigration() {
         } else {
           log.error(`Failed to execute statement ${i + 1}: ${err.message}`);
           errorCount++;
-          // Continue with other statements
         }
       }
     }
-    
-    // Summary
-    console.log(`\n${colors.bright}Migration Summary:${colors.reset}`);
-    console.log(`  ${colors.green}Success: ${successCount}${colors.reset}`);
-    console.log(`  ${colors.yellow}Skipped: ${skipCount}${colors.reset}`);
-    console.log(`  ${colors.red}Errors: ${errorCount}${colors.reset}`);
-    
-    // Test the new columns exist
+
     log.info('\nVerifying migration results...');
     
     const { data: testData, error: testError } = await supabase
@@ -128,7 +108,6 @@ async function runMigration() {
       .limit(1);
     
     if (testError) {
-      // Try alternative verification
       const { data: bookings, error: bookingsError } = await supabase
         .from('bookings')
         .select('*')
@@ -147,7 +126,6 @@ async function runMigration() {
       log.info('Columns verified: parent_id, occurrence_date, modification_type, cancelled_at');
     }
     
-    // Check if views were created
     log.info('\nChecking views...');
     const viewsToCheck = ['active_bookings', 'recurring_series', 'exception_appointments'];
     
@@ -165,11 +143,10 @@ async function runMigration() {
     }
     
     if (errorCount === 0) {
-      console.log(`\n${colors.bright}${colors.green}✅ Migration completed successfully!${colors.reset}\n`);
+      
       return true;
     } else {
-      console.log(`\n${colors.bright}${colors.yellow}⚠️ Migration completed with some errors${colors.reset}`);
-      console.log(`${colors.yellow}The system should still work, but some optimizations might be missing${colors.reset}\n`);
+
       return true;
     }
     
@@ -180,7 +157,6 @@ async function runMigration() {
   }
 }
 
-// Alternative: Direct column addition if RPC doesn't work
 async function addColumnsDirect() {
   log.info('\nAttempting direct column addition...');
   
@@ -193,7 +169,6 @@ async function addColumnsDirect() {
   
   for (const column of columns) {
     try {
-      // This is a workaround - we'll check if we can select the column
       const { data, error } = await supabase
         .from('bookings')
         .select(column.name)
@@ -210,7 +185,6 @@ async function addColumnsDirect() {
   }
 }
 
-// Run the migration
 async function main() {
   const success = await runMigration();
   
@@ -218,8 +192,7 @@ async function main() {
     log.warning('Trying alternative approach...');
     await addColumnsDirect();
   }
-  
-  console.log(`${colors.cyan}Migration process complete. The new recurring system is ready to use!${colors.reset}\n`);
+
 }
 
 main().catch(error => {

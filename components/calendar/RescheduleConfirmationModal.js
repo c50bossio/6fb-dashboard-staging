@@ -1,17 +1,16 @@
 'use client'
 
 import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, useState } from 'react'
-import { 
-  ExclamationTriangleIcon, 
-  CalendarIcon, 
-  ClockIcon,
+import {
+  ExclamationTriangleIcon,
+  CalendarIcon,
   UserIcon,
   BellIcon,
   EnvelopeIcon,
   DevicePhoneMobileIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import { Fragment, useState } from 'react'
 
 export default function RescheduleConfirmationModal({
   isOpen,
@@ -31,7 +30,6 @@ export default function RescheduleConfirmationModal({
   
   if (!appointmentDetails || !newTimeSlot) return null
   
-  // Format dates for display
   const formatDateTime = (date) => {
     if (!date) return ''
     const d = new Date(date)
@@ -48,7 +46,6 @@ export default function RescheduleConfirmationModal({
   const handleConfirm = async () => {
     setLoading(true)
     
-    // Prepare reschedule data
     const rescheduleData = {
       appointmentId: appointmentDetails.id,
       oldTime: {
@@ -66,7 +63,6 @@ export default function RescheduleConfirmationModal({
       customMessage: notifyCustomer ? customMessage : null
     }
     
-    // Call the confirm handler
     await onConfirm(rescheduleData)
     setLoading(false)
   }

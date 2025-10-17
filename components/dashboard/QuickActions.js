@@ -5,7 +5,6 @@ import Link from 'next/link'
 
 import { Card, Badge } from '../ui'
 
-// Destructure icons from the imported module to avoid bundling issues
 const {
   ChatBubbleLeftRightIcon,
   ChartBarIcon,
@@ -17,15 +16,28 @@ const {
   PlusIcon,
   ArrowRightIcon,
   LightBulbIcon,
-  RocketLaunchIcon
+  RocketLaunchIcon,
+  PaintBrushIcon,
+  GlobeAltIcon
 } = HeroIcons
 
-// Fallback icon component in case of import issues
+// Unified customization URL for all user roles
+const getCustomizationUrl = () => '/customize'
+
+// Unified customization content with progressive disclosure
+const getCustomizationContent = () => ({
+  title: 'Customize Experience',
+  description: 'Personalize your profile, website, and branding'
+})
+
 const FallbackIcon = ({ className }) => (
-  <div className={`${className} bg-gray-300 rounded-full`} />
+  <div className={`${className} bg-muted rounded-full`} />
 )
 
 export default function QuickActions({ profile }) {
+  // Get unified customization content
+  const customizationContent = getCustomizationContent()
+  const customizationUrl = getCustomizationUrl()
   const primaryActions = [
     {
       title: 'AI Command Center',
@@ -35,6 +47,15 @@ export default function QuickActions({ profile }) {
       color: 'purple',
       badge: 'Most Popular',
       badgeVariant: 'solid-purple'
+    },
+    {
+      title: 'Check-In Customer',
+      description: 'Mark customer as arrived for their appointment',
+      href: '/dashboard/checkin',
+      icon: UserGroupIcon,
+      color: 'green',
+      badge: 'Quick Action',
+      badgeVariant: 'success'
     },
     {
       title: 'View Analytics',
@@ -51,12 +72,19 @@ export default function QuickActions({ profile }) {
       href: '/dashboard/bookings',
       icon: CalendarDaysIcon,
       color: 'green',
-      badge: '12 Today',
+      badge: 'Today',
       badgeVariant: 'success'
     }
   ]
 
   const secondaryActions = [
+    {
+      title: customizationContent.title,
+      description: customizationContent.description,
+      href: customizationUrl,
+      icon: PaintBrushIcon,
+      color: 'indigo'
+    },
     {
       title: 'Customer Management',
       description: 'View and manage your customer database',
@@ -76,7 +104,7 @@ export default function QuickActions({ profile }) {
       description: 'Train and customize your AI agents',
       href: '/dashboard/ai-training',
       icon: SparklesIcon,
-      color: 'indigo'
+      color: 'emerald'
     }
   ]
 
@@ -107,19 +135,18 @@ export default function QuickActions({ profile }) {
 
   const getColorClasses = (color) => {
     const colorMap = {
-      purple: 'text-gold-600 bg-gold-50 hover:bg-gold-100',
-      blue: 'text-olive-600 bg-olive-50 hover:bg-olive-100',
-      green: 'text-green-600 bg-green-50 hover:bg-green-100',
-      orange: 'text-orange-600 bg-orange-50 hover:bg-orange-100',
-      pink: 'text-pink-600 bg-pink-50 hover:bg-pink-100',
-      indigo: 'text-olive-600 bg-indigo-50 hover:bg-indigo-100',
-      emerald: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100',
-      amber: 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+      purple: 'text-gold-600 bg-muted hover:bg-muted',
+      blue: 'text-olive-600 bg-muted hover:bg-muted',
+      green: 'text-green-600 bg-muted hover:bg-muted',
+      orange: 'text-orange-600 bg-muted hover:bg-muted',
+      pink: 'text-pink-600 bg-muted hover:bg-muted',
+      indigo: 'text-olive-600 bg-muted hover:bg-muted',
+      emerald: 'text-emerald-600 bg-muted hover:bg-muted',
+      amber: 'text-amber-700 bg-muted hover:bg-muted'
     }
     return colorMap[color] || colorMap.blue
   }
 
-  // Show quick start for new users
   const isNewUser = !profile?.subscription_status || profile?.subscription_status === 'trial'
 
   return (
@@ -129,8 +156,8 @@ export default function QuickActions({ profile }) {
         <div>
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Quick Start</h2>
-              <p className="text-sm text-gray-600 mt-1">Get your AI system up and running in minutes</p>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Quick Start</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Get your AI system up and running in minutes</p>
             </div>
             <Badge variant="primary">New User</Badge>
           </div>
@@ -149,10 +176,10 @@ export default function QuickActions({ profile }) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-gray-900 text-sm">{action.title}</h3>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{action.title}</h3>
                         {action.isNew && <Badge variant="success" size="sm">New</Badge>}
                       </div>
-                      <p className="text-xs text-gray-600 mt-1">{action.description}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">{action.description}</p>
                     </div>
                     {ArrowRightIcon ? (
                       <ArrowRightIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
@@ -170,8 +197,8 @@ export default function QuickActions({ profile }) {
       {/* Primary Actions */}
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Most Used Features</h2>
-          <span className="text-sm text-gray-500">Quick access to your main tools</span>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Most Used Features</h2>
+          <span className="text-sm text-gray-500 dark:text-gray-400">Quick access to your main tools</span>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -188,7 +215,7 @@ export default function QuickActions({ profile }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900 group-hover:text-gray-700 transition-colors text-base sm:text-lg">
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors text-base sm:text-lg">
                         {action.title}
                       </h3>
                       {action.badge && (
@@ -197,8 +224,8 @@ export default function QuickActions({ profile }) {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 leading-relaxed">{action.description}</p>
-                    <div className="flex items-center mt-3 sm:mt-4 text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{action.description}</p>
+                    <div className="flex items-center mt-3 sm:mt-4 text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
                       <span>Get started</span>
                       {ArrowRightIcon ? (
                         <ArrowRightIcon className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-200" />
@@ -217,8 +244,8 @@ export default function QuickActions({ profile }) {
       {/* Secondary Actions */}
       <div>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">More Tools</h2>
-          <span className="text-sm text-gray-500">Additional features and settings</span>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">More Tools</h2>
+          <span className="text-sm text-gray-500 dark:text-gray-400">Additional features and settings</span>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -234,10 +261,10 @@ export default function QuickActions({ profile }) {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 text-sm group-hover:text-gray-700 transition-colors">
+                    <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">
                       {action.title}
                     </h3>
-                    <p className="text-xs text-gray-600 mt-0.5">{action.description}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{action.description}</p>
                   </div>
                   {ArrowRightIcon ? (
                     <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all duration-200" />
@@ -252,11 +279,11 @@ export default function QuickActions({ profile }) {
       </div>
 
       {/* Settings Quick Access */}
-      <div className="bg-gray-50 rounded-xl p-6">
+      <div className="bg-muted rounded-xl p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-gray-900">System Settings</h3>
-            <p className="text-sm text-gray-600 mt-1">Configure your AI system preferences</p>
+            <h3 className="font-semibold text-gray-900 dark:text-gray-100">System Settings</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Configure your AI system preferences</p>
           </div>
           <Link href="/dashboard/settings">
             <div className="flex items-center space-x-2 text-olive-600 hover:text-olive-700 transition-colors cursor-pointer">

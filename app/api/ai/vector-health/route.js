@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function GET() {
   try {
-    // Dynamic import to avoid build-time issues
     const { 
       checkVectorDatabaseHealth, 
       initializeVectorDatabase,
@@ -12,12 +11,9 @@ export async function GET() {
     
     const startTime = Date.now()
     
-    // Check vector database health
     const vectorHealth = await checkVectorDatabaseHealth()
     
-    // Initialize if not already done
     if (!vectorHealth.initialized) {
-      console.log('🔄 Initializing vector database...')
       try {
         await initializeVectorDatabase()
         const updatedHealth = await checkVectorDatabaseHealth()
@@ -27,7 +23,6 @@ export async function GET() {
       }
     }
     
-    // Test search functionality if available
     let searchTest = null
     if (vectorHealth.initialized) {
       try {
@@ -40,7 +35,6 @@ export async function GET() {
       }
     }
     
-    // Determine overall status
     let status = 'healthy'
     if (!vectorHealth.initialized) {
       status = 'unhealthy'
@@ -66,7 +60,6 @@ export async function GET() {
       recommendations: generateVectorHealthRecommendations(vectorHealth, status)
     }
     
-    // Return appropriate HTTP status
     const httpStatus = status === 'unhealthy' ? 503 : status === 'degraded' ? 206 : 200
     
     return NextResponse.json(response, { 
@@ -91,12 +84,10 @@ export async function GET() {
   }
 }
 
-// Initialize vector database on demand
 export async function POST() {
   try {
     const { initializeVectorDatabase } = await import('@/lib/vector-knowledge')
     
-    console.log('🔄 Manual vector database initialization requested...')
     const startTime = Date.now()
     
     const result = await initializeVectorDatabase()

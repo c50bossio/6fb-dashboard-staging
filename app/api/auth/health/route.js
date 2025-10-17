@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server'
 
+import { getDisplayName, splitFullName, combineNames, normalizeNameData } from '@/lib/name-utils'
 import { createClient } from '@/lib/supabase/server'
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
     const startTime = Date.now()
-    const supabase = createClient()
+    const supabase = await createClient()
     
-    // Comprehensive authentication system health check
     const authHealth = {
       timestamp: new Date().toISOString(),
       system_status: 'healthy',
@@ -19,7 +19,6 @@ export async function GET() {
       recommendations: []
     }
 
-    // Component 1: Supabase Configuration
     try {
       const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL
       const hasAnonKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -44,7 +43,6 @@ export async function GET() {
       }
     }
 
-    // Component 2: Database Connectivity
     try {
       const dbStartTime = Date.now()
       const { data, error } = await supabase
@@ -70,7 +68,6 @@ export async function GET() {
       }
     }
 
-    // Component 3: Current Session Status
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
@@ -113,7 +110,6 @@ export async function GET() {
       }
     }
 
-    // Component 4: User Profile System
     if (authHealth.session_info?.user_id) {
       try {
         const profileStartTime = Date.now()
@@ -131,12 +127,21 @@ export async function GET() {
         }
         
         if (profile) {
+          // Normalize name data for consistent health checking
+          const nameData = normalizeNameData({
+            firstName: profile.first_name,
+            lastName: profile.last_name,
+            fullName: profile.full_name
+          })
+          
           authHealth.components.user_profile.profile_completeness = {
-            has_full_name: !!profile.full_name,
+            has_full_name: !!nameData.fullName,
+            has_first_name: !!nameData.firstName,
+            has_last_name: !!nameData.lastName,
             has_shop_name: !!profile.shop_name,
             has_role: !!profile.role,
             subscription_status: profile.subscription_status || 'unknown',
-            completion_score: calculateProfileCompleteness(profile)
+            completion_score: calculateProfileCompleteness(profile, nameData)
           }
           
           if (authHealth.components.user_profile.profile_completeness.completion_score < 80) {
@@ -159,7 +164,6 @@ export async function GET() {
       }
     }
 
-    // Component 5: Authentication Features
     try {
       const features = {
         email_auth: true,
@@ -184,7 +188,6 @@ export async function GET() {
       }
     }
 
-    // Component 6: Security Configuration
     try {
       const security = {
         https_required: process.env.NODE_ENV === 'production',
@@ -207,7 +210,6 @@ export async function GET() {
       }
     }
 
-    // Determine overall system status
     const componentStatuses = Object.values(authHealth.components).map(c => c.status)
     const hasErrors = componentStatuses.includes('error')
     const hasUnhealthy = componentStatuses.includes('unhealthy')
@@ -221,7 +223,6 @@ export async function GET() {
       authHealth.system_status = 'healthy'
     }
 
-    // Add general recommendations
     if (authHealth.system_status === 'healthy') {
       authHealth.recommendations.unshift('✅ Authentication system is fully operational')
     }
@@ -230,14 +231,12 @@ export async function GET() {
       authHealth.recommendations.push('🚧 Development mode active - dev bypass authentication available')
     }
 
-    // Performance metrics
     authHealth.performance = {
       total_response_time_ms: Date.now() - startTime,
       database_response_time_ms: authHealth.components.database?.response_time_ms || 0,
       profile_response_time_ms: authHealth.components.user_profile?.response_time_ms || 0
     }
 
-    // Return appropriate HTTP status
     const httpStatus = authHealth.system_status === 'unhealthy' ? 503 : 
                       authHealth.system_status === 'degraded' ? 206 : 200
 
@@ -264,19 +263,23 @@ export async function GET() {
   }
 }
 
-// Calculate profile completeness score
-function calculateProfileCompleteness(profile) {
+function calculateProfileCompleteness(profile, nameData = null) {
+  // Use normalized name data if provided, otherwise check raw fields
+  const hasName = nameData ? 
+    (nameData.firstName && nameData.lastName) || nameData.fullName :
+    profile.full_name || (profile.first_name && profile.last_name)
+    
   const fields = [
-    'full_name',
-    'shop_name', 
-    'email',
-    'role',
-    'subscription_status'
+    hasName,
+    profile.shop_name, 
+    profile.email,
+    profile.role,
+    profile.subscription_status
   ]
   
   const completedFields = fields.filter(field => {
-    const value = profile[field]
-    return value && value.toString().trim().length > 0
+    if (typeof field === 'boolean') return field
+    return field && field.toString().trim().length > 0
   }).length
   
   return Math.round((completedFields / fields.length) * 100)

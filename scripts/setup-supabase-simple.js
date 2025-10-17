@@ -6,14 +6,10 @@ import 'dotenv/config';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-console.log('🚀 Setting up Supabase database...');
-
-// Create admin client
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 async function insertDemoData() {
-  console.log('📋 Inserting demo barbershop data...');
-  
+
   const demoData = {
     id: '550e8400-e29b-41d4-a716-446655440000',
     name: 'Elite Cuts Barbershop',
@@ -63,8 +59,7 @@ async function insertDemoData() {
     console.error('❌ Insert failed:', error.message);
     return false;
   }
-  
-  console.log('✅ Demo data inserted:', data[0]?.name);
+
   return true;
 }
 
@@ -72,7 +67,7 @@ async function main() {
   try {
     const success = await insertDemoData();
     if (success) {
-      console.log('🎉 Setup complete! Test at: http://localhost:9999/dashboard/website-settings');
+      
     }
   } catch (error) {
     console.error('💥 Error:', error.message);

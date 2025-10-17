@@ -1,19 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { 
-  CalendarIcon,
-  ClockIcon,
-  UserIcon,
+import {
   PhoneIcon,
   CheckIcon,
   XMarkIcon,
   PlusIcon
 } from '@heroicons/react/24/outline'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function BarberSchedule() {
-  const { user } = useAuth()
+  const { user: _user } = useAuth()
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [appointments, setAppointments] = useState([])
   const [availability, setAvailability] = useState({
@@ -30,13 +27,12 @@ export default function BarberSchedule() {
 
   useEffect(() => {
     loadScheduleData()
-  }, [selectedDate])
+  }, [selectedDate]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadScheduleData = async () => {
     try {
       setLoading(true)
       
-      // Load appointments for selected date range
       const response = await fetch(`/api/appointments?barber_id=${user?.id || 'demo'}&date=${selectedDate.toISOString()}`)
       const data = await response.json()
       
@@ -59,7 +55,6 @@ export default function BarberSchedule() {
       })
       
       if (response.ok) {
-        // Reload appointments
         loadScheduleData()
       }
     } catch (error) {
@@ -77,7 +72,6 @@ export default function BarberSchedule() {
     }
     setAvailability(newAvailability)
     
-    // Save to backend
     try {
       await fetch('/api/barber/availability', {
         method: 'POST',
@@ -147,7 +141,26 @@ export default function BarberSchedule() {
     for (let hour = startHour; hour < endHour; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
-        const appointment = appointments.find(apt => apt.start_time === time)
+        const appointment = appointments.find(apt => {
+          // Handle different schema formats
+          let appointmentTime;
+          if (apt.time) {
+            appointmentTime = apt.time;
+          } else if (apt.scheduled_at) {
+            appointmentTime = new Date(apt.scheduled_at).toLocaleTimeString('en-US', { 
+              hour12: false, 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+          } else if (apt.date) {
+            appointmentTime = new Date(apt.date).toLocaleTimeString('en-US', { 
+              hour12: false, 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+          }
+          return appointmentTime === time;
+        })
         slots.push({ time, appointment })
       }
     }

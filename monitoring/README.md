@@ -1,243 +1,670 @@
-# 6FB AI Agent System - Monitoring & Alerting
+# 6FB AI Agent System - Site Reliability Engineering (SRE) Framework
 
-Comprehensive production monitoring stack with Prometheus, Grafana, and Alertmanager.
+A comprehensive Site Reliability Engineering framework implementing industry best practices for monitoring, alerting, incident response, and system reliability.
 
-## Quick Start
+## 🎯 Overview
 
-```bash
-# Start monitoring stack
-npm run monitoring:start
+This SRE framework provides:
 
-# Stop monitoring stack
-npm run monitoring:stop
+- **Service Level Objectives (SLOs) & Service Level Indicators (SLIs)** with automated tracking
+- **Error Budget calculation and monitoring** with burn rate alerting
+- **Comprehensive health checking** with circuit breaker patterns
+- **Auto-recovery mechanisms** with intelligent failure handling
+- **Incident response procedures** with automated escalation
+- **Capacity planning** with predictive scaling recommendations
+- **Performance baselines** with anomaly detection
+- **Multi-channel alerting** with smart routing and correlation
+- **Real-time dashboards** with WebSocket updates
+- **Uptime monitoring** with 99.9% availability targets
 
-# View logs
-npm run monitoring:logs
+## 🏗️ Architecture
 
-# Check status
-npm run monitoring:status
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   SRE Dashboard │    │  Alert Manager  │    │ Health Checks   │
+│   (FastAPI)     │◄──►│  (Multi-channel)│◄──►│ (Circuit Breaker│
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                        │                        │
+         ▼                        ▼                        ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ SRE Framework   │    │ Incident Mgmt   │    │ Auto Recovery   │
+│ (Orchestrator)  │◄──►│ (Runbooks)      │◄──►│ (Self-healing)  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                        │                        │
+         ▼                        ▼                        ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ SLO Manager     │    │ Capacity Planner│    │ Performance     │
+│ (Error Budgets) │    │ (Scaling)       │    │ Baselines       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## Services Overview
+## 🚀 Quick Start
 
-| Service | Port | Purpose | URL |
-|---------|------|---------|-----|
-| **Prometheus** | 9090 | Metrics collection & storage | http://localhost:9090 |
-| **Grafana** | 3001 | Visualization & dashboards | http://localhost:3001 |
-| **Alertmanager** | 9093 | Alert routing & notifications | http://localhost:9093 |
-| **Node Exporter** | 9100 | System metrics | http://localhost:9100 |
-| **cAdvisor** | 8080 | Container metrics | http://localhost:8080 |
-| **Blackbox Exporter** | 9115 | Endpoint monitoring | http://localhost:9115 |
-| **PostgreSQL Exporter** | 9187 | Database metrics | http://localhost:9187 |
-| **Redis Exporter** | 9121 | Cache metrics | http://localhost:9121 |
+### 1. Start the SRE Framework
 
-## Default Credentials
+```python
+from monitoring.sre_framework import SREFramework
+import asyncio
 
-- **Grafana**: admin / admin123 (change in production)
-- **Environment**: Configure passwords in `.env.production`
+async def main():
+    # Initialize SRE framework
+    sre = SREFramework()
+    
+    # Start monitoring
+    await sre.start()
+    
+    # Keep running
+    try:
+        while True:
+            await asyncio.sleep(60)
+    finally:
+        await sre.stop()
 
-## Key Features
+if __name__ == "__main__":
+    asyncio.run(main())
+```
 
-### 📊 Metrics Collection
-- **System Metrics**: CPU, memory, disk, network via Node Exporter
-- **Container Metrics**: Docker resource usage via cAdvisor
-- **Application Metrics**: Custom business metrics via `/api/metrics`
-- **Database Metrics**: PostgreSQL performance via custom queries
-- **Cache Metrics**: Redis performance and usage
-- **External Monitoring**: Health checks via Blackbox Exporter
+### 2. Launch the Dashboard
 
-### 🚨 Comprehensive Alerting
-- **Critical Alerts**: Service downtime, resource exhaustion
-- **Security Alerts**: Failed logins, DDoS indicators, SSL expiry
-- **Performance Alerts**: High CPU/memory, slow responses
-- **Business Alerts**: Booking conversion rates, AI accuracy
-- **Custom Routing**: Different notification channels by severity
+```bash
+# Start the SRE dashboard
+cd monitoring
+python sre_dashboard.py --host 0.0.0.0 --port 8080
+```
 
-### 📈 Pre-built Dashboards
-- **Main Dashboard**: System overview with key metrics
-- **Performance Dashboard**: Response times, error rates
-- **Security Dashboard**: Security events and trends
-- **Business Dashboard**: Booking metrics, user activity
-- **Infrastructure Dashboard**: Container and network metrics
+Access dashboard at: `http://localhost:8080`
 
-## Configuration
+### 3. Configure Environment Variables
+
+```bash
+# Email notifications
+export SMTP_SERVER="smtp.gmail.com"
+export SMTP_USERNAME="alerts@6fb.ai"
+export SMTP_PASSWORD="your-password"
+export SECURITY_ALERT_EMAILS="sre-team@6fb.ai,oncall@6fb.ai"
+
+# Slack notifications
+export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
+
+# Webhook notifications
+export SECURITY_WEBHOOK_URL="https://your-webhook-endpoint.com/alerts"
+export WEBHOOK_SECRET="your-secret-key"
+```
+
+## 📊 Service Level Objectives (SLOs)
+
+### Default SLOs
+
+| Service | SLI | Target | Time Window | Error Budget |
+|---------|-----|--------|-------------|--------------|
+| Backend API | Availability | 99.9% | 30 days | 0.1% |
+| Backend API | Latency P95 | <500ms | 1 day | 5% |
+| Frontend | Load Time P90 | <2s | 1 day | 10% |
+| Database | Query P95 | <100ms | 1 day | 5% |
+| AI Service | Availability | 99.5% | 7 days | 0.5% |
+| System | Error Rate | <0.1% | 1 hour | 0.1% |
+
+### Adding Custom SLOs
+
+```python
+from monitoring.sre_framework import SLO, SLI, SLIType, TimeWindow
+from monitoring.sre_framework import SREFramework
+
+sre = SREFramework()
+
+# Define custom SLI
+custom_sli = SLI(
+    name="custom_metric",
+    type=SLIType.LATENCY,
+    description="Custom service latency",
+    query="histogram_quantile(0.95, rate(custom_service_duration_bucket[5m]))",
+    unit="seconds"
+)
+
+# Define custom SLO
+custom_slo = SLO(
+    name="custom_service_latency",
+    service="custom-service",
+    sli=custom_sli,
+    target_percentage=95.0,
+    time_window=TimeWindow.DAY,
+    description="95% of requests complete within threshold"
+)
+
+# Add to SRE framework
+sre.slo_manager.add_slo(custom_slo)
+```
+
+## 🚨 Alerting Strategy
+
+### Alert Severity Levels
+
+- **Critical (P1)**: Service completely down, immediate SMS/Slack/Email + 15min escalation
+- **High (P2)**: Major feature down, Email/Slack + 30min escalation  
+- **Medium (P3)**: Minor degradation, Slack only + 60min escalation
+- **Low (P4)**: Performance issues, Slack only (business hours)
+- **Info (P5)**: Informational only, Slack only
+
+### Alert Routing Rules
+
+```python
+# Critical alerts (24/7)
+- Channels: Email + Slack + SMS
+- Escalation: 15min → PagerDuty
+- Throttling: Max 5/hour, 1 hour cooldown
+
+# High severity (business hours)  
+- Channels: Email + Slack
+- Escalation: 30min → SMS
+- Throttling: Max 3/hour, 30min cooldown
+
+# Medium/Low (business hours only)
+- Channels: Slack
+- No escalation
+- Throttling: Max 10/hour, 15min cooldown
+```
+
+### Adding Custom Alert Rules
+
+```python
+from monitoring.alerting_strategy import AlertRule, AlertSeverity, AlertChannel, ThresholdType
+
+rule = AlertRule(
+    name="custom_high_latency",
+    description="Custom service latency is high",
+    metric_query="histogram_quantile(0.95, rate(custom_duration_bucket[5m])) > 1",
+    severity=AlertSeverity.HIGH,
+    threshold_type=ThresholdType.STATIC,
+    threshold_value=1.0,  # 1 second
+    evaluation_interval_seconds=60,
+    for_duration_seconds=300,  # 5 minutes
+    channels=[AlertChannel.EMAIL, AlertChannel.SLACK],
+    escalation_channels={30: [AlertChannel.SMS]},  # 30min escalation
+    labels={"service": "custom", "type": "latency"}
+)
+
+alert_manager.add_alert_rule(rule)
+```
+
+## 🏥 Health Checks
+
+### Default Health Checks
+
+- **Backend API**: HTTP endpoint check (`/health`)
+- **Frontend**: HTTP endpoint check (`/api/health`) 
+- **Database**: Connection and query test
+- **Redis**: Ping and memory usage
+- **System Resources**: CPU, Memory, Disk usage
+- **External APIs**: OpenAI, Anthropic availability
+
+### Adding Custom Health Checks
+
+```python
+from monitoring.health_checks import BaseHealthCheck, HealthCheckResult, HealthStatus
+import aiohttp
+
+class CustomServiceHealthCheck(BaseHealthCheck):
+    def __init__(self, service_url: str, **kwargs):
+        super().__init__("custom_service", CheckType.HTTP, **kwargs)
+        self.service_url = service_url
+    
+    async def _check_health(self) -> HealthCheckResult:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{self.service_url}/health") as response:
+                if response.status == 200:
+                    return HealthCheckResult(
+                        name=self.name,
+                        status=HealthStatus.HEALTHY,
+                        message="Service responsive",
+                        response_time_ms=100,
+                        timestamp=datetime.utcnow()
+                    )
+                else:
+                    return HealthCheckResult(
+                        name=self.name,
+                        status=HealthStatus.UNHEALTHY,
+                        message=f"HTTP {response.status}",
+                        response_time_ms=0,
+                        timestamp=datetime.utcnow()
+                    )
+
+# Add to health manager
+health_manager.add_health_check(
+    CustomServiceHealthCheck("http://custom-service:8080")
+)
+```
+
+## 🔄 Auto-Recovery
+
+### Default Recovery Rules
+
+| Trigger | Actions | Cooldown | Max Attempts |
+|---------|---------|----------|--------------|
+| Health Check Failed | Restart Service | 5 min | 3 |
+| High Error Rate | Clear Cache + Restart | 10 min | 2 |
+| High Memory | Cleanup + Restart Workers | 5 min | 2 |
+| Circuit Breaker Open | Restart + Reset CB | 10 min | 2 |
+| SLO Violation | Scale Up + Clear Cache | 15 min | 1 |
+
+### Adding Custom Recovery Rules
+
+```python
+from monitoring.auto_recovery import RecoveryRule, RecoveryAction, TriggerCondition
+
+custom_rule = RecoveryRule(
+    name="custom_service_recovery",
+    description="Restart custom service on failure",
+    trigger_condition=TriggerCondition.SERVICE_UNAVAILABLE,
+    actions=[RecoveryAction.RESTART_SERVICE, RecoveryAction.CLEAR_CACHE],
+    cooldown_seconds=300,
+    max_attempts=3,
+    timeout_seconds=60,
+    conditions={"service": "custom-service"},
+    tags={"service": "custom", "action": "restart"}
+)
+
+recovery_orchestrator.add_recovery_rule(custom_rule)
+```
+
+## 📋 Incident Response
+
+### Incident Severity Classification
+
+- **P1 (Critical)**: Complete service outage, customer-facing impact
+- **P2 (High)**: Major feature down, significant customer impact  
+- **P3 (Medium)**: Minor feature down, limited customer impact
+- **P4 (Low)**: Degraded performance, minimal customer impact
+- **P5 (Info)**: Information only, no customer impact
+
+### Runbooks
+
+Built-in runbooks for common incidents:
+
+- **Service Outage Response** (P1/P2) - 30 min estimated
+- **Performance Degradation** (P2/P3) - 45 min estimated  
+- **Database Issues** (P1/P2/P3) - 40 min estimated
+- **API Failures** (P1/P2) - 25 min estimated
+- **Security Incidents** (P1/P2) - 60 min estimated
+
+### Creating Incidents
+
+```python
+from monitoring.incident_response import IncidentSeverity, IncidentType
+
+incident = await incident_manager.create_incident(
+    title="API Response Time Degraded",
+    description="95th percentile response time above 2 seconds",
+    severity=IncidentSeverity.P2_HIGH,
+    incident_type=IncidentType.PERFORMANCE_DEGRADATION,
+    affected_services=["backend-api"],
+    detected_by="monitoring_system"
+)
+
+# Execute runbook
+await incident_manager.execute_runbook(
+    incident.id, 
+    "performance_degradation_response", 
+    "sre_engineer"
+)
+
+# Update incident
+await incident_manager.update_incident(
+    incident.id,
+    status=IncidentStatus.INVESTIGATING,
+    update_message="Identified high database query latency",
+    updated_by="sre_engineer"
+)
+
+# Resolve incident
+await incident_manager.resolve_incident(
+    incident.id,
+    resolution_summary="Optimized slow database queries, response time normalized",
+    resolved_by="sre_engineer"
+)
+```
+
+## 📈 Capacity Planning
+
+### Monitored Resources
+
+- **CPU**: Current, peak, average utilization + growth trends
+- **Memory**: Usage patterns and growth projections
+- **Disk**: Storage consumption and projected capacity needs
+- **Database Connections**: Pool utilization and scaling needs
+- **Redis Memory**: Cache usage and eviction patterns
+- **API Throughput**: Request volume and capacity limits
+
+### Scaling Recommendations
+
+- **Immediate**: Resource >85% utilization
+- **Urgent**: Resource >75% with high growth rate
+- **Moderate**: Peak utilization >80%  
+- **Proactive**: High growth rate (>2%/day) with <30 days to critical
+
+### Example Capacity Metrics
+
+```python
+# Get capacity analysis
+capacity_status = sre.capacity_planner.get_capacity_summary()
+
+print(f"Overall Status: {capacity_status['overall_status']}")
+print(f"Critical Resources: {capacity_status['critical_resources']}")
+
+for resource_name, resource_data in capacity_status['resources'].items():
+    print(f"{resource_name}: {resource_data['current_utilization']:.1f}%")
+    if resource_data['projected_saturation_days']:
+        print(f"  → Saturation in {resource_data['projected_saturation_days']} days")
+    if resource_data['recommendation']:
+        print(f"  → {resource_data['recommendation']}")
+```
+
+## 🎯 Performance Baselines
+
+### Tracked Metrics
+
+- **API Response Time**: P50, P95 with trend analysis
+- **Database Query Time**: P95 with optimization recommendations
+- **Frontend Load Time**: P90 with performance insights
+- **AI Response Time**: Average with complexity correlation  
+- **System Resources**: CPU, Memory with baseline comparison
+- **Error Rates**: Trend analysis and anomaly detection
+- **Throughput**: RPS trends and capacity planning
+
+### Anomaly Detection
+
+```python
+# Get performance analysis
+perf_summary = sre.baseline_manager.get_performance_summary()
+
+# Check for anomalies
+anomalies = perf_summary['anomalies']
+for anomaly in anomalies:
+    print(f"Anomaly in {anomaly['metric']}: {anomaly['severity']}")
+    print(f"  Current: {anomaly['current_value']}")
+    print(f"  Baseline: {anomaly['baseline_value']}")
+    print(f"  Deviation: {anomaly['deviation_percentage']:.1f}%")
+    print(f"  Trend: {anomaly['trend']}")
+```
+
+## 🔧 Configuration
 
 ### Environment Variables
-```bash
-# Required for production
-GRAFANA_PASSWORD=your-secure-password
-POSTGRES_PASSWORD=your-db-password
-REDIS_PASSWORD=your-cache-password
 
-# Optional - Email alerts
-SMTP_HOST=your-smtp-server
-SMTP_USER=your-smtp-user
-SMTP_PASSWORD=your-smtp-password
+```bash
+# Database
+DATABASE_URL="sqlite:///./agent_system.db"
+
+# Redis
+REDIS_URL="redis://localhost:6379"
+
+# Email Notifications  
+SMTP_SERVER="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USERNAME="alerts@6fb.ai"
+SMTP_PASSWORD="app-password"
+FROM_EMAIL="sre@6fb.ai"
+SECURITY_ALERT_EMAILS="team@6fb.ai,oncall@6fb.ai"
+
+# Webhook Notifications
+SECURITY_WEBHOOK_URL="https://hooks.slack.com/services/..."
+WEBHOOK_SECRET="your-webhook-secret"
+
+# Slack Integration
+SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
+
+# External APIs
+OPENAI_API_KEY="sk-..."
+ANTHROPIC_API_KEY="sk-ant-..."
+GOOGLE_AI_API_KEY="AIza..."
+
+# Monitoring
+PROMETHEUS_URL="http://localhost:9090"
+GRAFANA_URL="http://localhost:3000"
 ```
 
-### Alert Routing
-Edit `monitoring/alertmanager/alertmanager.yml` to configure:
-- Email recipients
-- Slack/Discord webhooks
-- PagerDuty integration
-- Alert grouping and timing
+### Monitoring Intervals
 
-### Custom Metrics
-Add business metrics in `app/api/metrics/route.js`:
+- **Health Checks**: 30 seconds
+- **SLO Evaluation**: 5 minutes  
+- **Capacity Analysis**: 5 minutes
+- **Performance Baselines**: 5 minutes
+- **Alert Evaluation**: 1 minute
+- **Dashboard Updates**: 30 seconds
+
+## 📊 Dashboards
+
+### SRE Dashboard (`http://localhost:8080`)
+
+Real-time dashboard showing:
+
+- **System Health Overview**: Health score and status
+- **SLO Status**: Healthy/Warning/Critical SLOs
+- **Active Alerts**: Current alerts by severity
+- **Performance Metrics**: Response time, error rate, throughput
+- **Incidents**: Open incidents and MTTR
+- **Capacity Status**: Resource utilization and warnings
+- **Auto-Recovery**: Recovery success rate and active rules
+
+### API Endpoints
+
+- `GET /api/health` - Health check
+- `GET /api/metrics` - Dashboard metrics
+- `GET /api/slo-status` - SLO status and error budgets
+- `GET /api/health-checks` - Health check results
+- `GET /api/alerts` - Active alerts and summary
+- `GET /api/incidents` - Open incidents and metrics
+- `GET /api/capacity` - Capacity planning data
+- `GET /api/performance` - Performance baselines
+- `GET /api/recovery-status` - Auto-recovery status
+- `POST /api/alerts/{alert_id}/acknowledge` - Acknowledge alert
+- `POST /api/recovery/trigger` - Manual recovery trigger
+- `POST /api/health-checks/{check_name}/run` - Run health check
+
+### WebSocket Updates
+
+Real-time updates via WebSocket at `/ws`:
+
 ```javascript
-// Example: Track booking conversions
-export function trackBookingConversion(success) {
-  if (success) {
-    incrementMetric('booking_conversions_total');
+const ws = new WebSocket('ws://localhost:8080/ws');
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    if (data.type === 'metrics_update') {
+        updateDashboard(data.metrics);
+    }
+};
+```
+
+## 🛠️ Integration
+
+### With FastAPI Backend
+
+```python
+# Add to fastapi_backend.py
+from monitoring.sre_framework import SREFramework
+from monitoring.health_checks import HealthCheckManager
+
+app = FastAPI()
+sre_framework = SREFramework()
+health_manager = HealthCheckManager()
+
+@app.on_event("startup")
+async def startup_event():
+    await sre_framework.start()
+
+@app.on_event("shutdown") 
+async def shutdown_event():
+    await sre_framework.stop()
+
+@app.get("/health")
+async def health_check():
+    health_summary = health_manager.get_health_summary()
+    return {
+        "status": health_summary['overall_status'],
+        "checks": health_summary['checks']
+    }
+```
+
+### With Next.js Frontend
+
+```javascript
+// Add to app/api/health/route.js
+export async function GET() {
+  try {
+    const healthResponse = await fetch('http://localhost:8001/health');
+    const healthData = await healthResponse.json();
+    
+    return Response.json({
+      status: healthData.status,
+      timestamp: new Date().toISOString(),
+      frontend: 'healthy'
+    });
+  } catch (error) {
+    return Response.json({
+      status: 'unhealthy',
+      error: error.message
+    }, { status: 503 });
   }
-  incrementMetric('booking_attempts_total');
 }
 ```
 
-## Alert Rules
-
-### Critical Alerts (Immediate Action)
-- **ServiceDown**: Service unavailable for 1+ minutes
-- **HighCPUUsage**: CPU >90% for 5+ minutes
-- **HighMemoryUsage**: Memory >90% for 5+ minutes
-- **DiskSpaceCritical**: Disk space <10%
-- **DatabaseConnectionFailure**: DB unreachable for 30+ seconds
-
-### Warning Alerts (Review Required)
-- **HighErrorRate**: 5xx errors >5% for 3+ minutes
-- **SlowResponseTime**: 95th percentile >2 seconds
-- **AIServiceFailure**: AI service errors >10%
-- **HighFailedLoginRate**: >10 failed logins/minute
-
-### Security Alerts (Security Review)
-- **PossibleDDoSAttack**: >1000 requests/minute
-- **SSLCertificateExpiring**: Certificate expires in <7 days
-- **SecurityViolation**: Pattern-based security violations
-
-## Grafana Dashboards
-
-### Import Community Dashboards
-1. Go to Grafana → Dashboards → Import
-2. Use these dashboard IDs:
-   - **Node Exporter Full**: 1860
-   - **Docker Container Metrics**: 14282
-   - **PostgreSQL Database**: 9628
-   - **Redis**: 763
-
-### Custom Dashboard Variables
-- `$instance`: Filter by server instance
-- `$job`: Filter by service type
-- `$timerange`: Adjust time window
-
-## Troubleshooting
+## 🔍 Troubleshooting
 
 ### Common Issues
 
-**Services not starting:**
+**SRE Framework won't start:**
 ```bash
-# Check Docker daemon
-docker info
+# Check dependencies
+pip install -r requirements.txt
+
+# Check database permissions
+ls -la agent_system.db
+
+# Check port availability
+lsof -i :8080
+```
+
+**Alerts not sending:**
+```bash
+# Verify SMTP settings
+export SMTP_SERVER="smtp.gmail.com"
+export SMTP_USERNAME="your-email@domain.com"
+export SMTP_PASSWORD="app-password"
+
+# Test email connectivity
+python -c "import smtplib; s=smtplib.SMTP('smtp.gmail.com', 587); s.starttls(); print('SMTP OK')"
+```
+
+**Health checks failing:**
+```bash
+# Check service endpoints
+curl http://localhost:8001/health
+curl http://localhost:9999/api/health
+
+# Check Redis connection
+redis-cli ping
+
+# Check database
+sqlite3 agent_system.db ".tables"
+```
+
+**Dashboard not loading:**
+```bash
+# Check dashboard process
+ps aux | grep sre_dashboard
+
+# Check port binding
+netstat -tulpn | grep 8080
 
 # Check logs
-npm run monitoring:logs
-
-# Reset monitoring stack
-npm run monitoring:stop
-docker system prune -f
-npm run monitoring:start
+tail -f /var/log/sre_dashboard.log
 ```
 
-**Grafana permission errors:**
+### Debugging
+
+Enable debug logging:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Or set environment variable
+export LOG_LEVEL=DEBUG
+```
+
+### Performance Tuning
+
+Adjust monitoring intervals based on system load:
+
+```python
+# Reduce frequency for high-load systems
+sre_config = {
+    'health_check_interval': 60,  # Default: 30 seconds
+    'slo_evaluation_interval': 300,  # Default: 300 seconds  
+    'capacity_analysis_interval': 600,  # Default: 300 seconds
+}
+```
+
+## 🔒 Security
+
+### Authentication
+
+Dashboard authentication (if enabled):
+
+```python
+# Add to sre_dashboard.py
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException
+
+security = HTTPBearer()
+
+async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    if credentials.credentials != os.getenv('SRE_DASHBOARD_TOKEN'):
+        raise HTTPException(status_code=403, detail="Invalid token")
+    return credentials
+```
+
+### Network Security
+
 ```bash
-# Fix Grafana permissions
-sudo chown -R 472:472 monitoring/grafana/
-npm run monitoring:restart
+# Firewall rules (example)
+ufw allow from 10.0.0.0/8 to any port 8080  # Internal network only
+ufw deny 8080  # Block external access
 ```
 
-**No metrics in Prometheus:**
+### Secrets Management
+
+Store sensitive configuration in secure locations:
+
 ```bash
-# Check targets status
-curl http://localhost:9090/api/v1/targets
+# Use environment files
+source /etc/sre/secrets.env
 
-# Verify application metrics
-curl http://localhost:9999/api/metrics
-curl http://localhost:8001/metrics
+# Or use secrets management
+export SMTP_PASSWORD=$(aws secretsmanager get-secret-value --secret-id sre/smtp --query SecretString --output text)
 ```
 
-**Alerts not firing:**
-```bash
-# Check alert rules
-curl http://localhost:9090/api/v1/rules
+## 📚 Additional Resources
 
-# Test alertmanager
-curl -X POST http://localhost:9093/api/v1/alerts
+- **Prometheus Query Examples**: `/monitoring/prometheus-queries.md`
+- **Grafana Dashboards**: `/monitoring/grafana/`  
+- **Runbook Templates**: `/monitoring/runbooks/`
+- **Alert Rule Examples**: `/monitoring/alert-examples.md`
+- **Capacity Planning Guide**: `/monitoring/capacity-planning.md`
 
-# Verify email config
-docker-compose -f monitoring/docker-compose.monitoring.yml logs alertmanager
-```
+## 🤝 Contributing
 
-### Performance Optimization
+1. Follow the existing code patterns
+2. Add tests for new features
+3. Update documentation
+4. Test with real scenarios
+5. Submit PR with detailed description
 
-**High resource usage:**
-- Reduce scrape intervals in `prometheus/prometheus.yml`
-- Limit retention period: `--storage.tsdb.retention.time=15d`
-- Disable unnecessary metrics collection
+## 📄 License
 
-**Slow queries:**
-- Optimize PromQL queries in dashboards
-- Use recording rules for complex calculations
-- Implement metric caching
-
-## Production Considerations
-
-### Security
-- Change default passwords
-- Enable HTTPS for external access
-- Configure firewall rules
-- Use secrets management
-
-### High Availability
-- Deploy Prometheus in HA mode
-- Set up Grafana clustering
-- Configure external storage
-- Implement backup strategies
-
-### Scaling
-- Use remote storage (Thanos, Cortex)
-- Implement federation for multiple sites
-- Use recording rules for heavy queries
-- Set up metric sharding
-
-## Integration with Main Application
-
-### Automatic Startup
-Add to `docker-compose.production.yml`:
-```yaml
-depends_on:
-  - prometheus
-  - grafana
-```
-
-### Custom Metrics
-Application automatically exposes metrics at:
-- Frontend: `http://localhost:9999/api/metrics`
-- Backend: `http://localhost:8001/metrics`
-
-### Health Checks
-Monitoring stack monitors:
-- Application health endpoints
-- Database connectivity
-- External service availability
-- SSL certificate status
-
-## Support
-
-For monitoring-related issues:
-1. Check service logs: `npm run monitoring:logs`
-2. Verify configuration files in `monitoring/`
-3. Test individual components at their endpoints
-4. Review alert rules and dashboard queries
+MIT License - see LICENSE file for details.
 
 ---
 
-**Note**: This monitoring stack is designed for production use with comprehensive alerting and business metric tracking. For development, consider using `--skip-validation` flag for faster startup.
+**🛡️ Production-Ready SRE Framework for 6FB AI Agent System**
+
+*Implementing Google SRE principles with automated reliability engineering.*

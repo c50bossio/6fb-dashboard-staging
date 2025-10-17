@@ -1,5 +1,7 @@
 import { createClient } from '../../../../../lib/supabase-server'
 import { withAdminAuth, logAdminAction } from '../../../../../middleware/adminAuth'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 /**
  * POST /api/admin/subscriptions/manage
@@ -21,9 +23,8 @@ async function handleManageSubscription(request) {
       )
     }
 
-    const supabase = createClient()
+    const supabase = await createClient()
 
-    // Get user details for logging and validation
     const { data: user, error: userError } = await supabase
       .from('users')
       .select('*')
@@ -41,7 +42,7 @@ async function handleManageSubscription(request) {
     }
 
     let result = {}
-    let auditDetails = { reason, originalData: user }
+    const auditDetails = { reason, originalData: user }
 
     switch (action) {
       case 'cancel_subscription':
@@ -109,7 +110,6 @@ async function handleManageSubscription(request) {
         )
     }
 
-    // Log admin action
     await logAdminAction(
       request.adminContext.userId,
       `SUBSCRIPTION_${action.toUpperCase()}`,
@@ -146,7 +146,6 @@ async function handleManageSubscription(request) {
   }
 }
 
-// Helper functions for different subscription management actions
 
 async function handleCancelSubscription(supabase, user, reason) {
   const { data, error } = await supabase
@@ -163,7 +162,6 @@ async function handleCancelSubscription(supabase, user, reason) {
 
   if (error) throw error
 
-  // Record in subscription history
   await supabase
     .from('subscription_history')
     .insert({
@@ -210,7 +208,6 @@ async function handleExtendTrial(supabase, user, days) {
 }
 
 async function handleUpdateTier(supabase, user, newTier) {
-  // Update tier limits based on new subscription
   const tierLimits = {
     barber: { staff: 1, sms: 500, email: 1000, ai_tokens: 5000 },
     shop: { staff: 15, sms: 2000, email: 5000, ai_tokens: 20000 },
@@ -239,7 +236,6 @@ async function handleUpdateTier(supabase, user, newTier) {
 }
 
 async function handleRefundPayment(supabase, user, amount, reason) {
-  // Create refund record (would integrate with Stripe in production)
   const { data, error } = await supabase
     .from('subscription_history')
     .insert({
@@ -316,5 +312,4 @@ async function handleResumeSubscription(supabase, user) {
   return { resumedSubscription: data }
 }
 
-// Export with admin auth wrapper
 export const POST = withAdminAuth(handleManageSubscription)

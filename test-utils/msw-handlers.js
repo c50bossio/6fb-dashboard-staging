@@ -8,9 +8,7 @@ import {
   mockTrafftData 
 } from './test-utils'
 
-// Mock API handlers for MSW
 export const handlers = [
-  // Authentication endpoints
   http.get('/api/auth/me', () => {
     return HttpResponse.json(mockUser)
   }),
@@ -41,11 +39,9 @@ export const handlers = [
     return HttpResponse.json({ success: true })
   }),
 
-  // AI Agent endpoints
   http.post('/api/agents/chat', async ({ request }) => {
     const { agentId, message } = await request.json()
     
-    // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 500))
     
     return HttpResponse.json({
@@ -55,7 +51,6 @@ export const handlers = [
     })
   }),
 
-  // Trafft integration endpoints
   http.get('/api/integrations/trafft/auth', ({ request }) => {
     const url = new URL(request.url)
     const barbershopId = url.searchParams.get('barbershopId')
@@ -108,7 +103,6 @@ export const handlers = [
   http.post('/api/integrations/trafft/sync', async ({ request }) => {
     const { barbershopId } = await request.json()
     
-    // Simulate sync processing
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     return HttpResponse.json({
@@ -129,7 +123,6 @@ export const handlers = [
     })
   }),
 
-  // Integration list endpoint
   http.get('/api/integrations/list', () => {
     return HttpResponse.json({
       integrations: [
@@ -151,14 +144,12 @@ export const handlers = [
     })
   }),
 
-  // Fallback handler for unhandled requests
   http.all('*', ({ request }) => {
     console.warn(`Unhandled ${request.method} request to ${request.url}`)
     return new HttpResponse(null, { status: 404 })
   })
 ]
 
-// Error handlers for testing error scenarios
 export const errorHandlers = [
   http.post('/api/agents/chat', () => {
     return new HttpResponse('Internal Server Error', { status: 500 })
@@ -173,7 +164,6 @@ export const errorHandlers = [
   })
 ]
 
-// Network error handlers
 export const networkErrorHandlers = [
   http.all('*', () => {
     return HttpResponse.error()

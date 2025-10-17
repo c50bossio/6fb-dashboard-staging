@@ -14,7 +14,7 @@ import { useState, useEffect } from 'react'
 
 import ProtectedRoute from '../../components/ProtectedRoute'
 import { useAuth } from '../../components/SupabaseAuthProvider'
-import { createClient } from '../../lib/supabase/browser-client'
+import { createClient } from '../../lib/supabase/client'
 import LoadingSpinner, { TableLoadingSkeleton, CardLoadingSkeleton } from '../../components/LoadingSpinner'
 
 export default function PaymentsPage() {

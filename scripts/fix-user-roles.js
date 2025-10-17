@@ -19,8 +19,7 @@ const supabase = createClient(
 )
 
 async function fixRoles() {
-  console.log('🔧 Fixing user roles...\n')
-  
+
   const roleUpdates = [
     { email: 'owner@premiumcuts.com', role: 'SHOP_OWNER', full_name: 'Michael Johnson' },
     { email: 'john@premiumcuts.com', role: 'BARBER', full_name: 'John Martinez' },
@@ -40,18 +39,14 @@ async function fixRoles() {
       .select()
     
     if (error) {
-      console.log(`❌ Failed to update ${update.email}:`, error.message)
+      
     } else if (data?.length > 0) {
-      console.log(`✅ Updated ${update.email} to role: ${update.role}`)
+      
     } else {
-      console.log(`⚠️  No user found with email: ${update.email}`)
+      
     }
   }
-  
-  // Link shop owner to barbershop
-  console.log('\n🔗 Linking shop owner to barbershop...')
-  
-  // Get shop owner ID
+
   const { data: owner } = await supabase
     .from('profiles')
     .select('id')
@@ -59,29 +54,23 @@ async function fixRoles() {
     .single()
   
   if (owner) {
-    // Update barbershop owner
     const { error: shopError } = await supabase
       .from('barbershops')
       .update({ owner_id: owner.id })
       .eq('name', 'Elite Cuts Barbershop')
     
     if (!shopError) {
-      console.log('✅ Linked shop owner to barbershop')
+      
     } else {
-      console.log('❌ Failed to link shop owner:', shopError.message)
+      
     }
     
-    // Also update Premium Cuts if it exists
     await supabase
       .from('barbershops')
       .update({ owner_id: owner.id })
       .eq('name', 'Premium Cuts Barbershop')
   }
-  
-  console.log('\n✅ Role fixes complete!')
-  console.log('\nYou can now log in with:')
-  console.log('  Shop Owner: owner@premiumcuts.com / TestPassword123!')
-  console.log('  Barber: john@premiumcuts.com / TestPassword123!')
+
 }
 
 fixRoles().catch(console.error)

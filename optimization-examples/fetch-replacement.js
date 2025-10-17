@@ -46,8 +46,6 @@ class ApiClient {
   }
 }
 
-// Usage
 const api = new ApiClient('/api')
 const data = await api.get('/data')
 
-// Result: -45KB from bundle, same functionality

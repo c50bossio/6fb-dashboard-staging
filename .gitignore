@@ -71,6 +71,10 @@ automated-test-*.js
 *.pem
 *.crt
 
+# Claude Code agent folder (Spec-Kit - may contain credentials/tokens)
+.claude/
+.claude/settings.local.json
+
 # Logs
 *.log
 logs/
@@ -90,6 +94,7 @@ terraform.tfvars
 secure-credentials/
 *.env.production
 *.env.staging
+.env.vercel.production
 .env.local.secure
 admin-credentials.txt
 jwt-secret.txt
@@ -98,3 +103,87 @@ jwt-secret.txt
 .master.key
 .secrets.encrypted
 .env.local.backup
+
+# Context cleanup archive
+.context-cleanup-archive/
+
+# Large context files
+*.sql.backup
+*.db.backup
+migrations-backup/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+docs/generated/
+api-docs/
+
+# Development artifacts
+package-lock.json.backup
+yarn.lock.backup
+composer.lock.backup
+.env.backup*
+
+# Database exports
+*.sql.export
+*.csv.export
+data-exports/
+
+# Context Window Optimization - Massive File Prevention
+# Coverage and reports (massive context consumers)
+coverage/
+eslint-report.json
+*.coverage.json
+coverage-final.json
+
+# Test reports and artifacts  
+*test-results*.json
+*-report.json
+*-results.json
+*analysis*.json
+playwright-report/
+test-results/
+performance-report.html
+performance-report.json
+
+# Generated artifacts outside proper directories
+test_*.js
+debug_*.js
+*_test_*.json
+*.backup-*
+*analysis*.json
+*report*.json
+performance-*.js
+mock-data-*.json
+
+# Cleanup and temporary files
+.context-cleanup-archive/
+scripts/debug/
+*.backup.*
+*-backup.*
+*temp*.js
+apply-*.js
+check-*.js
+setup-*.js
+create-*.js
+run-*.js
+
+# Large generated files
+*.sql.export
+*.csv.export
+data-exports/
+screenshots/
+performance-report.html
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+evaluations/__pycache__/
+services/__pycache__/
+
+.env.vercel-check
+.env.vercel
+.env.local.bak

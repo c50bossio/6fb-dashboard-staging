@@ -1,0 +1,73 @@
+{
+  "basicHaircut": {
+    "id": "test-service-1",
+    "barbershop_id": "test-barbershop-1",
+    "name": "Basic Haircut",
+    "description": "Standard men's haircut with styling",
+    "duration_minutes": 45,
+    "price_cents": 3500,
+    "is_active": true,
+    "requires_deposit": false,
+    "metadata": {
+      "category": "haircut",
+      "popularity": "high"
+    }
+  },
+  "quickTrim": {
+    "id": "test-service-2",
+    "barbershop_id": "test-barbershop-1",
+    "name": "Quick Trim",
+    "description": "Fast touch-up and cleanup",
+    "duration_minutes": 30,
+    "price_cents": 2500,
+    "is_active": true,
+    "requires_deposit": false,
+    "metadata": {
+      "category": "trim",
+      "popularity": "medium"
+    }
+  },
+  "fullService": {
+    "id": "test-service-3",
+    "barbershop_id": "test-barbershop-1",
+    "name": "Full Service",
+    "description": "Haircut, beard trim, and hot towel treatment",
+    "duration_minutes": 60,
+    "price_cents": 5000,
+    "is_active": true,
+    "requires_deposit": true,
+    "deposit_amount_cents": 1000,
+    "metadata": {
+      "category": "premium",
+      "popularity": "high",
+      "includes": ["haircut", "beard_trim", "hot_towel"]
+    }
+  },
+  "beardTrim": {
+    "id": "test-service-4",
+    "barbershop_id": "test-barbershop-1",
+    "name": "Beard Trim",
+    "description": "Professional beard shaping and trim",
+    "duration_minutes": 20,
+    "price_cents": 1500,
+    "is_active": true,
+    "requires_deposit": false,
+    "metadata": {
+      "category": "beard",
+      "popularity": "medium"
+    }
+  },
+  "inactiveService": {
+    "id": "test-service-inactive",
+    "barbershop_id": "test-barbershop-1",
+    "name": "Discontinued Service",
+    "description": "This service is no longer offered",
+    "duration_minutes": 30,
+    "price_cents": 2000,
+    "is_active": false,
+    "requires_deposit": false,
+    "metadata": {
+      "discontinued_date": "2025-09-01"
+    }
+  }
+}

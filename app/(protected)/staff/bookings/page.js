@@ -302,7 +302,7 @@ export default function StaffBookingsPage() {
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-background">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Customer
@@ -326,7 +326,7 @@ export default function StaffBookingsPage() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {bookings.map((booking) => (
-                    <tr key={booking.id} className="hover:bg-gray-50">
+                    <tr key={booking.id} className="hover:bg-background">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
@@ -417,14 +417,14 @@ export default function StaffBookingsPage() {
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>
@@ -444,7 +444,7 @@ export default function StaffBookingsPage() {
                       <button
                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <ChevronLeftIcon className="h-5 w-5" />
                       </button>
@@ -459,7 +459,7 @@ export default function StaffBookingsPage() {
                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                               currentPage === pageNumber
                                 ? 'z-10 bg-olive-50 border-olive-500 text-olive-600'
-                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                : 'bg-white border-gray-300 text-gray-500 hover:bg-background'
                             }`}
                           >
                             {pageNumber}
@@ -470,7 +470,7 @@ export default function StaffBookingsPage() {
                       <button
                         onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                         disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-background disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <ChevronRightIcon className="h-5 w-5" />
                       </button>
@@ -543,7 +543,7 @@ export default function StaffBookingsPage() {
             <div className="mt-6 flex justify-end space-x-3">
               <button
                 onClick={() => setShowDetails(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-background"
               >
                 Close
               </button>

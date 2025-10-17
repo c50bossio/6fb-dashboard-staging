@@ -42,61 +42,64 @@ export default function RecurringAppointmentModal({
   const [preview, setPreview] = useState([])
   const [loading, setLoading] = useState(false)
 
-  // Generate recurrence rule string
   const generateRRule = () => {
     if (recurrenceType === 'none') return null
 
     const startDate = new Date(appointmentData?.scheduled_at || new Date())
     
-    let freq, interval = 1, byweekday = null, count = null, until = null
+    let rruleConfig = {
+      freq: null,
+      interval: 1,
+      byweekday: null,
+      count: null,
+      until: null
+    }
 
     switch (recurrenceType) {
       case 'daily':
-        freq = RRule.DAILY
+        rruleConfig.freq = RRule.DAILY
         break
       case 'weekly':
-        freq = RRule.WEEKLY
-        byweekday = [startDate.getDay()]
+        rruleConfig.freq = RRule.WEEKLY
+        rruleConfig.byweekday = [startDate.getDay()]
         break
       case 'biweekly':
-        freq = RRule.WEEKLY
-        interval = 2
-        byweekday = [startDate.getDay()]
+        rruleConfig.freq = RRule.WEEKLY
+        rruleConfig.interval = 2
+        rruleConfig.byweekday = [startDate.getDay()]
         break
       case 'monthly':
-        freq = RRule.MONTHLY
+        rruleConfig.freq = RRule.MONTHLY
         break
       case 'custom':
-        freq = customRule.frequency === 'daily' ? RRule.DAILY :
+        rruleConfig.freq = customRule.frequency === 'daily' ? RRule.DAILY :
               customRule.frequency === 'weekly' ? RRule.WEEKLY :
               customRule.frequency === 'monthly' ? RRule.MONTHLY : RRule.YEARLY
-        interval = customRule.interval
-        byweekday = customRule.byweekday.length > 0 ? customRule.byweekday : null
-        count = customRule.count || null
-        until = customRule.until ? new Date(customRule.until) : null
+        rruleConfig.interval = customRule.interval
+        rruleConfig.byweekday = customRule.byweekday.length > 0 ? customRule.byweekday : null
+        rruleConfig.count = customRule.count || null
+        rruleConfig.until = customRule.until ? new Date(customRule.until) : null
         break
       default:
         return null
     }
 
-    // Default count if no end condition specified
-    if (!count && !until) {
-      count = 10
+    if (!rruleConfig.count && !rruleConfig.until) {
+      rruleConfig.count = 10
     }
 
     const rule = new RRule({
-      freq,
-      interval,
-      byweekday,
-      count,
-      until,
+      freq: rruleConfig.freq,
+      interval: rruleConfig.interval,
+      byweekday: rruleConfig.byweekday,
+      count: rruleConfig.count,
+      until: rruleConfig.until,
       dtstart: startDate
     })
 
     return rule.toString()
   }
 
-  // Generate preview of recurring dates
   const generatePreview = () => {
     const ruleString = generateRRule()
     if (!ruleString) {
@@ -135,7 +138,6 @@ export default function RecurringAppointmentModal({
       const rule = RRule.fromString(ruleString)
       const dates = rule.all()
 
-      // Create appointments for each occurrence
       const appointments = dates.map(date => ({
         ...appointmentData,
         scheduled_at: date.toISOString(),

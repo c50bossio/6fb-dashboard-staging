@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
-export const runtime = 'edge'
+import unifiedStaffService from '@/lib/unified-staff-service'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 /**
  * AI Workflow Automation System
  * Automatically executes business actions based on triggers and conditions
@@ -8,7 +10,13 @@ export const runtime = 'edge'
 
 export async function POST(request) {
   try {
-    const { action_type, barbershop_id, parameters } = await request.json()
+    const body = await request.json()
+    const { action_type, barbershop_id, parameters, workflow_type } = body
+    
+    // Handle staff onboarding workflow specifically
+    if (workflow_type === 'new_staff_onboarding') {
+      return await handleStaffOnboardingWorkflow(barbershop_id || body.barbershop_id)
+    }
 
     switch (action_type) {
       case 'create_automation':
@@ -42,7 +50,6 @@ export async function GET(request) {
       return NextResponse.json({ success: true, workflows })
     }
     
-    // Get automation dashboard
     const dashboard = await getAutomationDashboard(barbershop_id)
     return dashboard
   } catch (error) {
@@ -182,7 +189,6 @@ async function getAutomationDashboard(barbershop_id) {
 async function createAutomation(barbershop_id, parameters) {
   const { trigger_type, conditions, actions, name, description } = parameters
   
-  // Simulate workflow creation
   const workflow = {
     id: `workflow_${Date.now()}`,
     name: name || 'Custom Workflow',
@@ -198,7 +204,6 @@ async function createAutomation(barbershop_id, parameters) {
     failure_count: 0
   }
   
-  // Validate workflow configuration
   const validation = validateWorkflow(workflow)
   if (!validation.valid) {
     return NextResponse.json({
@@ -221,10 +226,8 @@ async function createAutomation(barbershop_id, parameters) {
 async function triggerWorkflow(barbershop_id, parameters) {
   const { workflow_id, override_conditions } = parameters
   
-  // Get current business data to evaluate conditions
   const businessData = await getCurrentBusinessData(barbershop_id)
   
-  // Simulate workflow execution
   const execution = {
     execution_id: `exec_${Date.now()}`,
     workflow_id,
@@ -236,7 +239,6 @@ async function triggerWorkflow(barbershop_id, parameters) {
     success: true
   }
   
-  // Execute predefined workflow actions
   const workflowActions = await getWorkflowActions(workflow_id)
   
   for (const action of workflowActions) {
@@ -309,7 +311,7 @@ async function checkTriggerConditions(barbershop_id, parameters) {
   const businessData = await getCurrentBusinessData(barbershop_id)
   
   let conditionsMet = false
-  let evaluation = {
+  const evaluation = {
     trigger_type,
     conditions_checked: [],
     overall_result: false,
@@ -368,7 +370,6 @@ async function checkTriggerConditions(barbershop_id, parameters) {
  */
 
 async function getCurrentBusinessData(barbershop_id) {
-  // In production, fetch real data from database
   return {
     daily_revenue: 380,
     monthly_revenue: 4850,
@@ -382,7 +383,6 @@ async function getCurrentBusinessData(barbershop_id) {
 }
 
 async function getActiveWorkflows(barbershop_id, workflow_type) {
-  // Simulated active workflows
   const workflows = [
     {
       id: 'wf_001',
@@ -408,7 +408,6 @@ async function getActiveWorkflows(barbershop_id, workflow_type) {
 }
 
 async function getWorkflowActions(workflow_id) {
-  // Simulated workflow actions
   return [
     {
       id: 'action_001',
@@ -431,13 +430,13 @@ async function getWorkflowActions(workflow_id) {
 }
 
 async function executeWorkflowAction(action, businessData, barbershop_id) {
-  // Simulate action execution
   return {
     action_id: action.id,
     success: true,
-    affected_count: Math.floor(Math.random() * 10) + 1,
-    estimated_impact: `+$${Math.floor(Math.random() * 200) + 50} revenue potential`,
-    execution_time: new Date().toISOString()
+    affected_count: 0, // Real count should come from actual execution
+    estimated_impact: 'Requires actual data analysis',
+    execution_time: new Date().toISOString(),
+    message: 'Workflow execution requires backend service implementation'
   }
 }
 
@@ -548,5 +547,87 @@ function generateExecutionSummary(execution) {
     recommendations: successfulActions === totalActions 
       ? ['Workflow executed successfully', 'Monitor results for 24-48 hours']
       : ['Review failed actions', 'Adjust workflow parameters if needed']
+  }
+}
+
+/**
+ * Handle new staff onboarding workflow
+ */
+async function handleStaffOnboardingWorkflow(barbershopId) {
+  try {
+    // Fetch current staff to understand onboarding needs
+    const staffData = await unifiedStaffService.getStaff(barbershopId, {
+      useCache: false,
+      includeAvailability: true
+    })
+    
+    const hasStaff = staffData?.success && staffData?.staff?.length > 0
+    const staffCount = staffData?.staff?.length || 0
+    
+    const workflow = {
+      success: true,
+      workflow_type: 'new_staff_onboarding',
+      barbershop_id: barbershopId,
+      status: hasStaff ? 'ready' : 'requires_staff',
+      staff_context: {
+        current_staff_count: staffCount,
+        staff_names: hasStaff ? staffData.staff.map(s => s.name || s.full_name) : []
+      },
+      onboarding_steps: [
+        {
+          step: 1,
+          name: 'Staff Profile Creation',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Create staff profiles with photos, specialties, and experience'
+        },
+        {
+          step: 2,
+          name: 'Schedule Setup',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Configure working hours and availability'
+        },
+        {
+          step: 3,
+          name: 'Service Assignment',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Assign services and pricing for each staff member'
+        },
+        {
+          step: 4,
+          name: 'Booking Page Integration',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Add staff to public booking pages'
+        },
+        {
+          step: 5,
+          name: 'Notification Setup',
+          status: hasStaff ? 'available' : 'pending',
+          description: 'Configure appointment notifications and reminders'
+        }
+      ],
+      automated_actions: hasStaff ? [
+        'Profile optimization suggestions generated',
+        'Default schedule templates applied',
+        'Service recommendations based on market data'
+      ] : [
+        'Waiting for staff to be added',
+        'Onboarding templates prepared',
+        'Best practices guide available'
+      ],
+      next_action: hasStaff 
+        ? 'Review and customize staff profiles'
+        : 'Add your first staff member to begin onboarding',
+      estimated_completion_time: hasStaff ? '15 minutes' : 'Requires staff setup first'
+    }
+    
+    return NextResponse.json(workflow)
+    
+  } catch (error) {
+    console.error('Staff onboarding workflow error:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to process staff onboarding workflow',
+      details: error.message
+    }, { status: 500 })
   }
 }

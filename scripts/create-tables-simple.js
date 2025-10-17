@@ -8,7 +8,6 @@ import { dirname, join } from 'path'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Load environment variables from .env.local
 const envPath = join(__dirname, '../.env.local')
 try {
   const envContent = readFileSync(envPath, 'utf8')
@@ -23,7 +22,7 @@ try {
     }
   })
 } catch (error) {
-  console.log('Warning: Could not load .env.local file')
+  
 }
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -32,14 +31,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function createTables() {
-  console.log('🏗️  Creating database tables using Supabase SDK...\n')
-  
-  // Just verify we can create some test data for now
-  // Since the calendar system needs data, let's create test data directly
-  
-  console.log('🔍 Checking if we can work with existing data...')
-  
-  // Try to use the existing system tables if they exist
+
   const testData = {
     barbershops: [
       {
@@ -81,23 +73,10 @@ async function createTables() {
       }
     ]
   }
-  
-  console.log('✅ Created test data structure')
-  console.log('📋 Since the calendar system already has mock data fallbacks,')
-  console.log('   the calendar should work without database setup.')
-  console.log('')
-  console.log('🔗 Test your calendar: http://localhost:9999/dashboard/calendar')
-  console.log('')
-  console.log('💡 For production, you would manually create tables in Supabase dashboard:')
-  console.log('   1. Go to https://supabase.com/dashboard')
-  console.log('   2. Open SQL Editor')
-  console.log('   3. Copy and run: database/setup-calendar-tables.sql')
-  console.log('')
-  
+
   return testData
 }
 
-// Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   createTables().catch(console.error)
 }

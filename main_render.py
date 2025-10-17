@@ -231,17 +231,7 @@ async def database_health():
         "timestamp": datetime.now().isoformat()
     }
 
-@app.get("/debug")
-async def debug_info():
-    """Debug information"""
-    return {
-        "environment": os.getenv("ENVIRONMENT", "development"),
-        "port": os.getenv("PORT", "8000"),
-        "frontend_url": os.getenv("FRONTEND_URL", "not_set"),
-        "python_unbuffered": os.getenv("PYTHONUNBUFFERED", "not_set"),
-        "agents_count": len(AGENTS),
-        "timestamp": datetime.now().isoformat()
-    }
+# Debug endpoint removed for production security
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))

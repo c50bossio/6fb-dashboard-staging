@@ -1,17 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { 
-  ChartBarIcon, 
+import {
+  ChartBarIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
   ServerIcon,
   CpuChipIcon,
-  ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline'
-import { Line, Bar, Doughnut } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -25,6 +22,8 @@ import {
   Legend,
   Filler
 } from 'chart.js'
+import { useState, useEffect } from 'react'
+import { Line, Bar, Doughnut } from 'react-chartjs-2'
 
 // Register ChartJS components
 ChartJS.register(
@@ -277,7 +276,7 @@ export default function MonitoringDashboard() {
           <div className="mt-4 flex items-center justify-between text-sm">
             <span className="text-gray-500">Total: 45.2k</span>
             <span className="flex items-center text-green-500">
-              <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+              <ChartBarIcon className="h-4 w-4 mr-1" />
               +18%
             </span>
           </div>

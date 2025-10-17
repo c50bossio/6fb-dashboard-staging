@@ -1,9 +1,5 @@
 'use client'
 
-import ProtectedRoute from '../../../../components/ProtectedRoute'
-import GlobalNavigation from '../../../../components/GlobalNavigation'
-import CapacityPlanningPanel from '../../../../components/dashboard/CapacityPlanningPanel'
-import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import {
   WrenchScrewdriverIcon,
   ChartBarIcon,
@@ -12,13 +8,17 @@ import {
   ArrowLeftIcon
 } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import CapacityPlanningPanel from '../../../../components/dashboard/CapacityPlanningPanel'
+// Removed GlobalNavigation import - using protected layout navigation
+import ProtectedRoute from '../../../../components/ProtectedRoute'
+import { useAuth } from '../../../../components/SupabaseAuthProvider'
 
 export default function CapacityPlanningPage() {
   const { user, profile } = useAuth()
 
   return (
     <ProtectedRoute>
-      <GlobalNavigation />
+      {/* Navigation now handled by protected layout */}
       <div className="min-h-screen bg-gray-50">
         {/* Main Content - adjusting for sidebar */}
         <div className="lg:ml-80 transition-all duration-300 ease-in-out pt-16 lg:pt-0">
@@ -93,7 +93,7 @@ export default function CapacityPlanningPage() {
               </div>
 
               {/* Main Capacity Planning Component */}
-              <CapacityPlanningPanel barbershop_id={profile?.shop_id || 'demo'} />
+              <CapacityPlanningPanel barbershop_id={profile?.barbershop_id} />
 
               {/* Additional Resources */}
               <div className="mt-8 bg-olive-50 rounded-lg border border-olive-200 p-6">

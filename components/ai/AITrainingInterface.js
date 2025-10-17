@@ -1,12 +1,11 @@
 'use client'
 
-import { 
+import {
   AcademicCapIcon,
   SparklesIcon,
   ChartBarIcon,
   Cog6ToothIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon
+  CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 

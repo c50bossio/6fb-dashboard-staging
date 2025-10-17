@@ -1,17 +1,14 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
 import {
   MicrophoneIcon,
   SpeakerWaveIcon,
   XMarkIcon,
   PlayIcon,
-  PauseIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/outline'
-import {
-  MicrophoneIcon as MicrophoneSolid
-} from '@heroicons/react/24/solid'
+
+import { useState, useEffect, useRef } from 'react'
 
 export default function VoiceAssistant({ barbershop_id = 'demo' }) {
   const [isListening, setIsListening] = useState(false)
@@ -28,7 +25,6 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
   const audioContextRef = useRef(null)
 
   useEffect(() => {
-    // Check for browser support
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       const speechSynthesis = window.speechSynthesis
@@ -39,7 +35,6 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
         return
       }
 
-      // Initialize Speech Recognition
       const recognition = new SpeechRecognition()
       recognition.continuous = false
       recognition.interimResults = true
@@ -81,7 +76,6 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
       
       recognitionRef.current = recognition
 
-      // Initialize session
       const voiceSessionId = `voice_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       setSessionId(voiceSessionId)
     }
@@ -91,7 +85,6 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
     if (!isSupported || !recognitionRef.current) return
     
     try {
-      // Request microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true })
       recognitionRef.current.start()
     } catch (err) {
@@ -109,7 +102,6 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
   const processVoiceCommand = async (command) => {
     setIsProcessing(true)
     try {
-      // Enhanced voice command processing
       const processedCommand = preprocessVoiceCommand(command)
       
       const response = await fetch('/api/ai/voice-assistant', {
@@ -129,12 +121,10 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
       if (data.success) {
         setResponse(data)
         
-        // If response includes voice synthesis
         if (data.voice_response && data.voice_response.speak) {
           speakResponse(data.voice_response.text)
         }
         
-        // Execute any actions
         if (data.actions && data.actions.length > 0) {
           executeVoiceActions(data.actions)
         }
@@ -150,7 +140,6 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
   }
 
   const preprocessVoiceCommand = (command) => {
-    // Convert common voice patterns to better text commands
     const patterns = [
       { pattern: /how are (bookings|appointments) looking/i, replacement: 'Show me today\'s booking status' },
       { pattern: /what('s| is) my revenue/i, replacement: 'Show me today\'s revenue' },
@@ -175,7 +164,6 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
   const speakResponse = (text) => {
     if (!window.speechSynthesis) return
 
-    // Stop any ongoing speech
     window.speechSynthesis.cancel()
 
     const utterance = new SpeechSynthesisUtterance(text)
@@ -205,14 +193,11 @@ export default function VoiceAssistant({ barbershop_id = 'demo' }) {
           window.location.href = action.url
           break
         case 'display_data':
-          // Data is already in response, handled by UI
           break
         case 'create_task':
-          // Task creation handled by backend
           alert(`✅ Task created: ${action.title}`)
           break
         default:
-          console.log('Unknown action:', action)
       }
     })
   }

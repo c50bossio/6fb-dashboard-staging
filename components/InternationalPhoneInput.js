@@ -1,15 +1,14 @@
 import { useState, useRef, useEffect, forwardRef, memo } from 'react'
 
-import NuclearInput from './NuclearInput'
+import { NuclearInput } from './ui/UnifiedInput'
 
 /**
  * INTERNATIONAL PHONE INPUT WITH COUNTRY CODE SUPPORT
- * 
- * Specifically designed for Twilio SMS integration requiring E.164 format
- * Provides country code dropdown + formatted phone number input
+ *
+ * Provides international phone number input with automatic E.164 formatting
+ * Supports country code selection + formatted phone number input
  */
 
-// Popular countries for barbershop businesses with their calling codes
 const COUNTRY_CODES = [
   { code: 'US', name: 'United States', dialCode: '+1', flag: '🇺🇸', format: '(XXX) XXX-XXXX' },
   { code: 'CA', name: 'Canada', dialCode: '+1', flag: '🇨🇦', format: '(XXX) XXX-XXXX' },
@@ -42,10 +41,8 @@ const formatByCountry = (value, countryCode) => {
   const country = COUNTRY_CODES.find(c => c.code === countryCode)
   if (!country) return value
   
-  // Remove all non-digit characters
   const digits = value.replace(/[^\d]/g, '')
   
-  // Apply country-specific formatting
   switch (countryCode) {
     case 'US':
     case 'CA':
@@ -90,14 +87,13 @@ const formatByCountry = (value, countryCode) => {
       return `${digits.slice(0, 5)} ${digits.slice(5, 10)}`
     
     default:
-      // Generic formatting: add spaces every 3-4 digits
       const groups = digits.match(/.{1,3}/g) || []
       return groups.join(' ')
   }
 }
 
 /**
- * Generate E.164 format for Twilio SMS
+ * Generate E.164 format for international phone numbers
  */
 const toE164Format = (phoneNumber, countryDialCode) => {
   if (!phoneNumber) return ''
@@ -144,12 +140,9 @@ const InternationalPhoneInput = memo(forwardRef(({
   const dropdownRef = useRef(null)
   const actualRef = ref || phoneInputRef
   
-  // Initialize phone number from defaultValue
   useEffect(() => {
     if (defaultValue) {
-      // Try to parse existing phone number
       if (defaultValue.startsWith('+')) {
-        // Find matching country code
         const matchingCountry = COUNTRY_CODES.find(c => 
           defaultValue.startsWith(c.dialCode)
         )
@@ -166,7 +159,6 @@ const InternationalPhoneInput = memo(forwardRef(({
     }
   }, [defaultValue, selectedCountry])
   
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -184,7 +176,6 @@ const InternationalPhoneInput = memo(forwardRef(({
     setSelectedCountry(countryCode)
     setIsDropdownOpen(false)
     
-    // Reformat current phone number for new country
     if (phoneNumber) {
       const newFormatted = formatByCountry(phoneNumber, countryCode)
       setPhoneNumber(newFormatted)
@@ -201,7 +192,6 @@ const InternationalPhoneInput = memo(forwardRef(({
     const formatted = formatByCountry(value, selectedCountry)
     setPhoneNumber(formatted)
     
-    // Update the actual input value
     if (actualRef.current) {
       actualRef.current.value = formatted
     }
@@ -210,20 +200,18 @@ const InternationalPhoneInput = memo(forwardRef(({
   const handleBlur = (e) => {
     const value = e.target.value
     
-    // Validate phone number
     const isValidNumber = validatePhoneLength(value, selectedCountry)
     setIsValid(isValidNumber)
     setValidationMessage(isValidNumber ? '' : `Please enter a valid ${selectedCountryData.name} phone number`)
     
     if (onBlur) {
-      // Provide both formatted and E.164 versions
       const e164 = toE164Format(value, selectedCountryData.dialCode)
       const eventWithData = {
         ...e,
         target: {
           ...e.target,
           value: value, // Formatted display value
-          e164: e164,   // E.164 for Twilio
+          e164: e164,   // E.164 international format
           country: selectedCountryData.code,
           dialCode: selectedCountryData.dialCode
         }
@@ -242,13 +230,13 @@ const InternationalPhoneInput = memo(forwardRef(({
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             disabled={disabled}
             className={`
-              flex items-center px-3 py-2 border border-r-0 rounded-l-md bg-gray-50 
-              hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-olive-500
+              flex items-center px-3 py-2 border border-r-0 rounded-l-md bg-muted
+              hover:bg-accent focus:outline-none focus:ring-2 focus:ring-olive-500
               ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
             `}
           >
             <span className="text-lg mr-1">{selectedCountryData.flag}</span>
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-foreground">
               {selectedCountryData.dialCode}
             </span>
             <svg 
@@ -263,21 +251,21 @@ const InternationalPhoneInput = memo(forwardRef(({
           
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="absolute z-50 top-full left-0 w-80 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-50 top-full left-0 w-80 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
               {COUNTRY_CODES.map((country) => (
                 <button
                   key={country.code}
                   type="button"
                   onClick={() => handleCountrySelect(country.code)}
                   className={`
-                    w-full px-3 py-2 text-left hover:bg-olive-50 flex items-center
-                    ${selectedCountry === country.code ? 'bg-olive-100' : ''}
+                    w-full px-3 py-2 text-left hover:bg-olive-50 dark:hover:bg-olive-900/30 flex items-center
+                    ${selectedCountry === country.code ? 'bg-olive-100 dark:bg-olive-900/50' : ''}
                   `}
                 >
                   <span className="text-lg mr-2">{country.flag}</span>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900">{country.name}</div>
-                    <div className="text-xs text-gray-500">{country.dialCode} • {country.format}</div>
+                    <div className="text-sm font-medium text-popover-foreground">{country.name}</div>
+                    <div className="text-xs text-muted-foreground">{country.dialCode} • {country.format}</div>
                   </div>
                 </button>
               ))}
@@ -319,7 +307,7 @@ const InternationalPhoneInput = memo(forwardRef(({
           <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
-          Valid • Twilio format: {toE164Format(phoneNumber, selectedCountryData.dialCode)}
+          Valid • International format: {toE164Format(phoneNumber, selectedCountryData.dialCode)}
         </div>
       )}
     </div>
@@ -330,14 +318,12 @@ InternationalPhoneInput.displayName = 'InternationalPhoneInput'
 
 export default InternationalPhoneInput
 
-// Helper function for components that need E.164 format
 export const getE164Format = (phoneNumber, countryCode) => {
   const country = COUNTRY_CODES.find(c => c.code === countryCode)
   if (!country) return phoneNumber
   return toE164Format(phoneNumber, country.dialCode)
 }
 
-// Validation helper
 export const isValidInternationalPhone = (phoneNumber, countryCode) => {
   return validatePhoneLength(phoneNumber, countryCode)
 }

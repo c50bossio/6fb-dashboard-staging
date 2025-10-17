@@ -1,5 +1,6 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
+import tailwindcssAnimate from "tailwindcss-animate"
+
+export default {
   darkMode: ["class"],
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -49,7 +50,6 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // BookedBarber Brand Colors - Gold and Black from new logos
         brand: {
           50: '#fdfbf4',
           100: '#faf5e1',
@@ -63,7 +63,6 @@ module.exports = {
           900: '#664d25',
           950: '#3b2c13'
         },
-        // Deep Olive & Gold Custom Palette (legacy)
         olive: {
           50: '#f4f5f4',
           100: '#e5e7e5',
@@ -185,5 +184,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 }

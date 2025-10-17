@@ -3,9 +3,9 @@
  * Prevents single component failures from crashing the entire app
  */
 
+import { AlertCircle, RefreshCw } from 'lucide-react'
 import React from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, RefreshCw } from 'lucide-react'
 
 class ComponentErrorBoundary extends React.Component {
   constructor(props) {
