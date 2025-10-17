@@ -17,101 +17,72 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request) {
   try {
+    console.log('[User Locations API] ===== Starting GET request =====')
+
+    // Step 1: Create Supabase client
+    console.log('[User Locations API] Step 1: Creating Supabase client...')
     const supabase = await createServerSupabaseClient()
-    
-    // Get authenticated user
+    console.log('[User Locations API] Step 1: ✓ Supabase client created')
+
+    // Step 2: Get authenticated user
+    console.log('[User Locations API] Step 2: Getting authenticated user...')
     const { data: { user }, error: authError } = await supabase.auth.getUser()
+    console.log('[User Locations API] Step 2: Auth result:', {
+      hasUser: !!user,
+      userId: user?.id,
+      authError: authError?.message
+    })
     
-    // Development mode bypass - return mock data when no user is authenticated
-    const isDevelopmentMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEV_MODE === 'true'
-    
+    // REMOVED: Development mode bypass
+    // The frontend should handle authentication properly instead of using mock data
+    // Mock data was causing location ID mismatch issues
+
     if (authError || !user) {
       console.log('[User Locations API] Authentication failed:', authError?.message)
-      
-      if (isDevelopmentMode) {
-        console.log('[User Locations API] Using development mode bypass - returning mock location data')
-        
-        const mockLocations = [
-          {
-            id: '1ca6138d-eae8-46ed-abf4-5d6c52fbd21b',
-            name: 'Downtown Barbershop (DEV)',
-            address: '123 Main St',
-            city: 'New York',
-            state: 'NY',
-            phone: '(555) 123-4567',
-            email: 'dev@barbershop.com',
-            manager: 'Dev Manager',
-            managerId: 'dev-manager-123',
-            status: 'active',
-            hours: {
-              monday: { open: '9:00 AM', close: '6:00 PM' },
-              tuesday: { open: '9:00 AM', close: '6:00 PM' },
-              wednesday: { open: '9:00 AM', close: '6:00 PM' },
-              thursday: { open: '9:00 AM', close: '6:00 PM' },
-              friday: { open: '9:00 AM', close: '6:00 PM' },
-              saturday: { open: '9:00 AM', close: '5:00 PM' },
-              sunday: { open: 'Closed', close: 'Closed' }
-            },
-            staff: [],
-            metrics: {
-              revenue: 15000,
-              bookings: 125,
-              customers: 85,
-              rating: 4.7,
-              utilization: 78
-            },
-            services: [],
-            _debug: {
-              accessMethod: 'development-mode-bypass',
-              fallback: true,
-              userRole: 'SHOP_OWNER',
-              originalLocationStatus: 'active',
-              hasIsActive: true
-            }
-          }
-        ]
-        
-        return NextResponse.json({
-          success: true,
-          data: mockLocations,
-          meta: {
-            count: mockLocations.length,
-            accessMethod: 'development-mode-bypass',
-            userRole: 'SHOP_OWNER',
-            message: 'Development mode - mock data returned',
-            timestamp: new Date().toISOString()
-          }
-        })
-      }
-      
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log(`[User Locations API] Authenticated user: ${user.id}`)
+    console.log(`[User Locations API] Step 3: ✓ Authenticated user: ${user.id}`)
 
-    // Get user's profile
+    // Step 3: Get user's profile
+    console.log('[User Locations API] Step 3: Fetching user profile...')
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, role, shop_id, barbershop_id, organization_id, full_name, email')
+      .select('id, role, barbershop_id, organization_id, full_name, email')
       .eq('id', user.id)
       .single()
 
     if (profileError || !profile) {
-      console.error('[User Locations API] Failed to get user profile:', profileError)
-      return NextResponse.json({ error: 'User profile not found' }, { status: 403 })
+      console.error('[User Locations API] Step 3: ✗ Failed to get user profile:', {
+        error: profileError,
+        errorMessage: profileError?.message,
+        errorCode: profileError?.code,
+        errorDetails: profileError?.details
+      })
+      return NextResponse.json({
+        error: 'User profile not found',
+        details: profileError?.message,
+        code: profileError?.code
+      }, { status: 403 })
     }
 
-    console.log(`[User Locations API] User profile:`, {
+    console.log(`[User Locations API] Step 3: ✓ User profile loaded:`, {
       id: profile.id,
       role: profile.role,
-      hasShopId: !!(profile.shop_id || profile.barbershop_id),
-      hasOrgId: !!profile.organization_id
+      barbershop_id: profile.barbershop_id,
+      organization_id: profile.organization_id,
+      email: profile.email
     })
 
-    // Use the centralized service to get accessible locations
+    // Step 4: Use the centralized service to get accessible locations
+    console.log('[User Locations API] Step 4: Calling getUserAccessibleLocations...')
     const locations = await getUserAccessibleLocations(user.id, profile.role, profile)
-    
-    console.log(`[User Locations API] Found ${locations.length} locations using unified service`)
+
+    console.log(`[User Locations API] Step 4: ✓ Found ${locations.length} locations using unified service:`, {
+      locationCount: locations.length,
+      locationIds: locations.map(l => l.id),
+      locationNames: locations.map(l => l.name)
+    })
 
     if (locations && locations.length > 0) {
       // Transform for Location Management UI compatibility
@@ -197,9 +168,20 @@ export async function GET(request) {
     })
 
   } catch (error) {
-    console.error('[User Locations API] Error:', error)
+    console.error('[User Locations API] ===== CRITICAL ERROR =====')
+    console.error('[User Locations API] Error Name:', error.name)
+    console.error('[User Locations API] Error Message:', error.message)
+    console.error('[User Locations API] Error Stack:', error.stack)
+    console.error('[User Locations API] Error Object:', error)
+    console.error('[User Locations API] =============================')
+
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      {
+        error: 'Internal server error',
+        details: error.message,
+        errorName: error.name,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     )
   }

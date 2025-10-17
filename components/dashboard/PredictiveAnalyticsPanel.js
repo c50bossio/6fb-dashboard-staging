@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 
 export default function PredictiveAnalyticsPanel({ data }) {
+  // Get current location from GlobalDashboardContext (source of truth for shop selection)
+  const { currentLocationId } = useGlobalDashboard()
   const [predictions, setPredictions] = useState(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
@@ -17,33 +20,49 @@ export default function PredictiveAnalyticsPanel({ data }) {
       setPredictions(data.predictions)
       setLastUpdated(new Date())
       setLoading(false)
-    } else {
+    } else if (currentLocationId) {
+      // Only load predictions if we have a location selected
       loadPredictions()
     }
-    
-    // Auto-refresh predictions every 10 minutes
-    const interval = setInterval(loadPredictions, 10 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [data, selectedForecastType, selectedTimeHorizon])
+
+    // Auto-refresh predictions every 10 minutes (only if location is selected)
+    let interval
+    if (currentLocationId) {
+      interval = setInterval(loadPredictions, 10 * 60 * 1000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [data, selectedForecastType, selectedTimeHorizon, currentLocationId])
 
   const loadPredictions = async () => {
     try {
       setError(null)
-      const response = await fetch(`/api/ai/predictive?barbershop_id=demo`)
+
+      // CRITICAL: Use real barbershop ID from GlobalDashboardContext (NO DEMO DATA!)
+      if (!currentLocationId) {
+        setError('No location selected. Please select a shop to view predictions.')
+        setLoading(false)
+        return
+      }
+
+      const response = await fetch(`/api/ai/predictive?barbershopId=${currentLocationId}`)
       const data = await response.json()
 
       if (data.success) {
         setPredictions(data.predictions)
         setLastUpdated(new Date())
+      } else if (data.insufficient_data) {
+        // Handle insufficient data gracefully (following NO MOCK DATA policy)
+        setError(data.friendly_message || 'Insufficient data for predictions')
+        setPredictions(null)
       } else {
         setError(data.error || 'Failed to load predictions')
       }
     } catch (err) {
       console.error('Failed to load predictions:', err)
-      setError('Connection error - using demo predictions')
-      // Load mock predictions as fallback
-      setPredictions(await generateDemoPredictions())
-      setLastUpdated(new Date())
+      setError('Connection error. Please try again.')
+      setPredictions(null) // NO FALLBACK TO DEMO DATA!
     } finally {
       setLoading(false)
     }
@@ -52,21 +71,29 @@ export default function PredictiveAnalyticsPanel({ data }) {
   const generateNewPredictions = async () => {
     setGenerating(true)
     try {
+      // CRITICAL: Use real barbershop ID from GlobalDashboardContext (NO DEMO DATA!)
+      if (!currentLocationId) {
+        setError('No location selected. Please select a shop to generate predictions.')
+        setGenerating(false)
+        return
+      }
+
+      // Get actual business context from data prop (passed from UnifiedDashboard)
       const businessContext = {
-        shop_name: 'Demo Barbershop',
-        current_revenue: 1200 + Math.random() * 400,
-        customer_count: 350 + Math.random() * 100,
-        avg_satisfaction: 4.2 + Math.random() * 0.6,
-        service_utilization: 0.7 + Math.random() * 0.2
+        shop_name: data?.shopName || 'Your Shop',
+        current_revenue: data?.metrics?.revenue || 0,
+        customer_count: data?.metrics?.customers || 0,
+        avg_satisfaction: data?.metrics?.satisfaction || 0,
+        service_utilization: data?.todayMetrics?.capacity / 100 || 0
       }
 
       const response = await fetch('/api/ai/predictive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           prediction_type: 'revenue_forecast',
-          barbershop_id: 'demo',
-          parameters: { 
+          barbershop_id: currentLocationId, // Use REAL ID!
+          parameters: {
             timeframe: selectedTimeHorizon === 'weekly' ? 7 : selectedTimeHorizon === 'monthly' ? 30 : 1,
             confidence_level: 0.85
           }
@@ -77,6 +104,10 @@ export default function PredictiveAnalyticsPanel({ data }) {
       if (data.success) {
         setPredictions(data.forecast)
         setLastUpdated(new Date())
+      } else if (data.insufficient_data) {
+        // Handle insufficient data gracefully (following NO MOCK DATA policy)
+        setError(data.error || 'Insufficient data to generate predictions')
+        setPredictions(null)
       } else {
         throw new Error(data.error || 'Generation failed')
       }
@@ -364,66 +395,5 @@ export default function PredictiveAnalyticsPanel({ data }) {
   )
 }
 
-async function generateDemoPredictions() {
-  return {
-    id: `demo_forecast_${Date.now()}`,
-    type: 'comprehensive',
-    timeHorizon: 'weekly',
-    generated_at: new Date().toISOString(),
-    overallConfidence: 0.84,
-    revenueForecast: {
-      currentRevenue: 1350,
-      predictions: {
-        '1_day': { value: 1280, confidence: 0.91, trend: 'stable' },
-        '1_week': { value: 8950, confidence: 0.86, trend: 'increasing' },
-        '1_month': { value: 39200, confidence: 0.79, trend: 'increasing' }
-      },
-      factors: [
-        'Holiday season demand increase (+18%)',
-        'Customer retention improvement (+12%)',
-        'Premium service uptake (+8%)'
-      ],
-      recommendations: [
-        'Extend holiday hours to capture peak demand',
-        'Promote premium services to loyal customers',
-        'Implement holiday booking incentives'
-      ]
-    },
-    customerBehavior: {
-      segments: [
-        {
-          name: 'VIP Customers',
-          size: 92,
-          retentionRate: 0.94,
-          predictedGrowth: 0.06,
-          avgMonthlyValue: 195,
-          recommendations: [
-            'Offer exclusive holiday packages',
-            'Provide VIP scheduling priority'
-          ]
-        },
-        {
-          name: 'Regular Customers',
-          size: 285,
-          retentionRate: 0.78,
-          predictedGrowth: 0.04,
-          avgMonthlyValue: 105,
-          recommendations: [
-            'Implement loyalty point system',
-            'Send monthly service reminders'
-          ]
-        }
-      ],
-      churnPrediction: {
-        highRisk: 15,
-        mediumRisk: 32,
-        lowRisk: 388,
-        interventionRecommendations: [
-          'Priority outreach to high-risk customers',
-          'Satisfaction surveys for medium-risk segment',
-          'Loyalty rewards for stable customer base'
-        ]
-      }
-    }
-  }
-}
+// Following NO MOCK DATA policy: generateDemoPredictions() function has been removed
+// When predictions cannot be loaded, user sees friendly empty state prompting real data entry

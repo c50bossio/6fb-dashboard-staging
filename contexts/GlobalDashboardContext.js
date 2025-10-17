@@ -1,43 +1,17 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
 import { useAuth } from '../components/SupabaseAuthProvider'
 import contextAwareCache from '../lib/context-aware-cache'
 import { getDisplayName, normalizeNameData } from '../lib/name-utils'
 import unifiedStaffService from '../lib/unified-staff-service'
 
-// Development mode mock data
-const DEV_MOCK_USER = {
-  id: 'mock-user-123',
-  email: 'test@barbershop.com',
-  user_metadata: {
-    full_name: 'Test Owner',
-    role: 'SHOP_OWNER'
-  }
-}
-
-const DEV_MOCK_PROFILE = {
-  id: 'mock-user-123',
-  email: 'test@barbershop.com',
-  full_name: 'Test Owner',
-  role: 'SHOP_OWNER',
-  barbershop_id: '1ca6138d-eae8-46ed-abf4-5d6c52fbd21b' // Using actual barbershop ID
-}
-
 const GlobalDashboardContext = createContext({})
 
 export function GlobalDashboardProvider({ children }) {
-  const { user: authUser, profile: authProfile, userRole: authUserRole } = useAuth()
+  const { user, profile, userRole } = useAuth()
   const [initialized, setInitialized] = useState(false)
-  
-  // Use mock data in development when no real user is authenticated
-  const isDevelopmentMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEV_MODE === 'true'
-  const useMockData = isDevelopmentMode && !authUser
-  
-  const user = useMockData ? DEV_MOCK_USER : authUser
-  const profile = useMockData ? DEV_MOCK_PROFILE : authProfile
-  const userRole = useMockData ? DEV_MOCK_PROFILE.role : authUserRole
   
   // Core dashboard state (existing)
   const [selectedLocations, setSelectedLocations] = useState([])
@@ -62,6 +36,9 @@ export function GlobalDashboardProvider({ children }) {
   const [contextLoading, setContextLoading] = useState(false)
   const [contextCache, setContextCache] = useState(new Map())
   const [isContextSwitching, setIsContextSwitching] = useState(false)
+
+  // Abort controller ref for canceling in-flight requests
+  const abortControllerRef = useRef(null)
   
   // Barber color generation helper
   const generateBarberColor = (barberId) => {
@@ -486,6 +463,16 @@ export function GlobalDashboardProvider({ children }) {
       return
     }
 
+    // CRITICAL: Cancel any in-flight context switch to prevent race conditions
+    if (abortControllerRef.current) {
+      console.log('[GlobalDashboardContext] Aborting previous context switch')
+      abortControllerRef.current.abort()
+    }
+
+    // Create new abort controller for this context switch
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
+
     const switchStartTime = Date.now()
     console.log('[GlobalDashboardContext] Starting context switch to:', {
       locationId: newContext.locationId,
@@ -497,6 +484,12 @@ export function GlobalDashboardProvider({ children }) {
     setContextLoading(true)
 
     try {
+      // Check if aborted before proceeding
+      if (abortController.signal.aborted) {
+        console.log('[GlobalDashboardContext] Context switch aborted before starting')
+        return
+      }
+
       // 1. Optimistically update active context for immediate UI response
       setActiveContext(newContext)
 
@@ -506,7 +499,15 @@ export function GlobalDashboardProvider({ children }) {
 
       // 3. Fetch fresh contextual data with timing
       newContext._startTime = Date.now()
+      newContext._abortSignal = abortController.signal  // Pass abort signal to fetch
       const freshData = await fetchContextualData(newContext)
+
+      // Check if aborted after fetch completes
+      if (abortController.signal.aborted) {
+        console.log('[GlobalDashboardContext] Context switch aborted after fetch')
+        return
+      }
+
       setContextData(freshData)
 
       const switchEndTime = Date.now()
@@ -776,9 +777,34 @@ export function GlobalDashboardProvider({ children }) {
       
     } catch (error) {
       console.error('[GlobalDashboardContext] Error loading locations from unified API:', error)
-      setAvailableLocations([])
+
+      // FALLBACK: If API fails but user has barbershop_id in profile, use that
+      if (profile?.barbershop_id) {
+        console.log('[GlobalDashboardContext] API failed - using profile.barbershop_id as fallback:', profile.barbershop_id)
+
+        // Create a minimal location object from profile data
+        const fallbackLocation = {
+          id: profile.barbershop_id,
+          name: profile.barbershop_name || 'Your Barbershop',
+          city: 'Not set',
+          state: 'Not set',
+          address: 'Address not available',
+          phone: 'Phone not available',
+          owner_id: user.id,
+          _debug: {
+            accessMethod: 'profile-fallback',
+            fallback: true,
+            reason: 'API call failed - using profile.barbershop_id'
+          }
+        }
+
+        setAvailableLocations([fallbackLocation])
+        console.log('[GlobalDashboardContext] Fallback location set from profile:', fallbackLocation)
+      } else {
+        setAvailableLocations([])
+      }
     }
-  }, [user?.id]) // Only depend on user ID, not the whole user object or other state
+  }, [user?.id, profile?.barbershop_id, profile?.barbershop_name]) // Depend on profile data for fallback
   
   // Load barbers for current location using unifiedStaffService for consistency
   const loadAvailableBarbers = useCallback(async () => {
