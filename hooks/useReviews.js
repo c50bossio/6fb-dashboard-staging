@@ -107,10 +107,10 @@ export default function useReviews({
 
   const loadBarbers = useCallback(async () => {
     try {
-      const barbershopId = barbershopId || profile?.barbershop_id
-      if (!barbershopId) return
+      const shopId = barbershopId || profile?.barbershop_id
+      if (!shopId) return
 
-      const response = await fetch(`/api/barbers?barbershop_id=${barbershopId}&active_only=true`)
+      const response = await fetch(`/api/barbers?barbershop_id=${shopId}&active_only=true`)
       if (response.ok) {
         const result = await response.json()
         if (result.barbers) {
@@ -162,12 +162,12 @@ export default function useReviews({
   const syncReviews = useCallback(async () => {
     try {
       setLoading(true)
-      const barbershopId = barbershopId || profile?.barbershop_id
-      
+      const shopId = barbershopId || profile?.barbershop_id
+
       const response = await fetch('/api/gmb/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barbershop_id: barbershopId })
+        body: JSON.stringify({ barbershop_id: shopId })
       })
 
       if (response.ok) {

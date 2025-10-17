@@ -28,49 +28,7 @@ export default function OnboardingStepBanner({
   const [canComplete, setCanComplete] = useState(false)
   const [validationError, setValidationError] = useState(null)
 
-  useEffect(() => {
-    // Check if we're in onboarding mode via URL params
-    const fromOnboarding = searchParams.get('onboarding') === 'true'
-    const currentStep = searchParams.get('step')
-    
-    let isOnboardingFlow = fromOnboarding && currentStep === stepId
-    
-    // Fallback: Check session storage if URL params are missing
-    if (!isOnboardingFlow) {
-      try {
-        const savedContext = sessionStorage.getItem('onboarding_context')
-        if (savedContext) {
-          const context = JSON.parse(savedContext)
-          // Check if context is recent (within 10 minutes) and matches current step
-          const isRecent = Date.now() - context.timestamp < 10 * 60 * 1000
-          const matchesStep = context.step === stepId
-          const matchesRoute = window.location.pathname === context.route || 
-                              window.location.pathname.startsWith(context.route)
-          
-          if (isRecent && matchesStep && matchesRoute) {
-            
-            isOnboardingFlow = true
-          } else if (!isRecent) {
-            // Clean up old context
-            sessionStorage.removeItem('onboarding_context')
-          }
-        }
-      } catch (error) {
-        console.warn('OnboardingStepBanner: Failed to restore context from session storage', error)
-      }
-    }
-    
-    setIsOnboarding(isOnboardingFlow)
-    
-    // Initial validation check
-    if (isOnboardingFlow && validateCompletion) {
-      checkCompletion()
-    } else if (isOnboardingFlow) {
-      // If no validation function provided, assume it's completable
-      setCanComplete(true)
-    }
-  }, [stepId, searchParams, checkCompletion])
-
+  // Define checkCompletion BEFORE useEffect that uses it
   const checkCompletion = useCallback(async () => {
     if (!validateCompletion) return
     
@@ -89,6 +47,50 @@ export default function OnboardingStepBanner({
       setIsValidating(false)
     }
   }, [validateCompletion])
+
+  // useEffect that uses checkCompletion - placed AFTER its definition
+  useEffect(() => {
+    // Check if we're in onboarding mode via URL params
+    const fromOnboarding = searchParams.get('onboarding') === 'true'
+    const currentStep = searchParams.get('step')
+
+    let isOnboardingFlow = fromOnboarding && currentStep === stepId
+
+    // Fallback: Check session storage if URL params are missing
+    if (!isOnboardingFlow) {
+      try {
+        const savedContext = sessionStorage.getItem('onboarding_context')
+        if (savedContext) {
+          const context = JSON.parse(savedContext)
+          // Check if context is recent (within 10 minutes) and matches current step
+          const isRecent = Date.now() - context.timestamp < 10 * 60 * 1000
+          const matchesStep = context.step === stepId
+          const matchesRoute = window.location.pathname === context.route ||
+                              window.location.pathname.startsWith(context.route)
+
+          if (isRecent && matchesStep && matchesRoute) {
+
+            isOnboardingFlow = true
+          } else if (!isRecent) {
+            // Clean up old context
+            sessionStorage.removeItem('onboarding_context')
+          }
+        }
+      } catch (error) {
+        console.warn('OnboardingStepBanner: Failed to restore context from session storage', error)
+      }
+    }
+
+    setIsOnboarding(isOnboardingFlow)
+
+    // Initial validation check
+    if (isOnboardingFlow && validateCompletion) {
+      checkCompletion()
+    } else if (isOnboardingFlow) {
+      // If no validation function provided, assume it's completable
+      setCanComplete(true)
+    }
+  }, [stepId, searchParams, validateCompletion, checkCompletion])
 
   const handleReturn = () => {
     // Clear session storage context when user manually returns

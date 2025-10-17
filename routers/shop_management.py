@@ -582,13 +582,13 @@ async def calculate_metrics_manually(shop_id: str) -> dict:
                 metrics['low_stock_products'] += 1
         
         # Get appointment counts
-        bookings = supabase.table('bookings').select('created_at').eq('shop_id', shop_id).execute()
-        
-        for booking in bookings.data:
-            booking_date = datetime.fromisoformat(booking['created_at'].replace('Z', '+00:00')).date()
-            if booking_date == today:
+        appointments = supabase.table('appointments').select('created_at').eq('barbershop_id', shop_id).execute()
+
+        for appointment in appointments.data:
+            appointment_date = datetime.fromisoformat(appointment['created_at'].replace('Z', '+00:00')).date()
+            if appointment_date == today:
                 metrics['today_appointments'] += 1
-            if booking_date >= week_ago:
+            if appointment_date >= week_ago:
                 metrics['week_appointments'] += 1
     
     except Exception as e:

@@ -157,11 +157,11 @@ function calculatePerformanceCharts(salesData, inventoryData, startDate, endDate
 function generateDatePeriods(startDate, endDate, granularity) {
   const periods = []
   const current = new Date(startDate)
-  
+
   while (current <= endDate) {
     const periodStart = new Date(current)
-    let periodData = { periodEnd: null, label: '', key: '' }
-    
+    let periodEnd, label, key
+
     switch (granularity) {
       case 'weekly':
         periodEnd = new Date(current.getTime() + 7 * 24 * 60 * 60 * 1000 - 1)
@@ -182,19 +182,19 @@ function generateDatePeriods(startDate, endDate, granularity) {
         current.setDate(current.getDate() + 1)
         break
     }
-    
+
     if (periodEnd > endDate) periodEnd = endDate
-    
+
     periods.push({
       start: new Date(periodStart),
       end: new Date(periodEnd),
       label: label,
       key: key
     })
-    
+
     if (periodEnd >= endDate) break
   }
-  
+
   return periods
 }
 

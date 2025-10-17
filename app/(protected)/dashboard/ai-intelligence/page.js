@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { 
+import {
   ChartBarIcon,
   CpuChipIcon,
   LightBulbIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   ClockIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
@@ -287,7 +287,7 @@ export default function AIIntelligencePage() {
         <div className="mb-6">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center space-x-3 mb-4">
-              <TrendingUpIcon className="h-6 w-6 text-blue-500" />
+              <ArrowTrendingUpIcon className="h-6 w-6 text-blue-500" />
               <h2 className="text-lg font-semibold text-gray-900">Business Performance Analytics</h2>
             </div>
             <BusinessIntelligenceDashboard />

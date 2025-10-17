@@ -399,22 +399,21 @@ export default function CheckInInterface({ barbershopId, mode = 'embedded' }) {
       setCheckingIn(true)
       setError('')
 
-      const response = await fetch(`/api/appointments/${appointment.id}/check-in`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
+      const { csrfFetchJSON } = await import('@/lib/csrf-fetch')
 
-      const result = await response.json()
+      const result = await csrfFetchJSON(`/api/appointments/${appointment.id}/check-in`, {
+        method: 'POST'
+      })
 
       if (result.success) {
         const queueInfo = result.queue_position ? ` Queue position: ${result.queue_position}` : ''
         setSuccessMessage(`${appointment.client_name} checked in successfully! ✅${queueInfo}`)
         setSelectedAppointment({ ...appointment, status: 'checked_in' })
-        
+
         // Clear search results and phone number
         setSearchResults([])
         setCustomerPhone('')
-        
+
         // Clear success message after 5 seconds to allow reading queue position
         setTimeout(() => {
           setSuccessMessage('')
@@ -436,10 +435,11 @@ export default function CheckInInterface({ barbershopId, mode = 'embedded' }) {
     try {
       setLoading(true)
       setError('')
-      
-      const response = await fetch('/api/walk-ins', {
+
+      const { csrfFetchJSON } = await import('@/lib/csrf-fetch')
+
+      const result = await csrfFetchJSON('/api/walk-ins', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: walkInData.name,
           phone: customerPhone,
@@ -450,14 +450,12 @@ export default function CheckInInterface({ barbershopId, mode = 'embedded' }) {
         })
       })
 
-      const result = await response.json()
-
       if (result.success) {
         setSuccessMessage(`${walkInData.name} added to walk-in queue! Estimated wait: ${result.estimated_wait} minutes`)
         setShowWalkInForm(false)
         setWalkInData({ name: '', phone: '', service: '', notes: '' })
         setCustomerPhone('')
-        
+
         setTimeout(() => {
           setSuccessMessage('')
         }, 5000)
@@ -475,9 +473,10 @@ export default function CheckInInterface({ barbershopId, mode = 'embedded' }) {
   // Send custom message to customer
   const sendMessage = async (appointment, message) => {
     try {
-      const response = await fetch('/api/notifications/send', {
+      const { csrfFetchJSON } = await import('@/lib/csrf-fetch')
+
+      const result = await csrfFetchJSON('/api/notifications/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'custom_message',
           message,
@@ -486,7 +485,6 @@ export default function CheckInInterface({ barbershopId, mode = 'embedded' }) {
         })
       })
 
-      const result = await response.json()
       if (result.success) {
         alert('Message sent successfully!')
       } else {

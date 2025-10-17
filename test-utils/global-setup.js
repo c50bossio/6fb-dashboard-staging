@@ -89,7 +89,6 @@ async function verifyTestServer() {
     }
     
     if (i < maxRetries - 1) {
-      `)
       await new Promise(resolve => setTimeout(resolve, retryDelay))
     }
   }
@@ -117,13 +116,13 @@ async function initializeComputerUse() {
     
     await execAsync('python3 --version')
 
-    const testCommand = `cd "${path.dirname(pythonScriptPath)}" && python3 -c "
-import os
+    const pythonCode = `import os
 import anthropic
 client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
-print('Claude API connection ready')
-"`
-    
+print('Claude API connection ready')`
+
+    const testCommand = `cd "${path.dirname(pythonScriptPath)}" && python3 -c "${pythonCode}"`
+
     await execAsync(testCommand, {
       env: { ...process.env },
       timeout: 10000

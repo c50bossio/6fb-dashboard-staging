@@ -20,7 +20,7 @@ export async function GET(request) {
     // Get user's profile to find shop/organization
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('shop_id, barbershop_id, role')
+      .select('barbershop_id, role')
       .eq('id', user.id)
       .single()
 
@@ -28,7 +28,7 @@ export async function GET(request) {
       console.error('Error fetching profile:', profileError)
     }
 
-    const shopId = profile?.shop_id || profile?.barbershop_id
+    const shopId = profile?.barbershop_id
 
     // Try to fetch subscription data from database
     let subscriptionData = null

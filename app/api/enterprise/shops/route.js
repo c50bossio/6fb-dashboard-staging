@@ -31,7 +31,7 @@ export async function GET(request) {
     if (profile?.organization_id) {
       const { data: barbershops, error: shopError } = await supabase
         .from('barbershops')
-        .select('id, name, address, city, state, phone, email, created_at, location_status')
+        .select('id, name, address, city, state, phone, email, created_at')
         .eq('organization_id', profile.organization_id)
         .order('name')
         
@@ -49,7 +49,7 @@ export async function GET(request) {
         name: shop.name || `Shop ${shop.id}`,
         role: 'Shop',
         location: shop.address || `${shop.city || ''}, ${shop.state || ''}`.trim().replace(/^,\s*/, '') || 'Location not set',
-        status: shop.location_status || 'active',
+        status: 'active', // Default status since location_status column doesn't exist
         city: shop.city,
         state: shop.state,
         phone: shop.phone,
@@ -60,7 +60,7 @@ export async function GET(request) {
       // Fallback: Single shop owner - get their shop
       const { data: barbershops, error: shopError } = await supabase
         .from('barbershops')
-        .select('id, name, address, city, state, phone, email, created_at, location_status')
+        .select('id, name, address, city, state, phone, email, created_at')
         .eq('id', profile.barbershop_id)
         .order('name')
 
@@ -79,7 +79,7 @@ export async function GET(request) {
         name: shop.name || `Shop ${shop.id}`,
         role: 'Shop',
         location: shop.address || `${shop.city || ''}, ${shop.state || ''}`.trim().replace(/^,\s*/, '') || 'Location not set',
-        status: shop.location_status || 'active',
+        status: 'active', // Default status since location_status column doesn't exist
         city: shop.city,
         state: shop.state,
         phone: shop.phone,

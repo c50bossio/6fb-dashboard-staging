@@ -9,43 +9,43 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function InventoryPage() {
-  const { user, profile } = useAuth()
+  const { user, profile, loading: authLoading } = useAuth()
   const [barbershopId, setbarbershopId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (user) {
-      loadUserContext()
+    // Wait for auth to finish loading before processing profile
+    if (authLoading) {
+      return
     }
-  }, [user])
+
+    if (user && profile) {
+      loadUserContext()
+    } else if (!user) {
+      // No user means not authenticated - let middleware handle redirect
+      setLoading(false)
+    }
+  }, [user, profile, authLoading])
 
   const loadUserContext = async () => {
     try {
       setLoading(true)
-      
-      // Get user's subscription-based context
-      const response = await fetch('/api/profile/current')
-      const data = await response.json()
 
-      if (response.ok && data.profile) {
-        // Use the resolved barbershop ID from the API response
-        // This handles both individual barbers and shop employees
-        const contextId = data.profile.resolved_barbershop_id || 
-                         data.profile.barbershop_id || 
-                         data.profile.barbershop_id ||
-                         data.profile.id // Fallback to user ID for individual barbers
+      // Use profile data directly from useAuth() - no HTTP request needed
+      // This eliminates 401 errors and improves page load performance
+      const contextId = profile?.barbershop_id ||  // Primary barbershop association
+                       profile?.barbershop_id ||   // Fallback field name
+                       user?.id                     // Individual barber fallback
 
-        if (contextId) {
-          setbarbershopId(contextId)
-        } else {
-          throw new Error('Unable to determine inventory access. Please complete your profile setup.')
-        }
+      if (contextId) {
+        setbarbershopId(contextId)
+        console.log('✅ Inventory: Loaded barbershop context:', contextId)
       } else {
-        throw new Error(data.error || 'Failed to load user context')
+        throw new Error('Unable to determine inventory access. Please complete your profile setup.')
       }
     } catch (err) {
-      console.error('Error loading user context:', err)
+      console.error('❌ Inventory: Error loading user context:', err)
       setError(err instanceof Error ? err.message : 'Failed to load inventory system')
     } finally {
       setLoading(false)

@@ -1,6 +1,6 @@
 'use client'
 
-import { ShoppingCart, Package, Search, Plus, Minus, Receipt, CreditCard, Link, Mail, MessageCircle, QrCode, Zap, Settings } from 'lucide-react'
+import { ShoppingCart, Package, Search, Plus, Minus, Receipt, CreditCard, Link, Mail, MessageCircle, QrCode, Zap, Settings, RefreshCw } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/Button'
@@ -393,32 +393,32 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
   const totals = calculateTotal()
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Products Section */}
       <div className="lg:col-span-2 space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
+        <Card className="card-modern shadow-modern">
+          <CardHeader className="border-b border-border bg-gradient-to-r from-card to-brand-50/10 dark:to-brand-900/10">
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <Package className="h-5 w-5 text-brand-600 dark:text-brand-500" />
               Products
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             {/* Search and Filters */}
-            <div className="flex gap-4 mb-4">
+            <div className="flex gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search products, SKU, or barcode..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="input-field pl-10"
                 />
               </div>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border rounded-md"
+                className="input-field px-4 py-2 min-w-[150px]"
               >
                 <option value="all">All Categories</option>
                 {categories.map(category => (
@@ -430,30 +430,30 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
             {/* Product Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {filteredProducts.map(product => (
-                <Card key={product.id} className="hover:shadow-md transition-shadow">
+                <Card key={product.id} className="feature-card hover:shadow-gold transition-all duration-300">
                   <CardContent className="p-4">
                     {product.thumbnail_url && (
                       <img
                         src={product.thumbnail_url}
                         alt={product.name}
-                        className="w-full h-32 object-cover rounded-md mb-3"
+                        className="w-full h-32 object-cover rounded-lg mb-3 shadow-sm"
                       />
                     )}
                     <div className="space-y-2">
-                      <h3 className="font-medium line-clamp-2">{product.name}</h3>
+                      <h3 className="font-semibold line-clamp-2 text-foreground">{product.name}</h3>
                       <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold">${product.price}</span>
-                        <Badge variant={product.current_stock > 0 ? 'default' : 'destructive'}>
+                        <span className="text-xl font-bold text-brand-600 dark:text-brand-500">${product.price}</span>
+                        <Badge variant={product.current_stock > 0 ? 'default' : 'destructive'} className="badge-info">
                           {product.current_stock} in stock
                         </Badge>
                       </div>
                       {product.sku && (
-                        <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>
+                        <p className="text-xs text-muted-foreground">SKU: {product.sku}</p>
                       )}
                       <Button
                         onClick={() => addToCart(product)}
                         disabled={product.current_stock === 0}
-                        className="w-full"
+                        className="btn-primary w-full mt-2"
                         size="sm"
                       >
                         <Plus className="h-4 w-4 mr-2" />
@@ -470,25 +470,27 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
 
       {/* Cart Section */}
       <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5" />
+        <Card className="card-modern-gold shadow-gold-glow sticky top-6">
+          <CardHeader className="border-b border-brand-600/20 dark:border-brand-700/30 bg-gradient-gold-subtle">
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <ShoppingCart className="h-5 w-5 text-brand-600 dark:text-brand-500" />
               Cart ({cart.length})
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+          <CardContent className="pt-4">
+            <div className="space-y-3 max-h-[400px] overflow-y-auto scrollbar-hide">
               {cart.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Cart is empty
-                </p>
+                <div className="text-center py-12">
+                  <ShoppingCart className="h-16 w-16 mx-auto mb-3 text-muted-foreground opacity-30" />
+                  <p className="text-muted-foreground text-sm">Cart is empty</p>
+                  <p className="text-xs text-muted-foreground mt-1">Add products to get started</p>
+                </div>
               ) : (
                 cart.map(item => (
-                  <div key={item.id} className="flex items-center justify-between p-3 border rounded-md">
+                  <div key={item.id} className="flex items-center justify-between p-3 border border-brand-600/10 dark:border-brand-700/20 rounded-xl bg-gradient-to-r from-card to-brand-50/5 dark:to-brand-900/5 hover:border-brand-600/30 dark:hover:border-brand-700/40 transition-all">
                     <div className="flex-1">
-                      <h4 className="font-medium line-clamp-1">{item.name}</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <h4 className="font-semibold line-clamp-1 text-foreground text-sm">{item.name}</h4>
+                      <p className="text-xs text-brand-600 dark:text-brand-500 font-medium">
                         ${item.price} each
                       </p>
                     </div>
@@ -497,14 +499,16 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
                         variant="outline"
                         size="sm"
                         onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
+                        className="h-8 w-8 p-0 border-brand-600/20 hover:border-brand-600/40 hover:bg-brand-50/50 dark:hover:bg-brand-900/20"
                       >
                         <Minus className="h-3 w-3" />
                       </Button>
-                      <span className="w-8 text-center">{item.quantity}</span>
+                      <span className="w-8 text-center font-semibold text-foreground">{item.quantity}</span>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
+                        className="h-8 w-8 p-0 border-brand-600/20 hover:border-brand-600/40 hover:bg-brand-50/50 dark:hover:bg-brand-900/20"
                       >
                         <Plus className="h-3 w-3" />
                       </Button>
@@ -512,7 +516,7 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
                         variant="outline"
                         size="sm"
                         onClick={() => removeFromCart(item.id)}
-                        className="text-red-600 hover:text-red-700"
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800"
                       >
                         ×
                       </Button>
@@ -526,27 +530,27 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
 
         {/* Checkout Section */}
         {cart.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Checkout</CardTitle>
+          <Card className="card-modern-gold shadow-gold">
+            <CardHeader className="border-b border-brand-600/20 dark:border-brand-700/30 bg-gradient-gold-subtle">
+              <CardTitle className="text-foreground">Checkout</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 pt-4">
               {/* Payment Method */}
               <div>
-                <label className="block text-sm font-medium mb-2">Payment Method</label>
+                <label className="block text-sm font-semibold mb-3 text-foreground">Payment Method</label>
                 <div className="grid grid-cols-2 gap-2">
                   {(['cash', 'card', 'qr_code', 'payment_link'] as const).map(method => (
                     <Button
                       key={method}
                       variant={paymentMethod === method ? 'default' : 'outline'}
                       onClick={() => setPaymentMethod(method)}
-                      className="flex-1"
+                      className={paymentMethod === method ? 'btn-primary' : 'border-brand-600/20 hover:border-brand-600/40 hover:bg-brand-50/50 dark:hover:bg-brand-900/20'}
                       size="sm"
                     >
                       {method === 'card' && <CreditCard className="h-4 w-4 mr-1" />}
                       {method === 'qr_code' && <QrCode className="h-4 w-4 mr-1" />}
                       {method === 'payment_link' && <Link className="h-4 w-4 mr-1" />}
-                      {method === 'payment_link' ? 'Payment Link' : 
+                      {method === 'payment_link' ? 'Payment Link' :
                        method === 'qr_code' ? 'QR Code' :
                        method.charAt(0).toUpperCase() + method.slice(1)}
                     </Button>
@@ -557,20 +561,20 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
                     variant={paymentMethod === 'terminal' ? 'default' : 'outline'}
                     onClick={() => setPaymentMethod('terminal')}
                     disabled={!terminalConfigured}
-                    className="w-full"
+                    className={paymentMethod === 'terminal' ? 'btn-primary w-full' : 'w-full border-brand-600/20 hover:border-brand-600/40'}
                     size="sm"
                   >
                     <Zap className="h-4 w-4 mr-1" />
                     Terminal (Card Present)
-                    {terminalConfigured && <Badge variant="success" className="ml-2">Ready</Badge>}
+                    {terminalConfigured && <Badge variant="success" className="ml-2 badge-success">Ready</Badge>}
                   </Button>
-                  
+
                   {!terminalConfigured && (
                     <div className="mt-2 space-y-1">
                       <Button
                         variant="outline"
                         onClick={() => setSetupModalOpen(true)}
-                        className="w-full"
+                        className="w-full border-brand-600/20 hover:border-brand-600/40 hover:bg-brand-50/50 dark:hover:bg-brand-900/20"
                         size="sm"
                       >
                         <Settings className="h-4 w-4 mr-1" />
@@ -582,7 +586,7 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
                         </p>
                       )}
                       {stripeStatus && stripeStatus.overall_status === 'in_progress' && (
-                        <p className="text-xs text-yellow-600 text-center">
+                        <p className="text-xs text-amber-600 dark:text-amber-500 text-center">
                           Stripe setup {stripeStatus.setup_progress?.overall || 0}% complete
                         </p>
                       )}
@@ -592,18 +596,18 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
               </div>
 
               {/* Totals */}
-              <div className="space-y-2 border-t pt-3">
-                <div className="flex justify-between">
+              <div className="space-y-3 border-t border-brand-600/20 dark:border-brand-700/30 pt-4 bg-gradient-to-r from-transparent to-brand-50/20 dark:to-brand-900/20 rounded-lg p-3">
+                <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Subtotal:</span>
-                  <span>${totals.subtotal.toFixed(2)}</span>
+                  <span className="font-medium text-foreground">${totals.subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Tax:</span>
-                  <span>${totals.tax.toFixed(2)}</span>
+                  <span className="font-medium text-foreground">${totals.tax.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between font-bold text-lg border-t pt-2">
+                <div className="flex justify-between font-bold text-lg border-t border-brand-600/30 dark:border-brand-700/40 pt-3 text-brand-600 dark:text-brand-500">
                   <span>Total:</span>
-                  <span>${totals.total.toFixed(2)}</span>
+                  <span className="text-2xl">${totals.total.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -612,20 +616,20 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
                 <Button
                   onClick={() => setTerminalPaymentModalOpen(true)}
                   disabled={cart.length === 0}
-                  className="w-full"
+                  className="btn-primary w-full text-lg py-6"
                   size="lg"
                 >
-                  <Zap className="h-4 w-4 mr-2" />
+                  <Zap className="h-5 w-5 mr-2" />
                   Process Terminal Payment - ${totals.total.toFixed(2)}
                 </Button>
               ) : paymentMethod === 'qr_code' ? (
                 <Button
                   onClick={() => setQrPaymentModalOpen(true)}
                   disabled={cart.length === 0}
-                  className="w-full"
+                  className="btn-primary w-full text-lg py-6"
                   size="lg"
                 >
-                  <QrCode className="h-4 w-4 mr-2" />
+                  <QrCode className="h-5 w-5 mr-2" />
                   Generate QR Code - ${totals.total.toFixed(2)}
                 </Button>
               ) : paymentMethod === 'payment_link' ? (
@@ -633,10 +637,10 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
                   <DialogTrigger asChild>
                     <Button
                       disabled={cart.length === 0}
-                      className="w-full"
+                      className="btn-primary w-full text-lg py-6"
                       size="lg"
                     >
-                      <Link className="h-4 w-4 mr-2" />
+                      <Link className="h-5 w-5 mr-2" />
                       Send Payment Link - ${totals.total.toFixed(2)}
                     </Button>
                   </DialogTrigger>
@@ -727,11 +731,18 @@ export function POSInterface({ barbershopId, barberId, customerId }: POSInterfac
                 <Button
                   onClick={processSale}
                   disabled={loading || cart.length === 0}
-                  className="w-full"
+                  className="btn-primary w-full text-lg py-6"
                   size="lg"
                 >
-                  <Receipt className="h-4 w-4 mr-2" />
-                  {loading ? 'Processing...' : `Process Sale - $${totals.total.toFixed(2)}`}
+                  <Receipt className="h-5 w-5 mr-2" />
+                  {loading ? (
+                    <>
+                      <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    `Process Sale - $${totals.total.toFixed(2)}`
+                  )}
                 </Button>
               )}
             </CardContent>

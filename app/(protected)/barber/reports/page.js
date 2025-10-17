@@ -8,7 +8,7 @@ import {
   ScissorsIcon,
   ArrowDownTrayIcon
 } from '@heroicons/react/24/outline'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   BarChart,
   Bar,
@@ -29,7 +29,7 @@ import { useAuth } from '../../../../components/SupabaseAuthProvider'
 export default function BarberReports() {
   const { user: _user } = useAuth()
   const _supabase = createClient()
-  
+
   const [loading, setLoading] = useState(false)
   const [_error, setError] = useState(null)
   const [dateRange, setDateRange] = useState('week') // day, week, month, year
@@ -63,27 +63,8 @@ export default function BarberReports() {
     }
   })
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadReportData()
-    }, 100)
-    
-    const failsafeTimer = setTimeout(() => {
-      if (loading) {
-        console.warn('Reports loading timeout - forcing completion')
-        setLoading(false)
-        setError('Loading took too long. Displaying with empty data.')
-      }
-    }, 5000)
-    
-    return () => {
-      clearTimeout(timer)
-      clearTimeout(failsafeTimer)
-    }
-  }, [dateRange, user]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadReportData = async () => {
-    const currentUser = user || { id: 'dev-user-123', email: 'dev@localhost.com' }
+  const loadReportData = useCallback(async () => {
+    const currentUser = _user || { id: 'dev-user-123', email: 'dev@localhost.com' }
     
     try {
       
@@ -109,23 +90,23 @@ export default function BarberReports() {
 
       let appointments = null
       let apptError = null
-      
-      const appointmentsResult = await supabase
+
+      const appointmentsResult = await _supabase
         .from('bookings')
         .select('*')
         .eq('barber_id', currentUser.id)
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString())
-      
+
       if (appointmentsResult.error && appointmentsResult.error.message.includes('does not exist')) {
-        
-        const bookingsResult = await supabase
+
+        const bookingsResult = await _supabase
           .from('bookings')
           .select('*')
           .eq('barber_id', currentUser.id)
           .gte('created_at', startDate.toISOString())
           .lte('created_at', endDate.toISOString())
-        
+
         appointments = bookingsResult.data
         apptError = bookingsResult.error
       } else {
@@ -137,10 +118,10 @@ export default function BarberReports() {
         console.error('Error fetching appointment data:', apptError)
         appointments = [] // Use empty array instead of throwing
       }
-      
+
       if (!appointments) appointments = []
 
-      let { data: transactions, error: transError } = await supabase
+      let { data: transactions, error: transError } = await _supabase
         .from('transactions')
         .select('*')
         .eq('barber_id', currentUser.id)
@@ -172,7 +153,26 @@ export default function BarberReports() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [_user, _supabase, dateRange])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadReportData()
+    }, 100)
+
+    const failsafeTimer = setTimeout(() => {
+      if (loading) {
+        console.warn('Reports loading timeout - forcing completion')
+        setLoading(false)
+        setError('Loading took too long. Displaying with empty data.')
+      }
+    }, 5000)
+
+    return () => {
+      clearTimeout(timer)
+      clearTimeout(failsafeTimer)
+    }
+  }, [dateRange, _user, loadReportData]) // Now loadReportData is stable via useCallback
 
   const processReportData = (appointments, transactions, range) => {
     // Calculate real earnings from transaction data

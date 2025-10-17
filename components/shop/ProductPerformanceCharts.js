@@ -20,7 +20,8 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
     categoryPerformance: [],
     inventoryTurnover: [],
     seasonalTrends: [],
-    loading: true
+    loading: true,
+    error: null
   })
   const [selectedTimeframe, setSelectedTimeframe] = useState('30') // days
   const [selectedMetric, setSelectedMetric] = useState('revenue') // revenue, units, margin
@@ -32,120 +33,65 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
 
   const loadPerformanceData = async () => {
     try {
-      setPerformanceData(prev => ({ ...prev, loading: true }))
-      
+      setPerformanceData(prev => ({ ...prev, loading: true, error: null }))
+
       // Fetch performance charts data from API
-      const response = await fetch(`/api/shop/analytics/performance-charts?timeframe=${selectedTimeframe}&metric=${selectedMetric}`)
+      const response = await fetch(`/api/shop/analytics/performance-charts?period_days=${selectedTimeframe}&granularity=daily`)
       const data = await response.json()
-      
+
       if (data.success) {
+        // Map API response structure to component state
+        // Transform revenue_over_time to match chart expectations
+        const salesTrends = (data.charts?.revenue_over_time || []).map(item => ({
+          date: item.date || item.period,
+          current: item.revenue,
+          previous: 0, // TODO: API doesn't provide comparison data yet
+          target: item.revenue * 1.1 // 10% growth target
+        }))
+
+        // Transform category_performance to simple format
+        const categoryPerformance = (data.charts?.category_performance || []).map(cat => ({
+          category: cat.category,
+          revenue: cat.total_revenue,
+          previousRevenue: 0, // TODO: API doesn't provide comparison data yet
+          growth: 0
+        }))
+
+        // Transform inventory_turnover to match component expectations
+        const inventoryTurnover = (data.charts?.inventory_turnover || []).slice(0, 10).map(item => ({
+          name: item.name,
+          turnoverRate: item.turnover_rate,
+          daysToSell: item.days_to_sell_inventory || 0,
+          stockLevel: item.velocity_class === 'fast' ? 'Optimal' :
+                      item.velocity_class === 'medium' ? 'Good' :
+                      item.velocity_class === 'slow' ? 'Moderate' : 'Low'
+        }))
+
         setPerformanceData({
-          salesTrends: data.salesTrends || generateMockSalesTrends(),
-          categoryPerformance: data.categoryPerformance || generateMockCategoryPerformance(),
-          inventoryTurnover: data.inventoryTurnover || generateMockInventoryTurnover(),
-          seasonalTrends: data.seasonalTrends || generateMockSeasonalTrends(),
-          loading: false
+          salesTrends: salesTrends,
+          categoryPerformance: categoryPerformance,
+          inventoryTurnover: inventoryTurnover,
+          seasonalTrends: [], // TODO: API doesn't provide seasonal trends in expected format
+          loading: false,
+          error: null
         })
       } else {
-        // Fall back to mock data
-        setPerformanceData({
-          salesTrends: generateMockSalesTrends(),
-          categoryPerformance: generateMockCategoryPerformance(),
-          inventoryTurnover: generateMockInventoryTurnover(),
-          seasonalTrends: generateMockSeasonalTrends(),
-          loading: false
-        })
+        // API returned error
+        setPerformanceData(prev => ({
+          ...prev,
+          loading: false,
+          error: data.error || 'Failed to load performance data'
+        }))
       }
     } catch (error) {
       console.error('Error loading performance charts data:', error)
-      // Use mock data on error
-      setPerformanceData({
-        salesTrends: generateMockSalesTrends(),
-        categoryPerformance: generateMockCategoryPerformance(),
-        inventoryTurnover: generateMockInventoryTurnover(),
-        seasonalTrends: generateMockSeasonalTrends(),
-        loading: false
-      })
+      // Network or parsing error
+      setPerformanceData(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Unable to connect to server. Please try again later.'
+      }))
     }
-  }
-
-  const generateMockSalesTrends = () => {
-    const days = parseInt(selectedTimeframe)
-    const data = []
-    for (let i = days; i >= 0; i--) {
-      const date = new Date()
-      date.setDate(date.getDate() - i)
-      const baseValue = selectedMetric === 'revenue' ? 150 : selectedMetric === 'units' ? 8 : 40
-      const variation = baseValue * 0.3
-      data.push({
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        current: Math.floor(Math.random() * variation + baseValue),
-        previous: Math.floor(Math.random() * variation + baseValue * 0.85),
-        target: baseValue * 1.2
-      })
-    }
-    return data
-  }
-
-  const generateMockCategoryPerformance = () => [
-    { 
-      category: 'Hair Care', 
-      revenue: 2450, 
-      units: 89, 
-      margin: 45.2, 
-      growth: 12.3,
-      previousRevenue: 2180
-    },
-    { 
-      category: 'Beard Care', 
-      revenue: 1890, 
-      units: 67, 
-      margin: 52.1, 
-      growth: 8.7,
-      previousRevenue: 1740
-    },
-    { 
-      category: 'Tools', 
-      revenue: 1260, 
-      units: 18, 
-      margin: 38.5, 
-      growth: -3.2,
-      previousRevenue: 1302
-    },
-    { 
-      category: 'Styling', 
-      revenue: 980, 
-      units: 45, 
-      margin: 48.9, 
-      growth: 15.6,
-      previousRevenue: 848
-    },
-    { 
-      category: 'Aftercare', 
-      revenue: 420, 
-      units: 23, 
-      margin: 41.3, 
-      growth: 5.2,
-      previousRevenue: 399
-    }
-  ]
-
-  const generateMockInventoryTurnover = () => [
-    { name: 'Premium Hair Oil', turnoverRate: 8.2, daysToSell: 12, stockLevel: 'Optimal' },
-    { name: 'Beard Styling Balm', turnoverRate: 6.5, daysToSell: 18, stockLevel: 'Good' },
-    { name: 'Professional Scissors', turnoverRate: 2.1, daysToSell: 45, stockLevel: 'Slow' },
-    { name: 'Hair Styling Gel', turnoverRate: 5.8, daysToSell: 21, stockLevel: 'Good' },
-    { name: 'Aftershave Lotion', turnoverRate: 4.2, daysToSell: 28, stockLevel: 'Moderate' }
-  ]
-
-  const generateMockSeasonalTrends = () => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    return months.map(month => ({
-      month,
-      thisYear: Math.floor(Math.random() * 1000) + 500,
-      lastYear: Math.floor(Math.random() * 800) + 400,
-      forecast: Math.floor(Math.random() * 1200) + 600
-    }))
   }
 
   const formatCurrency = (value) => `$${value.toLocaleString()}`
@@ -153,22 +99,76 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
 
   if (performanceData.loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-card rounded-lg border border-border p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-6 bg-muted rounded w-1/4 mb-4"></div>
+          <div className="h-64 bg-muted rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (performanceData.error) {
+    return (
+      <div className="bg-card rounded-lg border border-border p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <ChartBarIcon className="h-6 w-6 text-blue-600" />
+          <h3 className="text-lg font-semibold text-card-foreground">Product Performance Charts</h3>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <svg className="h-5 w-5 text-red-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-red-900 mb-1">Unable to Load Performance Data</h4>
+              <p className="text-sm text-red-700">{performanceData.error}</p>
+              <button
+                onClick={loadPerformanceData}
+                className="mt-3 px-4 py-2 text-sm font-medium text-red-700 hover:text-red-900 border border-red-300 rounded-md hover:bg-red-100"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Empty state
+  const hasNoData =
+    performanceData.salesTrends.length === 0 &&
+    performanceData.categoryPerformance.length === 0 &&
+    performanceData.inventoryTurnover.length === 0 &&
+    performanceData.seasonalTrends.length === 0
+
+  if (hasNoData) {
+    return (
+      <div className="bg-card rounded-lg border border-border p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <ChartBarIcon className="h-6 w-6 text-blue-600" />
+          <h3 className="text-lg font-semibold text-card-foreground">Product Performance Charts</h3>
+        </div>
+        <div className="bg-muted border border-border rounded-lg p-8 text-center">
+          <ChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <h4 className="text-sm font-semibold text-card-foreground mb-1">No Performance Data Available</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            Complete some product sales to see performance trends and analytics.
+          </p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div className="flex items-center space-x-2 mb-4 md:mb-0">
           <ChartBarIcon className="h-6 w-6 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Product Performance Charts</h3>
+          <h3 className="text-lg font-semibold text-card-foreground">Product Performance Charts</h3>
         </div>
 
         {/* Controls */}
@@ -178,7 +178,7 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
             <select
               value={selectedTimeframe}
               onChange={(e) => setSelectedTimeframe(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-input bg-background text-foreground rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="7">Last 7 days</option>
               <option value="30">Last 30 days</option>
@@ -192,7 +192,7 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
             <select
               value={selectedMetric}
               onChange={(e) => setSelectedMetric(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-input bg-background text-foreground rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="revenue">Revenue</option>
               <option value="units">Units Sold</option>
@@ -203,9 +203,9 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
           <button
             onClick={() => setComparisonMode(!comparisonMode)}
             className={`px-3 py-1 text-sm rounded-md border transition-colors ${
-              comparisonMode 
-                ? 'bg-blue-600 text-white border-blue-600' 
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              comparisonMode
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-card text-card-foreground border-input hover:bg-muted'
             }`}
           >
             Compare
@@ -215,8 +215,8 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Trends Chart */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+        <div className="bg-muted p-4 rounded-lg">
+          <h4 className="text-sm font-semibold text-card-foreground mb-3 flex items-center">
             <ChartBarIcon className="h-4 w-4 mr-2" />
             Sales Trends ({selectedMetric})
           </h4>
@@ -265,8 +265,8 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
         </div>
 
         {/* Category Performance */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+        <div className="bg-muted p-4 rounded-lg">
+          <h4 className="text-sm font-semibold text-card-foreground mb-3 flex items-center">
             <CurrencyDollarIcon className="h-4 w-4 mr-2" />
             Category Performance
           </h4>
@@ -295,20 +295,20 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
         </div>
 
         {/* Inventory Turnover */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 mb-3">Inventory Turnover Rate</h4>
+        <div className="bg-muted p-4 rounded-lg">
+          <h4 className="text-sm font-semibold text-card-foreground mb-3">Inventory Turnover Rate</h4>
           <div className="space-y-3">
             {performanceData.inventoryTurnover.map((item, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-sm font-medium text-card-foreground">{item.name}</div>
+                  <div className="text-xs text-muted-foreground">
                     {item.daysToSell} days to sell
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="text-right">
-                    <div className="text-sm font-semibold text-gray-900">
+                    <div className="text-sm font-semibold text-card-foreground">
                       {item.turnoverRate.toFixed(1)}x
                     </div>
                   </div>
@@ -327,8 +327,8 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
         </div>
 
         {/* Seasonal Trends */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 mb-3">Seasonal Trends</h4>
+        <div className="bg-muted p-4 rounded-lg">
+          <h4 className="text-sm font-semibold text-card-foreground mb-3">Seasonal Trends</h4>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={performanceData.seasonalTrends}>
@@ -365,11 +365,11 @@ export default function ProductPerformanceCharts({ products = [], metrics = {} }
       </div>
 
       {/* Performance Summary */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-border">
         {performanceData.categoryPerformance.slice(0, 4).map((category, index) => (
           <div key={index} className="text-center">
-            <div className="text-lg font-bold text-gray-900">{formatCurrency(category.revenue)}</div>
-            <div className="text-sm text-gray-600">{category.category}</div>
+            <div className="text-lg font-bold text-card-foreground">{formatCurrency(category.revenue)}</div>
+            <div className="text-sm text-muted-foreground">{category.category}</div>
             <div className={`text-sm font-medium ${
               category.growth > 0 ? 'text-green-600' : 'text-red-600'
             }`}>

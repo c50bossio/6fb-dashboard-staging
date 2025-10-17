@@ -133,15 +133,7 @@ export default function NoShowAnalyticsDashboard({
     } catch (err) {
       console.error('Error loading analytics:', err)
       setError(err.message)
-      // Use mock data for development with user notification
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('Using mock data due to API error')
-        setData({
-          ...generateMockAnalyticsData(),
-          _isMockData: true,
-          _mockReason: 'API connection failed - using sample data for development'
-        })
-      }
+      // NO MOCK DATA - Show proper error state instead
     } finally {
       setLoading(false)
     }

@@ -15,6 +15,8 @@ export function TerminalPaymentModal({
   barbershopId,
   barberId,
   customerId,
+  subtotal,
+  processingFee,
   totalAmount,
   onPaymentSuccess
 }) {
@@ -186,6 +188,8 @@ export function TerminalPaymentModal({
           customerId,
           readerId: selectedReader.id,
           cartItems,
+          subtotal,
+          processingFee,
           amount: Math.round(totalAmount * 100) // Convert to cents
         })
       })
@@ -303,7 +307,9 @@ export function TerminalPaymentModal({
     onClose()
   }
 
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  // Use props if provided, otherwise calculate (backward compatibility)
+  const calculatedSubtotal = subtotal !== undefined ? subtotal : cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const calculatedProcessingFee = processingFee !== undefined ? processingFee : 0
   const tax = cartItems.reduce((sum, item) => {
     const itemTax = (item.price * item.quantity * (item.tax_rate || 0)) / 100
     return sum + itemTax
@@ -449,19 +455,26 @@ export function TerminalPaymentModal({
                 ))}
                 
                 <div className="border-t my-2"></div>
-                
+
                 <div className="flex justify-between text-sm">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>${calculatedSubtotal.toFixed(2)}</span>
                 </div>
-                
+
+                {calculatedProcessingFee > 0 && (
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Processing Fee (2.9% + 30¢)</span>
+                    <span>${calculatedProcessingFee.toFixed(2)}</span>
+                  </div>
+                )}
+
                 {tax > 0 && (
                   <div className="flex justify-between text-sm">
                     <span>Tax</span>
                     <span>${tax.toFixed(2)}</span>
                   </div>
                 )}
-                
+
                 <div className="flex justify-between font-bold text-base pt-2 border-t">
                   <span>Total</span>
                   <span>${totalAmount.toFixed(2)}</span>

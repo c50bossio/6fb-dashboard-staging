@@ -1,3 +1,26 @@
+/**
+ * ⚠️ WARNING: NOT PRODUCTION READY - 100% MOCK DATA ⚠️
+ *
+ * This component is currently NOT READY FOR PRODUCTION USE.
+ *
+ * ISSUES:
+ * - Uses 100% mock data (no real database integration)
+ * - No backend API endpoints implemented
+ * - Simulates loading with setTimeout (fake async)
+ * - All actions (approve, reject, deploy) are fake state updates only
+ *
+ * MISSING IMPLEMENTATION:
+ * - Database tables: workflows, workflow_versions, workflow_approvals
+ * - API routes: /api/workflows/*
+ * - Real-time collaboration features
+ * - Version control system backend
+ *
+ * DO NOT USE THIS COMPONENT until proper backend is implemented.
+ * Estimated implementation time: 16+ hours
+ *
+ * Status: DRAFT/TEMPLATE ONLY
+ */
+
 'use client'
 
 import {

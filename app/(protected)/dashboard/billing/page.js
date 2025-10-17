@@ -527,10 +527,10 @@ Thank you for your business!
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading billing data...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading billing data...</p>
         </div>
       </div>
     )
@@ -538,11 +538,11 @@ Thank you for your business!
 
   if (!billingData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <ExclamationCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600">Failed to load billing data</p>
-          {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
+          <ExclamationCircleIcon className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <p className="text-muted-foreground">Failed to load billing data</p>
+          {error && <p className="text-sm text-destructive mt-2">{error}</p>}
         </div>
       </div>
     )
@@ -557,44 +557,44 @@ Thank you for your business!
           strategy="lazyOnload"
         />
       )}
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="p-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Billing & Usage</h1>
-          <p className="text-gray-600">Track your API usage and manage billing</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Billing & Usage</h1>
+          <p className="text-muted-foreground">Track your API usage and manage billing</p>
         </div>
 
         {/* Enhanced Usage Monitoring */}
         {billingData && (
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Usage Monitoring</h2>
-            
+            <h2 className="text-lg font-semibold text-foreground mb-4">Usage Monitoring</h2>
+
             {/* Critical Alerts */}
             {billingData.alerts && billingData.alerts.length > 0 && (
               <div className="space-y-3 mb-6">
                 {billingData.alerts.map((alert, index) => (
                   <div key={index} className={`p-4 rounded-lg border ${
-                    alert.severity === 'critical' 
-                      ? 'bg-red-50 border-red-200' 
-                      : 'bg-yellow-50 border-yellow-200'
+                    alert.severity === 'critical'
+                      ? 'bg-destructive/10 border-destructive/30 dark:bg-destructive/20 dark:border-destructive/40'
+                      : 'bg-amber-100/50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-700/40'
                   }`}>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center">
                         <ExclamationCircleIcon className={`h-5 w-5 mr-3 ${
-                          alert.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'
+                          alert.severity === 'critical' ? 'text-destructive' : 'text-amber-600 dark:text-amber-400'
                         }`} />
                         <div>
                           <p className={`font-medium ${
-                            alert.severity === 'critical' ? 'text-red-800' : 'text-yellow-800'
+                            alert.severity === 'critical' ? 'text-destructive' : 'text-amber-800 dark:text-amber-200'
                           }`}>
                             {alert.type.toUpperCase()} Usage Alert ({alert.percentage.toFixed(1)}% of limit)
                           </p>
                           <p className={`text-sm ${
-                            alert.severity === 'critical' ? 'text-red-600' : 'text-yellow-600'
+                            alert.severity === 'critical' ? 'text-destructive/80 dark:text-destructive/90' : 'text-amber-700 dark:text-amber-300'
                           }`}>
                             {alert.used.toLocaleString()} of {alert.limit.toLocaleString()} {
-                              alert.type === 'ai' ? 'tokens' : 
+                              alert.type === 'ai' ? 'tokens' :
                               alert.type === 'sms' ? 'SMS messages' : 'emails'
                             } used this month
                           </p>
@@ -604,7 +604,7 @@ Thank you for your business!
                         {alert.percentage >= 90 && (
                           <button
                             onClick={() => handleUpgrade(alert.type === 'ai' ? 'Professional' : 'Enterprise')}
-                            className="px-3 py-1 bg-olive-600 text-white rounded text-xs font-medium hover:bg-olive-700"
+                            className="px-3 py-1 bg-primary text-primary-foreground rounded text-xs font-medium hover:bg-primary/90"
                           >
                             Upgrade Plan
                           </button>
@@ -649,41 +649,41 @@ Thank you for your business!
                 const isOverLimit = percentage >= 100
                 
                 return (
-                  <div key={index} className={`card min-w-0 ${isOverLimit ? 'border-red-300 bg-red-50' : isNearLimit ? 'border-yellow-300 bg-yellow-50' : ''}`}>
+                  <div key={index} className={`card min-w-0 ${isOverLimit ? 'border-destructive/30 bg-destructive/10 dark:bg-destructive/20' : isNearLimit ? 'border-amber-300 bg-amber-50 dark:border-amber-700/40 dark:bg-amber-900/20' : ''}`}>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-gray-900 truncate flex-1 mr-2">{meter.type}</h4>
+                      <h4 className="font-medium text-card-foreground truncate flex-1 mr-2">{meter.type}</h4>
                       <span className={`text-sm font-semibold flex-shrink-0 ${
-                        isOverLimit ? 'text-red-600' : isNearLimit ? 'text-yellow-600' : 'text-gray-600'
+                        isOverLimit ? 'text-destructive' : isNearLimit ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
                       }`}>
                         ${meter.cost.toFixed(2)}
                       </span>
                     </div>
-                    
+
                     <div className="mb-2">
-                      <div className="flex justify-between items-start text-xs sm:text-sm text-gray-600 mb-1">
+                      <div className="flex justify-between items-start text-xs sm:text-sm text-muted-foreground mb-1">
                         <span className="truncate flex-1 mr-2">{meter.used.toLocaleString()} / {meter.limit.toLocaleString()} {meter.unit}</span>
                         <span className="flex-shrink-0 ml-auto">{percentage.toFixed(1)}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div
                           className={`h-2 rounded-full transition-all duration-300 ${
-                            isOverLimit ? 'bg-red-500' : 
-                            isNearLimit ? 'bg-yellow-500' : 
-                            meter.color === 'olive' ? 'bg-olive-500' :
-                            meter.color === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'
+                            isOverLimit ? 'bg-destructive' :
+                            isNearLimit ? 'bg-amber-500 dark:bg-amber-600' :
+                            meter.color === 'olive' ? 'bg-primary' :
+                            meter.color === 'yellow' ? 'bg-amber-500' : 'bg-green-500'
                           }`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         ></div>
                       </div>
                     </div>
-                    
+
                     {isOverLimit && (
-                      <div className="text-xs text-red-600 font-medium break-words">
+                      <div className="text-xs text-destructive font-medium break-words">
                         ⚠️ Over limit - additional charges apply
                       </div>
                     )}
                     {isNearLimit && !isOverLimit && (
-                      <div className="text-xs text-yellow-600 font-medium break-words">
+                      <div className="text-xs text-amber-600 dark:text-amber-400 font-medium break-words">
                         ⚠️ Approaching limit ({(meter.limit - meter.used).toLocaleString()} {meter.unit} remaining)
                       </div>
                     )}
@@ -698,59 +698,59 @@ Thank you for your business!
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">Current Month Total</span>
-              <CreditCardIcon className="h-5 w-5 text-gray-400" />
+              <span className="text-sm font-medium text-muted-foreground">Current Month Total</span>
+              <CreditCardIcon className="h-5 w-5 text-muted-foreground" />
             </div>
             <div className="flex items-baseline">
-              <span className="text-3xl font-bold text-gray-900">${billingData.currentMonth.total}</span>
+              <span className="text-3xl font-bold text-foreground">${billingData.currentMonth.total}</span>
             </div>
             <div className="flex items-center mt-2">
               {billingData.currentMonth.comparedToLastMonth > 0 ? (
                 <>
-                  <ChartBarIcon className="h-4 w-4 text-red-500 mr-1" />
-                  <span className="text-sm text-red-600">+{billingData.currentMonth.comparedToLastMonth}%</span>
+                  <ChartBarIcon className="h-4 w-4 text-destructive mr-1" />
+                  <span className="text-sm text-destructive">+{billingData.currentMonth.comparedToLastMonth}%</span>
                 </>
               ) : (
                 <>
                   <ArrowTrendingDownIcon className="h-4 w-4 text-green-500 mr-1" />
-                  <span className="text-sm text-green-600">{billingData.currentMonth.comparedToLastMonth}%</span>
+                  <span className="text-sm text-green-600 dark:text-green-400">{billingData.currentMonth.comparedToLastMonth}%</span>
                 </>
               )}
-              <span className="text-sm text-gray-500 ml-1">vs last month</span>
+              <span className="text-sm text-muted-foreground ml-1">vs last month</span>
             </div>
           </div>
 
           <div className="card">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">AI Usage</span>
-              <div className="h-2 w-2 bg-olive-500 rounded-full"></div>
+              <span className="text-sm font-medium text-muted-foreground">AI Usage</span>
+              <div className="h-2 w-2 bg-primary rounded-full"></div>
             </div>
             <div className="flex items-baseline">
-              <span className="text-2xl font-bold text-gray-900">${billingData.usage.ai.cost}</span>
+              <span className="text-2xl font-bold text-foreground">${billingData.usage.ai.cost}</span>
             </div>
-            <span className="text-sm text-gray-500">{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens</span>
+            <span className="text-sm text-muted-foreground">{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens</span>
           </div>
 
           <div className="card">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">SMS Usage</span>
-              <div className="h-2 w-2 bg-gold-500 rounded-full"></div>
+              <span className="text-sm font-medium text-muted-foreground">SMS Usage</span>
+              <div className="h-2 w-2 bg-amber-500 rounded-full"></div>
             </div>
             <div className="flex items-baseline">
-              <span className="text-2xl font-bold text-gray-900">${billingData.usage.sms.cost}</span>
+              <span className="text-2xl font-bold text-foreground">${billingData.usage.sms.cost}</span>
             </div>
-            <span className="text-sm text-gray-500">{billingData.usage.sms.messages.toLocaleString()} messages</span>
+            <span className="text-sm text-muted-foreground">{billingData.usage.sms.messages.toLocaleString()} messages</span>
           </div>
 
           <div className="card">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">Email Usage</span>
+              <span className="text-sm font-medium text-muted-foreground">Email Usage</span>
               <div className="h-2 w-2 bg-green-500 rounded-full"></div>
             </div>
             <div className="flex items-baseline">
-              <span className="text-2xl font-bold text-gray-900">${billingData.usage.email.cost}</span>
+              <span className="text-2xl font-bold text-foreground">${billingData.usage.email.cost}</span>
             </div>
-            <span className="text-sm text-gray-500">{billingData.usage.email.sent.toLocaleString()} emails</span>
+            <span className="text-sm text-muted-foreground">{billingData.usage.email.sent.toLocaleString()} emails</span>
           </div>
         </div>
 
@@ -759,11 +759,11 @@ Thank you for your business!
           <div className="lg:col-span-2 usage-trends">
             <div className="card">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Usage Trends</h3>
-                <select 
-                  value={timeRange} 
+                <h3 className="text-lg font-semibold text-foreground">Usage Trends</h3>
+                <select
+                  value={timeRange}
                   onChange={(e) => setTimeRange(e.target.value)}
-                  className="text-sm border border-gray-300 rounded-md px-3 py-1"
+                  className="text-sm border border-border bg-card text-foreground rounded-md px-3 py-1 focus:ring-2 focus:ring-ring"
                 >
                   <option value="7days">Last 7 days</option>
                   <option value="30days">Last 30 days</option>
@@ -787,31 +787,31 @@ Thank you for your business!
 
             {/* Detailed Usage */}
             <div className="card mt-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Detailed Usage Breakdown</h3>
-              
+              <h3 className="text-lg font-semibold text-foreground mb-6">Detailed Usage Breakdown</h3>
+
               <div className="space-y-4">
-                <div className="border-b pb-4">
+                <div className="border-b border-border pb-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h4 className="font-medium text-gray-900">AI Business Coach</h4>
-                      <p className="text-sm text-gray-600">GPT-4 & Claude API calls</p>
+                      <h4 className="font-medium text-foreground">AI Business Coach</h4>
+                      <p className="text-sm text-muted-foreground">GPT-4 & Claude API calls</p>
                     </div>
-                    <span className="font-semibold text-gray-900">${billingData.usage.ai.cost}</span>
+                    <span className="font-semibold text-foreground">${billingData.usage.ai.cost}</span>
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     <p>{(billingData.usage.ai.tokens / 1000).toFixed(0)}K tokens × $0.04/1K = ${billingData.usage.ai.cost}</p>
                   </div>
                 </div>
 
-                <div className="border-b pb-4">
+                <div className="border-b border-border pb-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h4 className="font-medium text-gray-900">SMS Marketing</h4>
-                      <p className="text-sm text-gray-600">Appointment reminders & campaigns</p>
+                      <h4 className="font-medium text-foreground">SMS Marketing</h4>
+                      <p className="text-sm text-muted-foreground">Appointment reminders & campaigns</p>
                     </div>
-                    <span className="font-semibold text-gray-900">${billingData.usage.sms.cost}</span>
+                    <span className="font-semibold text-foreground">${billingData.usage.sms.cost}</span>
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     <p>{billingData.usage.sms.messages} messages × $0.01/msg = ${billingData.usage.sms.cost}</p>
                   </div>
                 </div>
@@ -819,21 +819,21 @@ Thank you for your business!
                 <div className="pb-4">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h4 className="font-medium text-gray-900">Email Campaigns</h4>
-                      <p className="text-sm text-gray-600">Marketing emails & newsletters</p>
+                      <h4 className="font-medium text-foreground">Email Campaigns</h4>
+                      <p className="text-sm text-muted-foreground">Marketing emails & newsletters</p>
                     </div>
-                    <span className="font-semibold text-gray-900">${billingData.usage.email.cost}</span>
+                    <span className="font-semibold text-foreground">${billingData.usage.email.cost}</span>
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-muted-foreground">
                     <p>{billingData.usage.email.sent.toLocaleString()} emails × $0.001/email = ${billingData.usage.email.cost}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t">
+              <div className="mt-6 pt-4 border-t border-border">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-900">Total for January</span>
-                  <span className="text-xl font-bold text-gray-900">${billingData.currentMonth.total}</span>
+                  <span className="font-semibold text-foreground">Total for January</span>
+                  <span className="text-xl font-bold text-foreground">${billingData.currentMonth.total}</span>
                 </div>
               </div>
             </div>
@@ -843,7 +843,7 @@ Thank you for your business!
           <div className="space-y-6">
             {/* Usage Distribution */}
             <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage Distribution</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">Usage Distribution</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
@@ -859,7 +859,7 @@ Thank you for your business!
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${value}`} />
+                  <Tooltip formatter={(value) => `$${value}`} contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', color: 'hsl(var(--foreground))' }} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="mt-4 space-y-2">
@@ -867,9 +867,9 @@ Thank you for your business!
                   <div key={index} className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
                       <div className={`h-3 w-3 rounded-full mr-2`} style={{ backgroundColor: item.color }}></div>
-                      <span className="text-gray-700">{item.name}</span>
+                      <span className="text-muted-foreground">{item.name}</span>
                     </div>
-                    <span className="font-medium text-gray-900">{((item.value / billingData.currentMonth.total) * 100).toFixed(0)}%</span>
+                    <span className="font-medium text-foreground">{((item.value / billingData.currentMonth.total) * 100).toFixed(0)}%</span>
                   </div>
                 ))}
               </div>
@@ -877,37 +877,37 @@ Thank you for your business!
 
             {/* Payment Method */}
             <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">Payment Method</h3>
               {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY && !process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.includes('placeholder') ? (
                 <>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                     <div className="flex items-center">
-                      <CreditCardIcon className="h-8 w-8 text-gray-400 mr-3" />
+                      <CreditCardIcon className="h-8 w-8 text-muted-foreground mr-3" />
                       <div>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-foreground">
                           {billingData.paymentMethod.brand} •••• {billingData.paymentMethod.last4}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           Expires {billingData.paymentMethod.expMonth}/{billingData.paymentMethod.expYear}
                         </p>
                       </div>
                     </div>
                     <CheckCircleIcon className="h-5 w-5 text-green-500" />
                   </div>
-                  <button 
+                  <button
                     onClick={handleUpdatePayment}
-                    className="mt-4 w-full py-2 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="mt-4 w-full py-2 px-4 border border-border rounded-md text-sm font-medium text-foreground hover:bg-muted"
                   >
                     Update Payment Method
                   </button>
                 </>
               ) : (
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="p-4 bg-blue-100/50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700/40">
                   <div className="flex items-center">
-                    <CreditCardIcon className="h-8 w-8 text-blue-400 mr-3" />
+                    <CreditCardIcon className="h-8 w-8 text-blue-500 dark:text-blue-400 mr-3" />
                     <div>
-                      <p className="font-medium text-blue-900">Payment System Setup Required</p>
-                      <p className="text-sm text-blue-700">
+                      <p className="font-medium text-blue-900 dark:text-blue-200">Payment System Setup Required</p>
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
                         Payment processing is disabled in development mode. Contact support to enable payments.
                       </p>
                     </div>
@@ -918,50 +918,50 @@ Thank you for your business!
 
             {/* Subscription */}
             <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Subscription</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">Subscription</h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Plan</span>
-                  <span className="font-medium text-gray-900">{billingData.subscription.plan}</span>
+                  <span className="text-muted-foreground">Plan</span>
+                  <span className="font-medium text-foreground">{billingData.subscription.plan}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Status</span>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
+                  <span className="text-muted-foreground">Status</span>
+                  <span className="badge badge-success">
                     {billingData.subscription.status}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Next billing</span>
-                  <span className="font-medium text-gray-900">{billingData.subscription.nextBilling}</span>
+                  <span className="text-muted-foreground">Next billing</span>
+                  <span className="font-medium text-foreground">{billingData.subscription.nextBilling}</span>
                 </div>
               </div>
             </div>
 
             {/* Subscription Management */}
             <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Subscription Management</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">Subscription Management</h3>
               <div className="space-y-4">
                 {/* Current Plan */}
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-muted rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-gray-900">Current Plan</span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-moss-100 text-moss-900">
+                    <span className="font-medium text-foreground">Current Plan</span>
+                    <span className="badge badge-success">
                       {billingData.subscription.plan}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-3">
+                  <p className="text-sm text-muted-foreground mb-3">
                     Next billing: {billingData.subscription.nextBilling}
                   </p>
                   <div className="space-y-2">
-                    <button 
+                    <button
                       onClick={handleUpdatePayment}
-                      className="w-full px-4 py-2 bg-olive-600 text-white rounded-md text-sm font-medium hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500"
+                      className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       Update Payment Method
                     </button>
-                    <button 
+                    <button
                       onClick={handleDownloadInvoice}
-                      className="w-full px-4 py-2 border border-olive-600 text-olive-600 rounded-md text-sm font-medium hover:bg-olive-50 focus:outline-none focus:ring-2 focus:ring-olive-500"
+                      className="w-full px-4 py-2 border border-primary text-primary rounded-md text-sm font-medium hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                       Download Latest Invoice
                     </button>
@@ -970,7 +970,7 @@ Thank you for your business!
 
                 {/* Available Plans */}
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Change Plan</h4>
+                  <h4 className="font-medium text-foreground mb-3">Change Plan</h4>
                   <div className="space-y-2">
                     {[
                       { name: 'Free', price: '$0', features: 'Full barbershop, Individual-level limits', recommended: false },
@@ -980,39 +980,39 @@ Thank you for your business!
                     ].map((plan) => {
                       const isCurrent = billingData.subscription.plan === plan.name
                       const isUpgrade = !isCurrent && ['Free', 'Individual', 'Professional', 'Enterprise'].indexOf(plan.name) > ['Free', 'Individual', 'Professional', 'Enterprise'].indexOf(billingData.subscription.plan)
-                      
+
                       return (
-                        <div 
+                        <div
                           key={plan.name}
                           className={`p-3 border rounded-lg transition-colors relative ${
                             isCurrent
-                              ? 'border-olive-600 bg-olive-50' 
-                              : 'border-gray-200 hover:border-olive-300 cursor-pointer'
+                              ? 'border-primary bg-primary/10'
+                              : 'border-border hover:border-primary/50 cursor-pointer bg-card'
                           }`}
                           onClick={() => !isCurrent && handleUpgrade(plan.name)}
                         >
                           {plan.recommended && (
-                            <span className="absolute -top-2 -right-2 bg-olive-600 text-white text-xs px-2 py-1 rounded-full">
+                            <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
                               Recommended
                             </span>
                           )}
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
                               <div className="flex items-center">
-                                <p className="font-medium text-gray-900">{plan.name}</p>
+                                <p className="font-medium text-foreground">{plan.name}</p>
                                 {isCurrent && (
-                                  <span className="ml-2 text-xs bg-olive-100 text-olive-800 px-2 py-1 rounded-full">
+                                  <span className="ml-2 text-xs badge badge-success">
                                     Current
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-gray-600 mt-1">{plan.features}</p>
+                              <p className="text-xs text-muted-foreground mt-1">{plan.features}</p>
                             </div>
                             <div className="text-right">
-                              <span className="font-semibold text-gray-900">{plan.price}</span>
-                              <p className="text-xs text-gray-500">/month</p>
+                              <span className="font-semibold text-foreground">{plan.price}</span>
+                              <p className="text-xs text-muted-foreground">/month</p>
                               {isUpgrade && (
-                                <p className="text-xs text-olive-600 font-medium">Upgrade</p>
+                                <p className="text-xs text-primary font-medium">Upgrade</p>
                               )}
                             </div>
                           </div>
@@ -1026,25 +1026,25 @@ Thank you for your business!
 
             {/* Actions */}
             <div className="card">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Billing Actions</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-4">Billing Actions</h3>
               <div className="space-y-3">
-                <button 
+                <button
                   onClick={() => handleViewInvoice()}
-                  className="w-full flex items-center justify-center px-4 py-2 bg-olive-600 text-white rounded-md text-sm font-medium hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500"
+                  className="w-full flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <CreditCardIcon className="h-4 w-4 mr-2" />
                   View Current Invoice
                 </button>
-                <button 
+                <button
                   onClick={handleDownloadInvoice}
-                  className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="w-full flex items-center justify-center px-4 py-2 border border-border rounded-md text-sm font-medium text-foreground hover:bg-muted"
                 >
                   <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                   Download Invoice
                 </button>
-                <button 
+                <button
                   onClick={handleViewBillingHistory}
-                  className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="w-full flex items-center justify-center px-4 py-2 border border-border rounded-md text-sm font-medium text-foreground hover:bg-muted"
                 >
                   <ChartBarIcon className="h-4 w-4 mr-2" />
                   View Usage Trends
@@ -1056,31 +1056,31 @@ Thank you for your business!
 
         {/* Payment Method Management Modal */}
         {showPaymentForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 m-4 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Manage Payment Methods</h3>
-              
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-card rounded-lg p-6 m-4 max-w-lg w-full max-h-[90vh] overflow-y-auto border border-border">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Manage Payment Methods</h3>
+
               {/* Existing Payment Methods */}
               {paymentMethods.length > 0 && (
                 <div className="mb-6">
-                  <h4 className="font-medium text-gray-900 mb-3">Your Payment Methods</h4>
+                  <h4 className="font-medium text-foreground mb-3">Your Payment Methods</h4>
                   <div className="space-y-3">
                     {paymentMethods.map((method) => (
-                      <div key={method.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div key={method.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
                         <div className="flex items-center">
-                          <CreditCardIcon className="h-6 w-6 text-gray-400 mr-3" />
+                          <CreditCardIcon className="h-6 w-6 text-muted-foreground mr-3" />
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-foreground">
                               {method.brand.toUpperCase()} •••• {method.last4}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-muted-foreground">
                               Expires {method.expMonth}/{method.expYear}
                             </p>
                           </div>
                         </div>
                         <button
                           onClick={() => handleRemovePaymentMethod(method.id)}
-                          className="text-red-600 hover:text-red-700 p-2"
+                          className="text-destructive hover:text-destructive/80 p-2"
                         >
                           <TrashIcon className="h-4 w-4" />
                         </button>
@@ -1091,8 +1091,8 @@ Thank you for your business!
               )}
 
               {/* Add New Payment Method Form */}
-              <div className="border-t pt-6">
-                <h4 className="font-medium text-gray-900 mb-3">Add New Payment Method</h4>
+              <div className="border-t border-border pt-6">
+                <h4 className="font-medium text-foreground mb-3">Add New Payment Method</h4>
                 {stripe && elements ? (
                   <form onSubmit={handleAddPaymentMethod} className="space-y-4">
                     <div id="payment-element">
@@ -1101,7 +1101,7 @@ Thank you for your business!
                     <div className="flex space-x-3">
                       <button
                         type="submit"
-                        className="flex-1 bg-olive-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
                       >
                         Add Payment Method
                       </button>
@@ -1112,7 +1112,7 @@ Thank you for your business!
                           setElements(null)
                           setSetupIntent(null)
                         }}
-                        className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        className="flex-1 border border-border text-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
                       >
                         Cancel
                       </button>
@@ -1120,8 +1120,8 @@ Thank you for your business!
                   </form>
                 ) : (
                   <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading payment form...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading payment form...</p>
                   </div>
                 )}
               </div>
@@ -1131,27 +1131,27 @@ Thank you for your business!
 
         {/* Invoice Display Modal */}
         {showInvoiceModal && currentInvoice && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 m-4 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-card rounded-lg p-6 m-4 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-gray-900">Invoice {currentInvoice.invoiceNumber}</h3>
-                <button 
+                <h3 className="text-xl font-semibold text-foreground">Invoice {currentInvoice.invoiceNumber}</h3>
+                <button
                   onClick={() => setShowInvoiceModal(false)}
-                  className="text-gray-400 hover:text-gray-600 p-2"
+                  className="text-muted-foreground hover:text-foreground p-2"
                 >
                   ✕
                 </button>
               </div>
-              
+
               {/* Invoice Header */}
-              <div className="bg-gradient-to-r from-olive-600 to-olive-700 text-white p-6 rounded-lg mb-6">
+              <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-6 rounded-lg mb-6">
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className="text-2xl font-bold">6FB AI Agent System</h2>
-                    <p className="text-olive-100 mt-1">Professional Business Intelligence</p>
+                    <p className="opacity-90 mt-1">Professional Business Intelligence</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-olive-100">Invoice Date</p>
+                    <p className="opacity-90">Invoice Date</p>
                     <p className="text-xl font-semibold">
                       {new Date(currentInvoice.createdAt || Date.now()).toLocaleDateString()}
                     </p>
@@ -1162,25 +1162,25 @@ Thank you for your business!
               {/* Invoice Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Bill To:</h4>
-                  <div className="text-gray-600">
+                  <h4 className="font-semibold text-foreground mb-2">Bill To:</h4>
+                  <div className="text-muted-foreground">
                     <p>{billingData.subscription.plan} Plan Subscriber</p>
                     <p>Payment Method: {billingData.paymentMethod.brand} •••• {billingData.paymentMethod.last4}</p>
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Invoice Details:</h4>
-                  <div className="text-gray-600">
-                    <p><strong>Period:</strong> {currentInvoice.period}</p>
-                    <p><strong>Due Date:</strong> {currentInvoice.dueDate}</p>
+                  <h4 className="font-semibold text-foreground mb-2">Invoice Details:</h4>
+                  <div className="text-muted-foreground">
+                    <p><strong className="text-foreground">Period:</strong> {currentInvoice.period}</p>
+                    <p><strong className="text-foreground">Due Date:</strong> {currentInvoice.dueDate}</p>
                     <p>
-                      <strong>Status:</strong>{' '}
+                      <strong className="text-foreground">Status:</strong>{' '}
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        currentInvoice.status === 'paid' 
-                          ? 'bg-green-100 text-green-800' 
+                        currentInvoice.status === 'paid'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                           : currentInvoice.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
+                          ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                       }`}>
                         {currentInvoice.status.toUpperCase()}
                       </span>
@@ -1191,38 +1191,38 @@ Thank you for your business!
 
               {/* Invoice Items */}
               <div className="mb-6">
-                <h4 className="font-semibold text-gray-900 mb-4">Usage Details</h4>
-                <div className="overflow-hidden rounded-lg border border-gray-200">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <h4 className="font-semibold text-foreground mb-4">Usage Details</h4>
+                <div className="overflow-hidden rounded-lg border border-border">
+                  <table className="min-w-full divide-y divide-border">
+                    <thead className="bg-muted">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Service
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Usage
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Rate
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Amount
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-card divide-y divide-border">
                       {currentInvoice.items.map((item, index) => (
-                        <tr key={index} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <tr key={index} className="hover:bg-muted/50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             {item.description}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                             {item.quantity.toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                             ${item.unitPrice.toFixed(4)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                             ${item.total.toFixed(2)}
                           </td>
                         </tr>
@@ -1233,14 +1233,14 @@ Thank you for your business!
               </div>
 
               {/* Invoice Total */}
-              <div className="border-t pt-4">
+              <div className="border-t border-border pt-4">
                 <div className="flex justify-end">
                   <div className="w-64">
-                    <div className="flex justify-between py-2 text-gray-600">
+                    <div className="flex justify-between py-2 text-muted-foreground">
                       <span>Subtotal:</span>
                       <span>${currentInvoice.subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between py-2 text-lg font-semibold text-gray-900 border-t">
+                    <div className="flex justify-between py-2 text-lg font-semibold text-foreground border-t border-border">
                       <span>Total:</span>
                       <span>${currentInvoice.total.toFixed(2)}</span>
                     </div>
@@ -1249,20 +1249,20 @@ Thank you for your business!
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t">
+              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-border">
                 <button
                   onClick={() => {
                     setShowInvoiceModal(false)
                     handleDownloadInvoice()
                   }}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="px-4 py-2 border border-border text-foreground rounded-md text-sm font-medium hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <ArrowDownTrayIcon className="h-4 w-4 inline mr-2" />
                   Download
                 </button>
                 <button
                   onClick={() => setShowInvoiceModal(false)}
-                  className="px-4 py-2 bg-olive-600 text-white rounded-md text-sm font-medium hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500"
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   Close
                 </button>
@@ -1273,50 +1273,50 @@ Thank you for your business!
 
         {/* Plan Change Preview Modal */}
         {showPlanPreview && selectedPlan && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 m-4 max-w-md w-full">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Plan Change Preview</h3>
-              
+          <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-card rounded-lg p-6 m-4 max-w-md w-full border border-border">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Plan Change Preview</h3>
+
               {(() => {
                 const preview = calculatePlanPreview(selectedPlan)
-                if (!preview) return <p>Unable to calculate preview</p>
+                if (!preview) return <p className="text-muted-foreground">Unable to calculate preview</p>
 
                 return (
                   <div className="space-y-4">
-                    <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="bg-muted rounded-lg p-4">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-gray-600">Current Plan:</span>
-                        <span className="font-medium">{preview.currentPlan} (${preview.currentPrice}/month)</span>
+                        <span className="text-muted-foreground">Current Plan:</span>
+                        <span className="font-medium text-foreground">{preview.currentPlan} (${preview.currentPrice}/month)</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-gray-600">New Plan:</span>
-                        <span className="font-medium">{preview.targetPlan} (${preview.newPrice}/month)</span>
+                        <span className="text-muted-foreground">New Plan:</span>
+                        <span className="font-medium text-foreground">{preview.targetPlan} (${preview.newPrice}/month)</span>
                       </div>
                     </div>
 
-                    <div className="border-t pt-4">
-                      <h4 className="font-medium text-gray-900 mb-2">Billing Details</h4>
+                    <div className="border-t border-border pt-4">
+                      <h4 className="font-medium text-foreground mb-2">Billing Details</h4>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Effective Date:</span>
-                          <span>{preview.effectiveDate}</span>
+                          <span className="text-muted-foreground">Effective Date:</span>
+                          <span className="text-foreground">{preview.effectiveDate}</span>
                         </div>
                         {preview.isUpgrade && preview.proratedAmount > 0 && (
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Prorated Charge Today:</span>
-                            <span className="font-medium text-olive-600">+${preview.proratedAmount.toFixed(2)}</span>
+                            <span className="text-muted-foreground">Prorated Charge Today:</span>
+                            <span className="font-medium text-primary">+${preview.proratedAmount.toFixed(2)}</span>
                           </div>
                         )}
-                        <div className="flex justify-between border-t pt-2">
-                          <span className="text-gray-600">Next Monthly Billing:</span>
-                          <span className="font-medium">${preview.nextBillingAmount}/month</span>
+                        <div className="flex justify-between border-t border-border pt-2">
+                          <span className="text-muted-foreground">Next Monthly Billing:</span>
+                          <span className="font-medium text-foreground">${preview.nextBillingAmount}/month</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-sm text-blue-800">
-                        {preview.isUpgrade 
+                    <div className="bg-blue-100/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/40 rounded-lg p-3">
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
+                        {preview.isUpgrade
                           ? `You'll be charged ${preview.proratedAmount > 0 ? `$${preview.proratedAmount.toFixed(2)} today for the remaining days, then ` : ''}$${preview.newPrice}/month starting ${preview.effectiveDate}.`
                           : `Your plan will change to ${preview.targetPlan} effective ${preview.effectiveDate}. Your next billing will be $${preview.newPrice}/month.`
                         }
@@ -1330,7 +1330,7 @@ Thank you for your business!
                           setSelectedPlan(null)
                           handlePlanChange(selectedPlan)
                         }}
-                        className="flex-1 bg-olive-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-olive-700 focus:outline-none focus:ring-2 focus:ring-olive-500"
+                        className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
                       >
                         {preview.isUpgrade ? 'Confirm Upgrade' : 'Confirm Change'}
                       </button>
@@ -1339,7 +1339,7 @@ Thank you for your business!
                           setShowPlanPreview(false)
                           setSelectedPlan(null)
                         }}
-                        className="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        className="flex-1 border border-border text-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring"
                       >
                         Cancel
                       </button>

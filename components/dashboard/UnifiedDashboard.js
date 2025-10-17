@@ -141,11 +141,17 @@ export default function UnifiedDashboard({ user, profile }) {
     try {
       // Use faster analytics API for executive mode to avoid slow AI health checks
       if (currentMode === DASHBOARD_MODES.EXECUTIVE) {
-        const response = await fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json&force_refresh=true`)
-        const result = await response.json()
+        // Fetch both analytics and AI insights in parallel
+        const [analyticsResponse, insightsResponse] = await Promise.all([
+          fetch(`/api/analytics/live-data?barbershop_id=${barbershopId}&format=json&force_refresh=true`),
+          fetch(`/api/ai/insights?barbershop_id=${barbershopId}`)
+        ])
 
-        if (response.ok && result.success) {
-          // Transform analytics data for executive dashboard - FIX DATA MAPPING
+        const result = await analyticsResponse.json()
+        const insightsResult = await insightsResponse.json()
+
+        if (analyticsResponse.ok && result.success) {
+          // Transform analytics data for executive dashboard - USE REAL GROWTH DATA
           const apiData = result.data
           const transformedData = {
             // Executive Summary expects metrics in this format
@@ -153,7 +159,14 @@ export default function UnifiedDashboard({ user, profile }) {
               revenue: apiData.total_revenue || 0,
               customers: apiData.total_customers || 0,
               appointments: apiData.total_appointments || 0,
-              satisfaction: 4.5 // Default satisfaction score
+              satisfaction: apiData.average_satisfaction || 4.5 // REAL satisfaction from database!
+            },
+            // Growth percentages - REAL DATA from period-over-period comparison!
+            growth: {
+              revenue: apiData.revenue_growth || 0,
+              customers: apiData.customer_growth || 0,
+              appointments: apiData.appointment_growth || 0,
+              satisfaction: 0 // Satisfaction growth would require historical tracking
             },
             // Today's snapshot data
             todayMetrics: {
@@ -183,7 +196,9 @@ export default function UnifiedDashboard({ user, profile }) {
               uptime_percent: 99.8
             },
             // Include raw analytics data for other components
-            analytics_data: apiData
+            analytics_data: apiData,
+            // Add dynamic AI insights (NO MOCK DATA!)
+            insights: insightsResult.success ? insightsResult.insights : []
           }
           setDashboardData(transformedData)
           // Cache removed for data consistency between Executive/Analytics modes
@@ -257,12 +272,19 @@ export default function UnifiedDashboard({ user, profile }) {
     }
 
     // Set up auto-refresh every 30 seconds for operations mode
+    let interval
     if (currentMode === DASHBOARD_MODES.OPERATIONS && currentLocationId) {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         loadDashboardData()
         // loadChecklistData() // Now handled globally
       }, 30000)
-      return () => clearInterval(interval)
+    }
+
+    // Cleanup: Always clear interval on unmount or dependency change
+    return () => {
+      if (interval) {
+        clearInterval(interval)
+      }
     }
   }, [currentMode, currentLocationId, loadDashboardData]) // Reload when location changes
 
@@ -345,17 +367,56 @@ export default function UnifiedDashboard({ user, profile }) {
 
     // Show setup prompt when no location is selected
     if (!dashboardData && !currentLocationId) {
+      // Enhanced error diagnostics for production debugging
+      const diagnosticInfo = {
+        hasUser: !!user,
+        hasProfile: !!profile,
+        profileBarbershopId: profile?.barbershop_id || 'Not set',
+        currentLocationId: currentLocationId || 'Not set',
+        contextLoading: contextLoading,
+        timestamp: new Date().toISOString()
+      }
+
+      // Log diagnostic info in development mode
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 [Dashboard] No location selected - diagnostic info:', diagnosticInfo)
+      }
+
       return (
         <div className="card-modern rounded-xl p-12 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <Squares2X2Icon className="h-8 w-8 text-amber-600 dark:text-amber-400" />
             </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">No Location Selected</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              {contextLoading ? 'Loading Location...' : 'No Location Available'}
+            </h3>
             <p className="text-muted-foreground mb-6">
-              Please select a location from the shop selector in the sidebar to view {modeConfigs[currentMode].label}.
-              {!currentLocation && ' You may need to complete your shop setup first.'}
+              {contextLoading ? (
+                'Please wait while we load your location information...'
+              ) : profile?.barbershop_id ? (
+                `Your profile has a location ID (${profile.barbershop_id.substring(0, 8)}...), but it couldn't be loaded. This may indicate a database connection issue.`
+              ) : (
+                'No location is assigned to your account. Please complete your shop setup to get started.'
+              )}
             </p>
+
+            {/* Diagnostic info for debugging (development only) */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mb-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg text-left">
+                <p className="text-xs font-mono text-gray-600 dark:text-gray-400 mb-2">
+                  <strong>Debug Info:</strong>
+                </p>
+                <ul className="text-xs font-mono text-gray-600 dark:text-gray-400 space-y-1">
+                  <li>User: {diagnosticInfo.hasUser ? '✓' : '✗'}</li>
+                  <li>Profile: {diagnosticInfo.hasProfile ? '✓' : '✗'}</li>
+                  <li>Profile barbershop_id: {diagnosticInfo.profileBarbershopId}</li>
+                  <li>Context Location ID: {diagnosticInfo.currentLocationId}</li>
+                  <li>Context Loading: {diagnosticInfo.contextLoading ? 'Yes' : 'No'}</li>
+                </ul>
+              </div>
+            )}
+
             <div className="flex gap-3 justify-center">
               <a
                 href="/settings/shop"
@@ -370,6 +431,26 @@ export default function UnifiedDashboard({ user, profile }) {
                 Update Profile
               </a>
             </div>
+
+            {/* Additional help for production issues */}
+            {!contextLoading && profile?.barbershop_id && (
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-sm text-muted-foreground mb-3">
+                  <strong>Having trouble?</strong>
+                </p>
+                <p className="text-xs text-muted-foreground mb-4">
+                  If this issue persists, it may indicate a database connection problem.
+                  Please check your internet connection and try refreshing the page.
+                </p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="inline-flex items-center px-3 py-1 text-xs font-medium rounded-md text-brand-700 bg-brand-50 hover:bg-brand-100"
+                >
+                  <ArrowPathIcon className="h-3 w-3 mr-1" />
+                  Refresh Page
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )

@@ -10,7 +10,7 @@ import { cacheQuery, invalidateCache, getCacheStats } from '../../../../lib/anal
 // Define demo barbershop ID constant
 const DEMO_BARBERSHOP_ID = '1ca6138d-eae8-46ed-abff-5d6e52fbd21b'; // Elite Cuts Barbershop
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 export async function GET(request) {
   try {
@@ -204,42 +204,101 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       console.error('Appointments query error:', appointmentsError);
     }
 
-    // Calculate metrics using actual database data
+    // PHASE 2: Calculate period-over-period growth using REAL historical data
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+    // Current period (last 30 days)
+    const currentPeriodAppointments = appointments?.filter(a =>
+      new Date(a.created_at) >= thirtyDaysAgo
+    ) || [];
+
+    const currentPeriodCustomers = customers?.filter(c =>
+      new Date(c.created_at) >= thirtyDaysAgo
+    ) || [];
+
+    // Previous period (30-60 days ago) for comparison
+    const previousPeriodAppointments = appointments?.filter(a => {
+      const date = new Date(a.created_at);
+      return date >= sixtyDaysAgo && date < thirtyDaysAgo;
+    }) || [];
+
+    const previousPeriodCustomers = customers?.filter(c => {
+      const date = new Date(c.created_at);
+      return date >= sixtyDaysAgo && date < thirtyDaysAgo;
+    }) || [];
+
+    // Calculate current period metrics
     const totalCustomers = customers?.length || 0;
-    
+    const currentRevenue = currentPeriodAppointments.reduce((sum, a) => sum + (parseFloat(a.total_amount) || 0), 0);
+    const currentAppointments = currentPeriodAppointments.length;
+    const currentCustomerCount = currentPeriodCustomers.length;
+
+    // Calculate previous period metrics for comparison
+    const previousRevenue = previousPeriodAppointments.reduce((sum, a) => sum + (parseFloat(a.total_amount) || 0), 0);
+    const previousAppointments = previousPeriodAppointments.length;
+    const previousCustomerCount = previousPeriodCustomers.length;
+
+    // Calculate REAL growth percentages (not hardcoded!)
+    const revenueGrowth = previousRevenue > 0
+      ? Math.round(((currentRevenue - previousRevenue) / previousRevenue) * 100 * 10) / 10
+      : 0;
+
+    const appointmentGrowth = previousAppointments > 0
+      ? Math.round(((currentAppointments - previousAppointments) / previousAppointments) * 100 * 10) / 10
+      : 0;
+
+    const customerGrowth = previousCustomerCount > 0
+      ? Math.round(((currentCustomerCount - previousCustomerCount) / previousCustomerCount) * 100 * 10) / 10
+      : 0;
+
     // Use appointment data for more accurate revenue calculation
     const appointmentRevenue = appointments?.reduce((sum, a) => sum + (parseFloat(a.total_amount) || 0), 0) || 0;
     const customerRevenue = customers?.reduce((sum, c) => sum + (parseFloat(c.total_spent) || 0), 0) || 0;
     const totalRevenue = appointmentRevenue > 0 ? appointmentRevenue : customerRevenue;
-    
+
     // Use appointment count for more accurate metrics
     const totalAppointments = appointments?.length || customers?.reduce((sum, c) => sum + (c.total_visits || 0), 0) || 0;
-    
+
     // Calculate appointment status breakdown
     const completedAppointments = appointments?.filter(a => a.status === 'completed' || a.status === 'COMPLETED')?.length || 0;
     const cancelledAppointments = appointments?.filter(a => a.status === 'cancelled' || a.status === 'CANCELLED')?.length || 0;
     const pendingAppointments = appointments?.filter(a => a.status === 'pending' || a.status === 'PENDING')?.length || 0;
-    
+
     const avgServicePrice = services?.reduce((sum, s) => sum + (parseFloat(s.price) || 0), 0) / Math.max(1, services?.length || 1) || 0;
+
+    // Calculate average satisfaction from completed appointments (if rating field exists)
+    const appointmentsWithRatings = appointments?.filter(a => a.rating) || [];
+    const avgSatisfaction = appointmentsWithRatings.length > 0
+      ? appointmentsWithRatings.reduce((sum, a) => sum + (parseFloat(a.rating) || 0), 0) / appointmentsWithRatings.length
+      : 4.5; // Default if no ratings
     
-    console.log('📊 Supabase analytics data:', {
+    console.log('📊 Supabase analytics data with REAL growth:', {
       customers: totalCustomers,
       revenue: totalRevenue,
       appointments: totalAppointments,
       completed: completedAppointments,
       cancelled: cancelledAppointments,
-      pending: pendingAppointments
+      pending: pendingAppointments,
+      // Growth metrics
+      revenueGrowth: `${revenueGrowth}%`,
+      appointmentGrowth: `${appointmentGrowth}%`,
+      customerGrowth: `${customerGrowth}%`,
+      // Period comparisons
+      currentPeriod: { revenue: currentRevenue, appointments: currentAppointments, customers: currentCustomerCount },
+      previousPeriod: { revenue: previousRevenue, appointments: previousAppointments, customers: previousCustomerCount }
     });
-    
+
     // Format data to match analytics API structure
     const analyticsMetrics = {
       total_revenue: totalRevenue,
-      monthly_revenue: totalRevenue, // Using total as monthly for now
-      daily_revenue: Math.round(totalRevenue / 30),
-      weekly_revenue: Math.round(totalRevenue / 4),
+      monthly_revenue: currentRevenue, // Current period (last 30 days)
+      daily_revenue: Math.round(currentRevenue / 30),
+      weekly_revenue: Math.round(currentRevenue / 4),
       service_revenue: totalRevenue,
       tip_revenue: 0, // Could be calculated from appointments if tip_amount exists
-      revenue_growth: 0, // Would need historical data
+      revenue_growth: revenueGrowth, // REAL growth from period comparison!
       
       total_appointments: totalAppointments,
       completed_appointments: completedAppointments,
@@ -249,12 +308,15 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       confirmed_appointments: totalAppointments - cancelledAppointments - pendingAppointments,
       appointment_completion_rate: totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0,
       average_appointments_per_day: Math.round(totalAppointments / 30),
-      
+      appointment_growth: appointmentGrowth, // REAL growth from period comparison!
+
       total_customers: totalCustomers,
-      new_customers_this_month: totalCustomers,
-      returning_customers: 0,
+      new_customers_this_month: currentCustomerCount, // Real count from current period
+      returning_customers: totalCustomers - currentCustomerCount,
       customer_retention_rate: 0,
       average_customer_lifetime_value: totalCustomers > 0 ? Math.round(totalRevenue / totalCustomers) : 0,
+      customer_growth: customerGrowth, // REAL growth from period comparison!
+      average_satisfaction: Math.round(avgSatisfaction * 100) / 100, // REAL satisfaction from ratings
       
       total_barbers: 6, // From our known data
       active_barbers: 6,
@@ -269,11 +331,19 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       average_service_price: Math.round(avgServicePrice),
       payment_success_rate: 0,
       outstanding_payments: 0,
-      
+
       last_updated: new Date().toISOString(),
       data_freshness: "supabase_real"
     };
-    
+
+    // PHASE 3: Generate daily breakdown for charts (REAL DATA, not estimates!)
+    const dailyBreakdown = generateDailyBreakdown(currentPeriodAppointments);
+    const weeklyPatterns = generateWeeklyPatterns(appointments);
+
+    // Add breakdown data to response
+    analyticsMetrics.daily_breakdown = dailyBreakdown;
+    analyticsMetrics.weekly_patterns = weeklyPatterns;
+
     return {
       success: true,
       data: analyticsMetrics,
@@ -295,6 +365,95 @@ async function getSupabaseAnalyticsData(barbershopId, format, metric) {
       data_source: 'supabase_fallback'
     };
   }
+}
+
+/**
+ * Generate daily breakdown from appointment records (REAL DATA)
+ * Groups appointments by date and calculates revenue/count per day
+ */
+function generateDailyBreakdown(appointments) {
+  if (!appointments || appointments.length === 0) {
+    return [];
+  }
+
+  // Group appointments by date
+  const dailyData = {};
+
+  appointments.forEach(appointment => {
+    const date = new Date(appointment.created_at);
+    const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    if (!dailyData[dateKey]) {
+      dailyData[dateKey] = {
+        date: dateKey,
+        revenue: 0,
+        bookings: 0,
+        dayOfWeek: date.toLocaleDateString('en-US', { weekday: 'short' })
+      };
+    }
+
+    dailyData[dateKey].revenue += parseFloat(appointment.total_amount) || 0;
+    dailyData[dateKey].bookings += 1;
+  });
+
+  // Convert to array and sort by date
+  return Object.values(dailyData)
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .map(day => ({
+      ...day,
+      revenue: Math.round(day.revenue)
+    }));
+}
+
+/**
+ * Generate weekly patterns from all appointments (REAL DATA)
+ * Shows which days of week are busiest based on actual bookings
+ */
+function generateWeeklyPatterns(appointments) {
+  if (!appointments || appointments.length === 0) {
+    return {
+      Monday: { revenue: 0, bookings: 0, avgRevenue: 0 },
+      Tuesday: { revenue: 0, bookings: 0, avgRevenue: 0 },
+      Wednesday: { revenue: 0, bookings: 0, avgRevenue: 0 },
+      Thursday: { revenue: 0, bookings: 0, avgRevenue: 0 },
+      Friday: { revenue: 0, bookings: 0, avgRevenue: 0 },
+      Saturday: { revenue: 0, bookings: 0, avgRevenue: 0 },
+      Sunday: { revenue: 0, bookings: 0, avgRevenue: 0 }
+    };
+  }
+
+  const weeklyData = {
+    Monday: { revenue: 0, bookings: 0, count: 0 },
+    Tuesday: { revenue: 0, bookings: 0, count: 0 },
+    Wednesday: { revenue: 0, bookings: 0, count: 0 },
+    Thursday: { revenue: 0, bookings: 0, count: 0 },
+    Friday: { revenue: 0, bookings: 0, count: 0 },
+    Saturday: { revenue: 0, bookings: 0, count: 0 },
+    Sunday: { revenue: 0, bookings: 0, count: 0 }
+  };
+
+  appointments.forEach(appointment => {
+    const date = new Date(appointment.created_at);
+    const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+
+    if (weeklyData[dayOfWeek]) {
+      weeklyData[dayOfWeek].revenue += parseFloat(appointment.total_amount) || 0;
+      weeklyData[dayOfWeek].bookings += 1;
+      weeklyData[dayOfWeek].count += 1;
+    }
+  });
+
+  // Calculate averages
+  Object.keys(weeklyData).forEach(day => {
+    const data = weeklyData[day];
+    weeklyData[day] = {
+      revenue: Math.round(data.revenue),
+      bookings: data.bookings,
+      avgRevenue: data.count > 0 ? Math.round(data.revenue / data.count) : 0
+    };
+  });
+
+  return weeklyData;
 }
 
 /**

@@ -246,7 +246,33 @@ export default function EnhancedProfessionalCalendar({
   
   // Removed DOM manipulation useEffect - anti-pattern
   // Calendar API should be accessed through calendarRef.current.getApi()
-  
+
+  // Custom resource label rendering with profile images
+  const renderResourceLabel = useCallback((resourceInfo) => {
+    const resource = resourceInfo.resource
+    const avatarUrl = resource.extendedProps?.avatar_url
+    const name = resource.title || 'Unknown'
+
+    // Generate colored initials fallback using consistent hashing
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    const colorIndex = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 6
+    const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899']
+    const bgColor = colors[colorIndex]
+
+    return {
+      html: `
+        <div class="resource-label-wrapper">
+          ${avatarUrl ?
+            `<img src="${avatarUrl}" alt="${name}" class="resource-avatar"
+              onerror="var div=document.createElement('div');div.className='resource-avatar-fallback';div.style.backgroundColor='${bgColor}';div.textContent='${initials}';this.replaceWith(div);" />` :
+            `<div class="resource-avatar-fallback" style="background-color: ${bgColor}">${initials}</div>`
+          }
+          <span class="resource-name">${name}</span>
+        </div>
+      `
+    }
+  }, [])
+
   return (
     <div className="enhanced-professional-calendar-wrapper">
       <style jsx global>{`
@@ -389,7 +415,7 @@ export default function EnhancedProfessionalCalendar({
 
         /* Resource area styling */
         .fc-resource-area {
-          min-width: 140px !important;
+          min-width: 180px !important;
           background: linear-gradient(to right, #2D3630, #3C4A3E);
         }
 
@@ -407,14 +433,55 @@ export default function EnhancedProfessionalCalendar({
         }
 
         .fc-resource {
-          padding: 0.75rem !important;
-          font-weight: 600 !important;
-          color: #E5E7EB !important;
+          padding: 0 !important;
           transition: background 0.2s ease !important;
         }
 
         .fc-resource:hover {
           background: rgba(84, 99, 85, 0.25) !important;
+        }
+
+        /* Resource label with avatar (inline layout) */
+        .resource-label-wrapper {
+          display: flex !important;
+          align-items: center !important;
+          gap: 0.75rem !important;
+          padding: 0.75rem !important;
+          width: 100%;
+        }
+
+        .resource-avatar {
+          width: 48px !important;
+          height: 48px !important;
+          border-radius: 50% !important;
+          object-fit: cover !important;
+          border: 2px solid rgba(255, 255, 255, 0.2) !important;
+          flex-shrink: 0 !important;
+        }
+
+        .resource-avatar-fallback {
+          width: 48px !important;
+          height: 48px !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          color: white !important;
+          font-weight: 700 !important;
+          font-size: 1rem !important;
+          border: 2px solid rgba(255, 255, 255, 0.2) !important;
+          flex-shrink: 0 !important;
+        }
+
+        .resource-name {
+          font-weight: 600 !important;
+          color: #E5E7EB !important;
+          font-size: 0.875rem !important;
+          line-height: 1.25 !important;
+          flex: 1 !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
         }
 
         /* Timeline view specific styling */
@@ -585,6 +652,7 @@ export default function EnhancedProfessionalCalendar({
         
         // Premium resources enabled with proper licensing
         resources={resources}  // Use resources prop for barber resources
+        resourceLabelContent={renderResourceLabel}  // Custom rendering with profile images
         {...(eventSources ? { eventSources: eventSources } : { events: processedEvents })}  // Use eventSources or fallback to events
         // resourcesInitiallyExpanded={true}
         // refetchResourcesOnNavigate={false}  // Better performance - only refetch when needed

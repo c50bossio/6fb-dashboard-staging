@@ -109,6 +109,32 @@ const shopId = profile?.shop_id || profile?.barbershop_id;
 
 **Reference**: See `/docs/SCHEMA_STANDARDS.md` for complete schema standards and migration status.
 
+## Calendar & Schedule Visibility
+
+### Barber Schedule Visibility Policy (Industry Standard)
+**Default Behavior**: All barbers can VIEW all team schedules at their location by default.
+
+**Why This Matters**:
+- **Customer Service**: Barbers need to coordinate handoffs and check teammate availability
+- **Operational Efficiency**: Team visibility enables smooth schedule coordination
+- **Industry Standard**: Squire, Booksy, and leading barbershop platforms all allow team schedule viewing
+- **Privacy Protection**: Barbers see schedules only (not private notes, financials, or personal info)
+
+**Implementation**:
+- `BARBER` role includes `'all-barbers'` and `'shop-calendar'` views in `/lib/calendar-permissions.js`
+- Barbers have read-only access to team schedules
+- Shop owners can disable this via settings if needed (future feature)
+- Multi-location enterprises: Barbers only see their assigned location
+
+**View-Only Restrictions**:
+Barbers viewing team schedules CANNOT:
+- Edit other barbers' appointments
+- View financial information (commissions, tips)
+- Access other barbers' private customer notes
+- Modify other barbers' availability settings
+
+See `/lib/calendar-permissions.js` for complete permission definitions.
+
 ## Key Technologies & Architecture
 
 ### Frontend Stack
@@ -296,6 +322,46 @@ npm run lint:fix
 - **Schema Management**: Complete schemas in `/database/` directory including multi-tenant, GDPR compliance
 - **Migrations**: Supabase migrations for schema changes
 - **Vector Storage**: pgvector extension support for RAG system embeddings
+
+#### Staff Data Architecture (Dual-Table Pattern)
+
+The system uses a **dual-table architecture** for staff/barber data:
+
+**Two Data Sources**:
+1. **`profiles` table**: Authenticated users with Supabase Auth accounts
+   - Full user accounts with email, password, OAuth
+   - Row Level Security (RLS) enabled
+   - Foreign key to `auth.users.id`
+
+2. **`barbers` table**: All service providers (may not have accounts)
+   - Demo data, seeded data, future barbers
+   - No authentication required
+   - Flexible for testing and demos
+
+**UNION Pattern**:
+The Staff API (`/app/api/staff/route.js`) merges both sources:
+```javascript
+// Query both tables
+const profiles = await supabase.from('profiles').select('*')
+const barbers = await supabase.from('barbers').select('*')
+
+// Deduplicate (profiles takes precedence)
+const profileIds = new Set(profiles.map(p => p.id))
+const uniqueBarbers = barbers.filter(b => !profileIds.has(b.id))
+
+// Transform both to unified format and merge
+return [...staffFromProfiles, ...staffFromBarbers]
+```
+
+**Why This Architecture**:
+- **Flexibility**: Support both authenticated and non-authenticated barbers
+- **Testing**: Easy to seed demo data without creating auth accounts
+- **Data Integrity**: Profiles table maintains strict foreign key constraints
+- **Backward Compatibility**: Existing code works with both data sources
+
+**Precedence Rule**: If a barber exists in both tables, the `profiles` version is used (authenticated users are source of truth).
+
+See `/docs/STAFF_ID_ARCHITECTURE.md` for complete staff ID management patterns.
 
 #### 🔗 Claude Code Database Access
 Claude Code has **direct Supabase database access** through a custom utility:

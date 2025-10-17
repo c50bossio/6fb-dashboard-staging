@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   ChatBubbleLeftRightIcon,
   SparklesIcon,
   RocketLaunchIcon,
@@ -20,15 +20,19 @@ import {
   XMarkIcon,
   ArrowDownTrayIcon,
   EllipsisVerticalIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  Bars3Icon
 } from '@heroicons/react/24/outline'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useTheme } from 'next-themes'
+import { useSearchParams } from 'next/navigation'
 
 import ProtectedRoute from '../../../../components/ProtectedRoute'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
 import { Card } from '../../../../components/ui'
 import ExecutableActionButton from '../../../../components/ExecutableActionButton'
 import ModelSelector from '../../../../components/ai/ModelSelector'
+import { csrfFetch } from '../../../../lib/csrf-fetch'
 
 // Performance Metrics Widget from AI Intelligent
 function AIPerformanceMetricsWidget({ onRefresh, loading }) {
@@ -381,15 +385,15 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
         </div>
 
         {/* Message Content */}
-        <div className="bg-white rounded-2xl rounded-tl-md px-5 py-4 border border-gray-200 shadow-sm">
+        <div className="bg-card dark:bg-card rounded-2xl rounded-tl-md px-5 py-4 border border-border dark:border-border shadow-sm">
           {isLoading ? (
             <div className="flex items-center space-x-2">
               <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-muted-foreground dark:bg-muted-foreground rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-muted-foreground dark:bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-2 h-2 bg-muted-foreground dark:bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
-              <span className="text-sm text-gray-500">AI is thinking...</span>
+              <span className="text-sm text-muted-foreground dark:text-muted-foreground">AI is thinking...</span>
             </div>
           ) : (
             <div>
@@ -397,20 +401,20 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
               {agent && (
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <span className="font-semibold text-sm text-gray-800">
+                    <span className="font-semibold text-sm text-foreground dark:text-foreground">
                       {agent.name || 'AI Agent'}
                     </span>
                     <span className={`text-xs px-2 py-1 rounded-full ${
-                      agent.confidence >= 0.8 
-                        ? 'bg-moss-100 text-moss-800' 
-                        : agent.confidence >= 0.6 
-                          ? 'bg-amber-100 text-amber-900'
-                          : 'bg-gray-100 text-gray-600'
+                      agent.confidence >= 0.8
+                        ? 'bg-moss-100 dark:bg-moss-900/30 text-moss-800 dark:text-moss-300'
+                        : agent.confidence >= 0.6
+                          ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-900 dark:text-amber-300'
+                          : 'bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground'
                     }`}>
                       {agent.confidence ? `${(agent.confidence * 100).toFixed(0)}% confident` : 'AI Response'}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted-foreground/70 dark:text-muted-foreground/70">
                     {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </span>
                 </div>
@@ -418,20 +422,20 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
 
               {/* Message Content */}
               <div className="prose prose-sm max-w-none">
-                <div className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{message}</div>
+                <div className="text-sm text-foreground dark:text-foreground whitespace-pre-wrap leading-relaxed">{message}</div>
               </div>
 
               {/* Recommendations */}
               {agent?.recommendations && agent.recommendations.length > 0 && (
-                <div className="mt-4 p-3 bg-olive-50 rounded-lg border-l-4 border-olive-400">
-                  <h4 className="font-semibold text-sm text-olive-800 mb-2 flex items-center">
+                <div className="mt-4 p-3 bg-olive-50 dark:bg-olive-900/20 rounded-lg border-l-4 border-olive-400 dark:border-olive-600">
+                  <h4 className="font-semibold text-sm text-olive-800 dark:text-olive-300 mb-2 flex items-center">
                     <LightBulbIcon className="h-4 w-4 mr-1" />
                     Key Recommendations
                   </h4>
                   <ul className="space-y-2">
                     {agent.recommendations.slice(0, 3).map((rec, idx) => (
-                      <li key={idx} className="text-sm text-olive-700 flex items-start space-x-2">
-                        <CheckCircleIcon className="h-4 w-4 mt-0.5 text-olive-500 flex-shrink-0" />
+                      <li key={idx} className="text-sm text-olive-700 dark:text-olive-400 flex items-start space-x-2">
+                        <CheckCircleIcon className="h-4 w-4 mt-0.5 text-olive-500 dark:text-olive-500 flex-shrink-0" />
                         <span>{rec}</span>
                       </li>
                     ))}
@@ -441,8 +445,8 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
 
               {/* Action Items */}
               {agent?.action_items && agent.action_items.length > 0 && (
-                <div className="mt-4 p-3 bg-green-50 rounded-lg border-l-4 border-green-400">
-                  <h4 className="font-semibold text-sm text-green-800 mb-3 flex items-center">
+                <div className="mt-4 p-3 bg-moss-50 dark:bg-moss-900/20 rounded-lg border-l-4 border-moss-400 dark:border-moss-600">
+                  <h4 className="font-semibold text-sm text-moss-800 dark:text-moss-300 mb-3 flex items-center">
                     <RocketLaunchIcon className="h-4 w-4 mr-1" />
                     Action Items
                   </h4>
@@ -466,10 +470,10 @@ function MessageBubble({ message, isUser, agent, isLoading = false, handleExecut
               
               {/* Retry button for error messages */}
               {isError && onRetry && (
-                <div className="mt-4 pt-3 border-t border-red-200">
+                <div className="mt-4 pt-3 border-t border-red-200 dark:border-red-800">
                   <button
                     onClick={onRetry}
-                    className="flex items-center space-x-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    className="flex items-center space-x-2 px-4 py-2 bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                     aria-label="Retry last message"
                   >
                     <span>🔄</span>
@@ -586,11 +590,11 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
   }, [conversations, searchQuery, sortBy])
   
   return (
-    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-64 bg-card dark:bg-card border-r border-border dark:border-border flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-border dark:border-border">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-gray-900">Conversations</h2>
+          <h2 className="font-semibold text-foreground dark:text-foreground">Conversations</h2>
           <div className="flex space-x-2">
             {conversations.length > 0 && (
               <button
@@ -626,21 +630,21 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
                 placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+                className="w-full pl-8 pr-3 py-2 text-sm border border-border dark:border-border rounded-lg bg-background dark:bg-background text-foreground dark:text-foreground focus:ring-2 focus:ring-olive-500 focus:border-transparent"
                 aria-label="Search conversations"
               />
-              <div className="absolute left-2.5 top-2.5 text-gray-400">
+              <div className="absolute left-2.5 top-2.5 text-muted-foreground dark:text-muted-foreground">
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
             </div>
-            
+
             {/* Sort Dropdown */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full py-2 px-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-olive-500 focus:border-transparent"
+              className="w-full py-2 px-3 text-sm border border-border dark:border-border rounded-lg bg-background dark:bg-background text-foreground dark:text-foreground focus:ring-2 focus:ring-olive-500 focus:border-transparent"
               aria-label="Sort conversations by"
             >
               <option value="recent">Most Recent</option>
@@ -654,13 +658,13 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
-            <ChatBubbleLeftRightIcon className="h-12 w-12 mx-auto text-gray-300 mb-2" />
+          <div className="p-4 text-center text-muted-foreground dark:text-muted-foreground">
+            <ChatBubbleLeftRightIcon className="h-12 w-12 mx-auto text-muted-foreground/50 dark:text-muted-foreground/50 mb-2" />
             <p className="text-sm">No conversations yet</p>
             <p className="text-xs">Start chatting to see history</p>
           </div>
         ) : filteredAndSortedConversations.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
+          <div className="p-4 text-center text-muted-foreground dark:text-muted-foreground">
             <div className="text-4xl mb-2">🔍</div>
             <p className="text-sm">No conversations found</p>
             <p className="text-xs">Try a different search term</p>
@@ -679,17 +683,17 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
                   onClick={() => onSelectConversation(conversation.id)}
                   className={`w-full p-3 text-left rounded-lg border transition-colors ${
                     activeConversation === conversation.id
-                      ? 'bg-olive-50 border-olive-200 text-olive-700'
-                      : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                      ? 'bg-olive-50 dark:bg-olive-900/20 border-olive-200 dark:border-olive-700 text-olive-700 dark:text-olive-400'
+                      : 'bg-muted dark:bg-muted border-border dark:border-border text-foreground dark:text-foreground hover:bg-accent dark:hover:bg-accent'
                   }`}
                 >
                   <div className="font-medium text-sm truncate pr-16">
                     {conversation.title || 'New Conversation'}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">
                     {conversation.messages?.length || 0} messages
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-muted-foreground/70 dark:text-muted-foreground/70 mt-1">
                     {new Date(conversation.updated_at).toLocaleDateString()}
                   </div>
                 </button>
@@ -711,14 +715,14 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
                     
                     {/* Dropdown Menu */}
                     {showDropdown === conversation.id && (
-                      <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                      <div className="absolute right-0 top-full mt-1 w-36 bg-card dark:bg-card border border-border dark:border-border rounded-lg shadow-lg z-10">
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             exportConversation(conversation, 'txt')
                             setShowDropdown(null)
                           }}
-                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg"
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted rounded-t-lg"
                         >
                           <ArrowDownTrayIcon className="h-4 w-4" />
                           <span>Export as TXT</span>
@@ -729,19 +733,19 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
                             exportConversation(conversation, 'json')
                             setShowDropdown(null)
                           }}
-                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted"
                         >
                           <ArrowDownTrayIcon className="h-4 w-4" />
                           <span>Export as JSON</span>
                         </button>
-                        <div className="border-t border-gray-200"></div>
+                        <div className="border-t border-border dark:border-border"></div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             handleDelete(e, conversation.id)
                             setShowDropdown(null)
                           }}
-                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded-b-lg"
+                          className="flex items-center space-x-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-b-lg"
                         >
                           <TrashIcon className="h-4 w-4" />
                           <span>Delete</span>
@@ -758,24 +762,24 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
       
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm">
-            <h3 className="text-lg font-semibold mb-2">Confirm Delete</h3>
-            <p className="text-gray-600 mb-4">
-              {deleteTarget === 'all' 
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-card dark:bg-card rounded-lg p-6 max-w-sm border border-border dark:border-border shadow-xl">
+            <h3 className="text-lg font-semibold mb-2 text-foreground dark:text-foreground">Confirm Delete</h3>
+            <p className="text-muted-foreground dark:text-muted-foreground mb-4">
+              {deleteTarget === 'all'
                 ? 'Are you sure you want to delete all conversations? This cannot be undone.'
                 : 'Are you sure you want to delete this conversation?'}
             </p>
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg"
+                className="px-4 py-2 bg-red-600 dark:bg-red-600 text-white hover:bg-red-700 dark:hover:bg-red-700 rounded-lg transition-colors"
               >
                 Delete
               </button>
@@ -790,12 +794,14 @@ function ConversationHistory({ conversations, activeConversation, onSelectConver
 // Main AI Command Center Component
 function AICommandCenter() {
   const { user } = useAuth()
+  const { theme, resolvedTheme } = useTheme()
+  const searchParams = useSearchParams()
   const [messages, setMessages] = useState([])
   const [inputMessage, setInputMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [conversations, setConversations] = useState([])
   const [activeConversation, setActiveConversation] = useState(null)
-  const [showHistory, setShowHistory] = useState(true)
+  const [showHistory, setShowHistory] = useState(false) // Start false, will be set based on screen size
   const [showInsights, setShowInsights] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const [lastFailedMessage, setLastFailedMessage] = useState(null)
@@ -804,6 +810,7 @@ function AICommandCenter() {
     model: 'gpt-4o',
     provider: 'openai'
   })
+  const [syncNotification, setSyncNotification] = useState(null) // For showing sync success message
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const saveTimeoutRef = useRef(null)
@@ -812,17 +819,92 @@ function AICommandCenter() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  // Debounced localStorage save function
+  // Get user-scoped storage key (SECURITY FIX)
+  const getStorageKey = useCallback(() => {
+    if (!user?.id) {
+      console.warn('[Command Center] No user ID, using fallback key')
+      return 'ai-conversations' // Fallback for unauthenticated (should not happen)
+    }
+
+    // User-scoped key for conversation isolation
+    return `ai-conversations-${user.id}`
+  }, [user?.id])
+
+  // Set initial sidebar visibility based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      // Show sidebar by default on desktop (>= 768px), hide on mobile
+      setShowHistory(window.innerWidth >= 768)
+    }
+
+    // Set initial state
+    handleResize()
+
+    // Listen for window resize
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Cleanup on logout - Remove all user-scoped conversations
+  useEffect(() => {
+    if (!user) {
+      // User logged out - clear all conversation data
+      try {
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('ai-conversations-')) {
+            localStorage.removeItem(key)
+            console.log(`[Command Center] Cleared conversation key on logout: ${key}`)
+          }
+        })
+
+        // Also clear any legacy global key
+        localStorage.removeItem('ai-conversations')
+
+        console.log('[Command Center] All conversation data cleared on logout')
+      } catch (error) {
+        console.error('[Command Center] Error cleaning up on logout:', error)
+      }
+    }
+  }, [user])
+
+  // Migrate legacy conversations to user-scoped storage (ONE-TIME MIGRATION)
+  useEffect(() => {
+    if (user?.id) {
+      try {
+        const legacyKey = 'ai-conversations'
+        const legacyConversations = localStorage.getItem(legacyKey)
+
+        if (legacyConversations) {
+          const userKey = `ai-conversations-${user.id}`
+
+          // Only migrate if user doesn't have scoped conversations yet
+          if (!localStorage.getItem(userKey)) {
+            localStorage.setItem(userKey, legacyConversations)
+            console.log(`[Command Center] Migrated ${JSON.parse(legacyConversations).length} conversations to user-scoped storage`)
+          }
+
+          // Remove legacy global key
+          localStorage.removeItem(legacyKey)
+          console.log('[Command Center] Removed legacy global conversation key')
+        }
+      } catch (error) {
+        console.error('[Command Center] Error during conversation migration:', error)
+      }
+    }
+  }, [user?.id])
+
+  // Debounced localStorage save function (NOW USER-SCOPED)
   const debouncedSaveConversations = useCallback((conversationsToSave) => {
     // Clear previous timeout
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current)
     }
-    
+
     // Set new timeout for 500ms debounce
     saveTimeoutRef.current = setTimeout(() => {
       try {
-        localStorage.setItem('ai-conversations', JSON.stringify(conversationsToSave))
+        const storageKey = getStorageKey()
+        localStorage.setItem(storageKey, JSON.stringify(conversationsToSave))
       } catch (error) {
         console.error('Failed to save conversations to localStorage:', error)
         // Handle localStorage quota exceeded or other errors
@@ -830,14 +912,15 @@ function AICommandCenter() {
           // Keep only the most recent 10 conversations if quota exceeded
           const recentConversations = conversationsToSave.slice(0, 10)
           try {
-            localStorage.setItem('ai-conversations', JSON.stringify(recentConversations))
+            const storageKey = getStorageKey()
+            localStorage.setItem(storageKey, JSON.stringify(recentConversations))
           } catch (retryError) {
             console.error('Failed to save even reduced conversations:', retryError)
           }
         }
       }
     }, 500)
-  }, [])
+  }, [getStorageKey])
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -857,24 +940,75 @@ function AICommandCenter() {
     }
   }, [messages])
 
-  // Load conversations from localStorage on mount
+  // Load conversations from localStorage on mount (NOW USER-SCOPED)
   useEffect(() => {
-    const savedConversations = localStorage.getItem('ai-conversations')
+    if (!user?.id) {
+      // Don't load until we have user ID
+      console.log('[Command Center] Waiting for user authentication...')
+      return
+    }
+
+    const storageKey = getStorageKey()
+    const savedConversations = localStorage.getItem(storageKey)
+
     if (savedConversations) {
       try {
         const parsed = JSON.parse(savedConversations)
         setConversations(parsed)
+
         // Load the most recent conversation
         if (parsed.length > 0) {
           const mostRecent = parsed[0]
           setActiveConversation(mostRecent.id)
           setMessages(mostRecent.messages || [])
+
+          console.log(`[Command Center] Loaded ${parsed.length} conversations for user ${user.id}`)
         }
       } catch (e) {
-        console.error('Failed to load conversations:', e)
+        console.error('[Command Center] Failed to load conversations:', e)
       }
+    } else {
+      console.log(`[Command Center] No saved conversations found for user ${user.id}`)
     }
-  }, [])
+  }, [user?.id, getStorageKey])
+
+  // Load synced conversation from query parameter (Phase 4: Shared Context)
+  useEffect(() => {
+    const conversationIdFromQuery = searchParams?.get('conversation');
+
+    if (!conversationIdFromQuery || conversations.length === 0) {
+      return;
+    }
+
+    // Find the synced conversation
+    const syncedConversation = conversations.find(c => c.id === conversationIdFromQuery);
+
+    if (syncedConversation) {
+      console.log(`[Command Center] Loading synced conversation: ${conversationIdFromQuery}`);
+
+      // Load the synced conversation
+      setActiveConversation(syncedConversation.id);
+      setMessages(syncedConversation.messages || []);
+
+      // Show sync notification
+      setSyncNotification({
+        message: `✨ Conversation synced from AI Widget`,
+        timestamp: new Date().toISOString()
+      });
+
+      // Auto-dismiss notification after 5 seconds
+      setTimeout(() => {
+        setSyncNotification(null);
+      }, 5000);
+
+      // Clear query parameter from URL (clean up)
+      if (typeof window !== 'undefined') {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    } else {
+      console.warn(`[Command Center] Synced conversation not found: ${conversationIdFromQuery}`);
+    }
+  }, [searchParams, conversations]);
 
   // Initialize with welcome message
   useEffect(() => {
@@ -942,8 +1076,8 @@ Try the quick actions below or just start chatting! 💬`,
       }
       setMessages(prev => [...prev, loadingMessage])
 
-      // Send to AI orchestrator
-      const response = await fetch('/api/ai/orchestrator', {
+      // Send to AI orchestrator with CSRF protection
+      const response = await csrfFetch('/api/ai/orchestrator', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1065,8 +1199,8 @@ Try the quick actions below or just start chatting! 💬`,
       }
       setMessages(prev => [...prev, executionMessage])
 
-      // Call executable action API
-      const response = await fetch('/api/ai/actions/execute', {
+      // Call executable action API with CSRF protection
+      const response = await csrfFetch('/api/ai/actions/execute', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1227,46 +1361,116 @@ What would you like to work on today?`,
   }
 
   return (
-    <div className="h-screen flex bg-gray-100">
-      {/* Conversation History Sidebar */}
+    <div className="h-screen flex bg-background dark:bg-background relative safe-top safe-bottom">
+      {/* Conversation History Sidebar - Desktop: Always visible, Mobile: Overlay */}
       {showHistory && (
-        <aside 
-          className="conversation-history" 
-          aria-label="Conversation History"
-          role="complementary"
-        >
-          <ConversationHistory
-            conversations={conversations}
-            activeConversation={activeConversation}
-            onSelectConversation={(conversationId) => {
-              const conversation = conversations.find(c => c.id === conversationId)
-              if (conversation) {
-                setActiveConversation(conversationId)
-                setMessages(conversation.messages || [])
-              }
-            }}
-            onNewConversation={handleNewConversation}
-            onDeleteConversation={handleDeleteConversation}
-            onDeleteAll={handleDeleteAll}
+        <>
+          {/* Mobile: Dark overlay when sidebar open */}
+          <div
+            className="md:hidden fixed inset-0 bg-black/50 z-40"
+            onClick={() => setShowHistory(false)}
+            aria-hidden="true"
           />
-        </aside>
+
+          <aside
+            className={`
+              conversation-history
+
+              /* Desktop: Normal sidebar */
+              md:relative md:z-auto
+
+              /* Mobile: Slide-over panel */
+              max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50
+              max-md:w-80 max-md:shadow-xl
+              max-md:animate-in max-md:slide-in-from-left
+            `}
+            aria-label="Conversation History"
+            role="complementary"
+          >
+            <ConversationHistory
+              conversations={conversations}
+              activeConversation={activeConversation}
+              onSelectConversation={(conversationId) => {
+                const conversation = conversations.find(c => c.id === conversationId)
+                if (conversation) {
+                  setActiveConversation(conversationId)
+                  setMessages(conversation.messages || [])
+                  // Auto-close sidebar on mobile after selection
+                  if (window.innerWidth < 768) {
+                    setShowHistory(false)
+                  }
+                }
+              }}
+              onNewConversation={handleNewConversation}
+              onDeleteConversation={handleDeleteConversation}
+              onDeleteAll={handleDeleteAll}
+            />
+          </aside>
+        </>
       )}
 
       {/* Main Chat Interface */}
       <main className="flex-1 flex flex-col" role="main" aria-label="AI Command Center Chat Interface">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
+        {/* Header - Responsive: Horizontal on desktop, stacked on mobile */}
+        <div className="bg-card dark:bg-card border-b border-border dark:border-border px-4 md:px-6 py-3 md:py-4">
+          {/* Mobile: Single row with hamburger + title + status */}
+          <div className="flex items-center justify-between md:hidden mb-3">
+            {/* Hamburger menu button */}
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className={`
+                p-2 rounded-lg transition-colors
+                text-muted-foreground dark:text-muted-foreground
+                hover:bg-muted dark:hover:bg-muted
+                min-h-[44px] min-w-[44px] flex items-center justify-center
+              `}
+              aria-label="Toggle conversation history"
+              title="Toggle conversation history"
+            >
+              <Bars3Icon className="h-6 w-6" />
+            </button>
+
+            {/* Title */}
+            <div className="flex items-center space-x-2 flex-1 justify-center">
+              <div className="bg-gradient-to-r from-olive-500 to-gold-600 dark:from-olive-600 dark:to-gold-700 w-8 h-8 rounded-lg flex items-center justify-center shadow-sm">
+                <SparklesIcon className="h-5 w-5 text-white" />
+              </div>
+              <h1 className="text-lg font-bold text-foreground dark:text-foreground">AI Command Center</h1>
+            </div>
+
+            {/* Status indicator (compact on mobile) */}
+            <div className={`${isLoading ? 'text-olive-600' : 'text-green-600'}`}>
+              <div className={`w-3 h-3 rounded-full ${
+                isLoading ? 'bg-olive-500 animate-pulse' : 'bg-green-500 animate-pulse'
+              }`}></div>
+            </div>
+          </div>
+
+          {/* Mobile: Agent and Model selectors (full width) */}
+          <div className="md:hidden space-y-2">
+            <AgentSelector
+              selectedAgent={selectedAgent}
+              onAgentChange={setSelectedAgent}
+              isLoading={isLoading}
+            />
+            <ModelSelector
+              selectedModel={modelConfig.model}
+              onModelChange={setModelConfig}
+            />
+          </div>
+
+          {/* Desktop: Original horizontal layout */}
+          <div className="hidden md:flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-olive-500 to-gold-600 w-10 h-10 rounded-lg flex items-center justify-center">
+              <div className="bg-gradient-to-r from-olive-500 to-gold-600 dark:from-olive-600 dark:to-gold-700 w-10 h-10 rounded-lg flex items-center justify-center shadow-sm">
                 <SparklesIcon className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">AI Command Center</h1>
-                <p className="text-sm text-gray-500">Your intelligent business assistant</p>
+                <h1 className="text-xl font-bold text-foreground dark:text-foreground">AI Command Center</h1>
+                <p className="text-sm text-muted-foreground dark:text-muted-foreground">Your intelligent business assistant</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {/* Agent Selector */}
               <AgentSelector
@@ -1274,41 +1478,53 @@ What would you like to work on today?`,
                 onAgentChange={setSelectedAgent}
                 isLoading={isLoading}
               />
-              
+
               {/* Model Selector */}
               <div className="w-60">
-                <ModelSelector 
+                <ModelSelector
                   selectedModel={modelConfig.model}
                   onModelChange={setModelConfig}
                 />
               </div>
-              
+
               <button
                 onClick={() => setShowHistory(!showHistory)}
-                className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className={`
+                  text-muted-foreground dark:text-muted-foreground
+                  hover:text-foreground dark:hover:text-foreground
+                  p-2 rounded-lg hover:bg-muted dark:hover:bg-muted
+                  transition-colors
+                `}
                 title="Toggle conversation history"
+                aria-label="Toggle conversation history"
               >
                 <ClockIcon className="h-5 w-5" />
               </button>
-              
+
               <button
                 onClick={() => setShowInsights(!showInsights)}
-                className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className={`
+                  text-muted-foreground dark:text-muted-foreground
+                  hover:text-foreground dark:hover:text-foreground
+                  p-2 rounded-lg hover:bg-muted dark:hover:bg-muted
+                  transition-colors
+                `}
                 title="Toggle AI insights"
+                aria-label="Toggle AI insights"
               >
                 <ChartBarIcon className="h-5 w-5" />
               </button>
-              
+
               {/* Enhanced Status Indicator */}
               <div className={`flex items-center space-x-2 text-sm transition-colors duration-300 ${
-                isLoading 
-                  ? 'text-olive-600' 
-                  : 'text-green-600'
+                isLoading
+                  ? 'text-olive-600 dark:text-olive-400'
+                  : 'text-green-600 dark:text-green-400'
               }`}>
                 <div className={`w-2 h-2 rounded-full ${
-                  isLoading 
-                    ? 'bg-olive-500 animate-pulse' 
-                    : 'bg-green-500 animate-pulse'
+                  isLoading
+                    ? 'bg-olive-500 dark:bg-olive-400 animate-pulse'
+                    : 'bg-green-500 dark:bg-green-400 animate-pulse'
                 }`}></div>
                 <span>
                   {isLoading ? 'AI Processing...' : 'AI Agents Online'}
@@ -1322,13 +1538,65 @@ What would you like to work on today?`,
         </div>
 
         {/* Messages Area */}
-        <section 
-          className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-gray-50 to-white"
+        <section
+          className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-background/50 to-background dark:from-background dark:to-background"
           aria-label="Conversation messages"
           role="region"
           aria-live="polite"
           aria-relevant="additions"
         >
+          {/* Sync Notification (Phase 4: Shared Context) */}
+          {syncNotification && (
+            <div className="max-w-4xl mx-auto mb-6">
+              <div className="bg-gradient-to-r from-moss-50 to-green-50 dark:from-moss-900/20 dark:to-green-900/20 border border-moss-200 dark:border-moss-700 rounded-xl p-4 flex items-start space-x-3 shadow-sm animate-in slide-in-from-top">
+                <div className="bg-moss-600 dark:bg-moss-700 rounded-full p-2 flex-shrink-0">
+                  <CheckCircleIcon className="h-4 w-4 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground dark:text-foreground font-medium">
+                    {syncNotification.message}
+                  </p>
+                  <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">
+                    Your conversation has been transferred from the AI Widget. Continue where you left off!
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSyncNotification(null)}
+                  className="text-moss-600 dark:text-moss-400 hover:text-moss-700 dark:hover:text-moss-300 flex-shrink-0 transition-colors"
+                  aria-label="Dismiss notification"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Widget Discovery Tip */}
+          <div className="max-w-4xl mx-auto mb-6">
+            <div className="bg-gradient-to-r from-olive-50 to-gold-50 dark:from-olive-900/20 dark:to-gold-900/20 border border-olive-200 dark:border-olive-700 rounded-xl p-4 flex items-start space-x-3 shadow-sm">
+              <div className="bg-olive-600 dark:bg-olive-700 rounded-full p-2 flex-shrink-0">
+                <SparklesIcon className="h-4 w-4 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-foreground dark:text-foreground">
+                  <span className="font-semibold">💡 Pro Tip:</span> For quick queries while browsing other pages, look for the{' '}
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-olive-600 dark:bg-olive-700 text-white text-xs font-medium">
+                    <SparklesIcon className="h-3 w-3 mr-1" />
+                    AI Widget
+                  </span>
+                  {' '}button in the bottom-right corner. Perfect for fast insights without leaving your current page!
+                </p>
+              </div>
+              <button
+                onClick={(e) => e.currentTarget.parentElement.style.display = 'none'}
+                className="text-olive-600 dark:text-olive-400 hover:text-olive-700 dark:hover:text-olive-300 flex-shrink-0 transition-colors"
+                aria-label="Dismiss tip"
+              >
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
           {/* Quick Actions */}
           <QuickActions onQuickAction={handleQuickAction} isLoading={isLoading} />
 
@@ -1352,7 +1620,7 @@ What would you like to work on today?`,
         </section>
 
         {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 p-6 shadow-lg">
+        <div className="bg-card dark:bg-card border-t border-border dark:border-border p-6 shadow-lg">
           <div className="max-w-4xl mx-auto">
             <form onSubmit={handleSubmit} className="flex items-end space-x-3" role="form">
             <div className="flex-1">
@@ -1367,9 +1635,9 @@ What would you like to work on today?`,
                 placeholder={isLoading ? "AI is processing your request..." : "Ask about your business, request actions, or get strategic advice..."}
                 rows={1}
                 className={`w-full px-4 py-3 border rounded-xl resize-none transition-all duration-200 ${
-                  isLoading 
-                    ? 'border-olive-300 bg-olive-50 text-gray-600 cursor-wait' 
-                    : 'border-gray-300 bg-white focus:ring-2 focus:ring-olive-500 focus:border-transparent'
+                  isLoading
+                    ? 'border-olive-300 dark:border-olive-700 bg-olive-50 dark:bg-olive-900/20 text-muted-foreground dark:text-muted-foreground cursor-wait'
+                    : 'border-border dark:border-border bg-background dark:bg-background text-foreground dark:text-foreground focus:ring-2 focus:ring-olive-500 focus:border-transparent'
                 }`}
                 style={{
                   minHeight: '50px',
@@ -1411,8 +1679,8 @@ What would you like to work on today?`,
                 Send your message to get AI assistance with your business needs.
               </div>
             </div>
-            
-            <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
+
+            <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground dark:text-muted-foreground">
               <div className="flex items-center space-x-4">
                 <span>💡 Try: "Analyze my revenue" or "Launch a marketing campaign"</span>
               </div>
@@ -1426,20 +1694,20 @@ What would you like to work on today?`,
 
       {/* AI Insights Sidebar */}
       {showInsights && (
-        <aside className="w-80 bg-white border-l border-gray-200 flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-gray-200">
+        <aside className="w-80 bg-card dark:bg-card border-l border-border dark:border-border flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-border dark:border-border">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">AI Insights</h2>
+              <h2 className="font-semibold text-foreground dark:text-foreground">AI Insights</h2>
               <button
                 onClick={() => setShowInsights(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-foreground transition-colors"
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>
             </div>
           </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/50 dark:bg-background/50">
             <AIPerformanceMetricsWidget onRefresh={0} loading={false} />
           </div>
         </aside>

@@ -183,18 +183,14 @@ async function sendNotifications() {
 }
 
 async function logFinalSummary() {
-  )
-  
-  )
-  
   try {
     const resultsData = await fs.readFile('test-results/triple-tool-report.json', 'utf8')
     const results = JSON.parse(resultsData)
-    
+
     const { total, passed, failed, skipped, duration } = results.summary
     const passRate = total > 0 ? Math.round((passed / total) * 100) : 0
 
-    }s`)
+    console.log(`\n📊 Test Summary: ${total} tests, ${passed} passed, ${failed} failed (${passRate}%)`)
 
     const tools = ['playwright', 'puppeteer', 'computerUse']
     tools.forEach(tool => {
@@ -203,21 +199,19 @@ async function logFinalSummary() {
         const toolPassed = toolResults.filter(r => r.status === 'passed').length
         const toolTotal = toolResults.length
         const toolName = tool.charAt(0).toUpperCase() + tool.slice(1)
-        
+        console.log(`  ${toolName}: ${toolPassed}/${toolTotal} passed`)
       }
     })
 
     if (failed > 0) {
-
+      console.log('\n❌ Some tests failed')
     } else {
-
+      console.log('\n✅ All tests passed!')
     }
-    
-  } catch (error) {
 
+  } catch (error) {
+    console.warn('⚠️  Could not generate final summary:', error.message)
   }
-  
-  )
 }
 
 process.on('exit', () => {

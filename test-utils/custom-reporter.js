@@ -26,12 +26,13 @@ class TripleToolReporter {
 
   onBegin(config, suite) {
     this.startTime = Date.now()
-
+    console.log('🎬 Starting Triple Tool Testing Suite')
   }
 
   onTestBegin(test, result) {
     const testType = this.categorizeTest(test)
-    } ${test.title}`)
+    const icon = this.getTestIcon(testType)
+    console.log(`${icon} Running: ${test.title}`)
   }
 
   onTestEnd(test, result) {
@@ -56,18 +57,18 @@ class TripleToolReporter {
     switch (status) {
       case 'passed':
         this.results.summary.passed++
-        `)
+        console.log(`  ✅ Passed`)
         break
       case 'failed':
         this.results.summary.failed++
-        `)
+        console.log(`  ❌ Failed`)
         if (result.error) {
-          
+          console.log(`     Error: ${result.error.message}`)
         }
         break
       case 'skipped':
         this.results.summary.skipped++
-        
+        console.log(`  ⏭️  Skipped`)
         break
     }
   }
@@ -106,15 +107,18 @@ class TripleToolReporter {
   }
 
   async generateReport() {
-    
-    )
-    
+    console.log('\n' + '='.repeat(80))
+    console.log('📊 Triple Tool Test Results Summary')
+    console.log('='.repeat(80))
+
     const { total, passed, failed, skipped, duration } = this.results.summary
     const passRate = total > 0 ? Math.round((passed / total) * 100) : 0
 
-    }s`)
+    console.log(`Total: ${total} | Passed: ${passed} | Failed: ${failed} | Skipped: ${skipped}`)
+    console.log(`Pass Rate: ${passRate}% | Duration: ${Math.round(duration / 1000)}s`)
 
-    )
+    console.log('\n📋 Results by Testing Tool:')
+    console.log('-'.repeat(80))
     
     const tools = ['playwright', 'puppeteer', 'computerUse']
     tools.forEach(tool => {
@@ -127,11 +131,11 @@ class TripleToolReporter {
       if (toolTotal > 0) {
         const icon = this.getTestIcon(tool)
         const toolName = tool.charAt(0).toUpperCase() + tool.slice(1)
-        `)
+        console.log(`${icon} ${toolName}: ${toolPassed}/${toolTotal} passed (${toolPassRate}%)`)
       }
     })
 
-    )
+    console.log('\n' + '-'.repeat(80))
     
     const performanceTests = this.results.playwright.filter(t => 
       t.title.toLowerCase().includes('performance') || 
@@ -142,27 +146,27 @@ class TripleToolReporter {
       const avgDuration = Math.round(
         performanceTests.reduce((sum, test) => sum + test.duration, 0) / performanceTests.length
       )
-      
+      console.log(`⚡ Performance Tests: ${performanceTests.length} tests, avg ${avgDuration}ms`)
     }
 
-    const visualTests = this.results.playwright.filter(t => 
-      t.title.toLowerCase().includes('visual') || 
+    const visualTests = this.results.playwright.filter(t =>
+      t.title.toLowerCase().includes('visual') ||
       t.title.toLowerCase().includes('screenshot')
     )
-    
+
     if (visualTests.length > 0) {
       const visualPassed = visualTests.filter(t => t.status === 'passed').length
-      
+      console.log(`👁️  Visual Tests: ${visualPassed}/${visualTests.length} passed`)
     }
 
-    const a11yTests = this.results.playwright.filter(t => 
-      t.title.toLowerCase().includes('accessibility') || 
+    const a11yTests = this.results.playwright.filter(t =>
+      t.title.toLowerCase().includes('accessibility') ||
       t.title.toLowerCase().includes('wcag')
     )
-    
+
     if (a11yTests.length > 0) {
       const a11yPassed = a11yTests.filter(t => t.status === 'passed').length
-      
+      console.log(`♿ Accessibility Tests: ${a11yPassed}/${a11yTests.length} passed`)
     }
 
     const failedTests = [
@@ -172,28 +176,29 @@ class TripleToolReporter {
     ].filter(t => t.status === 'failed')
 
     if (failedTests.length > 0) {
-      
-      )
-      
+      console.log('\n❌ Failed Tests:')
+      console.log('-'.repeat(80))
+
       failedTests.forEach((test, index) => {
-        
-        }:${test.line}`)
+        console.log(`${index + 1}. ${test.title}`)
+        console.log(`   File: ${test.file}:${test.line}`)
         if (test.error) {
-          
+          console.log(`   Error: ${test.error.message}`)
         }
-        
+        console.log('')
       })
     }
 
     await this.generateJSONReport()
-    
+    console.log('📄 JSON report saved to test-results/triple-tool-report.json')
     await this.generateHTMLReport()
+    console.log('📄 HTML report saved to test-results/triple-tool-report.html')
 
     if (failed > 0) {
-       failed. See details above.`)
+      console.log(`\n❌ Tests failed: ${failed} failed. See details above.`)
       process.exit(1)
     } else {
-      
+      console.log('\n✅ All tests passed!')
     }
   }
 

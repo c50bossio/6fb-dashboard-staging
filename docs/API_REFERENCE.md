@@ -1,7 +1,7 @@
 # API Reference
 
 **6FB AI Agent System - Barbershop Management Platform**
-**Last Updated**: October 9, 2025
+**Last Updated**: October 11, 2025
 **Version**: 0.9.0
 **Base URL**: `https://yourdomain.com/api`
 
@@ -13,8 +13,9 @@
 2. [Response Format](#response-format)
 3. [Error Handling](#error-handling)
 4. [Schedule & Appointments APIs](#schedule--appointments-apis)
-5. [Customer Management APIs](#customer-management-apis)
-6. [Product Management APIs](#product-management-apis)
+5. [Staff Management APIs](#staff-management-apis)
+6. [Customer Management APIs](#customer-management-apis)
+7. [Product Management APIs](#product-management-apis)
 7. [Point of Sale (POS) APIs](#point-of-sale-pos-apis)
 8. [Inventory Management APIs](#inventory-management-apis)
 9. [Barber Customization APIs](#barber-customization-apis)
@@ -248,6 +249,226 @@ curl -X GET "https://yourdomain.com/api/shop/schedule?startDate=2025-10-09&endDa
   "details": { "message": "Failed to fetch appointments" }
 }
 ```
+
+---
+
+## Staff Management APIs
+
+### GET /api/staff
+
+Retrieves staff and barber data for a barbershop location. Uses profiles joined with barbershop_staff employment details.
+
+**Authentication**: Required (Bearer token)
+
+**Query Parameters**:
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| barbershop_id | UUID | Yes* | UUID of the barbershop (*Required if not in URL or profile) |
+| format | string | No | Response format: 'resources' (FullCalendar) or 'default' (standard array) |
+
+**Request Example**:
+
+```bash
+curl -X GET "https://yourdomain.com/api/staff?barbershop_id=c5a58548-8f23-426c-bedc-49a83d238724&format=resources" \
+  -H "Authorization: Bearer <token>"
+```
+
+**Response (format=default)**:
+
+```json
+{
+  "success": true,
+  "staff": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "user_id": "550e8400-e29b-41d4-a716-446655440000",
+      "barbershop_id": "c5a58548-8f23-426c-bedc-49a83d238724",
+      "role": "BARBER",
+      "is_active": true,
+      "can_take_appointments": true,
+      "is_visible_for_booking": true,
+      "email": "barber@example.com",
+      "first_name": "John",
+      "last_name": "Doe",
+      "full_name": "John Doe",
+      "phone": "+1234567890",
+      "avatar_url": "https://example.com/avatar.jpg",
+      "title": "Barber",
+      "specialties": ["Fades", "Beard Trim"],
+      "bio": "10 years of experience in classic cuts",
+      "experience_years": 10,
+      "commission_rate": 0.60,
+      "hourly_rate": 25.00,
+      "employment_type": "commission",
+      "booth_rent_amount": null,
+      "started_at": "2020-01-01T00:00:00Z",
+      "display_name": "John Doe",
+      "service_provider_since": "2020-01-01T00:00:00Z",
+      "created_at": "2020-01-01T00:00:00Z",
+      "updated_at": "2025-10-11T00:00:00Z",
+      "profile": {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "email": "barber@example.com",
+        "full_name": "John Doe"
+      }
+    }
+  ],
+  "barbershop_id": "c5a58548-8f23-426c-bedc-49a83d238724",
+  "count": 5
+}
+```
+
+**Response (format=resources)** - FullCalendar format:
+
+```json
+{
+  "success": true,
+  "resources": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "John Doe",
+      "eventColor": "#10b981",
+      "extendedProps": {
+        "staff_id": "550e8400-e29b-41d4-a716-446655440000",
+        "email": "barber@example.com",
+        "phone": "+1234567890",
+        "avatar_url": "https://example.com/avatar.jpg",
+        "role": "BARBER",
+        "commission_rate": 0.60,
+        "is_active": true,
+        "can_take_appointments": true,
+        "is_visible_for_booking": true
+      }
+    }
+  ],
+  "barbershop_id": "c5a58548-8f23-426c-bedc-49a83d238724",
+  "total": 5
+}
+```
+
+**Single Source of Truth Architecture**:
+
+This endpoint queries the `profiles` table joined with `barbershop_staff` to get complete staff information:
+
+1. **`profiles` table**: All authenticated users with Supabase Auth accounts
+2. **`barbershop_staff` table**: Employment details (commission_rate, hourly_rate, employment_type, etc.)
+
+**Join Pattern**: Uses inner join to ensure staff members have both a profile and active employment record.
+
+**Response Fields**:
+
+| Field | Type | Description | Source |
+|-------|------|-------------|--------|
+| `id` | UUID | Staff member unique identifier | profiles.id |
+| `user_id` | UUID | User account ID | profiles.id |
+| `barbershop_id` | UUID | Barbershop location ID | barbershop_staff |
+| `role` | String | User role (BARBER, SHOP_OWNER, MANAGER, STAFF, ENTERPRISE_OWNER) | profiles.role |
+| `is_active` | Boolean | Whether staff member is active | profiles.is_active |
+| `can_take_appointments` | Boolean | Can accept bookings (role-based defaults) | Computed |
+| `is_visible_for_booking` | Boolean | Shown in booking interface | profiles |
+| `email` | String | Email address | profiles.email |
+| `first_name` | String | First name | profiles.first_name |
+| `last_name` | String | Last name | profiles.last_name |
+| `full_name` | String | Display name | profiles.full_name |
+| `phone` | String | Phone number | profiles.phone |
+| `avatar_url` | String\|null | Profile photo URL | profiles.avatar_url |
+| `title` | String | Job title (Owner, Manager, Barber) | Computed from role |
+| `specialties` | String[] | Service specialties | profiles.specialties |
+| `bio` | String | Biography | profiles.bio |
+| `experience_years` | Integer | Years of experience | profiles.experience_years |
+| `commission_rate` | Decimal\|null | Commission percentage (0-1 decimal) | barbershop_staff |
+| `hourly_rate` | Decimal\|null | Hourly wage rate | barbershop_staff |
+| `employment_type` | String | Employment type (commission, hourly, booth_rent, hybrid) | barbershop_staff |
+| `booth_rent_amount` | Decimal\|null | Booth rent amount if applicable | barbershop_staff |
+| `started_at` | ISO8601\|null | Employment start date | barbershop_staff |
+| `display_name` | String | Formatted display name | Computed |
+| `service_provider_since` | ISO8601 | Date started providing services | barbershop_staff.started_at or profiles.created_at |
+| `profile` | Object | Direct profile reference | profiles |
+
+**Role-Based Appointment Defaults**:
+
+| Role | can_take_appointments | Description |
+|------|----------------------|-------------|
+| BARBER | true | Service providers |
+| SHOP_OWNER | true | Can provide services |
+| ENTERPRISE_OWNER | true | Can provide services |
+| MANAGER | false | Administrative role |
+| STAFF | false | Support role |
+
+**Error Responses**:
+
+```json
+// 400 Bad Request - Missing barbershop_id (when not in profile)
+{
+  "error": "No barbershop found for user"
+}
+
+// 401 Unauthorized - No auth token
+{
+  "error": "Unauthorized",
+  "hint": "Please log in again"
+}
+
+// 404 Not Found - Profile not found
+{
+  "error": "Profile not found"
+}
+
+// 500 Internal Server Error - Database error
+{
+  "error": "Internal server error",
+  "details": "Database query failed: <error message>",
+  "type": "Error",
+  "timestamp": "2025-10-11T12:00:00Z"
+}
+```
+
+**Usage Examples**:
+
+```javascript
+// Fetch staff for calendar display
+const response = await fetch('/api/staff?format=resources&barbershop_id=c5a58548-8f23-426c-bedc-49a83d238724', {
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+})
+const { resources } = await response.json()
+
+// Fetch staff for management dashboard
+const response = await fetch('/api/staff?barbershop_id=c5a58548-8f23-426c-bedc-49a83d238724', {
+  headers: {
+    'Authorization': `Bearer ${token}`
+  }
+})
+const { staff, count } = await response.json()
+```
+
+**Performance Considerations**:
+
+- Single query with inner join for optimal performance
+- No deduplication needed (single source of truth)
+- Transform operations are O(n) where n = total staff members
+- Includes retry logic with exponential backoff for transient failures
+- Efficient database query using indexed joins
+
+**FullCalendar Integration**:
+
+When `format=resources` is specified:
+- Only staff with `can_take_appointments: true` are included
+- Each resource gets a consistent color based on staff ID
+- Extended properties include all staff metadata for event rendering
+- Compatible with FullCalendar Scheduler's resource timeline view
+
+**Related Endpoints**:
+- `GET /api/shop/schedule` - Appointment management
+- `GET /api/shop/barber-customizations` - Barber landing page settings
+
+**Related Documentation**:
+- Calendar permissions: `/lib/calendar-permissions.js`
+- Staff API implementation: `/app/api/staff/route.js`
+- Schema standards: `/docs/SCHEMA_STANDARDS.md`
+- Employment models: `/docs/EMPLOYMENT_MODELS.md`
 
 ---
 
@@ -1246,5 +1467,5 @@ API versioning is handled through the base URL. Future versions will be accessib
 
 ---
 
-*Last Updated: October 9, 2025*
+*Last Updated: October 11, 2025*
 *API Version: 1.0*

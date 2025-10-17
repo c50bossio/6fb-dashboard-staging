@@ -8,69 +8,46 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const includeAnalytics = searchParams.get('include_analytics') === 'true'
     const periodDays = parseInt(searchParams.get('period_days') || '30')
-    
-    // Check if we're in development mode for bypass
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    const devBypass = request.headers.get('x-dev-bypass') === 'true' || isDevelopment
-    
-    let supabase
-    let user = null
-    let userId
-    
-    // In development, use service role client to bypass RLS
-    if (devBypass && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-      supabase = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-        {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false
-          }
-        }
+
+    // Always use standard client - no bypasses
+    const supabase = await createClient()
+
+    // Get the authenticated user from the session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error('Authentication failed in product fetch:', authError)
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
       )
-      
-      // Use mock user for development - use actual user ID from database
-      user = {
-        id: null /* hardcoded ID removed for production */, // Actual user c50bossio@gmail.com
-        email: null /* hardcoded ID removed for production */
-      }
-      userId = user.id
-      
-    } else {
-      // Production path - use normal client
-      supabase = createClient()
-      
-      // Get the authenticated user from the session
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-      
-      if (authError || !authUser) {
-        console.error('Authentication failed in product fetch:', authError)
-        return NextResponse.json(
-          { error: 'Unauthorized - Please log in' },
-          { status: 401 }
-        )
-      }
-      
-      user = authUser
-      userId = user.id
     }
+
+    const userId = user.id
     
     // Get user profile with shop_id/barbershop_id
     let profile = null
     if (userId) {
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('role, barbershop_id, barbershop_id')
+        .select('role, barbershop_id')
         .eq('id', userId)
         .single()
       profile = profileData
     }
-    
-    if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
+
+    if (!profile) {
       return NextResponse.json(
-        { error: 'Forbidden - Must be a shop owner or admin' },
+        { error: 'Profile not found' },
+        { status: 404 }
+      )
+    }
+
+    // Allow BARBER role to read products (needed for POS), but restrict modifications to owners
+    const allowedRoles = ['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN', 'BARBER']
+    if (!allowedRoles.includes(profile.role)) {
+      return NextResponse.json(
+        { error: 'Forbidden - Insufficient permissions' },
         { status: 403 }
       )
     }
@@ -78,9 +55,9 @@ export async function GET(request) {
     // Find the barbershop - check profile first (like Cin7 sync does)
     let shop = null
     
-    // Method 1: Check profile for shop_id or barbershop_id (most reliable)
-    if (profile && (profile.barbershop_id || profile.barbershop_id)) {
-      const barbershopId = profile.barbershop_id || profile.barbershop_id
+    // Method 1: Check profile for barbershop_id (most reliable)
+    if (profile && profile.barbershop_id) {
+      const barbershopId = profile.barbershop_id
       const { data: profileShop } = await supabase
         .from('barbershops')
         .select('id, name')
@@ -204,9 +181,11 @@ export async function GET(request) {
     
   } catch (error) {
     console.error('Error in /api/shop/products:', error)
-    
+    console.error('Error stack:', error.stack)
+    console.error('Error message:', error.message)
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     )
   }
@@ -214,51 +193,20 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Check if we're in development mode for bypass
-    const isDevelopment = process.env.NODE_ENV === 'development'
-    const devBypass = request.headers.get('x-dev-bypass') === 'true' || isDevelopment
-    
-    let supabase
-    let user = null
-    let userId
-    
-    // In development, use service role client to bypass RLS
-    if (devBypass && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const { createClient: createServiceClient } = await import('@supabase/supabase-js')
-      supabase = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
-        {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false
-          }
-        }
+    // Always use standard client - no bypasses
+    const supabase = await createClient()
+
+    // Get the authenticated user from the session
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
       )
-      
-      // Use mock user for development
-      user = {
-        id: null /* hardcoded ID removed for production */, // Actual user c50bossio@gmail.com
-        email: null /* hardcoded ID removed for production */
-      }
-      userId = user.id
-    } else {
-      // Production path - use normal client
-      supabase = createClient()
-      
-      // Get the authenticated user from the session
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
-      
-      if (authError || !authUser) {
-        return NextResponse.json(
-          { error: 'Unauthorized - Please log in' },
-          { status: 401 }
-        )
-      }
-      
-      user = authUser
-      userId = user.id
     }
+
+    const userId = user.id
     
     const productData = await request.json()
     
@@ -272,7 +220,7 @@ export async function POST(request) {
       profile = profileData
     }
     
-    if (!isDevelopment && (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role))) {
+    if (!profile || !['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN'].includes(profile.role)) {
       return NextResponse.json(
         { error: 'Forbidden - Must be a shop owner or admin' },
         { status: 403 }
@@ -368,8 +316,19 @@ async function generateProductAnalytics(supabase, barbershopId, periodDays, prod
     }
   } catch (error) {
     console.error('Analytics generation error:', error)
-    // Return comprehensive mock data structure on error
-    return generateMockAnalyticsData(products, periodDays)
+    // Return empty analytics structure on error - NO MOCK DATA
+    return {
+      topProducts: [],
+      categoryBreakdown: [],
+      revenueOverTime: [],
+      profitMargins: [],
+      recommendations: [],
+      inventoryInsights: {},
+      commissionData: {},
+      salesTrends: {},
+      performanceMetrics: {},
+      error: 'Failed to generate analytics'
+    }
   }
 }
 

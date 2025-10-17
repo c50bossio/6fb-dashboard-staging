@@ -14,8 +14,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
  */
 export async function POST(request) {
   try {
-    const supabase = createClient()
-    
+    const supabase = await createClient()
+
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -48,11 +48,18 @@ export async function POST(request) {
       .eq('id', barbershopId)
       .single()
 
-    const hasAccess = profile?.barbershop_id === barbershopId || 
+    // Allow access if:
+    // 1. User's profile is associated with this barbershop
+    // 2. User is the owner of this barbershop
+    // 3. User has admin/owner privileges
+    // 4. User is a BARBER (needs terminal access for POS)
+    const allowedRoles = ['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN', 'BARBER']
+    const hasAccess = profile?.barbershop_id === barbershopId ||
                      barbershop?.owner_id === user.id ||
-                     profile?.role === 'admin'
+                     allowedRoles.includes(profile?.role)
 
     if (!hasAccess) {
+      console.error('Access denied - Profile:', profile, 'Barbershop:', barbershop)
       return NextResponse.json(
         { error: 'Access denied to this barbershop' },
         { status: 403 }

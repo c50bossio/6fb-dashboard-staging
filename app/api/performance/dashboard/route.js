@@ -20,11 +20,11 @@ export async function GET(request) {
     // Get user's barbershop for metrics
     const { data: profile } = await supabase
       .from('profiles')
-      .select('barbershop_id, shop_id')
+      .select('barbershop_id')
       .eq('id', user.id)
       .single()
 
-    const barbershopId = profile?.barbershop_id || profile?.shop_id
+    const barbershopId = profile?.barbershop_id
 
     if (!barbershopId) {
       return NextResponse.json({ error: 'No barbershop found' }, { status: 404 })

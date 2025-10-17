@@ -16,6 +16,7 @@ import {
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { subscribeToChannel, unsubscribeFromChannel, CHANNELS, EVENTS } from '@/lib/supabase-realtime'
 
 const DashboardHeader = React.memo(function DashboardHeader() {
   const { user, profile, signOut } = useAuth()
@@ -23,6 +24,8 @@ const DashboardHeader = React.memo(function DashboardHeader() {
   const [timeOfDay, setTimeOfDay] = useState('')
   const [currentTime, setCurrentTime] = useState('')
   const [activeDropdown, setActiveDropdown] = useState(null) // 'notifications', 'profile', or null
+  const [notifications, setNotifications] = useState([])
+  const [loadingNotifications, setLoadingNotifications] = useState(false)
 
   // Refs for dropdown containers
   const notificationsRef = useRef(null)
@@ -139,17 +142,130 @@ const DashboardHeader = React.memo(function DashboardHeader() {
   // Get the actual user role for permissions
   const userRole = profile?.role || user?.user_metadata?.role || 'CLIENT'
 
+  // Fetch notifications from database
+  const fetchNotifications = async () => {
+    setLoadingNotifications(true)
+    try {
+      const response = await fetch('/api/user/notifications?limit=10')
+      if (response.ok) {
+        const data = await response.json()
+        setNotifications(data.notifications || [])
+      } else {
+        console.error('Failed to fetch notifications')
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error)
+    } finally {
+      setLoadingNotifications(false)
+    }
+  }
+
+  // Fetch notifications on mount and when dropdown opens
+  useEffect(() => {
+    if (user) {
+      fetchNotifications()
+
+      // Poll for new notifications every 30 seconds (fallback if Pusher fails)
+      const interval = setInterval(fetchNotifications, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [user])
+
+  // Set up Supabase Realtime notifications (with graceful fallback to polling)
+  useEffect(() => {
+    if (!user?.id) return
+
+    let channel = null
+
+    try {
+      const channelName = CHANNELS.USER_NOTIFICATIONS(user.id)
+
+      // Subscribe to Supabase Realtime channel
+      channel = subscribeToChannel(channelName, {
+        [EVENTS.NEW_NOTIFICATION]: (data) => {
+          console.log('📬 New notification received via Supabase Realtime:', data)
+
+          // Add notification to the list
+          setNotifications(prev => [{
+            id: data.id,
+            message: data.message || data.title,
+            time: 'just now',
+            read: false,
+            type: data.type,
+            metadata: data.metadata
+          }, ...prev.slice(0, 9)]) // Keep only latest 10
+
+          // Show browser notification if permitted
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(data.title || 'New Notification', {
+              body: data.message,
+              icon: '/icon-192x192.png'
+            })
+          }
+        },
+        [EVENTS.NOTIFICATION_READ]: (data) => {
+          setNotifications(prev =>
+            prev.map(notif =>
+              notif.id === data.notificationId ? { ...notif, read: true } : notif
+            )
+          )
+        }
+      })
+
+      console.log('✅ Supabase Realtime subscribed to:', channelName)
+
+    } catch (error) {
+      console.log('ℹ️ Supabase Realtime initialization failed, using polling fallback:', error.message)
+    }
+
+    return () => {
+      if (channel) {
+        try {
+          const channelName = CHANNELS.USER_NOTIFICATIONS(user.id)
+          unsubscribeFromChannel(channelName)
+        } catch (error) {
+          // Silently handle cleanup errors
+        }
+      }
+    }
+  }, [user?.id])
+
   // Toggle dropdown handlers
   const toggleDropdown = (dropdown) => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown)
+
+    // Refresh notifications when opening the dropdown
+    if (dropdown === 'notifications' && user) {
+      fetchNotifications()
+    }
   }
 
-  // Sample notifications data
-  const notifications = [
-    { id: 1, message: 'New booking from John Doe', time: '5 min ago', read: false },
-    { id: 2, message: 'Payment received: $45.00', time: '1 hour ago', read: false },
-    { id: 3, message: 'Schedule updated for tomorrow', time: '2 hours ago', read: true },
-  ]
+  // Mark notification as read
+  const markAsRead = async (notificationId) => {
+    try {
+      // Optimistic update - update UI immediately
+      setNotifications(prev =>
+        prev.map(notif =>
+          notif.id === notificationId ? { ...notif, read: true } : notif
+        )
+      )
+
+      // Send API request
+      const response = await fetch(`/api/user/notifications/${notificationId}/read`, {
+        method: 'PUT'
+      })
+
+      if (!response.ok) {
+        // Revert on error
+        fetchNotifications()
+        console.error('Failed to mark notification as read')
+      }
+    } catch (error) {
+      // Revert on error
+      fetchNotifications()
+      console.error('Error marking notification as read:', error)
+    }
+  }
 
   const handleSignOut = async () => {
     try {
@@ -216,23 +332,37 @@ const DashboardHeader = React.memo(function DashboardHeader() {
                     <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
-                    {notifications.length > 0 ? (
+                    {loadingNotifications ? (
+                      <div className="p-8 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-olive-600 mx-auto"></div>
+                        <p className="text-sm text-muted-foreground mt-2">Loading...</p>
+                      </div>
+                    ) : notifications.length > 0 ? (
                       notifications.map(notif => (
-                        <div key={notif.id} className={`p-4 border-b border-border hover:bg-muted ${!notif.read ? 'bg-olive-50 dark:bg-olive-900/20' : ''}`}>
+                        <div
+                          key={notif.id}
+                          onClick={() => !notif.read && markAsRead(notif.id)}
+                          className={`p-4 border-b border-border hover:bg-muted cursor-pointer transition-colors ${!notif.read ? 'bg-olive-50 dark:bg-olive-900/20' : ''}`}
+                        >
                           <p className="text-sm text-foreground">{notif.message}</p>
                           <p className="text-xs text-muted-foreground mt-1">{notif.time}</p>
                         </div>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-sm text-muted-foreground">
-                        No new notifications
+                      <div className="p-8 text-center text-sm text-muted-foreground">
+                        <BellSlashIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                        <p>No new notifications</p>
                       </div>
                     )}
                   </div>
                   <div className="p-3 border-t border-border">
-                    <button className="text-sm text-olive-600 dark:text-olive-400 hover:text-olive-700 dark:hover:text-olive-300 font-medium w-full text-center">
+                    <Link
+                      href="/dashboard/notifications"
+                      onClick={() => setActiveDropdown(null)}
+                      className="text-sm text-olive-600 dark:text-olive-400 hover:text-olive-700 dark:hover:text-olive-300 font-medium w-full text-center block"
+                    >
                       View all notifications
-                    </button>
+                    </Link>
                   </div>
                 </div>
               )}

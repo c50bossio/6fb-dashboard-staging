@@ -1,1 +1,29 @@
-{"cookies":[],"origins":[]}
+{
+  "cookies": [
+    {
+      "name": "dev_auth",
+      "value": "true",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1760815813.776295,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:9999",
+      "localStorage": [
+        {
+          "name": "dev_session",
+          "value": "true"
+        },
+        {
+          "name": "supabase.auth.token",
+          "value": "{\"access_token\":\"test_token_1760729413776\",\"user\":{\"id\":\"test-user-playwright\",\"email\":\"playwright@test.com\",\"user_metadata\":{\"full_name\":\"Playwright Test User\"}},\"expires_at\":1760815813776}"
+        }
+      ]
+    }
+  ]
+}

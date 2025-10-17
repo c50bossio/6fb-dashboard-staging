@@ -67,7 +67,7 @@ export async function verifyAuth(request) {
     
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id, email, role, shop_id')
+      .select('id, email, role, barbershop_id')
       .eq('id', session.user.id)
       .single()
     

@@ -11,7 +11,7 @@ setup('authenticate', async ({ page }) => {
     localStorage.setItem('dev_session', 'true')
     document.cookie = 'dev_auth=true; path=/; max-age=86400'
     
-    const Session = {
+    const mockSession = {
       access_token: 'test_token_' + Date.now(),
       user: {
         id: 'test-user-playwright',
@@ -22,7 +22,7 @@ setup('authenticate', async ({ page }) => {
       },
       expires_at: Date.now() + (24 * 60 * 60 * 1000) // 24 hours from now
     }
-    
+
     localStorage.setItem('supabase.auth.token', JSON.stringify(mockSession))
     
   })

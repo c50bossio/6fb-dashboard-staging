@@ -25,6 +25,14 @@ export default function UnifiedExecutiveSummary({ data }) {
     satisfaction: 0
   }
 
+  // REAL growth percentages from API (not hardcoded!)
+  const growth = data?.growth || {
+    revenue: 0,
+    customers: 0,
+    appointments: 0,
+    satisfaction: 0
+  }
+
   // Use real today's metrics from data
   const todayMetrics = data?.todayMetrics || {
     revenue: data?.dailyRevenue || 0,
@@ -46,18 +54,15 @@ export default function UnifiedExecutiveSummary({ data }) {
   const healthStatus = healthScore >= 90 ? 'Excellent' : healthScore >= 70 ? 'Good' : healthScore >= 50 ? 'Fair' : 'Needs Attention'
   const healthColor = healthScore >= 90 ? 'green' : healthScore >= 70 ? 'blue' : healthScore >= 50 ? 'yellow' : 'red'
 
-  // Get AI insights - handle both object and string formats
+  // Get AI insights - dynamically generated from real analytics data (NO MOCK DATA!)
   const rawInsights = data?.insights || []
-  const aiInsights = rawInsights.length > 0 
-    ? rawInsights.map(insight => 
-        typeof insight === 'object' 
+  const aiInsights = rawInsights.length > 0
+    ? rawInsights.map(insight =>
+        typeof insight === 'object'
           ? insight.description || insight.message || insight.title || 'Insight available'
           : insight
       )
-    : [
-        'Your premium services are performing 40% better than standard cuts',
-        'Tuesday bookings are consistently 50% lower - opportunity for promotion'
-      ]
+    : [] // Empty array when no insights (following NO MOCK DATA policy)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -124,7 +129,7 @@ export default function UnifiedExecutiveSummary({ data }) {
               <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
                   <CurrencyDollarIcon className="h-5 w-5 text-olive-600 dark:text-olive-400" />
-                  {formatChange(12.5)}
+                  {formatChange(growth.revenue)}
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   ${metrics.revenue >= 1000 ? `${(metrics.revenue / 1000).toFixed(1)}k` : metrics.revenue.toFixed(0)}
@@ -135,7 +140,7 @@ export default function UnifiedExecutiveSummary({ data }) {
               <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
                   <UserGroupIcon className="h-5 w-5 text-olive-600 dark:text-olive-400" />
-                  {formatChange(8.3)}
+                  {formatChange(growth.customers)}
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   {metrics.customers.toLocaleString()}
@@ -146,7 +151,7 @@ export default function UnifiedExecutiveSummary({ data }) {
               <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
                   <CalendarDaysIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  {formatChange(15)}
+                  {formatChange(growth.appointments)}
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   {metrics.appointments}
@@ -157,7 +162,7 @@ export default function UnifiedExecutiveSummary({ data }) {
               <div className="metric-card">
                 <div className="flex items-center justify-between mb-2">
                   <StarIcon className="h-5 w-5 text-amber-800 dark:text-amber-500" />
-                  {formatChange(0.2, '+')}
+                  {formatChange(growth.satisfaction, '+')}
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   {metrics.satisfaction.toFixed(2)}
@@ -247,23 +252,25 @@ export default function UnifiedExecutiveSummary({ data }) {
           </div>
         </div>
 
-        {/* AI Insights */}
-        <div className="mt-6 bg-gradient-to-r from-gold-50 to-indigo-50 dark:from-gold-900/20 dark:to-indigo-900/20 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <SparklesIcon className="h-5 w-5 text-gold-600 dark:text-gold-400 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="text-sm font-semibold text-foreground mb-2">AI Insights</h4>
-              <div className="space-y-2">
-                {aiInsights.slice(0, 2).map((insight, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <span className="text-gold-600 dark:text-gold-400">•</span>
-                    <p className="text-sm text-foreground/90">{insight}</p>
-                  </div>
-                ))}
+        {/* AI Insights - Dynamic (NO MOCK DATA!) */}
+        {aiInsights.length > 0 && (
+          <div className="mt-6 bg-gradient-to-r from-gold-50 to-indigo-50 dark:from-gold-900/20 dark:to-indigo-900/20 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <SparklesIcon className="h-5 w-5 text-gold-600 dark:text-gold-400 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="text-sm font-semibold text-foreground mb-2">AI Insights</h4>
+                <div className="space-y-2">
+                  {aiInsights.slice(0, 2).map((insight, idx) => (
+                    <div key={idx} className="flex items-start gap-2">
+                      <span className="text-gold-600 dark:text-gold-400">•</span>
+                      <p className="text-sm text-foreground/90">{insight}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

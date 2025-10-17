@@ -36,10 +36,21 @@ class ErrorBoundary extends Component {
       errorInfo,
     })
 
-    // TODO: Send error to error tracking service (Sentry, etc.)
-    // if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
-    //   Sentry.captureException(error, { extra: errorInfo })
-    // }
+    // Send error to Sentry (if configured)
+    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      // Dynamically import Sentry to avoid build issues if not configured
+      import('@sentry/nextjs').then((Sentry) => {
+        Sentry.captureException(error, {
+          contexts: {
+            react: {
+              componentStack: errorInfo.componentStack,
+            },
+          },
+        })
+      }).catch((err) => {
+        console.warn('Failed to report error to Sentry:', err)
+      })
+    }
   }
 
   handleReset = () => {

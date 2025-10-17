@@ -11,19 +11,24 @@ import {
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/components/SupabaseAuthProvider'
 import { createClient } from '@/lib/supabase/UNIFIED_CLIENT'
-import { getTenant } from '@/lib/tenant-resolver-client'
-import { useUnifiedContext, UNIFIED_CONTEXT_LEVELS } from '@/contexts/UnifiedContextProvider'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 import { Card } from '../ui/card'
 import Button from '../ui/Button'
-import ContextBanner from '@/components/navigation/ContextBanner'
 import StreamlinedOnboarding from './StreamlinedOnboarding'
 import OrganizationFinanceDashboard from './OrganizationFinanceDashboard'
 import OwnerFinanceDashboard from './OwnerFinanceDashboard'
 import BarberEarningsDashboard from './BarberEarningsDashboard'
 
+// Context level constants (kept for backward compatibility)
+const UNIFIED_CONTEXT_LEVELS = {
+  ORGANIZATION: 'ORGANIZATION',
+  LOCATION: 'LOCATION',
+  RESOURCE: 'RESOURCE'
+}
+
 export default function UnifiedFinanceHub() {
   const { user, profile } = useAuth()
-  const { context: unifiedContext } = useUnifiedContext()
+  const { currentLocation, activeContext } = useGlobalDashboard()
   const supabase = createClient()
   
   const [loading, setLoading] = useState(true)
@@ -37,20 +42,20 @@ export default function UnifiedFinanceHub() {
       loadFinanceContext()
       return
     }
-    
+
     if (user && profile) {
       loadFinanceContext()
     }
-  }, [user, profile, unifiedContext]) // Re-load when context changes
+  }, [user, profile, currentLocation, activeContext]) // Re-load when global location context changes
 
   const loadFinanceContext = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Use unified context if available, otherwise fall back to tenant resolver
+      // Use global location context from navigation ShopSelector
       let contextData = null
-      
+
       // Development mode mock data
       if (process.env.NODE_ENV === 'development' && !user && !profile) {
         console.log('🔧 [FINANCE HUB] Using development mock data')
@@ -61,27 +66,34 @@ export default function UnifiedFinanceHub() {
           role: 'SHOP_OWNER',
           contextLevel: UNIFIED_CONTEXT_LEVELS.LOCATION
         }
-      } else if (unifiedContext) {
-        // Use unified context data
+      } else if (currentLocation) {
+        // Use global location context from ShopSelector
+        console.log('💰 [FINANCE HUB] Using global location context:', currentLocation.name)
         contextData = {
-          barbershopId: unifiedContext.locationId,
-          organizationId: unifiedContext.organizationId,
-          resourceId: unifiedContext.resourceId,
+          barbershopId: currentLocation.id,
+          organizationId: activeContext?.organizationId || null,
+          resourceId: activeContext?.contextType === 'barber' ? profile?.id : null,
           role: profile?.role || 'BARBER',
-          contextLevel: unifiedContext.level
+          contextLevel: activeContext?.contextType === 'organization'
+            ? UNIFIED_CONTEXT_LEVELS.ORGANIZATION
+            : activeContext?.contextType === 'barber'
+            ? UNIFIED_CONTEXT_LEVELS.RESOURCE
+            : UNIFIED_CONTEXT_LEVELS.LOCATION
         }
-      } else {
-        // Fallback to legacy tenant resolution
-        const { barbershopId, role } = await getTenant(profile.id, { supabase })
+      } else if (profile?.barbershop_id) {
+        // Fallback to profile barbershop_id if no location selected
+        console.log('💰 [FINANCE HUB] Falling back to profile barbershop_id')
         contextData = {
-          barbershopId,
-          role: role || 'BARBER',
+          barbershopId: profile.barbershop_id,
+          organizationId: null,
+          resourceId: null,
+          role: profile?.role || 'BARBER',
           contextLevel: UNIFIED_CONTEXT_LEVELS.LOCATION
         }
       }
-      
-      if (!contextData.barbershopId && !contextData.organizationId) {
-        setError('No barbershop or organization found. Please complete your profile setup.')
+
+      if (!contextData || (!contextData.barbershopId && !contextData.organizationId)) {
+        setError('No barbershop or organization found. Please select a location from the navigation.')
         return
       }
 
@@ -125,23 +137,50 @@ export default function UnifiedFinanceHub() {
             charges_enabled: false
           }
         } else {
-          // Production database queries
-          const { data: barbershopData } = await supabase
+          // Production database queries with graceful error handling
+          const { data: barbershopData, error: barbershopError } = await supabase
             .from('barbershops')
-            .select('name, phone, website, business_type')
+            .select('name, phone, website')
             .eq('id', contextData.barbershopId)
             .single()
-            
-          barbershop = barbershopData
 
-          // Check Stripe Connect status for this location
-          const { data: stripeData } = await supabase
-            .from('stripe_accounts')
-            .select('account_id, onboarding_completed, charges_enabled')
-            .eq('barbershop_id', contextData.barbershopId)
-            .single()
-            
-          stripeAccount = stripeData
+          if (barbershopError) {
+            console.warn('[FINANCE HUB] Error fetching barbershop data:', barbershopError.message)
+          }
+          barbershop = barbershopData || { name: 'Shop', phone: null, website: null }
+
+          // Check Stripe Connect status for this location (graceful fallback if table doesn't exist)
+          try {
+            const { data: stripeData, error: stripeError } = await supabase
+              .from('stripe_accounts')
+              .select('account_id, onboarding_completed, charges_enabled')
+              .eq('barbershop_id', contextData.barbershopId)
+              .single()
+
+            if (stripeError && (stripeError.code === 'PGRST106' || stripeError.code === '42P01')) {
+              // Table doesn't exist - this is expected in some environments
+              console.log('[FINANCE HUB] stripe_accounts table not found, using default values')
+              stripeAccount = {
+                account_id: null,
+                onboarding_completed: false,
+                charges_enabled: false
+              }
+            } else {
+              stripeAccount = stripeData || {
+                account_id: null,
+                onboarding_completed: false,
+                charges_enabled: false
+              }
+            }
+          } catch (error) {
+            // Network or other error - use defaults
+            console.warn('[FINANCE HUB] Error checking Stripe status:', error.message)
+            stripeAccount = {
+              account_id: null,
+              onboarding_completed: false,
+              charges_enabled: false
+            }
+          }
         }
         
       } else if (contextData.contextLevel === UNIFIED_CONTEXT_LEVELS.RESOURCE) {
@@ -190,7 +229,8 @@ export default function UnifiedFinanceHub() {
         billing: billingResponse,
         barbershop: barbershop,
         profile: profile,
-        unifiedContext: unifiedContext,
+        currentLocation: currentLocation, // Use global location context
+        activeContext: activeContext,     // Include active context for reference
         quickActions: generateQuickActions(stripeAccount, revenueResponse, billingResponse, contextData.role, contextData.contextLevel)
       })
 
@@ -257,9 +297,9 @@ export default function UnifiedFinanceHub() {
     return (
       <div className="p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-64"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-muted rounded w-64"></div>
+          <div className="h-32 bg-muted rounded"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </div>
     )
@@ -294,13 +334,13 @@ export default function UnifiedFinanceHub() {
   // First-time setup flow
   if (!hasStripeConnect) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="max-w-4xl mx-auto py-8 px-4">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Set Up Payments</h1>
-            <p className="text-gray-600 mt-2">Get started accepting payments in just 3 simple steps</p>
+            <h1 className="text-3xl font-bold text-foreground">Set Up Payments</h1>
+            <p className="text-muted-foreground mt-2">Get started accepting payments in just 3 simple steps</p>
           </div>
-          <StreamlinedOnboarding 
+          <StreamlinedOnboarding
             financeContext={financeContext}
             onComplete={() => loadFinanceContext()}
           />

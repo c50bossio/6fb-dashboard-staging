@@ -20,8 +20,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
  */
 export async function POST(request) {
   try {
-    const supabase = createClient()
-    
+    const supabase = await createClient()
+
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -33,15 +33,17 @@ export async function POST(request) {
     }
 
     const body = await request.json()
-    const { 
-      barbershopId, 
-      barberId, 
+    const {
+      barbershopId,
+      barberId,
       customerId,
       readerId,
       cartItems,
       paymentMethodId,
       customerEmail,
-      customerPhone
+      customerPhone,
+      subtotal,
+      processingFee
     } = body
 
     // Validate required fields
@@ -65,11 +67,18 @@ export async function POST(request) {
       .eq('id', barbershopId)
       .single()
 
-    const hasAccess = profile?.barbershop_id === barbershopId || 
+    // Allow access if:
+    // 1. User's profile is associated with this barbershop
+    // 2. User is the owner of this barbershop
+    // 3. User has admin/owner privileges
+    // 4. User is a BARBER (needs terminal access for POS)
+    const allowedRoles = ['SHOP_OWNER', 'ENTERPRISE_OWNER', 'SUPER_ADMIN', 'BARBER']
+    const hasAccess = profile?.barbershop_id === barbershopId ||
                      barbershop?.owner_id === user.id ||
-                     profile?.role === 'admin'
+                     allowedRoles.includes(profile?.role)
 
     if (!hasAccess) {
+      console.error('Access denied - Profile:', profile, 'Barbershop:', barbershop)
       return NextResponse.json(
         { error: 'Access denied to this barbershop' },
         { status: 403 }
@@ -99,12 +108,17 @@ export async function POST(request) {
     }
 
     // Calculate totals
-    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    // If subtotal and processingFee are provided from frontend, use them
+    // Otherwise fallback to calculating from cart items (backward compatibility)
+    const calculatedSubtotal = subtotal || cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+    const calculatedProcessingFee = processingFee || 0
     const tax = cartItems.reduce((sum, item) => {
       const itemTax = (item.price * item.quantity * (item.tax_rate || 0)) / 100
       return sum + itemTax
     }, 0)
-    const totalAmount = Math.round((subtotal + tax) * 100) // Convert to cents
+
+    // Total includes subtotal + processing fee + tax
+    const totalAmount = Math.round((calculatedSubtotal + calculatedProcessingFee + tax) * 100) // Convert to cents
 
     // Get barber's Stripe Connect account if specified
     let connectedAccountId = null
@@ -136,17 +150,33 @@ export async function POST(request) {
         platform: 'bookedbarber',
         payment_type: 'terminal',
         items_count: cartItems.length.toString(),
-        subtotal_cents: Math.round(subtotal * 100).toString(),
-        tax_cents: Math.round(tax * 100).toString()
+        subtotal_cents: Math.round(calculatedSubtotal * 100).toString(),
+        processing_fee_cents: Math.round(calculatedProcessingFee * 100).toString(),
+        tax_cents: Math.round(tax * 100).toString(),
+        stripe_fee_rate: '0.027',
+        platform_fee_cents: connectedAccountId ? (Math.round(calculatedProcessingFee * 100) - Math.round(totalAmount * 0.027)).toString() : '0'
       }
     }
 
     // Add Connect account handling if available
     if (connectedAccountId) {
-      const platformFee = Math.round(totalAmount * 0.10) // 10% platform fee
-      paymentIntentData.application_fee_amount = platformFee
-      paymentIntentData.transfer_data = {
-        destination: connectedAccountId
+      // Calculate platform margin from processing fee
+      // Customer pays: Subtotal + Processing Fee (2.9% + 30¢)
+      // Stripe charges barber's account: 2.7% of total
+      // Platform keeps: Processing Fee - Actual Stripe Fee
+
+      const processingFeeCents = Math.round(calculatedProcessingFee * 100)
+      const actualStripeFee = Math.round(totalAmount * 0.027) // 2.7% Terminal rate
+
+      // Application fee is your profit: what customer paid for processing minus what Stripe actually charges
+      const platformFee = processingFeeCents - actualStripeFee
+
+      // Only set application fee if positive (should always be positive with 2.9% rate)
+      if (platformFee > 0) {
+        paymentIntentData.application_fee_amount = platformFee
+        paymentIntentData.transfer_data = {
+          destination: connectedAccountId
+        }
       }
     }
 
@@ -175,7 +205,12 @@ export async function POST(request) {
           customer_email: customerEmail,
           customer_phone: customerPhone,
           connected_account_id: connectedAccountId,
-          platform_fee: connectedAccountId ? Math.round(totalAmount * 0.10) : 0
+          subtotal_cents: Math.round(calculatedSubtotal * 100),
+          processing_fee_cents: Math.round(calculatedProcessingFee * 100),
+          actual_stripe_fee_cents: connectedAccountId ? Math.round(totalAmount * 0.027) : 0,
+          platform_fee_cents: connectedAccountId ? (Math.round(calculatedProcessingFee * 100) - Math.round(totalAmount * 0.027)) : 0,
+          // Legacy field for backward compatibility
+          platform_fee: connectedAccountId ? (Math.round(calculatedProcessingFee * 100) - Math.round(totalAmount * 0.027)) : 0
         }
       })
       .select()
@@ -210,11 +245,13 @@ export async function POST(request) {
       barber_id: barberId,
       customer_id: customerId,
       metadata: {
-        subtotal: subtotal,
+        subtotal: calculatedSubtotal,
+        processing_fee: calculatedProcessingFee,
         tax: tax,
         total: totalAmount / 100,
         items_count: cartItems.length,
-        connected_account: !!connectedAccountId
+        connected_account: !!connectedAccountId,
+        platform_margin: connectedAccountId ? ((calculatedProcessingFee * 100) - (totalAmount * 0.027)) / 100 : 0
       }
     })
 
@@ -235,8 +272,8 @@ export async function POST(request) {
  */
 export async function PUT(request) {
   try {
-    const supabase = createClient()
-    
+    const supabase = await createClient()
+
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     

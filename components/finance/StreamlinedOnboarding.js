@@ -353,20 +353,20 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
           <Card className="p-8">
             <div className="text-center mb-8">
               <BanknotesIcon className="h-16 w-16 mx-auto text-green-500 mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900">Connect Your Bank Account</h2>
-              <p className="text-gray-600 mt-2">
+              <h2 className="text-2xl font-bold text-foreground">Connect Your Bank Account</h2>
+              <p className="text-muted-foreground mt-2">
                 We'll use Stripe to securely connect your bank account and enable payments
               </p>
             </div>
 
             <div className="space-y-4 max-w-md mx-auto">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Business Name
                 </label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
                   placeholder="Your barbershop name"
                   value={onboardingData.businessInfo.name}
                   onChange={(e) => setOnboardingData(prev => ({
@@ -377,11 +377,11 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Business Type
                 </label>
                 <select
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
                   value={onboardingData.businessInfo.type}
                   onChange={(e) => setOnboardingData(prev => ({
                     ...prev,
@@ -393,18 +393,18 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
                   <option value="partnership">Partnership</option>
                   <option value="corporation">Corporation</option>
                 </select>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Choose "Individual" for faster setup if you're a sole proprietor
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Phone Number
                 </label>
                 <input
                   type="tel"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-foreground"
                   placeholder="(555) 123-4567"
                   value={onboardingData.businessInfo.phone}
                   onChange={(e) => setOnboardingData(prev => ({
@@ -416,7 +416,7 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
 
               <div className="space-y-4">
                 {/* Trust indicators */}
-                <div className="flex items-center justify-center space-x-6 text-xs text-gray-500">
+                <div className="flex items-center justify-center space-x-6 text-xs text-muted-foreground">
                   <div className="flex items-center space-x-1">
                     <CheckCircleIcon className="h-4 w-4 text-green-500" />
                     <span>Bank-level security</span>
@@ -447,7 +447,7 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
                   )}
                 </Button>
 
-                <p className="text-xs text-center text-gray-500">
+                <p className="text-xs text-center text-muted-foreground">
                   This opens Stripe's secure setup in a new window. Takes 30 seconds.
                 </p>
               </div>
@@ -460,27 +460,27 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
           <Card className="p-8">
             <div className="text-center mb-8">
               <ScaleIcon className="h-16 w-16 mx-auto text-blue-500 mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900">Choose Your Payment Model</h2>
-              <p className="text-gray-600 mt-2">
+              <h2 className="text-2xl font-bold text-foreground">Choose Your Payment Model</h2>
+              <p className="text-muted-foreground mt-2">
                 How do you want to structure compensation with your staff?
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {/* Commission Model */}
-              <Card 
+              <Card
                 className={`p-6 cursor-pointer border-2 transition-colors ${
-                  onboardingData.paymentModel.type === 'commission' 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
+                  onboardingData.paymentModel.type === 'commission'
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
+                    : 'border-border hover:border-muted-foreground'
                 }`}
                 onClick={() => setOnboardingData(prev => ({
                   ...prev,
                   paymentModel: { ...prev.paymentModel, type: 'commission' }
                 }))}
               >
-                <h3 className="font-semibold text-gray-900 mb-2">Commission Split</h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <h3 className="font-semibold text-foreground mb-2">Commission Split</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   Split revenue from each service (recommended for new shops)
                 </p>
                 <div className="text-lg font-bold text-blue-600">
@@ -489,19 +489,19 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
               </Card>
 
               {/* Booth Rent Model */}
-              <Card 
+              <Card
                 className={`p-6 cursor-pointer border-2 transition-colors ${
-                  onboardingData.paymentModel.type === 'booth_rent' 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
+                  onboardingData.paymentModel.type === 'booth_rent'
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
+                    : 'border-border hover:border-muted-foreground'
                 }`}
                 onClick={() => setOnboardingData(prev => ({
                   ...prev,
                   paymentModel: { ...prev.paymentModel, type: 'booth_rent' }
                 }))}
               >
-                <h3 className="font-semibold text-gray-900 mb-2">Booth Rent</h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <h3 className="font-semibold text-foreground mb-2">Booth Rent</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   Fixed monthly rent per chair (good for established barbers)
                 </p>
                 <div className="text-lg font-bold text-green-600">
@@ -510,19 +510,19 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
               </Card>
 
               {/* Hybrid Model */}
-              <Card 
+              <Card
                 className={`p-6 cursor-pointer border-2 transition-colors ${
-                  onboardingData.paymentModel.type === 'hybrid' 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-200 hover:border-gray-300'
+                  onboardingData.paymentModel.type === 'hybrid'
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
+                    : 'border-border hover:border-muted-foreground'
                 }`}
                 onClick={() => setOnboardingData(prev => ({
                   ...prev,
                   paymentModel: { ...prev.paymentModel, type: 'hybrid' }
                 }))}
               >
-                <h3 className="font-semibold text-gray-900 mb-2">Hybrid</h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <h3 className="font-semibold text-foreground mb-2">Hybrid</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   Base rent + lower commission (best of both worlds)
                 </p>
                 <div className="text-lg font-bold text-purple-600">
@@ -556,8 +556,8 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
           <Card className="p-8">
             <div className="text-center mb-8">
               <CheckCircleIcon className="h-16 w-16 mx-auto text-green-500 mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900">Ready to Launch!</h2>
-              <p className="text-gray-600 mt-2">
+              <h2 className="text-2xl font-bold text-foreground">Ready to Launch!</h2>
+              <p className="text-muted-foreground mt-2">
                 Review your setup and activate your payment system
               </p>
             </div>
@@ -572,13 +572,13 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
                     <CheckCircleIcon className="h-5 w-5 text-green-500" />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-green-700">Payment Model</span>
-                    <span className="font-medium text-green-800 capitalize">
+                    <span className="text-green-700 dark:text-green-400">Payment Model</span>
+                    <span className="font-medium text-green-800 dark:text-green-300 capitalize">
                       {onboardingData.paymentModel.type.replace('_', ' ')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-green-700">Ready to Accept Payments</span>
+                    <span className="text-green-700 dark:text-green-400">Ready to Accept Payments</span>
                     <CheckCircleIcon className="h-5 w-5 text-green-500" />
                   </div>
                 </div>
@@ -617,11 +617,11 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
             <div key={step.id} className="flex items-center">
               <div className="flex flex-col items-center">
                 <div className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
-                  completedSteps.has(step.id) 
+                  completedSteps.has(step.id)
                     ? 'bg-green-500 border-green-500 text-white'
                     : currentStep === step.id
                     ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'bg-gray-100 border-gray-300 text-gray-400'
+                    : 'bg-muted border-border text-muted-foreground'
                 }`}>
                   {completedSteps.has(step.id) ? (
                     <CheckCircleIcon className="h-6 w-6" />
@@ -631,18 +631,18 @@ export default function StreamlinedOnboarding({ financeContext, onComplete }) {
                 </div>
                 <div className="mt-2 text-center">
                   <div className={`text-sm font-medium ${
-                    currentStep === step.id ? 'text-blue-600' : 'text-gray-500'
+                    currentStep === step.id ? 'text-blue-600' : 'text-muted-foreground'
                   }`}>
                     {step.title}
                   </div>
-                  <div className="flex items-center text-xs text-gray-400 mt-1">
+                  <div className="flex items-center text-xs text-muted-foreground mt-1">
                     <ClockIcon className="h-3 w-3 mr-1" />
                     {step.timeEstimate}
                   </div>
                 </div>
               </div>
               {index < steps.length - 1 && (
-                <ArrowRightIcon className="h-5 w-5 text-gray-400 mx-4" />
+                <ArrowRightIcon className="h-5 w-5 text-muted-foreground mx-4" />
               )}
             </div>
           ))}

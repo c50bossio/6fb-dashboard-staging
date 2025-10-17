@@ -171,21 +171,22 @@ export function UnifiedContextProvider({ children }) {
       }
 
       // Location level contexts - Use API endpoint (same as Location Management)
+      let locations = [] // Declare locations at the top of the function scope
+
       if (permittedLevels.includes(CONTEXT_LEVELS.LOCATION)) {
         if (process.env.NEXT_PUBLIC_DEBUG_UNIFIED_CONTEXT === 'true') {
           console.log('[UnifiedContextProvider] Loading location contexts using /api/user/locations (same as Location Management)')
         }
-        
-        let locations = []
+
         try {
           const response = await fetch('/api/user/locations')
           const locationData = await response.json()
           locations = locationData.data || []
-          
+
           console.log('[UnifiedContextProvider] /api/user/locations returned:', {
             locationsCount: locations?.length || 0,
-            locations: locations?.map(loc => ({ 
-              id: loc.id, 
+            locations: locations?.map(loc => ({
+              id: loc.id,
               name: loc.name
             })) || 'No locations',
             rawResponse: locationData
@@ -194,13 +195,13 @@ export function UnifiedContextProvider({ children }) {
           console.error('[UnifiedContextProvider] Error fetching locations:', error)
           locations = []
         }
-        
+
         if (locations?.length > 0) {
           // Get the user's organization ID for enterprise owners
           const userOrgId = userRole === 'ENTERPRISE_OWNER' ? profile.organization_id : null
-          
+
           console.log('[UnifiedContextProvider] Processing locations with userOrgId:', userOrgId)
-          
+
           locations.forEach(location => {
             // Skip if already added (avoid duplicates)
             if (!contexts.find(c => c.locationId === location.id)) {
@@ -211,8 +212,8 @@ export function UnifiedContextProvider({ children }) {
                 displayName: location.displayName || location.name,
                 metadata: {
                   locationName: location.metadata?.locationName || location.name,
-                  organizationName: userRole === 'ENTERPRISE_OWNER' ? 
-                    (contexts.find(c => c.level === CONTEXT_LEVELS.ORGANIZATION)?.displayName || null) : 
+                  organizationName: userRole === 'ENTERPRISE_OWNER' ?
+                    (contexts.find(c => c.level === CONTEXT_LEVELS.ORGANIZATION)?.displayName || null) :
                     null,
                   fallback: location.metadata?.fallback || false
                 },
@@ -243,7 +244,7 @@ export function UnifiedContextProvider({ children }) {
           const { data: staff } = await supabase
             .from('barbershop_staff')
             .select('user_id, barbershop_id, role, is_active')
-          
+
           if (staff?.length > 0) {
             // Filter staff for barbershops owned by the current user
             const userOwnedStaff = staff.filter(s => {
@@ -325,13 +326,14 @@ export function UnifiedContextProvider({ children }) {
         .eq('user_id', userId)
         .single()
 
-      // Handle missing table gracefully (404 errors)
-      if (preferencesError && (preferencesError.code === 'PGRST106' || preferencesError.code === '42P01')) {
-        console.log('📋 [UnifiedContextProvider] user_context_preferences table not found, using default context selection')
-        // Continue with fallback logic below
+      // Handle missing table or missing row gracefully - silently skip
+      if (preferencesError && (preferencesError.code === 'PGRST106' || preferencesError.code === '42P01' || preferencesError.code === 'PGRST116')) {
+        // Table doesn't exist OR no preferences row yet - silently continue with default context selection
+        // PGRST116 = "No rows returned" (406 Not Acceptable) - expected for new users
+        // (No console log needed - this is expected in some environments)
       } else if (preferences?.last_context) {
         const lastContext = preferences.last_context
-        const isValid = availableContextsList.some(ctx => 
+        const isValid = availableContextsList.some(ctx =>
           ctx.level === lastContext.level &&
           ctx.organizationId === lastContext.organizationId &&
           ctx.locationId === lastContext.locationId &&
@@ -347,7 +349,7 @@ export function UnifiedContextProvider({ children }) {
         }
       }
     } catch (error) {
-      console.log('No saved context preferences, using default')
+      // Silently handle - preferences are optional
     }
 
     // Determine default based on role hierarchy
@@ -393,17 +395,16 @@ export function UnifiedContextProvider({ children }) {
           onConflict: 'user_id'
         })
 
-      // Handle missing table gracefully (don't spam console with 404 errors)
-      if (error && (error.code === 'PGRST106' || error.code === '42P01')) {
-        // Table doesn't exist - this is expected in development mode
-        // Silently skip preference saving
+      // Handle missing table or missing row gracefully (don't spam console with errors)
+      if (error && (error.code === 'PGRST106' || error.code === '42P01' || error.code === 'PGRST116')) {
+        // Table doesn't exist OR no row to update - silently skip (this is expected in some environments)
         return
       } else if (error) {
-        console.error('Error saving context preferences:', error)
+        // Only log non-404 errors
+        console.warn('[UnifiedContextProvider] Could not save context preferences:', error.message)
       }
     } catch (error) {
-      // Handle network errors and other issues
-      console.error('Error saving context preferences:', error)
+      // Silently handle network errors - preferences are optional
     }
   }, [userId, supabase])
 

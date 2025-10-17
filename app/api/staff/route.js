@@ -300,11 +300,14 @@ export async function GET(request) {
           const colorIndex = member.id ? parseInt(member.id.slice(-2), 16) % colors.length : 0
 
           return {
-            id: member.id,
+            // FIX: Use user_id to match appointments.barber_id (foreign key to profiles.id)
+            // This allows calendar appointments to map correctly to staff resources
+            id: member.user_id || member.id,
             title: member.full_name || member.display_name || 'Staff Member',
             eventColor: colors[colorIndex],
             extendedProps: {
               staff_id: member.id,
+              user_id: member.user_id,
               email: member.email,
               phone: member.phone,
               avatar_url: member.avatar_url,
@@ -452,108 +455,141 @@ return profile.barbershop_id
 
 async function fetchStaffWithProfiles(supabase, barbershopId) {
   try {
-    // // Debug log removed for production
-if (!supabase) {
+    if (!supabase) {
       console.error('❌ fetchStaffWithProfiles: Supabase client is null')
       throw new Error('Database client not available')
     }
-    
+
     if (!barbershopId) {
       console.error('❌ fetchStaffWithProfiles: Barbershop ID is required')
       throw new Error('Barbershop ID is required')
     }
 
-    // Get all profiles associated with this barbershop directly
-    // This avoids 406 errors from barbershop_staff table queries
-    // Now includes the new appointment capability columns
+    // ACTUAL DATABASE ARCHITECTURE: barbershop_staff + profiles join
     if (process.env.NODE_ENV === 'development') {
-      console.log('👥 fetchStaffWithProfiles: Querying profiles for barbershop:', barbershopId)
+      console.log('👥 fetchStaffWithProfiles: Querying barbershop_staff + profiles...')
     }
 
-    const { data: profiles, error: profilesError } = await retryDatabaseOperation(async () => {
+    // Query barbershop_staff with profiles join to get full staff details
+    const { data: staffMembers, error: staffError } = await retryDatabaseOperation(async () => {
       return await supabase
-        .from('profiles')
-        .select('*')
+        .from('barbershop_staff')
+        .select(`
+          *,
+          profile:profiles!barbershop_staff_user_id_fkey(
+            id,
+            email,
+            full_name,
+            first_name,
+            last_name,
+            phone,
+            avatar_url,
+            role
+          )
+        `)
         .eq('barbershop_id', barbershopId)
-        .in('role', ['BARBER', 'SHOP_OWNER', 'MANAGER', 'STAFF', 'ENTERPRISE_OWNER'])
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
     })
 
-    if (profilesError) {
-      console.error('❌ fetchStaffWithProfiles: Error fetching staff profiles:', {
-        code: profilesError.code,
-        message: profilesError.message,
-        details: profilesError.details,
-        hint: profilesError.hint
+    // Handle query error
+    if (staffError) {
+      console.error('❌ fetchStaffWithProfiles: Error fetching staff:', {
+        code: staffError.code,
+        message: staffError.message,
+        details: staffError.details,
+        hint: staffError.hint
       })
-      throw new Error(`Profile fetch failed: ${profilesError.message}`)
+      throw new Error(`Staff fetch failed: ${staffError.message}`)
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`👥 fetchStaffWithProfiles: Found ${profiles?.length || 0} staff profiles`)
+      console.log(`👥 fetchStaffWithProfiles: Found ${staffMembers?.length || 0} staff members`)
     }
 
-    if (!profiles || profiles.length === 0) {
+    // Return empty array if no staff found
+    if (!staffMembers || staffMembers.length === 0) {
       return []
     }
 
-    // Transform profiles to staff format expected by the frontend
-    const staffWithProfiles = profiles.map(profile => {
+    // Transform to frontend format (barbershop_staff + profile data)
+    const staffWithProfiles = staffMembers.map(member => {
+      // Extract profile data from join
+      const profile = member.profile || {}
+
+      // Determine role from barbershop_staff.role OR profile.role
+      const effectiveRole = member.role || profile.role || 'BARBER'
+
       // Set role-based defaults for appointment capabilities
-      const defaultCanTakeAppointments = profile.can_take_appointments ?? (
-        profile.role === 'BARBER' ? true : 
-        profile.role === 'ENTERPRISE_OWNER' ? true :
-        profile.role === 'SHOP_OWNER' ? true :
-        profile.role === 'MANAGER' ? false :
+      const defaultCanTakeAppointments = member.can_take_appointments ?? (
+        effectiveRole === 'BARBER' ? true :
+        effectiveRole === 'ENTERPRISE_OWNER' ? true :
+        effectiveRole === 'SHOP_OWNER' ? true :
+        effectiveRole === 'MANAGER' ? false :
         false // STAFF role defaults to false
       )
-      
+
       return {
-        // Staff record fields
-        id: profile.id, // Use profile.id as staff id
-        user_id: profile.id,
-        barbershop_id: barbershopId,
-        role: profile.role,
-        is_active: profile.is_active ?? true,
-        created_at: profile.created_at,
-        updated_at: profile.updated_at,
-        
+        // Core staff fields (from barbershop_staff table)
+        id: member.id,
+        user_id: member.user_id,
+        barbershop_id: member.barbershop_id,
+        role: effectiveRole,
+        is_active: member.is_active ?? true,
+        created_at: member.created_at,
+        updated_at: member.updated_at,
+
         // Appointment capability fields
         can_take_appointments: defaultCanTakeAppointments,
-        is_visible_for_booking: profile.is_visible_for_booking ?? true,
-        service_provider_since: profile.service_provider_since || profile.created_at,
-        
-        // Profile information
+        is_visible_for_booking: member.is_visible_for_booking ?? true,
+        service_provider_since: member.service_provider_since || member.created_at,
+
+        // Personal information (from profiles table)
         email: profile.email || '',
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
-        full_name: profile.full_name || 
-          `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 
+        full_name: profile.full_name ||
+          `${profile.first_name || ''} ${profile.last_name || ''}`.trim() ||
           profile.email || 'Staff Member',
         phone: profile.phone || '',
         avatar_url: profile.avatar_url || null,
-        
-        // Staff-specific fields
-        title: profile.role === 'SHOP_OWNER' ? 'Owner' : 
-               profile.role === 'ENTERPRISE_OWNER' ? 'Enterprise Owner' :
-               profile.role === 'MANAGER' ? 'Manager' : 'Barber',
-        specialties: profile.specialties || [],
-        bio: profile.bio || '',
-        experience_years: profile.experience_years || 0,
-        commission_rate: profile.commission_rate || null,
-        
-        // Direct profile reference for compatibility
-        profile: profile,
-        
-        // Additional fields for staff management
+
+        // Professional information
+        title: effectiveRole === 'SHOP_OWNER' ? 'Owner' :
+               effectiveRole === 'ENTERPRISE_OWNER' ? 'Enterprise Owner' :
+               effectiveRole === 'MANAGER' ? 'Manager' : 'Barber',
+        specialties: member.specialties || [],
+        bio: member.bio || '',
+        experience_years: member.experience_years || 0,
+
+        // Financial fields (from barbershop_staff)
+        commission_rate: member.commission_rate || null,
+        hourly_rate: member.hourly_rate || null,
+        booth_rent_amount: member.booth_rent_amount || null,
+        employment_type: member.employment_type || 'commission',
+
+        // Legacy compatibility fields
         display_name: profile.full_name || profile.email || 'Staff Member',
-        metadata: profile.metadata || {}
+        metadata: member.metadata || {},
+
+        // Profile reference for backward compatibility
+        profile: {
+          id: member.user_id,
+          email: profile.email,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          full_name: profile.full_name,
+          phone: profile.phone,
+          avatar_url: profile.avatar_url,
+          role: effectiveRole
+        }
       }
     })
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ fetchStaffWithProfiles: Returning ${staffWithProfiles.length} staff members`)
+      console.log(`✅ fetchStaffWithProfiles: Returning ${staffWithProfiles.length} staff members from unified staff table`)
     }
-    
+
     return staffWithProfiles
   } catch (error) {
     console.error('💥 fetchStaffWithProfiles: Unexpected error:', error)

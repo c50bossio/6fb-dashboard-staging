@@ -19,6 +19,24 @@ class DashboardErrorBoundary extends React.Component {
       error: error,
       errorInfo: errorInfo
     })
+
+    // Send to Sentry if configured
+    if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      import('@sentry/nextjs').then((Sentry) => {
+        Sentry.captureException(error, {
+          contexts: {
+            react: {
+              componentStack: errorInfo.componentStack,
+            },
+          },
+          tags: {
+            errorBoundary: 'Dashboard',
+          },
+        })
+      }).catch((err) => {
+        console.warn('Failed to report dashboard error to Sentry:', err)
+      })
+    }
   }
 
   handleReset = () => {

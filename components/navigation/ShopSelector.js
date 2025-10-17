@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Fragment } from 'react'
+import { Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import {
   ChevronDownIcon,
@@ -8,153 +8,53 @@ import {
   CheckIcon,
   PlusIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '../SupabaseAuthProvider'
-import { createClient } from '@/lib/supabase/client'
+import { useGlobalDashboard } from '@/contexts/GlobalDashboardContext'
 
-export default function ShopSelector() {
-  const { user, profile, refreshProfile } = useAuth()
-  const [shops, setShops] = useState([])
-  const [selectedShop, setSelectedShop] = useState(null)
-  const [loading, setLoading] = useState(true)
+export default function ShopSelector({ collapsed = false }) {
+  // Use GlobalDashboardContext as single source of truth
+  const {
+    availableLocations,
+    availableContexts,
+    activeContext,
+    switchContext,
+    isLoading,
+    currentLocation
+  } = useGlobalDashboard()
 
-  // Load user's barbershops
-  useEffect(() => {
-    if (profile?.organization_id) {
-      console.log('🏢 [ShopSelector] Loading shops for organization:', profile.organization_id)
-      loadShops()
-    } else {
-      if (process.env.NODE_ENV === 'development') {
-        if (!profile) {
-          console.log('⏳ [ShopSelector] Waiting for profile to load...')
-        } else {
-          console.warn('⚠️ [ShopSelector] Profile loaded but no organization_id found:', {
-            profileId: profile.id,
-            email: profile.email,
-            role: profile.role
-          })
-        }
-      }
-      setLoading(false)
-    }
-  }, [profile?.organization_id])
-
-  // Update selectedShop when profile.last_selected_shop_id changes (without refetching shops)
-  // This handles shop switching without a page reload
-  useEffect(() => {
-    if (profile?.last_selected_shop_id && shops.length > 0) {
-      const newSelectedShop = shops.find(shop => shop.id === profile.last_selected_shop_id)
-      if (newSelectedShop && newSelectedShop.id !== selectedShop?.id) {
-        console.log('🔄 [ShopSelector] last_selected_shop_id changed, updating selectedShop:', newSelectedShop.name)
-        setSelectedShop(newSelectedShop)
-      }
-    }
-  }, [profile?.last_selected_shop_id, shops, selectedShop])
-
-  const loadShops = async () => {
-    try {
-      setLoading(true)
-
-      // Get auth session for API request
-      const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-
-      const headers = {
-        'Content-Type': 'application/json'
-      }
-
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`
-      }
-
-      const response = await fetch(`/api/organizations/${profile.organization_id}/shops`, {
-        headers
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const shops = data.shops || []
-        setShops(shops)
-
-        console.log('✅ [ShopSelector] Loaded shops:', shops.map(s => ({ id: s.id, name: s.name })))
-
-        // Set the currently selected shop
-        // Prioritize last_selected_shop_id (selected shop) over barbershop_id (home shop)
-        const currentShop = shops.find(
-          shop => shop.id === profile.last_selected_shop_id ||
-                  shop.id === profile.barbershop_id
-        )
-        const selected = currentShop || shops[0]
-        setSelectedShop(selected)
-
-        console.log('🎯 [ShopSelector] Selected shop:', selected ? { id: selected.id, name: selected.name } : 'none')
-        console.log('🔍 [ShopSelector] Profile IDs:', {
-          last_selected_shop_id: profile.last_selected_shop_id,
-          barbershop_id: profile.barbershop_id
-        })
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('❌ [ShopSelector] Failed to load shops:', response.status, await response.text())
-        }
-        setShops([])
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('❌ ShopSelector: Error loading shops:', error)
-      }
-      setShops([])
-    } finally {
-      setLoading(false)
-    }
+  // Find the manager context for the current location (for switching)
+  const getContextForLocation = (locationId) => {
+    // Find the manager or booking context for this location
+    return availableContexts?.find(ctx =>
+      ctx.locationId === locationId &&
+      (ctx.contextType === 'manager' || ctx.contextType === 'booking')
+    )
   }
 
-  const switchShop = async (shop) => {
-    try {
-      console.log('🔄 [ShopSelector] Switching to shop:', { id: shop.id, name: shop.name })
-
-      // Update last_selected_shop_id in profiles table (this is what TenantContext reads)
-      const supabase = createClient()
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          last_selected_shop_id: shop.id,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id)
-
-      if (updateError) {
-        console.error('❌ [ShopSelector] Failed to update profile:', updateError)
-        return
-      }
-
-      console.log('✅ [ShopSelector] Shop switched successfully in database')
-
-      // Clear tenant resolver cache to force fresh lookup
-      console.log('🗑️ [ShopSelector] Clearing tenant cache...')
-      try {
-        await fetch('/api/tenant/clear-cache', { method: 'POST' })
-        console.log('✅ [ShopSelector] Tenant cache cleared')
-      } catch (cacheError) {
-        console.warn('⚠️ [ShopSelector] Failed to clear cache:', cacheError)
-      }
-
-      // Refresh profile cache to get updated shop_id
-      console.log('🔄 [ShopSelector] Refreshing profile cache...')
-      await refreshProfile()
-
-      setSelectedShop(shop)
-
-      // Reload page to refresh TenantContext with new shop
-      console.log('🔄 [ShopSelector] Reloading page...')
-      window.location.reload()
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('❌ [ShopSelector] Error switching shop:', error)
-      }
+  const handleLocationSwitch = async (location) => {
+    const contextToSwitch = getContextForLocation(location.id)
+    if (contextToSwitch) {
+      console.log('🔄 [ShopSelector] Switching to location:', location.name)
+      await switchContext(contextToSwitch)
     }
   }
 
   // Show single shop info if only one shop (no dropdown needed)
-  if (shops.length === 1 && selectedShop) {
+  if (availableLocations?.length === 1 && currentLocation) {
+    if (collapsed) {
+      return (
+        <div className="px-2 py-3 border-b border-border">
+          <div className="flex items-center justify-center">
+            <div
+              className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center"
+              title={`${currentLocation.name} - ${currentLocation.city}, ${currentLocation.state}`}
+            >
+              <BuildingStorefrontIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="px-4 py-3 border-b border-border">
         <div className="flex items-center space-x-3">
@@ -163,10 +63,10 @@ export default function ShopSelector() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">
-              {selectedShop.name}
+              {currentLocation.name}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              {selectedShop.city}, {selectedShop.state}
+              {currentLocation.city}, {currentLocation.state}
             </p>
           </div>
         </div>
@@ -175,11 +75,21 @@ export default function ShopSelector() {
   }
 
   // Don't show if no shops loaded yet and not loading
-  if (shops.length === 0 && !loading) {
+  if (!availableLocations || (availableLocations.length === 0 && !isLoading)) {
     return null
   }
 
-  if (loading) {
+  if (isLoading) {
+    if (collapsed) {
+      return (
+        <div className="px-2 py-3 border-b border-border">
+          <div className="animate-pulse flex items-center justify-center">
+            <div className="w-10 h-10 bg-muted rounded-lg"></div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="px-4 py-3 border-b border-border">
         <div className="animate-pulse flex items-center space-x-3">
@@ -193,6 +103,92 @@ export default function ShopSelector() {
     )
   }
 
+  // Collapsed view - compact icon with dropdown
+  if (collapsed) {
+    return (
+      <div className="px-2 py-3 border-b border-border">
+        <Menu as="div" className="relative">
+          <Menu.Button
+            className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
+            title={currentLocation?.name || 'Select Shop'}
+          >
+            <BuildingStorefrontIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+          </Menu.Button>
+
+          <Transition
+            as={Fragment}
+            enter="transition ease-out duration-100"
+            enterFrom="transform opacity-0 scale-95"
+            enterTo="transform opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="transform opacity-100 scale-100"
+            leaveTo="transform opacity-0 scale-95"
+          >
+            <Menu.Items className="absolute left-0 mt-2 w-64 bg-card rounded-lg shadow-lg ring-1 ring-border focus:outline-none z-50 max-h-60 overflow-auto">
+              <div className="py-1">
+                {availableLocations?.map((location) => (
+                  <Menu.Item key={location.id}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => handleLocationSwitch(location)}
+                        className={`${
+                          active ? 'bg-amber-50 dark:bg-amber-900/20' : ''
+                        } ${
+                          currentLocation?.id === location.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''
+                        } group flex items-center w-full px-4 py-3 text-sm`}
+                      >
+                        <BuildingStorefrontIcon
+                          className={`mr-3 h-5 w-5 flex-shrink-0 ${
+                            currentLocation?.id === location.id
+                              ? 'text-amber-600 dark:text-amber-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                        <div className="flex-1 text-left">
+                          <p className={`text-sm font-medium ${
+                            currentLocation?.id === location.id
+                              ? 'text-amber-900 dark:text-amber-100'
+                              : 'text-foreground'
+                          }`}>
+                            {location.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {location.city}, {location.state}
+                          </p>
+                        </div>
+                        {currentLocation?.id === location.id && (
+                          <CheckIcon className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                        )}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+
+                {/* Add Location Button */}
+                <div className="border-t border-border mt-1 pt-1">
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        onClick={() => window.location.href = '/enterprise/website'}
+                        className={`${
+                          active ? 'bg-olive-50 dark:bg-olive-900/20' : ''
+                        } group flex items-center w-full px-4 py-3 text-sm text-olive-700 dark:text-olive-300 hover:text-olive-900 dark:hover:text-olive-100`}
+                      >
+                        <PlusIcon className="mr-3 h-5 w-5 flex-shrink-0" />
+                        <span className="font-medium">Add Location</span>
+                      </button>
+                    )}
+                  </Menu.Item>
+                </div>
+              </div>
+            </Menu.Items>
+          </Transition>
+        </Menu>
+      </div>
+    )
+  }
+
+  // Expanded view - full details with dropdown
   return (
     <div className="px-4 py-3 border-b border-border">
       <Menu as="div" className="relative">
@@ -202,10 +198,10 @@ export default function ShopSelector() {
           </div>
           <div className="flex-1 min-w-0 text-left">
             <p className="text-sm font-medium text-foreground truncate">
-              {selectedShop?.name || 'Select Shop'}
+              {currentLocation?.name || 'Select Shop'}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              {selectedShop ? `${selectedShop.city}, ${selectedShop.state}` : 'No location'}
+              {currentLocation ? `${currentLocation.city}, ${currentLocation.state}` : 'No location'}
             </p>
           </div>
           <ChevronDownIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -222,37 +218,37 @@ export default function ShopSelector() {
         >
           <Menu.Items className="absolute left-0 right-0 mt-2 bg-card rounded-lg shadow-lg ring-1 ring-border focus:outline-none z-50 max-h-60 overflow-auto">
             <div className="py-1">
-              {shops.map((shop) => (
-                <Menu.Item key={shop.id}>
+              {availableLocations?.map((location) => (
+                <Menu.Item key={location.id}>
                   {({ active }) => (
                     <button
-                      onClick={() => switchShop(shop)}
+                      onClick={() => handleLocationSwitch(location)}
                       className={`${
                         active ? 'bg-amber-50 dark:bg-amber-900/20' : ''
                       } ${
-                        selectedShop?.id === shop.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''
+                        currentLocation?.id === location.id ? 'bg-amber-50 dark:bg-amber-900/20' : ''
                       } group flex items-center w-full px-4 py-3 text-sm`}
                     >
                       <BuildingStorefrontIcon
                         className={`mr-3 h-5 w-5 flex-shrink-0 ${
-                          selectedShop?.id === shop.id
+                          currentLocation?.id === location.id
                             ? 'text-amber-600 dark:text-amber-400'
                             : 'text-muted-foreground'
                         }`}
                       />
                       <div className="flex-1 text-left">
                         <p className={`text-sm font-medium ${
-                          selectedShop?.id === shop.id
+                          currentLocation?.id === location.id
                             ? 'text-amber-900 dark:text-amber-100'
                             : 'text-foreground'
                         }`}>
-                          {shop.name}
+                          {location.name}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {shop.city}, {shop.state}
+                          {location.city}, {location.state}
                         </p>
                       </div>
-                      {selectedShop?.id === shop.id && (
+                      {currentLocation?.id === location.id && (
                         <CheckIcon className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                       )}
                     </button>

@@ -377,8 +377,8 @@ export default function ProductManagement() {
       <div className="mb-8">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Product Management</h1>
-            <p className="text-gray-600 mt-2">Manage your shop's retail products and track inventory</p>
+            <h1 className="text-3xl font-bold text-card-foreground">Product Management</h1>
+            <p className="text-muted-foreground mt-2">Manage your shop's retail products and track inventory</p>
           </div>
           {/* Status Widget - shows connection status */}
           <div className="mt-2">
@@ -411,49 +411,49 @@ export default function ProductManagement() {
       {/* Enhanced POS Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
         {/* Total Products */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
+        <div className="bg-card rounded-lg border border-border p-3">
           <div className="flex items-center justify-between mb-1">
             <ArchiveBoxIcon className="h-5 w-5 text-olive-600" />
-            <span className="text-xl font-bold text-gray-900">{metrics.totalProducts}</span>
+            <span className="text-xl font-bold text-card-foreground">{metrics.totalProducts}</span>
           </div>
-          <p className="text-xs text-gray-600">Total Products</p>
+          <p className="text-xs text-muted-foreground">Total Products</p>
         </div>
 
         {/* Inventory Value */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
+        <div className="bg-card rounded-lg border border-border p-3">
           <div className="flex items-center justify-between mb-1">
             <CurrencyDollarIcon className="h-5 w-5 text-green-600" />
-            <span className="text-xl font-bold text-gray-900">
+            <span className="text-xl font-bold text-card-foreground">
               ${(metrics.totalValue / 1000).toFixed(1)}K
             </span>
           </div>
-          <p className="text-xs text-gray-600">Retail Value</p>
+          <p className="text-xs text-muted-foreground">Retail Value</p>
         </div>
 
         {/* Total Cost */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
+        <div className="bg-card rounded-lg border border-border p-3">
           <div className="flex items-center justify-between mb-1">
             <CurrencyDollarIcon className="h-5 w-5 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">
+            <span className="text-xl font-bold text-card-foreground">
               ${(metrics.totalCost / 1000).toFixed(1)}K
             </span>
           </div>
-          <p className="text-xs text-gray-600">Total Cost</p>
+          <p className="text-xs text-muted-foreground">Total Cost</p>
         </div>
 
         {/* Potential Profit */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
+        <div className="bg-card rounded-lg border border-border p-3">
           <div className="flex items-center justify-between mb-1">
             <CurrencyDollarIcon className="h-5 w-5 text-emerald-600" />
             <span className="text-xl font-bold text-emerald-600">
               ${(metrics.potentialProfit / 1000).toFixed(1)}K
             </span>
           </div>
-          <p className="text-xs text-gray-600">Potential Profit</p>
+          <p className="text-xs text-muted-foreground">Potential Profit</p>
         </div>
 
         {/* Average Margin */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
+        <div className="bg-card rounded-lg border border-border p-3">
           <div className="flex items-center justify-between mb-1">
             <svg className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -462,48 +462,48 @@ export default function ProductManagement() {
               {metrics.averageMargin}%
             </span>
           </div>
-          <p className="text-xs text-gray-600">Avg Margin</p>
+          <p className="text-xs text-muted-foreground">Avg Margin</p>
         </div>
 
         {/* Low Stock */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
+        <div className="bg-card rounded-lg border border-border p-3">
           <div className="flex items-center justify-between mb-1">
             <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600" />
             <span className="text-xl font-bold text-yellow-600">{metrics.lowStock}</span>
           </div>
-          <p className="text-xs text-gray-600">Low Stock</p>
+          <p className="text-xs text-muted-foreground">Low Stock</p>
         </div>
 
         {/* Out of Stock */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
+        <div className="bg-card rounded-lg border border-border p-3">
           <div className="flex items-center justify-between mb-1">
             <ExclamationTriangleIcon className="h-5 w-5 text-red-600" />
             <span className="text-xl font-bold text-red-600">{metrics.outOfStock}</span>
           </div>
-          <p className="text-xs text-gray-600">Out of Stock</p>
+          <p className="text-xs text-muted-foreground">Out of Stock</p>
         </div>
 
         {/* Needs Reorder */}
-        <div className="bg-white rounded-lg border border-gray-200 p-3">
+        <div className="bg-card rounded-lg border border-border p-3">
           <div className="flex items-center justify-between mb-1">
             <svg className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             <span className="text-xl font-bold text-orange-600">{metrics.needsReorder}</span>
           </div>
-          <p className="text-xs text-gray-600">Reorder Now</p>
+          <p className="text-xs text-muted-foreground">Reorder Now</p>
         </div>
       </div>
 
       {/* Tab Navigation - MOVED TO TOP AFTER METRICS */}
-      <div className="mb-6 border-b border-gray-200">
+      <div className="mb-6 border-b border-border">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('inventory')}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'inventory'
                 ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                : 'border-transparent text-muted-foreground hover:text-card-foreground hover:border-border'
             }`}
           >
             Inventory Management
@@ -513,7 +513,7 @@ export default function ProductManagement() {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'pos'
                 ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                : 'border-transparent text-muted-foreground hover:text-card-foreground hover:border-border'
             }`}
           >
             POS Settings
@@ -523,7 +523,7 @@ export default function ProductManagement() {
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'analytics'
                 ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                : 'border-transparent text-muted-foreground hover:text-card-foreground hover:border-border'
             }`}
           >
             Analytics & Insights
@@ -537,18 +537,18 @@ export default function ProductManagement() {
         {activeTab === 'inventory' && (
           <div className="space-y-6">
             {/* Filters and Actions */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div className="bg-card rounded-lg border border-border p-4">
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Search */}
                 <div className="flex-1">
                   <div className="relative">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <input
                       type="text"
                       placeholder="Search products..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
+                      className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500 text-card-foreground"
                     />
                   </div>
                 </div>
@@ -557,7 +557,7 @@ export default function ProductManagement() {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500"
+                  className="px-4 py-2 bg-background border border-input rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-olive-500 text-card-foreground"
                 >
                   {categories.map(cat => (
                     <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -576,41 +576,41 @@ export default function ProductManagement() {
             </div>
 
             {/* Products Table */}
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="bg-card rounded-lg border border-border overflow-hidden">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Product
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Category
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Stock
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Price
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-card divide-y divide-border">
                   {filteredProducts.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50">
+                    <tr key={product.id} className="hover:bg-muted/50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                          <div className="text-sm text-gray-500">{product.brand} • SKU: {product.sku}</div>
+                          <div className="text-sm font-medium text-card-foreground">{product.name}</div>
+                          <div className="text-sm text-muted-foreground">{product.brand} • SKU: {product.sku}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-muted text-card-foreground">
                           {product.category?.replace('_', ' ')}
                         </span>
                       </td>
@@ -619,7 +619,7 @@ export default function ProductManagement() {
                           <span className={`text-sm font-medium ${
                             product.current_stock === 0 ? 'text-red-600' :
                             product.current_stock <= product.min_stock_level ? 'text-amber-800' :
-                            'text-gray-900'
+                            'text-card-foreground'
                           }`}>
                             {product.current_stock}
                           </span>
@@ -630,8 +630,8 @@ export default function ProductManagement() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">${product.retail_price}</div>
-                          <div className="text-xs text-gray-500">Cost: ${product.cost_price || 'N/A'}</div>
+                          <div className="text-sm font-medium text-card-foreground">${product.retail_price}</div>
+                          <div className="text-xs text-muted-foreground">Cost: ${product.cost_price || 'N/A'}</div>
                           {product.cost_price && (
                             <div className="text-xs font-semibold text-green-600">
                               Margin: {((1 - product.cost_price / product.retail_price) * 100).toFixed(1)}%
@@ -705,21 +705,21 @@ export default function ProductManagement() {
 
               {filteredProducts.length === 0 && (
                 <div className="text-center py-12">
-                  <ArchiveBoxIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-600">No products found</p>
-                  
+                  <ArchiveBoxIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground">No products found</p>
+
                   {/* Cin7 Integration */}
-                  <div className="mt-8 pt-8 border-t border-gray-200">
+                  <div className="mt-8 pt-8 border-t border-border">
                     {!hasCredentials ? (
                       <button
                         onClick={() => setShowCin7Modal(true)}
-                        className="text-xs text-gray-400 hover:text-gray-600 underline flex items-center justify-center mx-auto"
+                        className="text-xs text-muted-foreground hover:text-card-foreground underline flex items-center justify-center mx-auto"
                       >
                         <LinkIcon className="h-3 w-3 mr-1" />
                         Advanced: Connect warehouse system
                       </button>
                     ) : (
-                      <div className="flex items-center justify-center space-x-4 text-xs text-gray-400">
+                      <div className="flex items-center justify-center space-x-4 text-xs text-muted-foreground">
                         <div className="flex items-center">
                           <div className="h-2 w-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                           <span>Cin7 warehouse connected</span>
@@ -769,22 +769,16 @@ export default function ProductManagement() {
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-bold text-gray-900">📊 Product Analytics & Insights</h2>
-            
+            <h2 className="text-xl font-bold text-card-foreground">📊 Product Analytics & Insights</h2>
+
             {/* Product Analytics Panel */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <ProductAnalyticsPanel products={products} metrics={metrics} />
-            </div>
-            
+            <ProductAnalyticsPanel products={products} metrics={metrics} />
+
             {/* Product Performance Charts */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <ProductPerformanceCharts products={products} metrics={metrics} />
-            </div>
-            
+            <ProductPerformanceCharts products={products} metrics={metrics} />
+
             {/* Inventory Insights */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <InventoryInsights products={products} metrics={metrics} />
-            </div>
+            <InventoryInsights products={products} metrics={metrics} />
           </div>
         )}
       </div>
@@ -792,16 +786,16 @@ export default function ProductManagement() {
       {/* Simplified Modal Placeholders */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full">
+          <div className="bg-card rounded-xl max-w-md w-full border border-border">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Product Management</h2>
-              <p>Product management functionality is being updated.</p>
-              <button 
+              <h2 className="text-xl font-bold text-card-foreground mb-4">Product Management</h2>
+              <p className="text-muted-foreground">Product management functionality is being updated.</p>
+              <button
                 onClick={() => {
                   setShowAddModal(false)
                   setEditingProduct(null)
-                }} 
-                className="mt-4 px-4 py-2 bg-gray-500 text-white rounded"
+                }}
+                className="mt-4 px-4 py-2 bg-muted text-card-foreground rounded hover:bg-muted/80"
               >
                 Close
               </button>
@@ -812,13 +806,13 @@ export default function ProductManagement() {
 
       {showSetupWizard && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full">
+          <div className="bg-card rounded-xl max-w-md w-full border border-border">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Setup Wizard</h2>
-              <p>Setup functionality is being updated.</p>
-              <button 
-                onClick={() => setShowSetupWizard(false)} 
-                className="mt-4 px-4 py-2 bg-gray-500 text-white rounded"
+              <h2 className="text-xl font-bold text-card-foreground mb-4">Setup Wizard</h2>
+              <p className="text-muted-foreground">Setup functionality is being updated.</p>
+              <button
+                onClick={() => setShowSetupWizard(false)}
+                className="mt-4 px-4 py-2 bg-muted text-card-foreground rounded hover:bg-muted/80"
               >
                 Close
               </button>

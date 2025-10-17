@@ -14,14 +14,42 @@ export async function GET(request, { params }) {
     
 
     // Use service client to bypass RLS for public API
-    const supabase = createServiceClient()
-    
-    if (!supabase) {
-      console.error('❌ Public barbers API: Failed to create service client')
+    // First check environment variables explicitly for better error messages
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Public barbers API: Missing required environment variables')
+      console.error('   NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓ Set' : '✗ Missing')
+      console.error('   SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? '✓ Set' : '✗ Missing')
+
       return NextResponse.json({
         success: false,
-        error: 'Service configuration error'
-      }, { status: 500 })
+        error: 'Database configuration error',
+        details: 'Required Supabase environment variables are not set',
+        troubleshooting: [
+          'Check that .env.local exists in the project root',
+          'Verify NEXT_PUBLIC_SUPABASE_URL is set',
+          'Verify SUPABASE_SERVICE_ROLE_KEY is set',
+          'Restart the Next.js development server after adding variables'
+        ]
+      }, { status: 503 }) // Service Unavailable
+    }
+
+    const supabase = createServiceClient()
+
+    if (!supabase) {
+      console.error('❌ Public barbers API: Failed to create service client despite env vars being present')
+      return NextResponse.json({
+        success: false,
+        error: 'Service initialization error',
+        details: 'Failed to create database client',
+        troubleshooting: [
+          'Check Supabase service status',
+          'Verify environment variable values are correct',
+          'Check server logs for additional errors'
+        ]
+      }, { status: 503 })
     }
     
     // // Debug log removed for production
@@ -58,7 +86,7 @@ export async function GET(request, { params }) {
     }
 
     // Get staff who can take appointments for this barbershop from profiles table
-    // NOW USING CAPABILITY-BASED FILTERING instead of role-based filtering
+    // Using role-based filtering since capability columns don't exist yet
     const { data: staff, error: staffError } = await supabase
       .from('profiles')
       .select(`
@@ -70,16 +98,13 @@ export async function GET(request, { params }) {
         last_name,
         full_name,
         avatar_url,
-        created_at,
-        metadata,
-        can_take_appointments,
-        is_visible_for_booking,
-        service_provider_since
+        bio,
+        specialties,
+        created_at
       `)
-      .eq('barbershop_id', actualbarbershopId)  // Use actualbarbershopId instead of barbershopId
+      .eq('barbershop_id', actualbarbershopId)
       .eq('is_active', true)
-      .eq('can_take_appointments', true)       // MUST be able to take appointments
-      .eq('is_visible_for_booking', true)      // MUST be visible in public booking
+      .in('role', ['BARBER', 'SHOP_OWNER', 'ENTERPRISE_OWNER', 'MANAGER'])
       .order('created_at', { ascending: true })
     
     // // Debug log removed for production
@@ -109,12 +134,11 @@ return NextResponse.json({
 
     // Transform profile data to staff format (we already have all the data from profiles table)
     const staffWithProfiles = staff.map(profile => {
-      const metadata = profile.metadata || {}
-      
       // Use profile data directly since we're querying profiles table
-      const firstName = profile.first_name || metadata.first_name || ''
-      const lastName = profile.last_name || metadata.last_name || ''
-      let fullName = profile.full_name || metadata.full_name || ''
+      // Note: metadata column doesn't exist in profiles table, using direct fields only
+      const firstName = profile.first_name || ''
+      const lastName = profile.last_name || ''
+      let fullName = profile.full_name || ''
       
       // If we don't have full_name but have first/last names, combine them
       if (!fullName && (firstName || lastName)) {
@@ -143,28 +167,28 @@ return NextResponse.json({
         // Use profile.id as primary identifier for consistency
         id: profile.id,
         user_id: profile.id,
-        staff_id: profile.id, // profiles.id is now the staff identifier
+        staff_id: profile.id,
         barbershop_id: profile.barbershop_id,
         role: profile.role,
         is_active: profile.is_active,
-        can_take_appointments: profile.can_take_appointments ?? true, // Default to true for backward compatibility
-        is_visible_for_booking: profile.is_visible_for_booking ?? true, // Default to true
-        service_provider_since: profile.service_provider_since || profile.created_at,
         created_at: profile.created_at,
         first_name: finalFirstName,
         last_name: finalLastName,
         full_name: fullName,
         display_name: displayName,
         avatar_url: profile.avatar_url || null,
-        // Public-safe defaults for booking UI - now role-agnostic
-        title: profile.role === 'SHOP_OWNER' || profile.role === 'ENTERPRISE_OWNER' ? 'Owner/Master Barber' : 
+        // Use actual bio and specialties from database if available
+        bio: profile.bio || `Professional ${profile.role.toLowerCase().replace('_', ' ')} providing quality service`,
+        specialties: profile.specialties && profile.specialties.length > 0
+          ? profile.specialties
+          : ['Haircuts', 'Styling'],
+        // Public-safe defaults for booking UI
+        title: profile.role === 'SHOP_OWNER' || profile.role === 'ENTERPRISE_OWNER' ? 'Owner/Master Barber' :
                profile.role === 'MANAGER' ? 'Service Manager' : 'Service Provider',
         experience: '5+ years',
         rating: 4.8,
         reviewCount: 0,
-        specialties: ['Haircuts', 'Styling'],
-        availability: 'Available',
-        bio: `Professional ${profile.role.toLowerCase().replace('_', ' ')} providing quality service`
+        availability: 'Available'
       }
     })
 

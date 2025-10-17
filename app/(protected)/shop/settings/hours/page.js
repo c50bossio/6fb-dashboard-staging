@@ -205,17 +205,17 @@ export default function BusinessHoursPage() {
       // First, get the user's shop ID
       const { data: profile, error: profileError } = await _supabase
         .from('profiles')
-        .select('shop_id, barbershop_id')
+        .select('barbershop_id')
         .eq('id', _user.id)
         .single()
-      
+
       if (profileError) {
         console.error('Error loading profile:', profileError)
         setSpecialHoursAvailable(false)
         return
       }
-      
-      const shopId = profile.shop_id || profile.barbershop_id
+
+      const shopId = profile.barbershop_id
       if (!shopId) {
         setSpecialHoursAvailable(false)
         return
@@ -300,11 +300,11 @@ export default function BusinessHoursPage() {
       // Get the user's shop ID
       const { data: profile } = await _supabase
         .from('profiles')
-        .select('shop_id, barbershop_id')
+        .select('barbershop_id')
         .eq('id', _user.id)
         .single()
-      
-      const shopId = profile.shop_id || profile.barbershop_id
+
+      const shopId = profile.barbershop_id
       if (!shopId) {
         throw new Error('No shop ID found')
       }

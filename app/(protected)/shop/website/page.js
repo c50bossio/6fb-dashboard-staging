@@ -133,12 +133,12 @@ export default function ShopWebsiteCustomization() {
       try {
         setLoading(true)
         const _supabase = createClient()
-        
+
         // Get user's barbershop
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile, error: profileError } = await _supabase
           .from('profiles')
           .select('barbershop_id')
-          .eq('id', user.id)
+          .eq('id', _user.id)
           .single()
         
         if (profileError || !profile?.barbershop_id) {
@@ -157,7 +157,7 @@ export default function ShopWebsiteCustomization() {
         }
         
         // Fetch barber pages for this shop
-        const { data: barbers, error: barbersError } = await supabase
+        const { data: barbers, error: barbersError } = await _supabase
           .from('barber_page_customization')
           .select(`
             *,

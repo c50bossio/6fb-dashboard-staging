@@ -148,14 +148,14 @@ export default function POSProductSelector({ products = [], onSave }) {
     .filter(Boolean)
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-card rounded-lg shadow-lg border border-border p-6">
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+        <h2 className="text-2xl font-bold text-card-foreground flex items-center">
           <ShoppingCartIcon className="h-7 w-7 mr-2 text-blue-600" />
           POS Product Selection
         </h2>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           Select which products appear in your Point of Sale and set their display order
         </p>
       </div>
@@ -209,32 +209,32 @@ export default function POSProductSelector({ products = [], onSave }) {
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="flex-1">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search products by name, SKU, or brand..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="w-full pl-10 pr-3 py-2 bg-background border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 text-card-foreground"
             />
           </div>
         </div>
-        
+
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          className="px-3 py-2 bg-background border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 text-card-foreground"
         >
           <option value="all">All Categories</option>
           {categories.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </select>
-        
+
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          className="px-3 py-2 bg-background border border-input rounded-md focus:ring-blue-500 focus:border-blue-500 text-card-foreground"
         >
           <option value="all">All Products</option>
           <option value="selected">POS Enabled</option>
@@ -252,7 +252,7 @@ export default function POSProductSelector({ products = [], onSave }) {
         </button>
         <button
           onClick={handleDeselectAll}
-          className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
+          className="px-3 py-1 bg-muted text-card-foreground rounded-md hover:bg-muted/80 text-sm"
         >
           Deselect All
         </button>
@@ -268,20 +268,20 @@ export default function POSProductSelector({ products = [], onSave }) {
       </div>
 
       {/* Product List */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden mb-6">
+      <div className="border border-border rounded-lg overflow-hidden mb-6">
         <div className="max-h-96 overflow-y-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted sticky top-0">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">POS</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">POS</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Product</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Category</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Price</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Stock</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Order</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-card divide-y divide-border">
               {filteredProducts.map((product) => {
                 const isSelected = selectedProducts.has(product.id)
                 const orderIndex = productOrder.indexOf(product.id)
@@ -291,7 +291,7 @@ export default function POSProductSelector({ products = [], onSave }) {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => handleToggleProduct(product.id)}
-                        className={`p-1 rounded ${isSelected ? 'text-green-600' : 'text-gray-400'}`}
+                        className={`p-1 rounded ${isSelected ? 'text-green-600' : 'text-muted-foreground'}`}
                       >
                         {isSelected ? (
                           <CheckCircleIcon className="h-6 w-6" />
@@ -313,34 +313,34 @@ export default function POSProductSelector({ products = [], onSave }) {
                             }}
                           />
                         ) : null}
-                        <div 
-                          className="h-10 w-10 rounded bg-gray-200 flex items-center justify-center mr-3"
+                        <div
+                          className="h-10 w-10 rounded bg-muted flex items-center justify-center mr-3"
                           style={{ display: product.thumbnail_url || product.image_url ? 'none' : 'flex' }}
                         >
-                          <PhotoIcon className="h-6 w-6 text-gray-400" />
+                          <PhotoIcon className="h-6 w-6 text-muted-foreground" />
                         </div>
                         <div>
-                          <div className="font-medium text-gray-900">{product.name}</div>
-                          <div className="text-sm text-gray-500">{product.sku}</div>
+                          <div className="font-medium text-card-foreground">{product.name}</div>
+                          <div className="text-sm text-muted-foreground">{product.sku}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-muted text-card-foreground">
                         {product.category || 'Uncategorized'}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-sm font-medium text-gray-900">${product.retail_price}</div>
+                      <div className="text-sm font-medium text-card-foreground">${product.retail_price}</div>
                       {product.cost_price && (
-                        <div className="text-xs text-gray-500">Cost: ${product.cost_price}</div>
+                        <div className="text-xs text-muted-foreground">Cost: ${product.cost_price}</div>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <div className={`text-sm font-medium ${
                         product.current_stock === 0 ? 'text-red-600' :
                         product.current_stock < (product.min_stock_level || 5) ? 'text-amber-600' :
-                        'text-gray-900'
+                        'text-card-foreground'
                       }`}>
                         {product.current_stock}
                       </div>
@@ -348,14 +348,14 @@ export default function POSProductSelector({ products = [], onSave }) {
                     <td className="px-4 py-3">
                       {isSelected && (
                         <div className="flex items-center gap-1">
-                          <span className="text-sm font-medium text-gray-600 mr-2">
+                          <span className="text-sm font-medium text-muted-foreground mr-2">
                             #{orderIndex + 1}
                           </span>
                           <button
                             onClick={() => handleMoveUp(product.id)}
                             disabled={orderIndex === 0}
                             className={`p-1 rounded ${
-                              orderIndex === 0 ? 'text-gray-300' : 'text-gray-600 hover:text-blue-600'
+                              orderIndex === 0 ? 'text-muted-foreground/50' : 'text-muted-foreground hover:text-blue-600'
                             }`}
                           >
                             <ArrowUpIcon className="h-4 w-4" />
@@ -364,7 +364,7 @@ export default function POSProductSelector({ products = [], onSave }) {
                             onClick={() => handleMoveDown(product.id)}
                             disabled={orderIndex === productOrder.length - 1}
                             className={`p-1 rounded ${
-                              orderIndex === productOrder.length - 1 ? 'text-gray-300' : 'text-gray-600 hover:text-blue-600'
+                              orderIndex === productOrder.length - 1 ? 'text-muted-foreground/50' : 'text-muted-foreground hover:text-blue-600'
                             }`}
                           >
                             <ArrowDownIcon className="h-4 w-4" />
@@ -382,12 +382,12 @@ export default function POSProductSelector({ products = [], onSave }) {
 
       {/* Preview Section */}
       {selectedProducts.size > 0 && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-gray-900 mb-3">POS Preview (Display Order)</h3>
+        <div className="bg-muted rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-card-foreground mb-3">POS Preview (Display Order)</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {orderedProducts.slice(0, 12).map((product, index) => (
-              <div key={product.id} className="bg-white rounded-lg p-2 border border-gray-200">
-                <div className="aspect-square bg-gray-100 rounded mb-2 flex items-center justify-center">
+              <div key={product.id} className="bg-card rounded-lg p-2 border border-border">
+                <div className="aspect-square bg-muted rounded mb-2 flex items-center justify-center">
                   {product.thumbnail_url || product.image_url ? (
                     <img
                       src={product.thumbnail_url || product.image_url}
@@ -396,18 +396,18 @@ export default function POSProductSelector({ products = [], onSave }) {
                       onError={(e) => e.target.style.display = 'none'}
                     />
                   ) : (
-                    <PhotoIcon className="h-8 w-8 text-gray-400" />
+                    <PhotoIcon className="h-8 w-8 text-muted-foreground" />
                   )}
                 </div>
-                <div className="text-xs font-medium text-gray-900 truncate">{product.name}</div>
-                <div className="text-xs text-gray-500">${product.retail_price}</div>
-                <div className="text-xs text-gray-400">#{index + 1}</div>
+                <div className="text-xs font-medium text-card-foreground truncate">{product.name}</div>
+                <div className="text-xs text-muted-foreground">${product.retail_price}</div>
+                <div className="text-xs text-muted-foreground">#{index + 1}</div>
               </div>
             ))}
             {orderedProducts.length > 12 && (
-              <div className="bg-gray-100 rounded-lg p-2 border border-gray-200 flex items-center justify-center">
+              <div className="bg-muted rounded-lg p-2 border border-border flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-sm font-medium text-gray-600">
+                  <div className="text-sm font-medium text-muted-foreground">
                     +{orderedProducts.length - 12} more
                   </div>
                 </div>
@@ -423,8 +423,8 @@ export default function POSProductSelector({ products = [], onSave }) {
           onClick={handleSave}
           disabled={isSaving}
           className={`px-6 py-2 rounded-md text-white font-medium ${
-            isSaving 
-              ? 'bg-gray-400 cursor-not-allowed' 
+            isSaving
+              ? 'bg-muted text-muted-foreground cursor-not-allowed'
               : 'bg-blue-600 hover:bg-blue-700'
           }`}
         >

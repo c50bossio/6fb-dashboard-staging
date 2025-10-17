@@ -35,7 +35,8 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
     predictiveInsights: [],
     costAnalysis: [],
     supplierPerformance: [],
-    loading: true
+    loading: true,
+    error: null
   })
   const [selectedInsight, setSelectedInsight] = useState('alerts') // alerts, predictions, analysis, suppliers
   const [alertFilter, setAlertFilter] = useState('all') // all, critical, warning
@@ -46,272 +47,99 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
 
   const loadInventoryInsights = async () => {
     try {
-      setInsightsData(prev => ({ ...prev, loading: true }))
-      
+      setInsightsData(prev => ({ ...prev, loading: true, error: null }))
+
       // Fetch inventory insights from API
-      const response = await fetch('/api/shop/analytics/inventory-insights')
+      const response = await fetch('/api/shop/analytics/inventory-insights?period_days=90')
       const data = await response.json()
-      
+
       if (data.success) {
+        // Map API response structure to component state
+        // Transform stock_alerts object to flat array
+        const stockAlertsArray = [
+          ...(data.stock_alerts?.alerts?.critical || []).map(alert => ({ ...alert, severity: 'critical' })),
+          ...(data.stock_alerts?.alerts?.high || []).map(alert => ({ ...alert, severity: 'warning' })),
+          ...(data.stock_alerts?.alerts?.medium || []).map(alert => ({ ...alert, severity: 'warning' }))
+        ].map(alert => ({
+          product: alert.name,
+          category: alert.category,
+          severity: alert.severity,
+          currentStock: alert.current_stock,
+          daysUntilEmpty: alert.days_remaining || 0,
+          avgDailySales: 0, // TODO: Not in API response
+          suggestedOrder: 0, // TODO: Not in API response
+          action: alert.recommended_action,
+          cost: 0 // TODO: Not in API response
+        }))
+
+        // Transform reorder_recommendations
+        const reorderSuggestions = (data.reorder_recommendations?.recommendations || []).map(rec => ({
+          product: rec.name,
+          category: rec.category,
+          currentStock: rec.current_stock,
+          suggestedQuantity: rec.suggested_reorder_quantity,
+          estimatedCost: rec.estimated_cost,
+          priority: rec.priority
+        }))
+
+        // Transform ABC analysis to category health
+        const categoryHealth = (data.abc_analysis?.products || []).slice(0, 5).map(product => ({
+          category: product.category,
+          status: product.classification === 'A' ? 'optimal' :
+                  product.classification === 'B' ? 'good' : 'warning',
+          stockDays: 30, // TODO: Not directly available
+          turnoverRate: product.turnover_rate,
+          value: product.revenue_value,
+          trend: 'stable'
+        }))
+
+        // Transform actionable_insights to predictive insights
+        const predictiveInsights = (data.actionable_insights || []).map(insight => ({
+          title: insight.title,
+          message: insight.description,
+          impact: insight.priority === 1 ? 'high' : insight.priority === 2 ? 'medium' : 'low',
+          confidence: 85, // TODO: Not in API
+          timeframe: '30 days'
+        }))
+
+        // Transform inventory_valuation to cost analysis
+        const costAnalysis = (data.inventory_valuation?.category_breakdown || []).map(cat => ({
+          category: cat.category,
+          totalCost: cat.inventory_value,
+          totalValue: cat.retail_value,
+          margin: ((cat.retail_value - cat.inventory_value) / cat.retail_value) * 100,
+          carryingCost: 0, // TODO: Not in API
+          turnoverDays: 0 // TODO: Not in API
+        }))
+
         setInsightsData({
-          stockAlerts: data.stockAlerts || generateMockStockAlerts(),
-          reorderSuggestions: data.reorderSuggestions || generateMockReorderSuggestions(),
-          categoryHealth: data.categoryHealth || generateMockCategoryHealth(),
-          predictiveInsights: data.predictiveInsights || generateMockPredictiveInsights(),
-          costAnalysis: data.costAnalysis || generateMockCostAnalysis(),
-          supplierPerformance: data.supplierPerformance || generateMockSupplierPerformance(),
-          loading: false
+          stockAlerts: stockAlertsArray,
+          reorderSuggestions: reorderSuggestions,
+          categoryHealth: categoryHealth,
+          predictiveInsights: predictiveInsights,
+          costAnalysis: costAnalysis,
+          supplierPerformance: [], // TODO: API doesn't provide supplier performance data yet
+          loading: false,
+          error: null
         })
       } else {
-        // Fall back to mock data
-        setInsightsData({
-          stockAlerts: generateMockStockAlerts(),
-          reorderSuggestions: generateMockReorderSuggestions(),
-          categoryHealth: generateMockCategoryHealth(),
-          predictiveInsights: generateMockPredictiveInsights(),
-          costAnalysis: generateMockCostAnalysis(),
-          supplierPerformance: generateMockSupplierPerformance(),
-          loading: false
-        })
+        // API returned error - show error state
+        setInsightsData(prev => ({
+          ...prev,
+          loading: false,
+          error: data.error || 'Failed to load inventory insights'
+        }))
       }
     } catch (error) {
       console.error('Error loading inventory insights:', error)
-      // Use mock data on error
-      setInsightsData({
-        stockAlerts: generateMockStockAlerts(),
-        reorderSuggestions: generateMockReorderSuggestions(),
-        categoryHealth: generateMockCategoryHealth(),
-        predictiveInsights: generateMockPredictiveInsights(),
-        costAnalysis: generateMockCostAnalysis(),
-        supplierPerformance: generateMockSupplierPerformance(),
-        loading: false
-      })
+      // Network or parsing error - show error state
+      setInsightsData(prev => ({
+        ...prev,
+        loading: false,
+        error: 'Unable to connect to server. Please try again later.'
+      }))
     }
   }
-
-  const generateMockStockAlerts = () => [
-    {
-      product: 'Premium Hair Oil',
-      category: 'Hair Care',
-      currentStock: 3,
-      minLevel: 10,
-      severity: 'critical',
-      daysUntilEmpty: 2,
-      avgDailySales: 1.5,
-      action: 'Immediate reorder required',
-      cost: 120,
-      suggestedOrder: 25
-    },
-    {
-      product: 'Beard Styling Balm',
-      category: 'Beard Care', 
-      currentStock: 7,
-      minLevel: 12,
-      severity: 'warning',
-      daysUntilEmpty: 5,
-      avgDailySales: 1.2,
-      action: 'Plan reorder within 3 days',
-      cost: 84,
-      suggestedOrder: 20
-    },
-    {
-      product: 'Hair Styling Gel',
-      category: 'Styling',
-      currentStock: 15,
-      minLevel: 20,
-      severity: 'warning',
-      daysUntilEmpty: 12,
-      avgDailySales: 1.1,
-      action: 'Monitor closely',
-      cost: 66,
-      suggestedOrder: 15
-    },
-    {
-      product: 'Professional Scissors',
-      category: 'Tools',
-      currentStock: 2,
-      minLevel: 5,
-      severity: 'critical',
-      daysUntilEmpty: 15,
-      avgDailySales: 0.3,
-      action: 'Low stock alert',
-      cost: 280,
-      suggestedOrder: 8
-    }
-  ]
-
-  const generateMockReorderSuggestions = () => [
-    {
-      product: 'Premium Hair Oil',
-      priority: 1,
-      suggestedQuantity: 25,
-      estimatedCost: 300,
-      supplier: 'Hair Care Plus',
-      leadTime: 3,
-      expectedProfit: 450,
-      roi: 150
-    },
-    {
-      product: 'Beard Styling Balm',
-      priority: 2,
-      suggestedQuantity: 20,
-      estimatedCost: 160,
-      supplier: 'Beard Masters',
-      leadTime: 5,
-      expectedProfit: 240,
-      roi: 150
-    },
-    {
-      product: 'Professional Scissors',
-      priority: 3,
-      suggestedQuantity: 8,
-      estimatedCost: 360,
-      supplier: 'Pro Tools Inc',
-      leadTime: 7,
-      expectedProfit: 200,
-      roi: 55
-    }
-  ]
-
-  const generateMockCategoryHealth = () => [
-    { 
-      category: 'Hair Care', 
-      status: 'good', 
-      stockDays: 25, 
-      turnoverRate: 8.2, 
-      value: 12450, 
-      items: 15,
-      trend: 'up'
-    },
-    { 
-      category: 'Beard Care', 
-      status: 'warning', 
-      stockDays: 12, 
-      turnoverRate: 6.5, 
-      value: 8900, 
-      items: 12,
-      trend: 'up'
-    },
-    { 
-      category: 'Tools', 
-      status: 'critical', 
-      stockDays: 8, 
-      turnoverRate: 2.1, 
-      value: 15600, 
-      items: 8,
-      trend: 'down'
-    },
-    { 
-      category: 'Styling', 
-      status: 'optimal', 
-      stockDays: 35, 
-      turnoverRate: 5.8, 
-      value: 6750, 
-      items: 18,
-      trend: 'up'
-    },
-    { 
-      category: 'Aftercare', 
-      status: 'good', 
-      stockDays: 22, 
-      turnoverRate: 4.2, 
-      value: 3200, 
-      items: 9,
-      trend: 'stable'
-    }
-  ]
-
-  const generateMockPredictiveInsights = () => [
-    {
-      type: 'demand_spike',
-      title: 'Seasonal Demand Increase Expected',
-      message: 'Hair styling products typically see 30% increase in December. Consider stocking up on Hair Styling Gel and Premium Hair Oil.',
-      confidence: 85,
-      timeframe: '2-3 weeks',
-      impact: 'high'
-    },
-    {
-      type: 'slow_mover',
-      title: 'Slow Moving Inventory Alert',
-      message: 'Professional Scissors have low turnover (2.1x annually). Consider promotional pricing or bundle deals.',
-      confidence: 92,
-      timeframe: 'Current',
-      impact: 'medium'
-    },
-    {
-      type: 'opportunity',
-      title: 'Cross-Sell Opportunity',
-      message: 'Customers buying Beard Styling Balm often purchase Aftershave Lotion. Bundle pricing could increase margins.',
-      confidence: 78,
-      timeframe: 'Immediate',
-      impact: 'medium'
-    },
-    {
-      type: 'cost_optimization',
-      title: 'Supplier Cost Analysis',
-      message: 'Switching to Hair Care Plus for bulk orders could reduce costs by 12% while maintaining quality.',
-      confidence: 89,
-      timeframe: 'Next order cycle',
-      impact: 'high'
-    }
-  ]
-
-  const generateMockCostAnalysis = () => [
-    {
-      category: 'Hair Care',
-      totalCost: 1850,
-      totalValue: 4200,
-      margin: 55.9,
-      carryingCost: 92,
-      turnoverDays: 18
-    },
-    {
-      category: 'Beard Care', 
-      totalCost: 1320,
-      totalValue: 3150,
-      margin: 58.1,
-      carryingCost: 66,
-      turnoverDays: 22
-    },
-    {
-      category: 'Tools',
-      totalCost: 2100,
-      totalValue: 3360,
-      margin: 37.5,
-      carryingCost: 420,
-      turnoverDays: 65
-    }
-  ]
-
-  const generateMockSupplierPerformance = () => [
-    {
-      supplier: 'Hair Care Plus',
-      orders: 12,
-      onTimeDelivery: 92,
-      quality: 98,
-      costEfficiency: 87,
-      totalSpent: 4850,
-      avgLeadTime: 4
-    },
-    {
-      supplier: 'Beard Masters',
-      orders: 8,
-      onTimeDelivery: 88,
-      quality: 95,
-      costEfficiency: 82,
-      totalSpent: 2340,
-      avgLeadTime: 6
-    },
-    {
-      supplier: 'Pro Tools Inc',
-      orders: 6,
-      onTimeDelivery: 75,
-      quality: 90,
-      costEfficiency: 65,
-      totalSpent: 1890,
-      avgLeadTime: 8
-    }
-  ]
 
   const formatCurrency = (value) => `$${value.toLocaleString()}`
   const formatPercentage = (value) => `${value.toFixed(1)}%`
@@ -323,30 +151,83 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
 
   if (insightsData.loading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-card rounded-lg border border-border p-6">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-6 bg-muted rounded w-1/3 mb-4"></div>
           <div className="space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-4 bg-muted rounded w-full"></div>
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
           </div>
         </div>
       </div>
     )
   }
 
+  // Error state
+  if (insightsData.error) {
+    return (
+      <div className="bg-card rounded-lg border border-border p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <LightBulbIcon className="h-6 w-6 text-purple-600" />
+          <h3 className="text-lg font-semibold text-card-foreground">Inventory Insights</h3>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-red-900 mb-1">Unable to Load Insights</h4>
+              <p className="text-sm text-red-700">{insightsData.error}</p>
+              <button
+                onClick={loadInventoryInsights}
+                className="mt-3 px-4 py-2 text-sm font-medium text-red-700 hover:text-red-900 border border-red-300 rounded-md hover:bg-red-100"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Empty state - no data available
+  const hasNoData =
+    insightsData.stockAlerts.length === 0 &&
+    insightsData.categoryHealth.length === 0 &&
+    insightsData.predictiveInsights.length === 0 &&
+    insightsData.costAnalysis.length === 0 &&
+    insightsData.supplierPerformance.length === 0
+
+  if (hasNoData) {
+    return (
+      <div className="bg-card rounded-lg border border-border p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <LightBulbIcon className="h-6 w-6 text-purple-600" />
+          <h3 className="text-lg font-semibold text-card-foreground">Inventory Insights</h3>
+        </div>
+        <div className="bg-muted border border-border rounded-lg p-8 text-center">
+          <CubeIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <h4 className="text-sm font-semibold text-card-foreground mb-1">No Inventory Data Available</h4>
+          <p className="text-sm text-muted-foreground mb-4">
+            Start adding products to your inventory to see intelligent insights and analytics.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+    <div className="bg-card rounded-lg border border-border p-6 mb-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
         <div className="flex items-center space-x-2 mb-4 md:mb-0">
           <LightBulbIcon className="h-6 w-6 text-purple-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Inventory Insights</h3>
+          <h3 className="text-lg font-semibold text-card-foreground">Inventory Insights</h3>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center space-x-1 bg-muted rounded-lg p-1">
           {[
             { key: 'alerts', label: 'Stock Alerts', icon: ExclamationTriangleIcon },
             { key: 'predictions', label: 'Predictions', icon: ChartPieIcon },
@@ -357,9 +238,9 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
               key={key}
               onClick={() => setSelectedInsight(key)}
               className={`px-3 py-1 text-sm rounded-md transition-colors flex items-center space-x-1 ${
-                selectedInsight === key 
-                  ? 'bg-white text-purple-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-800'
+                selectedInsight === key
+                  ? 'bg-card text-purple-600 shadow-sm'
+                  : 'text-muted-foreground hover:text-card-foreground'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -427,11 +308,11 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
 
           {/* Alert Filter */}
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-700">Filter:</span>
+            <span className="text-sm text-muted-foreground">Filter:</span>
             <select
               value={alertFilter}
               onChange={(e) => setAlertFilter(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="border border-input bg-background text-foreground rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
             >
               <option value="all">All Alerts</option>
               <option value="critical">Critical Only</option>
@@ -449,8 +330,8 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <span className="font-semibold text-gray-900">{alert.product}</span>
-                      <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+                      <span className="font-semibold text-card-foreground">{alert.product}</span>
+                      <span className="px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground">
                         {alert.category}
                       </span>
                       <span className={`px-2 py-1 text-xs rounded-full ${
@@ -463,28 +344,28 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <span className="text-gray-600">Current Stock:</span>
+                        <span className="text-muted-foreground">Current Stock:</span>
                         <div className="font-medium">{alert.currentStock} units</div>
                       </div>
                       <div>
-                        <span className="text-gray-600">Days Until Empty:</span>
+                        <span className="text-muted-foreground">Days Until Empty:</span>
                         <div className="font-medium">{formatDays(alert.daysUntilEmpty)}</div>
                       </div>
                       <div>
-                        <span className="text-gray-600">Daily Sales:</span>
+                        <span className="text-muted-foreground">Daily Sales:</span>
                         <div className="font-medium">{alert.avgDailySales}/day</div>
                       </div>
                       <div>
-                        <span className="text-gray-600">Suggested Order:</span>
+                        <span className="text-muted-foreground">Suggested Order:</span>
                         <div className="font-medium">{alert.suggestedOrder} units</div>
                       </div>
                     </div>
-                    
-                    <div className="mt-2 text-sm text-gray-700">{alert.action}</div>
+
+                    <div className="mt-2 text-sm text-muted-foreground">{alert.action}</div>
                   </div>
-                  
+
                   <div className="ml-4 text-right">
-                    <div className="text-lg font-bold text-gray-900">
+                    <div className="text-lg font-bold text-card-foreground">
                       {formatCurrency(alert.cost)}
                     </div>
                     <button className="mt-2 px-3 py-1 text-xs font-medium text-purple-600 hover:text-purple-700 border border-purple-300 rounded-md hover:bg-purple-50">
@@ -502,13 +383,13 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
       {selectedInsight === 'predictions' && (
         <div className="space-y-6">
           {/* Category Health Overview */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">Category Health Overview</h4>
+          <div className="bg-muted p-4 rounded-lg">
+            <h4 className="text-sm font-semibold text-card-foreground mb-3">Category Health Overview</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {insightsData.categoryHealth.map((category, index) => (
-                <div key={index} className="bg-white p-3 rounded-lg border">
+                <div key={index} className="bg-card p-3 rounded-lg border border-border">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-900">{category.category}</span>
+                    <span className="text-sm font-medium text-card-foreground">{category.category}</span>
                     <div className={`w-3 h-3 rounded-full ${
                       category.status === 'critical' ? 'bg-red-500' :
                       category.status === 'warning' ? 'bg-yellow-500' :
@@ -516,7 +397,7 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                       'bg-blue-500'
                     }`}></div>
                   </div>
-                  <div className="space-y-1 text-xs text-gray-600">
+                  <div className="space-y-1 text-xs text-muted-foreground">
                     <div>Stock: {formatDays(category.stockDays)}</div>
                     <div>Turnover: {category.turnoverRate}x</div>
                     <div>Value: {formatCurrency(category.value)}</div>
@@ -527,7 +408,7 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                     <span className={`text-xs font-medium ${
                       category.trend === 'up' ? 'text-green-600' :
                       category.trend === 'down' ? 'text-red-600' :
-                      'text-gray-600'
+                      'text-muted-foreground'
                     }`}>
                       {category.trend}
                     </span>
@@ -539,21 +420,21 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
 
           {/* Predictive Insights */}
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-900">AI-Powered Insights</h4>
+            <h4 className="text-sm font-semibold text-card-foreground">AI-Powered Insights</h4>
             {insightsData.predictiveInsights.map((insight, index) => (
               <div key={index} className={`p-4 rounded-lg border-l-4 ${
                 insight.impact === 'high' ? 'bg-blue-50 border-blue-400' :
                 insight.impact === 'medium' ? 'bg-green-50 border-green-400' :
-                'bg-gray-50 border-gray-400'
+                'bg-muted border-border'
               }`}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-semibold text-gray-900">{insight.title}</span>
+                      <span className="font-semibold text-card-foreground">{insight.title}</span>
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         insight.impact === 'high' ? 'bg-blue-100 text-blue-800' :
                         insight.impact === 'medium' ? 'bg-green-100 text-green-800' :
-                        'bg-gray-100 text-gray-800'
+                        'bg-muted text-muted-foreground'
                       }`}>
                         {insight.impact} impact
                       </span>
@@ -561,8 +442,8 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                         {insight.confidence}% confidence
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700 mb-2">{insight.message}</p>
-                    <div className="text-xs text-gray-600">
+                    <p className="text-sm text-muted-foreground mb-2">{insight.message}</p>
+                    <div className="text-xs text-muted-foreground">
                       Timeframe: {insight.timeframe}
                     </div>
                   </div>
@@ -577,15 +458,15 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
       {selectedInsight === 'analysis' && (
         <div className="space-y-6">
           {/* Cost Analysis Table */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+          <div className="bg-muted p-4 rounded-lg">
+            <h4 className="text-sm font-semibold text-card-foreground mb-3 flex items-center">
               <BanknotesIcon className="h-4 w-4 mr-2" />
               Inventory Cost Analysis
             </h4>
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead>
-                  <tr className="text-left text-xs text-gray-500 uppercase tracking-wider border-b">
+                  <tr className="text-left text-xs text-muted-foreground uppercase tracking-wider border-b border-border">
                     <th className="pb-2">Category</th>
                     <th className="pb-2">Cost Basis</th>
                     <th className="pb-2">Market Value</th>
@@ -596,10 +477,10 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                 </thead>
                 <tbody className="space-y-2">
                   {insightsData.costAnalysis.map((item, index) => (
-                    <tr key={index} className="text-sm border-b border-gray-100">
-                      <td className="py-3 font-medium text-gray-900">{item.category}</td>
-                      <td className="py-3 text-gray-600">{formatCurrency(item.totalCost)}</td>
-                      <td className="py-3 text-gray-600">{formatCurrency(item.totalValue)}</td>
+                    <tr key={index} className="text-sm border-b border-border">
+                      <td className="py-3 font-medium text-card-foreground">{item.category}</td>
+                      <td className="py-3 text-muted-foreground">{formatCurrency(item.totalCost)}</td>
+                      <td className="py-3 text-muted-foreground">{formatCurrency(item.totalValue)}</td>
                       <td className="py-3">
                         <span className={`font-semibold ${
                           item.margin >= 50 ? 'text-green-600' :
@@ -608,8 +489,8 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                           {formatPercentage(item.margin)}
                         </span>
                       </td>
-                      <td className="py-3 text-gray-600">{formatCurrency(item.carryingCost)}</td>
-                      <td className="py-3 text-gray-600">{formatDays(item.turnoverDays)}</td>
+                      <td className="py-3 text-muted-foreground">{formatCurrency(item.carryingCost)}</td>
+                      <td className="py-3 text-muted-foreground">{formatDays(item.turnoverDays)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -625,25 +506,25 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
           {/* Supplier Performance Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {insightsData.supplierPerformance.map((supplier, index) => (
-              <div key={index} className="bg-gray-50 p-4 rounded-lg">
+              <div key={index} className="bg-muted p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
-                  <h5 className="font-semibold text-gray-900">{supplier.supplier}</h5>
+                  <h5 className="font-semibold text-card-foreground">{supplier.supplier}</h5>
                   <div className="flex items-center space-x-1">
                     <ShieldCheckIcon className={`h-4 w-4 ${
                       supplier.quality >= 95 ? 'text-green-500' :
                       supplier.quality >= 90 ? 'text-yellow-500' : 'text-red-500'
                     }`} />
-                    <span className="text-xs font-medium text-gray-600">{supplier.quality}%</span>
+                    <span className="text-xs font-medium text-muted-foreground">{supplier.quality}%</span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Orders:</span>
+                    <span className="text-muted-foreground">Orders:</span>
                     <span className="font-medium">{supplier.orders}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">On-Time Delivery:</span>
+                    <span className="text-muted-foreground">On-Time Delivery:</span>
                     <span className={`font-medium ${
                       supplier.onTimeDelivery >= 90 ? 'text-green-600' :
                       supplier.onTimeDelivery >= 80 ? 'text-yellow-600' : 'text-red-600'
@@ -652,7 +533,7 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Cost Efficiency:</span>
+                    <span className="text-muted-foreground">Cost Efficiency:</span>
                     <span className={`font-medium ${
                       supplier.costEfficiency >= 85 ? 'text-green-600' :
                       supplier.costEfficiency >= 70 ? 'text-yellow-600' : 'text-red-600'
@@ -661,19 +542,19 @@ export default function InventoryInsights({ products = [], metrics = {} }) {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total Spent:</span>
+                    <span className="text-muted-foreground">Total Spent:</span>
                     <span className="font-medium">{formatCurrency(supplier.totalSpent)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Avg Lead Time:</span>
+                    <span className="text-muted-foreground">Avg Lead Time:</span>
                     <span className="font-medium">{formatDays(supplier.avgLeadTime)}</span>
                   </div>
                 </div>
 
                 {/* Supplier Rating */}
-                <div className="mt-4 pt-3 border-t border-gray-200">
+                <div className="mt-4 pt-3 border-t border-border">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Overall Rating:</span>
+                    <span className="text-sm text-muted-foreground">Overall Rating:</span>
                     <div className="flex items-center space-x-1">
                       {[...Array(5)].map((_, i) => {
                         const rating = Math.round((supplier.onTimeDelivery + supplier.quality + supplier.costEfficiency) / 60)

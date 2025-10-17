@@ -15,9 +15,11 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import ComponentErrorBoundary from '../../../../components/dashboard/ComponentErrorBoundary'
 import { useAuth } from '../../../../components/SupabaseAuthProvider'
+import { useGlobalDashboard } from '../../../../contexts/GlobalDashboardContext'
 
 export default function BarberDashboard() {
   const { user, profile } = useAuth()
+  const { currentLocationId } = useGlobalDashboard()
   const [stats, setStats] = useState({
     todayAppointments: 0,
     completedToday: 0,
@@ -31,19 +33,19 @@ export default function BarberDashboard() {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [_retryCount, setRetryCount] = useState(0)
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
     loadDashboardData()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentLocationId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadDashboardData = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      // Get barbershop context from profile
-      const barbershopId = profile?.barbershop_id || profile?.barbershop_id
+      // Get barbershop context from GlobalDashboard (prioritize) or profile fallback
+      const barbershopId = currentLocationId || profile?.barbershop_id
       const barberId = user?.id
       
       if (!barberId) {
@@ -51,11 +53,13 @@ export default function BarberDashboard() {
       }
 
       if (!barbershopId) {
-        // For barbers without barbershop association, show helpful error
-        if (profile?.role === 'BARBER') {
-          setError('Your barber account is not associated with a barbershop. Please contact your shop owner to complete your profile setup.')
+        // Show context-aware error message
+        if (currentLocationId) {
+          setError('Unable to load shop data. The selected location may not exist or you may not have access.')
+        } else if (profile?.role === 'BARBER') {
+          setError('No location selected. Please use the shop selector in the top navigation, or contact your shop owner to complete your profile setup.')
         } else {
-          setError('No barbershop association found. Please complete your profile setup.')
+          setError('No location selected. Please use the shop selector in the top navigation to select a barbershop.')
         }
         setLoading(false)
         return
@@ -83,10 +87,10 @@ export default function BarberDashboard() {
       if (appointmentsData.error) {
         throw new Error(appointmentsData.error)
       }
-      
-      if (appointmentsData.bookings || appointmentsData.appointments) {
-        // Handle both 'bookings' and 'appointments' response formats
-        const appointmentsList = appointmentsData.bookings || appointmentsData.appointments || []
+
+      // API returns data in 'data' property
+      if (appointmentsData.data) {
+        const appointmentsList = appointmentsData.data || []
         const today = new Date().toDateString()
         const todayAppointments = appointmentsList.filter(apt => 
           new Date(apt.scheduled_at).toDateString() === today
@@ -141,13 +145,13 @@ export default function BarberDashboard() {
   }
 
   const StatCard = ({ icon: Icon, title, value, color, subtitle }) => (
-    <div className="bg-white dark:bg-dark-bg-elevated-1 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-dark-bg-elevated-6 p-3 sm:p-6">
+    <div className="bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-border p-3 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="order-2 sm:order-1">
-          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-dark-text-secondary truncate">{title}</p>
+          <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-muted-foreground truncate">{title}</p>
           <p className={`text-lg sm:text-2xl font-bold ${color}`}>{value}</p>
           {subtitle && (
-            <p className="text-xs text-gray-500 dark:text-dark-text-muted mt-0.5 sm:mt-1 hidden sm:block">{subtitle}</p>
+            <p className="text-xs text-gray-500 dark:text-muted-foreground mt-0.5 sm:mt-1 hidden sm:block">{subtitle}</p>
           )}
         </div>
         <div className={`p-2 sm:p-3 rounded-lg ${color.replace('text-', 'bg-').replace('600', '100')} mb-2 sm:mb-0 order-1 sm:order-2 self-start sm:self-auto`}>
@@ -159,13 +163,36 @@ export default function BarberDashboard() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      confirmed: { bg: 'bg-olive-100', text: 'text-olive-800', label: 'Confirmed' },
-      completed: { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
-      cancelled: { bg: 'bg-red-100', text: 'text-red-800', label: 'Cancelled' },
-      no_show: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'No Show' }
+      confirmed: {
+        bg: 'bg-olive-100 dark:bg-olive-900/30',
+        text: 'text-olive-800 dark:text-olive-300',
+        label: 'Confirmed'
+      },
+      completed: {
+        bg: 'bg-green-100 dark:bg-green-900/30',
+        text: 'text-green-800 dark:text-green-300',
+        label: 'Completed'
+      },
+      cancelled: {
+        bg: 'bg-red-100 dark:bg-red-900/30',
+        text: 'text-red-800 dark:text-red-300',
+        label: 'Cancelled'
+      },
+      no_show: {
+        bg: 'bg-gray-100 dark:bg-gray-800/50',
+        text: 'text-gray-800 dark:text-gray-300',
+        label: 'No Show'
+      },
+      pending: {
+        bg: 'bg-amber-100 dark:bg-amber-900/30',
+        text: 'text-amber-800 dark:text-amber-300',
+        label: 'Pending'
+      }
     }
-    
-    const config = statusConfig[status] || statusConfig.confirmed
+
+    // Normalize status to lowercase for lookup
+    const normalizedStatus = (status || 'confirmed').toLowerCase()
+    const config = statusConfig[normalizedStatus] || statusConfig.confirmed
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
         {config.label}
@@ -175,28 +202,28 @@ export default function BarberDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-background">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 dark:border-amber-400"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg">
+    <div className="min-h-screen bg-gray-50 dark:bg-background">
       {/* Header */}
-      <div className="bg-white dark:bg-dark-bg-elevated-1 shadow-sm border-b">
+      <div className="bg-white dark:bg-card shadow-sm border-b dark:border-border">
         <div className="px-4 sm:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-dark-text-primary">Barber Dashboard</h1>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-dark-text-secondary">Welcome back, {profile?.full_name || user?.email || 'Barber'}</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-foreground">Barber Dashboard</h1>
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-muted-foreground">Welcome back, {profile?.full_name || user?.email || 'Barber'}</p>
             </div>
             <div className="flex items-center justify-between sm:justify-end space-x-3">
-              <button className="relative p-2 text-gray-600 dark:text-dark-text-secondary hover:text-gray-900 dark:text-dark-text-primary">
+              <button className="relative p-2 text-gray-600 dark:text-muted-foreground hover:text-gray-900 dark:hover:text-foreground">
                 <BellIcon className="h-5 sm:h-6 w-5 sm:w-6" />
                 <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
               </button>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-dark-text-secondary">
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-muted-foreground">
                 {new Date().toLocaleDateString('en-US', { 
                   weekday: 'short', 
                   month: 'short', 
@@ -282,56 +309,56 @@ export default function BarberDashboard() {
         </ComponentErrorBoundary>
 
         {/* Quick Actions */}
-        <div className="bg-white dark:bg-dark-bg-elevated-1 rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-dark-bg-elevated-6 p-4 sm:p-6 mb-6 sm:mb-8">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-dark-text-primary mb-3 sm:mb-4">Quick Actions</h2>
+        <div className="bg-white dark:bg-card rounded-lg sm:rounded-xl shadow-sm border border-gray-200 dark:border-border p-4 sm:p-6 mb-6 sm:mb-8">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-foreground mb-3 sm:mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <Link href="/barber/schedule" className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:bg-amber-900/30 transition-colors text-center">
+            <Link href="/barber/schedule" className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors text-center">
               <CalendarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-amber-700 dark:text-amber-300 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-dark-text-primary">View Schedule</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-foreground">View Schedule</p>
             </Link>
-            <Link href="/barber/clients" className="p-3 sm:p-4 bg-olive-50 dark:bg-dark-brand-olive/10 rounded-lg hover:bg-olive-100 dark:bg-dark-brand-olive/20 transition-colors text-center">
-              <UserGroupIcon className="h-5 sm:h-6 w-5 sm:w-6 text-olive-600 dark:text-dark-brand-olive mx-auto mb-1 sm:mb-2" />
-              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-dark-text-primary">My Clients</p>
+            <Link href="/barber/clients" className="p-3 sm:p-4 bg-olive-50 dark:bg-olive-900/20 rounded-lg hover:bg-olive-100 dark:hover:bg-olive-900/30 transition-colors text-center">
+              <UserGroupIcon className="h-5 sm:h-6 w-5 sm:w-6 text-olive-600 dark:text-olive-400 mx-auto mb-1 sm:mb-2" />
+              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-foreground">My Clients</p>
             </Link>
-            <Link href="/barber/reports" className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:bg-green-900/30 transition-colors text-center">
+            <Link href="/barber/reports" className="p-3 sm:p-4 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-center">
               <ChartBarIcon className="h-5 sm:h-6 w-5 sm:w-6 text-green-600 dark:text-green-400 mx-auto mb-1 sm:mb-2" />
-              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-dark-text-primary">View Reports</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-foreground">View Reports</p>
             </Link>
-            <Link href="/barber/services" className="p-3 sm:p-4 bg-gold-50 dark:bg-dark-brand-gold/10 rounded-lg hover:bg-gold-100 dark:bg-dark-brand-gold/20 transition-colors text-center">
-              <ScissorsIcon className="h-5 sm:h-6 w-5 sm:w-6 text-gold-600 dark:text-dark-brand-gold mx-auto mb-1 sm:mb-2" />
-              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-dark-text-primary">My Services</p>
+            <Link href="/barber/services" className="p-3 sm:p-4 bg-gold-50 dark:bg-gold-900/20 rounded-lg hover:bg-gold-100 dark:hover:bg-gold-900/30 transition-colors text-center">
+              <ScissorsIcon className="h-5 sm:h-6 w-5 sm:w-6 text-gold-600 dark:text-gold-400 mx-auto mb-1 sm:mb-2" />
+              <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-foreground">My Services</p>
             </Link>
           </div>
         </div>
 
         {/* Today's Schedule */}
-        <div className="bg-white dark:bg-dark-bg-elevated-1 rounded-xl shadow-sm border border-gray-200 dark:border-dark-bg-elevated-6">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-dark-bg-elevated-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-dark-text-primary">Today's Schedule</h2>
+        <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-border">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-foreground">Today's Schedule</h2>
           </div>
           <div className="divide-y divide-gray-200">
             {appointments.length > 0 ? (
               appointments.map((appointment) => (
-                <div key={appointment.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-dark-bg-elevated-2 dark:bg-dark-bg">
+                <div key={appointment.id} className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-muted dark:bg-card">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                          <UserGroupIcon className="h-5 w-5 text-gray-600 dark:text-dark-text-secondary" />
+                        <div className="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                          <UserGroupIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-dark-text-primary">
-                          {appointment.customer_name}
+                        <p className="text-sm font-medium text-gray-900 dark:text-foreground">
+                          {appointment.client?.full_name || appointment.client_name || 'Walk-in Client'}
                         </p>
-                        <p className="text-sm text-gray-500 dark:text-dark-text-muted">
-                          {appointment.service_name} • {appointment.start_time} - {appointment.end_time}
+                        <p className="text-sm text-gray-500 dark:text-muted-foreground">
+                          {appointment.service?.name || 'Service'} • {new Date(appointment.scheduled_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       {getStatusBadge(appointment.status)}
-                      <button className="text-sm text-olive-600 dark:text-dark-brand-olive hover:text-olive-800 font-medium">
+                      <button className="text-sm text-olive-600 dark:text-olive-400 hover:text-olive-800 dark:hover:text-olive-300 font-medium">
                         View Details
                       </button>
                     </div>
@@ -340,9 +367,9 @@ export default function BarberDashboard() {
               ))
             ) : (
               <div className="px-6 py-12 text-center">
-                <CalendarIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-dark-text-disabled" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-dark-text-primary">No appointments today</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-dark-text-muted">
+                <CalendarIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-foreground">No appointments today</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-muted-foreground">
                   Enjoy your day off or check tomorrow's schedule
                 </p>
               </div>
@@ -352,20 +379,20 @@ export default function BarberDashboard() {
 
         {/* Earnings Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-white dark:bg-dark-bg-elevated-1 rounded-xl shadow-sm border border-gray-200 dark:border-dark-bg-elevated-6 p-6">
-            <h3 className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary mb-2">This Week</h3>
-            <p className="text-2xl font-bold text-gray-900 dark:text-dark-text-primary">${stats.weekEarnings}</p>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-muted-foreground mb-2">This Week</h3>
+            <p className="text-2xl font-bold text-gray-900 dark:text-foreground">${stats.weekEarnings}</p>
             <p className="text-xs text-green-600 dark:text-green-400 mt-1">↑ 12% from last week</p>
           </div>
-          <div className="bg-white dark:bg-dark-bg-elevated-1 rounded-xl shadow-sm border border-gray-200 dark:border-dark-bg-elevated-6 p-6">
-            <h3 className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary mb-2">This Month</h3>
-            <p className="text-2xl font-bold text-gray-900 dark:text-dark-text-primary">${stats.monthEarnings}</p>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-muted-foreground mb-2">This Month</h3>
+            <p className="text-2xl font-bold text-gray-900 dark:text-foreground">${stats.monthEarnings}</p>
             <p className="text-xs text-green-600 dark:text-green-400 mt-1">↑ 8% from last month</p>
           </div>
-          <div className="bg-white dark:bg-dark-bg-elevated-1 rounded-xl shadow-sm border border-gray-200 dark:border-dark-bg-elevated-6 p-6">
-            <h3 className="text-sm font-medium text-gray-600 dark:text-dark-text-secondary mb-2">Commission Rate</h3>
-            <p className="text-2xl font-bold text-gray-900 dark:text-dark-text-primary">60%</p>
-            <p className="text-xs text-gray-500 dark:text-dark-text-muted mt-1">Standard rate</p>
+          <div className="bg-white dark:bg-card rounded-xl shadow-sm border border-gray-200 dark:border-border p-6">
+            <h3 className="text-sm font-medium text-gray-600 dark:text-muted-foreground mb-2">Commission Rate</h3>
+            <p className="text-2xl font-bold text-gray-900 dark:text-foreground">60%</p>
+            <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">Standard rate</p>
           </div>
         </div>
       </div>

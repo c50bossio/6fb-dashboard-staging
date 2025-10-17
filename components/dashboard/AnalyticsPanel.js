@@ -79,16 +79,20 @@ export default function AnalyticsPanel({ data }) {
   const [dataSource, setDataSource] = useState('loading')
   const datePickerRef = useRef(null)
 
-  // Chart data from real database (NO MOCK DATA)
-  const revenueData = [
-    { date: 'Mon', revenue: analyticsData ? analyticsData.totalRevenue / 30 : 0, bookings: analyticsData ? Math.round(analyticsData.totalBookings / 7) : 0 },
-    { date: 'Tue', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.2 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.2) : 0 },
-    { date: 'Wed', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.1 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.1) : 0 },
-    { date: 'Thu', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.5 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.5) : 0 },
-    { date: 'Fri', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.8 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.8) : 0 },
-    { date: 'Sat', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 2.0 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 2.0) : 0 },
-    { date: 'Sun', revenue: analyticsData ? (analyticsData.totalRevenue / 30) * 1.6 : 0, bookings: analyticsData ? Math.round((analyticsData.totalBookings / 7) * 1.6) : 0 }
-  ]
+  // Chart data from REAL database daily breakdown (NOT estimated!)
+  const revenueData = analyticsData?.daily_breakdown?.length > 0
+    ? analyticsData.daily_breakdown.map(day => ({
+        date: day.dayOfWeek || new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        revenue: day.revenue,
+        bookings: day.bookings
+      }))
+    : analyticsData?.weekly_patterns
+    ? Object.entries(analyticsData.weekly_patterns).map(([day, data]) => ({
+        date: day.substring(0, 3), // Mon, Tue, Wed, etc.
+        revenue: data.revenue,
+        bookings: data.bookings
+      }))
+    : [] // Empty array if no data
 
   // Service breakdown from database (to be replaced with API call)
   const serviceBreakdown = analyticsData?.popular_services || [
@@ -153,9 +157,18 @@ export default function AnalyticsPanel({ data }) {
           if (result.success && result.data) {
             console.log('✅ Real analytics data fetched:', result.data)
             setDataSource(result.data_source || 'api')
-            
+
             let dashboardData = {}
-            
+
+            // Log real data status
+            if (result.data.daily_breakdown && result.data.daily_breakdown.length > 0) {
+              console.log(`✅ Using REAL daily breakdown data (${result.data.daily_breakdown.length} days)`)
+            } else if (result.data.weekly_patterns) {
+              console.log('✅ Using REAL weekly patterns (aggregated by day of week)')
+            } else {
+              console.warn('⚠️ No breakdown data available - charts will be empty')
+            }
+
             // Handle different data structures based on period type
             if (timeRange === 'ytd' && result.data.current_ytd) {
               // YTD comparison data
@@ -201,10 +214,13 @@ export default function AnalyticsPanel({ data }) {
                 customerRetentionRate: result.data.customer_retention_rate || 0,
                 retentionGrowth: 0,
                 periodType: timeRange,
-                dateRange: result.date_range
+                dateRange: result.date_range,
+                // REAL breakdown data for charts!
+                daily_breakdown: result.data.daily_breakdown || [],
+                weekly_patterns: result.data.weekly_patterns || null
               }
             }
-            
+
             setAnalyticsData(dashboardData)
             console.log(`✅ Analytics panel now using REAL ${timeRange} data!`, dashboardData)
           } else {
@@ -557,33 +573,50 @@ export default function AnalyticsPanel({ data }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue & Bookings Trend */}
         <div className="bg-card rounded-lg shadow p-6">
-          <h3 className="text-lg font-medium text-foreground mb-4">Revenue & Bookings Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Legend />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="revenue"
-                stroke="#3B82F6"
-                strokeWidth={2}
-                name="Revenue ($)"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="bookings"
-                stroke="#10B981"
-                strokeWidth={2}
-                name="Bookings"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <h3 className="text-lg font-medium text-foreground mb-4">
+            Revenue & Bookings Trend
+            {revenueData.length > 0 && (
+              <span className="ml-2 text-xs bg-moss-100 dark:bg-moss-900/30 text-moss-900 dark:text-moss-200 px-2 py-1 rounded">
+                REAL DATA ({revenueData.length} {revenueData.length > 7 ? 'days' : 'data points'})
+              </span>
+            )}
+          </h3>
+          {revenueData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis yAxisId="left" />
+                <YAxis yAxisId="right" orientation="right" />
+                <Tooltip />
+                <Legend />
+                <Line
+                  yAxisId="left"
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#3B82F6"
+                  strokeWidth={2}
+                  name="Revenue ($)"
+                />
+                <Line
+                  yAxisId="right"
+                  type="monotone"
+                  dataKey="bookings"
+                  stroke="#10B981"
+                  strokeWidth={2}
+                  name="Bookings"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px]">
+              <div className="text-center text-muted-foreground">
+                <ChartBarIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>No appointment data available for the selected period</p>
+                <p className="text-sm mt-1">Data will appear once appointments are booked</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Service Breakdown */}

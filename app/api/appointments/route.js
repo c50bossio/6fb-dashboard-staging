@@ -45,15 +45,16 @@ export async function GET(request) {
     const end_date = searchParams.get('end_date')
     const status = searchParams.get('status')
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 1000)
     const offset = (page - 1) * limit
 
     // Build query - use correct table name and columns
+    // NOTE: client_id references customers table (not profiles)
     let query = supabase
       .from('appointments')
       .select(`
         *,
-        client:profiles!appointments_client_id_fkey(id, email, full_name),
+        client:customers(id, full_name, email, phone),
         barber:profiles!appointments_barber_id_fkey(id, email, full_name),
         service:services(id, name, description, duration_minutes, price, category),
         barbershop:barbershops(id, name, address, phone)
@@ -195,7 +196,7 @@ export async function POST(request) {
       })
       .select(`
         *,
-        client:profiles!appointments_client_id_fkey(id, email, full_name),
+        client:customers(id, full_name, email, phone),
         barber:profiles!appointments_barber_id_fkey(id, email, full_name),
         service:services(id, name, description, duration_minutes, price, category),
         barbershop:barbershops(id, name, address, phone)
@@ -291,7 +292,7 @@ export async function PUT(request) {
       .eq('id', id)
       .select(`
         *,
-        client:profiles!appointments_client_id_fkey(id, email, full_name),
+        client:customers(id, full_name, email, phone),
         barber:profiles!appointments_barber_id_fkey(id, email, full_name),
         service:services(id, name, description, duration_minutes, price, category),
         barbershop:barbershops(id, name, address, phone)

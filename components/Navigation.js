@@ -152,14 +152,19 @@ const shopManagement = [
     description: 'Manage inventory, marketplace, and point of sale',
     badge: 'CIN7'
   },
-  { 
-    name: 'Point of Sale', 
-    href: '/dashboard/pos', 
+  {
+    name: 'Point of Sale',
+    href: '/dashboard/pos',
     icon: CreditCardIcon,
     description: 'Process product sales and commissions'
+  },
+  {
+    name: 'Staff Management',
+    href: '/shop/barbers',
+    icon: UserGroupIcon,
+    description: 'Manage barbers, schedules, and compensation'
   }
   // Coming Soon:
-  // - Staff Management (manage all barbers)
   // - Advanced Reports (detailed analytics)
 ]
 
@@ -284,7 +289,9 @@ export default function Navigation() {
   // Mobile Header Component
   const MobileHeader = () => (
     <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-40 backdrop-blur-md">
-      <LogoHeader size="small" showText={false} />
+      <Link href="/dashboard">
+        <LogoHeader size="small" showText={false} />
+      </Link>
       <button
         onClick={() => setIsMobileMenuOpen(true)}
         className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all duration-200"
@@ -742,7 +749,9 @@ export default function Navigation() {
           <div className="mobile-navigation absolute inset-y-0 left-0 w-80 max-w-full bg-card shadow-2xl transform transition-transform ease-in-out duration-300 border-r border-border">
             {/* Header */}
             <div className="p-6 border-b border-border flex items-center justify-between bg-background/95 backdrop-blur-sm">
-              <Logo size="medium" showText priority />
+              <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                <Logo size="medium" showText priority />
+              </Link>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary/10 transition-all duration-200"
@@ -751,7 +760,10 @@ export default function Navigation() {
                 <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
-            
+
+            {/* Shop Selector - CRITICAL: Provides location context for entire app */}
+            <ShopSelector collapsed={false} />
+
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 140px)' }}>
               <NavigationItems onItemClick={() => setIsMobileMenuOpen(false)} />
@@ -795,7 +807,9 @@ export default function Navigation() {
             <div className="p-6 border-b border-border bg-background/95 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className={`flex items-center ${isCollapsed ? 'hidden' : ''}`}>
-                  <Logo size="medium" showText priority />
+                  <Link href="/dashboard">
+                    <Logo size="medium" showText priority />
+                  </Link>
                 </div>
                 <button
                   onClick={() => setIsCollapsed(!isCollapsed)}
@@ -811,8 +825,8 @@ export default function Navigation() {
               </div>
             </div>
 
-            {/* Shop Selector */}
-            {!isCollapsed && <ShopSelector />}
+            {/* Shop Selector - CRITICAL: Provides location context for entire app */}
+            <ShopSelector collapsed={isCollapsed} />
 
             <NavigationItems collapsed={isCollapsed} />
           </div>

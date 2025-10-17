@@ -3,7 +3,7 @@
 import { BellIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 
-import { usePusherNotifications } from '../hooks/usePusherNotifications'
+import { useSupabaseNotifications } from '../hooks/useSupabaseNotifications'
 
 export default function NotificationBell() {
   const [showDropdown, setShowDropdown] = useState(false)
@@ -14,7 +14,7 @@ export default function NotificationBell() {
     markAsRead,
     markAllAsRead,
     requestPermission,
-  } = usePusherNotifications()
+  } = useSupabaseNotifications()
 
   const handleNotificationClick = async (notification) => {
     if (!notification.read) {

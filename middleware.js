@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server'
 import { handlePreflightRequest, addCorsHeaders } from './lib/cors-config'
 import { updateSession } from './lib/supabase/middleware'
+import { generateCsrfToken, validateCsrfToken } from './lib/csrf'
 
 export async function middleware(request) {
   const origin = request.headers.get('origin')
@@ -44,6 +45,34 @@ export async function middleware(request) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirectTo', pathname) // Remember where they wanted to go
     return NextResponse.redirect(loginUrl)
+  }
+
+  // CSRF Protection for state-changing operations
+  const STATE_CHANGING_METHODS = ['POST', 'PUT', 'DELETE', 'PATCH']
+  const CSRF_EXEMPT_PATHS = [
+    '/api/ai/data-query',     // AI Widget - will add CSRF in Phase 2
+    '/api/ai/unified-chat'    // AI Coach Panel and unified chat - exempted for now
+  ]
+
+  if (pathname.startsWith('/api/') &&
+      STATE_CHANGING_METHODS.includes(request.method) &&
+      user &&
+      !CSRF_EXEMPT_PATHS.includes(pathname)) {
+    const csrfToken = request.headers.get('X-CSRF-Token')
+
+    if (!csrfToken || !validateCsrfToken(csrfToken, user.id)) {
+      console.error(`🚫 [Middleware] CSRF token validation failed for ${request.method} ${pathname}`)
+      return NextResponse.json(
+        { error: 'Invalid CSRF token. Please refresh the page and try again.' },
+        { status: 403 }
+      )
+    }
+  }
+
+  // Generate CSRF token for authenticated GET requests
+  if (request.method === 'GET' && user && pathname.startsWith('/api/')) {
+    const csrfToken = generateCsrfToken(user.id)
+    supabaseResponse.headers.set('X-CSRF-Token', csrfToken)
   }
 
   // Redirect authenticated users away from auth pages
