@@ -25,7 +25,7 @@ import { useResponsiveCalendar } from '../../hooks/useResponsiveCalendar'
  * @param {boolean} enableSwipeToDismiss - Enable swipe gesture (default: true)
  */
 export default function MobileBottomSheet({
-  open,
+  isOpen,
   onClose,
   title,
   children,
@@ -50,11 +50,11 @@ export default function MobileBottomSheet({
 
   // Reset drag state when sheet closes
   useEffect(() => {
-    if (!open) {
+    if (!isOpen) {
       setDragOffset(0)
       setIsDragging(false)
     }
-  }, [open])
+  }, [isOpen])
 
   // Touch event handlers for swipe-to-dismiss
   const handleTouchStart = (e) => {
@@ -112,7 +112,7 @@ export default function MobileBottomSheet({
   const useBottomSheet = isMobile
 
   return (
-    <Transition.Root show={open} as={Fragment}>
+    <Transition.Root show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
         {/* Backdrop with blur effect */}
         <Transition.Child
