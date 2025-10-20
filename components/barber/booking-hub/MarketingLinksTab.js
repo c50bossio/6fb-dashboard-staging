@@ -237,8 +237,8 @@ export default function MarketingLinksTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-        <p className="ml-4 text-gray-600">Loading marketing links...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 dark:border-green-400"></div>
+        <p className="ml-4 text-muted-foreground">Loading marketing links...</p>
       </div>
     )
   }
@@ -247,68 +247,68 @@ export default function MarketingLinksTab() {
     <div className="space-y-6">
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <LinkIcon className="h-8 w-8 text-green-600" />
+              <LinkIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Active Links</dt>
-                <dd className="text-2xl font-bold text-gray-900">{stats.activeLinks}</dd>
-                <dd className="text-xs text-gray-500">{bookingLinks.length} total</dd>
+                <dt className="text-sm font-medium text-muted-foreground truncate">Active Links</dt>
+                <dd className="text-2xl font-bold text-foreground">{stats.activeLinks}</dd>
+                <dd className="text-xs text-muted-foreground">{bookingLinks.length} total</dd>
               </dl>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <EyeIcon className="h-8 w-8 text-olive-600" />
+              <EyeIcon className="h-8 w-8 text-olive-600 dark:text-olive-400" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Total Clicks</dt>
-                <dd className="text-2xl font-bold text-gray-900">{stats.totalClicks}</dd>
-                <dd className="text-xs text-gray-500">All time</dd>
+                <dt className="text-sm font-medium text-muted-foreground truncate">Total Clicks</dt>
+                <dd className="text-2xl font-bold text-foreground">{stats.totalClicks}</dd>
+                <dd className="text-xs text-muted-foreground">All time</dd>
               </dl>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <ChartBarIcon className="h-8 w-8 text-gold-600" />
+              <ChartBarIcon className="h-8 w-8 text-gold-600 dark:text-gold-400" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Conversions</dt>
-                <dd className="text-2xl font-bold text-gray-900">
-                  {stats.totalConversions} 
-                  <span className="text-sm text-gold-600">
+                <dt className="text-sm font-medium text-muted-foreground truncate">Conversions</dt>
+                <dd className="text-2xl font-bold text-foreground">
+                  {stats.totalConversions}
+                  <span className="text-sm text-gold-600 dark:text-gold-400">
                     ({stats.totalClicks > 0 ? ((stats.totalConversions / stats.totalClicks) * 100).toFixed(1) : 0}%)
                   </span>
                 </dd>
-                <dd className="text-xs text-gray-500">Clicks to bookings</dd>
+                <dd className="text-xs text-muted-foreground">Clicks to bookings</dd>
               </dl>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <CurrencyDollarIcon className="h-8 w-8 text-green-600" />
+              <CurrencyDollarIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Revenue</dt>
-                <dd className="text-2xl font-bold text-gray-900">
+                <dt className="text-sm font-medium text-muted-foreground truncate">Revenue</dt>
+                <dd className="text-2xl font-bold text-foreground">
                   ${stats.totalRevenue > 0 ? stats.totalRevenue.toLocaleString() : 'NaN'}
                 </dd>
-                <dd className="text-xs text-gray-500">From link bookings</dd>
+                <dd className="text-xs text-muted-foreground">From link bookings</dd>
               </dl>
             </div>
           </div>
@@ -318,12 +318,12 @@ export default function MarketingLinksTab() {
       {/* Header with Create Button */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Marketing Links</h2>
-          <p className="text-sm text-gray-600">Create and manage custom booking links for your campaigns</p>
+          <h2 className="text-lg font-semibold text-foreground">Marketing Links</h2>
+          <p className="text-sm text-muted-foreground">Create and manage custom booking links for your campaigns</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
           Create New Link
@@ -333,38 +333,38 @@ export default function MarketingLinksTab() {
       {/* Links List */}
       <div className="space-y-4">
         {bookingLinks.map((link) => (
-          <div key={link.id} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <div key={link.id} className="bg-card rounded-xl p-6 shadow-sm border border-border">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900">{link.name}</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{link.name}</h3>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    link.active 
-                      ? 'bg-moss-100 text-moss-900' 
-                      : 'bg-gray-100 text-gray-800'
+                    link.active
+                      ? 'bg-moss-100 dark:bg-moss-900/30 text-moss-900 dark:text-moss-300'
+                      : 'bg-muted text-muted-foreground'
                   }`}>
                     {link.active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                
-                <div className="flex items-center text-sm text-gray-600 mb-4">
-                  <code className="bg-gray-100 px-2 py-1 rounded font-mono text-xs">
+
+                <div className="flex items-center text-sm text-muted-foreground mb-4">
+                  <code className="bg-muted px-2 py-1 rounded font-mono text-xs text-foreground">
                     {link.url}
                   </code>
                   <button
                     onClick={() => copyToClipboard(link.url, link.id)}
-                    className="ml-2 p-1 text-gray-400 hover:text-gray-600"
+                    className="ml-2 p-1 text-muted-foreground hover:text-foreground"
                     title="Copy URL"
                   >
                     {copiedLinkId === link.id ? (
-                      <CheckCircleIcon className="h-4 w-4 text-green-600" />
+                      <CheckCircleIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
                     ) : (
                       <LinkIcon className="h-4 w-4" />
                     )}
                   </button>
                   <button
                     onClick={() => openInNewTab(link.url)}
-                    className="ml-1 p-1 text-gray-400 hover:text-gray-600"
+                    className="ml-1 p-1 text-muted-foreground hover:text-foreground"
                     title="Open in new tab"
                   >
                     <ArrowTopRightOnSquareIcon className="h-4 w-4" />
@@ -374,21 +374,21 @@ export default function MarketingLinksTab() {
                 {/* Services and Time Slots */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Services</h4>
+                    <h4 className="text-sm font-medium text-foreground mb-2">Services</h4>
                     <div className="flex flex-wrap gap-1">
                       {link.services?.map((service, index) => (
-                        <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-olive-100 text-olive-800">
+                        <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-olive-100 dark:bg-olive-900/30 text-olive-800 dark:text-olive-300">
                           {service}
                         </span>
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Time Slots</h4>
+                    <h4 className="text-sm font-medium text-foreground mb-2">Time Slots</h4>
                     <div className="flex flex-wrap gap-1">
                       {link.timeSlots?.map((slot, index) => (
-                        <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gold-100 text-gold-800">
+                        <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gold-100 dark:bg-gold-900/30 text-gold-800 dark:text-gold-300">
                           {slot}
                         </span>
                       ))}
@@ -399,24 +399,24 @@ export default function MarketingLinksTab() {
                 {/* Performance Metrics */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-olive-600">{link.clicks || 0}</div>
-                    <div className="text-xs text-gray-500">Clicks</div>
+                    <div className="text-2xl font-bold text-olive-600 dark:text-olive-400">{link.clicks || 0}</div>
+                    <div className="text-xs text-muted-foreground">Clicks</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-green-600">{link.conversions || 0}</div>
-                    <div className="text-xs text-gray-500">Bookings</div>
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">{link.conversions || 0}</div>
+                    <div className="text-xs text-muted-foreground">Bookings</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-gold-600">{link.embed_count || 0}</div>
-                    <div className="text-xs text-gray-500">Embeds</div>
+                    <div className="text-2xl font-bold text-gold-600 dark:text-gold-400">{link.embed_count || 0}</div>
+                    <div className="text-xs text-muted-foreground">Embeds</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-orange-600">{link.conversionRate || 0}%</div>
-                    <div className="text-xs text-gray-500">Conversion</div>
+                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{link.conversionRate || 0}%</div>
+                    <div className="text-xs text-muted-foreground">Conversion</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-green-600">${link.revenue || 0}</div>
-                    <div className="text-xs text-gray-500">Revenue</div>
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">${link.revenue || 0}</div>
+                    <div className="text-xs text-muted-foreground">Revenue</div>
                   </div>
                 </div>
               </div>
@@ -424,42 +424,42 @@ export default function MarketingLinksTab() {
               {/* Action Buttons */}
               <div className="flex flex-col gap-2 ml-6">
                 <div className="flex items-center gap-2">
-                  <div className="text-right text-xs text-gray-500">
+                  <div className="text-right text-xs text-muted-foreground">
                     <div>Duration: {link.duration} min</div>
                     <div>Price: ${link.customPrice}</div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => copyToClipboard(link.url, `copy-${link.id}`)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-all"
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-muted text-foreground hover:bg-muted/80 rounded-lg transition-all"
                     title="Copy Link"
                   >
                     <LinkIcon className="h-4 w-4" />
                     Copy Link
                   </button>
-                  
+
                   <button
                     onClick={() => generateQRCode(link.id)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all bg-olive-100 text-olive-700 hover:bg-olive-200"
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-all bg-olive-100 dark:bg-olive-900/30 text-olive-700 dark:text-olive-300 hover:bg-olive-200 dark:hover:bg-olive-900/50"
                     title="Generate QR"
                   >
                     <QrCodeIcon className="h-4 w-4" />
                     Generate QR
                   </button>
-                  
+
                   <button
                     onClick={() => showEmbedCode(link.id)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-100 text-olive-700 hover:bg-indigo-200 rounded-lg transition-all"
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-100 dark:bg-indigo-900/30 text-olive-700 dark:text-olive-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 rounded-lg transition-all"
                     title="Embed Code"
                   >
                     <CodeBracketIcon className="h-4 w-4" />
                     Embed
                   </button>
                 </div>
-                
-                <div className="text-xs text-gray-500 text-right">
+
+                <div className="text-xs text-muted-foreground text-right">
                   Created {link.createdAt}
                 </div>
               </div>
