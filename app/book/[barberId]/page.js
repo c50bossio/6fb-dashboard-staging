@@ -161,47 +161,56 @@ function BookingPageContent() {
   const loadBarberData = async () => {
     try {
       setLoading(true)
-      
-      const mockBarber = {
-        id: params.barberId,
-        name: 'Marcus Johnson',
-        title: 'Master Barber',
-        image: '/barbers/marcus.jpg',
-        rating: 4.9,
-        reviewCount: 156,
-        bio: 'Professional barber with over 10 years of experience specializing in fades, beard sculpting, and modern men\'s cuts.',
+
+      // Fetch real barber data from API
+      const barberResponse = await fetch(`/api/book/${params.barberId}`)
+      if (!barberResponse.ok) {
+        throw new Error('Failed to load barber profile')
+      }
+      const barberData = await barberResponse.json()
+
+      // Fetch real services from API
+      const servicesResponse = await fetch(`/api/book/${params.barberId}/services`)
+      if (!servicesResponse.ok) {
+        throw new Error('Failed to load services')
+      }
+      const servicesData = await servicesResponse.json()
+
+      // Transform barber data to match expected format
+      const transformedBarber = {
+        id: barberData.id,
+        name: barberData.name,
+        title: barberData.title || 'Professional Barber',
+        image: barberData.image,
+        rating: barberData.rating || 5.0,
+        reviewCount: barberData.reviewCount || 0,
+        bio: barberData.bio,
         location: {
-          name: '6FB Downtown',
-          address: '123 Main St, Downtown, NY 10001',
-          phone: '(555) 123-4567'
+          name: barberData.barbershop?.name,
+          address: `${barberData.barbershop?.address}, ${barberData.barbershop?.city}, ${barberData.barbershop?.state} ${barberData.barbershop?.zip_code}`,
+          phone: barberData.barbershop?.phone || barberData.phone
         },
-        specialties: ['Fades', 'Beard Sculpting', 'Hot Towel Shaves', 'Classic Cuts'],
-        availability: {
-          monday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          tuesday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          wednesday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          thursday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          friday: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00'],
-          saturday: ['09:00', '10:00', '11:00', '14:00', '15:00'],
-          sunday: ['10:00', '11:00', '12:00', '14:00', '15:00']
-        }
+        specialties: barberData.specialties || [],
+        availability: {} // Will be loaded dynamically from availability API
       }
 
-      const mockServices = [
-        { id: 1, name: 'Classic Cut', duration: 30, price: 35, description: 'Traditional scissor cut and style', category: 'Haircuts' },
-        { id: 2, name: 'Fade Cut', duration: 45, price: 45, description: 'Modern fade with scissor work on top', category: 'Haircuts' },
-        { id: 3, name: 'Buzz Cut', duration: 15, price: 25, description: 'Clean, uniform length all around', category: 'Haircuts' },
-        { id: 4, name: 'Beard Trim', duration: 20, price: 20, description: 'Precision beard trimming and shaping', category: 'Beard Services' },
-        { id: 5, name: 'Beard Sculpting', duration: 30, price: 35, description: 'Detailed beard design and sculpting', category: 'Beard Services' },
-        { id: 6, name: 'Hot Towel Shave', duration: 45, price: 50, description: 'Traditional straight razor shave with hot towel', category: 'Premium Services' },
-        { id: 7, name: 'Hair Wash & Style', duration: 25, price: 30, description: 'Professional wash and styling', category: 'Add-ons' },
-        { id: 8, name: 'Eyebrow Trim', duration: 10, price: 15, description: 'Eyebrow trimming and shaping', category: 'Add-ons' }
-      ]
+      // Transform services to match expected format
+      const transformedServices = servicesData.services.map(service => ({
+        id: service.id,
+        name: service.name,
+        duration: service.durationMinutes,
+        price: parseFloat(service.price),
+        description: service.description,
+        category: service.category
+      }))
 
-      setBarberData(mockBarber)
-      setAvailableServices(mockServices)
+      setBarberData(transformedBarber)
+      setAvailableServices(transformedServices)
     } catch (error) {
       console.error('Failed to load barber data:', error)
+      // Set empty state instead of showing mock data
+      setBarberData(null)
+      setAvailableServices([])
     } finally {
       setLoading(false)
     }
@@ -741,7 +750,7 @@ function BookingPageContent() {
                           className={`p-3 text-sm rounded-lg border-2 transition-all ${
                             isSelected
                               ? 'border-olive-500 bg-olive-50 text-olive-700'
-                              : 'border-gray-200 hover:border-gray-300'
+                              : 'border-gray-200 hover:border-gray-300 text-gray-900'
                           }`}
                         >
                           {new Date(`2000-01-01T${time}:00`).toLocaleTimeString('en-US', {

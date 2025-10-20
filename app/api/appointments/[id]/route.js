@@ -13,10 +13,10 @@ export async function PUT(request, { params }) {
 
     console.log(`[Appointment Update] Updating appointment ${id}`)
 
-    // Update appointment in bookings table
+    // Update appointment in appointments table
     const { data, error } = await supabase
-      .from('bookings')
-      .update({ 
+      .from('appointments')
+      .update({
         customer_name,
         service_name,
         notes,
@@ -63,14 +63,14 @@ export async function DELETE(request, { params }) {
 
     // Get appointment details for notification
     const { data: appointmentData } = await supabase
-      .from('bookings')
+      .from('appointments')
       .select('customer_name, customer_phone, barbershop_id')
       .eq('id', id)
       .single()
 
-    // Delete appointment from bookings table
+    // Delete appointment from appointments table
     const { error } = await supabase
-      .from('bookings')
+      .from('appointments')
       .delete()
       .eq('id', id)
 

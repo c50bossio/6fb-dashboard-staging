@@ -20,10 +20,10 @@ export async function PUT(request, { params }) {
 
     console.log(`[Appointment Status] Updating appointment ${id} to status: ${status}`)
 
-    // Update appointment status in bookings table
+    // Update appointment status in appointments table
     const { data, error } = await supabase
-      .from('bookings')
-      .update({ 
+      .from('appointments')
+      .update({
         status,
         updated_at: new Date().toISOString()
       })

@@ -273,7 +273,7 @@ export async function POST(request) {
 
     // Check for overlapping appointments (prevents double booking)
     const { data: overlapping, error: overlapError } = await supabase
-      .from('bookings')
+      .from('appointments')
       .select('id, start_time, end_time, status, customer_id')
       .eq('barbershop_id', barbershopId)
       .eq('barber_id', body.barber_id)
@@ -424,7 +424,7 @@ export async function POST(request) {
     // 🚨 RACE CONDITION FIX: Final check for conflicts before inserting
     // Double-check for overlapping appointments right before insert
     const { data: finalOverlapCheck } = await supabase
-      .from('bookings')
+      .from('appointments')
       .select('id')
       .eq('barbershop_id', bookingData.barbershop_id)
       .eq('barber_id', bookingData.barber_id)
@@ -445,7 +445,7 @@ export async function POST(request) {
 
     // Insert the single booking record (FullCalendar will handle recurring instances)
     const { data: newBooking, error: bookingError } = await supabase
-      .from('bookings')
+      .from('appointments')
       .insert([bookingData])
       .select()
       .single()
