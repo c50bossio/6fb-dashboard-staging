@@ -19,17 +19,18 @@ export async function GET(
     const { staffSlug } = params
 
     // Fetch staff profile by booking slug
+    // Note: Using barbershop_id!inner to explicitly specify the foreign key relationship
     const { data: profile, error } = await supabase
       .from('profiles')
       .select(`
         id,
-        name,
+        full_name,
         bio,
         specialties,
         avatar_url,
         phone,
         barbershop_id,
-        barbershops (
+        barbershops!barbershop_id (
           id,
           name,
           address,
@@ -53,7 +54,7 @@ export async function GET(
     // Return sanitized public profile
     return NextResponse.json({
       id: profile.id,
-      name: profile.name,
+      name: profile.full_name, // Map full_name to name for frontend compatibility
       bio: profile.bio,
       specialties: profile.specialties || [],
       image: profile.avatar_url, // Map avatar_url to image for frontend compatibility
