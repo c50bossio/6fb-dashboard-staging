@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../SupabaseAuthProvider'
 
 export default function PublicPageTab() {
-  const { user: _user } = useAuth()
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('preview')
   const [copied, setCopied] = useState({})
   const [qrSize, setQrSize] = useState(200)
