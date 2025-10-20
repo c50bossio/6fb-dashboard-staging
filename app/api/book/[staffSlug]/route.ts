@@ -26,7 +26,7 @@ export async function GET(
         name,
         bio,
         specialties,
-        image,
+        avatar_url,
         phone,
         barbershop_id,
         barbershops (
@@ -56,7 +56,7 @@ export async function GET(
       name: profile.name,
       bio: profile.bio,
       specialties: profile.specialties || [],
-      image: profile.image,
+      image: profile.avatar_url, // Map avatar_url to image for frontend compatibility
       phone: profile.phone,
       barbershop: profile.barbershops
     })
